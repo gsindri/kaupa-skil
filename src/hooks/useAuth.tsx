@@ -1,6 +1,5 @@
 
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/integrations/supabase/client'
 import { User } from '@supabase/supabase-js'
 import { Database } from '@/lib/types/database'
@@ -11,7 +10,6 @@ export function useAuth() {
   const [user, setUser] = useState<User | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
-  const navigate = useNavigate()
 
   const fetchProfile = async (userId: string) => {
     try {
@@ -96,14 +94,14 @@ export function useAuth() {
         } else {
           setUser(null)
           setProfile(null)
-          navigate('/login')
+          // Navigation will be handled by AuthGate component
         }
         setLoading(false)
       }
     )
 
     return () => subscription.unsubscribe()
-  }, [navigate])
+  }, [])
 
   return {
     user,

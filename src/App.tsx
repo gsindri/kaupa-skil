@@ -42,31 +42,29 @@ function AppContent() {
   }
 
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/login" element={<LoginShowcase />} />
-        <Route path="/reset-password" element={<PasswordReset />} />
-        <Route
-          path="/*"
-          element={
-            <AuthGate>
-              <AppLayout>
-                <Routes>
-                  <Route path="/" element={<Index />} />
-                  <Route path="/dashboard" element={<Dashboard />} />
-                  <Route path="/compare" element={<Compare />} />
-                  <Route path="/orders" element={<Orders />} />
-                  <Route path="/suppliers" element={<Suppliers />} />
-                  <Route path="/price-history" element={<PriceHistory />} />
-                  <Route path="/admin" element={<Admin />} />
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </AppLayout>
-            </AuthGate>
-          }
-        />
-      </Routes>
-    </BrowserRouter>
+    <Routes>
+      <Route path="/login" element={<LoginShowcase />} />
+      <Route path="/reset-password" element={<PasswordReset />} />
+      <Route
+        path="/*"
+        element={
+          <AuthGate>
+            <AppLayout>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/compare" element={<Compare />} />
+                <Route path="/orders" element={<Orders />} />
+                <Route path="/suppliers" element={<Suppliers />} />
+                <Route path="/price-history" element={<PriceHistory />} />
+                <Route path="/admin" element={<Admin />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </AppLayout>
+          </AuthGate>
+        }
+      />
+    </Routes>
   );
 }
 
@@ -74,7 +72,9 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <AppContent />
+        <BrowserRouter>
+          <AppContent />
+        </BrowserRouter>
         <Toaster />
         <Sonner />
       </TooltipProvider>
