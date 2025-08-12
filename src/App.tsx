@@ -7,6 +7,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { AuthGate } from "@/components/auth/AuthGate";
 import { AppLayoutNew } from "@/components/layout/AppLayoutNew";
+import LoginShowcase from "@/pages/auth/LoginShowcase";
+import PasswordReset from "@/pages/auth/PasswordReset";
 import Dashboard from "./pages/Dashboard";
 import Compare from "./pages/Compare";
 import Suppliers from "./pages/Suppliers";
@@ -23,18 +25,27 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
-          <AuthGate>
-            <AppLayoutNew>
-              <Routes>
-                <Route path="/" element={<Dashboard />} />
-                <Route path="/compare" element={<Compare />} />
-                <Route path="/suppliers" element={<Suppliers />} />
-                <Route path="/orders" element={<Orders />} />
-                <Route path="/history" element={<PriceHistory />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </AppLayoutNew>
-          </AuthGate>
+          <Routes>
+            {/* Public routes */}
+            <Route path="/login" element={<LoginShowcase />} />
+            <Route path="/reset" element={<PasswordReset />} />
+            
+            {/* Protected routes */}
+            <Route path="*" element={
+              <AuthGate>
+                <AppLayoutNew>
+                  <Routes>
+                    <Route path="/" element={<Dashboard />} />
+                    <Route path="/compare" element={<Compare />} />
+                    <Route path="/suppliers" element={<Suppliers />} />
+                    <Route path="/orders" element={<Orders />} />
+                    <Route path="/history" element={<PriceHistory />} />
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </AppLayoutNew>
+              </AuthGate>
+            } />
+          </Routes>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
