@@ -14,13 +14,178 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      grants: {
+        Row: {
+          capability: string
+          constraints: Json | null
+          created_at: string | null
+          id: string
+          membership_id: string
+          scope: string
+          scope_id: string | null
+          tenant_id: string
+        }
+        Insert: {
+          capability: string
+          constraints?: Json | null
+          created_at?: string | null
+          id?: string
+          membership_id: string
+          scope?: string
+          scope_id?: string | null
+          tenant_id: string
+        }
+        Update: {
+          capability?: string
+          constraints?: Json | null
+          created_at?: string | null
+          id?: string
+          membership_id?: string
+          scope?: string
+          scope_id?: string | null
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "grants_membership_id_fkey"
+            columns: ["membership_id"]
+            isOneToOne: false
+            referencedRelation: "memberships"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "grants_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      memberships: {
+        Row: {
+          attrs: Json | null
+          base_role: string
+          created_at: string | null
+          id: string
+          tenant_id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          attrs?: Json | null
+          base_role: string
+          created_at?: string | null
+          id?: string
+          tenant_id: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          attrs?: Json | null
+          base_role?: string
+          created_at?: string | null
+          id?: string
+          tenant_id?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "memberships_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string | null
+          email: string | null
+          full_name: string | null
+          id: string
+          tenant_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email?: string | null
+          full_name?: string | null
+          id: string
+          tenant_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          tenant_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      tenants: {
+        Row: {
+          created_at: string | null
+          created_by: string
+          id: string
+          kind: string
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by: string
+          id?: string
+          kind?: string
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string
+          id?: string
+          kind?: string
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_user_memberships: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          membership_id: string
+          tenant_id: string
+          tenant_name: string
+          base_role: string
+          attrs: Json
+        }[]
+      }
+      has_capability: {
+        Args: {
+          cap: string
+          target_scope: string
+          target_id?: string
+          want?: Json
+        }
+        Returns: boolean
+      }
+      is_owner: {
+        Args: { _tenant_id: string }
+        Returns: boolean
+      }
+      setup_owner_grants: {
+        Args: { _membership_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
