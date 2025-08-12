@@ -40,6 +40,32 @@ export function useAuth() {
     }
   }
 
+  const signIn = async (email: string, password: string) => {
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    })
+    if (error) throw error
+  }
+
+  const signUp = async (email: string, password: string, fullName: string) => {
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          full_name: fullName,
+        },
+      },
+    })
+    if (error) throw error
+  }
+
+  const signOut = async () => {
+    const { error } = await supabase.auth.signOut()
+    if (error) throw error
+  }
+
   useEffect(() => {
     const initializeAuth = async () => {
       try {
@@ -83,6 +109,9 @@ export function useAuth() {
     user,
     profile,
     loading,
-    refetch
+    refetch,
+    signIn,
+    signUp,
+    signOut
   }
 }

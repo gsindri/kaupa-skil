@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import AppLayout from '../components/layout/AppLayout';
+import { AppLayout } from '../components/layout/AppLayout';
 import DashboardOverview from '../components/dashboard/DashboardOverview';
 import PriceComparisonTable from '../components/compare/PriceComparisonTable';
 import { Button } from '../components/ui/button';
@@ -10,7 +10,7 @@ const Index = () => {
   const [currentView, setCurrentView] = useState<'dashboard' | 'compare'>('dashboard');
 
   return (
-    <AppLayout currentPage={currentView === 'dashboard' ? 'dashboard' : 'compare'}>
+    <AppLayout>
       <div className="space-y-6 animate-fade-in">
         {/* Page Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
