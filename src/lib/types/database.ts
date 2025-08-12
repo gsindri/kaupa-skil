@@ -1,4 +1,3 @@
-
 export interface Database {
   public: {
     Tables: {
@@ -55,6 +54,67 @@ export interface Database {
           role?: 'admin' | 'buyer' | 'manager'
           created_at?: string
           updated_at?: string
+        }
+      }
+      memberships: {
+        Row: {
+          id: string
+          tenant_id: string
+          user_id: string
+          base_role: 'owner' | 'admin' | 'member'
+          attrs: Record<string, any>
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          tenant_id: string
+          user_id: string
+          base_role: 'owner' | 'admin' | 'member'
+          attrs?: Record<string, any>
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          tenant_id?: string
+          user_id?: string
+          base_role?: 'owner' | 'admin' | 'member'
+          attrs?: Record<string, any>
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      grants: {
+        Row: {
+          id: string
+          tenant_id: string
+          membership_id: string
+          capability: string
+          scope: 'tenant' | 'relationship' | 'supplier'
+          scope_id: string | null
+          constraints: Record<string, any>
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          tenant_id: string
+          membership_id: string
+          capability: string
+          scope?: 'tenant' | 'relationship' | 'supplier'
+          scope_id?: string | null
+          constraints?: Record<string, any>
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          tenant_id?: string
+          membership_id?: string
+          capability?: string
+          scope?: 'tenant' | 'relationship' | 'supplier'
+          scope_id?: string | null
+          constraints?: Record<string, any>
+          created_at?: string
         }
       }
       suppliers: {
@@ -429,6 +489,27 @@ export interface Database {
           log_data?: Record<string, any>
           created_at?: string
         }
+      }
+    }
+    Functions: {
+      has_capability: {
+        Args: {
+          cap: string
+          target_scope: string
+          target_id?: string
+          want?: Record<string, any>
+        }
+        Returns: boolean
+      }
+      get_user_memberships: {
+        Args: {}
+        Returns: {
+          membership_id: string
+          tenant_id: string
+          tenant_name: string
+          base_role: string
+          attrs: Record<string, any>
+        }[]
       }
     }
   }
