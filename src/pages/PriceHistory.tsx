@@ -49,7 +49,7 @@ export default function PriceHistory() {
           unit_price_ex_vat,
           observed_at,
           supplier_items!inner(
-            suppliers(name)
+            suppliers!inner(name)
           )
         `)
         .eq('supplier_items.item_id', selectedItem)
@@ -62,7 +62,10 @@ export default function PriceHistory() {
       
       data.forEach(quote => {
         const date = new Date(quote.observed_at).toLocaleDateString('is-IS')
-        const supplierName = quote.supplier_items?.suppliers?.name || 'Unknown'
+        // Since supplier_items is an array due to the join, we need to access the first element
+        const supplierItem = Array.isArray(quote.supplier_items) ? quote.supplier_items[0] : quote.supplier_items
+        const supplier = Array.isArray(supplierItem?.suppliers) ? supplierItem.suppliers[0] : supplierItem?.suppliers
+        const supplierName = supplier?.name || 'Unknown'
         
         if (!groupedData[date]) {
           groupedData[date] = {}
