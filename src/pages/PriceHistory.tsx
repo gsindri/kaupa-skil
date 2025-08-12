@@ -62,7 +62,7 @@ export default function PriceHistory() {
       
       data.forEach(quote => {
         const date = new Date(quote.observed_at).toLocaleDateString('is-IS')
-        const supplierName = quote.supplier_items.suppliers?.name || 'Unknown'
+        const supplierName = quote.supplier_items?.suppliers?.name || 'Unknown'
         
         if (!groupedData[date]) {
           groupedData[date] = {}
