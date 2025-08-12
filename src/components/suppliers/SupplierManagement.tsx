@@ -125,7 +125,7 @@ export function SupplierManagement() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'verified':
-        return <Badge variant="default" className="bg-success">Verified</Badge>
+        return <Badge variant="default" className="bg-green-500">Verified</Badge>
       case 'configured':
         return <Badge variant="secondary">Configured</Badge>
       case 'failed':
@@ -138,11 +138,11 @@ export function SupplierManagement() {
   const getRunStatusIcon = (status: string) => {
     switch (status) {
       case 'completed':
-        return <CheckCircle className="h-4 w-4 text-success" />
+        return <CheckCircle className="h-4 w-4 text-green-500" />
       case 'failed':
-        return <XCircle className="h-4 w-4 text-destructive" />
+        return <XCircle className="h-4 w-4 text-red-500" />
       case 'running':
-        return <Clock className="h-4 w-4 text-warning animate-spin" />
+        return <Clock className="h-4 w-4 text-yellow-500 animate-spin" />
       default:
         return <Clock className="h-4 w-4 text-muted-foreground" />
     }

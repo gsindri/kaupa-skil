@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { Textarea } from '@/components/ui/textarea'
-import { ShoppingCart, Trash2, Send, FileText, Download } from 'lucide-react'
+import { ShoppingCart, Trash2, Send } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/integrations/supabase/client'
@@ -167,6 +167,7 @@ export function OrderComposer() {
         .single()
 
       if (orderError) throw orderError
+      if (!order) throw new Error('Failed to create order')
 
       // Create order lines
       const orderLines = cartItems.map(item => ({

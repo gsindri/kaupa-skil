@@ -41,97 +41,101 @@ export function PriceComparisonTableNew() {
   const { profile } = useAuth()
   const { data: unitsVatData } = useUnitsVat()
 
+  // For now, let's use mock data since we don't have supplier items and price quotes yet
   const { data: comparisonData, isLoading } = useQuery({
     queryKey: ['price-comparison', profile?.tenant_id],
     queryFn: async () => {
-      if (!profile?.tenant_id) return []
+      // Mock data for demonstration
+      const mockData: PriceComparisonItem[] = [
+        {
+          id: '1',
+          itemName: 'Extra Virgin Olive Oil',
+          brand: 'Bertolli',
+          category: 'Food & Beverages',
+          suppliers: [
+            {
+              id: 'supplier-1',
+              name: 'Véfkaupmenn',
+              sku: 'VK-OLV-001',
+              packSize: '500ml bottle',
+              packPrice: 1890,
+              unitPriceExVat: 3780,
+              unitPriceIncVat: 4688,
+              unit: 'L',
+              inStock: true,
+              lastUpdated: new Date().toLocaleDateString('is-IS'),
+              vatCode: 'standard'
+            },
+            {
+              id: 'supplier-2',
+              name: 'Heilsuhúsið',
+              sku: 'HH-OLV-002',
+              packSize: '500ml bottle',
+              packPrice: 2150,
+              unitPriceExVat: 4300,
+              unitPriceIncVat: 5332,
+              unit: 'L',
+              inStock: true,
+              lastUpdated: new Date().toLocaleDateString('is-IS'),
+              vatCode: 'standard'
+            }
+          ]
+        },
+        {
+          id: '2',
+          itemName: 'Icelandic Skyr Plain',
+          brand: 'KEA',
+          category: 'Dairy Products',
+          suppliers: [
+            {
+              id: 'supplier-2',
+              name: 'Heilsuhúsið',
+              sku: 'HH-SKYR-PLAIN',
+              packSize: '1kg container',
+              packPrice: 850,
+              unitPriceExVat: 850,
+              unitPriceIncVat: 1054,
+              unit: 'kg',
+              inStock: true,
+              lastUpdated: new Date().toLocaleDateString('is-IS'),
+              vatCode: 'standard'
+            },
+            {
+              id: 'supplier-3',
+              name: 'Matfuglinn',
+              sku: 'MF-SKYR-001',
+              packSize: '1kg container',
+              packPrice: 795,
+              unitPriceExVat: 795,
+              unitPriceIncVat: 986,
+              unit: 'kg',
+              inStock: false,
+              lastUpdated: new Date().toLocaleDateString('is-IS'),
+              vatCode: 'standard'
+            }
+          ]
+        }
+      ]
 
-      // Get items with their supplier items and latest price quotes
-      const { data, error } = await supabase
-        .from('items')
-        .select(`
-          id,
-          name,
-          brand,
-          categories!inner(name),
-          supplier_items!inner(
-            id,
-            supplier_id,
-            ext_sku,
-            display_name,
-            pack_qty,
-            pack_unit_id,
-            yield_pct,
-            suppliers!inner(id, name),
-            units!pack_unit_id(code, name),
-            price_quotes!supplier_item_id(
-              pack_price,
-              unit_price_ex_vat,
-              unit_price_inc_vat,
-              vat_code,
-              observed_at,
-              currency
-            )
-          )
-        `)
-        .limit(50)
+      // Calculate price badges
+      mockData.forEach(item => {
+        const prices = item.suppliers.map(s => includeVat ? s.unitPriceIncVat : s.unitPriceExVat)
+        const minPrice = Math.min(...prices)
+        const maxPrice = Math.max(...prices)
+        const priceRange = maxPrice - minPrice
 
-      if (error) throw error
-
-      // Transform the data into comparison format
-      const comparisonItems: PriceComparisonItem[] = []
-      
-      for (const item of data || []) {
-        const supplierData: PriceComparisonItem['suppliers'] = []
-        
-        for (const supplierItem of item.supplier_items || []) {
-          const latestPrice = supplierItem.price_quotes?.[0] // Assuming ordered by observed_at desc
+        item.suppliers.forEach(supplier => {
+          const price = includeVat ? supplier.unitPriceIncVat : supplier.unitPriceExVat
+          const percentile = priceRange > 0 ? (price - minPrice) / priceRange : 0
           
-          if (latestPrice && supplierItem.suppliers && supplierItem.units) {
-            supplierData.push({
-              id: supplierItem.suppliers.id,
-              name: supplierItem.suppliers.name,
-              sku: supplierItem.ext_sku,
-              packSize: `${supplierItem.pack_qty} ${supplierItem.units.name}`,
-              packPrice: latestPrice.pack_price,
-              unitPriceExVat: latestPrice.unit_price_ex_vat || 0,
-              unitPriceIncVat: latestPrice.unit_price_inc_vat || 0,
-              unit: supplierItem.units.code,
-              inStock: true, // TODO: implement stock tracking
-              lastUpdated: new Date(latestPrice.observed_at).toLocaleDateString('is-IS'),
-              vatCode: latestPrice.vat_code,
-            })
-          }
-        }
+          if (percentile <= 0.1) supplier.badge = 'best'
+          else if (percentile <= 0.3) supplier.badge = 'good'
+          else if (percentile <= 0.7) supplier.badge = 'average'
+          else supplier.badge = 'expensive'
+        })
+      })
 
-        if (supplierData.length > 0) {
-          // Calculate price badges
-          const prices = supplierData.map(s => includeVat ? s.unitPriceIncVat : s.unitPriceExVat)
-          const minPrice = Math.min(...prices)
-          const maxPrice = Math.max(...prices)
-          const priceRange = maxPrice - minPrice
-
-          supplierData.forEach(supplier => {
-            const price = includeVat ? supplier.unitPriceIncVat : supplier.unitPriceExVat
-            const percentile = priceRange > 0 ? (price - minPrice) / priceRange : 0
-            
-            if (percentile <= 0.1) supplier.badge = 'best'
-            else if (percentile <= 0.3) supplier.badge = 'good'
-            else if (percentile <= 0.7) supplier.badge = 'average'
-            else supplier.badge = 'expensive'
-          })
-
-          comparisonItems.push({
-            id: item.id,
-            itemName: item.name,
-            brand: item.brand || '',
-            category: item.categories?.name || '',
-            suppliers: supplierData
-          })
-        }
-      }
-
-      return comparisonItems
+      return mockData
     },
     enabled: !!profile?.tenant_id
   })
@@ -223,28 +227,28 @@ export function PriceComparisonTableNew() {
       <Card className="card-elevated">
         <CardContent className="p-0">
           <div className="overflow-x-auto">
-            <table className="data-table">
-              <thead>
+            <table className="w-full">
+              <thead className="bg-muted/50">
                 <tr>
-                  <th className="w-64">Product</th>
-                  <th>Supplier</th>
-                  <th>SKU</th>
-                  <th>Pack Size</th>
-                  <th className="text-right">Price per Pack</th>
-                  <th className="text-right">
+                  <th className="text-left p-4 font-medium">Product</th>
+                  <th className="text-left p-4 font-medium">Supplier</th>
+                  <th className="text-left p-4 font-medium">SKU</th>
+                  <th className="text-left p-4 font-medium">Pack Size</th>
+                  <th className="text-right p-4 font-medium">Price per Pack</th>
+                  <th className="text-right p-4 font-medium">
                     Price per Unit ({includeVat ? 'inc VAT' : 'ex VAT'})
                   </th>
-                  <th>Stock</th>
-                  <th>Updated</th>
-                  <th></th>
+                  <th className="text-left p-4 font-medium">Stock</th>
+                  <th className="text-left p-4 font-medium">Updated</th>
+                  <th className="text-left p-4 font-medium"></th>
                 </tr>
               </thead>
               <tbody>
                 {filteredData.map((item) => (
                   item.suppliers.map((supplier, supplierIndex) => (
-                    <tr key={`${item.id}-${supplier.id}`} className="animate-fade-in">
+                    <tr key={`${item.id}-${supplier.id}`} className="border-b border-border hover:bg-muted/25">
                       {supplierIndex === 0 && (
-                        <td rowSpan={item.suppliers.length} className="border-r border-table-border">
+                        <td rowSpan={item.suppliers.length} className="p-4 border-r border-border">
                           <div>
                             <div className="font-medium text-foreground">{item.itemName}</div>
                             <div className="text-sm text-muted-foreground">{item.brand}</div>
@@ -252,39 +256,39 @@ export function PriceComparisonTableNew() {
                           </div>
                         </td>
                       )}
-                      <td>
+                      <td className="p-4">
                         <div className="font-medium text-foreground">{supplier.name}</div>
                       </td>
-                      <td>
+                      <td className="p-4">
                         <code className="text-xs bg-muted px-2 py-1 rounded font-mono">
                           {supplier.sku}
                         </code>
                       </td>
-                      <td>
+                      <td className="p-4">
                         <span className="text-sm text-foreground">{supplier.packSize}</span>
                       </td>
-                      <td className="text-right">
-                        <div className="font-medium currency-isk">
+                      <td className="p-4 text-right">
+                        <div className="font-medium">
                           {formatPrice(supplier.packPrice)}
                         </div>
                       </td>
-                      <td className="text-right">
+                      <td className="p-4 text-right">
                         <div className="flex items-center justify-end space-x-2">
-                          <span className="font-medium currency-isk">
+                          <span className="font-medium">
                             {formatPrice(includeVat ? supplier.unitPriceIncVat : supplier.unitPriceExVat)}
                           </span>
                           <span className="text-xs text-muted-foreground">/{supplier.unit}</span>
                         </div>
                       </td>
-                      <td>
+                      <td className="p-4">
                         <Badge variant={supplier.inStock ? 'default' : 'destructive'}>
                           {supplier.inStock ? 'In Stock' : 'Out of Stock'}
                         </Badge>
                       </td>
-                      <td>
+                      <td className="p-4">
                         <span className="text-xs text-muted-foreground">{supplier.lastUpdated}</span>
                       </td>
-                      <td>
+                      <td className="p-4">
                         <div className="flex items-center space-x-2">
                           {supplier.badge && (
                             <PriceBadge type={supplier.badge}>
