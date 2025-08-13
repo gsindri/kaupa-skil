@@ -5,7 +5,9 @@ import { useAuth } from './useAuth'
 import { useToast } from './use-toast'
 import { Database } from '@/lib/types/database'
 
-type ConnectorRun = Database['public']['Tables']['connector_runs']['Row']
+type ConnectorRun = Database['public']['Tables']['connector_runs']['Row'] & {
+  supplier?: Database['public']['Tables']['suppliers']['Row']
+}
 type ConnectorRunInsert = Database['public']['Tables']['connector_runs']['Insert']
 
 export function useConnectorRuns() {
@@ -22,7 +24,7 @@ export function useConnectorRuns() {
         .from('connector_runs')
         .select(`
           *,
-          supplier:suppliers(name)
+          supplier:suppliers(*)
         `)
         .eq('tenant_id', profile.tenant_id)
         .order('created_at', { ascending: false })

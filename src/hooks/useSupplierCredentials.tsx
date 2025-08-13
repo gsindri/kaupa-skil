@@ -5,7 +5,9 @@ import { useAuth } from './useAuth'
 import { useToast } from './use-toast'
 import { Database } from '@/lib/types/database'
 
-type SupplierCredential = Database['public']['Tables']['supplier_credentials']['Row']
+type SupplierCredential = Database['public']['Tables']['supplier_credentials']['Row'] & {
+  supplier?: Database['public']['Tables']['suppliers']['Row']
+}
 type SupplierCredentialInsert = Database['public']['Tables']['supplier_credentials']['Insert']
 
 export function useSupplierCredentials() {
@@ -22,7 +24,7 @@ export function useSupplierCredentials() {
         .from('supplier_credentials')
         .select(`
           *,
-          supplier:suppliers(name, connector_type)
+          supplier:suppliers(*)
         `)
         .eq('tenant_id', profile.tenant_id)
 

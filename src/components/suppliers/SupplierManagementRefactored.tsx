@@ -45,24 +45,6 @@ export function SupplierManagementRefactored() {
     enabled: !!profile?.tenant_id
   })
 
-  const { data: connectorRuns } = useQuery({
-    queryKey: ['connector-runs', profile?.tenant_id],
-    queryFn: async () => {
-      if (!profile?.tenant_id) return []
-
-      const { data, error } = await supabase
-        .from('connector_runs')
-        .select('*, suppliers(*)')
-        .eq('tenant_id', profile.tenant_id)
-        .order('created_at', { ascending: false })
-        .limit(10)
-
-      if (error) throw error
-      return data
-    },
-    enabled: !!profile?.tenant_id
-  })
-
   const handleRunConnector = async (supplierId: string) => {
     if (!profile?.tenant_id) return
 
@@ -141,12 +123,7 @@ export function SupplierManagementRefactored() {
 
             <div>
               {selectedSupplier ? (
-                <SupplierCredentialsForm
-                  supplier={suppliers?.find(s => s.id === selectedSupplier)!}
-                  onSuccess={() => {
-                    setTimeout(() => window.location.reload(), 1000)
-                  }}
-                />
+                <SupplierCredentialsForm />
               ) : (
                 <Card>
                   <CardContent className="p-8 text-center">
@@ -163,7 +140,7 @@ export function SupplierManagementRefactored() {
         </TabsContent>
 
         <TabsContent value="ingestion" className="space-y-4">
-          <IngestionRunsList connectorRuns={connectorRuns || []} />
+          <IngestionRunsList />
         </TabsContent>
       </Tabs>
     </div>
