@@ -1,150 +1,199 @@
 
 import React, { useState } from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { useToast } from '@/hooks/use-toast'
-import { supabase } from '@/integrations/supabase/client'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Badge } from '@/components/ui/badge'
+import { Trash2, Key, TestTube, CheckCircle, XCircle, Clock } from 'lucide-react'
+import { useSupplierCredentials } from '@/hooks/useSupplierCredentials'
+import { useSuppliers } from '@/hooks/useSuppliers'
 import { useAuth } from '@/hooks/useAuth'
-import { Database } from '@/lib/types/database'
 
-type Supplier = Database['public']['Tables']['suppliers']['Row']
-
-interface SupplierCredentialsFormProps {
-  supplier: Supplier
-  onSuccess?: () => void
-}
-
-export function SupplierCredentialsForm({ supplier, onSuccess }: SupplierCredentialsFormProps) {
-  const [formData, setFormData] = useState({
-    username: '',
-    password: '',
-    additionalData: ''
-  })
-  const [loading, setLoading] = useState(false)
-  const [testing, setTesting] = useState(false)
-  
+export function SupplierCredentialsForm() {
   const { profile } = useAuth()
-  const { toast } = useToast()
+  const { suppliers } = useSuppliers()
+  const { credentials, createCredential, updateCredential, deleteCredential } = useSupplierCredentials()
+  
+  const [selectedSupplierId, setSelectedSupplierId] = useState('')
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
+  const [apiKey, setApiKey] = useState('')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!profile?.tenant_id) return
+    if (!selectedSupplierId || !profile?.tenant_id) return
 
-    setLoading(true)
-    try {
-      // In a real implementation, we would encrypt the credentials client-side
-      // For now, we'll simulate this with a simple JSON encoding
-      const encryptedBlob = btoa(JSON.stringify(formData))
+    // In a real implementation, this would be encrypted client-side
+    const encryptedBlob = JSON.stringify({
+      username,
+      password,
+      apiKey
+    })
 
-      const { error } = await supabase
-        .from('supplier_credentials')
-        .upsert({
-          tenant_id: profile.tenant_id,
-          supplier_id: supplier.id,
-          encrypted_blob: encryptedBlob,
-        })
+    await createCredential.mutateAsync({
+      tenant_id: profile.tenant_id,
+      supplier_id: selectedSupplierId,
+      encrypted_blob: encryptedBlob,
+      test_status: 'pending'
+    })
 
-      if (error) throw error
+    // Reset form
+    setSelectedSupplierId('')
+    setUsername('')
+    setPassword('')
+    setApiKey('')
+  }
 
-      toast({
-        title: 'Credentials saved',
-        description: `Credentials for ${supplier.name} have been securely stored.`,
-      })
-
-      onSuccess?.()
-    } catch (error: any) {
-      toast({
-        title: 'Error saving credentials',
-        description: error.message,
-        variant: 'destructive',
-      })
-    } finally {
-      setLoading(false)
+  const getStatusIcon = (status: string | null) => {
+    switch (status) {
+      case 'success':
+        return <CheckCircle className="h-4 w-4 text-green-500" />
+      case 'failed':
+        return <XCircle className="h-4 w-4 text-red-500" />
+      case 'pending':
+        return <Clock className="h-4 w-4 text-yellow-500" />
+      default:
+        return <TestTube className="h-4 w-4 text-gray-400" />
     }
   }
 
-  const handleTestConnection = async () => {
-    setTesting(true)
-    try {
-      // Simulate testing connection - in real implementation this would call an edge function
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      
-      toast({
-        title: 'Connection test successful',
-        description: `Successfully connected to ${supplier.name}`,
-      })
-    } catch (error: any) {
-      toast({
-        title: 'Connection test failed',
-        description: error.message,
-        variant: 'destructive',
-      })
-    } finally {
-      setTesting(false)
+  const getStatusBadge = (status: string | null) => {
+    switch (status) {
+      case 'success':
+        return <Badge variant="default" className="bg-green-100 text-green-800">Connected</Badge>
+      case 'failed':
+        return <Badge variant="destructive">Failed</Badge>
+      case 'pending':
+        return <Badge variant="secondary">Testing</Badge>
+      default:
+        return <Badge variant="outline">Not Tested</Badge>
     }
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Credentials for {supplier.name}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="username">Username / Email</Label>
-            <Input
-              id="username"
-              type="text"
-              value={formData.username}
-              onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))}
-              required
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              value={formData.password}
-              onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
-              required
-            />
-          </div>
-
-          {supplier.connector_type === 'portal' && (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center space-x-2">
+            <Key className="h-5 w-5" />
+            <span>Add Supplier Credentials</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <Label htmlFor="additionalData">Additional Settings (JSON)</Label>
-              <Textarea
-                id="additionalData"
-                value={formData.additionalData}
-                onChange={(e) => setFormData(prev => ({ ...prev, additionalData: e.target.value }))}
-                placeholder='{"loginUrl": "https://example.com/login", "timeout": 30000}'
-                rows={3}
+              <Label htmlFor="supplier">Supplier</Label>
+              <Select value={selectedSupplierId} onValueChange={setSelectedSupplierId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a supplier" />
+                </SelectTrigger>
+                <SelectContent>
+                  {suppliers?.map((supplier) => (
+                    <SelectItem key={supplier.id} value={supplier.id}>
+                      {supplier.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="username">Username</Label>
+                <Input
+                  id="username"
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="API username"
+                />
+              </div>
+              <div>
+                <Label htmlFor="password">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="API password"
+                />
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="apiKey">API Key (if required)</Label>
+              <Input
+                id="apiKey"
+                type="password"
+                value={apiKey}
+                onChange={(e) => setApiKey(e.target.value)}
+                placeholder="Optional API key"
               />
             </div>
-          )}
 
-          <div className="flex space-x-3">
-            <Button type="submit" disabled={loading}>
-              {loading ? 'Saving...' : 'Save Credentials'}
-            </Button>
-            
             <Button 
-              type="button" 
-              variant="outline" 
-              onClick={handleTestConnection}
-              disabled={testing || !formData.username || !formData.password}
+              type="submit" 
+              disabled={!selectedSupplierId || createCredential.isPending}
+              className="w-full"
             >
-              {testing ? 'Testing...' : 'Test Connection'}
+              {createCredential.isPending ? 'Saving...' : 'Save Credentials'}
             </Button>
+          </form>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Stored Credentials</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            {credentials?.map((credential) => (
+              <div
+                key={credential.id}
+                className="flex items-center justify-between p-4 border rounded-lg"
+              >
+                <div className="flex items-center space-x-3">
+                  {getStatusIcon(credential.test_status)}
+                  <div>
+                    <div className="font-medium">
+                      {credential.supplier?.name || 'Unknown Supplier'}
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      Last tested: {credential.last_tested_at ? 
+                        new Date(credential.last_tested_at).toLocaleString() : 
+                        'Never'
+                      }
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-3">
+                  {getStatusBadge(credential.test_status)}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => deleteCredential.mutate(credential.id)}
+                    disabled={deleteCredential.isPending}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            ))}
+
+            {(!credentials || credentials.length === 0) && (
+              <div className="text-center py-8 text-muted-foreground">
+                <Key className="h-12 w-12 mx-auto mb-4" />
+                <p>No credentials stored yet</p>
+                <p className="text-sm">Add supplier credentials to enable price ingestion</p>
+              </div>
+            )}
           </div>
-        </form>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </div>
   )
 }

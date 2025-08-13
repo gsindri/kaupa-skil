@@ -16,11 +16,15 @@ export function useUnitsVat() {
         supabase.from('vat_rules').select('*')
       ])
 
-      if (unitsResponse.error) throw unitsResponse.error
-      if (vatRulesResponse.error) throw vatRulesResponse.error
+      if (unitsResponse.error) {
+        console.warn('Units table query failed:', unitsResponse.error)
+      }
+      if (vatRulesResponse.error) {
+        console.warn('VAT rules table query failed:', vatRulesResponse.error)
+      }
 
-      const units = unitsResponse.data as Unit[]
-      const vatRules = vatRulesResponse.data as VatRule[]
+      const units = (unitsResponse.data as Unit[]) || []
+      const vatRules = (vatRulesResponse.data as VatRule[]) || []
 
       const engine = createIcelandUnitVatEngine(units, vatRules)
 
@@ -31,5 +35,6 @@ export function useUnitsVat() {
       }
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
+    retry: 1, // Only retry once for missing tables
   })
 }
