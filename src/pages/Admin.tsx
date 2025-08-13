@@ -1,5 +1,5 @@
 
-import React from 'react'
+import React, { useState } from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Shield, Users, Activity, AlertTriangle, TestTube, BookOpen } from 'lucide-react'
 import { ElevationBanner } from '@/components/admin/ElevationBanner'
@@ -7,7 +7,6 @@ import { SupportSessionBanner } from '@/components/admin/SupportSessionBanner'
 import { ElevationDialog } from '@/components/admin/ElevationDialog'
 import { SupportSessionDialog } from '@/components/admin/SupportSessionDialog'
 import { TenantUserManagement } from '@/components/admin/TenantUserManagement'
-import { UserPermissionsPanel } from '@/components/admin/UserPermissionsPanel'
 import { InviteUserDialog } from '@/components/admin/InviteUserDialog'
 import { CurrentUserRole } from '@/components/admin/CurrentUserRole'
 import { PendingAdminActions } from '@/components/admin/PendingAdminActions'
@@ -16,8 +15,12 @@ import { AuditLogExport } from '@/components/admin/AuditLogExport'
 import { SecurityMonitoring } from '@/components/admin/SecurityMonitoring'
 import { SecurityTesting } from '@/components/admin/SecurityTesting'
 import { SecurityDocumentation } from '@/components/admin/SecurityDocumentation'
+import { Button } from '@/components/ui/button'
 
 export default function Admin() {
+  const [elevationDialogOpen, setElevationDialogOpen] = useState(false)
+  const [supportSessionDialogOpen, setSupportSessionDialogOpen] = useState(false)
+
   return (
     <div className="container mx-auto py-6 space-y-6">
       <div className="flex items-center justify-between">
@@ -72,17 +75,30 @@ export default function Admin() {
         </TabsContent>
 
         <TabsContent value="users" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <TenantUserManagement />
-            <UserPermissionsPanel />
-          </div>
+          <TenantUserManagement />
           <InviteUserDialog />
         </TabsContent>
 
         <TabsContent value="actions" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <ElevationDialog />
-            <SupportSessionDialog />
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">Privilege Elevation</h3>
+              <p className="text-sm text-muted-foreground">
+                Request temporary elevated privileges for administrative tasks.
+              </p>
+              <Button onClick={() => setElevationDialogOpen(true)}>
+                Request Elevation
+              </Button>
+            </div>
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">Support Sessions</h3>
+              <p className="text-sm text-muted-foreground">
+                Create consented impersonation sessions for customer support.
+              </p>
+              <Button onClick={() => setSupportSessionDialogOpen(true)}>
+                Create Support Session
+              </Button>
+            </div>
           </div>
           <PendingAdminActions />
           <AuditLogExport />
@@ -100,6 +116,16 @@ export default function Admin() {
           <SecurityDocumentation />
         </TabsContent>
       </Tabs>
+
+      {/* Dialogs */}
+      <ElevationDialog 
+        open={elevationDialogOpen} 
+        onClose={() => setElevationDialogOpen(false)} 
+      />
+      <SupportSessionDialog 
+        open={supportSessionDialogOpen} 
+        onClose={() => setSupportSessionDialogOpen(false)} 
+      />
     </div>
   )
 }
