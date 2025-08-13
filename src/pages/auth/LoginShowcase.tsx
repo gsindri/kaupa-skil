@@ -1,4 +1,3 @@
-
 import * as React from "react";
 import { useState, useEffect } from "react";
 import { Eye, EyeOff, Building2 } from "lucide-react";
@@ -7,17 +6,33 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 
 export default function LoginShowcase() {
-  const { user } = useAuth();
+  const { user, profile, loading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
   // Redirect authenticated users
   useEffect(() => {
-    if (user) {
-      const from = location.state?.from?.pathname || "/";
-      navigate(from, { replace: true });
+    if (!loading && user) {
+      if (profile && !profile.tenant_id) {
+        navigate("/setup", { replace: true });
+      } else {
+        const from = location.state?.from?.pathname || "/";
+        navigate(from, { replace: true });
+      }
     }
-  }, [user, navigate, location]);
+  }, [user, profile, loading, navigate, location]);
+
+  // Show loading while checking auth state
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-pulse space-y-4">
+          <div className="h-4 bg-muted rounded w-48"></div>
+          <div className="h-4 bg-muted rounded w-32"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative min-h-screen w-full overflow-hidden">

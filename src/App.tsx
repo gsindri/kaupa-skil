@@ -3,11 +3,11 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider, useAuth } from "./contexts/AuthProvider";
 import { AuthGate } from "./components/auth/AuthGate";
 import { AppLayout } from "./components/layout/AppLayout";
 import { FirstTimeSetup } from "./components/setup/FirstTimeSetup";
-import { useAuth } from "./hooks/useAuth";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import Compare from "./pages/Compare";
@@ -36,31 +36,38 @@ function AppContent() {
     );
   }
 
-  // If user is authenticated but has no tenant, show first-time setup
-  if (user && profile && !profile.tenant_id) {
-    return <FirstTimeSetup />;
-  }
-
   return (
     <Routes>
       <Route path="/login" element={<LoginShowcase />} />
       <Route path="/reset-password" element={<PasswordReset />} />
+      <Route 
+        path="/setup" 
+        element={
+          <AuthGate>
+            <FirstTimeSetup />
+          </AuthGate>
+        } 
+      />
       <Route
         path="/*"
         element={
           <AuthGate>
-            <AppLayout>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/compare" element={<Compare />} />
-                <Route path="/orders" element={<Orders />} />
-                <Route path="/suppliers" element={<Suppliers />} />
-                <Route path="/price-history" element={<PriceHistory />} />
-                <Route path="/admin" element={<Admin />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </AppLayout>
+            {user && profile && !profile.tenant_id ? (
+              <Navigate to="/setup" replace />
+            ) : (
+              <AppLayout>
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/dashboard" element={<Dashboard />} />
+                  <Route path="/compare" element={<Compare />} />
+                  <Route path="/orders" element={<Orders />} />
+                  <Route path="/suppliers" element={<Suppliers />} />
+                  <Route path="/price-history" element={<PriceHistory />} />
+                  <Route path="/admin" element={<Admin />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </AppLayout>
+            )}
           </AuthGate>
         }
       />
@@ -73,7 +80,9 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <BrowserRouter>
-          <AppContent />
+          <AuthProvider>
+            <AppContent />
+          </AuthProvider>
         </BrowserRouter>
         <Toaster />
         <Sonner />
