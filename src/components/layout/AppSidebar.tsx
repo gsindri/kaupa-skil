@@ -55,8 +55,8 @@ export function AppSidebar() {
   const location = useLocation()
   const { profile } = useAuth()
 
-  // Check if user has admin access
-  const isAdmin = profile?.base_role === 'owner' || profile?.base_role === 'admin'
+  // Check if user has admin access based on profile role
+  const isAdmin = profile?.role === 'admin'
 
   return (
     <Sidebar>
