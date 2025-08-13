@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -8,7 +7,7 @@ import { Separator } from '@/components/ui/separator'
 import { Textarea } from '@/components/ui/textarea'
 import { ShoppingCart, Trash2, Send, AlertTriangle } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
-import { useAuth } from '@/hooks/useAuth'
+import { useAuth } from '@/contexts/AuthProvider'
 import { useCart } from '@/contexts/CartProvider'
 import { supabase } from '@/integrations/supabase/client'
 import type { CartItem } from '@/lib/types'

@@ -1,4 +1,3 @@
-
 import { Home, Users, Package, ShoppingCart, TrendingUp, Settings, Shield } from "lucide-react"
 import {
   Sidebar,
@@ -13,7 +12,7 @@ import {
   SidebarHeader
 } from "@/components/ui/sidebar"
 import { useLocation, Link } from "react-router-dom"
-import { useAuth } from "@/hooks/useAuth"
+import { useAuth } from "@/contexts/AuthProvider"
 
 const items = [
   {

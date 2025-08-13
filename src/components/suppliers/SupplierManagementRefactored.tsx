@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -8,7 +7,7 @@ import { SupplierCredentialsForm } from './SupplierCredentialsForm'
 import { SupplierList } from './SupplierList'
 import { IngestionRunsList } from './IngestionRunsList'
 import { supabase } from '@/integrations/supabase/client'
-import { useAuth } from '@/hooks/useAuth'
+import { useAuth } from '@/contexts/AuthProvider'
 import { useToast } from '@/hooks/use-toast'
 import { Database } from '@/lib/types/database'
 

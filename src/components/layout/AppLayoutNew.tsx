@@ -1,8 +1,7 @@
-
 import React from 'react'
 import { Outlet, Link, useLocation } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
-import { useAuth } from '@/hooks/useAuth'
+import { useAuth } from '@/contexts/AuthProvider'
 import { 
   LayoutDashboard, 
   Scale, 

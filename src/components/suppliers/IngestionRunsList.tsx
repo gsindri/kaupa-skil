@@ -1,4 +1,3 @@
-
 import React from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -7,7 +6,7 @@ import { Progress } from '@/components/ui/progress'
 import { Play, RefreshCw, CheckCircle, XCircle, Clock } from 'lucide-react'
 import { useConnectorRuns } from '@/hooks/useConnectorRuns'
 import { useSupplierCredentials } from '@/hooks/useSupplierCredentials'
-import { useAuth } from '@/hooks/useAuth'
+import { useAuth } from '@/contexts/AuthProvider'
 
 export function IngestionRunsList() {
   const { profile } = useAuth()

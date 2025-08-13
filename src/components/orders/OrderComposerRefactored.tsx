@@ -1,10 +1,9 @@
-
 import React, { useState, useMemo } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
 import { ShoppingCart } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
-import { useAuth } from '@/hooks/useAuth'
+import { useAuth } from '@/contexts/AuthProvider'
 import { useCart } from '@/contexts/CartProvider'
 import { supabase } from '@/integrations/supabase/client'
 import { OrderSummaryCard } from './OrderSummaryCard'
