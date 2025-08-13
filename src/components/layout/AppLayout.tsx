@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -21,6 +20,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { CartDrawer } from "@/components/cart/CartDrawer";
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: Home },
@@ -193,28 +193,31 @@ export function AppLayout({ children }: AppLayoutProps) {
 
       {/* Main content */}
       <div className="flex flex-1 flex-col lg:pl-64">
-        {/* Mobile top bar */}
-        <div className="sticky top-0 z-10 flex h-16 shrink-0 bg-white border-b border-gray-200 lg:hidden">
+        {/* Top bar with cart */}
+        <div className="sticky top-0 z-10 flex h-16 shrink-0 bg-white border-b border-gray-200">
           <Button
             variant="ghost"
             size="sm"
-            className="px-4"
+            className="px-4 lg:hidden"
             onClick={() => setSidebarOpen(true)}
           >
             <Menu className="h-6 w-6" />
           </Button>
           <div className="flex-1 flex items-center justify-between px-4">
-            <div className="flex items-center">
+            <div className="flex items-center lg:hidden">
               <BarChart3 className="h-8 w-8 text-blue-600" />
               <span className="ml-2 text-xl font-semibold text-gray-900">
                 ProcureWise
               </span>
             </div>
+            <div className="flex items-center space-x-4 ml-auto">
+              <CartDrawer />
+            </div>
           </div>
         </div>
 
         {/* Page content */}
-        <main className="flex-1 overflow-y-auto">
+        <main className="flex-1 overflow-y-auto p-6">
           {children}
         </main>
       </div>

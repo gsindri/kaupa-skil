@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -6,81 +5,27 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { Textarea } from '@/components/ui/textarea'
-import { ShoppingCart, Trash2, Send } from 'lucide-react'
+import { ShoppingCart, Trash2, Send, AlertTriangle } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { useAuth } from '@/hooks/useAuth'
+import { useCart } from '@/contexts/CartProvider'
 import { supabase } from '@/integrations/supabase/client'
-
-interface CartItem {
-  id: string
-  supplierId: string
-  supplierName: string
-  itemName: string
-  sku: string
-  packSize: string
-  packPrice: number
-  unitPriceExVat: number
-  unitPriceIncVat: number
-  quantity: number
-  vatRate: number
-}
 
 interface SupplierOrder {
   supplierId: string
   supplierName: string
-  items: CartItem[]
+  items: typeof useCart extends () => { items: infer T } ? T : never
   totalExVat: number
   totalIncVat: number
   vatAmount: number
 }
 
 export function OrderComposer() {
-  const [cartItems, setCartItems] = useState<CartItem[]>([
-    // Sample data for demonstration
-    {
-      id: '1',
-      supplierId: 'supplier-1',
-      supplierName: 'Véfkaupmenn',
-      itemName: 'Extra Virgin Olive Oil',
-      sku: 'VK-OLV-001',
-      packSize: '500ml bottle',
-      packPrice: 1890,
-      unitPriceExVat: 3780,
-      unitPriceIncVat: 4688,
-      quantity: 2,
-      vatRate: 0.24
-    },
-    {
-      id: '2',
-      supplierId: 'supplier-2',
-      supplierName: 'Heilsuhúsið',
-      itemName: 'Icelandic Skyr Plain',
-      sku: 'HH-SKYR-PLAIN',
-      packSize: '1kg container',
-      packPrice: 850,
-      unitPriceExVat: 850,
-      unitPriceIncVat: 943,
-      quantity: 5,
-      vatRate: 0.24
-    },
-    {
-      id: '3',
-      supplierId: 'supplier-1',
-      supplierName: 'Véfkaupmenn',
-      itemName: 'Fresh Salmon Fillet',
-      sku: 'VK-SAL-001',
-      packSize: '1kg pack',
-      packPrice: 3200,
-      unitPriceExVat: 3200,
-      unitPriceIncVat: 3968,
-      quantity: 1,
-      vatRate: 0.24
-    }
-  ])
   const [notes, setNotes] = useState('')
   const [dispatching, setDispatching] = useState(false)
 
   const { profile } = useAuth()
+  const { items: cartItems, updateQuantity, removeItem, clearCart } = useCart()
   const { toast } = useToast()
 
   const supplierOrders = useMemo(() => {
@@ -119,26 +64,9 @@ export function OrderComposer() {
     }), { exVat: 0, incVat: 0, vat: 0 })
   }, [supplierOrders])
 
-  const updateQuantity = (itemId: string, newQuantity: number) => {
-    if (newQuantity <= 0) {
-      removeItem(itemId)
-      return
-    }
-
-    setCartItems(prev => 
-      prev.map(item => 
-        item.id === itemId ? { ...item, quantity: newQuantity } : item
-      )
-    )
-  }
-
-  const removeItem = (itemId: string) => {
-    setCartItems(prev => prev.filter(item => item.id !== itemId))
-  }
-
-  const clearCart = () => {
-    setCartItems([])
-  }
+  // Approval threshold check (200,000 ISK example)
+  const approvalThreshold = 200000
+  const needsApproval = grandTotal.incVat > approvalThreshold
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('is-IS', {
@@ -238,6 +166,25 @@ export function OrderComposer() {
 
   return (
     <div className="space-y-6">
+      {/* Approval Banner */}
+      {needsApproval && (
+        <Card className="border-amber-200 bg-amber-50">
+          <CardContent className="p-4">
+            <div className="flex items-center space-x-2">
+              <AlertTriangle className="h-5 w-5 text-amber-600" />
+              <div>
+                <div className="font-medium text-amber-800">
+                  Over your approval limit ({formatPrice(approvalThreshold)})
+                </div>
+                <div className="text-sm text-amber-700">
+                  Request approval to proceed with this order.
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Cart Summary */}
       <Card>
         <CardHeader>
@@ -249,15 +196,15 @@ export function OrderComposer() {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
             <div className="text-center">
-              <div className="text-2xl font-bold">{formatPrice(grandTotal.exVat)}</div>
+              <div className="text-2xl font-bold font-mono">{formatPrice(grandTotal.exVat)}</div>
               <div className="text-sm text-muted-foreground">Total (ex VAT)</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold">{formatPrice(grandTotal.vat)}</div>
+              <div className="text-2xl font-bold font-mono">{formatPrice(grandTotal.vat)}</div>
               <div className="text-sm text-muted-foreground">VAT Amount</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-primary">{formatPrice(grandTotal.incVat)}</div>
+              <div className="text-2xl font-bold text-primary font-mono">{formatPrice(grandTotal.incVat)}</div>
               <div className="text-sm text-muted-foreground">Total (inc VAT)</div>
             </div>
           </div>
@@ -268,10 +215,10 @@ export function OrderComposer() {
             </Button>
             <Button 
               onClick={handleDispatchOrders}
-              disabled={dispatching}
+              disabled={dispatching || needsApproval}
               className="flex-1"
             >
-              {dispatching ? 'Dispatching...' : 'Dispatch Orders'}
+              {dispatching ? 'Dispatching...' : needsApproval ? 'Request Approval' : 'Dispatch Orders'}
               <Send className="h-4 w-4 ml-2" />
             </Button>
           </div>
@@ -298,7 +245,7 @@ export function OrderComposer() {
                     <div className="text-sm text-muted-foreground">
                       SKU: {item.sku} • {item.packSize}
                     </div>
-                    <div className="text-sm">
+                    <div className="text-sm font-mono">
                       {formatPrice(item.packPrice)} per pack
                     </div>
                   </div>
@@ -329,7 +276,7 @@ export function OrderComposer() {
                     </div>
                     
                     <div className="text-right">
-                      <div className="font-medium">
+                      <div className="font-medium font-mono">
                         {formatPrice(item.packPrice * item.quantity)}
                       </div>
                     </div>
@@ -349,15 +296,15 @@ export function OrderComposer() {
               
               <div className="flex justify-between text-sm">
                 <span>Subtotal (ex VAT):</span>
-                <span>{formatPrice(supplierOrder.totalExVat)}</span>
+                <span className="font-mono">{formatPrice(supplierOrder.totalExVat)}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span>VAT:</span>
-                <span>{formatPrice(supplierOrder.vatAmount)}</span>
+                <span className="font-mono">{formatPrice(supplierOrder.vatAmount)}</span>
               </div>
               <div className="flex justify-between font-medium">
                 <span>Total (inc VAT):</span>
-                <span>{formatPrice(supplierOrder.totalIncVat)}</span>
+                <span className="font-mono">{formatPrice(supplierOrder.totalIncVat)}</span>
               </div>
             </div>
           </CardContent>

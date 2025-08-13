@@ -1,0 +1,148 @@
+
+import React, { createContext, useContext, useEffect, useState } from 'react'
+import { useToast } from '@/hooks/use-toast'
+
+export interface CartItem {
+  id: string
+  supplierId: string
+  supplierName: string
+  itemName: string
+  sku: string
+  packSize: string
+  packPrice: number
+  unitPriceExVat: number
+  unitPriceIncVat: number
+  quantity: number
+  vatRate: number
+  unit: string
+}
+
+interface CartContextType {
+  items: CartItem[]
+  addItem: (item: Omit<CartItem, 'quantity'>, quantity?: number) => void
+  updateQuantity: (itemId: string, quantity: number) => void
+  removeItem: (itemId: string) => void
+  clearCart: () => void
+  getTotalItems: () => number
+  isDrawerOpen: boolean
+  setIsDrawerOpen: (open: boolean) => void
+}
+
+const CartContext = createContext<CartContextType | undefined>(undefined)
+
+export function CartProvider({ children }: { children: React.ReactNode }) {
+  const [items, setItems] = useState<CartItem[]>(() => {
+    const saved = localStorage.getItem('procurewise-cart')
+    return saved ? JSON.parse(saved) : []
+  })
+  
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false)
+  const { toast } = useToast()
+
+  // Sync cart across tabs
+  useEffect(() => {
+    const channel = new BroadcastChannel('procurewise-cart')
+    
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data.type === 'CART_UPDATED') {
+        setItems(event.data.items)
+      }
+    }
+
+    channel.addEventListener('message', handleMessage)
+    return () => channel.close()
+  }, [])
+
+  const syncCart = (newItems: CartItem[]) => {
+    localStorage.setItem('procurewise-cart', JSON.stringify(newItems))
+    
+    const channel = new BroadcastChannel('procurewise-cart')
+    channel.postMessage({ type: 'CART_UPDATED', items: newItems })
+    channel.close()
+  }
+
+  const addItem = (item: Omit<CartItem, 'quantity'>, quantity = 1) => {
+    setItems(prev => {
+      const existingIndex = prev.findIndex(i => i.id === item.id && i.supplierId === item.supplierId)
+      
+      let newItems: CartItem[]
+      if (existingIndex >= 0) {
+        newItems = prev.map((cartItem, index) => 
+          index === existingIndex 
+            ? { ...cartItem, quantity: cartItem.quantity + quantity }
+            : cartItem
+        )
+      } else {
+        newItems = [...prev, { ...item, quantity }]
+      }
+      
+      syncCart(newItems)
+      
+      toast({
+        title: `Added to cart`,
+        description: `${item.itemName} (${quantity}x ${item.packSize})`
+      })
+      
+      return newItems
+    })
+  }
+
+  const updateQuantity = (itemId: string, quantity: number) => {
+    if (quantity <= 0) {
+      removeItem(itemId)
+      return
+    }
+
+    setItems(prev => {
+      const newItems = prev.map(item => 
+        item.id === itemId ? { ...item, quantity } : item
+      )
+      syncCart(newItems)
+      return newItems
+    })
+  }
+
+  const removeItem = (itemId: string) => {
+    setItems(prev => {
+      const newItems = prev.filter(item => item.id !== itemId)
+      syncCart(newItems)
+      return newItems
+    })
+  }
+
+  const clearCart = () => {
+    setItems([])
+    syncCart([])
+    toast({
+      title: 'Cart cleared',
+      description: 'All items have been removed from your cart'
+    })
+  }
+
+  const getTotalItems = () => {
+    return items.reduce((total, item) => total + item.quantity, 0)
+  }
+
+  return (
+    <CartContext.Provider value={{
+      items,
+      addItem,
+      updateQuantity,
+      removeItem,
+      clearCart,
+      getTotalItems,
+      isDrawerOpen,
+      setIsDrawerOpen
+    }}>
+      {children}
+    </CartContext.Provider>
+  )
+}
+
+export function useCart() {
+  const context = useContext(CartContext)
+  if (context === undefined) {
+    throw new Error('useCart must be used within a CartProvider')
+  }
+  return context
+}

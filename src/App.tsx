@@ -5,6 +5,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./contexts/AuthProvider";
+import { SettingsProvider } from "./contexts/SettingsProvider";
+import { CartProvider } from "./contexts/CartProvider";
 import { AuthGate } from "./components/auth/AuthGate";
 import { AppLayout } from "./components/layout/AppLayout";
 import { FirstTimeSetup } from "./components/setup/FirstTimeSetup";
@@ -55,18 +57,22 @@ function AppContent() {
             {user && profile && !profile.tenant_id ? (
               <Navigate to="/setup" replace />
             ) : (
-              <AppLayout>
-                <Routes>
-                  <Route path="/" element={<Index />} />
-                  <Route path="/dashboard" element={<Dashboard />} />
-                  <Route path="/compare" element={<Compare />} />
-                  <Route path="/orders" element={<Orders />} />
-                  <Route path="/suppliers" element={<Suppliers />} />
-                  <Route path="/price-history" element={<PriceHistory />} />
-                  <Route path="/admin" element={<Admin />} />
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </AppLayout>
+              <SettingsProvider>
+                <CartProvider>
+                  <AppLayout>
+                    <Routes>
+                      <Route path="/" element={<Index />} />
+                      <Route path="/dashboard" element={<Dashboard />} />
+                      <Route path="/compare" element={<Compare />} />
+                      <Route path="/orders" element={<Orders />} />
+                      <Route path="/suppliers" element={<Suppliers />} />
+                      <Route path="/price-history" element={<PriceHistory />} />
+                      <Route path="/admin" element={<Admin />} />
+                      <Route path="*" element={<NotFound />} />
+                    </Routes>
+                  </AppLayout>
+                </CartProvider>
+              </SettingsProvider>
             )}
           </AuthGate>
         }
