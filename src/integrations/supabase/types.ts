@@ -14,6 +14,86 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_elevations: {
+        Row: {
+          created_at: string | null
+          expires_at: string
+          id: string
+          reason: string
+          revoked_at: string | null
+          revoked_by: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          expires_at: string
+          id?: string
+          reason: string
+          revoked_at?: string | null
+          revoked_by?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          expires_at?: string
+          id?: string
+          reason?: string
+          revoked_at?: string | null
+          revoked_by?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      audit_events: {
+        Row: {
+          action: string
+          actor_id: string | null
+          created_at: string | null
+          entity_id: string | null
+          entity_type: string | null
+          id: string
+          ip_address: unknown | null
+          meta_data: Json | null
+          reason: string | null
+          tenant_id: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          created_at?: string | null
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          ip_address?: unknown | null
+          meta_data?: Json | null
+          reason?: string | null
+          tenant_id?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          created_at?: string | null
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          ip_address?: unknown | null
+          meta_data?: Json | null
+          reason?: string | null
+          tenant_id?: string | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_events_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       grants: {
         Row: {
           capability: string
@@ -62,6 +142,97 @@ export type Database = {
           },
         ]
       }
+      job_logs: {
+        Row: {
+          created_at: string | null
+          data: Json | null
+          id: string
+          job_id: string
+          level: string
+          message: string
+        }
+        Insert: {
+          created_at?: string | null
+          data?: Json | null
+          id?: string
+          job_id: string
+          level: string
+          message: string
+        }
+        Update: {
+          created_at?: string | null
+          data?: Json | null
+          id?: string
+          job_id?: string
+          level?: string
+          message?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_logs_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      jobs: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          data: Json | null
+          error_message: string | null
+          id: string
+          max_retries: number | null
+          requested_by: string | null
+          result: Json | null
+          retry_count: number | null
+          started_at: string | null
+          status: string
+          tenant_id: string | null
+          type: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          data?: Json | null
+          error_message?: string | null
+          id?: string
+          max_retries?: number | null
+          requested_by?: string | null
+          result?: Json | null
+          retry_count?: number | null
+          started_at?: string | null
+          status?: string
+          tenant_id?: string | null
+          type: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          data?: Json | null
+          error_message?: string | null
+          id?: string
+          max_retries?: number | null
+          requested_by?: string | null
+          result?: Json | null
+          retry_count?: number | null
+          started_at?: string | null
+          status?: string
+          tenant_id?: string | null
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "jobs_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       memberships: {
         Row: {
           attrs: Json | null
@@ -100,6 +271,78 @@ export type Database = {
           },
         ]
       }
+      pending_admin_actions: {
+        Row: {
+          action_data: Json | null
+          action_type: string
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string | null
+          id: string
+          reason: string
+          rejected_at: string | null
+          rejected_by: string | null
+          rejection_reason: string | null
+          requester_id: string
+          target_entity_id: string | null
+          target_entity_type: string | null
+        }
+        Insert: {
+          action_data?: Json | null
+          action_type: string
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string | null
+          id?: string
+          reason: string
+          rejected_at?: string | null
+          rejected_by?: string | null
+          rejection_reason?: string | null
+          requester_id: string
+          target_entity_id?: string | null
+          target_entity_type?: string | null
+        }
+        Update: {
+          action_data?: Json | null
+          action_type?: string
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string | null
+          id?: string
+          reason?: string
+          rejected_at?: string | null
+          rejected_by?: string | null
+          rejection_reason?: string | null
+          requester_id?: string
+          target_entity_id?: string | null
+          target_entity_type?: string | null
+        }
+        Relationships: []
+      }
+      platform_admins: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          id: string
+          is_active: boolean
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string | null
@@ -126,6 +369,50 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      support_sessions: {
+        Row: {
+          actor_id: string
+          created_at: string | null
+          ends_at: string
+          id: string
+          reason: string
+          revoked_at: string | null
+          revoked_by: string | null
+          starts_at: string | null
+          tenant_id: string
+        }
+        Insert: {
+          actor_id: string
+          created_at?: string | null
+          ends_at: string
+          id?: string
+          reason: string
+          revoked_at?: string | null
+          revoked_by?: string | null
+          starts_at?: string | null
+          tenant_id: string
+        }
+        Update: {
+          actor_id?: string
+          created_at?: string | null
+          ends_at?: string
+          id?: string
+          reason?: string
+          revoked_at?: string | null
+          revoked_by?: string | null
+          starts_at?: string | null
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_sessions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       tenants: {
         Row: {
@@ -159,6 +446,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_elevation: {
+        Args: { reason_text: string; duration_minutes?: number }
+        Returns: string
+      }
+      create_support_session: {
+        Args: {
+          target_tenant_id: string
+          reason_text: string
+          duration_minutes?: number
+        }
+        Returns: string
+      }
       get_user_memberships: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -169,6 +468,10 @@ export type Database = {
           attrs: Json
         }[]
       }
+      has_active_elevation: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       has_capability: {
         Args: {
           cap: string
@@ -178,8 +481,27 @@ export type Database = {
         }
         Returns: boolean
       }
+      has_support_session: {
+        Args: { target_tenant: string }
+        Returns: boolean
+      }
       is_owner: {
         Args: { _tenant_id: string }
+        Returns: boolean
+      }
+      log_audit_event: {
+        Args: {
+          action_name: string
+          entity_type_name?: string
+          entity_id_val?: string
+          reason_text?: string
+          meta_data_val?: Json
+          tenant_id_val?: string
+        }
+        Returns: string
+      }
+      revoke_elevation: {
+        Args: { elevation_id: string }
         Returns: boolean
       }
       setup_owner_grants: {
