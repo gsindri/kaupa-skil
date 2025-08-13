@@ -7,10 +7,8 @@ import { Play } from 'lucide-react'
 import { Database } from '@/lib/types/database'
 
 type Supplier = Database['public']['Tables']['suppliers']['Row']
-
-interface SupplierCredential {
-  supplier_id: string
-  test_status: string | null
+type SupplierCredential = Database['public']['Tables']['supplier_credentials']['Row'] & {
+  supplier?: Supplier
 }
 
 interface SupplierListProps {

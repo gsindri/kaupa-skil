@@ -10,13 +10,19 @@ import { IngestionRunsList } from './IngestionRunsList'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/hooks/useAuth'
 import { useToast } from '@/hooks/use-toast'
+import { Database } from '@/lib/types/database'
+
+type Supplier = Database['public']['Tables']['suppliers']['Row']
+type SupplierCredential = Database['public']['Tables']['supplier_credentials']['Row'] & {
+  supplier?: Supplier
+}
 
 export function SupplierManagementRefactored() {
   const [selectedSupplier, setSelectedSupplier] = useState<string | null>(null)
   const { profile } = useAuth()
   const { toast } = useToast()
 
-  const { data: suppliers } = useQuery({
+  const { data: suppliers } = useQuery<Supplier[]>({
     queryKey: ['suppliers'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -29,14 +35,17 @@ export function SupplierManagementRefactored() {
     }
   })
 
-  const { data: credentials } = useQuery({
+  const { data: credentials } = useQuery<SupplierCredential[]>({
     queryKey: ['supplier-credentials', profile?.tenant_id],
     queryFn: async () => {
       if (!profile?.tenant_id) return []
 
       const { data, error } = await supabase
         .from('supplier_credentials')
-        .select('*, suppliers(*)')
+        .select(`
+          *,
+          supplier:suppliers(*)
+        `)
         .eq('tenant_id', profile.tenant_id)
 
       if (error) throw error

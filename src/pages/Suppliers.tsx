@@ -1,6 +1,6 @@
 
 import React from 'react'
-import { SupplierManagement } from '@/components/suppliers/SupplierManagement'
+import { SupplierManagementRefactored } from '@/components/suppliers/SupplierManagementRefactored'
 
 export default function Suppliers() {
   return (
@@ -12,7 +12,7 @@ export default function Suppliers() {
         </p>
       </div>
       
-      <SupplierManagement />
+      <SupplierManagementRefactored />
     </div>
   )
 }
