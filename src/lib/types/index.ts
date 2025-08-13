@@ -1,4 +1,7 @@
 
+// Import the Database type from the database types file
+import { Database } from './database'
+
 // Consolidated types to prevent drift between database.ts and components
 export type { Database } from './database'
 

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react'
 import { CompareHeader } from '@/components/compare/CompareHeader'
 import { EnhancedComparisonTable } from '@/components/compare/EnhancedComparisonTable'
@@ -39,7 +38,8 @@ export default function Compare() {
               lastUpdated: '2 hours ago',
               vatCode: 'standard',
               priceHistory: [3600, 3700, 3650, 3780, 3750, 3780],
-              badge: 'good' as const
+              badge: 'good' as const,
+              supplierItemId: 'supplier-item-1'
             },
             {
               id: 'supplier-2',
@@ -54,7 +54,8 @@ export default function Compare() {
               lastUpdated: '4 hours ago',
               vatCode: 'standard',
               priceHistory: [4100, 4200, 4250, 4300, 4280, 4300],
-              badge: 'expensive' as const
+              badge: 'expensive' as const,
+              supplierItemId: 'supplier-item-2'
             }
           ]
         },
@@ -77,7 +78,8 @@ export default function Compare() {
               lastUpdated: '1 hour ago',
               vatCode: 'standard',
               priceHistory: [820, 830, 840, 850, 845, 850],
-              badge: 'best' as const
+              badge: 'best' as const,
+              supplierItemId: 'supplier-item-3'
             },
             {
               id: 'supplier-3',
@@ -92,7 +94,8 @@ export default function Compare() {
               lastUpdated: '1 day ago',
               vatCode: 'standard',
               priceHistory: [780, 785, 790, 795, 790, 795],
-              badge: 'good' as const
+              badge: 'good' as const,
+              supplierItemId: 'supplier-item-4'
             }
           ]
         }
@@ -110,8 +113,8 @@ export default function Compare() {
       const searchLower = searchTerm.toLowerCase()
       return (
         item.itemName.toLowerCase().includes(searchLower) ||
-        item.brand.toLowerCase().includes(searchLower) ||
-        item.category.toLowerCase().includes(searchLower) ||
+        item.brand?.toLowerCase().includes(searchLower) ||
+        item.category?.toLowerCase().includes(searchLower) ||
         item.suppliers.some(s => 
           s.name.toLowerCase().includes(searchLower) || 
           s.sku.toLowerCase().includes(searchLower)
