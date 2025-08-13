@@ -1,20 +1,12 @@
 
 import * as React from "react";
 import { useState, useEffect } from "react";
-import { Eye, EyeOff, Building2, Check } from "lucide-react";
+import { Eye, EyeOff, Building2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 
-const PRIMARY = {
-  bg: "#0b1220",
-  tint: "#101826", 
-  brand: "#2563eb",
-  brandSoft: "#dbeafe",
-};
-
 export default function LoginShowcase() {
-  const [mode, setMode] = useState<"card" | "split" | "glass">("card");
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -34,40 +26,16 @@ export default function LoginShowcase() {
         className="pointer-events-none absolute inset-0 -z-10"
         style={{
           background:
-            "radial-gradient(1000px 600px at -10% -10%, rgba(37, 99, 235, 0.10), transparent 60%), radial-gradient(900px 600px at 110% 110%, rgba(16, 185, 129, 0.10), transparent 60%), linear-gradient(0deg, #f8fafc, #f8fafc)",
+            "radial-gradient(1200px 800px at 20% -10%, rgba(37,99,235,0.15), transparent 60%), radial-gradient(1200px 800px at 120% 110%, rgba(16,185,129,0.12), transparent 60%), linear-gradient(180deg, #eef2ff, #f8fafc)",
         }}
       />
 
-      {/* Top controls */}
-      <div className="absolute right-4 top-4 z-10 flex items-center gap-2 rounded-full border border-black/5 bg-white/80 p-1 shadow-sm backdrop-blur">
-        {[
-          { k: "card", label: "Card" },
-          { k: "split", label: "Split" },
-          { k: "glass", label: "Glass" },
-        ].map((o) => (
-          <button
-            key={o.k}
-            onClick={() => setMode(o.k as any)}
-            className={`rounded-full px-3 py-1.5 text-sm font-medium transition ${
-              mode === (o.k as any)
-                ? "bg-black/80 text-white"
-                : "hover:bg-black/5 text-gray-700"
-            }`}
-            aria-pressed={mode === (o.k as any)}
-          >
-            {o.label}
-          </button>
-        ))}
-      </div>
-
-      {mode === "card" && <CenteredCard />}
-      {mode === "split" && <SplitLayout />}
-      {mode === "glass" && <GlassLayout />}
+      <GlassLayout />
     </div>
   );
 }
 
-function AuthForm({ compact = false }: { compact?: boolean }) {
+function AuthForm() {
   const [showPwd, setShowPwd] = useState(false);
   const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
@@ -106,7 +74,7 @@ function AuthForm({ compact = false }: { compact?: boolean }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className={`w-full ${compact ? "space-y-4" : "space-y-6"}`}>
+    <form onSubmit={handleSubmit} className="w-full space-y-4">
       {!isLogin && (
         <div className="space-y-2">
           <label htmlFor="fullName" className="block text-sm font-medium text-gray-900">
@@ -149,7 +117,7 @@ function AuthForm({ compact = false }: { compact?: boolean }) {
             Password
           </label>
           {isLogin && (
-            <a href="/reset" className="text-xs font-medium text-blue-600 hover:underline">
+            <a href="/reset-password" className="text-xs font-medium text-blue-600 hover:underline">
               Forgot?
             </a>
           )}
@@ -238,74 +206,6 @@ function AuthForm({ compact = false }: { compact?: boolean }) {
   );
 }
 
-function CenteredCard() {
-  return (
-    <main className="mx-auto flex min-h-screen max-w-7xl items-center justify-center p-6">
-      <div className="w-full max-w-md rounded-2xl border border-black/5 bg-white p-8 shadow-xl">
-        <BrandHeader />
-        <div className="mt-6">
-          <AuthForm />
-        </div>
-      </div>
-    </main>
-  );
-}
-
-function SplitLayout() {
-  return (
-    <main className="grid min-h-screen grid-cols-1 md:grid-cols-2">
-      {/* Left marketing panel */}
-      <div className="relative hidden overflow-hidden md:block">
-        <div
-          className="absolute inset-0"
-          style={{
-            background:
-              `radial-gradient(1200px 600px at 10% 0%, ${PRIMARY.brandSoft}, transparent 60%), linear-gradient(135deg, #eef2ff 0%, #f8fafc 60%)`,
-          }}
-        />
-        <div className="relative h-full p-12">
-          <div className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/70 px-3 py-1 text-xs font-medium backdrop-blur">
-            <Check className="h-3.5 w-3.5" /> Iceland B2B Wholesale
-          </div>
-          <h2 className="mt-6 max-w-md text-3xl font-semibold tracking-tight text-gray-900">
-            Compare Icelandic wholesale prices with <span className="text-blue-700">clarity</span>.
-          </h2>
-          <ul className="mt-6 space-y-3 text-sm text-gray-700">
-            {[
-              "Secure supplier login & VAT-ready invoices",
-              "Unit-aware price comparisons (ISK)",
-              "Email orders with a single click",
-            ].map((f) => (
-              <li key={f} className="flex items-start gap-3">
-                <span className="mt-1 inline-flex h-5 w-5 items-center justify-center rounded-full bg-blue-600/10 text-blue-700">
-                  <Check className="h-3.5 w-3.5" />
-                </span>
-                <span>{f}</span>
-              </li>
-            ))}
-          </ul>
-          <div className="absolute bottom-8 left-12 right-12 h-40 rounded-2xl border border-blue-200 bg-white/70 p-4 shadow-lg backdrop-blur">
-            <p className="text-sm text-gray-700">
-              "The simplest way to keep our food costs down. The VAT toggle is a lifesaver."
-            </p>
-            <p className="mt-2 text-xs text-gray-500">— Reykjavík Café Collective</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Right form panel */}
-      <div className="flex items-center justify-center bg-white p-6">
-        <div className="w-full max-w-md">
-          <BrandHeader align="left" />
-          <div className="mt-6">
-            <AuthForm />
-          </div>
-        </div>
-      </div>
-    </main>
-  );
-}
-
 function GlassLayout() {
   return (
     <main
@@ -325,10 +225,10 @@ function GlassLayout() {
   );
 }
 
-function BrandHeader({ align = "center" as "left" | "center" }) {
+function BrandHeader() {
   return (
-    <div className={align === "center" ? "text-center" : "text-left"}>
-      <div className={`mx-auto inline-flex items-center gap-2 rounded-2xl bg-blue-50 px-3 py-2 ${align === "center" ? "" : ""}`}>
+    <div className="text-center">
+      <div className="mx-auto inline-flex items-center gap-2 rounded-2xl bg-blue-50 px-3 py-2">
         <span className="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-blue-600 text-white shadow-sm">
           <Building2 className="h-4 w-4" />
         </span>

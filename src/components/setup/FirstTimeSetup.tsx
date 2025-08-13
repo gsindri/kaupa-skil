@@ -20,7 +20,10 @@ export function FirstTimeSetup() {
 
     setIsCreating(true)
     try {
-      const { data, error } = await supabase
+      console.log('Creating tenant for user:', user.id)
+      
+      // Create the tenant
+      const { data: tenant, error: tenantError } = await supabase
         .from('tenants')
         .insert({
           name: tenantName.trim(),
@@ -29,16 +32,29 @@ export function FirstTimeSetup() {
         .select()
         .single()
 
-      if (error) throw error
+      if (tenantError) throw tenantError
+
+      console.log('Tenant created:', tenant)
+
+      // Update the user's profile with the new tenant_id
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({ tenant_id: tenant.id })
+        .eq('id', user.id)
+
+      if (profileError) throw profileError
+
+      console.log('Profile updated with tenant_id:', tenant.id)
 
       toast({
         title: 'Organization created successfully!',
-        description: `Welcome to ${data.name}. You are now the owner.`
+        description: `Welcome to ${tenant.name}. You are now the owner.`
       })
 
       // Refresh user profile to get the new tenant_id
       await refetch()
     } catch (error: any) {
+      console.error('Error creating tenant:', error)
       toast({
         title: 'Failed to create organization',
         description: error.message,

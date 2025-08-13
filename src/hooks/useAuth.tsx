@@ -1,13 +1,14 @@
 
 import { useEffect, useState } from 'react'
 import { supabase } from '@/integrations/supabase/client'
-import { User } from '@supabase/supabase-js'
+import { User, Session } from '@supabase/supabase-js'
 import { Database } from '@/lib/types/database'
 
 type Profile = Database['public']['Tables']['profiles']['Row']
 
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null)
+  const [session, setSession] = useState<Session | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -47,10 +48,13 @@ export function useAuth() {
   }
 
   const signUp = async (email: string, password: string, fullName: string) => {
+    const redirectUrl = `${window.location.origin}/`
+    
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
+        emailRedirectTo: redirectUrl,
         data: {
           full_name: fullName,
         },
@@ -65,46 +69,56 @@ export function useAuth() {
   }
 
   useEffect(() => {
-    const initializeAuth = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession()
-        
-        if (session?.user) {
-          setUser(session.user)
-          const profileData = await fetchProfile(session.user.id)
-          setProfile(profileData)
-        }
-      } catch (error) {
-        console.error('Error initializing auth:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    initializeAuth()
-
+    console.log('useAuth: Setting up auth state management')
+    
+    // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
         console.log('Auth state changed:', event, session?.user?.email)
         
+        // Synchronous state updates only
+        setSession(session)
+        setUser(session?.user ?? null)
+        
+        // Defer profile fetching to avoid blocking
         if (session?.user) {
-          setUser(session.user)
-          const profileData = await fetchProfile(session.user.id)
-          setProfile(profileData)
+          setTimeout(() => {
+            fetchProfile(session.user.id).then(profileData => {
+              setProfile(profileData)
+              setLoading(false)
+            })
+          }, 0)
         } else {
-          setUser(null)
           setProfile(null)
-          // Navigation will be handled by AuthGate component
+          setLoading(false)
         }
-        setLoading(false)
       }
     )
+
+    // THEN check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('Initial session check:', session?.user?.email)
+      setSession(session)
+      setUser(session?.user ?? null)
+      
+      if (session?.user) {
+        setTimeout(() => {
+          fetchProfile(session.user.id).then(profileData => {
+            setProfile(profileData)
+            setLoading(false)
+          })
+        }, 0)
+      } else {
+        setLoading(false)
+      }
+    })
 
     return () => subscription.unsubscribe()
   }, [])
 
   return {
     user,
+    session,
     profile,
     loading,
     refetch,
