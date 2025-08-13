@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./contexts/AuthProvider";
 import { SettingsProvider } from "./contexts/SettingsProvider";
 import { CartProvider } from "./contexts/CartProvider";
+import { ErrorBoundary } from "./components/common/ErrorBoundary";
 import { AuthGate } from "./components/auth/AuthGate";
 import { AppLayout } from "./components/layout/AppLayout";
 import { FirstTimeSetup } from "./components/setup/FirstTimeSetup";
@@ -22,7 +23,20 @@ import PasswordReset from "./pages/auth/PasswordReset";
 import NotFound from "./pages/NotFound";
 import "./App.css";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: (failureCount, error) => {
+        // Don't retry on 4xx errors
+        if (error && 'status' in error && typeof error.status === 'number') {
+          return error.status >= 500 && failureCount < 2
+        }
+        return failureCount < 2
+      },
+      staleTime: 5 * 60 * 1000, // 5 minutes
+    },
+  },
+});
 
 function AppContent() {
   const { user, profile, loading } = useAuth();
@@ -57,22 +71,24 @@ function AppContent() {
             {user && profile && !profile.tenant_id ? (
               <Navigate to="/setup" replace />
             ) : (
-              <SettingsProvider>
-                <CartProvider>
-                  <AppLayout>
-                    <Routes>
-                      <Route path="/" element={<Index />} />
-                      <Route path="/dashboard" element={<Dashboard />} />
-                      <Route path="/compare" element={<Compare />} />
-                      <Route path="/orders" element={<Orders />} />
-                      <Route path="/suppliers" element={<Suppliers />} />
-                      <Route path="/price-history" element={<PriceHistory />} />
-                      <Route path="/admin" element={<Admin />} />
-                      <Route path="*" element={<NotFound />} />
-                    </Routes>
-                  </AppLayout>
-                </CartProvider>
-              </SettingsProvider>
+              <ErrorBoundary>
+                <SettingsProvider>
+                  <CartProvider>
+                    <AppLayout>
+                      <Routes>
+                        <Route path="/" element={<Index />} />
+                        <Route path="/dashboard" element={<Dashboard />} />
+                        <Route path="/compare" element={<Compare />} />
+                        <Route path="/orders" element={<Orders />} />
+                        <Route path="/suppliers" element={<Suppliers />} />
+                        <Route path="/price-history" element={<PriceHistory />} />
+                        <Route path="/admin" element={<Admin />} />
+                        <Route path="*" element={<NotFound />} />
+                      </Routes>
+                    </AppLayout>
+                  </CartProvider>
+                </SettingsProvider>
+              </ErrorBoundary>
             )}
           </AuthGate>
         }
@@ -86,9 +102,11 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <BrowserRouter>
-          <AuthProvider>
-            <AppContent />
-          </AuthProvider>
+          <ErrorBoundary>
+            <AuthProvider>
+              <AppContent />
+            </AuthProvider>
+          </ErrorBoundary>
         </BrowserRouter>
         <Toaster />
         <Sonner />

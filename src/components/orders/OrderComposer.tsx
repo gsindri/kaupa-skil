@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -10,11 +11,12 @@ import { useToast } from '@/hooks/use-toast'
 import { useAuth } from '@/hooks/useAuth'
 import { useCart } from '@/contexts/CartProvider'
 import { supabase } from '@/integrations/supabase/client'
+import type { CartItem } from '@/lib/types'
 
 interface SupplierOrder {
   supplierId: string
   supplierName: string
-  items: typeof useCart extends () => { items: infer T } ? T : never
+  items: CartItem[]
   totalExVat: number
   totalIncVat: number
   vatAmount: number
@@ -97,11 +99,11 @@ export function OrderComposer() {
       if (orderError) throw orderError
       if (!order) throw new Error('Failed to create order')
 
-      // Create order lines
+      // Create order lines - FIXED: use correct supplierItemId mapping
       const orderLines = cartItems.map(item => ({
         order_id: order.id,
         supplier_id: item.supplierId,
-        supplier_item_id: item.id, // This would be the actual supplier_item_id
+        supplier_item_id: item.supplierItemId, // FIXED: was using item.id
         qty_packs: item.quantity,
         pack_price: item.packPrice,
         unit_price_ex_vat: item.unitPriceExVat,
@@ -140,6 +142,7 @@ export function OrderComposer() {
       setNotes('')
 
     } catch (error: any) {
+      console.error('Order dispatch error:', error)
       toast({
         title: 'Error dispatching orders',
         description: error.message,
@@ -196,15 +199,15 @@ export function OrderComposer() {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
             <div className="text-center">
-              <div className="text-2xl font-bold font-mono">{formatPrice(grandTotal.exVat)}</div>
+              <div className="text-2xl font-bold font-mono tabular-nums">{formatPrice(grandTotal.exVat)}</div>
               <div className="text-sm text-muted-foreground">Total (ex VAT)</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold font-mono">{formatPrice(grandTotal.vat)}</div>
+              <div className="text-2xl font-bold font-mono tabular-nums">{formatPrice(grandTotal.vat)}</div>
               <div className="text-sm text-muted-foreground">VAT Amount</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-primary font-mono">{formatPrice(grandTotal.incVat)}</div>
+              <div className="text-2xl font-bold text-primary font-mono tabular-nums">{formatPrice(grandTotal.incVat)}</div>
               <div className="text-sm text-muted-foreground">Total (inc VAT)</div>
             </div>
           </div>
@@ -239,13 +242,13 @@ export function OrderComposer() {
           <CardContent>
             <div className="space-y-4">
               {supplierOrder.items.map((item) => (
-                <div key={item.id} className="flex items-center justify-between p-3 border rounded-lg">
+                <div key={item.supplierItemId} className="flex items-center justify-between p-3 border rounded-lg">
                   <div className="flex-1">
                     <div className="font-medium">{item.itemName}</div>
                     <div className="text-sm text-muted-foreground">
                       SKU: {item.sku} • {item.packSize}
                     </div>
-                    <div className="text-sm font-mono">
+                    <div className="text-sm font-mono tabular-nums">
                       {formatPrice(item.packPrice)} per pack
                     </div>
                   </div>
@@ -255,28 +258,28 @@ export function OrderComposer() {
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                        onClick={() => updateQuantity(item.supplierItemId, item.quantity - 1)}
                       >
                         -
                       </Button>
                       <Input
                         type="number"
                         value={item.quantity}
-                        onChange={(e) => updateQuantity(item.id, parseInt(e.target.value) || 0)}
+                        onChange={(e) => updateQuantity(item.supplierItemId, parseInt(e.target.value) || 0)}
                         className="w-16 text-center"
                         min="0"
                       />
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                        onClick={() => updateQuantity(item.supplierItemId, item.quantity + 1)}
                       >
                         +
                       </Button>
                     </div>
                     
                     <div className="text-right">
-                      <div className="font-medium font-mono">
+                      <div className="font-medium font-mono tabular-nums">
                         {formatPrice(item.packPrice * item.quantity)}
                       </div>
                     </div>
@@ -284,7 +287,7 @@ export function OrderComposer() {
                     <Button
                       size="sm"
                       variant="ghost"
-                      onClick={() => removeItem(item.id)}
+                      onClick={() => removeItem(item.supplierItemId)}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -296,15 +299,15 @@ export function OrderComposer() {
               
               <div className="flex justify-between text-sm">
                 <span>Subtotal (ex VAT):</span>
-                <span className="font-mono">{formatPrice(supplierOrder.totalExVat)}</span>
+                <span className="font-mono tabular-nums">{formatPrice(supplierOrder.totalExVat)}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span>VAT:</span>
-                <span className="font-mono">{formatPrice(supplierOrder.vatAmount)}</span>
+                <span className="font-mono tabular-nums">{formatPrice(supplierOrder.vatAmount)}</span>
               </div>
               <div className="flex justify-between font-medium">
                 <span>Total (inc VAT):</span>
-                <span className="font-mono">{formatPrice(supplierOrder.totalIncVat)}</span>
+                <span className="font-mono tabular-nums">{formatPrice(supplierOrder.totalIncVat)}</span>
               </div>
             </div>
           </CardContent>

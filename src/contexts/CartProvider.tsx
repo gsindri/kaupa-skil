@@ -1,27 +1,13 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { useToast } from '@/hooks/use-toast'
-
-export interface CartItem {
-  id: string
-  supplierId: string
-  supplierName: string
-  itemName: string
-  sku: string
-  packSize: string
-  packPrice: number
-  unitPriceExVat: number
-  unitPriceIncVat: number
-  quantity: number
-  vatRate: number
-  unit: string
-}
+import type { CartItem } from '@/lib/types'
 
 interface CartContextType {
   items: CartItem[]
   addItem: (item: Omit<CartItem, 'quantity'>, quantity?: number) => void
-  updateQuantity: (itemId: string, quantity: number) => void
-  removeItem: (itemId: string) => void
+  updateQuantity: (supplierItemId: string, quantity: number) => void
+  removeItem: (supplierItemId: string) => void
   clearCart: () => void
   getTotalItems: () => number
   isDrawerOpen: boolean
@@ -63,7 +49,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const addItem = (item: Omit<CartItem, 'quantity'>, quantity = 1) => {
     setItems(prev => {
-      const existingIndex = prev.findIndex(i => i.id === item.id && i.supplierId === item.supplierId)
+      // Use supplierItemId as the unique identifier for cart items
+      const existingIndex = prev.findIndex(i => i.supplierItemId === item.supplierItemId)
       
       let newItems: CartItem[]
       if (existingIndex >= 0) {
@@ -87,24 +74,24 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     })
   }
 
-  const updateQuantity = (itemId: string, quantity: number) => {
+  const updateQuantity = (supplierItemId: string, quantity: number) => {
     if (quantity <= 0) {
-      removeItem(itemId)
+      removeItem(supplierItemId)
       return
     }
 
     setItems(prev => {
       const newItems = prev.map(item => 
-        item.id === itemId ? { ...item, quantity } : item
+        item.supplierItemId === supplierItemId ? { ...item, quantity } : item
       )
       syncCart(newItems)
       return newItems
     })
   }
 
-  const removeItem = (itemId: string) => {
+  const removeItem = (supplierItemId: string) => {
     setItems(prev => {
-      const newItems = prev.filter(item => item.id !== itemId)
+      const newItems = prev.filter(item => item.supplierItemId !== supplierItemId)
       syncCart(newItems)
       return newItems
     })

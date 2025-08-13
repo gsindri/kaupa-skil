@@ -1,48 +1,32 @@
 
-import React, { useState } from 'react'
-import { Card, CardContent } from '@/components/ui/card'
+import React, { useState, useMemo } from 'react'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
-import PriceBadge from '@/components/ui/PriceBadge'
-import { Sparkline } from '@/components/ui/Sparkline'
-import { Plus, Minus, Info, RotateCcw } from 'lucide-react'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Plus, Minus, Info, ExternalLink } from 'lucide-react'
 import { useSettings } from '@/contexts/SettingsProvider'
 import { useCart } from '@/contexts/CartProvider'
-
-interface SupplierItem {
-  id: string
-  name: string
-  sku: string
-  packSize: string
-  packPrice: number
-  unitPriceExVat: number
-  unitPriceIncVat: number
-  unit: string
-  inStock: boolean
-  lastUpdated: string
-  badge?: 'best' | 'good' | 'average' | 'expensive'
-  vatCode: string
-  priceHistory: number[]
-}
-
-interface ComparisonItem {
-  id: string
-  itemName: string
-  brand: string
-  category: string
-  suppliers: SupplierItem[]
-}
+import { Sparkline } from '@/components/ui/Sparkline'
+import type { ComparisonItem, CartItem } from '@/lib/types'
 
 interface EnhancedComparisonTableProps {
   data: ComparisonItem[]
-  isLoading: boolean
+  isLoading?: boolean
 }
 
 export function EnhancedComparisonTable({ data, isLoading }: EnhancedComparisonTableProps) {
   const { includeVat } = useSettings()
-  const { addItem, items: cartItems, updateQuantity } = useCart()
-  const [quantities, setQuantities] = useState<{ [key: string]: number }>({})
+  const { addItem, updateQuantity, items: cartItems } = useCart()
+  const [quantities, setQuantities] = useState<Record<string, number>>({})
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('is-IS', {
@@ -53,171 +37,220 @@ export function EnhancedComparisonTable({ data, isLoading }: EnhancedComparisonT
     }).format(price)
   }
 
-  const getQuantity = (supplierId: string, itemId: string) => {
-    const key = `${supplierId}-${itemId}`
-    return quantities[key] || 0
+  const getCartQuantity = (supplierItemId: string) => {
+    const cartItem = cartItems.find(item => item.supplierItemId === supplierItemId)
+    return cartItem?.quantity || 0
   }
 
-  const updateLocalQuantity = (supplierId: string, itemId: string, newQuantity: number) => {
-    const key = `${supplierId}-${itemId}`
-    setQuantities(prev => ({
-      ...prev,
-      [key]: Math.max(0, newQuantity)
-    }))
-  }
-
-  const handleAddToCart = (supplier: SupplierItem, item: ComparisonItem) => {
-    const quantity = getQuantity(supplier.id, item.id) || 1
+  const handleQuantityChange = (supplierItemId: string, newQuantity: number) => {
+    const currentCartQuantity = getCartQuantity(supplierItemId)
     
-    addItem({
-      id: `${supplier.id}-${item.id}`,
-      supplierId: supplier.id,
-      supplierName: supplier.name,
-      itemName: item.itemName,
-      sku: supplier.sku,
-      packSize: supplier.packSize,
-      packPrice: supplier.packPrice,
-      unitPriceExVat: supplier.unitPriceExVat,
-      unitPriceIncVat: supplier.unitPriceIncVat,
-      vatRate: 0.24, // Default VAT rate for Iceland
-      unit: supplier.unit
-    }, quantity)
+    if (newQuantity > currentCartQuantity) {
+      // Find the supplier quote to add to cart
+      const supplierQuote = data.flatMap(item => 
+        item.suppliers.map(supplier => ({
+          ...supplier,
+          itemName: item.itemName,
+          brand: item.brand || ''
+        }))
+      ).find(supplier => supplier.supplierItemId === supplierItemId)
 
-    // Reset local quantity
-    updateLocalQuantity(supplier.id, item.id, 0)
+      if (supplierQuote) {
+        const cartItem: Omit<CartItem, 'quantity'> = {
+          id: supplierQuote.id,
+          supplierItemId: supplierQuote.supplierItemId,
+          supplierId: supplierQuote.id,
+          supplierName: supplierQuote.name,
+          itemName: supplierQuote.itemName,
+          sku: supplierQuote.sku,
+          packSize: supplierQuote.packSize,
+          packPrice: supplierQuote.packPrice,
+          unitPriceExVat: supplierQuote.unitPriceExVat,
+          unitPriceIncVat: supplierQuote.unitPriceIncVat,
+          vatRate: 0.24, // Default VAT rate - should come from data
+          unit: supplierQuote.unit,
+          displayName: supplierQuote.itemName,
+          packQty: 1 // Should come from supplier data
+        }
+        
+        addItem(cartItem, newQuantity - currentCartQuantity)
+      }
+    } else if (newQuantity < currentCartQuantity) {
+      updateQuantity(supplierItemId, newQuantity)
+    }
   }
+
+  const expandedItems = useMemo(() => {
+    return data.map(item => ({
+      ...item,
+      suppliers: item.suppliers.map(supplier => ({
+        ...supplier,
+        isInCart: getCartQuantity(supplier.supplierItemId) > 0,
+        cartQuantity: getCartQuantity(supplier.supplierItemId)
+      }))
+    }))
+  }, [data, cartItems])
 
   if (isLoading) {
     return (
-      <Card>
-        <CardContent className="p-8">
-          <div className="flex items-center justify-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-            <span className="ml-2">Loading price comparison data...</span>
+      <div className="space-y-4">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <div key={i} className="border rounded-lg p-4">
+            <Skeleton className="h-6 w-48 mb-2" />
+            <div className="grid grid-cols-7 gap-4">
+              {Array.from({ length: 7 }).map((_, j) => (
+                <Skeleton key={j} className="h-4 w-full" />
+              ))}
+            </div>
           </div>
-        </CardContent>
-      </Card>
+        ))}
+      </div>
+    )
+  }
+
+  if (!data.length) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-muted-foreground">No items found matching your search criteria.</p>
+      </div>
     )
   }
 
   return (
-    <Card className="card-elevated">
-      <CardContent className="p-0">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-muted/50 sticky top-0 z-10">
-              <tr>
-                <th className="text-left p-4 font-medium sticky left-0 bg-muted/50 z-20 min-w-[200px]">Product</th>
-                <th className="text-left p-4 font-medium min-w-[120px]">Supplier</th>
-                <th className="text-left p-4 font-medium min-w-[100px]">Pack</th>
-                <th className="text-right p-4 font-medium min-w-[120px]">Price/Pack</th>
-                <th className="text-right p-4 font-medium min-w-[140px]">
-                  Price/Unit ({includeVat ? 'inc VAT' : 'ex VAT'})
-                </th>
-                <th className="text-left p-4 font-medium min-w-[80px]">Stock</th>
-                <th className="text-left p-4 font-medium min-w-[100px]">History</th>
-                <th className="text-left p-4 font-medium min-w-[120px]">Add</th>
-                <th className="text-left p-4 font-medium min-w-[60px]">Info</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.map((item) => (
-                item.suppliers.map((supplier, supplierIndex) => (
-                  <tr key={`${item.id}-${supplier.id}`} className="border-b border-border hover:bg-muted/25">
-                    {supplierIndex === 0 && (
-                      <td rowSpan={item.suppliers.length} className="p-4 border-r border-border sticky left-0 bg-background z-10">
-                        <div>
-                          <div className="font-medium text-foreground">{item.itemName}</div>
-                          <div className="text-sm text-muted-foreground">{item.brand}</div>
-                          <div className="text-xs text-muted-foreground">{item.category}</div>
+    <div className="space-y-6">
+      {expandedItems.map((item) => (
+        <div key={item.id} className="border rounded-lg overflow-hidden">
+          <div className="bg-muted/50 p-4 border-b">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-semibold text-lg">{item.itemName}</h3>
+                <div className="text-sm text-muted-foreground flex items-center gap-2">
+                  {item.brand && <span>Brand: {item.brand}</span>}
+                  {item.category && <span>• Category: {item.category}</span>}
+                </div>
+              </div>
+              <Badge variant="secondary">
+                {item.suppliers.length} supplier{item.suppliers.length !== 1 ? 's' : ''}
+              </Badge>
+            </div>
+          </div>
+
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="sticky left-0 bg-background z-10 min-w-[200px]">Supplier</TableHead>
+                  <TableHead>Pack Size</TableHead>
+                  <TableHead className="text-right">Price/Pack</TableHead>
+                  <TableHead className="text-right">Price/Unit</TableHead>
+                  <TableHead className="text-center">Stock</TableHead>
+                  <TableHead className="text-center">History</TableHead>
+                  <TableHead className="text-center min-w-[120px]">Quantity</TableHead>
+                  <TableHead className="text-center">Info</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {item.suppliers.map((supplier) => {
+                  const price = includeVat ? supplier.unitPriceIncVat : supplier.unitPriceExVat
+                  const packPrice = includeVat ? supplier.packPrice * 1.24 : supplier.packPrice
+                  
+                  return (
+                    <TableRow key={supplier.supplierItemId} className={supplier.isInCart ? 'bg-blue-50' : ''}>
+                      <TableCell className="sticky left-0 bg-background z-10">
+                        <div className="flex items-center gap-2">
+                          <div>
+                            <div className="font-medium">{supplier.name}</div>
+                            <div className="text-xs text-muted-foreground">
+                              SKU: {supplier.sku}
+                            </div>
+                          </div>
+                          {supplier.badge && (
+                            <Badge
+                              variant={supplier.badge === 'best' ? 'default' : 
+                                     supplier.badge === 'good' ? 'secondary' : 'destructive'}
+                              className="text-xs"
+                            >
+                              {supplier.badge === 'best' ? 'Best price' : 
+                               supplier.badge === 'good' ? 'Good price' : 'Expensive'}
+                            </Badge>
+                          )}
                         </div>
-                      </td>
-                    )}
-                    <td className="p-4">
-                      <div className="font-medium text-foreground">{supplier.name}</div>
-                    </td>
-                    <td className="p-4">
-                      <code className="text-xs bg-muted px-2 py-1 rounded font-mono">
-                        {supplier.sku}
-                      </code>
-                      <div className="text-xs text-muted-foreground mt-1">
-                        {supplier.packSize}
-                      </div>
-                    </td>
-                    <td className="p-4 text-right">
-                      <div className="font-medium font-mono">
-                        {formatPrice(supplier.packPrice)}
-                      </div>
-                    </td>
-                    <td className="p-4 text-right">
-                      <div className="flex items-center justify-end space-x-2">
-                        <span className="font-medium font-mono">
-                          {formatPrice(includeVat ? supplier.unitPriceIncVat : supplier.unitPriceExVat)}
-                        </span>
-                        <span className="text-xs text-muted-foreground">/{supplier.unit}</span>
-                      </div>
-                      {supplier.badge && (
-                        <div className="mt-1">
-                          <PriceBadge type={supplier.badge}>
-                            {supplier.badge === 'best' ? 'Best ISK/' + supplier.unit : ''}
-                          </PriceBadge>
+                      </TableCell>
+                      <TableCell>{supplier.packSize}</TableCell>
+                      <TableCell className="text-right font-mono tabular-nums">
+                        {formatPrice(packPrice)}
+                      </TableCell>
+                      <TableCell className="text-right font-mono tabular-nums font-medium">
+                        {formatPrice(price)}
+                        <div className="text-xs text-muted-foreground">
+                          per {supplier.unit}
                         </div>
-                      )}
-                    </td>
-                    <td className="p-4">
-                      <Badge variant={supplier.inStock ? 'default' : 'destructive'}>
-                        {supplier.inStock ? 'In Stock' : 'Out of Stock'}
-                      </Badge>
-                    </td>
-                    <td className="p-4">
-                      <Sparkline data={supplier.priceHistory} className="mb-1" />
-                      <div className="text-xs text-muted-foreground">{supplier.lastUpdated}</div>
-                    </td>
-                    <td className="p-4">
-                      <div className="flex items-center space-x-1">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => updateLocalQuantity(supplier.id, item.id, getQuantity(supplier.id, item.id) - 1)}
-                          disabled={getQuantity(supplier.id, item.id) <= 0}
-                        >
-                          <Minus className="h-3 w-3" />
-                        </Button>
-                        <Input
-                          type="number"
-                          value={getQuantity(supplier.id, item.id)}
-                          onChange={(e) => updateLocalQuantity(supplier.id, item.id, parseInt(e.target.value) || 0)}
-                          className="w-12 text-center h-8"
-                          min="0"
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <Badge variant={supplier.inStock ? 'default' : 'secondary'}>
+                          {supplier.inStock ? 'In stock' : 'Out of stock'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <Sparkline 
+                          data={supplier.priceHistory} 
+                          width={60} 
+                          height={20}
+                          className="mx-auto"
                         />
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => updateLocalQuantity(supplier.id, item.id, getQuantity(supplier.id, item.id) + 1)}
-                        >
-                          <Plus className="h-3 w-3" />
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <div className="flex items-center justify-center gap-1">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleQuantityChange(
+                              supplier.supplierItemId, 
+                              Math.max(0, supplier.cartQuantity - 1)
+                            )}
+                            disabled={!supplier.inStock || supplier.cartQuantity === 0}
+                          >
+                            <Minus className="h-3 w-3" />
+                          </Button>
+                          
+                          <Input
+                            type="number"
+                            value={supplier.cartQuantity}
+                            onChange={(e) => handleQuantityChange(
+                              supplier.supplierItemId,
+                              parseInt(e.target.value) || 0
+                            )}
+                            className="w-12 h-8 text-center text-xs px-1"
+                            min="0"
+                            disabled={!supplier.inStock}
+                          />
+                          
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleQuantityChange(
+                              supplier.supplierItemId,
+                              supplier.cartQuantity + 1
+                            )}
+                            disabled={!supplier.inStock}
+                          >
+                            <Plus className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <Button size="sm" variant="ghost">
+                          <Info className="h-4 w-4" />
                         </Button>
-                        <Button
-                          size="sm"
-                          disabled={!supplier.inStock || getQuantity(supplier.id, item.id) === 0}
-                          onClick={() => handleAddToCart(supplier, item)}
-                        >
-                          Add
-                        </Button>
-                      </div>
-                    </td>
-                    <td className="p-4">
-                      <Button size="sm" variant="ghost">
-                        <Info className="h-3 w-3" />
-                      </Button>
-                    </td>
-                  </tr>
-                ))
-              ))}
-            </tbody>
-          </table>
+                      </TableCell>
+                    </TableRow>
+                  )
+                })}
+              </TableBody>
+            </Table>
+          </div>
         </div>
-      </CardContent>
-    </Card>
+      ))}
+    </div>
   )
 }
