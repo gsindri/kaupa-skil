@@ -4,13 +4,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Shield, Users, FileText, Settings, Zap, Eye } from 'lucide-react'
+import { Shield, Users, FileText, Settings, Zap, Eye, AlertTriangle, CheckSquare } from 'lucide-react'
 
 import { TenantUserManagement } from '@/components/admin/TenantUserManagement'
 import { CurrentUserRole } from '@/components/admin/CurrentUserRole'
 import { ElevationBanner } from '@/components/admin/ElevationBanner'
 import { ElevationDialog } from '@/components/admin/ElevationDialog'
 import { SupportSessionDialog } from '@/components/admin/SupportSessionDialog'
+import { PendingAdminActions } from '@/components/admin/PendingAdminActions'
+import { JobManagement } from '@/components/admin/JobManagement'
+import { AuditLogExport } from '@/components/admin/AuditLogExport'
 
 import { useAdminElevation } from '@/hooks/useAdminElevation'
 import { useSupportSessions } from '@/hooks/useSupportSessions'
@@ -124,6 +127,10 @@ export default function Admin() {
             <Users className="h-4 w-4 mr-2" />
             Users & Permissions
           </TabsTrigger>
+          <TabsTrigger value="pending">
+            <CheckSquare className="h-4 w-4 mr-2" />
+            Pending Actions
+          </TabsTrigger>
           <TabsTrigger value="elevations">
             <Shield className="h-4 w-4 mr-2" />
             Elevations
@@ -152,6 +159,10 @@ export default function Admin() {
               <TenantUserManagement />
             </div>
           </div>
+        </TabsContent>
+
+        <TabsContent value="pending" className="space-y-4">
+          <PendingAdminActions />
         </TabsContent>
 
         <TabsContent value="elevations" className="space-y-4">
@@ -232,90 +243,51 @@ export default function Admin() {
         </TabsContent>
 
         <TabsContent value="jobs" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Job Queue</CardTitle>
-              <CardDescription>
-                Async operations and their status
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {jobs?.map((job) => (
-                  <div key={job.id} className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="space-y-1">
-                      <p className="font-medium">{job.type}</p>
-                      <p className="text-sm text-muted-foreground">
-                        Created: {new Date(job.created_at).toLocaleString()}
-                      </p>
-                      {job.started_at && (
-                        <p className="text-sm text-muted-foreground">
-                          Started: {new Date(job.started_at).toLocaleString()}
-                        </p>
-                      )}
-                      {job.error_message && (
-                        <p className="text-sm text-red-600">{job.error_message}</p>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Badge variant={
-                        job.status === 'completed' ? 'default' :
-                        job.status === 'failed' ? 'destructive' :
-                        job.status === 'running' ? 'secondary' : 'outline'
-                      }>
-                        {job.status}
-                      </Badge>
-                      {job.retry_count > 0 && (
-                        <Badge variant="outline">
-                          Retry {job.retry_count}
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+          <JobManagement />
         </TabsContent>
 
         <TabsContent value="audit" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Audit Logs</CardTitle>
-              <CardDescription>
-                Recent system activities and changes
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {auditLogs?.map((log) => (
-                  <div key={log.id} className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="space-y-1">
-                      <p className="font-medium">{log.action}</p>
-                      {log.entity_type && (
+          <div className="space-y-6">
+            <AuditLogExport />
+            
+            <Card>
+              <CardHeader>
+                <CardTitle>Recent Audit Logs</CardTitle>
+                <CardDescription>
+                  Recent system activities and changes
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {auditLogs?.map((log) => (
+                    <div key={log.id} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div className="space-y-1">
+                        <p className="font-medium">{log.action}</p>
+                        {log.entity_type && (
+                          <p className="text-sm text-muted-foreground">
+                            Entity: {log.entity_type}
+                          </p>
+                        )}
+                        {log.reason && (
+                          <p className="text-sm text-muted-foreground">
+                            Reason: {log.reason}
+                          </p>
+                        )}
                         <p className="text-sm text-muted-foreground">
-                          Entity: {log.entity_type}
+                          {new Date(log.created_at).toLocaleString()}
                         </p>
-                      )}
-                      {log.reason && (
-                        <p className="text-sm text-muted-foreground">
-                          Reason: {log.reason}
-                        </p>
-                      )}
-                      <p className="text-sm text-muted-foreground">
-                        {new Date(log.created_at).toLocaleString()}
-                      </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {log.tenant?.name && (
+                          <Badge variant="outline">{log.tenant.name}</Badge>
+                        )}
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      {log.tenant?.name && (
-                        <Badge variant="outline">{log.tenant.name}</Badge>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
       </Tabs>
 

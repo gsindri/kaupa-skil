@@ -5,6 +5,7 @@ import { Sidebar, SidebarContent, SidebarProvider, SidebarTrigger } from '@/comp
 import { AppSidebar } from './AppSidebar'
 import { Toaster } from '@/components/ui/toaster'
 import { ElevationBanner } from '@/components/admin/ElevationBanner'
+import { SupportSessionBanner } from '@/components/admin/SupportSessionBanner'
 
 export function AppLayout() {
   return (
@@ -19,6 +20,7 @@ export function AppLayout() {
           </div>
           <div className="p-4">
             <ElevationBanner />
+            <SupportSessionBanner />
             <Outlet />
           </div>
         </main>
