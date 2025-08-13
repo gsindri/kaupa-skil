@@ -489,6 +489,10 @@ export type Database = {
         Args: { _tenant_id: string }
         Returns: boolean
       }
+      is_platform_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       log_audit_event: {
         Args: {
           action_name: string
