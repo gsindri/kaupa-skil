@@ -219,13 +219,7 @@ export function SupplierManagement() {
             {/* Credentials Form */}
             <div>
               {selectedSupplier ? (
-                <SupplierCredentialsForm
-                  supplier={suppliers?.find(s => s.id === selectedSupplier)!}
-                  onSuccess={() => {
-                    // Refetch credentials to update status
-                    setTimeout(() => window.location.reload(), 1000)
-                  }}
-                />
+                <SupplierCredentialsForm />
               ) : (
                 <Card>
                   <CardContent className="p-8 text-center">
