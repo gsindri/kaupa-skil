@@ -184,6 +184,35 @@ export interface Database {
           updated_at?: string
         }
       }
+      tenant_suppliers: {
+        Row: {
+          id: string
+          tenant_id: string
+          supplier_id: string
+          is_active: boolean
+          priority: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          tenant_id: string
+          supplier_id: string
+          is_active?: boolean
+          priority?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          tenant_id?: string
+          supplier_id?: string
+          is_active?: boolean
+          priority?: number
+          created_at?: string
+          updated_at?: string
+        }
+      }
       units: {
         Row: {
           id: string
@@ -444,6 +473,41 @@ export interface Database {
           vat_rate?: number | null
           line_total?: number | null
           created_at?: string
+        }
+      }
+      order_dispatches: {
+        Row: {
+          id: string
+          order_id: string
+          supplier_id: string
+          status: 'pending' | 'sent' | 'confirmed' | 'failed'
+          attachments: Record<string, any>
+          sent_at: string | null
+          confirmed_at: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          order_id: string
+          supplier_id: string
+          status?: 'pending' | 'sent' | 'confirmed' | 'failed'
+          attachments?: Record<string, any>
+          sent_at?: string | null
+          confirmed_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          order_id?: string
+          supplier_id?: string
+          status?: 'pending' | 'sent' | 'confirmed' | 'failed'
+          attachments?: Record<string, any>
+          sent_at?: string | null
+          confirmed_at?: string | null
+          created_at?: string
+          updated_at?: string
         }
       }
       connector_runs: {
