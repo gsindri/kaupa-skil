@@ -1,19 +1,19 @@
-
 import * as React from "react";
 import { useState, useEffect } from "react";
-import { Eye, EyeOff, Building2 } from "lucide-react";
+import { Eye, EyeOff, Building2, AlertCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthProvider";
 import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function LoginShowcase() {
-  const { user, profile, loading } = useAuth();
+  const { user, profile, loading, error, isInitialized } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
   // Redirect authenticated users
   useEffect(() => {
-    if (!loading && user) {
+    if (isInitialized && user) {
       if (profile && !profile.tenant_id) {
         navigate("/setup", { replace: true });
       } else {
@@ -21,15 +21,21 @@ export default function LoginShowcase() {
         navigate(from, { replace: true });
       }
     }
-  }, [user, profile, loading, navigate, location]);
+  }, [user, profile, isInitialized, navigate, location]);
 
   // Show loading while checking auth state
-  if (loading) {
+  if (loading || !isInitialized) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse space-y-4">
-          <div className="h-4 bg-muted rounded w-48"></div>
-          <div className="h-4 bg-muted rounded w-32"></div>
+        <div className="text-center space-y-4">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <p className="text-sm text-muted-foreground">Loading...</p>
+          {error && (
+            <Alert variant="destructive" className="max-w-md">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
         </div>
       </div>
     );
@@ -79,6 +85,7 @@ function AuthForm() {
         });
       }
     } catch (error: any) {
+      console.error('Auth error:', error);
       toast({
         variant: "destructive",
         title: "Authentication Error",

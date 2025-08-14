@@ -28,10 +28,22 @@ import { AuthGate } from "./components/auth/AuthGate";
 const queryClient = new QueryClient();
 
 function AppRoutes() {
-  const { isInitialized, isFirstTime } = useAuth()
+  const { isInitialized, isFirstTime, error } = useAuth()
+
+  console.log('AppRoutes state:', { isInitialized, isFirstTime, error })
 
   if (!isInitialized) {
-    return <div className="flex items-center justify-center min-h-screen">Loading...</div>
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center space-y-4">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <p className="text-sm text-muted-foreground">Initializing...</p>
+          {error && (
+            <p className="text-sm text-destructive max-w-md">{error}</p>
+          )}
+        </div>
+      </div>
+    )
   }
 
   if (isFirstTime) {
@@ -39,25 +51,24 @@ function AppRoutes() {
   }
 
   return (
-    <AuthGate>
-      <Routes>
-        <Route path="/" element={<AppLayout><Outlet /></AppLayout>}>
-          <Route index element={<Index />} />
-          <Route path="dashboard" element={<Dashboard />} />
-          <Route path="compare" element={<Compare />} />
-          <Route path="pantry" element={<Pantry />} />
-          <Route path="orders" element={<Orders />} />
-          <Route path="suppliers" element={<Suppliers />} />
-          <Route path="price-history" element={<PriceHistory />} />
-          <Route path="settings" element={<Settings />} />
-          <Route path="admin" element={<Admin />} />
-          <Route path="discovery" element={<Discovery />} />
-        </Route>
-        <Route path="/auth/login" element={<LoginShowcase />} />
-        <Route path="/auth/reset-password" element={<PasswordReset />} />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </AuthGate>
+    <Routes>
+      <Route path="/login" element={<LoginShowcase />} />
+      <Route path="/auth/login" element={<LoginShowcase />} />
+      <Route path="/auth/reset-password" element={<PasswordReset />} />
+      <Route path="/" element={<AuthGate><AppLayout><Outlet /></AppLayout></AuthGate>}>
+        <Route index element={<Index />} />
+        <Route path="dashboard" element={<Dashboard />} />
+        <Route path="compare" element={<Compare />} />
+        <Route path="pantry" element={<Pantry />} />
+        <Route path="orders" element={<Orders />} />
+        <Route path="suppliers" element={<Suppliers />} />
+        <Route path="price-history" element={<PriceHistory />} />
+        <Route path="settings" element={<Settings />} />
+        <Route path="admin" element={<Admin />} />
+        <Route path="discovery" element={<Discovery />} />
+      </Route>
+      <Route path="*" element={<NotFound />} />
+    </Routes>
   )
 }
 
