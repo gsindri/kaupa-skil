@@ -1,304 +1,459 @@
-
-import React, { useState } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
+import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/button'
+import { Slider } from '@/components/ui/slider'
+import { Switch } from '@/components/ui/switch'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { useSearchParams, useRouter } from 'next/navigation'
+import { useComparisonItems } from '@/hooks/useComparisonItems'
+import { ComparisonItem, SupplierQuote } from '@/lib/types'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import { cn } from '@/lib/utils'
+import { CheckCheck, ChevronsUpDown } from 'lucide-react'
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+  CommandSeparator,
+  CommandShortcut,
+} from "@/components/ui/command"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 import { Badge } from '@/components/ui/badge'
-import { Search, Filter, Download, Plus, Trash2 } from 'lucide-react'
-import { EnhancedCompareTable } from '@/components/compare/EnhancedCompareTable'
-import { AdvancedFilters } from '@/components/compare/AdvancedFilters'
-import { ExportDialog } from '@/components/compare/ExportDialog'
-import { useToast } from '@/hooks/use-toast'
+import { UnitConversionCalculator } from '@/components/units/UnitConversionCalculator'
 
-// Mock data for demonstration
-const mockCompareItems = [
-  {
-    id: '1',
-    name: 'Premium Atlantic Salmon Fillet',
-    brand: 'Iceland Seafood Co.',
-    category: 'Seafood',
-    image: '/placeholder.svg',
-    description: 'Fresh Atlantic salmon, sustainably sourced',
-    specifications: {
-      'Origin': 'Faroe Islands',
-      'Cut': 'Fillet',
-      'Grade': 'Premium'
-    },
-    tags: ['Fresh', 'Sustainable', 'Premium'],
-    averageRating: 4.8,
-    prices: [
-      {
-        supplierId: 'vefkaupmenn',
-        supplierName: 'Véfkaupmenn',
-        price: 2890,
-        priceIncVat: 3584,
-        unit: 'kg',
-        packSize: '1kg portions',
-        availability: 'in-stock' as const,
-        leadTime: '1-2 days',
-        moq: 5,
-        discount: 10,
-        lastUpdated: '2024-01-15T10:30:00Z',
-        priceHistory: [3200, 3100, 3000, 2950, 2890],
-        isPreferred: true
-      },
-      {
-        supplierId: 'iceland-seafood',
-        supplierName: 'Iceland Seafood',
-        price: 3100,
-        priceIncVat: 3844,
-        unit: 'kg',
-        packSize: '1.2kg portions',
-        availability: 'in-stock' as const,
-        leadTime: 'Same day',
-        moq: 3,
-        lastUpdated: '2024-01-15T09:15:00Z',
-        priceHistory: [3300, 3250, 3200, 3150, 3100],
-        isPreferred: false
-      },
-      {
-        supplierId: 'nordic-fresh',
-        supplierName: 'Nordic Fresh',
-        price: 2750,
-        priceIncVat: 3410,
-        unit: 'kg',
-        packSize: '800g portions',
-        availability: 'low-stock' as const,
-        leadTime: '2-3 days',
-        moq: 10,
-        lastUpdated: '2024-01-14T16:45:00Z',
-        priceHistory: [2800, 2790, 2770, 2760, 2750],
-        isPreferred: false
-      }
-    ]
-  },
-  {
-    id: '2',
-    name: 'Organic Baby Spinach',
-    brand: 'Green Valley Farms',
-    category: 'Fresh Produce',
-    image: '/placeholder.svg',
-    description: 'Fresh organic baby spinach leaves',
-    specifications: {
-      'Origin': 'Iceland',
-      'Type': 'Baby leaves',
-      'Certification': 'Organic'
-    },
-    tags: ['Organic', 'Local', 'Fresh'],
-    averageRating: 4.6,
-    prices: [
-      {
-        supplierId: 'vefkaupmenn',
-        supplierName: 'Véfkaupmenn',
-        price: 890,
-        priceIncVat: 1104,
-        unit: 'kg',
-        packSize: '200g bags',
-        availability: 'in-stock' as const,
-        leadTime: '1 day',
-        moq: 12,
-        lastUpdated: '2024-01-15T08:20:00Z',
-        priceHistory: [920, 910, 900, 895, 890],
-        isPreferred: true
-      },
-      {
-        supplierId: 'nordic-fresh',
-        supplierName: 'Nordic Fresh',
-        price: 850,
-        priceIncVat: 1054,
-        unit: 'kg',
-        packSize: '150g bags',
-        availability: 'in-stock' as const,
-        leadTime: 'Same day',
-        moq: 20,
-        discount: 5,
-        lastUpdated: '2024-01-15T07:30:00Z',
-        priceHistory: [880, 870, 865, 855, 850],
-        isPreferred: false
-      }
-    ]
-  },
-  {
-    id: '3',
-    name: 'Artisan Sourdough Bread',
-    brand: 'Reykjavik Bakehouse',
-    category: 'Bakery',
-    image: '/placeholder.svg',
-    description: 'Traditional sourdough bread, baked fresh daily',
-    specifications: {
-      'Type': 'Sourdough',
-      'Weight': '800g',
-      'Ingredients': 'Organic flour, water, salt, starter'
-    },  
-    tags: ['Artisan', 'Fresh', 'Traditional'],
-    averageRating: 4.9,
-    prices: [
-      {
-        supplierId: 'bakehouse',
-        supplierName: 'Reykjavik Bakehouse',
-        price: 650,
-        priceIncVat: 806,
-        unit: 'each',
-        packSize: '800g loaves',
-        availability: 'in-stock' as const,
-        leadTime: 'Same day',
-        moq: 6,
-        lastUpdated: '2024-01-15T06:00:00Z',
-        priceHistory: [650, 650, 640, 645, 650],
-        isPreferred: true
-      }
-    ]
+interface EnhancedCompareTableProps {
+  items: ComparisonItem[]
+  isLoading: boolean
+}
+
+function EnhancedCompareTable({ items, isLoading }: EnhancedCompareTableProps) {
+  if (isLoading) {
+    return <div className="text-center text-muted-foreground">Loading items...</div>
   }
-]
 
-interface FilterState {
-  priceRange: [number, number]
-  categories: string[]
-  suppliers: string[]
-  inStockOnly: boolean
-  minDiscount: number
-  sortBy: 'price' | 'name' | 'discount' | 'availability'
-  sortOrder: 'asc' | 'desc'
+  if (!items || items.length === 0) {
+    return <div className="text-center text-muted-foreground">No items to compare.</div>
+  }
+
+  return (
+    <div className="overflow-x-auto">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="w-[200px]">Item</TableHead>
+            <TableHead>Brand</TableHead>
+            <TableHead>Category</TableHead>
+            {items[0].suppliers.map((supplier) => (
+              <TableHead key={supplier.id} className="text-right">
+                {supplier.name}
+              </TableHead>
+            ))}
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {items.map((item) => (
+            <TableRow key={item.id}>
+              <TableCell className="font-medium">{item.itemName}</TableCell>
+              <TableCell>{item.brand || 'N/A'}</TableCell>
+              <TableCell>{item.category || 'N/A'}</TableCell>
+              {item.suppliers.map((supplier) => (
+                <TableCell key={supplier.id} className="text-right">
+                  <div>{supplier.packSize}</div>
+                  <div>{supplier.unitPriceIncVat.toFixed(2)} ISK</div>
+                  <div>
+                    {supplier.inStock ? (
+                      <Badge variant="outline">In Stock</Badge>
+                    ) : (
+                      <Badge variant="destructive">Out of Stock</Badge>
+                    )}
+                  </div>
+                </TableCell>
+              ))}
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  )
+}
+
+interface CompareHeaderProps {
+  searchTerm: string
+  onSearchChange: (term: string) => void
+  onClearFilters: () => void
+  hasActiveFilters: boolean
+}
+
+function CompareHeader({
+  searchTerm,
+  onSearchChange,
+  onClearFilters,
+  hasActiveFilters,
+}: CompareHeaderProps) {
+  return (
+    <div className="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
+      <div className="flex items-center space-x-2">
+        <Label htmlFor="search">Search Items:</Label>
+        <Input
+          type="search"
+          id="search"
+          placeholder="Enter item name"
+          value={searchTerm}
+          onChange={(e) => onSearchChange(e.target.value)}
+        />
+      </div>
+      {hasActiveFilters && (
+        <Button variant="ghost" onClick={onClearFilters}>
+          Clear Filters
+        </Button>
+      )}
+    </div>
+  )
+}
+
+interface AdvancedFiltersProps {
+  suppliers: { label: string; value: string }[]
+  categories: { label: string; value: string }[]
+  selectedSuppliers: string[]
+  selectedCategories: string[]
+  minPrice: number
+  maxPrice: number
+  showInStockOnly: boolean
+  onSuppliersChange: (suppliers: string[]) => void
+  onCategoriesChange: (categories: string[]) => void
+  onMinPriceChange: (min: number) => void
+  onMaxPriceChange: (max: number) => void
+  onInStockToggle: (checked: boolean) => void
+}
+
+function AdvancedFilters({
+  suppliers,
+  categories,
+  selectedSuppliers,
+  selectedCategories,
+  minPrice,
+  maxPrice,
+  showInStockOnly,
+  onSuppliersChange,
+  onCategoriesChange,
+  onMinPriceChange,
+  onMaxPriceChange,
+  onInStockToggle,
+}: AdvancedFiltersProps) {
+  const [openSupplier, setOpenSupplier] = useState(false)
+  const [openCategory, setOpenCategory] = useState(false)
+
+  const handleSupplierSelect = (supplier: string) => {
+    if (selectedSuppliers.includes(supplier)) {
+      onSuppliersChange(selectedSuppliers.filter((s) => s !== supplier))
+    } else {
+      onSuppliersChange([...selectedSuppliers, supplier])
+    }
+  }
+
+  const handleCategorySelect = (category: string) => {
+    if (selectedCategories.includes(category)) {
+      onCategoriesChange(selectedCategories.filter((c) => c !== category))
+    } else {
+      onCategoriesChange([...selectedCategories, category])
+    }
+  }
+
+  const allSuppliersSelected = useMemo(() => suppliers.every(supplier => selectedSuppliers.includes(supplier.value)), [suppliers, selectedSuppliers])
+  const allCategoriesSelected = useMemo(() => categories.every(category => selectedCategories.includes(category.value)), [categories, selectedCategories])
+
+  const toggleAllSuppliers = () => {
+    if (allSuppliersSelected) {
+      onSuppliersChange([])
+    } else {
+      onSuppliersChange(suppliers.map(supplier => supplier.value))
+    }
+  }
+
+  const toggleAllCategories = () => {
+    if (allCategoriesSelected) {
+      onCategoriesChange([])
+    } else {
+      onCategoriesChange(categories.map(category => category.value))
+    }
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Advanced Filters</CardTitle>
+      </CardHeader>
+      <CardContent className="grid gap-4">
+        {/* Supplier Filter */}
+        <Popover open={openSupplier} onOpenChange={setOpenSupplier}>
+          <PopoverTrigger asChild>
+            <Button variant="outline" role="combobox" aria-expanded={openSupplier} className="w-full justify-between">
+              Supplier <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-[200px] p-0">
+            <Command>
+              <CommandInput placeholder="Search suppliers..." />
+              <CommandList>
+                <CommandItem onSelect={toggleAllSuppliers}>
+                  <CheckCheck className={cn("mr-2 h-4 w-4", allSuppliersSelected ? "opacity-100" : "opacity-0")} />
+                  Select All
+                </CommandItem>
+                <CommandSeparator />
+                {suppliers.map((supplier) => (
+                  <CommandItem
+                    key={supplier.value}
+                    onSelect={() => handleSupplierSelect(supplier.value)}
+                  >
+                    <CheckCheck
+                      className={cn(
+                        "mr-2 h-4 w-4",
+                        selectedSuppliers.includes(supplier.value) ? "opacity-100" : "opacity-0"
+                      )}
+                    />
+                    {supplier.label}
+                  </CommandItem>
+                ))}
+                <CommandEmpty>No suppliers found.</CommandEmpty>
+              </CommandList>
+            </Command>
+          </PopoverContent>
+        </Popover>
+
+        {/* Category Filter */}
+        <Popover open={openCategory} onOpenChange={setOpenCategory}>
+          <PopoverTrigger asChild>
+            <Button variant="outline" role="combobox" aria-expanded={openCategory} className="w-full justify-between">
+              Category <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-[200px] p-0">
+            <Command>
+              <CommandInput placeholder="Search categories..." />
+              <CommandList>
+              <CommandItem onSelect={toggleAllCategories}>
+                  <CheckCheck className={cn("mr-2 h-4 w-4", allCategoriesSelected ? "opacity-100" : "opacity-0")} />
+                  Select All
+                </CommandItem>
+                <CommandSeparator />
+                {categories.map((category) => (
+                  <CommandItem
+                    key={category.value}
+                    onSelect={() => handleCategorySelect(category.value)}
+                  >
+                    <CheckCheck
+                      className={cn(
+                        "mr-2 h-4 w-4",
+                        selectedCategories.includes(category.value) ? "opacity-100" : "opacity-0"
+                      )}
+                    />
+                    {category.label}
+                  </CommandItem>
+                ))}
+                <CommandEmpty>No categories found.</CommandEmpty>
+              </CommandList>
+            </Command>
+          </PopoverContent>
+        </Popover>
+
+        {/* Price Range Filter */}
+        <div className="space-y-2">
+          <Label>Price Range (ISK)</Label>
+          <div className="flex items-center space-x-2">
+            <Input
+              type="number"
+              placeholder="Min"
+              value={minPrice > 0 ? minPrice : ''}
+              onChange={(e) => onMinPriceChange(Number(e.target.value))}
+              className="w-24"
+            />
+            <Input
+              type="number"
+              placeholder="Max"
+              value={maxPrice > 0 ? maxPrice : ''}
+              onChange={(e) => onMaxPriceChange(Number(e.target.value))}
+              className="w-24"
+            />
+          </div>
+        </div>
+
+        {/* In Stock Only Filter */}
+        <div className="flex items-center space-x-2">
+          <Label htmlFor="in-stock">In Stock Only</Label>
+          <Switch id="in-stock" checked={showInStockOnly} onCheckedChange={onInStockToggle} />
+        </div>
+      </CardContent>
+    </Card>
+  )
 }
 
 export default function Compare() {
-  const [compareItems, setCompareItems] = useState(mockCompareItems)
-  const [searchTerm, setSearchTerm] = useState('')
-  const [filters, setFilters] = useState<FilterState>({
-    priceRange: [0, 10000],
-    categories: [],
-    suppliers: [],
-    inStockOnly: false,
-    minDiscount: 0,
-    sortBy: 'name',
-    sortOrder: 'asc'
-  })
-  const { toast } = useToast()
+  const searchParams = useSearchParams()
+  const { replace } = useRouter()
+  const { items, isLoading, suppliers, categories } = useComparisonItems()
+  const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '')
+  const [selectedSuppliers, setSelectedSuppliers] = useState<string[]>(
+    searchParams.getAll('supplier') || []
+  )
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(
+    searchParams.getAll('category') || []
+  )
+  const [minPrice, setMinPrice] = useState(Number(searchParams.get('minPrice')) || 0)
+  const [maxPrice, setMaxPrice] = useState(Number(searchParams.get('maxPrice')) || 0)
+  const [showInStockOnly, setShowInStockOnly] = useState(searchParams.get('inStock') === 'true')
 
-  // Calculate active filters count
-  const activeFiltersCount = [
-    filters.categories.length > 0,
-    filters.suppliers.length > 0,
-    filters.inStockOnly,
-    filters.priceRange[0] > 0 || filters.priceRange[1] < 10000,
-    filters.minDiscount > 0
-  ].filter(Boolean).length
+  useEffect(() => {
+    const params = new URLSearchParams()
+    if (searchTerm) params.set('search', searchTerm)
+    selectedSuppliers.forEach((supplier) => params.append('supplier', supplier))
+    selectedCategories.forEach((category) => params.append('category', category))
+    if (minPrice > 0) params.set('minPrice', minPrice.toString())
+    if (maxPrice > 0) params.set('maxPrice', maxPrice.toString())
+    if (showInStockOnly) params.set('inStock', 'true')
 
-  const handleAddToCart = (item: any, supplier: any, quantity: number) => {
-    toast({
-      title: 'Added to cart',
-      description: `${quantity}x ${item.name} from ${supplier.supplierName}`
-    })
-  }
+    replace(`?${params.toString()}`, { scroll: false })
+  }, [
+    searchTerm,
+    selectedSuppliers,
+    selectedCategories,
+    minPrice,
+    maxPrice,
+    showInStockOnly,
+    replace,
+  ])
 
-  const handleRemoveItem = (itemId: string) => {
-    setCompareItems(prev => prev.filter(item => item.id !== itemId))
-    toast({
-      title: 'Item removed',
-      description: 'Item removed from comparison'
-    })
-  }
+  const clearFilters = useCallback(() => {
+    setSearchTerm('')
+    setSelectedSuppliers([])
+    setSelectedCategories([])
+    setMinPrice(0)
+    setMaxPrice(0)
+    setShowInStockOnly(false)
+  }, [])
 
-  const handleExport = () => {
-    toast({
-      title: 'Export started',
-      description: 'Preparing comparison data for export...'
-    })
-  }
+  const hasActiveFilters = useMemo(() => {
+    return (
+      searchTerm !== '' ||
+      selectedSuppliers.length > 0 ||
+      selectedCategories.length > 0 ||
+      minPrice > 0 ||
+      maxPrice > 0 ||
+      showInStockOnly
+    )
+  }, [
+    searchTerm,
+    selectedSuppliers,
+    selectedCategories,
+    minPrice,
+    maxPrice,
+    showInStockOnly,
+  ])
 
-  const handleClearAll = () => {
-    setCompareItems([])
-    toast({
-      title: 'Comparison cleared',
-      description: 'All items removed from comparison'
-    })
-  }
+  const filteredItems = useMemo(() => {
+    let filtered = items
+
+    if (searchTerm) {
+      filtered = filtered.filter((item) =>
+        item.itemName.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    }
+
+    if (selectedSuppliers.length > 0) {
+      filtered = filtered.map((item) => ({
+        ...item,
+        suppliers: item.suppliers.filter((supplier) =>
+          selectedSuppliers.includes(supplier.id)
+        ),
+      }))
+    }
+
+    if (selectedCategories.length > 0) {
+      filtered = filtered.filter((item) =>
+        item.category && selectedCategories.includes(item.category)
+      )
+    }
+
+    if (minPrice > 0) {
+      filtered = filtered.map((item) => ({
+        ...item,
+        suppliers: item.suppliers.filter((supplier) => supplier.unitPriceIncVat >= minPrice),
+      }))
+    }
+
+    if (maxPrice > 0) {
+      filtered = filtered.map((item) => ({
+        ...item,
+        suppliers: item.suppliers.filter((supplier) => supplier.unitPriceIncVat <= maxPrice),
+      }))
+    }
+
+    if (showInStockOnly) {
+      filtered = filtered.map((item) => ({
+        ...item,
+        suppliers: item.suppliers.filter((supplier) => supplier.inStock),
+      }))
+    }
+
+    return filtered.filter((item) => item.suppliers.length > 0)
+  }, [
+    items,
+    searchTerm,
+    selectedSuppliers,
+    selectedCategories,
+    minPrice,
+    maxPrice,
+    showInStockOnly,
+  ])
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Price Comparison</h1>
-          <p className="text-muted-foreground">
-            Compare prices across suppliers to find the best deals
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={handleClearAll} className="gap-2">
-            <Trash2 className="h-4 w-4" />
-            Clear All
-          </Button>
-          <ExportDialog 
-            data={compareItems}
-            trigger={
-              <Button variant="outline" className="gap-2">
-                <Download className="h-4 w-4" />
-                Export
-              </Button>
-            }
-          />
-        </div>
-      </div>
+      <CompareHeader
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        onClearFilters={clearFilters}
+        hasActiveFilters={hasActiveFilters}
+      />
 
-      {/* Search and Filters */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>Search & Filter</CardTitle>
-            <Badge variant="outline">
-              {compareItems.length} item{compareItems.length !== 1 ? 's' : ''} in comparison
-            </Badge>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Search */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search products, brands, or categories..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
-          </div>
+      {/* Unit Conversion Calculator */}
+      <UnitConversionCalculator />
 
-          {/* Advanced Filters */}
-          <AdvancedFilters
-            filters={filters}
-            onFiltersChange={setFilters}
-            onExport={handleExport}
-            activeFiltersCount={activeFiltersCount}
-          />
-        </CardContent>
-      </Card>
+      {/* Advanced Filters */}
+      <AdvancedFilters
+        suppliers={suppliers}
+        categories={categories}
+        selectedSuppliers={selectedSuppliers}
+        selectedCategories={selectedCategories}
+        minPrice={minPrice}
+        maxPrice={maxPrice}
+        showInStockOnly={showInStockOnly}
+        onSuppliersChange={setSelectedSuppliers}
+        onCategoriesChange={setSelectedCategories}
+        onMinPriceChange={setMinPrice}
+        onMaxPriceChange={setMaxPrice}
+        onInStockToggle={setShowInStockOnly}
+      />
 
-      {/* Comparison Table */}
-      {compareItems.length > 0 ? (
-        <EnhancedCompareTable
-          items={compareItems}
-          onAddToCart={handleAddToCart}
-          onRemoveItem={handleRemoveItem}
-        />
-      ) : (
-        <Card>
-          <CardContent className="p-12 text-center">
-            <div className="space-y-4">
-              <div className="text-6xl">📊</div>
-              <div>
-                <h3 className="text-lg font-semibold">No items to compare</h3>
-                <p className="text-muted-foreground">
-                  Add products from your search results to start comparing prices
-                </p>
-              </div>
-              <Button className="gap-2">
-                <Plus className="h-4 w-4" />
-                Browse Products
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      {/* Enhanced Compare Table */}
+      <EnhancedCompareTable 
+        items={filteredItems}
+        isLoading={isLoading}
+      />
     </div>
   )
 }
