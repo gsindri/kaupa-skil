@@ -5,9 +5,9 @@ import { Button } from '@/components/ui/button'
 import { Slider } from '@/components/ui/slider'
 import { Switch } from '@/components/ui/switch'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
-import { useSearchParams, useRouter } from 'next/navigation'
+import { useSearchParams, useNavigate } from 'react-router-dom'
 import { useComparisonItems } from '@/hooks/useComparisonItems'
-import { ComparisonItem, SupplierQuote } from '@/lib/types'
+import { ComparisonItem, SupplierQuote } from '@/hooks/useComparisonItems'
 import {
   Table,
   TableBody,
@@ -303,8 +303,8 @@ function AdvancedFilters({
 }
 
 export default function Compare() {
-  const searchParams = useSearchParams()
-  const { replace } = useRouter()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const navigate = useNavigate()
   const { items, isLoading, suppliers, categories } = useComparisonItems()
   const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '')
   const [selectedSuppliers, setSelectedSuppliers] = useState<string[]>(
@@ -326,7 +326,7 @@ export default function Compare() {
     if (maxPrice > 0) params.set('maxPrice', maxPrice.toString())
     if (showInStockOnly) params.set('inStock', 'true')
 
-    replace(`?${params.toString()}`, { scroll: false })
+    setSearchParams(params)
   }, [
     searchTerm,
     selectedSuppliers,
@@ -334,7 +334,7 @@ export default function Compare() {
     minPrice,
     maxPrice,
     showInStockOnly,
-    replace,
+    setSearchParams,
   ])
 
   const clearFilters = useCallback(() => {
