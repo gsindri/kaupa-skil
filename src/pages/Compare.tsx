@@ -1,14 +1,155 @@
 
 import React, { useState } from 'react'
-import { CompareHeader } from '@/components/compare/CompareHeader'
-import { EnhancedComparisonTable } from '@/components/compare/EnhancedComparisonTable'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Badge } from '@/components/ui/badge'
+import { Search, Filter, Download, Plus, Trash2 } from 'lucide-react'
+import { EnhancedCompareTable } from '@/components/compare/EnhancedCompareTable'
 import { AdvancedFilters } from '@/components/compare/AdvancedFilters'
 import { ExportDialog } from '@/components/compare/ExportDialog'
-import { Button } from '@/components/ui/button'
-import { useQuery } from '@tanstack/react-query'
-import { useAuth } from '@/contexts/AuthProvider'
-import { useSettings } from '@/contexts/SettingsProvider'
-import { Download } from 'lucide-react'
+import { useToast } from '@/hooks/use-toast'
+
+// Mock data for demonstration
+const mockCompareItems = [
+  {
+    id: '1',
+    name: 'Premium Atlantic Salmon Fillet',
+    brand: 'Iceland Seafood Co.',
+    category: 'Seafood',
+    image: '/placeholder.svg',
+    description: 'Fresh Atlantic salmon, sustainably sourced',
+    specifications: {
+      'Origin': 'Faroe Islands',
+      'Cut': 'Fillet',
+      'Grade': 'Premium'
+    },
+    tags: ['Fresh', 'Sustainable', 'Premium'],
+    averageRating: 4.8,
+    prices: [
+      {
+        supplierId: 'vefkaupmenn',
+        supplierName: 'Véfkaupmenn',
+        price: 2890,
+        priceIncVat: 3584,
+        unit: 'kg',
+        packSize: '1kg portions',
+        availability: 'in-stock' as const,
+        leadTime: '1-2 days',
+        moq: 5,
+        discount: 10,
+        lastUpdated: '2024-01-15T10:30:00Z',
+        priceHistory: [3200, 3100, 3000, 2950, 2890],
+        isPreferred: true
+      },
+      {
+        supplierId: 'iceland-seafood',
+        supplierName: 'Iceland Seafood',
+        price: 3100,
+        priceIncVat: 3844,
+        unit: 'kg',
+        packSize: '1.2kg portions',
+        availability: 'in-stock' as const,
+        leadTime: 'Same day',
+        moq: 3,
+        lastUpdated: '2024-01-15T09:15:00Z',
+        priceHistory: [3300, 3250, 3200, 3150, 3100],
+        isPreferred: false
+      },
+      {
+        supplierId: 'nordic-fresh',
+        supplierName: 'Nordic Fresh',
+        price: 2750,
+        priceIncVat: 3410,
+        unit: 'kg',
+        packSize: '800g portions',
+        availability: 'low-stock' as const,
+        leadTime: '2-3 days',
+        moq: 10,
+        lastUpdated: '2024-01-14T16:45:00Z',
+        priceHistory: [2800, 2790, 2770, 2760, 2750],
+        isPreferred: false
+      }
+    ]
+  },
+  {
+    id: '2',
+    name: 'Organic Baby Spinach',
+    brand: 'Green Valley Farms',
+    category: 'Fresh Produce',
+    image: '/placeholder.svg',
+    description: 'Fresh organic baby spinach leaves',
+    specifications: {
+      'Origin': 'Iceland',
+      'Type': 'Baby leaves',
+      'Certification': 'Organic'
+    },
+    tags: ['Organic', 'Local', 'Fresh'],
+    averageRating: 4.6,
+    prices: [
+      {
+        supplierId: 'vefkaupmenn',
+        supplierName: 'Véfkaupmenn',
+        price: 890,
+        priceIncVat: 1104,
+        unit: 'kg',
+        packSize: '200g bags',
+        availability: 'in-stock' as const,
+        leadTime: '1 day',
+        moq: 12,
+        lastUpdated: '2024-01-15T08:20:00Z',
+        priceHistory: [920, 910, 900, 895, 890],
+        isPreferred: true
+      },
+      {
+        supplierId: 'nordic-fresh',
+        supplierName: 'Nordic Fresh',
+        price: 850,
+        priceIncVat: 1054,
+        unit: 'kg',
+        packSize: '150g bags',
+        availability: 'in-stock' as const,
+        leadTime: 'Same day',
+        moq: 20,
+        discount: 5,
+        lastUpdated: '2024-01-15T07:30:00Z',
+        priceHistory: [880, 870, 865, 855, 850],
+        isPreferred: false
+      }
+    ]
+  },
+  {
+    id: '3',
+    name: 'Artisan Sourdough Bread',
+    brand: 'Reykjavik Bakehouse',
+    category: 'Bakery',
+    image: '/placeholder.svg',
+    description: 'Traditional sourdough bread, baked fresh daily',
+    specifications: {
+      'Type': 'Sourdough',
+      'Weight': '800g',
+      'Ingredients': 'Organic flour, water, salt, starter'
+    },  
+    tags: ['Artisan', 'Fresh', 'Traditional'],
+    averageRating: 4.9,
+    prices: [
+      {
+        supplierId: 'bakehouse',
+        supplierName: 'Reykjavik Bakehouse',
+        price: 650,
+        priceIncVat: 806,
+        unit: 'each',
+        packSize: '800g loaves',
+        availability: 'in-stock' as const,
+        leadTime: 'Same day',
+        moq: 6,
+        lastUpdated: '2024-01-15T06:00:00Z',
+        priceHistory: [650, 650, 640, 645, 650],
+        isPreferred: true
+      }
+    ]
+  }
+]
 
 interface FilterState {
   priceRange: [number, number]
@@ -21,6 +162,7 @@ interface FilterState {
 }
 
 export default function Compare() {
+  const [compareItems, setCompareItems] = useState(mockCompareItems)
   const [searchTerm, setSearchTerm] = useState('')
   const [filters, setFilters] = useState<FilterState>({
     priceRange: [0, 10000],
@@ -31,258 +173,132 @@ export default function Compare() {
     sortBy: 'name',
     sortOrder: 'asc'
   })
+  const { toast } = useToast()
 
-  const { profile } = useAuth()
-  const { includeVat } = useSettings()
+  // Calculate active filters count
+  const activeFiltersCount = [
+    filters.categories.length > 0,
+    filters.suppliers.length > 0,
+    filters.inStockOnly,
+    filters.priceRange[0] > 0 || filters.priceRange[1] < 10000,
+    filters.minDiscount > 0
+  ].filter(Boolean).length
 
-  // Mock data query - replace with real data
-  const { data: comparisonData, isLoading } = useQuery({
-    queryKey: ['price-comparison', profile?.tenant_id, includeVat],
-    queryFn: async () => {
-      // Mock data with enhanced features
-      const mockData = [
-        {
-          id: '1',
-          itemName: 'Extra Virgin Olive Oil',
-          brand: 'Bertolli',
-          category: 'Food & Beverages',
-          suppliers: [
-            {
-              id: 'supplier-1',
-              name: 'Véfkaupmenn',
-              sku: 'VK-OLV-001',
-              packSize: '500ml bottle',
-              packPrice: 1890,
-              unitPriceExVat: 3780,
-              unitPriceIncVat: 4688,
-              unit: 'L',
-              inStock: true,
-              lastUpdated: '2 hours ago',
-              vatCode: 'standard',
-              priceHistory: [3600, 3700, 3650, 3780, 3750, 3780],
-              badge: 'good' as const,
-              supplierItemId: 'supplier-item-1'
-            },
-            {
-              id: 'supplier-2',
-              name: 'Heilsuhúsið',
-              sku: 'HH-OLV-002',
-              packSize: '500ml bottle',
-              packPrice: 2150,
-              unitPriceExVat: 4300,
-              unitPriceIncVat: 5332,
-              unit: 'L',
-              inStock: true,
-              lastUpdated: '4 hours ago',
-              vatCode: 'standard',
-              priceHistory: [4100, 4200, 4250, 4300, 4280, 4300],
-              badge: 'expensive' as const,
-              supplierItemId: 'supplier-item-2'
-            }
-          ]
-        },
-        {
-          id: '2',
-          itemName: 'Icelandic Skyr Plain',
-          brand: 'KEA',
-          category: 'Dairy Products',
-          suppliers: [
-            {
-              id: 'supplier-2',
-              name: 'Heilsuhúsið',
-              sku: 'HH-SKYR-PLAIN',
-              packSize: '1kg container',
-              packPrice: 850,
-              unitPriceExVat: 850,
-              unitPriceIncVat: 1054,
-              unit: 'kg',
-              inStock: true,
-              lastUpdated: '1 hour ago',
-              vatCode: 'standard',
-              priceHistory: [820, 830, 840, 850, 845, 850],
-              badge: 'best' as const,
-              supplierItemId: 'supplier-item-3'
-            },
-            {
-              id: 'supplier-3',
-              name: 'Matfuglinn',
-              sku: 'MF-SKYR-001',
-              packSize: '1kg container',
-              packPrice: 795,
-              unitPriceExVat: 795,
-              unitPriceIncVat: 986,
-              unit: 'kg',
-              inStock: false,
-              lastUpdated: '1 day ago',
-              vatCode: 'standard',
-              priceHistory: [780, 785, 790, 795, 790, 795],
-              badge: 'good' as const,
-              supplierItemId: 'supplier-item-4'
-            }
-          ]
-        },
-        {
-          id: '3',
-          itemName: 'Organic Carrots',
-          brand: 'Nordic Fresh',
-          category: 'Fresh Produce',
-          suppliers: [
-            {
-              id: 'supplier-3',
-              name: 'Matfuglinn',
-              sku: 'MF-CARR-ORG',
-              packSize: '1kg bag',
-              packPrice: 450,
-              unitPriceExVat: 450,
-              unitPriceIncVat: 558,
-              unit: 'kg',
-              inStock: true,
-              lastUpdated: '3 hours ago',
-              vatCode: 'standard',
-              priceHistory: [420, 440, 445, 450, 455, 450],
-              badge: 'best' as const,
-              supplierItemId: 'supplier-item-5'
-            }
-          ]
-        }
-      ]
-
-      return mockData
-    },
-    enabled: !!profile?.tenant_id
-  })
-
-  const filteredData = React.useMemo(() => {
-    if (!comparisonData) return []
-    
-    return comparisonData.filter(item => {
-      // Search filter
-      const searchLower = searchTerm.toLowerCase()
-      const matchesSearch = !searchTerm || (
-        item.itemName.toLowerCase().includes(searchLower) ||
-        item.brand?.toLowerCase().includes(searchLower) ||
-        item.category?.toLowerCase().includes(searchLower) ||
-        item.suppliers.some(s => 
-          s.name.toLowerCase().includes(searchLower) || 
-          s.sku.toLowerCase().includes(searchLower)
-        )
-      )
-
-      // Category filter
-      const matchesCategory = filters.categories.length === 0 || 
-        filters.categories.includes(item.category)
-
-      // Supplier filter
-      const matchesSupplier = filters.suppliers.length === 0 ||
-        item.suppliers.some(s => filters.suppliers.includes(s.name))
-
-      // Price range filter (using lowest supplier price)
-      const lowestPrice = Math.min(...item.suppliers.map(s => 
-        includeVat ? s.unitPriceIncVat : s.unitPriceExVat
-      ))
-      const matchesPrice = lowestPrice >= filters.priceRange[0] && 
-        lowestPrice <= filters.priceRange[1]
-
-      // Stock filter
-      const matchesStock = !filters.inStockOnly || 
-        item.suppliers.some(s => s.inStock)
-
-      return matchesSearch && matchesCategory && matchesSupplier && 
-             matchesPrice && matchesStock
-    }).sort((a, b) => {
-      let aValue: string | number, bValue: string | number
-
-      switch (filters.sortBy) {
-        case 'name':
-          aValue = a.itemName
-          bValue = b.itemName
-          break
-        case 'price':
-          aValue = Math.min(...a.suppliers.map(s => 
-            includeVat ? s.unitPriceIncVat : s.unitPriceExVat
-          ))
-          bValue = Math.min(...b.suppliers.map(s => 
-            includeVat ? s.unitPriceIncVat : s.unitPriceExVat
-          ))
-          break
-        case 'availability':
-          aValue = a.suppliers.filter(s => s.inStock).length
-          bValue = b.suppliers.filter(s => s.inStock).length
-          break
-        default:
-          aValue = a.itemName
-          bValue = b.itemName
-      }
-
-      if (typeof aValue === 'string' && typeof bValue === 'string') {
-        return filters.sortOrder === 'asc' 
-          ? aValue.localeCompare(bValue)
-          : bValue.localeCompare(aValue)
-      } else {
-        return filters.sortOrder === 'asc'
-          ? (aValue as number) - (bValue as number)
-          : (bValue as number) - (aValue as number)
-      }
+  const handleAddToCart = (item: any, supplier: any, quantity: number) => {
+    toast({
+      title: 'Added to cart',
+      description: `${quantity}x ${item.name} from ${supplier.supplierName}`
     })
-  }, [comparisonData, searchTerm, filters, includeVat])
+  }
 
-  const activeFiltersCount = React.useMemo(() => {
-    let count = 0
-    if (filters.categories.length > 0) count++
-    if (filters.suppliers.length > 0) count++
-    if (filters.inStockOnly) count++
-    if (filters.priceRange[0] > 0 || filters.priceRange[1] < 10000) count++
-    if (filters.minDiscount > 0) count++
-    return count
-  }, [filters])
+  const handleRemoveItem = (itemId: string) => {
+    setCompareItems(prev => prev.filter(item => item.id !== itemId))
+    toast({
+      title: 'Item removed',
+      description: 'Item removed from comparison'
+    })
+  }
 
   const handleExport = () => {
-    console.log('Exporting filtered data:', filteredData)
+    toast({
+      title: 'Export started',
+      description: 'Preparing comparison data for export...'
+    })
+  }
+
+  const handleClearAll = () => {
+    setCompareItems([])
+    toast({
+      title: 'Comparison cleared',
+      description: 'All items removed from comparison'
+    })
   }
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-foreground">Price Comparison</h1>
-        <p className="text-muted-foreground">
-          Compare prices across your authorized suppliers with advanced filtering
-        </p>
-      </div>
-      
-      <CompareHeader
-        searchTerm={searchTerm}
-        onSearchChange={setSearchTerm}
-        onFiltersClick={() => {}} // Not used with new advanced filters
-        activeFilters={activeFiltersCount}
-      />
-
-      <AdvancedFilters
-        filters={filters}
-        onFiltersChange={setFilters}
-        onExport={handleExport}
-        activeFiltersCount={activeFiltersCount}
-      />
-      
-      <div className="flex justify-between items-center">
-        <div className="text-sm text-muted-foreground">
-          Showing {filteredData.length} of {comparisonData?.length || 0} items
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold">Price Comparison</h1>
+          <p className="text-muted-foreground">
+            Compare prices across suppliers to find the best deals
+          </p>
         </div>
-        
-        <ExportDialog 
-          data={filteredData}
-          trigger={
-            <Button variant="outline" className="gap-2">
-              <Download className="h-4 w-4" />
-              Export Data
-            </Button>
-          }
-        />
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={handleClearAll} className="gap-2">
+            <Trash2 className="h-4 w-4" />
+            Clear All
+          </Button>
+          <ExportDialog 
+            data={compareItems}
+            trigger={
+              <Button variant="outline" className="gap-2">
+                <Download className="h-4 w-4" />
+                Export
+              </Button>
+            }
+          />
+        </div>
       </div>
-      
-      <EnhancedComparisonTable 
-        data={filteredData}
-        isLoading={isLoading}
-      />
+
+      {/* Search and Filters */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle>Search & Filter</CardTitle>
+            <Badge variant="outline">
+              {compareItems.length} item{compareItems.length !== 1 ? 's' : ''} in comparison
+            </Badge>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Search */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search products, brands, or categories..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+
+          {/* Advanced Filters */}
+          <AdvancedFilters
+            filters={filters}
+            onFiltersChange={setFilters}
+            onExport={handleExport}
+            activeFiltersCount={activeFiltersCount}
+          />
+        </CardContent>
+      </Card>
+
+      {/* Comparison Table */}
+      {compareItems.length > 0 ? (
+        <EnhancedCompareTable
+          items={compareItems}
+          onAddToCart={handleAddToCart}
+          onRemoveItem={handleRemoveItem}
+        />
+      ) : (
+        <Card>
+          <CardContent className="p-12 text-center">
+            <div className="space-y-4">
+              <div className="text-6xl">📊</div>
+              <div>
+                <h3 className="text-lg font-semibold">No items to compare</h3>
+                <p className="text-muted-foreground">
+                  Add products from your search results to start comparing prices
+                </p>
+              </div>
+              <Button className="gap-2">
+                <Plus className="h-4 w-4" />
+                Browse Products
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }
