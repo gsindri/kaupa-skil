@@ -11,6 +11,8 @@ interface AuthContextType {
   session: Session | null
   profile: Profile | null
   loading: boolean
+  isInitialized: boolean
+  isFirstTime: boolean
   refetch: () => Promise<void>
   signIn: (email: string, password: string) => Promise<void>
   signUp: (email: string, password: string, fullName: string) => Promise<void>
@@ -24,6 +26,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
+  const [isInitialized, setIsInitialized] = useState(false)
+  const [isFirstTime, setIsFirstTime] = useState(false)
 
   const fetchProfile = async (userId: string) => {
     try {
@@ -98,12 +102,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setTimeout(() => {
             fetchProfile(session.user.id).then(profileData => {
               setProfile(profileData)
+              // Check if this is first time setup (no profile exists)
+              setIsFirstTime(!profileData)
               setLoading(false)
+              setIsInitialized(true)
             })
           }, 0)
         } else {
           setProfile(null)
+          setIsFirstTime(false)
           setLoading(false)
+          setIsInitialized(true)
         }
       }
     )
@@ -118,11 +127,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setTimeout(() => {
           fetchProfile(session.user.id).then(profileData => {
             setProfile(profileData)
+            // Check if this is first time setup (no profile exists)
+            setIsFirstTime(!profileData)
             setLoading(false)
+            setIsInitialized(true)
           })
         }, 0)
       } else {
         setLoading(false)
+        setIsInitialized(true)
       }
     })
 
@@ -135,6 +148,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       session,
       profile,
       loading,
+      isInitialized,
+      isFirstTime,
       refetch,
       signIn,
       signUp,
