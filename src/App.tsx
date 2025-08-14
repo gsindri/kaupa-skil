@@ -1,3 +1,4 @@
+
 import React from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
@@ -17,8 +18,8 @@ import Settings from '@/pages/Settings'
 import Admin from '@/pages/Admin'
 import PriceHistory from '@/pages/PriceHistory'
 import Discovery from '@/pages/Discovery'
-import LoginShowcase from '@/pages/LoginShowcase'
-import PasswordReset from '@/pages/PasswordReset'
+import LoginShowcase from '@/pages/auth/LoginShowcase'
+import PasswordReset from '@/pages/auth/PasswordReset'
 import NotFound from '@/pages/NotFound'
 
 import Delivery from '@/pages/Delivery'
