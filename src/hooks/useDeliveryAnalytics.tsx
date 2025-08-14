@@ -19,12 +19,12 @@ export function useDeliveryAnalytics(months: number = 6) {
         .gte('month', new Date(Date.now() - months * 30 * 24 * 60 * 60 * 1000).toISOString())
         .order('month', { ascending: true })
 
-      // Get supplier breakdown
+      // Get supplier breakdown - fixed the query structure
       const { data: supplierData } = await supabase
         .from('delivery_analytics')
         .select(`
           supplier_id,
-          suppliers!inner(name),
+          suppliers(name),
           total_fees_paid,
           total_orders,
           orders_under_threshold
@@ -51,8 +51,10 @@ export function useDeliveryAnalytics(months: number = 6) {
         return acc
       }, [] as Array<{ month: string; fees: number; orders: number }>) || []
 
+      // Fixed supplier breakdown processing to handle the correct data structure
       const supplierBreakdown = supplierData?.reduce((acc, item) => {
-        const existing = acc.find(a => a.supplier === item.suppliers.name)
+        const supplierName = (item.suppliers as any)?.name || 'Unknown Supplier'
+        const existing = acc.find(a => a.supplier === supplierName)
         const efficiency = item.total_orders > 0 
           ? Math.round(((item.total_orders - item.orders_under_threshold) / item.total_orders) * 100)
           : 0
@@ -63,7 +65,7 @@ export function useDeliveryAnalytics(months: number = 6) {
           existing.efficiency = Math.round((existing.efficiency + efficiency) / 2)
         } else {
           acc.push({
-            supplier: item.suppliers.name,
+            supplier: supplierName,
             fees: item.total_fees_paid,
             orders: item.total_orders,
             efficiency

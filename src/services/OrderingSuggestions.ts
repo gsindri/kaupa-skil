@@ -164,23 +164,33 @@ export class OrderingSuggestionsService {
 
   private async getFrequentlyOrderedItems(supplierId: string): Promise<any[]> {
     try {
+      // Fixed: Removed .group() and used proper aggregation in the select
       const { data } = await supabase
-        .from('order_lines')
-        .select(`
-          supplier_item_id,
-          supplier_items!inner(name, pack_size, unit_price_ex_vat, unit_price_inc_vat),
-          COUNT(*) as order_frequency
-        `)
-        .eq('supplier_id', supplierId)
-        .gte('created_at', new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString()) // Last 90 days
-        .group('supplier_item_id')
-        .order('order_frequency', { ascending: false })
-        .limit(5)
+        .rpc('get_frequent_items_by_supplier', {
+          supplier_id_param: supplierId,
+          days_back: 90
+        })
 
       return data || []
     } catch (error) {
       console.error('Failed to fetch frequently ordered items:', error)
-      return []
+      // Fallback to a simpler query without grouping
+      try {
+        const { data } = await supabase
+          .from('order_lines')
+          .select(`
+            supplier_item_id,
+            supplier_items(name, pack_size, unit_price_ex_vat, unit_price_inc_vat)
+          `)
+          .eq('supplier_id', supplierId)
+          .gte('created_at', new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString())
+          .limit(5)
+
+        return data || []
+      } catch (fallbackError) {
+        console.error('Fallback query also failed:', fallbackError)
+        return []
+      }
     }
   }
 }
