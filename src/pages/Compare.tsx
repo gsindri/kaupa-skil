@@ -1,459 +1,275 @@
+
 import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
-import { Slider } from '@/components/ui/slider'
-import { Switch } from '@/components/ui/switch'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import { useComparisonItems } from '@/hooks/useComparisonItems'
 import { ComparisonItem, SupplierQuote } from '@/hooks/useComparisonItems'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
-import { cn } from '@/lib/utils'
-import { CheckCheck, ChevronsUpDown } from 'lucide-react'
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-  CommandSeparator,
-  CommandShortcut,
-} from "@/components/ui/command"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
-import { Badge } from '@/components/ui/badge'
+import { Download, Filter } from 'lucide-react'
 import { UnitConversionCalculator } from '@/components/units/UnitConversionCalculator'
+import { EnhancedCompareTable } from '@/components/compare/EnhancedCompareTable'
+import { ExportDialog } from '@/components/compare/ExportDialog'
+import { AdvancedFilters } from '@/components/compare/AdvancedFilters'
+import { useToast } from '@/hooks/use-toast'
 
-interface EnhancedCompareTableProps {
-  items: ComparisonItem[]
-  isLoading: boolean
+// Transform comparison items to enhanced format
+function transformToEnhancedItems(items: ComparisonItem[]) {
+  return items.map(item => ({
+    id: item.id,
+    name: item.itemName,
+    brand: item.brand || 'Unknown',
+    category: item.category || 'Uncategorized',
+    image: undefined,
+    description: `${item.brand || 'Generic'} ${item.itemName}`,
+    specifications: {},
+    prices: item.suppliers.map(supplier => ({
+      supplierId: supplier.id,
+      supplierName: supplier.name,
+      price: Math.round(supplier.unitPriceIncVat / 1.24), // Estimate ex-VAT
+      priceIncVat: supplier.unitPriceIncVat,
+      unit: 'piece',
+      packSize: supplier.packSize,
+      availability: supplier.inStock ? 'in-stock' as const : 'out-of-stock' as const,
+      leadTime: '1-2 days',
+      moq: 1,
+      discount: 0,
+      lastUpdated: new Date().toISOString(),
+      priceHistory: [
+        supplier.unitPriceIncVat * 1.1,
+        supplier.unitPriceIncVat * 1.05,
+        supplier.unitPriceIncVat
+      ],
+      isPreferred: false
+    })),
+    averageRating: 4.2,
+    tags: [item.category || 'General', item.brand || 'Generic'].filter(Boolean)
+  }))
 }
 
-function EnhancedCompareTable({ items, isLoading }: EnhancedCompareTableProps) {
-  if (isLoading) {
-    return <div className="text-center text-muted-foreground">Loading items...</div>
-  }
-
-  if (!items || items.length === 0) {
-    return <div className="text-center text-muted-foreground">No items to compare.</div>
-  }
-
-  return (
-    <div className="overflow-x-auto">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-[200px]">Item</TableHead>
-            <TableHead>Brand</TableHead>
-            <TableHead>Category</TableHead>
-            {items[0].suppliers.map((supplier) => (
-              <TableHead key={supplier.id} className="text-right">
-                {supplier.name}
-              </TableHead>
-            ))}
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {items.map((item) => (
-            <TableRow key={item.id}>
-              <TableCell className="font-medium">{item.itemName}</TableCell>
-              <TableCell>{item.brand || 'N/A'}</TableCell>
-              <TableCell>{item.category || 'N/A'}</TableCell>
-              {item.suppliers.map((supplier) => (
-                <TableCell key={supplier.id} className="text-right">
-                  <div>{supplier.packSize}</div>
-                  <div>{supplier.unitPriceIncVat.toFixed(2)} ISK</div>
-                  <div>
-                    {supplier.inStock ? (
-                      <Badge variant="outline">In Stock</Badge>
-                    ) : (
-                      <Badge variant="destructive">Out of Stock</Badge>
-                    )}
-                  </div>
-                </TableCell>
-              ))}
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </div>
-  )
-}
-
-interface CompareHeaderProps {
-  searchTerm: string
-  onSearchChange: (term: string) => void
-  onClearFilters: () => void
-  hasActiveFilters: boolean
-}
-
-function CompareHeader({
-  searchTerm,
-  onSearchChange,
-  onClearFilters,
-  hasActiveFilters,
-}: CompareHeaderProps) {
-  return (
-    <div className="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
-      <div className="flex items-center space-x-2">
-        <Label htmlFor="search">Search Items:</Label>
-        <Input
-          type="search"
-          id="search"
-          placeholder="Enter item name"
-          value={searchTerm}
-          onChange={(e) => onSearchChange(e.target.value)}
-        />
-      </div>
-      {hasActiveFilters && (
-        <Button variant="ghost" onClick={onClearFilters}>
-          Clear Filters
-        </Button>
-      )}
-    </div>
-  )
-}
-
-interface AdvancedFiltersProps {
-  suppliers: { label: string; value: string }[]
-  categories: { label: string; value: string }[]
-  selectedSuppliers: string[]
-  selectedCategories: string[]
-  minPrice: number
-  maxPrice: number
-  showInStockOnly: boolean
-  onSuppliersChange: (suppliers: string[]) => void
-  onCategoriesChange: (categories: string[]) => void
-  onMinPriceChange: (min: number) => void
-  onMaxPriceChange: (max: number) => void
-  onInStockToggle: (checked: boolean) => void
-}
-
-function AdvancedFilters({
-  suppliers,
-  categories,
-  selectedSuppliers,
-  selectedCategories,
-  minPrice,
-  maxPrice,
-  showInStockOnly,
-  onSuppliersChange,
-  onCategoriesChange,
-  onMinPriceChange,
-  onMaxPriceChange,
-  onInStockToggle,
-}: AdvancedFiltersProps) {
-  const [openSupplier, setOpenSupplier] = useState(false)
-  const [openCategory, setOpenCategory] = useState(false)
-
-  const handleSupplierSelect = (supplier: string) => {
-    if (selectedSuppliers.includes(supplier)) {
-      onSuppliersChange(selectedSuppliers.filter((s) => s !== supplier))
-    } else {
-      onSuppliersChange([...selectedSuppliers, supplier])
-    }
-  }
-
-  const handleCategorySelect = (category: string) => {
-    if (selectedCategories.includes(category)) {
-      onCategoriesChange(selectedCategories.filter((c) => c !== category))
-    } else {
-      onCategoriesChange([...selectedCategories, category])
-    }
-  }
-
-  const allSuppliersSelected = useMemo(() => suppliers.every(supplier => selectedSuppliers.includes(supplier.value)), [suppliers, selectedSuppliers])
-  const allCategoriesSelected = useMemo(() => categories.every(category => selectedCategories.includes(category.value)), [categories, selectedCategories])
-
-  const toggleAllSuppliers = () => {
-    if (allSuppliersSelected) {
-      onSuppliersChange([])
-    } else {
-      onSuppliersChange(suppliers.map(supplier => supplier.value))
-    }
-  }
-
-  const toggleAllCategories = () => {
-    if (allCategoriesSelected) {
-      onCategoriesChange([])
-    } else {
-      onCategoriesChange(categories.map(category => category.value))
-    }
-  }
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Advanced Filters</CardTitle>
-      </CardHeader>
-      <CardContent className="grid gap-4">
-        {/* Supplier Filter */}
-        <Popover open={openSupplier} onOpenChange={setOpenSupplier}>
-          <PopoverTrigger asChild>
-            <Button variant="outline" role="combobox" aria-expanded={openSupplier} className="w-full justify-between">
-              Supplier <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-[200px] p-0">
-            <Command>
-              <CommandInput placeholder="Search suppliers..." />
-              <CommandList>
-                <CommandItem onSelect={toggleAllSuppliers}>
-                  <CheckCheck className={cn("mr-2 h-4 w-4", allSuppliersSelected ? "opacity-100" : "opacity-0")} />
-                  Select All
-                </CommandItem>
-                <CommandSeparator />
-                {suppliers.map((supplier) => (
-                  <CommandItem
-                    key={supplier.value}
-                    onSelect={() => handleSupplierSelect(supplier.value)}
-                  >
-                    <CheckCheck
-                      className={cn(
-                        "mr-2 h-4 w-4",
-                        selectedSuppliers.includes(supplier.value) ? "opacity-100" : "opacity-0"
-                      )}
-                    />
-                    {supplier.label}
-                  </CommandItem>
-                ))}
-                <CommandEmpty>No suppliers found.</CommandEmpty>
-              </CommandList>
-            </Command>
-          </PopoverContent>
-        </Popover>
-
-        {/* Category Filter */}
-        <Popover open={openCategory} onOpenChange={setOpenCategory}>
-          <PopoverTrigger asChild>
-            <Button variant="outline" role="combobox" aria-expanded={openCategory} className="w-full justify-between">
-              Category <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-[200px] p-0">
-            <Command>
-              <CommandInput placeholder="Search categories..." />
-              <CommandList>
-              <CommandItem onSelect={toggleAllCategories}>
-                  <CheckCheck className={cn("mr-2 h-4 w-4", allCategoriesSelected ? "opacity-100" : "opacity-0")} />
-                  Select All
-                </CommandItem>
-                <CommandSeparator />
-                {categories.map((category) => (
-                  <CommandItem
-                    key={category.value}
-                    onSelect={() => handleCategorySelect(category.value)}
-                  >
-                    <CheckCheck
-                      className={cn(
-                        "mr-2 h-4 w-4",
-                        selectedCategories.includes(category.value) ? "opacity-100" : "opacity-0"
-                      )}
-                    />
-                    {category.label}
-                  </CommandItem>
-                ))}
-                <CommandEmpty>No categories found.</CommandEmpty>
-              </CommandList>
-            </Command>
-          </PopoverContent>
-        </Popover>
-
-        {/* Price Range Filter */}
-        <div className="space-y-2">
-          <Label>Price Range (ISK)</Label>
-          <div className="flex items-center space-x-2">
-            <Input
-              type="number"
-              placeholder="Min"
-              value={minPrice > 0 ? minPrice : ''}
-              onChange={(e) => onMinPriceChange(Number(e.target.value))}
-              className="w-24"
-            />
-            <Input
-              type="number"
-              placeholder="Max"
-              value={maxPrice > 0 ? maxPrice : ''}
-              onChange={(e) => onMaxPriceChange(Number(e.target.value))}
-              className="w-24"
-            />
-          </div>
-        </div>
-
-        {/* In Stock Only Filter */}
-        <div className="flex items-center space-x-2">
-          <Label htmlFor="in-stock">In Stock Only</Label>
-          <Switch id="in-stock" checked={showInStockOnly} onCheckedChange={onInStockToggle} />
-        </div>
-      </CardContent>
-    </Card>
-  )
+interface FilterState {
+  priceRange: [number, number]
+  categories: string[]
+  suppliers: string[]
+  inStockOnly: boolean
+  minDiscount: number
+  sortBy: 'price' | 'name' | 'discount' | 'availability'
+  sortOrder: 'asc' | 'desc'
 }
 
 export default function Compare() {
   const [searchParams, setSearchParams] = useSearchParams()
   const navigate = useNavigate()
   const { items, isLoading, suppliers, categories } = useComparisonItems()
+  const { toast } = useToast()
+  
   const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '')
-  const [selectedSuppliers, setSelectedSuppliers] = useState<string[]>(
-    searchParams.getAll('supplier') || []
-  )
-  const [selectedCategories, setSelectedCategories] = useState<string[]>(
-    searchParams.getAll('category') || []
-  )
-  const [minPrice, setMinPrice] = useState(Number(searchParams.get('minPrice')) || 0)
-  const [maxPrice, setMaxPrice] = useState(Number(searchParams.get('maxPrice')) || 0)
-  const [showInStockOnly, setShowInStockOnly] = useState(searchParams.get('inStock') === 'true')
+  const [filters, setFilters] = useState<FilterState>({
+    priceRange: [0, 10000],
+    categories: [],
+    suppliers: [],
+    inStockOnly: false,
+    minDiscount: 0,
+    sortBy: 'name',
+    sortOrder: 'asc'
+  })
 
+  // Transform items for enhanced table
+  const enhancedItems = useMemo(() => transformToEnhancedItems(items), [items])
+
+  // Filter items based on current filters
+  const filteredItems = useMemo(() => {
+    let filtered = enhancedItems
+
+    if (searchTerm) {
+      filtered = filtered.filter(item =>
+        item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.brand.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    }
+
+    if (filters.categories.length > 0) {
+      filtered = filtered.filter(item =>
+        filters.categories.includes(item.category)
+      )
+    }
+
+    if (filters.suppliers.length > 0) {
+      filtered = filtered.map(item => ({
+        ...item,
+        prices: item.prices.filter(price =>
+          filters.suppliers.includes(price.supplierName)
+        )
+      })).filter(item => item.prices.length > 0)
+    }
+
+    if (filters.inStockOnly) {
+      filtered = filtered.map(item => ({
+        ...item,
+        prices: item.prices.filter(price => price.availability === 'in-stock')
+      })).filter(item => item.prices.length > 0)
+    }
+
+    if (filters.priceRange[0] > 0 || filters.priceRange[1] < 10000) {
+      filtered = filtered.map(item => ({
+        ...item,
+        prices: item.prices.filter(price =>
+          price.priceIncVat >= filters.priceRange[0] &&
+          price.priceIncVat <= filters.priceRange[1]
+        )
+      })).filter(item => item.prices.length > 0)
+    }
+
+    return filtered
+  }, [enhancedItems, searchTerm, filters])
+
+  // Update URL params
   useEffect(() => {
     const params = new URLSearchParams()
     if (searchTerm) params.set('search', searchTerm)
-    selectedSuppliers.forEach((supplier) => params.append('supplier', supplier))
-    selectedCategories.forEach((category) => params.append('category', category))
-    if (minPrice > 0) params.set('minPrice', minPrice.toString())
-    if (maxPrice > 0) params.set('maxPrice', maxPrice.toString())
-    if (showInStockOnly) params.set('inStock', 'true')
+    if (filters.categories.length > 0) {
+      filters.categories.forEach(cat => params.append('category', cat))
+    }
+    if (filters.suppliers.length > 0) {
+      filters.suppliers.forEach(sup => params.append('supplier', sup))
+    }
+    if (filters.inStockOnly) params.set('inStock', 'true')
+    if (filters.priceRange[0] > 0) params.set('minPrice', filters.priceRange[0].toString())
+    if (filters.priceRange[1] < 10000) params.set('maxPrice', filters.priceRange[1].toString())
 
     setSearchParams(params)
-  }, [
-    searchTerm,
-    selectedSuppliers,
-    selectedCategories,
-    minPrice,
-    maxPrice,
-    showInStockOnly,
-    setSearchParams,
-  ])
+  }, [searchTerm, filters, setSearchParams])
 
-  const clearFilters = useCallback(() => {
-    setSearchTerm('')
-    setSelectedSuppliers([])
-    setSelectedCategories([])
-    setMinPrice(0)
-    setMaxPrice(0)
-    setShowInStockOnly(false)
-  }, [])
+  const handleAddToCart = (item: any, supplier: any, quantity: number) => {
+    toast({
+      title: 'Added to cart',
+      description: `${quantity}x ${item.name} from ${supplier.supplierName}`
+    })
+  }
 
-  const hasActiveFilters = useMemo(() => {
+  const handleRemoveItem = (itemId: string) => {
+    toast({
+      title: 'Item removed',
+      description: 'Item has been removed from comparison'
+    })
+  }
+
+  const handleExport = () => {
+    toast({
+      title: 'Export started',
+      description: 'Preparing your comparison data...'
+    })
+  }
+
+  const activeFiltersCount = useMemo(() => {
+    let count = 0
+    if (filters.categories.length > 0) count++
+    if (filters.suppliers.length > 0) count++
+    if (filters.inStockOnly) count++
+    if (filters.priceRange[0] > 0 || filters.priceRange[1] < 10000) count++
+    if (filters.minDiscount > 0) count++
+    return count
+  }, [filters])
+
+  if (isLoading) {
     return (
-      searchTerm !== '' ||
-      selectedSuppliers.length > 0 ||
-      selectedCategories.length > 0 ||
-      minPrice > 0 ||
-      maxPrice > 0 ||
-      showInStockOnly
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading comparison data...</p>
+        </div>
+      </div>
     )
-  }, [
-    searchTerm,
-    selectedSuppliers,
-    selectedCategories,
-    minPrice,
-    maxPrice,
-    showInStockOnly,
-  ])
-
-  const filteredItems = useMemo(() => {
-    let filtered = items
-
-    if (searchTerm) {
-      filtered = filtered.filter((item) =>
-        item.itemName.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    }
-
-    if (selectedSuppliers.length > 0) {
-      filtered = filtered.map((item) => ({
-        ...item,
-        suppliers: item.suppliers.filter((supplier) =>
-          selectedSuppliers.includes(supplier.id)
-        ),
-      }))
-    }
-
-    if (selectedCategories.length > 0) {
-      filtered = filtered.filter((item) =>
-        item.category && selectedCategories.includes(item.category)
-      )
-    }
-
-    if (minPrice > 0) {
-      filtered = filtered.map((item) => ({
-        ...item,
-        suppliers: item.suppliers.filter((supplier) => supplier.unitPriceIncVat >= minPrice),
-      }))
-    }
-
-    if (maxPrice > 0) {
-      filtered = filtered.map((item) => ({
-        ...item,
-        suppliers: item.suppliers.filter((supplier) => supplier.unitPriceIncVat <= maxPrice),
-      }))
-    }
-
-    if (showInStockOnly) {
-      filtered = filtered.map((item) => ({
-        ...item,
-        suppliers: item.suppliers.filter((supplier) => supplier.inStock),
-      }))
-    }
-
-    return filtered.filter((item) => item.suppliers.length > 0)
-  }, [
-    items,
-    searchTerm,
-    selectedSuppliers,
-    selectedCategories,
-    minPrice,
-    maxPrice,
-    showInStockOnly,
-  ])
+  }
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <CompareHeader
-        searchTerm={searchTerm}
-        onSearchChange={setSearchTerm}
-        onClearFilters={clearFilters}
-        hasActiveFilters={hasActiveFilters}
-      />
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold">Price Comparison</h1>
+          <p className="text-muted-foreground">
+            Compare prices across suppliers to find the best deals
+          </p>
+        </div>
+        
+        <div className="flex items-center gap-2">
+          <Badge variant="outline">
+            {filteredItems.length} item{filteredItems.length !== 1 ? 's' : ''}
+          </Badge>
+          <ExportDialog 
+            data={filteredItems} 
+            trigger={
+              <Button variant="outline">
+                <Download className="h-4 w-4 mr-2" />
+                Export
+              </Button>
+            }
+          />
+        </div>
+      </div>
+
+      {/* Search */}
+      <div className="flex items-center gap-4">
+        <div className="flex-1">
+          <Label htmlFor="search" className="sr-only">Search items</Label>
+          <Input
+            id="search"
+            type="search"
+            placeholder="Search items by name or brand..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="max-w-md"
+          />
+        </div>
+      </div>
 
       {/* Unit Conversion Calculator */}
       <UnitConversionCalculator />
 
       {/* Advanced Filters */}
       <AdvancedFilters
-        suppliers={suppliers}
-        categories={categories}
-        selectedSuppliers={selectedSuppliers}
-        selectedCategories={selectedCategories}
-        minPrice={minPrice}
-        maxPrice={maxPrice}
-        showInStockOnly={showInStockOnly}
-        onSuppliersChange={setSelectedSuppliers}
-        onCategoriesChange={setSelectedCategories}
-        onMinPriceChange={setMinPrice}
-        onMaxPriceChange={setMaxPrice}
-        onInStockToggle={setShowInStockOnly}
+        filters={filters}
+        onFiltersChange={setFilters}
+        onExport={handleExport}
+        activeFiltersCount={activeFiltersCount}
       />
 
       {/* Enhanced Compare Table */}
-      <EnhancedCompareTable 
+      <EnhancedCompareTable
         items={filteredItems}
-        isLoading={isLoading}
+        onAddToCart={handleAddToCart}
+        onRemoveItem={handleRemoveItem}
       />
+
+      {filteredItems.length === 0 && !isLoading && (
+        <Card>
+          <CardContent className="p-8 text-center">
+            <p className="text-muted-foreground mb-4">
+              No items match your current filters
+            </p>
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setSearchTerm('')
+                setFilters({
+                  priceRange: [0, 10000],
+                  categories: [],
+                  suppliers: [],
+                  inStockOnly: false,
+                  minDiscount: 0,
+                  sortBy: 'name',
+                  sortOrder: 'asc'
+                })
+              }}
+            >
+              Clear all filters
+            </Button>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }
