@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -73,7 +74,18 @@ function AppContent() {
               <ErrorBoundary>
                 <SettingsProvider>
                   <CartProvider>
-                    <AppLayout />
+                    <Routes>
+                      <Route path="/" element={<AppLayout />}>
+                        <Route index element={<Index />} />
+                        <Route path="dashboard" element={<Dashboard />} />
+                        <Route path="compare" element={<Compare />} />
+                        <Route path="orders" element={<Orders />} />
+                        <Route path="suppliers" element={<Suppliers />} />
+                        <Route path="price-history" element={<PriceHistory />} />
+                        <Route path="admin" element={<Admin />} />
+                        <Route path="*" element={<NotFound />} />
+                      </Route>
+                    </Routes>
                   </CartProvider>
                 </SettingsProvider>
               </ErrorBoundary>
