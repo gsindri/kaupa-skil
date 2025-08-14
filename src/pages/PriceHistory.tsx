@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -6,7 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts'
 import { supabase } from '@/integrations/supabase/client'
-import { useAuth } from '@/hooks/useAuth'
+import { useAuth } from '@/contexts/AuthProvider'
 
 interface PriceHistoryData {
   date: string

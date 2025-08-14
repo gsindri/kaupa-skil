@@ -1,7 +1,8 @@
+
 import * as React from "react";
 import { useState, useEffect } from "react";
 import { Eye, EyeOff, Building2 } from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/contexts/AuthProvider";
 import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 
