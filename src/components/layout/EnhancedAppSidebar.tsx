@@ -1,5 +1,5 @@
 
-import { Home, TrendingUp, Package, ShoppingCart, History, Building2, Search, Heart, Shield } from "lucide-react"
+import { Home, TrendingUp, Package, ShoppingCart, History, Building2, Search, Heart, Shield, Truck } from "lucide-react"
 import {
   Sidebar,
   SidebarContent,
@@ -37,6 +37,11 @@ const mainItems = [
     title: "Orders",
     url: "/orders",
     icon: ShoppingCart,
+  },
+  {
+    title: "Delivery",
+    url: "/delivery",
+    icon: Truck,
   },
   {
     title: "Price History",
