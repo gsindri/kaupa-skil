@@ -19,8 +19,8 @@ import {
   XCircle
 } from 'lucide-react'
 import { Sparkline } from '@/components/ui/Sparkline'
-import { PriceBadge } from '@/components/ui/PriceBadge'
-import { VatToggle } from '@/components/ui/VatToggle'
+import PriceBadge from '@/components/ui/PriceBadge'
+import VatToggle from '@/components/ui/VatToggle'
 import { useSettings } from '@/contexts/SettingsProvider'
 
 interface PriceData {
@@ -59,7 +59,7 @@ interface EnhancedCompareTableProps {
 }
 
 export function EnhancedCompareTable({ items, onAddToCart, onRemoveItem }: EnhancedCompareTableProps) {
-  const { showVatInclusive } = useSettings()
+  const { includeVat } = useSettings()
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set())
   const [quantities, setQuantities] = useState<Record<string, number>>({})
   const [groupBy, setGroupBy] = useState<'category' | 'brand' | 'none'>('category')
@@ -85,8 +85,8 @@ export function EnhancedCompareTable({ items, onAddToCart, onRemoveItem }: Enhan
     if (availablePrices.length === 0) return null
     
     return availablePrices.reduce((best, current) => {
-      const price = showVatInclusive ? current.priceIncVat : current.price
-      const bestPrice = showVatInclusive ? best.priceIncVat : best.price
+      const price = includeVat ? current.priceIncVat : current.price
+      const bestPrice = includeVat ? best.priceIncVat : best.price
       return price < bestPrice ? current : best
     })
   }
@@ -171,7 +171,7 @@ export function EnhancedCompareTable({ items, onAddToCart, onRemoveItem }: Enhan
         </div>
 
         <div className="flex items-center gap-4">
-          <VatToggle />
+          <VatToggle includeVat={includeVat} onToggle={() => {}} />
           <Badge variant="outline">
             {items.length} item{items.length !== 1 ? 's' : ''} comparing
           </Badge>
@@ -253,12 +253,14 @@ export function EnhancedCompareTable({ items, onAddToCart, onRemoveItem }: Enhan
                             <TableCell className="text-center">
                               {bestPrice ? (
                                 <div className="space-y-1">
-                                  <PriceBadge 
-                                    price={showVatInclusive ? bestPrice.priceIncVat : bestPrice.price}
-                                    currency="ISK"
-                                    size="sm"
-                                    variant="success"
-                                  />
+                                  <PriceBadge type="best">
+                                    {new Intl.NumberFormat('is-IS', {
+                                      style: 'currency',
+                                      currency: 'ISK',
+                                      minimumFractionDigits: 0,
+                                      maximumFractionDigits: 0,
+                                    }).format(includeVat ? bestPrice.priceIncVat : bestPrice.price)}
+                                  </PriceBadge>
                                   <div className="flex items-center justify-center gap-1">
                                     <Star className="h-3 w-3 text-yellow-500" />
                                     <span className="text-xs text-muted-foreground">Best</span>
@@ -321,7 +323,6 @@ export function EnhancedCompareTable({ items, onAddToCart, onRemoveItem }: Enhan
                                       data={bestPrice.priceHistory}
                                       width={64}
                                       height={32}
-                                      color={getPriceTrend(bestPrice.priceHistory) === 'down' ? 'green' : 'red'}
                                     />
                                   </div>
                                 </div>
@@ -381,12 +382,14 @@ export function EnhancedCompareTable({ items, onAddToCart, onRemoveItem }: Enhan
                                           </div>
                                           
                                           <div className="flex items-center justify-between">
-                                            <PriceBadge 
-                                              price={showVatInclusive ? price.priceIncVat : price.price}
-                                              currency="ISK"
-                                              size="sm"
-                                              variant={price === bestPrice ? 'success' : 'default'}
-                                            />
+                                            <PriceBadge type={price === bestPrice ? 'best' : 'average'}>
+                                              {new Intl.NumberFormat('is-IS', {
+                                                style: 'currency',
+                                                currency: 'ISK',
+                                                minimumFractionDigits: 0,
+                                                maximumFractionDigits: 0,
+                                              }).format(includeVat ? price.priceIncVat : price.price)}
+                                            </PriceBadge>
                                             {price === bestPrice && (
                                               <Badge variant="outline" className="text-xs">Best</Badge>
                                             )}

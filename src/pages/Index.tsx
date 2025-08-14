@@ -1,7 +1,6 @@
 
 import React, { useState } from 'react';
 import DashboardOverview from '../components/dashboard/DashboardOverview';
-import PriceComparisonTable from '../components/compare/PriceComparisonTable';
 import { Button } from '../components/ui/button';
 import { TrendingUp, Package, Building2, ShoppingCart } from 'lucide-react';
 
@@ -48,7 +47,9 @@ const Index = () => {
       {currentView === 'dashboard' ? (
         <DashboardOverview />
       ) : (
-        <PriceComparisonTable />
+        <div className="text-center py-12">
+          <p className="text-muted-foreground">Price comparison feature coming soon...</p>
+        </div>
       )}
 
       {/* Quick Actions Footer */}
