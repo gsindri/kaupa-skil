@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Settings, Users, Crown, Shield } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
-import { useAuth } from '@/hooks/useAuth'
+import { useAuth } from '@/contexts/AuthProvider'
 import { UserPermissionsPanel } from './UserPermissionsPanel'
 import { InviteUserDialog } from './InviteUserDialog'
 import { BaseRole } from '@/lib/types/permissions'
