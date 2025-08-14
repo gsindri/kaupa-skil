@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, Outlet } from "react-router-dom";
 import { AuthProvider, useAuth } from "./contexts/AuthProvider";
 import { SettingsProvider } from "./contexts/SettingsProvider";
 import { CartProvider } from "./contexts/CartProvider";
@@ -77,7 +77,7 @@ function AppContent() {
                 <SettingsProvider>
                   <CartProvider>
                     <Routes>
-                      <Route path="/" element={<AppLayout />}>
+                      <Route path="/" element={<AppLayout><Outlet /></AppLayout>}>
                         <Route index element={<Index />} />
                         <Route path="dashboard" element={<Dashboard />} />
                         <Route path="compare" element={<Compare />} />
