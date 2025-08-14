@@ -1,5 +1,5 @@
 
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, useCallback } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
 import { toast } from 'sonner'
@@ -22,18 +22,55 @@ interface PriceAlert {
   data: PriceUpdate
 }
 
-export function useRealTimePrices() {
-  const [isConnected, setIsConnected] = useState(false)
-  const [alerts, setAlerts] = useState<PriceAlert[]>([])
-  const [recentUpdates, setRecentUpdates] = useState<PriceUpdate[]>([])
-  const queryClient = useQueryClient()
-  const channelRef = useRef<any>(null)
+// Connection manager to prevent rapid reconnections
+class RealtimeConnectionManager {
+  private static instance: RealtimeConnectionManager
+  private channel: any = null
+  private subscribers = new Set<string>()
+  private reconnectTimeout: NodeJS.Timeout | null = null
+  private isConnecting = false
 
-  useEffect(() => {
-    console.log('Setting up real-time price updates subscription')
+  static getInstance() {
+    if (!RealtimeConnectionManager.instance) {
+      RealtimeConnectionManager.instance = new RealtimeConnectionManager()
+    }
+    return RealtimeConnectionManager.instance
+  }
+
+  subscribe(id: string, handlers: any) {
+    this.subscribers.add(id)
     
-    // Subscribe to price updates via Supabase Realtime
-    const channel = supabase
+    if (!this.channel && !this.isConnecting) {
+      this.connect(handlers)
+    }
+    
+    return () => this.unsubscribe(id)
+  }
+
+  private unsubscribe(id: string) {
+    this.subscribers.delete(id)
+    
+    // If no more subscribers, disconnect after a delay
+    if (this.subscribers.size === 0) {
+      if (this.reconnectTimeout) {
+        clearTimeout(this.reconnectTimeout)
+      }
+      
+      this.reconnectTimeout = setTimeout(() => {
+        if (this.subscribers.size === 0 && this.channel) {
+          supabase.removeChannel(this.channel)
+          this.channel = null
+        }
+      }, 5000) // Wait 5 seconds before disconnecting
+    }
+  }
+
+  private connect(handlers: any) {
+    if (this.isConnecting || this.channel) return
+    
+    this.isConnecting = true
+    
+    this.channel = supabase
       .channel('price-updates')
       .on(
         'postgres_changes',
@@ -43,10 +80,7 @@ export function useRealTimePrices() {
           table: 'supplier_items',
           filter: 'price_ex_vat=neq.prev(price_ex_vat)'
         },
-        (payload) => {
-          console.log('Price update received:', payload)
-          handlePriceUpdate(payload)
-        }
+        handlers.handlePriceUpdate
       )
       .on(
         'postgres_changes',
@@ -56,27 +90,49 @@ export function useRealTimePrices() {
           table: 'supplier_items',
           filter: 'in_stock=neq.prev(in_stock)'
         },
-        (payload) => {
-          console.log('Stock update received:', payload)
-          handleStockUpdate(payload)
-        }
+        handlers.handleStockUpdate
       )
       .subscribe((status) => {
-        console.log('Realtime subscription status:', status)
-        setIsConnected(status === 'SUBSCRIBED')
+        this.isConnecting = false
+        if (status === 'SUBSCRIBED') {
+          console.log('Real-time connection established')
+        } else if (status === 'CHANNEL_ERROR') {
+          console.warn('Real-time connection failed, retrying...')
+          // Retry connection after delay
+          setTimeout(() => {
+            this.channel = null
+            if (this.subscribers.size > 0) {
+              this.connect(handlers)
+            }
+          }, 2000)
+        }
       })
+  }
+}
 
-    channelRef.current = channel
+export function useRealTimePrices() {
+  const [isConnected, setIsConnected] = useState(false)
+  const [alerts, setAlerts] = useState<PriceAlert[]>([])
+  const [recentUpdates, setRecentUpdates] = useState<PriceUpdate[]>([])
+  const queryClient = useQueryClient()
+  const connectionManager = RealtimeConnectionManager.getInstance()
+  const hookId = useRef(`price-hook-${Date.now()}-${Math.random()}`)
 
-    return () => {
-      console.log('Cleaning up price updates subscription')
-      if (channelRef.current) {
-        supabase.removeChannel(channelRef.current)
+  // Throttle query invalidations to prevent spam
+  const invalidateQueries = useRef(
+    (() => {
+      let timeout: NodeJS.Timeout | null = null
+      return () => {
+        if (timeout) clearTimeout(timeout)
+        timeout = setTimeout(() => {
+          queryClient.invalidateQueries({ queryKey: ['supplier-items'] })
+          queryClient.invalidateQueries({ queryKey: ['price-quotes'] })
+        }, 1000) // Batch invalidations over 1 second
       }
-    }
-  }, [])
+    })()
+  )
 
-  const handlePriceUpdate = (payload: any) => {
+  const handlePriceUpdate = useCallback((payload: any) => {
     const { new: newRecord, old: oldRecord } = payload
     
     if (!newRecord || !oldRecord) return
@@ -94,9 +150,9 @@ export function useRealTimePrices() {
       timestamp: new Date().toISOString()
     }
 
-    setRecentUpdates(prev => [update, ...prev.slice(0, 19)]) // Keep last 20 updates
+    setRecentUpdates(prev => [update, ...prev.slice(0, 19)])
 
-    // Create alert for significant price changes (>5%)
+    // Only create alerts for significant changes (>5%)
     if (Math.abs(changePercentage) > 5) {
       const alert: PriceAlert = {
         id: `price-${newRecord.id}-${Date.now()}`,
@@ -106,25 +162,24 @@ export function useRealTimePrices() {
         data: update
       }
 
-      setAlerts(prev => [alert, ...prev.slice(0, 9)]) // Keep last 10 alerts
+      setAlerts(prev => [alert, ...prev.slice(0, 9)])
 
-      // Show toast notification
+      // Throttle toast notifications
       toast(alert.message, {
         description: `${newRecord.supplier_name}: ${oldRecord.price_ex_vat.toLocaleString()} ISK → ${newRecord.price_ex_vat.toLocaleString()} ISK`,
-        duration: 5000,
+        duration: 3000, // Reduced from 5000ms
       })
     }
 
-    // Invalidate related queries to refresh data
-    queryClient.invalidateQueries({ queryKey: ['supplier-items'] })
-    queryClient.invalidateQueries({ queryKey: ['price-quotes'] })
-  }
+    invalidateQueries.current()
+  }, [])
 
-  const handleStockUpdate = (payload: any) => {
+  const handleStockUpdate = useCallback((payload: any) => {
     const { new: newRecord, old: oldRecord } = payload
     
-    if (!newRecord || !oldRecord) return
-    if (newRecord.in_stock === oldRecord.in_stock) return
+    if (!newRecord || !oldRecord || newRecord.in_stock === oldRecord.in_stock) {
+      return
+    }
 
     const alert: PriceAlert = {
       id: `stock-${newRecord.id}-${Date.now()}`,
@@ -144,23 +199,34 @@ export function useRealTimePrices() {
 
     setAlerts(prev => [alert, ...prev.slice(0, 9)])
 
-    // Show toast for stock changes
     toast(alert.message, {
       description: newRecord.supplier_name,
-      duration: 3000,
+      duration: 2000, // Reduced duration
     })
 
-    // Invalidate queries
-    queryClient.invalidateQueries({ queryKey: ['supplier-items'] })
-  }
+    invalidateQueries.current()
+  }, [])
 
-  const clearAlerts = () => {
+  useEffect(() => {
+    const handlers = { handlePriceUpdate, handleStockUpdate }
+    const unsubscribe = connectionManager.subscribe(hookId.current, handlers)
+    
+    // Set connected state based on existing connection
+    setIsConnected(true) // Optimistic connection state
+
+    return () => {
+      unsubscribe()
+      setIsConnected(false)
+    }
+  }, [handlePriceUpdate, handleStockUpdate])
+
+  const clearAlerts = useCallback(() => {
     setAlerts([])
-  }
+  }, [])
 
-  const dismissAlert = (alertId: string) => {
+  const dismissAlert = useCallback((alertId: string) => {
     setAlerts(prev => prev.filter(alert => alert.id !== alertId))
-  }
+  }, [])
 
   return {
     isConnected,

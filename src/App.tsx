@@ -2,13 +2,14 @@
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from "react-router-dom";
 import { AuthProvider, useAuth } from "./contexts/AuthProvider";
 import { SettingsProvider } from "./contexts/SettingsProvider";
 import { CartProvider } from "./contexts/CartProvider";
 import { ErrorBoundary } from "./components/common/ErrorBoundary";
 import { AppLayout } from "./components/layout/AppLayout";
+import { queryClient } from "./lib/queryClient";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import Compare from "./pages/Compare";
@@ -25,12 +26,8 @@ import PasswordReset from "./pages/auth/PasswordReset";
 import { OnboardingWizard } from "./components/onboarding/OnboardingWizard";
 import { AuthGate } from "./components/auth/AuthGate";
 
-const queryClient = new QueryClient();
-
 function AppRoutes() {
   const { isInitialized, isFirstTime, error } = useAuth()
-
-  console.log('AppRoutes state:', { isInitialized, isFirstTime, error })
 
   if (!isInitialized) {
     return (
