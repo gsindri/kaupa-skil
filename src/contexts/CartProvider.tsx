@@ -10,6 +10,7 @@ interface CartContextType {
   removeItem: (supplierItemId: string) => void
   clearCart: () => void
   getTotalItems: () => number
+  getTotalPrice: (includeVat: boolean) => number
   isDrawerOpen: boolean
   setIsDrawerOpen: (open: boolean) => void
 }
@@ -110,6 +111,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     return items.reduce((total, item) => total + item.quantity, 0)
   }
 
+  const getTotalPrice = (includeVat: boolean) => {
+    return items.reduce((total, item) => {
+      const price = includeVat ? item.unitPriceIncVat : item.unitPriceExVat
+      return total + (price * item.quantity)
+    }, 0)
+  }
+
   return (
     <CartContext.Provider value={{
       items,
@@ -118,6 +126,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       removeItem,
       clearCart,
       getTotalItems,
+      getTotalPrice,
       isDrawerOpen,
       setIsDrawerOpen
     }}>
