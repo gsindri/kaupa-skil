@@ -3,6 +3,7 @@ import React from 'react'
 import { ConnectorHealthCard } from './ConnectorHealthCard'
 import { RecentOrdersTable } from './RecentOrdersTable'
 import { AnomaliesList } from './AnomaliesList'
+import { RealTimePriceUpdates } from './RealTimePriceUpdates'
 
 const mockSuppliers = [
   {
@@ -40,6 +41,12 @@ export default function DashboardOverview() {
             <ConnectorHealthCard key={supplier.id} supplier={supplier} />
           ))}
         </div>
+      </div>
+
+      {/* Real-time Price Updates */}
+      <div>
+        <h2 className="text-xl font-semibold mb-4">Real-time Updates</h2>
+        <RealTimePriceUpdates />
       </div>
 
       {/* Recent Orders and Anomalies */}
