@@ -1,3 +1,4 @@
+
 import { QueryClient } from '@tanstack/react-query'
 
 // Create optimized query client with better caching and performance settings
@@ -31,23 +32,23 @@ export const queryClient = new QueryClient({
   },
 })
 
-// Enhanced error handling
+// Enhanced error handling for mutations
 queryClient.setMutationDefaults(['supplier-items'], {
   mutationFn: async (variables: any) => {
     // Add custom mutation logic here if needed
     throw new Error('Mutation not implemented')
   },
-  onError: (error) => {
-    console.error('Mutation error:', error)
-  },
 })
 
-// Global error handler for queries
-queryClient.setQueryDefaults(['default'], {
-  queryFn: async () => {
-    throw new Error('Query function not implemented')
-  },
-  onError: (error) => {
-    console.warn('Query error:', error)
-  },
+// Set up global error handling outside of query defaults
+queryClient.getQueryCache().subscribe((event) => {
+  if (event.type === 'error') {
+    console.warn('Query error:', event.error)
+  }
+})
+
+queryClient.getMutationCache().subscribe((event) => {
+  if (event.type === 'error') {
+    console.error('Mutation error:', event.error)
+  }
 })

@@ -1,5 +1,13 @@
 
 // Performance monitoring utilities
+
+// Define memory info interface for browsers that support it
+interface BrowserMemoryInfo {
+  usedJSHeapSize: number;
+  totalJSHeapSize: number;
+  jsHeapSizeLimit: number;
+}
+
 export class PerformanceMonitor {
   private static measurements = new Map<string, number>()
 
@@ -45,9 +53,9 @@ export class PerformanceMonitor {
     })
   }
 
-  static getMemoryUsage(): MemoryInfo | null {
+  static getMemoryUsage(): BrowserMemoryInfo | null {
     if ('memory' in performance) {
-      return (performance as any).memory
+      return (performance as any).memory as BrowserMemoryInfo
     }
     return null
   }
