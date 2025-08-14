@@ -1,10 +1,9 @@
-
 import React from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Crown, Shield, Users, User } from 'lucide-react'
 import { usePermissions } from '@/hooks/usePermissions'
-import { useAuth } from '@/hooks/useAuth'
+import { useAuth } from '@/contexts/AuthProvider'
 import { BaseRole } from '@/lib/types/permissions'
 
 export function CurrentUserRole() {
