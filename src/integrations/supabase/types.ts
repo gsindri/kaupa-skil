@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "13.0.4"
@@ -447,25 +447,25 @@ export type Database = {
     }
     Functions: {
       create_elevation: {
-        Args: { reason_text: string; duration_minutes?: number }
+        Args: { duration_minutes?: number; reason_text: string }
         Returns: string
       }
       create_support_session: {
         Args: {
-          target_tenant_id: string
-          reason_text: string
           duration_minutes?: number
+          reason_text: string
+          target_tenant_id: string
         }
         Returns: string
       }
       get_user_memberships: {
         Args: Record<PropertyKey, never>
         Returns: {
+          attrs: Json
+          base_role: string
           membership_id: string
           tenant_id: string
           tenant_name: string
-          base_role: string
-          attrs: Json
         }[]
       }
       has_active_elevation: {
@@ -475,8 +475,8 @@ export type Database = {
       has_capability: {
         Args: {
           cap: string
-          target_scope: string
           target_id?: string
+          target_scope: string
           want?: Json
         }
         Returns: boolean
@@ -496,10 +496,10 @@ export type Database = {
       log_audit_event: {
         Args: {
           action_name: string
-          entity_type_name?: string
           entity_id_val?: string
-          reason_text?: string
+          entity_type_name?: string
           meta_data_val?: Json
+          reason_text?: string
           tenant_id_val?: string
         }
         Returns: string

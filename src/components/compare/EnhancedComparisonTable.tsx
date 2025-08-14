@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react'
 import {
   Table,
@@ -12,10 +11,12 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Plus, Minus, Info, ExternalLink } from 'lucide-react'
+import { Plus, Minus, Info, ExternalLink, AlertTriangle } from 'lucide-react'
 import { useSettings } from '@/contexts/SettingsProvider'
 import { useCart } from '@/contexts/CartProvider'
 import { Sparkline } from '@/components/ui/Sparkline'
+import { DeliveryFeeIndicator } from '@/components/delivery/DeliveryFeeIndicator'
+import { deliveryCalculator } from '@/services/DeliveryCalculator'
 import type { ComparisonItem, CartItem } from '@/lib/types'
 
 interface EnhancedComparisonTableProps {
@@ -27,6 +28,7 @@ export function EnhancedComparisonTable({ data, isLoading }: EnhancedComparisonT
   const { includeVat } = useSettings()
   const { addItem, updateQuantity, items: cartItems } = useCart()
   const [quantities, setQuantities] = useState<Record<string, number>>({})
+  const [deliveryCalculations, setDeliveryCalculations] = useState<Map<string, any>>(new Map())
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('is-IS', {
@@ -42,11 +44,44 @@ export function EnhancedComparisonTable({ data, isLoading }: EnhancedComparisonT
     return cartItem?.quantity || 0
   }
 
-  const handleQuantityChange = (supplierItemId: string, newQuantity: number) => {
+  const calculateLandedCost = async (supplier: any, quantity: number) => {
+    const mockCartItem: CartItem = {
+      id: supplier.id,
+      supplierItemId: supplier.supplierItemId,
+      supplierId: supplier.id,
+      supplierName: supplier.name,
+      itemName: supplier.name,
+      sku: supplier.sku,
+      packSize: supplier.packSize,
+      packPrice: supplier.packPrice,
+      unitPriceExVat: supplier.unitPriceExVat,
+      unitPriceIncVat: supplier.unitPriceIncVat,
+      vatRate: 0.24,
+      unit: supplier.unit,
+      displayName: supplier.name,
+      packQty: 1,
+      quantity
+    }
+
+    try {
+      const calculation = await deliveryCalculator.calculateDeliveryForSupplier(
+        supplier.id,
+        supplier.name,
+        [mockCartItem]
+      )
+      
+      setDeliveryCalculations(prev => new Map(prev.set(supplier.supplierItemId, calculation)))
+      return calculation.landed_cost
+    } catch (error) {
+      console.error('Failed to calculate delivery:', error)
+      return supplier.unitPriceExVat * quantity
+    }
+  }
+
+  const handleQuantityChange = async (supplierItemId: string, newQuantity: number) => {
     const currentCartQuantity = getCartQuantity(supplierItemId)
     
     if (newQuantity > currentCartQuantity) {
-      // Find the supplier quote to add to cart
       const supplierQuote = data.flatMap(item => 
         item.suppliers.map(supplier => ({
           ...supplier,
@@ -56,6 +91,13 @@ export function EnhancedComparisonTable({ data, isLoading }: EnhancedComparisonT
       ).find(supplier => supplier.supplierItemId === supplierItemId)
 
       if (supplierQuote) {
+        // Check if this would create a new supplier with delivery fee
+        const isNewSupplier = !cartItems.some(item => item.supplierId === supplierQuote.id)
+        
+        if (isNewSupplier) {
+          await calculateLandedCost(supplierQuote, newQuantity - currentCartQuantity)
+        }
+
         const cartItem: Omit<CartItem, 'quantity'> = {
           id: supplierQuote.id,
           supplierItemId: supplierQuote.supplierItemId,
@@ -67,10 +109,10 @@ export function EnhancedComparisonTable({ data, isLoading }: EnhancedComparisonT
           packPrice: supplierQuote.packPrice,
           unitPriceExVat: supplierQuote.unitPriceExVat,
           unitPriceIncVat: supplierQuote.unitPriceIncVat,
-          vatRate: 0.24, // Default VAT rate - should come from data
+          vatRate: 0.24,
           unit: supplierQuote.unit,
           displayName: supplierQuote.itemName,
-          packQty: 1 // Should come from supplier data
+          packQty: 1
         }
         
         addItem(cartItem, newQuantity - currentCartQuantity)
@@ -143,6 +185,7 @@ export function EnhancedComparisonTable({ data, isLoading }: EnhancedComparisonT
                   <TableHead>Pack Size</TableHead>
                   <TableHead className="text-right">Price/Pack</TableHead>
                   <TableHead className="text-right">Price/Unit</TableHead>
+                  <TableHead className="text-right">Landed Cost</TableHead>
                   <TableHead className="text-center">Stock</TableHead>
                   <TableHead className="text-center">History</TableHead>
                   <TableHead className="text-center min-w-[120px]">Quantity</TableHead>
@@ -153,6 +196,8 @@ export function EnhancedComparisonTable({ data, isLoading }: EnhancedComparisonT
                 {item.suppliers.map((supplier) => {
                   const price = includeVat ? supplier.unitPriceIncVat : supplier.unitPriceExVat
                   const packPrice = includeVat ? supplier.packPrice * 1.24 : supplier.packPrice
+                  const deliveryCalc = deliveryCalculations.get(supplier.supplierItemId)
+                  const isNewSupplier = !cartItems.some(item => item.supplierId === supplier.id)
                   
                   return (
                     <TableRow key={supplier.supplierItemId} className={supplier.isInCart ? 'bg-blue-50' : ''}>
@@ -163,6 +208,11 @@ export function EnhancedComparisonTable({ data, isLoading }: EnhancedComparisonT
                             <div className="text-xs text-muted-foreground">
                               SKU: {supplier.sku}
                             </div>
+                            {isNewSupplier && deliveryCalc && deliveryCalc.total_delivery_cost > 0 && (
+                              <div className="mt-1">
+                                <DeliveryFeeIndicator calculation={deliveryCalc} />
+                              </div>
+                            )}
                           </div>
                           {supplier.badge && (
                             <Badge
@@ -185,6 +235,20 @@ export function EnhancedComparisonTable({ data, isLoading }: EnhancedComparisonT
                         <div className="text-xs text-muted-foreground">
                           per {supplier.unit}
                         </div>
+                      </TableCell>
+                      <TableCell className="text-right font-mono tabular-nums">
+                        {deliveryCalc ? (
+                          <div>
+                            <div className="font-medium">{formatPrice(deliveryCalc.landed_cost / supplier.cartQuantity || 1)}</div>
+                            {deliveryCalc.total_delivery_cost > 0 && (
+                              <div className="text-xs text-orange-600">
+                                +{formatPrice(deliveryCalc.total_delivery_cost)} delivery
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="font-medium">{formatPrice(price)}</div>
+                        )}
                       </TableCell>
                       <TableCell className="text-center">
                         <Badge variant={supplier.inStock ? 'default' : 'secondary'}>
@@ -237,6 +301,12 @@ export function EnhancedComparisonTable({ data, isLoading }: EnhancedComparisonT
                             <Plus className="h-3 w-3" />
                           </Button>
                         </div>
+                        
+                        {isNewSupplier && deliveryCalc && deliveryCalc.total_delivery_cost > 0 && (
+                          <div className="mt-1 flex items-center justify-center">
+                            <AlertTriangle className="h-3 w-3 text-orange-500" />
+                          </div>
+                        )}
                       </TableCell>
                       <TableCell className="text-center">
                         <Button size="sm" variant="ghost">
