@@ -55,7 +55,7 @@ const mockPantryItems: PantryItem[] = [
 
 export default function Pantry() {
   const [quantities, setQuantities] = useState<Record<string, number>>({})
-  const { addToCart } = useCart()
+  const { addItem } = useCart()
   const { includeVat } = useSettings()
 
   const updateQuantity = (itemId: string, change: number) => {
@@ -68,7 +68,7 @@ export default function Pantry() {
   const addToBasket = (item: PantryItem) => {
     const quantity = quantities[item.id] || item.previousQuantity
     if (quantity > 0) {
-      addToCart({
+      addItem({
         id: item.id,
         supplierId: item.supplierName.toLowerCase().replace(/\s+/g, '-'),
         supplierName: item.supplierName,
@@ -78,13 +78,12 @@ export default function Pantry() {
         packPrice: includeVat ? item.unitPriceIncVat : item.unitPriceExVat,
         unitPriceExVat: item.unitPriceExVat,
         unitPriceIncVat: item.unitPriceIncVat,
-        quantity,
         vatRate: 0.24,
         unit: item.unit,
         supplierItemId: item.supplierItemId,
         displayName: `${item.brand} ${item.name}`,
         packQty: 1
-      })
+      }, quantity)
       
       toast({
         title: "Added to basket",
