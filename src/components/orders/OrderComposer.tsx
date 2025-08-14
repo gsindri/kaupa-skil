@@ -1,5 +1,5 @@
 
-import React from 'react'
+import React, { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -10,12 +10,17 @@ import { useSettings } from '@/contexts/SettingsProvider'
 import { useDeliveryCalculation, useDeliveryOptimization } from '@/hooks/useDeliveryOptimization'
 import { DeliveryOptimizationBanner } from '@/components/delivery/DeliveryOptimizationBanner'
 import { DeliveryFeeIndicator } from '@/components/delivery/DeliveryFeeIndicator'
+import { OrderApprovalWorkflow } from './OrderApprovalWorkflow'
+import { useToast } from '@/hooks/use-toast'
 
 export function OrderComposer() {
   const { items, updateQuantity, removeItem, clearCart, getTotalItems, getTotalPrice } = useCart()
   const { includeVat } = useSettings()
   const { data: deliveryCalculations, isLoading: isLoadingDelivery } = useDeliveryCalculation()
   const { data: optimization } = useDeliveryOptimization()
+  const { toast } = useToast()
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [orderApproved, setOrderApproved] = useState(false)
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('is-IS', {
@@ -30,6 +35,43 @@ export function OrderComposer() {
   const subtotalPrice = getTotalPrice(includeVat)
   const totalDeliveryFees = deliveryCalculations?.reduce((sum, calc) => sum + calc.total_delivery_cost, 0) || 0
   const grandTotal = subtotalPrice + totalDeliveryFees
+
+  const handleOrderApproval = (reason?: string) => {
+    setOrderApproved(true)
+    toast({
+      title: "Order Approved",
+      description: reason || "Order approved for checkout despite delivery costs.",
+    })
+  }
+
+  const handleOrderRejection = (reason: string) => {
+    toast({
+      title: "Order Rejected",
+      description: reason,
+      variant: "destructive"
+    })
+  }
+
+  const handleCheckout = async () => {
+    setIsSubmitting(true)
+    try {
+      // Here you would implement actual checkout logic
+      toast({
+        title: "Order Submitted",
+        description: "Your order has been submitted successfully.",
+      })
+      clearCart()
+      setOrderApproved(false)
+    } catch (error) {
+      toast({
+        title: "Checkout Failed",
+        description: "There was an error submitting your order.",
+        variant: "destructive"
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
 
   if (items.length === 0) {
     return (
@@ -61,6 +103,16 @@ export function OrderComposer() {
       {/* Delivery Optimization Banner */}
       {optimization && (
         <DeliveryOptimizationBanner optimization={optimization} />
+      )}
+
+      {/* Order Approval Workflow */}
+      {deliveryCalculations && !orderApproved && (
+        <OrderApprovalWorkflow
+          calculations={deliveryCalculations}
+          onApprove={handleOrderApproval}
+          onReject={handleOrderRejection}
+          isSubmitting={isSubmitting}
+        />
       )}
 
       {/* Order Items by Supplier */}
@@ -226,14 +278,20 @@ export function OrderComposer() {
           </div>
           
           <div className="pt-4 space-y-2">
-            <Button className="w-full" size="lg">
-              Proceed to Checkout
+            <Button 
+              className="w-full" 
+              size="lg"
+              onClick={handleCheckout}
+              disabled={isSubmitting || (!orderApproved && totalDeliveryFees > 10000)}
+            >
+              {isSubmitting ? 'Processing...' : 'Proceed to Checkout'}
             </Button>
             
             <Button 
               variant="outline" 
               className="w-full" 
               onClick={clearCart}
+              disabled={isSubmitting}
             >
               Clear Cart
             </Button>

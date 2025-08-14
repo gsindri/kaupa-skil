@@ -1,94 +1,63 @@
+import React from 'react'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { ThemeProvider } from '@/components/theme-provider'
+import { AuthProvider } from '@/contexts/AuthProvider'
+import { CartProvider } from '@/contexts/CartProvider'
+import { SettingsProvider } from '@/contexts/SettingsProvider'
 
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate, Outlet } from "react-router-dom";
-import { AuthProvider, useAuth } from "./contexts/AuthProvider";
-import { SettingsProvider } from "./contexts/SettingsProvider";
-import { CartProvider } from "./contexts/CartProvider";
-import { ErrorBoundary } from "./components/common/ErrorBoundary";
-import { AppLayout } from "./components/layout/AppLayout";
-import { queryClient } from "./lib/queryClient";
-import Index from "./pages/Index";
-import Dashboard from "./pages/Dashboard";
-import Compare from "./pages/Compare";
-import Pantry from "./pages/Pantry";
-import Orders from "./pages/Orders";
-import Suppliers from "./pages/Suppliers";
-import PriceHistory from "./pages/PriceHistory";
-import Settings from "./pages/Settings";
-import Admin from "./pages/Admin";
-import Discovery from "./pages/Discovery";
-import NotFound from "./pages/NotFound";
-import LoginShowcase from "./pages/auth/LoginShowcase";
-import PasswordReset from "./pages/auth/PasswordReset";
-import { OnboardingWizard } from "./components/onboarding/OnboardingWizard";
-import { AuthGate } from "./components/auth/AuthGate";
+import AppLayout from '@/layouts/AppLayout'
+import Index from '@/pages/Index'
+import Dashboard from '@/pages/Dashboard'
+import Compare from '@/pages/Compare'
+import Orders from '@/pages/Orders'
+import Pantry from '@/pages/Pantry'
+import Suppliers from '@/pages/Suppliers'
+import Settings from '@/pages/Settings'
+import Admin from '@/pages/Admin'
+import PriceHistory from '@/pages/PriceHistory'
+import Discovery from '@/pages/Discovery'
+import LoginShowcase from '@/pages/LoginShowcase'
+import PasswordReset from '@/pages/PasswordReset'
+import NotFound from '@/pages/NotFound'
 
-function AppRoutes() {
-  const { isInitialized, isFirstTime, error } = useAuth()
+import Delivery from '@/pages/Delivery'
 
-  if (!isInitialized) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center space-y-4">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-          <p className="text-sm text-muted-foreground">Initializing...</p>
-          {error && (
-            <p className="text-sm text-destructive max-w-md">{error}</p>
-          )}
-        </div>
-      </div>
-    )
-  }
-
-  if (isFirstTime) {
-    return <OnboardingWizard />
-  }
-
-  return (
-    <Routes>
-      <Route path="/login" element={<LoginShowcase />} />
-      <Route path="/auth/login" element={<LoginShowcase />} />
-      <Route path="/auth/reset-password" element={<PasswordReset />} />
-      <Route path="/" element={<AuthGate><AppLayout><Outlet /></AppLayout></AuthGate>}>
-        <Route index element={<Index />} />
-        <Route path="dashboard" element={<Dashboard />} />
-        <Route path="compare" element={<Compare />} />
-        <Route path="pantry" element={<Pantry />} />
-        <Route path="orders" element={<Orders />} />
-        <Route path="suppliers" element={<Suppliers />} />
-        <Route path="price-history" element={<PriceHistory />} />
-        <Route path="settings" element={<Settings />} />
-        <Route path="admin" element={<Admin />} />
-        <Route path="discovery" element={<Discovery />} />
-      </Route>
-      <Route path="*" element={<NotFound />} />
-    </Routes>
-  )
-}
+const queryClient = new QueryClient()
 
 function App() {
   return (
-    <ErrorBoundary>
-      <TooltipProvider>
-        <QueryClientProvider client={queryClient}>
-          <AuthProvider>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
+        <AuthProvider>
+          <CartProvider>
             <SettingsProvider>
-              <CartProvider>
-                <BrowserRouter>
-                  <AppRoutes />
-                </BrowserRouter>
-                <Toaster />
-                <Sonner />
-              </CartProvider>
+              <BrowserRouter>
+                <Routes>
+                  <Route path="/" element={<AppLayout />}>
+                    <Route index element={<Index />} />
+                    <Route path="dashboard" element={<Dashboard />} />
+                    <Route path="compare" element={<Compare />} />
+                    <Route path="orders" element={<Orders />} />
+                    <Route path="delivery" element={<Delivery />} />
+                    <Route path="pantry" element={<Pantry />} />
+                    <Route path="suppliers" element={<Suppliers />} />
+                    <Route path="settings" element={<Settings />} />
+                    <Route path="admin" element={<Admin />} />
+                    <Route path="price-history" element={<PriceHistory />} />
+                    <Route path="discovery" element={<Discovery />} />
+                  </Route>
+                  <Route path="/auth/login" element={<LoginShowcase />} />
+                  <Route path="/auth/reset-password" element={<PasswordReset />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </BrowserRouter>
             </SettingsProvider>
-          </AuthProvider>
-        </QueryClientProvider>
-      </TooltipProvider>
-    </ErrorBoundary>
-  );
+          </CartProvider>
+        </AuthProvider>
+      </ThemeProvider>
+    </QueryClientProvider>
+  )
 }
 
-export default App;
+export default App
