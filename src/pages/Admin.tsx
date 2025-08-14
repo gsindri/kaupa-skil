@@ -1,8 +1,7 @@
-
 import React, { useState } from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Shield, Users, Activity, AlertTriangle, TestTube, BookOpen } from 'lucide-react'
-import { ElevationBanner } from '@/components/admin/ElevationBanner'
+import { ElevationBanner } from '@/components/layout/ElevationBanner'
 import { SupportSessionBanner } from '@/components/admin/SupportSessionBanner'
 import { ElevationDialog } from '@/components/admin/ElevationDialog'
 import { SupportSessionDialog } from '@/components/admin/SupportSessionDialog'
