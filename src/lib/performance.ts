@@ -18,14 +18,16 @@ export class PerformanceMonitor {
   static endMeasurement(name: string): number {
     const startTime = this.measurements.get(name)
     if (!startTime) {
-      console.warn(`No start measurement found for: ${name}`)
+      if (process.env.NODE_ENV === 'development') {
+        console.warn(`No start measurement found for: ${name}`)
+      }
       return 0
     }
 
     const duration = performance.now() - startTime
     this.measurements.delete(name)
     
-    // Log slow operations in development
+    // Log slow operations only in development
     if (process.env.NODE_ENV === 'development' && duration > 1000) {
       console.warn(`Slow operation detected: ${name} took ${duration.toFixed(2)}ms`)
     }
@@ -41,6 +43,7 @@ export class PerformanceMonitor {
         const result = await fn()
         const duration = this.endMeasurement(name)
         
+        // Only log in development
         if (process.env.NODE_ENV === 'development') {
           console.log(`${name} completed in ${duration.toFixed(2)}ms`)
         }
@@ -61,8 +64,13 @@ export class PerformanceMonitor {
   }
 
   static logMemoryUsage() {
+    // Only log memory usage in development
+    if (process.env.NODE_ENV !== 'development') {
+      return
+    }
+
     const memory = this.getMemoryUsage()
-    if (memory && process.env.NODE_ENV === 'development') {
+    if (memory) {
       console.log('Memory usage:', {
         used: `${(memory.usedJSHeapSize / 1024 / 1024).toFixed(2)} MB`,
         total: `${(memory.totalJSHeapSize / 1024 / 1024).toFixed(2)} MB`,
@@ -70,9 +78,23 @@ export class PerformanceMonitor {
       })
     }
   }
+
+  // Production-safe method to get performance metrics without logging
+  static getPerformanceMetrics() {
+    const memory = this.getMemoryUsage()
+    return {
+      memory: memory ? {
+        used: memory.usedJSHeapSize,
+        total: memory.totalJSHeapSize,
+        limit: memory.jsHeapSizeLimit
+      } : null,
+      timing: performance.timing,
+      navigation: performance.navigation
+    }
+  }
 }
 
-// Auto-log memory usage every 30 seconds in development
+// Auto-log memory usage only in development
 if (process.env.NODE_ENV === 'development') {
   setInterval(() => {
     PerformanceMonitor.logMemoryUsage()

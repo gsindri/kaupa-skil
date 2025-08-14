@@ -95,9 +95,13 @@ class RealtimeConnectionManager {
       .subscribe((status) => {
         this.isConnecting = false
         if (status === 'SUBSCRIBED') {
-          console.log('Real-time connection established')
+          if (process.env.NODE_ENV === 'development') {
+            console.log('Real-time connection established')
+          }
         } else if (status === 'CHANNEL_ERROR') {
-          console.warn('Real-time connection failed, retrying...')
+          if (process.env.NODE_ENV === 'development') {
+            console.warn('Real-time connection failed, retrying...')
+          }
           // Retry connection after delay
           setTimeout(() => {
             this.channel = null
@@ -164,10 +168,10 @@ export function useRealTimePrices() {
 
       setAlerts(prev => [alert, ...prev.slice(0, 9)])
 
-      // Throttle toast notifications
+      // Show toast notifications only for significant changes
       toast(alert.message, {
         description: `${newRecord.supplier_name}: ${oldRecord.price_ex_vat.toLocaleString()} ISK → ${newRecord.price_ex_vat.toLocaleString()} ISK`,
-        duration: 3000, // Reduced from 5000ms
+        duration: 3000,
       })
     }
 
@@ -201,7 +205,7 @@ export function useRealTimePrices() {
 
     toast(alert.message, {
       description: newRecord.supplier_name,
-      duration: 2000, // Reduced duration
+      duration: 2000,
     })
 
     invalidateQueries.current()
@@ -211,8 +215,8 @@ export function useRealTimePrices() {
     const handlers = { handlePriceUpdate, handleStockUpdate }
     const unsubscribe = connectionManager.subscribe(hookId.current, handlers)
     
-    // Set connected state based on existing connection
-    setIsConnected(true) // Optimistic connection state
+    // Set connected state optimistically
+    setIsConnected(true)
 
     return () => {
       unsubscribe()

@@ -61,7 +61,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .single()
 
       if (error) {
-        console.warn('Profile fetch failed:', error.message)
+        // Only log in development
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('Profile fetch failed:', error.message)
+        }
         profileCache.set(userId, { data: null, timestamp: Date.now() })
         return null
       }
@@ -70,7 +73,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       profileCache.set(userId, { data, timestamp: Date.now() })
       return data
     } catch (error) {
-      console.warn('Profile fetch error:', error)
+      // Only log in development
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('Profile fetch error:', error)
+      }
       return null
     } finally {
       fetchingProfile.current = null
@@ -92,7 +98,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       })
       if (error) throw error
     } catch (error) {
-      console.error('Sign in error:', error)
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Sign in error:', error)
+      }
       throw error
     }
   }, [])
@@ -113,7 +121,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       })
       if (error) throw error
     } catch (error) {
-      console.error('Sign up error:', error)
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Sign up error:', error)
+      }
       throw error
     }
   }, [])
@@ -125,7 +135,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const { error } = await supabase.auth.signOut()
       if (error) throw error
     } catch (error) {
-      console.error('Sign out error:', error)
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Sign out error:', error)
+      }
       throw error
     }
   }, [])
@@ -153,7 +165,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setIsFirstTime(false)
         }
       } catch (error) {
-        console.error('Auth state change error:', error)
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Auth state change error:', error)
+        }
         setError(error instanceof Error ? error.message : 'Authentication error')
       }
     }, 100) // 100ms debounce
@@ -166,7 +180,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const { data: { session: initialSession }, error: sessionError } = await supabase.auth.getSession()
       
       if (sessionError) {
-        console.warn('Session error:', sessionError.message)
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('Session error:', sessionError.message)
+        }
         setError('Failed to retrieve session')
       }
       
@@ -184,7 +200,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       
     } catch (error) {
-      console.error('Auth initialization error:', error)
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Auth initialization error:', error)
+      }
       setError('Authentication failed to initialize')
     } finally {
       setLoading(false)
@@ -196,18 +214,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(handleAuthStateChange)
 
-    // Initialize auth state with faster timeout
+    // Initialize auth state
     initializeAuth()
 
     // Reduced timeout for better UX
     const loadingTimeout = setTimeout(() => {
       if (loading && !isInitialized) {
-        console.warn('Auth initialization timeout')
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('Auth initialization timeout')
+        }
         setLoading(false)
         setIsInitialized(true)
         setError('Authentication timeout - please try refreshing')
       }
-    }, 3000) // Reduced from 10s to 3s
+    }, 3000) // Keep at 3s for better UX
 
     return () => {
       subscription.unsubscribe()

@@ -85,7 +85,10 @@ function AuthForm() {
         });
       }
     } catch (error: any) {
-      console.error('Auth error:', error);
+      // Only log in development
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Auth error:', error);
+      }
       toast({
         variant: "destructive",
         title: "Authentication Error",

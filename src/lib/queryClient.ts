@@ -1,3 +1,4 @@
+
 import { QueryClient } from '@tanstack/react-query'
 
 // Create optimized query client with better caching and performance settings
@@ -28,16 +29,20 @@ export const queryClient = new QueryClient({
       retry: 1,
       retryDelay: 1000,
       onError: (error) => {
-        console.error('Mutation error:', error)
+        // Only log in development
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Mutation error:', error)
+        }
       },
     },
   },
 })
 
-// Enhanced error handling for mutations
-queryClient.setMutationDefaults(['supplier-items'], {
-  mutationFn: async (variables: any) => {
-    // Add custom mutation logic here if needed
-    throw new Error('Mutation not implemented')
-  },
-})
+// Enhanced error handling for mutations (only in development)
+if (process.env.NODE_ENV === 'development') {
+  queryClient.setMutationDefaults(['supplier-items'], {
+    mutationFn: async (variables: any) => {
+      throw new Error('Mutation not implemented')
+    },
+  })
+}
