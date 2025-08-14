@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -21,7 +22,7 @@ import Discovery from "./pages/Discovery";
 import NotFound from "./pages/NotFound";
 import LoginShowcase from "./pages/auth/LoginShowcase";
 import PasswordReset from "./pages/auth/PasswordReset";
-import { FirstTimeSetup } from "./components/setup/FirstTimeSetup";
+import { OnboardingWizard } from "./components/onboarding/OnboardingWizard";
 import { AuthGate } from "./components/auth/AuthGate";
 
 const queryClient = new QueryClient();
@@ -34,7 +35,7 @@ function AppRoutes() {
   }
 
   if (isFirstTime) {
-    return <FirstTimeSetup />
+    return <OnboardingWizard />
   }
 
   return (

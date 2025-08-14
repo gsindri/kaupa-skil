@@ -8,6 +8,8 @@ import { OrganizationSetupStep } from './steps/OrganizationSetupStep'
 import { SupplierConnectionStep } from './steps/SupplierConnectionStep'
 import { OrderGuideStep } from './steps/OrderGuideStep'
 import { useAuth } from '@/contexts/AuthProvider'
+import { supabase } from '@/integrations/supabase/client'
+import { useToast } from '@/hooks/use-toast'
 
 interface OnboardingData {
   organization?: {
@@ -27,7 +29,8 @@ export function OnboardingWizard() {
   const [currentStep, setCurrentStep] = useState(1)
   const [data, setData] = useState<OnboardingData>({})
   const [isCompleting, setIsCompleting] = useState(false)
-  const { refetch } = useAuth()
+  const { user, refetch } = useAuth()
+  const { toast } = useToast()
 
   const steps = [
     { id: 1, title: 'Organization Setup', description: 'Set up your organization details' },
@@ -48,18 +51,50 @@ export function OnboardingWizard() {
   }
 
   const completeOnboarding = async () => {
+    if (!data.organization || !user) return
+
     setIsCompleting(true)
     try {
-      // Here we would normally save the data to the backend
-      console.log('Completing onboarding with data:', data)
+      console.log('Creating tenant for user:', user.id)
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500))
-      
+      // Create the tenant with organization data
+      const { data: tenant, error: tenantError } = await supabase
+        .from('tenants')
+        .insert({
+          name: data.organization.name,
+          created_by: user.id
+        })
+        .select()
+        .single()
+
+      if (tenantError) throw tenantError
+
+      console.log('Tenant created:', tenant)
+
+      // Update the user's profile with the new tenant_id
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({ tenant_id: tenant.id })
+        .eq('id', user.id)
+
+      if (profileError) throw profileError
+
+      console.log('Profile updated with tenant_id:', tenant.id)
+
+      toast({
+        title: 'Setup complete!',
+        description: `Welcome to ${tenant.name}. Your procurement console is ready to use.`
+      })
+
       // Refresh auth to update the user's profile
       await refetch()
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to complete onboarding:', error)
+      toast({
+        title: 'Setup failed',
+        description: error.message,
+        variant: 'destructive'
+      })
     } finally {
       setIsCompleting(false)
     }
@@ -77,7 +112,7 @@ export function OnboardingWizard() {
         <Card className="w-full max-w-md">
           <CardContent className="pt-6">
             <div className="text-center space-y-4">
-              <CheckCircle className="h-16 w-16 text-success mx-auto" />
+              <CheckCircle className="h-16 w-16 text-primary mx-auto" />
               <h2 className="text-xl font-semibold">Setting up your account...</h2>
               <p className="text-muted-foreground">This will just take a moment.</p>
             </div>
@@ -103,7 +138,7 @@ export function OnboardingWizard() {
               <div key={step.id} className="flex items-center">
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
                   currentStep > step.id 
-                    ? 'bg-success text-success-foreground' 
+                    ? 'bg-primary text-primary-foreground' 
                     : currentStep === step.id 
                       ? 'bg-primary text-primary-foreground' 
                       : 'bg-muted text-muted-foreground'
@@ -112,7 +147,7 @@ export function OnboardingWizard() {
                 </div>
                 {index < steps.length - 1 && (
                   <div className={`w-16 h-0.5 mx-2 ${
-                    currentStep > step.id ? 'bg-success' : 'bg-muted'
+                    currentStep > step.id ? 'bg-primary' : 'bg-muted'
                   }`} />
                 )}
               </div>
