@@ -17,6 +17,8 @@ import Compare from "./pages/Compare";
 import Orders from "./pages/Orders";
 import Suppliers from "./pages/Suppliers";
 import PriceHistory from "./pages/PriceHistory";
+import Pantry from "./pages/Pantry";
+import Discovery from "./pages/Discovery";
 import Admin from "./pages/Admin";
 import LoginShowcase from "./pages/auth/LoginShowcase";
 import PasswordReset from "./pages/auth/PasswordReset";
@@ -79,9 +81,11 @@ function AppContent() {
                         <Route index element={<Index />} />
                         <Route path="dashboard" element={<Dashboard />} />
                         <Route path="compare" element={<Compare />} />
+                        <Route path="pantry" element={<Pantry />} />
                         <Route path="orders" element={<Orders />} />
                         <Route path="suppliers" element={<Suppliers />} />
                         <Route path="price-history" element={<PriceHistory />} />
+                        <Route path="discovery" element={<Discovery />} />
                         <Route path="admin" element={<Admin />} />
                         <Route path="*" element={<NotFound />} />
                       </Route>

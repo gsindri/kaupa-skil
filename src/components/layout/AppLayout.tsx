@@ -1,29 +1,26 @@
 
 import React from 'react'
 import { Outlet } from 'react-router-dom'
-import { Sidebar, SidebarContent, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
-import { AppSidebar } from './AppSidebar'
+import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
+import { EnhancedAppSidebar } from './EnhancedAppSidebar'
+import { TopNavigation } from './TopNavigation'
+import { ElevationBanner } from './ElevationBanner'
 import { Toaster } from '@/components/ui/toaster'
-import { ElevationBanner } from '@/components/admin/ElevationBanner'
-import { SupportSessionBanner } from '@/components/admin/SupportSessionBanner'
+import { CartDrawer } from '@/components/cart/CartDrawer'
 
 export function AppLayout() {
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
-        <AppSidebar />
+        <EnhancedAppSidebar />
         <main className="flex-1 overflow-auto">
-          <div className="sticky top-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
-            <div className="flex h-14 items-center px-4">
-              <SidebarTrigger />
-            </div>
-          </div>
+          <TopNavigation />
           <div className="p-4">
             <ElevationBanner />
-            <SupportSessionBanner />
             <Outlet />
           </div>
         </main>
+        <CartDrawer />
       </div>
       <Toaster />
     </SidebarProvider>
