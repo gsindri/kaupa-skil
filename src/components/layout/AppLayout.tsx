@@ -1,28 +1,34 @@
 
 import React from 'react'
-import { Outlet } from 'react-router-dom'
-import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
+import { SidebarProvider } from '@/components/ui/sidebar'
 import { EnhancedAppSidebar } from './EnhancedAppSidebar'
 import { TopNavigation } from './TopNavigation'
 import { ElevationBanner } from './ElevationBanner'
+import { BasketDrawer } from '@/components/cart/BasketDrawer'
 import { Toaster } from '@/components/ui/toaster'
-import { CartDrawer } from '@/components/cart/CartDrawer'
 
-export function AppLayout() {
+interface AppLayoutProps {
+  children: React.ReactNode
+}
+
+export function AppLayout({ children }: AppLayoutProps) {
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full">
+      <div className="min-h-screen flex w-full bg-background">
         <EnhancedAppSidebar />
-        <main className="flex-1 overflow-auto">
+        
+        <div className="flex-1 flex flex-col">
+          <ElevationBanner />
           <TopNavigation />
-          <div className="p-4">
-            <ElevationBanner />
-            <Outlet />
-          </div>
-        </main>
-        <CartDrawer />
+          
+          <main className="flex-1 p-6 overflow-auto">
+            {children}
+          </main>
+        </div>
+        
+        <BasketDrawer />
+        <Toaster />
       </div>
-      <Toaster />
     </SidebarProvider>
   )
 }
