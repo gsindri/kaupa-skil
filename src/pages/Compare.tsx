@@ -1,8 +1,9 @@
+
 import React, { useState } from 'react'
 import { CompareHeader } from '@/components/compare/CompareHeader'
 import { EnhancedComparisonTable } from '@/components/compare/EnhancedComparisonTable'
 import { useQuery } from '@tanstack/react-query'
-import { useAuth } from '@/hooks/useAuth'
+import { useAuth } from '@/contexts/AuthProvider'
 import { useSettings } from '@/contexts/SettingsProvider'
 
 export default function Compare() {

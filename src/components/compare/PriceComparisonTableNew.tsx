@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -10,7 +9,7 @@ import PriceBadge from '@/components/ui/PriceBadge'
 import { Search, Filter, Download, Plus, ShoppingCart } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client'
 import { useUnitsVat } from '@/hooks/useUnitsVat'
-import { useAuth } from '@/hooks/useAuth'
+import { useAuth } from '@/contexts/AuthProvider'
 
 interface PriceComparisonItem {
   id: string
