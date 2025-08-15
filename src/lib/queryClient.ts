@@ -1,4 +1,3 @@
-
 import { QueryClient } from '@tanstack/react-query'
 import { handleQueryError, getRetryOptions, getRetryDelay } from './queryErrorHandler'
 
@@ -18,7 +17,7 @@ export const queryClient = new QueryClient({
       refetchOnReconnect: true,
       refetchOnMount: true,
       // Centralized error handling
-      throwOnError: false, // Handle errors through onError instead
+      throwOnError: false, // Handle errors through meta.onError instead
     },
     mutations: {
       // Retry mutations once
@@ -27,16 +26,6 @@ export const queryClient = new QueryClient({
       onError: (error, variables, context) => {
         handleQueryError(error, 'mutation')
       },
-    },
-  },
-})
-
-// Global error handler for queries
-queryClient.setDefaultOptions({
-  queries: {
-    ...queryClient.getDefaultOptions().queries,
-    onError: (error) => {
-      handleQueryError(error, 'query')
     },
   },
 })
@@ -54,8 +43,8 @@ if (process.env.NODE_ENV === 'development') {
 if (import.meta.env.DEV) {
   queryClient.getQueryCache().subscribe((event) => {
     if (event.type === 'updated' && event.action.type === 'success') {
-      const { queryKey, dataUpdatedAt } = event.query
-      console.log(`Query ${JSON.stringify(queryKey)} updated at ${new Date(dataUpdatedAt).toISOString()}`)
+      const { queryKey, state } = event.query
+      console.log(`Query ${JSON.stringify(queryKey)} updated at ${new Date(state.dataUpdatedAt || Date.now()).toISOString()}`)
     }
   })
 }

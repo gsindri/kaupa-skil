@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
 import { queryKeys } from '@/lib/queryKeys'
 import { useAuth } from '@/contexts/AuthProvider'
+import { handleQueryError } from '@/lib/queryErrorHandler'
 
 interface SupplierItemsFilters {
   search?: string
@@ -63,7 +64,10 @@ export function useOptimizedSupplierItems(filters: SupplierItemsFilters = {}) {
 
       const { data, error } = await query
 
-      if (error) throw error
+      if (error) {
+        handleQueryError(error, 'supplier items')
+        throw error
+      }
       return data || []
     },
     enabled: !!user,
