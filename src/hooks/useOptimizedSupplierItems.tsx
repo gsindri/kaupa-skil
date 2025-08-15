@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client'
 import { queryKeys } from '@/lib/queryKeys'
 import { useAuth } from '@/contexts/AuthProvider'
 import { handleQueryError } from '@/lib/queryErrorHandler'
+import { useTenantValidation } from './useTenantValidation'
 
 interface SupplierItemsFilters {
   search?: string
@@ -17,11 +18,17 @@ interface SupplierItemsFilters {
 }
 
 export function useOptimizedSupplierItems(filters: SupplierItemsFilters = {}) {
-  const { user } = useAuth()
+  const { user, profile } = useAuth()
+  const { data: tenantValidation } = useTenantValidation(profile?.tenant_id)
 
   return useQuery({
     queryKey: queryKeys.suppliers.items(filters.supplierId, filters),
     queryFn: async () => {
+      // Validate tenant context before proceeding
+      if (!tenantValidation?.isValid) {
+        throw new Error('Invalid tenant context')
+      }
+
       let query = supabase
         .from('supplier_items')
         .select(`
@@ -30,9 +37,10 @@ export function useOptimizedSupplierItems(filters: SupplierItemsFilters = {}) {
         `)
         .order('name')
 
-      // Apply filters
-      if (filters.search) {
-        query = query.ilike('name', `%${filters.search}%`)
+      // Apply filters with input validation
+      if (filters.search && filters.search.trim()) {
+        const sanitizedSearch = filters.search.trim().substring(0, 100) // Limit search length
+        query = query.ilike('name', `%${sanitizedSearch}%`)
       }
       
       if (filters.supplierId) {
@@ -43,23 +51,25 @@ export function useOptimizedSupplierItems(filters: SupplierItemsFilters = {}) {
         query = query.eq('in_stock', filters.inStock)
       }
       
-      if (filters.minPrice) {
+      if (filters.minPrice && filters.minPrice >= 0) {
         query = query.gte('price_ex_vat', filters.minPrice)
       }
       
-      if (filters.maxPrice) {
+      if (filters.maxPrice && filters.maxPrice >= 0) {
         query = query.lte('price_ex_vat', filters.maxPrice)
       }
       
-      if (filters.category) {
-        query = query.eq('category', filters.category)
+      if (filters.category && filters.category.trim()) {
+        query = query.eq('category', filters.category.trim())
       }
 
-      // Pagination
-      if (filters.limit) {
-        const from = filters.offset || 0
-        const to = from + filters.limit - 1
-        query = query.range(from, to)
+      // Enhanced pagination with security limits
+      const maxLimit = 1000
+      const safeLimit = Math.min(filters.limit || 100, maxLimit)
+      const safeOffset = Math.max(filters.offset || 0, 0)
+      
+      if (safeLimit) {
+        query = query.range(safeOffset, safeOffset + safeLimit - 1)
       }
 
       const { data, error } = await query
@@ -70,11 +80,22 @@ export function useOptimizedSupplierItems(filters: SupplierItemsFilters = {}) {
       }
       return data || []
     },
-    enabled: !!user,
-    // Optimize for large datasets
+    enabled: !!user && !!tenantValidation?.isValid,
+    // Optimize for large datasets with security considerations
     staleTime: filters.search ? 30000 : 1000 * 60 * 5, // Shorter stale time for searches
     gcTime: 1000 * 60 * 15, // Keep search results longer
     // Use placeholderData to prevent loading states during filter changes
     placeholderData: (previousData) => previousData,
+    // Enhanced retry logic
+    retry: (failureCount, error) => {
+      if (error?.message?.includes('Invalid tenant context') || 
+          error?.code === 'PGRST301') {
+        return false
+      }
+      return failureCount < 2
+    },
+    // Security-focused refetch settings
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
   })
 }

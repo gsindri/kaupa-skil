@@ -19,27 +19,29 @@ import './App.css'
 function App() {
   return (
     <GlobalErrorBoundary>
-      <QueryClientProvider client={queryClient}>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <TooltipProvider>
-            <ErrorBoundary>
-              <AuthProvider>
-                <ErrorBoundary>
-                  <BasketProvider>
-                    <ErrorBoundary>
-                      <SettingsProvider>
-                        <RouterProvider router={router} />
-                        <Toaster />
-                      </SettingsProvider>
-                    </ErrorBoundary>
-                  </BasketProvider>
-                </ErrorBoundary>
-              </AuthProvider>
-            </ErrorBoundary>
-          </TooltipProvider>
-        </ThemeProvider>
-        <ReactQueryDevtools initialIsOpen={false} />
-      </QueryClientProvider>
+      <ErrorBoundary>
+        <QueryClientProvider client={queryClient}>
+          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+            <TooltipProvider>
+              <ErrorBoundary>
+                <AuthProvider>
+                  <ErrorBoundary>
+                    <BasketProvider>
+                      <ErrorBoundary>
+                        <SettingsProvider>
+                          <RouterProvider router={router} />
+                          <Toaster />
+                        </SettingsProvider>
+                      </ErrorBoundary>
+                    </BasketProvider>
+                  </ErrorBoundary>
+                </AuthProvider>
+              </ErrorBoundary>
+            </TooltipProvider>
+          </ThemeProvider>
+          <ReactQueryDevtools initialIsOpen={false} />
+        </QueryClientProvider>
+      </ErrorBoundary>
     </GlobalErrorBoundary>
   )
 }

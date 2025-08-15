@@ -59,6 +59,18 @@ export const handleQueryError = (error: any, context?: string) => {
     return
   }
 
+  // Handle tenant context errors
+  if (error?.message?.includes('tenant') || error?.code === 'TENANT_ACCESS_DENIED') {
+    errorMessage = 'Access denied for this organization'
+    shouldShowToast = true
+  }
+
+  // Handle rate limiting
+  if (error?.status === 429 || error?.code === 'RATE_LIMIT_EXCEEDED') {
+    errorMessage = 'Too many requests. Please wait a moment and try again.'
+    shouldShowToast = true
+  }
+
   if (shouldShowToast) {
     toast.error(errorMessage, {
       description: context ? `Error in ${context}` : undefined,
@@ -69,15 +81,25 @@ export const handleQueryError = (error: any, context?: string) => {
   return errorMessage
 }
 
-// Retry logic for failed queries
+// Retry logic for failed queries with enhanced tenant-aware logic
 export const getRetryOptions = (failureCount: number, error: any) => {
   // Don't retry on authentication errors
   if (error?.message?.includes('JWT') || error?.message?.includes('auth')) {
     return false
   }
 
-  // Don't retry on client errors (4xx)
-  if (error?.status >= 400 && error?.status < 500) {
+  // Don't retry on permission errors
+  if (error?.code === 'PGRST301' || error?.code === '42501' || error?.code === 'TENANT_ACCESS_DENIED') {
+    return false
+  }
+
+  // Don't retry on client errors (4xx) except rate limiting
+  if (error?.status >= 400 && error?.status < 500 && error?.status !== 429) {
+    return false
+  }
+
+  // Don't retry on data constraint violations
+  if (error?.code === '23505' || error?.code === '23503') {
     return false
   }
 
@@ -85,7 +107,43 @@ export const getRetryOptions = (failureCount: number, error: any) => {
   return failureCount < 2
 }
 
-// Exponential backoff delay
+// Exponential backoff delay with jitter for better distribution
 export const getRetryDelay = (attemptIndex: number) => {
-  return Math.min(1000 * 2 ** attemptIndex, 30000)
+  const baseDelay = 1000 * 2 ** attemptIndex
+  const jitter = Math.random() * 1000
+  return Math.min(baseDelay + jitter, 30000)
+}
+
+// Centralized query invalidation helper
+export const invalidateQueriesWithPattern = (queryClient: any, pattern: string[]) => {
+  return queryClient.invalidateQueries({
+    predicate: (query: any) => {
+      return pattern.some(p => query.queryKey.includes(p))
+    }
+  })
+}
+
+// Request deduplication helper
+export const createDedupedQuery = (baseQueryFn: Function) => {
+  const pendingRequests = new Map()
+  
+  return async (...args: any[]) => {
+    const key = JSON.stringify(args)
+    
+    if (pendingRequests.has(key)) {
+      return pendingRequests.get(key)
+    }
+    
+    const promise = baseQueryFn(...args)
+    pendingRequests.set(key, promise)
+    
+    try {
+      const result = await promise
+      pendingRequests.delete(key)
+      return result
+    } catch (error) {
+      pendingRequests.delete(key)
+      throw error
+    }
+  }
 }
