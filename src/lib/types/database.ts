@@ -213,6 +213,114 @@ export interface Database {
           updated_at?: string
         }
       }
+      delivery_rules: {
+        Row: {
+          id: string
+          supplier_id: string
+          zone: string
+          free_threshold_ex_vat: number | null
+          flat_fee: number
+          fuel_surcharge_pct: number
+          pallet_deposit_per_unit: number
+          cutoff_time: string | null
+          delivery_days: number[]
+          tiers_json: Array<{ threshold: number; fee: number }>
+          is_active: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          supplier_id: string
+          zone?: string
+          free_threshold_ex_vat?: number | null
+          flat_fee?: number
+          fuel_surcharge_pct?: number
+          pallet_deposit_per_unit?: number
+          cutoff_time?: string | null
+          delivery_days?: number[]
+          tiers_json?: Array<{ threshold: number; fee: number }>
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          supplier_id?: string
+          zone?: string
+          free_threshold_ex_vat?: number | null
+          flat_fee?: number
+          fuel_surcharge_pct?: number
+          pallet_deposit_per_unit?: number
+          cutoff_time?: string | null
+          delivery_days?: number[]
+          tiers_json?: Array<{ threshold: number; fee: number }>
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      zones: {
+        Row: {
+          id: string
+          name: string
+          country_code: string
+          region: string | null
+          postal_codes: string[]
+          base_delivery_fee: number
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          country_code: string
+          region?: string | null
+          postal_codes?: string[]
+          base_delivery_fee?: number
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          country_code?: string
+          region?: string | null
+          postal_codes?: string[]
+          base_delivery_fee?: number
+          created_at?: string
+        }
+      }
+      delivery_analytics: {
+        Row: {
+          id: string
+          tenant_id: string
+          supplier_id: string
+          month: string
+          total_fees_paid: number
+          total_orders: number
+          orders_under_threshold: number
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          tenant_id: string
+          supplier_id: string
+          month: string
+          total_fees_paid?: number
+          total_orders?: number
+          orders_under_threshold?: number
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          tenant_id?: string
+          supplier_id?: string
+          month?: string
+          total_fees_paid?: number
+          total_orders?: number
+          orders_under_threshold?: number
+          created_at?: string
+        }
+      }
       units: {
         Row: {
           id: string
@@ -573,6 +681,18 @@ export interface Database {
           tenant_name: string
           base_role: string
           attrs: Record<string, any>
+        }[]
+      }
+      get_frequent_items_by_supplier: {
+        Args: {
+          supplier_id_param: string
+          days_back?: number
+        }
+        Returns: {
+          supplier_item_id: string
+          item_name: string
+          order_count: number
+          avg_quantity: number
         }[]
       }
     }
