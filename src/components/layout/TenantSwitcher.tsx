@@ -49,7 +49,7 @@ export function TenantSwitcher() {
   )?.tenant
 
   const displayName = currentTenant && typeof currentTenant === 'object' && 'name' in currentTenant 
-    ? currentTenant.name 
+    ? String(currentTenant.name)
     : 'No Organization'
 
   const handleTenantSwitch = async (tenantId: string) => {
@@ -83,7 +83,7 @@ export function TenantSwitcher() {
         {userMemberships?.map((membership) => {
           const tenant = membership.tenant
           const tenantId = tenant && typeof tenant === 'object' && 'id' in tenant ? tenant.id : null
-          const tenantName = tenant && typeof tenant === 'object' && 'name' in tenant ? tenant.name : 'Unknown'
+          const tenantName = tenant && typeof tenant === 'object' && 'name' in tenant ? String(tenant.name) : 'Unknown'
           
           return (
             <DropdownMenuItem
