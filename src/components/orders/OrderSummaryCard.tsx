@@ -15,7 +15,7 @@ interface OrderSummaryCardProps {
   approvalThreshold: number
   dispatching: boolean
   onDispatchOrders: () => void
-  onClearCart: () => void
+  onClearBasket: () => void // Changed from onClearCart to onClearBasket for consistency
   formatPrice: (price: number) => string
 }
 
@@ -26,7 +26,7 @@ export function OrderSummaryCard({
   approvalThreshold,
   dispatching,
   onDispatchOrders,
-  onClearCart,
+  onClearBasket,
   formatPrice
 }: OrderSummaryCardProps) {
   return (
@@ -75,8 +75,8 @@ export function OrderSummaryCard({
           </div>
 
           <div className="flex space-x-3">
-            <Button variant="outline" onClick={onClearCart}>
-              Clear Cart
+            <Button variant="outline" onClick={onClearBasket}>
+              Clear Basket
             </Button>
             <Button 
               onClick={onDispatchOrders}

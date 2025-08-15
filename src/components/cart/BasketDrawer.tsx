@@ -1,4 +1,3 @@
-
 import React from 'react'
 import {
   Drawer,
@@ -11,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { ShoppingCart, Send, CheckCircle, Save } from 'lucide-react'
-import { useCart } from '@/contexts/CartProvider'
+import { useCart } from '@/contexts/BasketProvider'
 import { useSettings } from '@/contexts/SettingsProvider'
 import { useDeliveryCalculation } from '@/hooks/useDeliveryOptimization'
 import { DeliveryHints } from './DeliveryHints'

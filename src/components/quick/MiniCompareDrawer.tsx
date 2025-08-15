@@ -1,4 +1,3 @@
-
 import React from 'react';
 import {
   Drawer,
@@ -11,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { X, TrendingUp, Truck, Clock, AlertCircle } from 'lucide-react';
 import { useSettings } from '@/contexts/SettingsProvider';
-import { useCart } from '@/contexts/CartProvider';
+import { useCart } from '@/contexts/BasketProvider';
 
 interface MiniCompareDrawerProps {
   itemId: string | null;

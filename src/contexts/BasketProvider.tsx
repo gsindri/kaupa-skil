@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { useToast } from '@/hooks/use-toast'
 import type { CartItem } from '@/lib/types'
@@ -8,6 +9,7 @@ interface BasketContextType {
   updateQuantity: (supplierItemId: string, quantity: number) => void
   removeItem: (supplierItemId: string) => void
   clearBasket: () => void
+  clearCart: () => void // Added for backward compatibility
   getTotalItems: () => number
   getTotalPrice: (includeVat: boolean) => number
   isDrawerOpen: boolean
@@ -105,6 +107,9 @@ export function BasketProvider({ children }: { children: React.ReactNode }) {
     })
   }
 
+  // Add clearCart method for backward compatibility
+  const clearCart = clearBasket
+
   const getTotalItems = () => {
     return items.reduce((total, item) => total + item.quantity, 0)
   }
@@ -123,6 +128,7 @@ export function BasketProvider({ children }: { children: React.ReactNode }) {
       updateQuantity,
       removeItem,
       clearBasket,
+      clearCart,
       getTotalItems,
       getTotalPrice,
       isDrawerOpen,
