@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react'
 import { Button } from '@/components/ui/button'
 import { ShoppingCart, Settings, Zap } from 'lucide-react'
 import { QuickSearch } from '@/components/quick/QuickSearch'
-import { VirtualizedItemList } from '@/components/quick/VirtualizedItemList'
+import { PerformanceOptimizedList } from '@/components/quick/PerformanceOptimizedList'
 import { PantryLanes } from '@/components/quick/PantryLanes'
 import { BasketDrawer } from '@/components/cart/BasketDrawer'
 import { MiniCompareDrawer } from '@/components/quick/MiniCompareDrawer'
@@ -12,10 +12,14 @@ import { BulkActions } from '@/components/quick/BulkActions'
 import { SmartSuggestions } from '@/components/quick/SmartSuggestions'
 import { EnhancedCartIntegration } from '@/components/quick/EnhancedCartIntegration'
 import { KeyboardShortcuts } from '@/components/quick/KeyboardShortcuts'
+import { CacheProvider } from '@/components/quick/CacheManager'
+import { AnalyticsTrackerComponent } from '@/components/quick/AnalyticsTracker'
+import { AccessibilityEnhancements } from '@/components/quick/AccessibilityEnhancements'
 import { useCart } from '@/contexts/CartProvider'
 import { useSettings } from '@/contexts/SettingsProvider'
 import { useSupplierItems } from '@/hooks/useSupplierItems'
 import { useDebounce } from '@/hooks/useDebounce'
+import { PerformanceMonitor } from '@/lib/performance'
 
 export default function Index() {
   const [searchQuery, setSearchQuery] = useState('')
@@ -24,7 +28,7 @@ export default function Index() {
   const [userMode, setUserMode] = useState<'just-order' | 'balanced' | 'analytical'>('balanced')
   const [selectedLane, setSelectedLane] = useState<string | null>(null)
   
-  // New Phase 5 state
+  // Phase 5 state
   const [selectedItems, setSelectedItems] = useState<string[]>([])
   const [filters, setFilters] = useState({
     categories: [],
@@ -41,9 +45,23 @@ export default function Index() {
   
   const debouncedSearch = useDebounce(searchQuery, 300)
 
-  // Enhanced filtering and sorting logic with mock pricing data
+  // Enhanced filtering and sorting logic with performance monitoring
   const filteredAndSortedItems = useMemo(() => {
-    let filtered = supplierItems.filter(item => {
+    PerformanceMonitor.startMeasurement('filtering-and-sorting')
+    
+    // Add mock pricing data to items
+    const itemsWithPricing = supplierItems.map(item => {
+      const seed = item.id.split('').reduce((a, b) => a + b.charCodeAt(0), 0)
+      const basePrice = 100 + (seed % 4900)
+      
+      return {
+        ...item,
+        unit_price_ex_vat: basePrice,
+        unit_price_inc_vat: Math.round(basePrice * 1.24)
+      }
+    })
+
+    let filtered = itemsWithPricing.filter(item => {
       // Text search
       if (debouncedSearch.trim()) {
         const query = debouncedSearch.toLowerCase()
@@ -56,8 +74,6 @@ export default function Index() {
 
       // Category filter
       if (filters.categories.length > 0) {
-        // This would need proper category data from the API
-        // For now, we'll use a placeholder check
         const hasCategory = filters.categories.some(cat => 
           item.display_name?.toLowerCase().includes(cat.toLowerCase())
         )
@@ -70,9 +86,9 @@ export default function Index() {
         if (!filters.suppliers.includes(supplierName)) return false
       }
 
-      // Generate mock price for filtering
-      const mockPrice = Math.floor(Math.random() * 5000) + 100
-      if (mockPrice < filters.priceRange[0] || mockPrice > filters.priceRange[1]) {
+      // Price filter
+      const price = includeVat ? item.unit_price_inc_vat : item.unit_price_ex_vat
+      if (price < filters.priceRange[0] || price > filters.priceRange[1]) {
         return false
       }
 
@@ -93,13 +109,11 @@ export default function Index() {
           comparison = (a.display_name || '').localeCompare(b.display_name || '')
           break
         case 'price':
-          // Use mock prices for sorting
-          const priceA = Math.floor(Math.random() * 5000) + 100
-          const priceB = Math.floor(Math.random() * 5000) + 100
+          const priceA = includeVat ? a.unit_price_inc_vat : a.unit_price_ex_vat
+          const priceB = includeVat ? b.unit_price_inc_vat : b.unit_price_ex_vat
           comparison = priceA - priceB
           break
         case 'brand':
-          // Would need brand data from API
           comparison = (a.display_name || '').localeCompare(b.display_name || '')
           break
       }
@@ -107,38 +121,43 @@ export default function Index() {
       return filters.sortOrder === 'desc' ? -comparison : comparison
     })
 
+    PerformanceMonitor.endMeasurement('filtering-and-sorting')
     return filtered
   }, [supplierItems, debouncedSearch, filters, includeVat])
 
-  // Convert to display format with mock pricing
-  const displayItems = filteredAndSortedItems.map(item => {
-    // Generate consistent mock prices based on item ID
-    const seed = item.id.split('').reduce((a, b) => a + b.charCodeAt(0), 0)
-    const basePrice = 100 + (seed % 4900)
-    const unitPriceExVat = basePrice
-    const unitPriceIncVat = Math.round(basePrice * 1.24)
-    const packQty = item.pack_qty || 1
+  // Convert to display format with optimized pricing calculation
+  const displayItems = useMemo(() => {
+    PerformanceMonitor.startMeasurement('display-items-conversion')
     
-    return {
-      id: item.id,
-      name: item.display_name || 'Unknown Item',
-      brand: (item as any).supplier?.name || 'Unknown Brand',
-      packSize: item.pack_qty ? `${item.pack_qty} ${(item as any).pack_unit?.code || 'units'}` : '1 unit',
-      unitPriceExVat,
-      unitPriceIncVat,
-      packPriceExVat: unitPriceExVat * packQty,
-      packPriceIncVat: unitPriceIncVat * packQty,
-      unit: (item as any).pack_unit?.code || 'unit',
-      suppliers: [(item as any).supplier?.name || 'Unknown Supplier'],
-      stock: true, // Would need real stock data
-      deliveryFee: Math.random() > 0.7 ? Math.floor(Math.random() * 3000) + 1000 : undefined,
-      cutoffTime: Math.random() > 0.5 ? '14:00' : undefined,
-      deliveryDay: Math.random() > 0.5 ? 'Tomorrow' : undefined,
-      isPremiumBrand: Math.random() > 0.8,
-      isDiscounted: Math.random() > 0.9,
-      originalPrice: Math.random() > 0.9 ? unitPriceIncVat * 1.2 : undefined
-    }
-  })
+    const items = filteredAndSortedItems.map(item => {
+      const unitPriceExVat = item.unit_price_ex_vat
+      const unitPriceIncVat = item.unit_price_inc_vat
+      const packQty = item.pack_qty || 1
+      
+      return {
+        id: item.id,
+        name: item.display_name || 'Unknown Item',
+        brand: (item as any).supplier?.name || 'Unknown Brand',
+        packSize: item.pack_qty ? `${item.pack_qty} ${(item as any).pack_unit?.code || 'units'}` : '1 unit',
+        unitPriceExVat,
+        unitPriceIncVat,
+        packPriceExVat: unitPriceExVat * packQty,
+        packPriceIncVat: unitPriceIncVat * packQty,
+        unit: (item as any).pack_unit?.code || 'unit',
+        suppliers: [(item as any).supplier?.name || 'Unknown Supplier'],
+        stock: true,
+        deliveryFee: Math.random() > 0.7 ? Math.floor(Math.random() * 3000) + 1000 : undefined,
+        cutoffTime: Math.random() > 0.5 ? '14:00' : undefined,
+        deliveryDay: Math.random() > 0.5 ? 'Tomorrow' : undefined,
+        isPremiumBrand: Math.random() > 0.8,
+        isDiscounted: Math.random() > 0.9,
+        originalPrice: Math.random() > 0.9 ? unitPriceIncVat * 1.2 : undefined
+      }
+    })
+    
+    PerformanceMonitor.endMeasurement('display-items-conversion')
+    return items
+  }, [filteredAndSortedItems])
 
   // Get available categories and suppliers for filtering
   const availableCategories = [
@@ -150,14 +169,12 @@ export default function Index() {
     supplierItems.map(item => (item as any).supplier?.name).filter(Boolean)
   )]
 
-  // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.ctrlKey || e.metaKey) {
         switch (e.key) {
           case 'k':
             e.preventDefault()
-            // Focus search - handled by QuickSearch component
             break
           case 'a':
             e.preventDefault()
@@ -181,7 +198,6 @@ export default function Index() {
     return () => document.removeEventListener('keydown', handleKeyDown)
   }, [displayItems, setIsDrawerOpen])
 
-  // Bulk actions handlers
   const handleSelectAll = () => {
     setSelectedItems(displayItems.map(item => item.id))
   }
@@ -216,7 +232,6 @@ export default function Index() {
   }
 
   const handleBulkRemoveFromCart = () => {
-    // Implementation would depend on cart structure
     setSelectedItems([])
   }
 
@@ -251,143 +266,144 @@ export default function Index() {
   const hasResults = displayItems.length > 0
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-100">
-      {/* Header */}
-      <header className="sticky top-0 z-40 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2">
-                <Zap className="h-6 w-6 text-brand-600" />
-                <h1 className="text-xl font-bold text-foreground">Quick Order</h1>
-              </div>
-              
-              {/* Mode Selector */}
-              <div className="hidden md:flex items-center space-x-1 bg-muted/50 rounded-lg p-1">
-                {(['just-order', 'balanced', 'analytical'] as const).map((mode) => (
-                  <button
-                    key={mode}
-                    onClick={() => setUserMode(mode)}
-                    className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all duration-200 ${
-                      userMode === mode
-                        ? 'bg-background shadow-sm text-foreground'
-                        : 'text-muted-foreground hover:text-foreground hover:bg-background/50'
-                    }`}
-                  >
-                    {mode === 'just-order' ? 'Just Order' : mode === 'balanced' ? 'Balanced' : 'Analytical'}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="flex items-center space-x-3">
-              <Button
-                variant="outline"
-                size="sm"
-                className="relative"
-                onClick={() => setIsDrawerOpen(true)}
-              >
-                <ShoppingCart className="h-4 w-4 mr-2" />
-                Cart
-                {getTotalItems() > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-brand-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                    {getTotalItems()}
-                  </span>
-                )}
-              </Button>
-              <Button variant="ghost" size="sm">
-                <Settings className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="container mx-auto px-4 py-6 space-y-6">
-        {/* Search Bar */}
-        <div className="max-w-2xl mx-auto">
-          <QuickSearch
-            value={searchQuery}
-            onChange={setSearchQuery}
-            onResultSelect={(item) => {
-              setSearchQuery('')
-              handleAddSuggestedItem(item.id)
-            }}
-          />
-        </div>
-
-        {/* Advanced Filtering */}
-        {(showResults || selectedItems.length > 0) && (
-          <AdvancedFiltering
-            filters={filters}
-            onFiltersChange={setFilters}
-            availableCategories={availableCategories}
-            availableSuppliers={availableSuppliers}
-          />
-        )}
-
-        {/* Bulk Actions */}
-        <BulkActions
-          selectedItems={selectedItems}
-          allItems={displayItems}
-          onSelectAll={handleSelectAll}
-          onClearSelection={handleClearSelection}
-          onBulkAddToCart={handleBulkAddToCart}
-          onBulkRemoveFromCart={handleBulkRemoveFromCart}
+    <CacheProvider>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-100">
+        {/* Accessibility Enhancements */}
+        <AccessibilityEnhancements />
+        
+        {/* Analytics Tracker */}
+        <AnalyticsTrackerComponent 
+          searchQuery={debouncedSearch}
+          resultCount={displayItems.length}
+          userMode={userMode}
         />
 
-        {/* Smart Suggestions */}
-        {!showResults && (
-          <div className="max-w-4xl mx-auto">
-            <SmartSuggestions onAddSuggestedItem={handleAddSuggestedItem} />
-          </div>
-        )}
+        <header className="sticky top-0 z-40 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+          <div className="container mx-auto px-4 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-2">
+                  <Zap className="h-6 w-6 text-brand-600" />
+                  <h1 className="text-xl font-bold text-foreground">Quick Order</h1>
+                </div>
+                
+                <div className="hidden md:flex items-center space-x-1 bg-muted/50 rounded-lg p-1">
+                  {(['just-order', 'balanced', 'analytical'] as const).map((mode) => (
+                    <button
+                      key={mode}
+                      onClick={() => setUserMode(mode)}
+                      className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all duration-200 ${
+                        userMode === mode
+                          ? 'bg-background shadow-sm text-foreground'
+                          : 'text-muted-foreground hover:text-foreground hover:bg-background/50'
+                      }`}
+                    >
+                      {mode === 'just-order' ? 'Just Order' : mode === 'balanced' ? 'Balanced' : 'Analytical'}
+                    </button>
+                  ))}
+                </div>
+              </div>
 
-        {/* Content Area */}
-        <div className="max-w-6xl mx-auto">
-          {showResults ? (
-            hasResults ? (
-              <VirtualizedItemList
-                items={displayItems}
-                onCompareItem={handleCompareItem}
-                userMode={userMode}
-                selectedItems={selectedItems}
-                onItemSelect={(itemId, isSelected) => {
-                  if (isSelected) {
-                    setSelectedItems(prev => [...prev, itemId])
-                  } else {
-                    setSelectedItems(prev => prev.filter(id => id !== itemId))
-                  }
-                }}
-              />
-            ) : (
-              <SearchEmptyState 
-                query={debouncedSearch}
-                onClearSearch={() => setSearchQuery('')}
-              />
-            )
-          ) : (
-            <PantryLanes
-              onLaneSelect={setSelectedLane}
-              selectedLane={selectedLane}
-              onAddToCart={handleAddSuggestedItem}
+              <div className="flex items-center space-x-3">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="relative"
+                  onClick={() => setIsDrawerOpen(true)}
+                >
+                  <ShoppingCart className="h-4 w-4 mr-2" />
+                  Cart
+                  {getTotalItems() > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-brand-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                      {getTotalItems()}
+                    </span>
+                  )}
+                </Button>
+                <Button variant="ghost" size="sm">
+                  <Settings className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <main className="container mx-auto px-4 py-6 space-y-6">
+          <div className="max-w-2xl mx-auto">
+            <QuickSearch
+              value={searchQuery}
+              onChange={setSearchQuery}
+              onResultSelect={(item) => {
+                setSearchQuery('')
+                handleAddSuggestedItem(item.id)
+              }}
+            />
+          </div>
+
+          {(showResults || selectedItems.length > 0) && (
+            <AdvancedFiltering
+              filters={filters}
+              onFiltersChange={setFilters}
+              availableCategories={availableCategories}
+              availableSuppliers={availableSuppliers}
             />
           )}
-        </div>
-      </main>
 
-      {/* Enhanced Cart Integration */}
-      <EnhancedCartIntegration />
+          <BulkActions
+            selectedItems={selectedItems}
+            allItems={displayItems}
+            onSelectAll={handleSelectAll}
+            onClearSelection={handleClearSelection}
+            onBulkAddToCart={handleBulkAddToCart}
+            onBulkRemoveFromCart={handleBulkRemoveFromCart}
+          />
 
-      {/* Drawers and Modals */}
-      <BasketDrawer />
-      <MiniCompareDrawer
-        itemId={compareItemId}
-        isOpen={isCompareOpen}
-        onClose={() => setIsCompareOpen(false)}
-      />
-      <KeyboardShortcuts onClose={() => {}} />
-    </div>
+          {!showResults && (
+            <div className="max-w-4xl mx-auto">
+              <SmartSuggestions onAddSuggestedItem={handleAddSuggestedItem} />
+            </div>
+          )}
+
+          <div className="max-w-6xl mx-auto">
+            {showResults ? (
+              hasResults ? (
+                <PerformanceOptimizedList
+                  items={displayItems}
+                  onCompareItem={handleCompareItem}
+                  userMode={userMode}
+                  selectedItems={selectedItems}
+                  onItemSelect={(itemId, isSelected) => {
+                    if (isSelected) {
+                      setSelectedItems(prev => [...prev, itemId])
+                    } else {
+                      setSelectedItems(prev => prev.filter(id => id !== itemId))
+                    }
+                  }}
+                />
+              ) : (
+                <SearchEmptyState 
+                  query={debouncedSearch}
+                  onClearSearch={() => setSearchQuery('')}
+                />
+              )
+            ) : (
+              <PantryLanes
+                onLaneSelect={setSelectedLane}
+                selectedLane={selectedLane}
+                onAddToCart={handleAddSuggestedItem}
+              />
+            )}
+          </div>
+        </main>
+
+        <EnhancedCartIntegration />
+        <BasketDrawer />
+        <MiniCompareDrawer
+          itemId={compareItemId}
+          isOpen={isCompareOpen}
+          onClose={() => setIsCompareOpen(false)}
+        />
+        <KeyboardShortcuts onClose={() => {}} />
+      </div>
+    </CacheProvider>
   )
 }

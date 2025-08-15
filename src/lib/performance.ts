@@ -10,25 +10,27 @@ interface BrowserMemoryInfo {
 
 export class PerformanceMonitor {
   private static measurements = new Map<string, number>()
+  private static isEnabled = process.env.NODE_ENV === 'development'
 
   static startMeasurement(name: string) {
+    if (!this.isEnabled) return
     this.measurements.set(name, performance.now())
   }
 
   static endMeasurement(name: string): number {
+    if (!this.isEnabled) return 0
+    
     const startTime = this.measurements.get(name)
     if (!startTime) {
-      if (process.env.NODE_ENV === 'development') {
-        console.warn(`No start measurement found for: ${name}`)
-      }
+      console.warn(`No start measurement found for: ${name}`)
       return 0
     }
 
     const duration = performance.now() - startTime
     this.measurements.delete(name)
     
-    // Log slow operations only in development
-    if (process.env.NODE_ENV === 'development' && duration > 1000) {
+    // Log slow operations
+    if (duration > 1000) {
       console.warn(`Slow operation detected: ${name} took ${duration.toFixed(2)}ms`)
     }
 
@@ -43,8 +45,7 @@ export class PerformanceMonitor {
         const result = await fn()
         const duration = this.endMeasurement(name)
         
-        // Only log in development
-        if (process.env.NODE_ENV === 'development') {
+        if (this.isEnabled && duration > 0) {
           console.log(`${name} completed in ${duration.toFixed(2)}ms`)
         }
         
@@ -64,10 +65,7 @@ export class PerformanceMonitor {
   }
 
   static logMemoryUsage() {
-    // Only log memory usage in development
-    if (process.env.NODE_ENV !== 'development') {
-      return
-    }
+    if (!this.isEnabled) return
 
     const memory = this.getMemoryUsage()
     if (memory) {
@@ -79,7 +77,6 @@ export class PerformanceMonitor {
     }
   }
 
-  // Production-safe method to get performance metrics without logging
   static getPerformanceMetrics() {
     const memory = this.getMemoryUsage()
     return {
@@ -91,6 +88,14 @@ export class PerformanceMonitor {
       timing: performance.timing,
       navigation: performance.navigation
     }
+  }
+
+  static enable() {
+    this.isEnabled = true
+  }
+
+  static disable() {
+    this.isEnabled = false
   }
 }
 

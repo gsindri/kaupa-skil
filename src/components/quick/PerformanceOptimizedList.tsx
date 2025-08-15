@@ -1,10 +1,11 @@
 
-import React from 'react'
+import React, { useMemo } from 'react'
 import { FixedSizeList as List } from 'react-window'
 import { ItemCard } from './ItemCard'
 import { Checkbox } from '@/components/ui/checkbox'
+import { PerformanceMonitor } from '@/lib/performance'
 
-interface VirtualizedItemListProps {
+interface PerformanceOptimizedListProps {
   items: any[]
   onCompareItem: (itemId: string) => void
   userMode: 'just-order' | 'balanced' | 'analytical'
@@ -12,15 +13,26 @@ interface VirtualizedItemListProps {
   onItemSelect?: (itemId: string, isSelected: boolean) => void
 }
 
-export function VirtualizedItemList({ 
+export function PerformanceOptimizedList({ 
   items, 
   onCompareItem, 
   userMode,
   selectedItems = [],
   onItemSelect 
-}: VirtualizedItemListProps) {
-  const ItemRow = ({ index, style }: { index: number; style: React.CSSProperties }) => {
-    const item = items[index]
+}: PerformanceOptimizedListProps) {
+  // Memoize expensive calculations
+  const memoizedItems = useMemo(() => {
+    PerformanceMonitor.startMeasurement('items-processing')
+    const processed = items.map(item => ({
+      ...item,
+      _cacheKey: `${item.id}-${item.name}-${userMode}`
+    }))
+    PerformanceMonitor.endMeasurement('items-processing')
+    return processed
+  }, [items, userMode])
+
+  const ItemRow = React.memo(({ index, style }: { index: number; style: React.CSSProperties }) => {
+    const item = memoizedItems[index]
     const isSelected = selectedItems.includes(item.id)
 
     return (
@@ -44,19 +56,22 @@ export function VirtualizedItemList({
         </div>
       </div>
     )
-  }
+  })
 
-  const itemHeight = userMode === 'just-order' ? 92 : 124 // Adjusted for checkbox
+  ItemRow.displayName = 'ItemRow'
+
+  const itemHeight = userMode === 'just-order' ? 92 : 124
   const listHeight = Math.min(items.length * itemHeight, 600)
 
   return (
     <div className="w-full">
       <List
         height={listHeight}
-        itemCount={items.length}
+        itemCount={memoizedItems.length}
         itemSize={itemHeight}
         width="100%"
         className="scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent"
+        overscanCount={5} // Prerender 5 items above/below viewport
       >
         {ItemRow}
       </List>
