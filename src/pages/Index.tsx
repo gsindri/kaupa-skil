@@ -1,309 +1,383 @@
-
-import React, { useState, useMemo, useCallback, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Separator } from '@/components/ui/separator'
-import { Zap, ShoppingCart, Settings } from 'lucide-react'
+import { ShoppingCart, Settings, Zap } from 'lucide-react'
+import { QuickSearch } from '@/components/quick/QuickSearch'
+import { VirtualizedItemList } from '@/components/quick/VirtualizedItemList'
+import { PantryLanes } from '@/components/quick/PantryLanes'
+import { BasketDrawer } from '@/components/cart/BasketDrawer'
+import { MiniCompareDrawer } from '@/components/quick/MiniCompareDrawer'
+import { SearchEmptyState } from '@/components/quick/SearchEmptyState'
+import { AdvancedFiltering } from '@/components/quick/AdvancedFiltering'
+import { BulkActions } from '@/components/quick/BulkActions'
+import { SmartSuggestions } from '@/components/quick/SmartSuggestions'
+import { EnhancedCartIntegration } from '@/components/quick/EnhancedCartIntegration'
+import { KeyboardShortcuts } from '@/components/quick/KeyboardShortcuts'
 import { useCart } from '@/contexts/CartProvider'
 import { useSettings } from '@/contexts/SettingsProvider'
-import { getUserPrefs, saveUserPrefs } from '@/state/userPrefs'
-import { QuickSearch } from '@/components/quick/QuickSearch'
-import { PantryLanes } from '@/components/quick/PantryLanes'
-import { VirtualizedItemList } from '@/components/quick/VirtualizedItemList'
-import { ItemCard } from '@/components/quick/ItemCard'
-import { SearchEmptyState } from '@/components/quick/SearchEmptyState'
-import { BasketDrawer } from '@/components/cart/BasketDrawer'
 import { useSupplierItems } from '@/hooks/useSupplierItems'
+import { useDebounce } from '@/hooks/useDebounce'
 
 export default function Index() {
   const [searchQuery, setSearchQuery] = useState('')
-  const [activeTab, setActiveTab] = useState<'pantry' | 'search'>('pantry')
-  const [selectedSearchItem, setSelectedSearchItem] = useState<any>(null)
-  const { setIsDrawerOpen, getTotalItems } = useCart()
-  const { includeVat, setIncludeVat } = useSettings()
+  const [compareItemId, setCompareItemId] = useState<string | null>(null)
+  const [isCompareOpen, setIsCompareOpen] = useState(false)
+  const [userMode, setUserMode] = useState<'just-order' | 'balanced' | 'analytical'>('balanced')
+  const [selectedLane, setSelectedLane] = useState<string | null>(null)
+  
+  // New Phase 5 state
+  const [selectedItems, setSelectedItems] = useState<string[]>([])
+  const [filters, setFilters] = useState({
+    categories: [],
+    suppliers: [],
+    priceRange: [0, 10000] as [number, number],
+    inStockOnly: false,
+    sortBy: 'name' as 'name' | 'price' | 'brand',
+    sortOrder: 'asc' as 'asc' | 'desc'
+  })
+
+  const { getTotalItems, setIsDrawerOpen, addItem } = useCart()
+  const { includeVat } = useSettings()
   const { data: supplierItems = [], isLoading } = useSupplierItems()
   
-  // Get user preferences
-  const userPrefs = getUserPrefs()
-  const [userMode, setUserMode] = useState(userPrefs.userMode)
+  const debouncedSearch = useDebounce(searchQuery, 300)
 
-  // Handle VAT toggle with smooth animation
-  const handleVatToggle = useCallback(() => {
-    setIncludeVat(!includeVat)
-  }, [includeVat, setIncludeVat])
+  // Enhanced filtering and sorting logic
+  const filteredAndSortedItems = useMemo(() => {
+    let filtered = supplierItems.filter(item => {
+      // Text search
+      if (debouncedSearch.trim()) {
+        const query = debouncedSearch.toLowerCase()
+        const matchesSearch = 
+          item.display_name?.toLowerCase().includes(query) ||
+          item.ext_sku?.toLowerCase().includes(query) ||
+          item.ean?.toLowerCase().includes(query)
+        if (!matchesSearch) return false
+      }
 
-  // Handle mode change
-  const handleModeChange = useCallback((mode: 'just-order' | 'balanced' | 'analytical') => {
-    setUserMode(mode)
-    saveUserPrefs({ userMode: mode })
-  }, [])
+      // Category filter
+      if (filters.categories.length > 0) {
+        // This would need proper category data from the API
+        // For now, we'll use a placeholder check
+        const hasCategory = filters.categories.some(cat => 
+          item.display_name?.toLowerCase().includes(cat.toLowerCase())
+        )
+        if (!hasCategory) return false
+      }
 
-  // Handle search result selection
-  const handleSearchResultSelect = useCallback((item: any) => {
-    setSelectedSearchItem(item)
-    setActiveTab('search')
-  }, [])
+      // Supplier filter
+      if (filters.suppliers.length > 0) {
+        const supplierName = (item as any).supplier?.name || 'Unknown'
+        if (!filters.suppliers.includes(supplierName)) return false
+      }
 
-  // Enhanced filtered items with better mapping
-  const filteredItems = useMemo(() => {
-    if (selectedSearchItem) {
-      return [{
-        id: selectedSearchItem.id,
-        name: selectedSearchItem.display_name || selectedSearchItem.ext_sku || 'Unknown Item',
-        brand: (selectedSearchItem as any).supplier?.name || 'Unknown Brand',
-        packSize: selectedSearchItem.pack_qty ? `${selectedSearchItem.pack_qty} ${(selectedSearchItem as any).pack_unit?.code || 'units'}` : '1 unit',
-        unitPriceExVat: 0,
-        unitPriceIncVat: 0,
-        packPriceExVat: 0,
-        packPriceIncVat: 0,
-        unit: (selectedSearchItem as any).pack_unit?.code || 'unit',
-        suppliers: [(selectedSearchItem as any).supplier?.name || 'Unknown'],
-        stock: true,
-        isPremiumBrand: Math.random() > 0.7, // Mock data
-        isDiscounted: Math.random() > 0.8, // Mock data
-        originalPrice: Math.random() > 0.8 ? 1200 : undefined // Mock data
-      }]
-    }
-    
-    if (!searchQuery.trim()) return []
-    
-    const query = searchQuery.toLowerCase()
-    return supplierItems
-      .filter(item => 
-        item.display_name?.toLowerCase().includes(query) ||
-        item.ext_sku?.toLowerCase().includes(query) ||
-        item.ean?.toLowerCase().includes(query)
-      )
-      .slice(0, 100)
-      .map(item => ({
-        id: item.id,
-        name: item.display_name || item.ext_sku || 'Unknown Item',
-        brand: (item as any).supplier?.name || 'Unknown Brand',
-        packSize: item.pack_qty ? `${item.pack_qty} ${(item as any).pack_unit?.code || 'units'}` : '1 unit',
-        unitPriceExVat: 0,
-        unitPriceIncVat: 0,
-        packPriceExVat: 0,
-        packPriceIncVat: 0,
-        unit: (item as any).pack_unit?.code || 'unit',
-        suppliers: [(item as any).supplier?.name || 'Unknown'],
-        stock: true,
-        isPremiumBrand: Math.random() > 0.7,
-        isDiscounted: Math.random() > 0.8,
-        originalPrice: Math.random() > 0.8 ? 1200 : undefined
-      }))
-  }, [supplierItems, searchQuery, selectedSearchItem])
+      // Price range filter
+      const price = includeVat ? item.unit_price_inc_vat : item.unit_price_ex_vat
+      if (price < filters.priceRange[0] || price > filters.priceRange[1]) {
+        return false
+      }
 
-  // Clear selected item when search changes
-  useEffect(() => {
-    if (!searchQuery.trim()) {
-      setSelectedSearchItem(null)
-    }
-  }, [searchQuery])
+      // Stock filter
+      if (filters.inStockOnly && !(item as any).stock) {
+        return false
+      }
+
+      return true
+    })
+
+    // Sort items
+    filtered.sort((a, b) => {
+      let comparison = 0
+      
+      switch (filters.sortBy) {
+        case 'name':
+          comparison = (a.display_name || '').localeCompare(b.display_name || '')
+          break
+        case 'price':
+          const priceA = includeVat ? a.unit_price_inc_vat : a.unit_price_ex_vat
+          const priceB = includeVat ? b.unit_price_inc_vat : b.unit_price_ex_vat
+          comparison = priceA - priceB
+          break
+        case 'brand':
+          // Would need brand data from API
+          comparison = (a.display_name || '').localeCompare(b.display_name || '')
+          break
+      }
+
+      return filters.sortOrder === 'desc' ? -comparison : comparison
+    })
+
+    return filtered
+  }, [supplierItems, debouncedSearch, filters, includeVat])
+
+  // Convert to display format
+  const displayItems = filteredAndSortedItems.map(item => ({
+    id: item.id,
+    name: item.display_name || 'Unknown Item',
+    brand: (item as any).supplier?.name || 'Unknown Brand',
+    packSize: item.pack_qty ? `${item.pack_qty} ${(item as any).pack_unit?.code || 'units'}` : '1 unit',
+    unitPriceExVat: item.unit_price_ex_vat || 0,
+    unitPriceIncVat: item.unit_price_inc_vat || 0,
+    packPriceExVat: (item.unit_price_ex_vat || 0) * (item.pack_qty || 1),
+    packPriceIncVat: (item.unit_price_inc_vat || 0) * (item.pack_qty || 1),
+    unit: (item as any).pack_unit?.code || 'unit',
+    suppliers: [(item as any).supplier?.name || 'Unknown Supplier'],
+    stock: true, // Would need real stock data
+    deliveryFee: Math.random() > 0.7 ? Math.floor(Math.random() * 3000) + 1000 : undefined,
+    cutoffTime: Math.random() > 0.5 ? '14:00' : undefined,
+    deliveryDay: Math.random() > 0.5 ? 'Tomorrow' : undefined,
+    isPremiumBrand: Math.random() > 0.8,
+    isDiscounted: Math.random() > 0.9,
+    originalPrice: Math.random() > 0.9 ? (item.unit_price_inc_vat || 0) * 1.2 : undefined
+  }))
+
+  // Get available categories and suppliers for filtering
+  const availableCategories = [
+    'Dairy Products', 'Fresh Produce', 'Meat & Seafood', 
+    'Bakery Items', 'Cleaning Supplies', 'Beverages'
+  ]
+  
+  const availableSuppliers = [...new Set(
+    supplierItems.map(item => (item as any).supplier?.name).filter(Boolean)
+  )]
 
   // Keyboard shortcuts
-  React.useEffect(() => {
+  useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'b' || e.key === 'B') {
-        if (e.target === document.body || (e.target as HTMLElement).tagName === 'INPUT') {
-          setIsDrawerOpen(true)
+      if (e.ctrlKey || e.metaKey) {
+        switch (e.key) {
+          case 'k':
+            e.preventDefault()
+            // Focus search - handled by QuickSearch component
+            break
+          case 'a':
+            e.preventDefault()
+            if (displayItems.length > 0) {
+              setSelectedItems(displayItems.map(item => item.id))
+            }
+            break
+          case 'd':
+            e.preventDefault()
+            setSelectedItems([])
+            break
+          case 'b':
+            e.preventDefault()
+            setIsDrawerOpen(true)
+            break
         }
       }
     }
 
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [setIsDrawerOpen])
+  }, [displayItems, setIsDrawerOpen])
 
-  const basketItemCount = getTotalItems()
+  // Bulk actions handlers
+  const handleSelectAll = () => {
+    setSelectedItems(displayItems.map(item => item.id))
+  }
+
+  const handleClearSelection = () => {
+    setSelectedItems([])
+  }
+
+  const handleBulkAddToCart = (quantity: number) => {
+    selectedItems.forEach(itemId => {
+      const item = displayItems.find(i => i.id === itemId)
+      if (item) {
+        addItem({
+          id: item.id,
+          supplierId: item.suppliers[0],
+          supplierName: item.suppliers[0],
+          itemName: item.name,
+          sku: item.id,
+          packSize: item.packSize,
+          packPrice: includeVat ? item.packPriceIncVat : item.packPriceExVat,
+          unitPriceExVat: item.unitPriceExVat,
+          unitPriceIncVat: item.unitPriceIncVat,
+          vatRate: 0.24,
+          unit: item.unit,
+          supplierItemId: item.id,
+          displayName: item.name,
+          packQty: 1
+        }, quantity)
+      }
+    })
+    setSelectedItems([])
+  }
+
+  const handleBulkRemoveFromCart = () => {
+    // Implementation would depend on cart structure
+    setSelectedItems([])
+  }
+
+  const handleAddSuggestedItem = (itemId: string) => {
+    const item = displayItems.find(i => i.id === itemId)
+    if (item) {
+      addItem({
+        id: item.id,
+        supplierId: item.suppliers[0],
+        supplierName: item.suppliers[0],
+        itemName: item.name,
+        sku: item.id,
+        packSize: item.packSize,
+        packPrice: includeVat ? item.packPriceIncVat : item.packPriceExVat,
+        unitPriceExVat: item.unitPriceExVat,
+        unitPriceIncVat: item.unitPriceIncVat,
+        vatRate: 0.24,
+        unit: item.unit,
+        supplierItemId: item.id,
+        displayName: item.name,
+        packQty: 1
+      }, 1)
+    }
+  }
+
+  const handleCompareItem = (itemId: string) => {
+    setCompareItemId(itemId)
+    setIsCompareOpen(true)
+  }
+
+  const showResults = debouncedSearch.trim().length > 0 || selectedLane
+  const hasResults = displayItems.length > 0
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header - exact 56px height with proper backdrop blur */}
-      <div className="sticky top-0 z-40 h-14 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border/50">
-        <div className="max-w-7xl mx-auto px-4 md:px-6 h-full flex items-center justify-between">
-          <div className="flex items-center gap-6">
-            <div className="flex items-center gap-2">
-              <Zap className="h-5 w-5 text-brand-500" />
-              <h1 className="text-lg font-semibold">Quick Order</h1>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-100">
+      {/* Header */}
+      <header className="sticky top-0 z-40 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2">
+                <Zap className="h-6 w-6 text-brand-600" />
+                <h1 className="text-xl font-bold text-foreground">Quick Order</h1>
+              </div>
+              
+              {/* Mode Selector */}
+              <div className="hidden md:flex items-center space-x-1 bg-muted/50 rounded-lg p-1">
+                {(['just-order', 'balanced', 'analytical'] as const).map((mode) => (
+                  <button
+                    key={mode}
+                    onClick={() => setUserMode(mode)}
+                    className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all duration-200 ${
+                      userMode === mode
+                        ? 'bg-background shadow-sm text-foreground'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-background/50'
+                    }`}
+                  >
+                    {mode === 'just-order' ? 'Just Order' : mode === 'balanced' ? 'Balanced' : 'Analytical'}
+                  </button>
+                ))}
+              </div>
             </div>
-            
-            {/* Mode Toggle */}
-            <div className="flex items-center gap-1 bg-muted/50 rounded-lg p-1">
-              {(['just-order', 'balanced', 'analytical'] as const).map((mode) => (
-                <Button
-                  key={mode}
-                  variant={userMode === mode ? 'default' : 'ghost'}
-                  size="sm"
-                  className={`h-7 text-xs transition-all duration-200 ${
-                    userMode === mode ? 'bg-background shadow-sm' : 'hover:bg-muted/80'
-                  }`}
-                  onClick={() => handleModeChange(mode)}
-                >
-                  {mode === 'just-order' ? 'Quick' : mode === 'balanced' ? 'Balanced' : 'Detail'}
-                </Button>
-              ))}
-            </div>
-          </div>
 
-          {/* Center: Search */}
-          <div className="flex-1 max-w-2xl mx-8">
-            <QuickSearch
-              value={searchQuery}
-              onChange={(value) => {
-                setSearchQuery(value)
-                setSelectedSearchItem(null)
-                if (value.trim()) {
-                  setActiveTab('search')
-                }
-              }}
-              onResultSelect={handleSearchResultSelect}
-              placeholder="Search item / brand / EAN…"
-            />
-          </div>
-
-          <div className="flex items-center gap-3">
-            {/* VAT Toggle */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleVatToggle}
-              className="transition-all duration-200 hover:bg-muted/80"
-            >
-              <span className={`transition-opacity duration-200 ${includeVat ? 'opacity-100' : 'opacity-50'}`}>
-                Inc VAT
-              </span>
-              <Separator orientation="vertical" className="mx-2 h-4" />
-              <span className={`transition-opacity duration-200 ${!includeVat ? 'opacity-100' : 'opacity-50'}`}>
-                Ex VAT
-              </span>
-            </Button>
-
-            {/* Basket Button */}
-            <Button
-              variant="default"
-              onClick={() => setIsDrawerOpen(true)}
-              className="relative transition-all duration-200 hover:scale-105 bg-brand-500 hover:bg-brand-600"
-            >
-              <ShoppingCart className="h-4 w-4 mr-2" />
-              Basket
-              {basketItemCount > 0 && (
-                <Badge 
-                  variant="secondary" 
-                  className="ml-2 bg-background text-foreground animate-pulse"
-                >
-                  {basketItemCount}
-                </Badge>
-              )}
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 md:px-6">
-        <div className="grid grid-cols-12 gap-6 py-6">
-          {/* Left 8 columns: Search/Pantry */}
-          <div className="col-span-12 lg:col-span-8 space-y-6">
-            {/* Content Tabs */}
-            <div className="flex gap-2">
+            <div className="flex items-center space-x-3">
               <Button
-                variant={activeTab === 'pantry' ? 'default' : 'outline'}
-                onClick={() => {
-                  setActiveTab('pantry')
-                  setSelectedSearchItem(null)
-                }}
-                className="transition-all duration-200"
+                variant="outline"
+                size="sm"
+                className="relative"
+                onClick={() => setIsDrawerOpen(true)}
               >
-                Pantry
-              </Button>
-              <Button
-                variant={activeTab === 'search' ? 'default' : 'outline'}
-                onClick={() => setActiveTab('search')}
-                disabled={!searchQuery.trim() && !selectedSearchItem}
-                className="transition-all duration-200"
-              >
-                Search Results
-                {filteredItems.length > 0 && (
-                  <Badge variant="secondary" className="ml-2">
-                    {filteredItems.length}
-                  </Badge>
+                <ShoppingCart className="h-4 w-4 mr-2" />
+                Cart
+                {getTotalItems() > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-brand-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                    {getTotalItems()}
+                  </span>
                 )}
               </Button>
-            </div>
-
-            {/* Content Area */}
-            <div className="transition-all duration-300 ease-in-out">
-              {activeTab === 'pantry' ? (
-                <PantryLanes userMode={userMode} />
-              ) : (
-                <div className="space-y-4">
-                  {isLoading ? (
-                    <div className="text-center py-12">
-                      <div className="animate-spin h-8 w-8 border-2 border-brand-500 border-t-transparent rounded-full mx-auto"></div>
-                      <p className="text-muted-foreground mt-3">Searching...</p>
-                    </div>
-                  ) : filteredItems.length > 0 ? (
-                    <div className="space-y-3">
-                      {filteredItems.length > 50 ? (
-                        <VirtualizedItemList
-                          items={filteredItems}
-                          height={600}
-                          itemHeight={120}
-                          userMode={userMode}
-                        />
-                      ) : (
-                        <div className="grid gap-3">
-                          {filteredItems.map((item, index) => (
-                            <div
-                              key={item.id}
-                              className="animate-scale-in"
-                              style={{ animationDelay: `${index * 50}ms` }}
-                            >
-                              <ItemCard
-                                item={item}
-                                userMode={userMode}
-                                onCompareItem={(itemId) => console.log('Compare:', itemId)}
-                              />
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  ) : (searchQuery.trim() && !selectedSearchItem) ? (
-                    <SearchEmptyState
-                      searchQuery={searchQuery}
-                      onBrowsePantry={() => setActiveTab('pantry')}
-                    />
-                  ) : null}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Right 4 columns: Basket context & tips */}
-          <div className="col-span-12 lg:col-span-4">
-            <div className="sticky top-20 space-y-4">
-              <Card className="rounded-xl border-border/50">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium">Order Summary</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-sm text-muted-foreground">
-                    {basketItemCount > 0 ? (
-                      <p>{basketItemCount} items in basket</p>
-                    ) : (
-                      <p>Your basket is empty</p>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
+              <Button variant="ghost" size="sm">
+                <Settings className="h-4 w-4" />
+              </Button>
             </div>
           </div>
         </div>
-      </div>
+      </header>
 
+      {/* Main Content */}
+      <main className="container mx-auto px-4 py-6 space-y-6">
+        {/* Search Bar */}
+        <div className="max-w-2xl mx-auto">
+          <QuickSearch
+            value={searchQuery}
+            onChange={setSearchQuery}
+            onResultSelect={(item) => {
+              setSearchQuery('')
+              handleAddSuggestedItem(item.id)
+            }}
+          />
+        </div>
+
+        {/* Advanced Filtering */}
+        {(showResults || selectedItems.length > 0) && (
+          <AdvancedFiltering
+            filters={filters}
+            onFiltersChange={setFilters}
+            availableCategories={availableCategories}
+            availableSuppliers={availableSuppliers}
+          />
+        )}
+
+        {/* Bulk Actions */}
+        <BulkActions
+          selectedItems={selectedItems}
+          allItems={displayItems}
+          onSelectAll={handleSelectAll}
+          onClearSelection={handleClearSelection}
+          onBulkAddToCart={handleBulkAddToCart}
+          onBulkRemoveFromCart={handleBulkRemoveFromCart}
+        />
+
+        {/* Smart Suggestions */}
+        {!showResults && (
+          <div className="max-w-4xl mx-auto">
+            <SmartSuggestions onAddSuggestedItem={handleAddSuggestedItem} />
+          </div>
+        )}
+
+        {/* Content Area */}
+        <div className="max-w-6xl mx-auto">
+          {showResults ? (
+            hasResults ? (
+              <VirtualizedItemList
+                items={displayItems}
+                onCompareItem={handleCompareItem}
+                userMode={userMode}
+                selectedItems={selectedItems}
+                onItemSelect={(itemId, isSelected) => {
+                  if (isSelected) {
+                    setSelectedItems(prev => [...prev, itemId])
+                  } else {
+                    setSelectedItems(prev => prev.filter(id => id !== itemId))
+                  }
+                }}
+              />
+            ) : (
+              <SearchEmptyState 
+                query={debouncedSearch}
+                onClearSearch={() => setSearchQuery('')}
+              />
+            )
+          ) : (
+            <PantryLanes
+              onLaneSelect={setSelectedLane}
+              selectedLane={selectedLane}
+              onAddToCart={handleAddSuggestedItem}
+            />
+          )}
+        </div>
+      </main>
+
+      {/* Enhanced Cart Integration */}
+      <EnhancedCartIntegration />
+
+      {/* Drawers and Modals */}
       <BasketDrawer />
+      <MiniCompareDrawer
+        itemId={compareItemId}
+        isOpen={isCompareOpen}
+        onClose={() => setIsCompareOpen(false)}
+      />
+      <KeyboardShortcuts onClose={() => {}} />
     </div>
   )
 }
