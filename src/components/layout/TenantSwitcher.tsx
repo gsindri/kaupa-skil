@@ -1,0 +1,106 @@
+
+import React from 'react'
+import { ChevronDown } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { useAuth } from '@/contexts/AuthProvider'
+import { useQuery } from '@tanstack/react-query'
+import { supabase } from '@/integrations/supabase/client'
+
+export function TenantSwitcher() {
+  const { profile, user } = useAuth()
+
+  // Get all tenants the user has membership in
+  const { data: userMemberships } = useQuery({
+    queryKey: ['user-memberships', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return []
+
+      const { data, error } = await supabase
+        .from('memberships')
+        .select(`
+          id,
+          base_role,
+          tenant:tenants(
+            id,
+            name
+          )
+        `)
+        .eq('user_id', user.id)
+
+      if (error) throw error
+      return data
+    },
+    enabled: !!user?.id
+  })
+
+  // Get current tenant name
+  const currentTenant = userMemberships?.find(
+    membership => membership.tenant?.id === profile?.tenant_id
+  )?.tenant
+
+  const displayName = currentTenant?.name || 'No Organization'
+
+  const handleTenantSwitch = async (tenantId: string) => {
+    if (!user?.id) return
+
+    try {
+      // Update the user's profile to switch to the new tenant
+      const { error } = await supabase
+        .from('profiles')
+        .update({ tenant_id: tenantId })
+        .eq('id', user.id)
+
+      if (error) throw error
+
+      // Refresh the page to update the context
+      window.location.reload()
+    } catch (error) {
+      console.error('Failed to switch tenant:', error)
+    }
+  }
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" className="flex items-center space-x-2">
+          <span className="font-medium">{displayName}</span>
+          <ChevronDown className="h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start">
+        {userMemberships?.map((membership) => (
+          <DropdownMenuItem
+            key={membership.id}
+            onClick={() => membership.tenant?.id && handleTenantSwitch(membership.tenant.id)}
+            className={membership.tenant?.id === profile?.tenant_id ? 'bg-muted' : ''}
+          >
+            <div className="flex flex-col">
+              <span className="font-medium">{membership.tenant?.name}</span>
+              <span className="text-sm text-muted-foreground capitalize">
+                {membership.base_role}
+              </span>
+            </div>
+          </DropdownMenuItem>
+        ))}
+        
+        {(!userMemberships || userMemberships.length === 0) && (
+          <DropdownMenuItem disabled>
+            <span className="text-sm text-muted-foreground">No organizations</span>
+          </DropdownMenuItem>
+        )}
+        
+        <DropdownMenuSeparator />
+        <DropdownMenuItem>
+          <span className="text-sm text-muted-foreground">Create organization</span>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}
