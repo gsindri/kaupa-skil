@@ -141,13 +141,13 @@ export function QuickSearch({
                   </div>
                   <div className="flex items-center space-x-2 mt-0.5">
                     <span className="text-xs text-muted-foreground">
-                      {item.supplier?.name || 'Unknown Supplier'}
+                      {(item as any).supplier?.name || 'Unknown Supplier'}
                     </span>
                     {item.pack_qty && (
                       <>
                         <span className="text-xs text-muted-foreground">•</span>
                         <span className="text-xs text-muted-foreground">
-                          {item.pack_qty} {item.pack_unit?.code || 'units'}
+                          {item.pack_qty} {(item as any).pack_unit?.code || 'units'}
                         </span>
                       </>
                     )}
@@ -155,7 +155,6 @@ export function QuickSearch({
                 </div>
                 <div className="text-right ml-4">
                   <div className="font-semibold text-sm text-foreground" style={{ fontFeatureSettings: '"tnum" 1' }}>
-                    {/* We'll show basic info since pricing might not be available directly */}
                     {item.ext_sku}
                   </div>
                 </div>
