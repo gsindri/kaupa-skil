@@ -24,6 +24,9 @@ import { useSupplierItems } from '@/hooks/useSupplierItems'
 import { useDebounce } from '@/hooks/useDebounce'
 import { PerformanceMonitor } from '@/lib/performance'
 import { Kbd } from '@/components/ui/kbd'
+import { CompactOrderGuidesCTA } from '@/components/quick/CompactOrderGuidesCTA'
+import { EnhancedPriceDisplay } from '@/components/quick/EnhancedPriceDisplay'
+import { useBasket } from '@/contexts/BasketProvider'
 
 export default function Index() {
   const [searchQuery, setSearchQuery] = useState('')
@@ -55,7 +58,7 @@ export default function Index() {
   // Phase 3: Smart sidebar visibility
   const [showSmartSidebar, setShowSmartSidebar] = useState(false)
 
-  const { getTotalItems, setIsDrawerOpen, addItem } = useCart()
+  const { getTotalItems, setIsDrawerOpen, addItem } = useBasket()
   const { includeVat, setIncludeVat } = useSettings()
   const { data: supplierItems = [], isLoading } = useSupplierItems()
   
@@ -317,7 +320,7 @@ export default function Index() {
 
   return (
     <CacheProvider>
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-100">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-100" style={{ fontFeatureSettings: '"tnum" 1' }}>
         {/* Accessibility Enhancements */}
         <AccessibilityEnhancements />
         
@@ -328,7 +331,7 @@ export default function Index() {
           userMode={userMode}
         />
 
-        <header className="sticky top-0 z-40 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <header className="sticky top-0 z-40 w-full border-b border-foreground/10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-sm">
           <div className="container mx-auto px-4 py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
@@ -346,13 +349,13 @@ export default function Index() {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="relative"
+                  className="relative border-foreground/10 hover:border-foreground/20"
                   onClick={() => setIsDrawerOpen(true)}
                 >
                   <ShoppingCart className="h-4 w-4 mr-2" />
-                  Basket · {getTotalItems()}
+                  Basket · <span className="font-mono" style={{ fontFeatureSettings: '"tnum" 1' }}>{getTotalItems()}</span>
                   {getTotalItems() > 0 && (
-                    <span className="absolute -top-2 -right-2 bg-brand-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                    <span className="absolute -top-2 -right-2 bg-brand-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-mono" style={{ fontFeatureSettings: '"tnum" 1' }}>
                       {getTotalItems()}
                     </span>
                   )}
@@ -363,17 +366,17 @@ export default function Index() {
               </div>
             </div>
 
-            {/* Mode selector - right-aligned under title */}
+            {/* Mode selector - right-aligned under title with softer styling */}
             <div className="flex justify-end mt-2">
-              <div className="inline-flex items-center bg-muted rounded-lg p-1">
+              <div className="inline-flex items-center bg-muted/50 rounded-lg p-1 border border-foreground/10">
                 {(['just-order', 'balanced', 'analytical'] as const).map((mode) => (
                   <button
                     key={mode}
                     onClick={() => setUserMode(mode)}
                     className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all duration-200 ${
                       userMode === mode
-                        ? 'bg-brand-600 text-white shadow-sm'
-                        : 'text-foreground/70 hover:text-foreground hover:bg-background/50'
+                        ? 'bg-brand-600 text-white shadow-sm border border-brand-700/20'
+                        : 'text-foreground/70 hover:text-foreground hover:bg-background/50 border border-transparent'
                     }`}
                   >
                     {mode === 'just-order' ? 'Just Order' : mode === 'balanced' ? 'Balanced' : 'Analytical'}
@@ -407,9 +410,11 @@ export default function Index() {
             )}
           </div>
 
-          {/* Phase 3: Delivery Optimization Banner */}
+          {/* Phase 3: Delivery Optimization Banner with softer styling */}
           <div className="max-w-4xl mx-auto">
-            <DeliveryOptimizationBanner />
+            <div className="border border-foreground/10 rounded-lg shadow-sm">
+              <DeliveryOptimizationBanner />
+            </div>
           </div>
 
           {(showResults || selectedItems.length > 0) && (
@@ -431,8 +436,9 @@ export default function Index() {
           />
 
           {!showResults && (
-            <div className="max-w-4xl mx-auto">
+            <div className="max-w-4xl mx-auto space-y-6">
               <SmartSuggestions onAddSuggestedItem={handleAddSuggestedItem} />
+              <CompactOrderGuidesCTA />
             </div>
           )}
 

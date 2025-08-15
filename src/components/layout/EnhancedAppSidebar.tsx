@@ -15,14 +15,21 @@ import {
 import { useLocation, Link } from "react-router-dom"
 import { useAuth } from "@/contexts/AuthProvider"
 import { Badge } from "@/components/ui/badge"
-import { useCart } from "@/contexts/CartProvider"
+import { useBasket } from "@/contexts/BasketProvider"
 
-const mainItems = [
+// Core workflow pages
+const coreItems = [
   {
     title: "Quick Order",
     url: "/",
     icon: Zap,
     description: "Fast ordering hub"
+  },
+  {
+    title: "Basket",
+    url: "/orders",
+    icon: ShoppingCart,
+    description: "Current basket & orders"
   },
   {
     title: "Compare",
@@ -31,22 +38,20 @@ const mainItems = [
     description: "Price comparison"
   },
   {
+    title: "Suppliers",
+    url: "/suppliers",
+    icon: Package,
+    description: "Supplier management"
+  }
+]
+
+// Exploration and analysis pages
+const exploreItems = [
+  {
     title: "Pantry",
     url: "/pantry",
     icon: Heart,
     description: "Favorites & guides"
-  },
-  {
-    title: "Orders",
-    url: "/orders",
-    icon: ShoppingCart,
-    description: "Order history"
-  },
-  {
-    title: "Delivery",
-    url: "/delivery",
-    icon: Truck,
-    description: "Delivery tracking"
   },
   {
     title: "Price History",
@@ -55,18 +60,10 @@ const mainItems = [
     description: "Historical data"
   },
   {
-    title: "Suppliers",
-    url: "/suppliers",
-    icon: Package,
-    description: "Supplier management"
-  },
-]
-
-const optionalItems = [
-  {
     title: "Discovery",
     url: "/discovery",
     icon: Search,
+    description: "Find new products"
   },
 ]
 
@@ -81,7 +78,7 @@ const adminItems = [
 export function EnhancedAppSidebar() {
   const location = useLocation()
   const { profile } = useAuth()
-  const { getTotalItems } = useCart()
+  const { getTotalItems } = useBasket()
 
   // Check if user has admin access
   const isAdmin = profile?.role === 'admin'
@@ -97,10 +94,10 @@ export function EnhancedAppSidebar() {
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+          <SidebarGroupLabel>Core Workflow</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {mainItems.map((item) => (
+              {coreItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
                     asChild
@@ -116,8 +113,8 @@ export function EnhancedAppSidebar() {
                           )}
                         </div>
                       </div>
-                      {item.title === "Orders" && basketItemCount > 0 && (
-                        <Badge variant="secondary" className="ml-2">
+                      {item.title === "Basket" && basketItemCount > 0 && (
+                        <Badge variant="secondary" className="ml-2 font-mono" style={{ fontFeatureSettings: '"tnum" 1' }}>
                           {basketItemCount}
                         </Badge>
                       )}
@@ -130,18 +127,25 @@ export function EnhancedAppSidebar() {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel>Explore</SidebarGroupLabel>
+          <SidebarGroupLabel>Explore & Analyze</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {optionalItems.map((item) => (
+              {exploreItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
                     asChild
                     isActive={location.pathname === item.url}
                   >
                     <Link to={item.url}>
-                      <item.icon className="mr-2 h-4 w-4" />
-                      <span>{item.title}</span>
+                      <div className="flex items-center">
+                        <item.icon className="mr-2 h-4 w-4" />
+                        <div className="flex flex-col items-start">
+                          <span>{item.title}</span>
+                          {item.description && (
+                            <span className="text-xs text-muted-foreground">{item.description}</span>
+                          )}
+                        </div>
+                      </div>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
