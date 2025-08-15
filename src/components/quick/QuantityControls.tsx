@@ -48,10 +48,10 @@ export function QuantityControls({
         size="sm"
         onClick={onRemove}
         disabled={quantity === 0 || disabled}
-        className="h-8 w-8 p-0 rounded-full hover:bg-muted/80 transition-colors duration-200"
+        className="h-9 w-9 p-0 rounded-full border hover:bg-muted focus:ring-2 focus:ring-brand-400/60 transition-all duration-200"
         aria-label="Decrease quantity"
       >
-        <Minus className="h-3.5 w-3.5" />
+        <Minus className="h-4 w-4" />
       </Button>
       
       <div className="relative">
@@ -61,7 +61,7 @@ export function QuantityControls({
           value={localQuantity}
           onChange={handleInputChange}
           onBlur={handleInputBlur}
-          className="w-12 h-8 text-center text-sm font-medium bg-transparent border border-border rounded focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500"
+          className="h-9 w-16 text-center text-sm font-medium rounded-md border focus:outline-none focus:ring-2 focus:ring-brand-400/60 focus:border-brand-500"
           style={{ fontFeatureSettings: '"tnum" 1' }}
           disabled={disabled}
         />
@@ -78,10 +78,10 @@ export function QuantityControls({
         size="sm"
         onClick={onAdd}
         disabled={disabled}
-        className="h-8 w-8 p-0 rounded-full bg-brand-500 hover:bg-brand-600 transition-all duration-200 hover:scale-105"
+        className="h-9 w-9 p-0 rounded-full bg-brand-600 hover:bg-brand-700 focus:ring-2 focus:ring-brand-400/60 transition-all duration-200"
         aria-label="Increase quantity"
       >
-        <Plus className="h-3.5 w-3.5" />
+        <Plus className="h-4 w-4" />
       </Button>
     </div>
   );

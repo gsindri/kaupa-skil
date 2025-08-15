@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { Button } from './button';
 
 interface VatToggleProps {
   includeVat: boolean;
@@ -10,31 +9,27 @@ interface VatToggleProps {
 
 const VatToggle: React.FC<VatToggleProps> = ({ includeVat, onToggle, className = "" }) => {
   return (
-    <div className={`flex items-center space-x-1 bg-muted rounded-md p-1 ${className}`}>
-      <Button
-        size="sm"
-        variant={!includeVat ? "default" : "ghost"}
+    <div className={`inline-flex items-center bg-muted rounded-lg p-1 ${className}`}>
+      <button
         onClick={() => onToggle(false)}
-        className={`px-3 py-1 text-xs ${
+        className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all duration-200 ${
           !includeVat 
-            ? 'bg-vat-exclusive text-white hover:bg-vat-exclusive/90' 
-            : 'hover:bg-muted-foreground/10'
+            ? 'bg-brand-600 text-white shadow-sm' 
+            : 'text-foreground/70 hover:text-foreground hover:bg-background/50'
         }`}
       >
         Ex VAT
-      </Button>
-      <Button
-        size="sm"
-        variant={includeVat ? "default" : "ghost"}
+      </button>
+      <button
         onClick={() => onToggle(true)}
-        className={`px-3 py-1 text-xs ${
+        className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all duration-200 ${
           includeVat 
-            ? 'bg-vat-inclusive text-white hover:bg-vat-inclusive/90' 
-            : 'hover:bg-muted-foreground/10'
+            ? 'bg-brand-600 text-white shadow-sm' 
+            : 'text-foreground/70 hover:text-foreground hover:bg-background/50'
         }`}
       >
         Inc VAT
-      </Button>
+      </button>
     </div>
   );
 };

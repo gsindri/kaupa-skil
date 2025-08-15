@@ -19,7 +19,7 @@ const CartContext = createContext<CartContextType | undefined>(undefined)
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>(() => {
-    const saved = localStorage.getItem('procurewise-cart')
+    const saved = localStorage.getItem('procurewise-basket')
     return saved ? JSON.parse(saved) : []
   })
   
@@ -28,10 +28,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   // Sync cart across tabs
   useEffect(() => {
-    const channel = new BroadcastChannel('procurewise-cart')
+    const channel = new BroadcastChannel('procurewise-basket')
     
     const handleMessage = (event: MessageEvent) => {
-      if (event.data.type === 'CART_UPDATED') {
+      if (event.data.type === 'BASKET_UPDATED') {
         setItems(event.data.items)
       }
     }
@@ -41,10 +41,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const syncCart = (newItems: CartItem[]) => {
-    localStorage.setItem('procurewise-cart', JSON.stringify(newItems))
+    localStorage.setItem('procurewise-basket', JSON.stringify(newItems))
     
-    const channel = new BroadcastChannel('procurewise-cart')
-    channel.postMessage({ type: 'CART_UPDATED', items: newItems })
+    const channel = new BroadcastChannel('procurewise-basket')
+    channel.postMessage({ type: 'BASKET_UPDATED', items: newItems })
     channel.close()
   }
 
@@ -67,7 +67,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       syncCart(newItems)
       
       toast({
-        title: `Added to cart`,
+        title: `Added to basket`,
         description: `${item.itemName} (${quantity}x ${item.packSize})`
       })
       
@@ -102,8 +102,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setItems([])
     syncCart([])
     toast({
-      title: 'Cart cleared',
-      description: 'All items have been removed from your cart'
+      title: 'Basket cleared',
+      description: 'All items have been removed from your basket'
     })
   }
 

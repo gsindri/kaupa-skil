@@ -94,8 +94,8 @@ export function ItemCard({ item, onCompareItem, userMode, compact = false }: Ite
 
   return (
     <div
-      className={`group relative rounded-xl border border-border/50 bg-card hover:bg-accent/30 hover:border-border transition-all duration-200 focus-within:ring-2 focus-within:ring-brand-500/40 focus-within:border-brand-500 ${
-        compact ? 'p-3 h-20' : 'p-4 h-28'
+      className={`group relative rounded-xl border border-foreground/5 bg-white hover:bg-muted/30 hover:shadow-sm transition-all duration-200 focus-within:ring-2 focus-within:ring-brand-500/40 focus-within:border-brand-500 ${
+        compact ? 'p-3 min-h-[88px]' : 'p-4 min-h-[112px]'
       } flex flex-col justify-between`}
       tabIndex={0}
       onKeyDown={handleKeyDown}
@@ -111,9 +111,9 @@ export function ItemCard({ item, onCompareItem, userMode, compact = false }: Ite
       )}
 
       {/* Main content */}
-      <div className="flex items-start justify-between">
+      <div className="flex items-start justify-between mb-3">
         <div className="flex-1 min-w-0 mr-4">
-          <h3 className="font-semibold text-foreground text-base leading-tight truncate group-hover:text-brand-700 transition-colors duration-200">
+          <h3 className="font-semibold text-base leading-tight truncate group-hover:text-brand-700 transition-colors duration-200">
             {item.name}
           </h3>
           <div className="flex items-center gap-2 mt-1">
@@ -134,7 +134,7 @@ export function ItemCard({ item, onCompareItem, userMode, compact = false }: Ite
       </div>
 
       {/* Bottom row: Badges and Controls */}
-      <div className="flex items-center justify-between mt-3">
+      <div className="flex items-center justify-between">
         <ItemBadges
           hasCheaperOption={hasCheaperOption}
           hasDeliveryFee={hasDeliveryFee}

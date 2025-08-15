@@ -20,13 +20,18 @@ import { useSettings } from '@/contexts/SettingsProvider'
 import { useSupplierItems } from '@/hooks/useSupplierItems'
 import { useDebounce } from '@/hooks/useDebounce'
 import { PerformanceMonitor } from '@/lib/performance'
+import { Kbd } from '@/components/ui/kbd'
 
 export default function Index() {
   const [searchQuery, setSearchQuery] = useState('')
   const [compareItemId, setCompareItemId] = useState<string | null>(null)
   const [isCompareOpen, setIsCompareOpen] = useState(false)
-  const [userMode, setUserMode] = useState<'just-order' | 'balanced' | 'analytical'>('balanced')
+  const [userMode, setUserMode] = useState<'just-order' | 'balanced' | 'analytical'>('just-order')
   const [selectedLane, setSelectedLane] = useState<string | null>(null)
+  const [showKeyboardHelper, setShowKeyboardHelper] = useState(() => {
+    const visits = localStorage.getItem('quick-order-visits') || '0'
+    return parseInt(visits) < 3
+  })
   
   // Phase 5 state
   const [selectedItems, setSelectedItems] = useState<string[]>([])
@@ -44,6 +49,17 @@ export default function Index() {
   const { data: supplierItems = [], isLoading } = useSupplierItems()
   
   const debouncedSearch = useDebounce(searchQuery, 300)
+
+  // Track visits for keyboard helper
+  useEffect(() => {
+    const visits = parseInt(localStorage.getItem('quick-order-visits') || '0')
+    if (visits < 3) {
+      localStorage.setItem('quick-order-visits', (visits + 1).toString())
+      if (visits + 1 >= 3) {
+        setTimeout(() => setShowKeyboardHelper(false), 5000)
+      }
+    }
+  }, [])
 
   // Enhanced filtering and sorting logic with performance monitoring
   const filteredAndSortedItems = useMemo(() => {
@@ -284,23 +300,7 @@ export default function Index() {
               <div className="flex items-center space-x-4">
                 <div className="flex items-center space-x-2">
                   <Zap className="h-6 w-6 text-brand-600" />
-                  <h1 className="text-xl font-bold text-foreground">Quick Order</h1>
-                </div>
-                
-                <div className="hidden md:flex items-center space-x-1 bg-muted/50 rounded-lg p-1">
-                  {(['just-order', 'balanced', 'analytical'] as const).map((mode) => (
-                    <button
-                      key={mode}
-                      onClick={() => setUserMode(mode)}
-                      className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all duration-200 ${
-                        userMode === mode
-                          ? 'bg-background shadow-sm text-foreground'
-                          : 'text-muted-foreground hover:text-foreground hover:bg-background/50'
-                      }`}
-                    >
-                      {mode === 'just-order' ? 'Just Order' : mode === 'balanced' ? 'Balanced' : 'Analytical'}
-                    </button>
-                  ))}
+                  <h1 className="text-xl font-semibold text-foreground">Quick Order</h1>
                 </div>
               </div>
 
@@ -312,7 +312,7 @@ export default function Index() {
                   onClick={() => setIsDrawerOpen(true)}
                 >
                   <ShoppingCart className="h-4 w-4 mr-2" />
-                  Cart
+                  Basket
                   {getTotalItems() > 0 && (
                     <span className="absolute -top-2 -right-2 bg-brand-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                       {getTotalItems()}
@@ -324,11 +324,30 @@ export default function Index() {
                 </Button>
               </div>
             </div>
+
+            {/* Mode selector - right-aligned under title */}
+            <div className="flex justify-end mt-2">
+              <div className="inline-flex items-center bg-muted rounded-lg p-1">
+                {(['just-order', 'balanced', 'analytical'] as const).map((mode) => (
+                  <button
+                    key={mode}
+                    onClick={() => setUserMode(mode)}
+                    className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all duration-200 ${
+                      userMode === mode
+                        ? 'bg-brand-600 text-white shadow-sm'
+                        : 'text-foreground/70 hover:text-foreground hover:bg-background/50'
+                    }`}
+                  >
+                    {mode === 'just-order' ? 'Just Order' : mode === 'balanced' ? 'Balanced' : 'Analytical'}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         </header>
 
         <main className="container mx-auto px-4 py-6 space-y-6">
-          <div className="max-w-2xl mx-auto">
+          <div className="max-w-2xl mx-auto space-y-2">
             <QuickSearch
               value={searchQuery}
               onChange={setSearchQuery}
@@ -337,6 +356,17 @@ export default function Index() {
                 handleAddSuggestedItem(item.id)
               }}
             />
+            
+            {/* Keyboard shortcuts helper */}
+            {showKeyboardHelper && (
+              <div className="text-xs text-muted-foreground text-center space-x-4 animate-fade-in">
+                <span>Shortcuts:</span>
+                <span><Kbd>/</Kbd> search</span>
+                <span><Kbd>Enter</Kbd> add</span>
+                <span><Kbd>B</Kbd> basket</span>
+                <span><Kbd>↑/↓</Kbd> qty</span>
+              </div>
+            )}
           </div>
 
           {(showResults || selectedItems.length > 0) && (
@@ -381,7 +411,7 @@ export default function Index() {
                 />
               ) : (
                 <SearchEmptyState 
-                  query={debouncedSearch}
+                  searchQuery={debouncedSearch}
                   onClearSearch={() => setSearchQuery('')}
                 />
               )

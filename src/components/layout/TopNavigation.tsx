@@ -12,16 +12,19 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { useAuth } from '@/contexts/AuthProvider'
 import { useSettings } from '@/contexts/SettingsProvider'
+import { useLocation } from 'react-router-dom'
 import VatToggle from '@/components/ui/VatToggle'
 
 export function TopNavigation() {
   const { profile, signOut } = useAuth()
   const { includeVat, setIncludeVat } = useSettings()
+  const location = useLocation()
+  const isQuickOrderPage = location.pathname === '/'
 
   return (
     <div className="h-14 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="flex h-full items-center justify-between px-4">
-        {/* Left side - Tenant switcher and search */}
+        {/* Left side - Tenant switcher and conditional search */}
         <div className="flex items-center space-x-4 flex-1 max-w-2xl">
           {/* Tenant Switcher */}
           <DropdownMenu>
@@ -45,19 +48,21 @@ export function TopNavigation() {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {/* Global Search */}
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="Search products, suppliers, orders..."
-              className="pl-10"
-            />
-          </div>
+          {/* Global Search - only show when NOT on Quick Order page */}
+          {!isQuickOrderPage && (
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Search products, suppliers, orders..."
+                className="pl-10"
+              />
+            </div>
+          )}
         </div>
 
         {/* Right side - VAT toggle, help, user menu */}
         <div className="flex items-center space-x-4">
-          {/* VAT Toggle */}
+          {/* VAT Toggle - visible on every page */}
           <VatToggle
             includeVat={includeVat}
             onToggle={setIncludeVat}
