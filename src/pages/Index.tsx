@@ -15,6 +15,7 @@ import { KeyboardShortcuts } from '@/components/quick/KeyboardShortcuts'
 import { CacheProvider } from '@/components/quick/CacheManager'
 import { AnalyticsTrackerComponent } from '@/components/quick/AnalyticsTracker'
 import { AccessibilityEnhancements } from '@/components/quick/AccessibilityEnhancements'
+import { VatToggle } from '@/components/ui/VatToggle'
 import { useCart } from '@/contexts/CartProvider'
 import { useSettings } from '@/contexts/SettingsProvider'
 import { useSupplierItems } from '@/hooks/useSupplierItems'
@@ -45,7 +46,7 @@ export default function Index() {
   })
 
   const { getTotalItems, setIsDrawerOpen, addItem } = useCart()
-  const { includeVat } = useSettings()
+  const { includeVat, setIncludeVat } = useSettings()
   const { data: supplierItems = [], isLoading } = useSupplierItems()
   
   const debouncedSearch = useDebounce(searchQuery, 300)
@@ -305,6 +306,10 @@ export default function Index() {
               </div>
 
               <div className="flex items-center space-x-3">
+                <VatToggle 
+                  includeVat={includeVat} 
+                  onToggle={setIncludeVat}
+                />
                 <Button
                   variant="outline"
                   size="sm"
@@ -312,7 +317,7 @@ export default function Index() {
                   onClick={() => setIsDrawerOpen(true)}
                 >
                   <ShoppingCart className="h-4 w-4 mr-2" />
-                  Basket
+                  Basket · {getTotalItems()}
                   {getTotalItems() > 0 && (
                     <span className="absolute -top-2 -right-2 bg-brand-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                       {getTotalItems()}
@@ -411,7 +416,7 @@ export default function Index() {
                 />
               ) : (
                 <SearchEmptyState 
-                  searchQuery={debouncedSearch}
+                  query={debouncedSearch}
                   onClearSearch={() => setSearchQuery('')}
                 />
               )
