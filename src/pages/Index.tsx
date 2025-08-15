@@ -523,7 +523,6 @@ export default function IndexPage() {
             <QuickSearch
               value={searchQuery}
               onChange={setSearchQuery}
-              className="shadow-md"
             />
 
             <Tabs
