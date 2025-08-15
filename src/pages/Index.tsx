@@ -468,6 +468,14 @@ export default function IndexPage() {
     )
   }, [searchQuery])
 
+  const handleAddSuggestedItem = (itemId: string) => {
+    // Find the item and add it to cart
+    const item = filteredItems.find(i => i.id === itemId)
+    if (item) {
+      handleAddToComparison(item)
+    }
+  }
+
   return (
     <div className="container relative">
       {/* Hero Section */}
@@ -514,7 +522,7 @@ export default function IndexPage() {
           <div className="space-y-3">
             <QuickSearch
               value={searchQuery}
-              onValueChange={setSearchQuery}
+              onChange={setSearchQuery}
               className="shadow-md"
             />
 
@@ -541,24 +549,25 @@ export default function IndexPage() {
                 <DeliveryOptimizationBanner />
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   <PerformanceOptimizedList
-                    data={filteredItems}
-                    renderItem={(item) => (
-                      <ItemCard
-                        key={item.id}
-                        item={item}
-                        onCompareItem={() => handleAddToComparison(item)}
-                        userMode={userMode}
-                      />
-                    )}
+                    items={filteredItems}
+                    onCompareItem={(itemId) => {
+                      const item = filteredItems.find(i => i.id === itemId)
+                      if (item) handleAddToComparison(item)
+                    }}
+                    userMode={userMode}
                   />
                 </div>
               </TabsContent>
               <TabsContent value="smart-list" className="space-y-4">
-                <SmartSuggestions />
+                <SmartSuggestions onAddSuggestedItem={handleAddSuggestedItem} />
                 <CompactOrderGuidesCTA />
               </TabsContent>
               <TabsContent value="pantry-lanes" className="space-y-4">
-                <PantryLanes />
+                <PantryLanes 
+                  onLaneSelect={(laneId) => console.log('Lane selected:', laneId)}
+                  selectedLane={null}
+                  onAddToCart={(item) => console.log('Add to cart:', item)}
+                />
               </TabsContent>
             </Tabs>
           </div>

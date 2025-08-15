@@ -6,6 +6,8 @@ interface SettingsContextType {
   setIncludeVat: (value: boolean) => void
   preferredUnit: string
   setPreferredUnit: (value: string) => void
+  userMode: 'just-order' | 'balanced' | 'analytical'
+  setUserMode: (value: 'just-order' | 'balanced' | 'analytical') => void
 }
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined)
@@ -21,6 +23,11 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     return saved || 'auto'
   })
 
+  const [userMode, setUserMode] = useState<'just-order' | 'balanced' | 'analytical'>(() => {
+    const saved = localStorage.getItem('procurewise-user-mode')
+    return saved as 'just-order' | 'balanced' | 'analytical' || 'balanced'
+  })
+
   // Sync settings across tabs
   useEffect(() => {
     const channel = new BroadcastChannel('procurewise-settings')
@@ -30,6 +37,8 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         setIncludeVat(event.data.value)
       } else if (event.data.type === 'UNIT_CHANGED') {
         setPreferredUnit(event.data.value)
+      } else if (event.data.type === 'USER_MODE_CHANGED') {
+        setUserMode(event.data.value)
       }
     }
 
@@ -55,12 +64,23 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     channel.close()
   }
 
+  const handleSetUserMode = (value: 'just-order' | 'balanced' | 'analytical') => {
+    setUserMode(value)
+    localStorage.setItem('procurewise-user-mode', value)
+    
+    const channel = new BroadcastChannel('procurewise-settings')
+    channel.postMessage({ type: 'USER_MODE_CHANGED', value })
+    channel.close()
+  }
+
   return (
     <SettingsContext.Provider value={{
       includeVat,
       setIncludeVat: handleSetIncludeVat,
       preferredUnit,
-      setPreferredUnit: handleSetPreferredUnit
+      setPreferredUnit: handleSetPreferredUnit,
+      userMode,
+      setUserMode: handleSetUserMode
     }}>
       {children}
     </SettingsContext.Provider>

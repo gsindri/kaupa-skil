@@ -188,7 +188,7 @@ const mockPantryItems: PantryItem[] = [
   },
 ]
 
-export function Pantry() {
+export default function Pantry() {
   const [searchQuery, setSearchQuery] = useState('')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const { includeVat } = useSettings()
@@ -222,7 +222,7 @@ export function Pantry() {
         <CardContent>
           <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
             <div className="col-span-1 md:col-span-2 lg:col-span-3">
-              <QuickSearch value={searchQuery} onValueChange={setSearchQuery} />
+              <QuickSearch value={searchQuery} onChange={setSearchQuery} />
             </div>
             <div className="col-span-1 lg:col-span-1 flex items-center justify-end space-x-2">
               <Button variant="ghost" size="icon" onClick={() => setViewMode('grid')}>
