@@ -44,7 +44,7 @@ export default function Index() {
     return supplierItems
       .filter(item => 
         item.display_name?.toLowerCase().includes(query) ||
-        item.sku?.toLowerCase().includes(query) ||
+        item.ext_sku?.toLowerCase().includes(query) ||
         item.ean?.toLowerCase().includes(query)
       )
       .slice(0, 100) // Limit results for performance
@@ -140,8 +140,12 @@ export default function Index() {
           <CardContent className="p-4">
             <QuickSearch
               value={searchQuery}
-              onChange={setSearchQuery}
-              onFocus={() => setActiveTab('search')}
+              onChange={(value) => {
+                setSearchQuery(value)
+                if (value.trim()) {
+                  setActiveTab('search')
+                }
+              }}
               placeholder="Search by name, SKU, or EAN..."
             />
           </CardContent>

@@ -1,12 +1,12 @@
 
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Heart, History, BookOpen } from 'lucide-react';
-import { ItemCard } from './ItemCard';
+import React from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Heart, History, BookOpen } from 'lucide-react'
+import { ItemCard } from './ItemCard'
 
 interface PantryLanesProps {
-  onCompareItem: (itemId: string) => void;
-  userMode: 'just-order' | 'balanced' | 'analytical';
+  userMode: 'just-order' | 'balanced' | 'analytical'
+  includeVat: boolean
 }
 
 // Mock data - replace with actual data from hooks
@@ -24,7 +24,7 @@ const mockFavorites = [
     suppliers: ['costco', 'metro'],
     stock: true
   }
-];
+]
 
 const mockLastOrder = [
   {
@@ -41,9 +41,9 @@ const mockLastOrder = [
     stock: true,
     lastQuantity: 2
   }
-];
+]
 
-export function PantryLanes({ onCompareItem, userMode }: PantryLanesProps) {
+export function PantryLanes({ userMode, includeVat }: PantryLanesProps) {
   return (
     <div className="space-y-6">
       {/* Favorites */}
@@ -61,8 +61,8 @@ export function PantryLanes({ onCompareItem, userMode }: PantryLanesProps) {
                 <ItemCard
                   key={item.id}
                   item={item}
-                  onCompareItem={onCompareItem}
                   userMode={userMode}
+                  includeVat={includeVat}
                 />
               ))}
             </div>
@@ -90,8 +90,8 @@ export function PantryLanes({ onCompareItem, userMode }: PantryLanesProps) {
                 <ItemCard
                   key={item.id}
                   item={item}
-                  onCompareItem={onCompareItem}
                   userMode={userMode}
+                  includeVat={includeVat}
                 />
               ))}
             </div>
@@ -120,5 +120,5 @@ export function PantryLanes({ onCompareItem, userMode }: PantryLanesProps) {
         </CardContent>
       </Card>
     </div>
-  );
+  )
 }

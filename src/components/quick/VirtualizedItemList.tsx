@@ -7,7 +7,7 @@ interface VirtualizedItemListProps {
   items: any[]
   height: number
   itemHeight: number
-  userMode: string
+  userMode: 'just-order' | 'balanced' | 'analytical'
   includeVat: boolean
 }
 
@@ -30,6 +30,7 @@ export function VirtualizedItemList({ items, height, itemHeight, userMode, inclu
   return (
     <List
       height={height}
+      width="100%"
       itemCount={items.length}
       itemSize={itemHeight}
       overscanCount={5}

@@ -66,15 +66,20 @@ export function DeliveryHints({ hints }: DeliveryHintsProps) {
                       size="sm"
                       className="h-7 text-xs bg-white hover:bg-blue-100 border-blue-200"
                       onClick={() => addItem({
+                        id: item.id,
                         supplierItemId: item.id,
                         itemName: item.name,
                         packSize: item.packSize,
                         unitPriceExVat: item.unitPrice,
-                        unitPriceIncVat: item.unitPrice * 1.24, // Mock VAT
+                        unitPriceIncVat: item.unitPrice * 1.24,
                         supplierId: hint.supplierId,
                         supplierName: hint.supplierName,
                         sku: `SKU-${item.id}`,
-                        category: 'Pantry Staple'
+                        packPrice: item.unitPrice,
+                        vatRate: 0.24,
+                        unit: 'pc',
+                        displayName: item.name,
+                        packQty: 1
                       })}
                     >
                       <Plus className="h-3 w-3 mr-1" />
