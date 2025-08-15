@@ -89,8 +89,8 @@ export function ItemCard({ item, onCompareItem, userMode, compact = false }: Ite
   };
 
   const hasCheaperOption = item.suppliers.length > 1;
-  const hasDeliveryFee = item.deliveryFee && item.deliveryFee > 0;
-  const hasDeliveryInfo = item.cutoffTime && item.deliveryDay;
+  const hasDeliveryFee = Boolean(item.deliveryFee && item.deliveryFee > 0);
+  const hasDeliveryInfo = Boolean(item.cutoffTime && item.deliveryDay);
 
   return (
     <div
