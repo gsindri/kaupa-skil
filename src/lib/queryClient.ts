@@ -1,5 +1,6 @@
 
 import { QueryClient } from '@tanstack/react-query'
+import { handleQueryError, getRetryOptions, getRetryDelay } from './queryErrorHandler'
 
 // Create optimized query client with better caching and performance settings
 export const queryClient = new QueryClient({
@@ -10,30 +11,32 @@ export const queryClient = new QueryClient({
       // Keep data in cache for 10 minutes
       gcTime: 1000 * 60 * 10,
       // Retry failed requests with exponential backoff
-      retry: (failureCount, error: any) => {
-        // Don't retry on 4xx errors (client errors)
-        if (error?.status >= 400 && error?.status < 500) {
-          return false
-        }
-        // Retry up to 2 times for other errors
-        return failureCount < 2
-      },
-      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+      retry: getRetryOptions,
+      retryDelay: getRetryDelay,
       // Disable automatic refetching in some cases to improve performance
       refetchOnWindowFocus: false,
       refetchOnReconnect: true,
       refetchOnMount: true,
+      // Centralized error handling
+      throwOnError: false, // Handle errors through onError instead
     },
     mutations: {
       // Retry mutations once
       retry: 1,
       retryDelay: 1000,
-      onError: (error) => {
-        // Only log in development
-        if (process.env.NODE_ENV === 'development') {
-          console.error('Mutation error:', error)
-        }
+      onError: (error, variables, context) => {
+        handleQueryError(error, 'mutation')
       },
+    },
+  },
+})
+
+// Global error handler for queries
+queryClient.setDefaultOptions({
+  queries: {
+    ...queryClient.getDefaultOptions().queries,
+    onError: (error) => {
+      handleQueryError(error, 'query')
     },
   },
 })
@@ -44,5 +47,15 @@ if (process.env.NODE_ENV === 'development') {
     mutationFn: async (variables: any) => {
       throw new Error('Mutation not implemented')
     },
+  })
+}
+
+// Performance monitoring
+if (import.meta.env.DEV) {
+  queryClient.getQueryCache().subscribe((event) => {
+    if (event.type === 'updated' && event.action.type === 'success') {
+      const { queryKey, dataUpdatedAt } = event.query
+      console.log(`Query ${JSON.stringify(queryKey)} updated at ${new Date(dataUpdatedAt).toISOString()}`)
+    }
   })
 }
