@@ -1,5 +1,4 @@
-
-import React, { useState, useMemo, useCallback } from 'react'
+import React, { useState, useMemo, useCallback, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -17,6 +16,7 @@ import { useSupplierItems } from '@/hooks/useSupplierItems'
 export default function Index() {
   const [searchQuery, setSearchQuery] = useState('')
   const [activeTab, setActiveTab] = useState<'pantry' | 'search'>('pantry')
+  const [selectedSearchItem, setSelectedSearchItem] = useState<any>(null)
   const { setIsDrawerOpen, getTotalItems } = useCart()
   const { includeVat, setIncludeVat } = useSettings()
   const { data: supplierItems = [], isLoading } = useSupplierItems()
@@ -36,8 +36,19 @@ export default function Index() {
     saveUserPrefs({ userMode: mode })
   }, [])
 
+  // Handle search result selection
+  const handleSearchResultSelect = useCallback((item: any) => {
+    setSelectedSearchItem(item)
+    setActiveTab('search')
+  }, [])
+
   // Filtered and sorted items with performance optimization
   const filteredItems = useMemo(() => {
+    // If we have a selected search item, show it prominently
+    if (selectedSearchItem) {
+      return [selectedSearchItem]
+    }
+    
     if (!searchQuery.trim()) return []
     
     const query = searchQuery.toLowerCase()
@@ -48,7 +59,14 @@ export default function Index() {
         item.ean?.toLowerCase().includes(query)
       )
       .slice(0, 100) // Limit results for performance
-  }, [supplierItems, searchQuery])
+  }, [supplierItems, searchQuery, selectedSearchItem])
+
+  // Clear selected item when search changes
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setSelectedSearchItem(null)
+    }
+  }, [searchQuery])
 
   // Keyboard shortcuts
   React.useEffect(() => {
@@ -101,10 +119,12 @@ export default function Index() {
               value={searchQuery}
               onChange={(value) => {
                 setSearchQuery(value)
+                setSelectedSearchItem(null) // Clear selection when typing
                 if (value.trim()) {
                   setActiveTab('search')
                 }
               }}
+              onResultSelect={handleSearchResultSelect}
               placeholder="Search item / brand / EAN…"
             />
           </div>
@@ -156,7 +176,10 @@ export default function Index() {
             <div className="flex gap-2">
               <Button
                 variant={activeTab === 'pantry' ? 'default' : 'outline'}
-                onClick={() => setActiveTab('pantry')}
+                onClick={() => {
+                  setActiveTab('pantry')
+                  setSelectedSearchItem(null)
+                }}
                 className="transition-all duration-200"
               >
                 Pantry
@@ -164,7 +187,7 @@ export default function Index() {
               <Button
                 variant={activeTab === 'search' ? 'default' : 'outline'}
                 onClick={() => setActiveTab('search')}
-                disabled={!searchQuery.trim()}
+                disabled={!searchQuery.trim() && !selectedSearchItem}
                 className="transition-all duration-200"
               >
                 Search Results
@@ -205,13 +228,29 @@ export default function Index() {
                               className="animate-scale-in"
                               style={{ animationDelay: `${index * 50}ms` }}
                             >
-                              {/* ItemCard will be rendered here */}
+                              <ItemCard
+                                item={{
+                                  id: item.id,
+                                  name: item.display_name || item.ext_sku || 'Unknown Item',
+                                  brand: item.supplier_name || 'Unknown Brand',
+                                  packSize: item.pack_size || '1 unit',
+                                  unitPriceExVat: item.unit_price_ex_vat || 0,
+                                  unitPriceIncVat: item.unit_price_inc_vat || 0,
+                                  packPriceExVat: item.pack_price_ex_vat || 0,
+                                  packPriceIncVat: item.pack_price_inc_vat || 0,
+                                  unit: item.unit || 'unit',
+                                  suppliers: [item.supplier_name || 'Unknown'],
+                                  stock: true
+                                }}
+                                userMode={userMode}
+                                onCompareItem={(itemId) => console.log('Compare:', itemId)}
+                              />
                             </div>
                           ))}
                         </div>
                       )}
                     </div>
-                  ) : searchQuery.trim() ? (
+                  ) : (searchQuery.trim() && !selectedSearchItem) ? (
                     <div className="text-center py-8 text-muted-foreground">
                       <p>No results. Try brand or EAN.</p>
                       <Button 
