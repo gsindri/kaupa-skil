@@ -1,75 +1,108 @@
 
-// Centralized query key factory for better cache management
 export const queryKeys = {
-  // User related
+  // User and auth related queries
   user: {
-    all: ['user'] as const,
-    memberships: (userId?: string) => [...queryKeys.user.all, 'memberships', userId] as const,
-    permissions: (userId?: string) => [...queryKeys.user.all, 'permissions', userId] as const,
+    profile: (userId?: string) => ['user', 'profile', userId] as const,
+    memberships: (userId?: string) => ['user', 'memberships', userId] as const,
+    permissions: (userId?: string) => ['user', 'permissions', userId] as const,
   },
   
-  // Supplier related
+  // Tenant related queries
+  tenant: {
+    all: () => ['tenants'] as const,
+    detail: (tenantId: string) => ['tenant', tenantId] as const,
+    users: (tenantId: string) => ['tenant', tenantId, 'users'] as const,
+    settings: (tenantId: string) => ['tenant', tenantId, 'settings'] as const,
+  },
+  
+  // Supplier related queries
   suppliers: {
-    all: ['suppliers'] as const,
-    list: (filters?: Record<string, any>) => [...queryKeys.suppliers.all, 'list', filters] as const,
-    detail: (id: string) => [...queryKeys.suppliers.all, 'detail', id] as const,
-    credentials: (id: string) => [...queryKeys.suppliers.all, 'credentials', id] as const,
-    items: (supplierId?: string, filters?: Record<string, any>) => 
-      ['supplier-items', supplierId, filters] as const,
+    all: () => ['suppliers'] as const,
+    detail: (supplierId: string) => ['supplier', supplierId] as const,
+    items: (supplierId?: string, filters?: any) => ['supplier', 'items', supplierId, filters] as const,
+    credentials: (supplierId: string) => ['supplier', supplierId, 'credentials'] as const,
+    runs: (supplierId: string) => ['supplier', supplierId, 'runs'] as const,
   },
   
-  // Orders related
+  // Order related queries
   orders: {
-    all: ['orders'] as const,
-    list: (filters?: Record<string, any>) => [...queryKeys.orders.all, 'list', filters] as const,
-    detail: (id: string) => [...queryKeys.orders.all, 'detail', id] as const,
+    all: () => ['orders'] as const,
+    detail: (orderId: string) => ['order', orderId] as const,
+    lines: (orderId: string) => ['order', orderId, 'lines'] as const,
+    recent: () => ['orders', 'recent'] as const,
   },
   
-  // Price related
+  // Price and comparison queries
   prices: {
-    all: ['prices'] as const,
-    quotes: (filters?: Record<string, any>) => ['price-quotes', filters] as const,
-    history: (itemId: string, timeRange?: string) => 
-      [...queryKeys.prices.all, 'history', itemId, timeRange] as const,
+    quotes: (filters?: any) => ['prices', 'quotes', filters] as const,
+    history: (itemId: string) => ['prices', 'history', itemId] as const,
+    comparison: (filters?: any) => ['prices', 'comparison', filters] as const,
+    realTime: () => ['prices', 'realTime'] as const,
   },
   
-  // Admin related
+  // Admin and security queries
   admin: {
-    all: ['admin'] as const,
-    auditLogs: (filters?: Record<string, any>) => [...queryKeys.admin.all, 'audit-logs', filters] as const,
-    securityMonitoring: () => [...queryKeys.admin.all, 'security-monitoring'] as const,
-    jobs: (filters?: Record<string, any>) => [...queryKeys.admin.all, 'jobs', filters] as const,
-    elevations: () => [...queryKeys.admin.all, 'elevations'] as const,
-    supportSessions: () => [...queryKeys.admin.all, 'support-sessions'] as const,
+    elevations: () => ['admin', 'elevations'] as const,
+    activeElevation: () => ['admin', 'activeElevation'] as const,
+    supportSessions: () => ['admin', 'supportSessions'] as const,
+    auditLogs: (filters?: any) => ['admin', 'auditLogs', filters] as const,
+    jobs: () => ['admin', 'jobs'] as const,
+    pendingActions: () => ['admin', 'pendingActions'] as const,
   },
   
-  // Delivery related
-  delivery: {
-    all: ['delivery'] as const,
-    analytics: (filters?: Record<string, any>) => [...queryKeys.delivery.all, 'analytics', filters] as const,
-    optimization: (data?: Record<string, any>) => [...queryKeys.delivery.all, 'optimization', data] as const,
+  // Security monitoring queries
+  security: {
+    alerts: () => ['security', 'alerts'] as const,
+    suspiciousElevations: () => ['security', 'suspiciousElevations'] as const,
+    failedJobs: () => ['security', 'failedJobs'] as const,
+    prolongedElevations: () => ['security', 'prolongedElevations'] as const,
+    events: () => ['security', 'events'] as const,
+    policies: () => ['security', 'policies'] as const,
+    functions: () => ['security', 'functions'] as const,
+  },
+  
+  // Connection and health queries
+  connections: {
+    health: () => ['connections', 'health'] as const,
+    status: (supplierId: string) => ['connection', supplierId, 'status'] as const,
+  },
+  
+  // Analytics queries
+  analytics: {
+    delivery: (filters?: any) => ['analytics', 'delivery', filters] as const,
+    pricing: (filters?: any) => ['analytics', 'pricing', filters] as const,
+    usage: () => ['analytics', 'usage'] as const,
+  },
+  
+  // Mutation keys for optimistic updates
+  mutations: {
+    createOrder: () => ['mutation', 'createOrder'] as const,
+    updateSupplierCredentials: () => ['mutation', 'updateSupplierCredentials'] as const,
+    createElevation: () => ['mutation', 'createElevation'] as const,
+    inviteUser: () => ['mutation', 'inviteUser'] as const,
   }
 } as const
 
 // Helper function to invalidate related queries
-export const getRelatedQueryKeys = (entity: string, id?: string) => {
-  switch (entity) {
-    case 'supplier':
-      return [
-        queryKeys.suppliers.all,
-        ...(id ? [queryKeys.suppliers.detail(id), queryKeys.suppliers.items(id)] : [])
-      ]
-    case 'order':
-      return [
-        queryKeys.orders.all,
-        ...(id ? [queryKeys.orders.detail(id)] : [])
-      ]
-    case 'user':
-      return [
-        queryKeys.user.all,
-        ...(id ? [queryKeys.user.memberships(id), queryKeys.user.permissions(id)] : [])
-      ]
-    default:
-      return []
-  }
+export const getInvalidationKeys = {
+  afterOrderCreate: () => [
+    queryKeys.orders.all(),
+    queryKeys.orders.recent(),
+    queryKeys.analytics.usage()
+  ],
+  afterUserInvite: (tenantId: string) => [
+    queryKeys.tenant.users(tenantId),
+    queryKeys.admin.auditLogs()
+  ],
+  afterCredentialsUpdate: (supplierId: string) => [
+    queryKeys.suppliers.credentials(supplierId),
+    queryKeys.connections.status(supplierId),
+    queryKeys.connections.health()
+  ],
+  afterElevationChange: () => [
+    queryKeys.admin.elevations(),
+    queryKeys.admin.activeElevation(),
+    queryKeys.security.suspiciousElevations(),
+    queryKeys.security.prolongedElevations()
+  ]
 }

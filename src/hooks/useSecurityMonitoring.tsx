@@ -1,6 +1,8 @@
 
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
+import { queryKeys } from '@/lib/queryKeys'
+import { handleQueryError } from '@/lib/queryErrorHandler'
 
 interface SuspiciousElevation {
   user_id: string
@@ -49,60 +51,78 @@ interface SecurityDefinerFunction {
 
 export function useSecurityMonitoring() {
   const { data: suspiciousElevations, isLoading: loadingSuspicious } = useQuery({
-    queryKey: ['suspicious-elevations'],
+    queryKey: queryKeys.security.suspiciousElevations(),
     queryFn: async (): Promise<SuspiciousElevation[]> => {
       const { data, error } = await supabase.rpc('detect_suspicious_elevations')
-      if (error) throw error
+      if (error) {
+        handleQueryError(error, 'suspicious elevations')
+        throw error
+      }
       return data || []
     },
     refetchInterval: 5 * 60 * 1000 // Refresh every 5 minutes
   })
 
   const { data: failedJobs, isLoading: loadingFailedJobs } = useQuery({
-    queryKey: ['failed-jobs-summary'],
+    queryKey: queryKeys.security.failedJobs(),
     queryFn: async (): Promise<FailedJobSummary[]> => {
       const { data, error } = await supabase.rpc('get_failed_jobs_summary')
-      if (error) throw error
+      if (error) {
+        handleQueryError(error, 'failed jobs summary')
+        throw error
+      }
       return data || []
     },
     refetchInterval: 2 * 60 * 1000 // Refresh every 2 minutes
   })
 
   const { data: prolongedElevations, isLoading: loadingProlonged } = useQuery({
-    queryKey: ['prolonged-elevations'],
+    queryKey: queryKeys.security.prolongedElevations(),
     queryFn: async (): Promise<ProlongedElevation[]> => {
       const { data, error } = await supabase.rpc('get_prolonged_elevations')
-      if (error) throw error
+      if (error) {
+        handleQueryError(error, 'prolonged elevations')
+        throw error
+      }
       return data || []
     },
     refetchInterval: 60 * 1000 // Refresh every minute
   })
 
   const { data: securityEvents, isLoading: loadingEvents } = useQuery({
-    queryKey: ['security-events'],
+    queryKey: queryKeys.security.events(),
     queryFn: async (): Promise<SecurityEvent[]> => {
       const { data, error } = await supabase.rpc('audit_security_events')
-      if (error) throw error
+      if (error) {
+        handleQueryError(error, 'security events')
+        throw error
+      }
       return data || []
     },
     refetchInterval: 5 * 60 * 1000 // Refresh every 5 minutes
   })
 
   const { data: securityPolicies, isLoading: loadingPolicies } = useQuery({
-    queryKey: ['security-policies'],
+    queryKey: queryKeys.security.policies(),
     queryFn: async (): Promise<SecurityPolicy[]> => {
       const { data, error } = await supabase.rpc('validate_security_policies')
-      if (error) throw error
+      if (error) {
+        handleQueryError(error, 'security policies')
+        throw error
+      }
       return data || []
     },
     refetchInterval: 10 * 60 * 1000 // Refresh every 10 minutes
   })
 
   const { data: securityDefinerFunctions, isLoading: loadingFunctions } = useQuery({
-    queryKey: ['security-definer-functions'],
+    queryKey: queryKeys.security.functions(),
     queryFn: async (): Promise<SecurityDefinerFunction[]> => {
       const { data, error } = await supabase.rpc('audit_security_definer_functions')
-      if (error) throw error
+      if (error) {
+        handleQueryError(error, 'security definer functions')
+        throw error
+      }
       return data || []
     },
     refetchInterval: 30 * 60 * 1000 // Refresh every 30 minutes
