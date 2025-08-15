@@ -4,11 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Search, Lightbulb } from 'lucide-react';
 
 interface SearchEmptyStateProps {
-  searchQuery: string;
-  onBrowsePantry: () => void;
+  query: string;
+  onClearSearch: () => void;
 }
 
-export function SearchEmptyState({ searchQuery, onBrowsePantry }: SearchEmptyStateProps) {
+export function SearchEmptyState({ query, onClearSearch }: SearchEmptyStateProps) {
   return (
     <div className="text-center py-12 space-y-4">
       <div className="flex justify-center">
@@ -19,7 +19,7 @@ export function SearchEmptyState({ searchQuery, onBrowsePantry }: SearchEmptySta
       
       <div className="space-y-2">
         <h3 className="text-lg font-medium text-foreground">
-          No results for "{searchQuery}"
+          No results for "{query}"
         </h3>
         <p className="text-muted-foreground max-w-md mx-auto">
           Try searching by item name, brand, or EAN code. You can also browse our organized pantry sections.
@@ -29,7 +29,7 @@ export function SearchEmptyState({ searchQuery, onBrowsePantry }: SearchEmptySta
       <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
         <Button 
           variant="outline" 
-          onClick={onBrowsePantry}
+          onClick={onClearSearch}
           className="min-w-[140px]"
         >
           Browse Pantry

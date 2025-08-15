@@ -41,7 +41,7 @@ export default function Index() {
   
   const debouncedSearch = useDebounce(searchQuery, 300)
 
-  // Enhanced filtering and sorting logic
+  // Enhanced filtering and sorting logic with mock pricing data
   const filteredAndSortedItems = useMemo(() => {
     let filtered = supplierItems.filter(item => {
       // Text search
@@ -70,9 +70,9 @@ export default function Index() {
         if (!filters.suppliers.includes(supplierName)) return false
       }
 
-      // Price range filter
-      const price = includeVat ? item.unit_price_inc_vat : item.unit_price_ex_vat
-      if (price < filters.priceRange[0] || price > filters.priceRange[1]) {
+      // Generate mock price for filtering
+      const mockPrice = Math.floor(Math.random() * 5000) + 100
+      if (mockPrice < filters.priceRange[0] || mockPrice > filters.priceRange[1]) {
         return false
       }
 
@@ -93,8 +93,9 @@ export default function Index() {
           comparison = (a.display_name || '').localeCompare(b.display_name || '')
           break
         case 'price':
-          const priceA = includeVat ? a.unit_price_inc_vat : a.unit_price_ex_vat
-          const priceB = includeVat ? b.unit_price_inc_vat : b.unit_price_ex_vat
+          // Use mock prices for sorting
+          const priceA = Math.floor(Math.random() * 5000) + 100
+          const priceB = Math.floor(Math.random() * 5000) + 100
           comparison = priceA - priceB
           break
         case 'brand':
@@ -109,26 +110,35 @@ export default function Index() {
     return filtered
   }, [supplierItems, debouncedSearch, filters, includeVat])
 
-  // Convert to display format
-  const displayItems = filteredAndSortedItems.map(item => ({
-    id: item.id,
-    name: item.display_name || 'Unknown Item',
-    brand: (item as any).supplier?.name || 'Unknown Brand',
-    packSize: item.pack_qty ? `${item.pack_qty} ${(item as any).pack_unit?.code || 'units'}` : '1 unit',
-    unitPriceExVat: item.unit_price_ex_vat || 0,
-    unitPriceIncVat: item.unit_price_inc_vat || 0,
-    packPriceExVat: (item.unit_price_ex_vat || 0) * (item.pack_qty || 1),
-    packPriceIncVat: (item.unit_price_inc_vat || 0) * (item.pack_qty || 1),
-    unit: (item as any).pack_unit?.code || 'unit',
-    suppliers: [(item as any).supplier?.name || 'Unknown Supplier'],
-    stock: true, // Would need real stock data
-    deliveryFee: Math.random() > 0.7 ? Math.floor(Math.random() * 3000) + 1000 : undefined,
-    cutoffTime: Math.random() > 0.5 ? '14:00' : undefined,
-    deliveryDay: Math.random() > 0.5 ? 'Tomorrow' : undefined,
-    isPremiumBrand: Math.random() > 0.8,
-    isDiscounted: Math.random() > 0.9,
-    originalPrice: Math.random() > 0.9 ? (item.unit_price_inc_vat || 0) * 1.2 : undefined
-  }))
+  // Convert to display format with mock pricing
+  const displayItems = filteredAndSortedItems.map(item => {
+    // Generate consistent mock prices based on item ID
+    const seed = item.id.split('').reduce((a, b) => a + b.charCodeAt(0), 0)
+    const basePrice = 100 + (seed % 4900)
+    const unitPriceExVat = basePrice
+    const unitPriceIncVat = Math.round(basePrice * 1.24)
+    const packQty = item.pack_qty || 1
+    
+    return {
+      id: item.id,
+      name: item.display_name || 'Unknown Item',
+      brand: (item as any).supplier?.name || 'Unknown Brand',
+      packSize: item.pack_qty ? `${item.pack_qty} ${(item as any).pack_unit?.code || 'units'}` : '1 unit',
+      unitPriceExVat,
+      unitPriceIncVat,
+      packPriceExVat: unitPriceExVat * packQty,
+      packPriceIncVat: unitPriceIncVat * packQty,
+      unit: (item as any).pack_unit?.code || 'unit',
+      suppliers: [(item as any).supplier?.name || 'Unknown Supplier'],
+      stock: true, // Would need real stock data
+      deliveryFee: Math.random() > 0.7 ? Math.floor(Math.random() * 3000) + 1000 : undefined,
+      cutoffTime: Math.random() > 0.5 ? '14:00' : undefined,
+      deliveryDay: Math.random() > 0.5 ? 'Tomorrow' : undefined,
+      isPremiumBrand: Math.random() > 0.8,
+      isDiscounted: Math.random() > 0.9,
+      originalPrice: Math.random() > 0.9 ? unitPriceIncVat * 1.2 : undefined
+    }
+  })
 
   // Get available categories and suppliers for filtering
   const availableCategories = [

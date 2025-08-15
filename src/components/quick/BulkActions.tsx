@@ -36,7 +36,9 @@ export function BulkActions({
           <Checkbox
             checked={isAllSelected}
             ref={(el) => {
-              if (el) el.indeterminate = isSomeSelected;
+              if (el && el instanceof HTMLInputElement) {
+                el.indeterminate = isSomeSelected;
+              }
             }}
             onCheckedChange={isAllSelected ? onClearSelection : onSelectAll}
           />

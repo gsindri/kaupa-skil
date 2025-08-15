@@ -5,7 +5,9 @@ import { Heart, History, BookOpen } from 'lucide-react'
 import { ItemCard } from './ItemCard'
 
 interface PantryLanesProps {
-  userMode: 'just-order' | 'balanced' | 'analytical'
+  onLaneSelect: (lane: string | null) => void;
+  selectedLane: string | null;
+  onAddToCart: (itemId: string) => void;
 }
 
 // Mock data - replace with actual data from hooks
@@ -42,7 +44,7 @@ const mockLastOrder = [
   }
 ]
 
-export function PantryLanes({ userMode }: PantryLanesProps) {
+export function PantryLanes({ onLaneSelect, selectedLane, onAddToCart }: PantryLanesProps) {
   const handleCompareItem = (itemId: string) => {
     console.log('Compare item:', itemId)
     // TODO: Implement compare functionality
@@ -65,7 +67,7 @@ export function PantryLanes({ userMode }: PantryLanesProps) {
                 <ItemCard
                   key={item.id}
                   item={item}
-                  userMode={userMode}
+                  userMode="balanced"
                   onCompareItem={handleCompareItem}
                 />
               ))}
@@ -94,7 +96,7 @@ export function PantryLanes({ userMode }: PantryLanesProps) {
                 <ItemCard
                   key={item.id}
                   item={item}
-                  userMode={userMode}
+                  userMode="balanced"
                   onCompareItem={handleCompareItem}
                 />
               ))}
