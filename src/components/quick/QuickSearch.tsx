@@ -9,7 +9,7 @@ interface QuickSearchProps {
   placeholder?: string
 }
 
-export function QuickSearch({ value, onChange, placeholder = "Search by name, SKU, or EAN..." }: QuickSearchProps) {
+export function QuickSearch({ value, onChange, placeholder = "Search item / brand / EAN…" }: QuickSearchProps) {
   const inputRef = useRef<HTMLInputElement>(null)
 
   // Keyboard shortcut: / focuses search
@@ -33,7 +33,7 @@ export function QuickSearch({ value, onChange, placeholder = "Search by name, SK
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="pl-10 h-12 text-base"
+        className="h-11 rounded-lg pl-10 text-base focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:shadow-focus transition-all duration-200"
       />
     </div>
   )

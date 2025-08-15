@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -67,13 +68,13 @@ export default function Index() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="sticky top-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
-        <div className="flex items-center justify-between p-4">
-          <div className="flex items-center gap-3">
+      {/* Header - exact 56px height with proper backdrop blur */}
+      <div className="sticky top-0 z-40 h-14 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-foreground/10">
+        <div className="max-w-screen-xl mx-auto px-4 md:px-6 h-full flex items-center justify-between">
+          <div className="flex items-center gap-6">
             <div className="flex items-center gap-2">
-              <Zap className="h-5 w-5 text-primary" />
-              <h1 className="text-xl font-semibold">Quick Order</h1>
+              <Zap className="h-5 w-5 text-brand-500" />
+              <h1 className="text-lg font-semibold">Quick Order</h1>
             </div>
             
             {/* Mode Toggle */}
@@ -92,6 +93,20 @@ export default function Index() {
                 </Button>
               ))}
             </div>
+          </div>
+
+          {/* Center: Search - 600-720px wide on desktop */}
+          <div className="flex-1 max-w-2xl mx-8">
+            <QuickSearch
+              value={searchQuery}
+              onChange={(value) => {
+                setSearchQuery(value)
+                if (value.trim()) {
+                  setActiveTab('search')
+                }
+              }}
+              placeholder="Search item / brand / EAN…"
+            />
           </div>
 
           <div className="flex items-center gap-3">
@@ -115,7 +130,7 @@ export default function Index() {
             <Button
               variant="default"
               onClick={() => setIsDrawerOpen(true)}
-              className="relative transition-all duration-200 hover:scale-105"
+              className="relative transition-all duration-200 hover:scale-105 bg-brand-500 hover:bg-brand-600"
             >
               <ShoppingCart className="h-4 w-4 mr-2" />
               Basket
@@ -132,91 +147,107 @@ export default function Index() {
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="p-4 space-y-6">
-        {/* Global Search */}
-        <Card className="transition-all duration-200 hover:shadow-md">
-          <CardContent className="p-4">
-            <QuickSearch
-              value={searchQuery}
-              onChange={(value) => {
-                setSearchQuery(value)
-                if (value.trim()) {
-                  setActiveTab('search')
-                }
-              }}
-              placeholder="Search by name, SKU, or EAN..."
-            />
-          </CardContent>
-        </Card>
-
-        {/* Content Tabs */}
-        <div className="flex gap-2 mb-4">
-          <Button
-            variant={activeTab === 'pantry' ? 'default' : 'outline'}
-            onClick={() => setActiveTab('pantry')}
-            className="transition-all duration-200"
-          >
-            Pantry
-          </Button>
-          <Button
-            variant={activeTab === 'search' ? 'default' : 'outline'}
-            onClick={() => setActiveTab('search')}
-            disabled={!searchQuery.trim()}
-            className="transition-all duration-200"
-          >
-            Search Results
-            {filteredItems.length > 0 && (
-              <Badge variant="secondary" className="ml-2">
-                {filteredItems.length}
-              </Badge>
-            )}
-          </Button>
-        </div>
-
-        {/* Content Area */}
-        <div className="transition-all duration-300 ease-in-out">
-          {activeTab === 'pantry' ? (
-            <PantryLanes userMode={userMode} />
-          ) : (
-            <div className="space-y-4">
-              {isLoading ? (
-                <div className="text-center py-8">
-                  <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full mx-auto"></div>
-                  <p className="text-muted-foreground mt-2">Searching...</p>
-                </div>
-              ) : filteredItems.length > 0 ? (
-                <div className="space-y-2">
-                  {/* Use virtualization for large lists */}
-                  {filteredItems.length > 50 ? (
-                    <VirtualizedItemList
-                      items={filteredItems}
-                      height={600}
-                      itemHeight={120}
-                      userMode={userMode}
-                    />
-                  ) : (
-                    <div className="grid gap-2">
-                      {filteredItems.map((item, index) => (
-                        <div
-                          key={item.id}
-                          className="animate-in fade-in slide-in-from-bottom-2"
-                          style={{ animationDelay: `${index * 50}ms` }}
-                        >
-                          {/* ItemCard will be rendered here */}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ) : searchQuery.trim() ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  <p>No items found for "{searchQuery}"</p>
-                  <p className="text-sm">Try searching by name, SKU, or EAN</p>
-                </div>
-              ) : null}
+      {/* Main Content - max-width 1280px with proper spacing */}
+      <div className="max-w-screen-xl mx-auto px-4 md:px-6">
+        <div className="grid grid-cols-12 gap-6 py-6">
+          {/* Left 8 columns: Search/Pantry */}
+          <div className="col-span-12 lg:col-span-8 space-y-6">
+            {/* Content Tabs */}
+            <div className="flex gap-2">
+              <Button
+                variant={activeTab === 'pantry' ? 'default' : 'outline'}
+                onClick={() => setActiveTab('pantry')}
+                className="transition-all duration-200"
+              >
+                Pantry
+              </Button>
+              <Button
+                variant={activeTab === 'search' ? 'default' : 'outline'}
+                onClick={() => setActiveTab('search')}
+                disabled={!searchQuery.trim()}
+                className="transition-all duration-200"
+              >
+                Search Results
+                {filteredItems.length > 0 && (
+                  <Badge variant="secondary" className="ml-2">
+                    {filteredItems.length}
+                  </Badge>
+                )}
+              </Button>
             </div>
-          )}
+
+            {/* Content Area */}
+            <div className="transition-all duration-300 ease-in-out">
+              {activeTab === 'pantry' ? (
+                <PantryLanes userMode={userMode} />
+              ) : (
+                <div className="space-y-4">
+                  {isLoading ? (
+                    <div className="text-center py-8">
+                      <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full mx-auto"></div>
+                      <p className="text-muted-foreground mt-2">Searching...</p>
+                    </div>
+                  ) : filteredItems.length > 0 ? (
+                    <div className="space-y-3">
+                      {/* Use virtualization for large lists */}
+                      {filteredItems.length > 50 ? (
+                        <VirtualizedItemList
+                          items={filteredItems}
+                          height={600}
+                          itemHeight={120}
+                          userMode={userMode}
+                        />
+                      ) : (
+                        <div className="grid gap-3">
+                          {filteredItems.map((item, index) => (
+                            <div
+                              key={item.id}
+                              className="animate-scale-in"
+                              style={{ animationDelay: `${index * 50}ms` }}
+                            >
+                              {/* ItemCard will be rendered here */}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ) : searchQuery.trim() ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <p>No results. Try brand or EAN.</p>
+                      <Button 
+                        variant="outline" 
+                        className="mt-4" 
+                        onClick={() => setActiveTab('pantry')}
+                      >
+                        Browse Pantry
+                      </Button>
+                    </div>
+                  ) : null}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Right 4 columns: Basket context & tips */}
+          <div className="col-span-12 lg:col-span-4">
+            <div className="sticky top-20 space-y-4">
+              {/* Basket summary card would go here */}
+              <Card className="rounded-xl">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-medium">Order Summary</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-sm text-muted-foreground">
+                    {basketItemCount > 0 ? (
+                      <p>{basketItemCount} items in basket</p>
+                    ) : (
+                      <p>Your basket is empty</p>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
         </div>
       </div>
 

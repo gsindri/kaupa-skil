@@ -69,6 +69,20 @@ export default {
 					DEFAULT: 'hsl(var(--error))',
 					foreground: 'hsl(var(--error-foreground))',
 				},
+				// Brand colors from specification
+				brand: {
+					50: '#ECF5F8',
+					100: '#D6ECF2',
+					200: '#B3DCE6',
+					300: '#8FCBDD',
+					400: '#5DB3CF',
+					500: '#2D9BC0', // primary
+					600: '#1D84A9',
+					700: '#186C8B',
+					800: '#12556E',
+					900: '#0D3E51',
+				},
+				'accent-highlight': '#F2B04E',
 				// VAT specific
 				'vat-inclusive': 'hsl(var(--vat-inclusive))',
 				'vat-exclusive': 'hsl(var(--vat-exclusive))',
@@ -125,11 +139,21 @@ export default {
 				'scale-in': {
 					from: {
 						opacity: '0',
-						transform: 'scale(0.95)'
+						transform: 'scale(0.98)'
 					},
 					to: {
 						opacity: '1',
 						transform: 'scale(1)'
+					}
+				},
+				'flyout': {
+					'0%': {
+						opacity: '1',
+						transform: 'scale(1) translateY(0)'
+					},
+					'100%': {
+						opacity: '0',
+						transform: 'scale(0.8) translateY(-20px)'
 					}
 				}
 			},
@@ -138,16 +162,21 @@ export default {
 				'accordion-up': 'accordion-up 0.2s ease-out',
 				'slide-up': 'slide-up 0.2s ease-out',
 				'fade-in': 'fade-in 0.3s ease-out',
-				'scale-in': 'scale-in 0.2s ease-out',
+				'scale-in': 'scale-in 0.12s ease-out',
+				'flyout': 'flyout 0.15s ease-out',
 			},
 			fontFamily: {
 				sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
 				mono: ['JetBrains Mono', 'Fira Code', 'Consolas', 'monospace'],
 			},
+			fontFeatureSettings: {
+				'tnum': '"tnum" 1',
+			},
 			boxShadow: {
 				'sm': 'var(--shadow-sm)',
 				'md': 'var(--shadow-md)',
 				'lg': 'var(--shadow-lg)',
+				'focus': '0 1px 0 #0000000A, 0 2px 8px #00000014',
 			}
 		}
 	},
