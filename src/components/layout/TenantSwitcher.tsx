@@ -42,10 +42,15 @@ export function TenantSwitcher() {
 
   // Get current tenant name
   const currentTenant = userMemberships?.find(
-    membership => membership.tenant?.id === profile?.tenant_id
+    membership => membership.tenant && 
+    typeof membership.tenant === 'object' && 
+    'id' in membership.tenant && 
+    membership.tenant.id === profile?.tenant_id
   )?.tenant
 
-  const displayName = currentTenant?.name || 'No Organization'
+  const displayName = currentTenant && typeof currentTenant === 'object' && 'name' in currentTenant 
+    ? currentTenant.name 
+    : 'No Organization'
 
   const handleTenantSwitch = async (tenantId: string) => {
     if (!user?.id) return
@@ -75,20 +80,26 @@ export function TenantSwitcher() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start">
-        {userMemberships?.map((membership) => (
-          <DropdownMenuItem
-            key={membership.id}
-            onClick={() => membership.tenant?.id && handleTenantSwitch(membership.tenant.id)}
-            className={membership.tenant?.id === profile?.tenant_id ? 'bg-muted' : ''}
-          >
-            <div className="flex flex-col">
-              <span className="font-medium">{membership.tenant?.name}</span>
-              <span className="text-sm text-muted-foreground capitalize">
-                {membership.base_role}
-              </span>
-            </div>
-          </DropdownMenuItem>
-        ))}
+        {userMemberships?.map((membership) => {
+          const tenant = membership.tenant
+          const tenantId = tenant && typeof tenant === 'object' && 'id' in tenant ? tenant.id : null
+          const tenantName = tenant && typeof tenant === 'object' && 'name' in tenant ? tenant.name : 'Unknown'
+          
+          return (
+            <DropdownMenuItem
+              key={membership.id}
+              onClick={() => tenantId && handleTenantSwitch(tenantId as string)}
+              className={tenantId === profile?.tenant_id ? 'bg-muted' : ''}
+            >
+              <div className="flex flex-col">
+                <span className="font-medium">{tenantName}</span>
+                <span className="text-sm text-muted-foreground capitalize">
+                  {membership.base_role}
+                </span>
+              </div>
+            </DropdownMenuItem>
+          )
+        })}
         
         {(!userMemberships || userMemberships.length === 0) && (
           <DropdownMenuItem disabled>
