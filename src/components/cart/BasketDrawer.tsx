@@ -13,11 +13,14 @@ import { Separator } from '@/components/ui/separator'
 import { ShoppingCart, Send, CheckCircle, Save } from 'lucide-react'
 import { useCart } from '@/contexts/CartProvider'
 import { useSettings } from '@/contexts/SettingsProvider'
+import { useDeliveryCalculation } from '@/hooks/useDeliveryOptimization'
+import { DeliveryHints } from './DeliveryHints'
 import { toast } from '@/hooks/use-toast'
 
 export function BasketDrawer() {
   const { items, getTotalItems, isDrawerOpen, setIsDrawerOpen, updateQuantity, removeItem } = useCart()
   const { includeVat } = useSettings()
+  const { data: deliveryCalculations = [], isLoading: deliveryLoading } = useDeliveryCalculation()
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('is-IS', {
@@ -45,8 +48,25 @@ export function BasketDrawer() {
     return groups
   }, {} as Record<string, any>)
 
+  // Calculate delivery hints
+  const deliveryHints = deliveryCalculations
+    .filter(calc => calc.is_under_threshold && calc.amount_to_free_delivery)
+    .map(calc => ({
+      supplierId: calc.supplier_id,
+      supplierName: calc.supplier_name,
+      amountToFreeDelivery: calc.amount_to_free_delivery!,
+      currentDeliveryFee: calc.delivery_fee,
+      suggestedItems: [
+        { id: 'staple-1', name: 'Flour 1kg', packSize: '1kg', unitPrice: 200 },
+        { id: 'staple-2', name: 'Sugar 500g', packSize: '500g', unitPrice: 150 },
+        { id: 'staple-3', name: 'Salt 500g', packSize: '500g', unitPrice: 100 }
+      ]
+    }))
+
   const totalExVat = Object.values(supplierGroups).reduce((sum: number, group: any) => sum + group.subtotalExVat, 0)
   const totalIncVat = Object.values(supplierGroups).reduce((sum: number, group: any) => sum + group.subtotalIncVat, 0)
+  const totalDeliveryFees = deliveryCalculations.reduce((sum, calc) => sum + calc.total_delivery_cost, 0)
+  const grandTotal = (includeVat ? totalIncVat : totalExVat) + totalDeliveryFees
 
   const needsApproval = totalExVat > 200000 // Mock approval threshold
 
@@ -99,46 +119,73 @@ export function BasketDrawer() {
             </div>
           ) : (
             <>
+              {/* Delivery optimization hints */}
+              <DeliveryHints hints={deliveryHints} />
+
               {/* Per-supplier splits */}
-              {Object.entries(supplierGroups).map(([supplierId, group]: [string, any]) => (
-                <Card key={supplierId}>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-lg">{group.supplier}</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    {group.items.map((item: any) => (
-                      <div key={item.supplierItemId} className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <div className="font-medium">{item.itemName}</div>
-                          <div className="text-sm text-muted-foreground">
-                            {item.packSize} • SKU: {item.sku}
+              {Object.entries(supplierGroups).map(([supplierId, group]: [string, any]) => {
+                const supplierDelivery = deliveryCalculations.find(calc => calc.supplier_id === supplierId)
+                
+                return (
+                  <Card key={supplierId}>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-lg flex items-center justify-between">
+                        <span>{group.supplier}</span>
+                        {supplierDelivery?.next_delivery_day && (
+                          <Badge variant="outline" className="text-xs">
+                            Next: {supplierDelivery.next_delivery_day}
+                          </Badge>
+                        )}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      {group.items.map((item: any) => (
+                        <div key={item.supplierItemId} className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <div className="font-medium">{item.itemName}</div>
+                            <div className="text-sm text-muted-foreground">
+                              {item.packSize} • SKU: {item.sku}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm">{item.quantity}x</span>
+                            <span className="font-mono">
+                              {formatPrice(includeVat ? item.unitPriceIncVat : item.unitPriceExVat)}
+                            </span>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm">{item.quantity}x</span>
+                      ))}
+                      
+                      <Separator />
+                      
+                      <div className="space-y-1">
+                        <div className="flex justify-between">
+                          <span>Subtotal ({includeVat ? 'inc VAT' : 'ex VAT'})</span>
                           <span className="font-mono">
-                            {formatPrice(includeVat ? item.unitPriceIncVat : item.unitPriceExVat)}
+                            {formatPrice(includeVat ? group.subtotalIncVat : group.subtotalExVat)}
+                          </span>
+                        </div>
+                        
+                        {supplierDelivery && supplierDelivery.total_delivery_cost > 0 && (
+                          <div className="flex justify-between text-sm text-orange-600">
+                            <span>Delivery & fees</span>
+                            <span className="font-mono">
+                              {formatPrice(supplierDelivery.total_delivery_cost)}
+                            </span>
+                          </div>
+                        )}
+                        
+                        <div className="flex justify-between font-medium pt-1 border-t">
+                          <span>Supplier total</span>
+                          <span className="font-mono">
+                            {formatPrice((includeVat ? group.subtotalIncVat : group.subtotalExVat) + (supplierDelivery?.total_delivery_cost || 0))}
                           </span>
                         </div>
                       </div>
-                    ))}
-                    
-                    <Separator />
-                    
-                    <div className="flex justify-between font-medium">
-                      <span>Subtotal ({includeVat ? 'inc VAT' : 'ex VAT'})</span>
-                      <span className="font-mono">
-                        {formatPrice(includeVat ? group.subtotalIncVat : group.subtotalExVat)}
-                      </span>
-                    </div>
-                    
-                    <div className="text-sm text-muted-foreground">
-                      <div>Delivery notes: Standard delivery</div>
-                      <div>Cutoff: Tomorrow 14:00</div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    </CardContent>
+                  </Card>
+                )
+              })}
 
               {/* Needs approval banner */}
               {needsApproval && (
@@ -155,23 +202,23 @@ export function BasketDrawer() {
                 </Card>
               )}
 
-              {/* Totals */}
-              <Card>
+              {/* Grand totals */}
+              <Card className="bg-slate-50">
                 <CardContent className="pt-4 space-y-2">
                   <div className="flex justify-between">
-                    <span>Total ex VAT</span>
-                    <span className="font-mono">{formatPrice(totalExVat)}</span>
+                    <span>Items total ({includeVat ? 'inc VAT' : 'ex VAT'})</span>
+                    <span className="font-mono">{formatPrice(includeVat ? totalIncVat : totalExVat)}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span>Total inc VAT</span>
-                    <span className="font-mono">{formatPrice(totalIncVat)}</span>
-                  </div>
+                  {totalDeliveryFees > 0 && (
+                    <div className="flex justify-between text-orange-600">
+                      <span>Total delivery & fees</span>
+                      <span className="font-mono">{formatPrice(totalDeliveryFees)}</span>
+                    </div>
+                  )}
                   <Separator />
                   <div className="flex justify-between font-bold text-lg">
-                    <span>Total ({includeVat ? 'inc VAT' : 'ex VAT'})</span>
-                    <span className="font-mono">
-                      {formatPrice(includeVat ? totalIncVat : totalExVat)}
-                    </span>
+                    <span>Grand Total</span>
+                    <span className="font-mono">{formatPrice(grandTotal)}</span>
                   </div>
                 </CardContent>
               </Card>

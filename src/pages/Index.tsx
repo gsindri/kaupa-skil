@@ -1,123 +1,224 @@
 
-import React, { useState } from 'react';
-import { QuickSearch } from '@/components/quick/QuickSearch';
-import { PantryLanes } from '@/components/quick/PantryLanes';
-import { MiniCompareDrawer } from '@/components/quick/MiniCompareDrawer';
-import { BasketDrawer } from '@/components/cart/BasketDrawer';
-import VatToggle from '@/components/ui/VatToggle';
-import { Button } from '@/components/ui/button';
-import { useSettings } from '@/contexts/SettingsProvider';
-import { useCart } from '@/contexts/CartProvider';
-import { ShoppingCart } from 'lucide-react';
+import React, { useState, useMemo, useCallback } from 'react'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Separator } from '@/components/ui/separator'
+import { Zap, ShoppingCart, Settings } from 'lucide-react'
+import { useCart } from '@/contexts/CartProvider'
+import { useSettings } from '@/contexts/SettingsProvider'
+import { getUserPrefs, saveUserPrefs } from '@/state/userPrefs'
+import { QuickSearch } from '@/components/quick/QuickSearch'
+import { PantryLanes } from '@/components/quick/PantryLanes'
+import { VirtualizedItemList } from '@/components/quick/VirtualizedItemList'
+import { BasketDrawer } from '@/components/cart/BasketDrawer'
+import { useSupplierItems } from '@/hooks/useSupplierItems'
 
-type UserMode = 'just-order' | 'balanced' | 'analytical';
+export default function Index() {
+  const [searchQuery, setSearchQuery] = useState('')
+  const [activeTab, setActiveTab] = useState<'pantry' | 'search'>('pantry')
+  const { setIsDrawerOpen, getTotalItems } = useCart()
+  const { includeVat, setIncludeVat } = useSettings()
+  const { data: supplierItems = [], isLoading } = useSupplierItems()
+  
+  // Get user preferences
+  const userPrefs = getUserPrefs()
+  const [userMode, setUserMode] = useState(userPrefs.userMode)
 
-const Index = () => {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [userMode, setUserMode] = useState<UserMode>('just-order');
-  const [compareItem, setCompareItem] = useState<string | null>(null);
-  const { includeVat, setIncludeVat } = useSettings();
-  const { getTotalItems, setIsDrawerOpen } = useCart();
+  // Handle VAT toggle with smooth animation
+  const handleVatToggle = useCallback(() => {
+    setIncludeVat(!includeVat)
+  }, [includeVat, setIncludeVat])
 
-  const handleSearchChange = (value: string) => {
-    setSearchQuery(value);
-  };
+  // Handle mode change
+  const handleModeChange = useCallback((mode: 'just-order' | 'balanced' | 'analytical') => {
+    setUserMode(mode)
+    saveUserPrefs({ userMode: mode })
+  }, [])
 
-  const handleCompareItem = (itemId: string) => {
-    setCompareItem(itemId);
-  };
+  // Filtered and sorted items with performance optimization
+  const filteredItems = useMemo(() => {
+    if (!searchQuery.trim()) return []
+    
+    const query = searchQuery.toLowerCase()
+    return supplierItems
+      .filter(item => 
+        item.display_name?.toLowerCase().includes(query) ||
+        item.sku?.toLowerCase().includes(query) ||
+        item.ean?.toLowerCase().includes(query)
+      )
+      .slice(0, 100) // Limit results for performance
+  }, [supplierItems, searchQuery])
 
-  const handleCloseCompare = () => {
-    setCompareItem(null);
-  };
+  // Keyboard shortcuts
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'b' || e.key === 'B') {
+        if (e.target === document.body || (e.target as HTMLElement).tagName === 'INPUT') {
+          setIsDrawerOpen(true)
+        }
+      }
+    }
 
-  const basketItemCount = getTotalItems();
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [setIsDrawerOpen])
+
+  const basketItemCount = getTotalItems()
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Quick Order</h1>
-          <p className="text-muted-foreground">
-            Search and order from all your suppliers in one place
-          </p>
-        </div>
-        
-        <div className="flex items-center space-x-4">
-          {/* Mode Toggle */}
-          <div className="flex items-center space-x-1 bg-muted rounded-md p-1">
-            <Button
-              size="sm"
-              variant={userMode === 'just-order' ? "default" : "ghost"}
-              onClick={() => setUserMode('just-order')}
-              className="px-3 py-1 text-xs"
-            >
-              Just Order
-            </Button>
-            <Button
-              size="sm"
-              variant={userMode === 'balanced' ? "default" : "ghost"}
-              onClick={() => setUserMode('balanced')}
-              className="px-3 py-1 text-xs"
-            >
-              Balanced
-            </Button>
+      <div className="sticky top-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
+        <div className="flex items-center justify-between p-4">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <Zap className="h-5 w-5 text-primary" />
+              <h1 className="text-xl font-semibold">Quick Order</h1>
+            </div>
+            
+            {/* Mode Toggle */}
+            <div className="flex items-center gap-1 bg-muted rounded-lg p-1">
+              {(['just-order', 'balanced', 'analytical'] as const).map((mode) => (
+                <Button
+                  key={mode}
+                  variant={userMode === mode ? 'default' : 'ghost'}
+                  size="sm"
+                  className={`h-7 text-xs transition-all duration-200 ${
+                    userMode === mode ? 'bg-background shadow-sm' : ''
+                  }`}
+                  onClick={() => handleModeChange(mode)}
+                >
+                  {mode === 'just-order' ? 'Quick' : mode === 'balanced' ? 'Balanced' : 'Detail'}
+                </Button>
+              ))}
+            </div>
           </div>
 
-          {/* VAT Toggle */}
-          <VatToggle 
-            includeVat={includeVat} 
-            onToggle={setIncludeVat}
-          />
+          <div className="flex items-center gap-3">
+            {/* VAT Toggle */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleVatToggle}
+              className="transition-all duration-200"
+            >
+              <span className={`transition-opacity duration-200 ${includeVat ? 'opacity-100' : 'opacity-50'}`}>
+                Inc VAT
+              </span>
+              <Separator orientation="vertical" className="mx-2 h-4" />
+              <span className={`transition-opacity duration-200 ${!includeVat ? 'opacity-100' : 'opacity-50'}`}>
+                Ex VAT
+              </span>
+            </Button>
 
-          {/* Basket Button */}
-          <Button
-            variant="outline"
-            onClick={() => setIsDrawerOpen(true)}
-            className="flex items-center space-x-2"
-          >
-            <ShoppingCart className="h-4 w-4" />
-            <span>Basket · {basketItemCount}</span>
-          </Button>
+            {/* Basket Button */}
+            <Button
+              variant="default"
+              onClick={() => setIsDrawerOpen(true)}
+              className="relative transition-all duration-200 hover:scale-105"
+            >
+              <ShoppingCart className="h-4 w-4 mr-2" />
+              Basket
+              {basketItemCount > 0 && (
+                <Badge 
+                  variant="secondary" 
+                  className="ml-2 bg-background text-foreground animate-pulse"
+                >
+                  {basketItemCount}
+                </Badge>
+              )}
+            </Button>
+          </div>
         </div>
       </div>
 
-      {/* Search Bar */}
-      <QuickSearch
-        value={searchQuery}
-        onChange={handleSearchChange}
-        onCompareItem={handleCompareItem}
-        userMode={userMode}
-      />
-
       {/* Main Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-3">
-          {searchQuery ? (
-            <div className="text-center py-8 text-muted-foreground">
-              <p>Search results for "{searchQuery}" will appear here</p>
-            </div>
-          ) : (
-            <PantryLanes
-              onCompareItem={handleCompareItem}
-              userMode={userMode}
+      <div className="p-4 space-y-6">
+        {/* Global Search */}
+        <Card className="transition-all duration-200 hover:shadow-md">
+          <CardContent className="p-4">
+            <QuickSearch
+              value={searchQuery}
+              onChange={setSearchQuery}
+              onFocus={() => setActiveTab('search')}
+              placeholder="Search by name, SKU, or EAN..."
             />
+          </CardContent>
+        </Card>
+
+        {/* Content Tabs */}
+        <div className="flex gap-2 mb-4">
+          <Button
+            variant={activeTab === 'pantry' ? 'default' : 'outline'}
+            onClick={() => setActiveTab('pantry')}
+            className="transition-all duration-200"
+          >
+            Pantry
+          </Button>
+          <Button
+            variant={activeTab === 'search' ? 'default' : 'outline'}
+            onClick={() => setActiveTab('search')}
+            disabled={!searchQuery.trim()}
+            className="transition-all duration-200"
+          >
+            Search Results
+            {filteredItems.length > 0 && (
+              <Badge variant="secondary" className="ml-2">
+                {filteredItems.length}
+              </Badge>
+            )}
+          </Button>
+        </div>
+
+        {/* Content Area */}
+        <div className="transition-all duration-300 ease-in-out">
+          {activeTab === 'pantry' ? (
+            <PantryLanes userMode={userMode} includeVat={includeVat} />
+          ) : (
+            <div className="space-y-4">
+              {isLoading ? (
+                <div className="text-center py-8">
+                  <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full mx-auto"></div>
+                  <p className="text-muted-foreground mt-2">Searching...</p>
+                </div>
+              ) : filteredItems.length > 0 ? (
+                <div className="space-y-2">
+                  {/* Use virtualization for large lists */}
+                  {filteredItems.length > 50 ? (
+                    <VirtualizedItemList
+                      items={filteredItems}
+                      height={600}
+                      itemHeight={120}
+                      userMode={userMode}
+                      includeVat={includeVat}
+                    />
+                  ) : (
+                    <div className="grid gap-2">
+                      {filteredItems.map((item, index) => (
+                        <div
+                          key={item.id}
+                          className="animate-in fade-in slide-in-from-bottom-2"
+                          style={{ animationDelay: `${index * 50}ms` }}
+                        >
+                          {/* ItemCard will be rendered here */}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ) : searchQuery.trim() ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <p>No items found for "{searchQuery}"</p>
+                  <p className="text-sm">Try searching by name, SKU, or EAN</p>
+                </div>
+              ) : null}
+            </div>
           )}
         </div>
       </div>
 
-      {/* Mini Compare Drawer */}
-      <MiniCompareDrawer
-        itemId={compareItem}
-        isOpen={compareItem !== null}
-        onClose={handleCloseCompare}
-      />
-
-      {/* Basket Drawer */}
       <BasketDrawer />
     </div>
-  );
-};
-
-export default Index;
+  )
+}
