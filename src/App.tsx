@@ -1,5 +1,6 @@
+
 import React from 'react'
-import { QueryClient, QueryClientProvider } from 'react-query'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Toaster } from '@/components/ui/toaster'
 import { AuthProvider } from '@/contexts/AuthProvider'
 import { SettingsProvider } from '@/contexts/SettingsProvider'
