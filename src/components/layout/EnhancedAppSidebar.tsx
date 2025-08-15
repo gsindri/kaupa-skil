@@ -77,12 +77,15 @@ const adminItems = [
 
 export function EnhancedAppSidebar() {
   const location = useLocation()
-  const { profile } = useAuth()
+  const { profile, user } = useAuth()
   const { getTotalItems } = useBasket()
 
   // Check if user has admin access
   const isAdmin = profile?.role === 'admin'
   const basketItemCount = getTotalItems()
+  
+  // Get display name with fallbacks
+  const displayName = profile?.full_name || user?.email?.split('@')[0] || 'User'
 
   return (
     <Sidebar>
@@ -179,7 +182,7 @@ export function EnhancedAppSidebar() {
       </SidebarContent>
       <SidebarFooter>
         <div className="p-4 text-sm text-muted-foreground">
-          {profile?.full_name || 'User'}
+          Welcome, {displayName}
         </div>
       </SidebarFooter>
     </Sidebar>

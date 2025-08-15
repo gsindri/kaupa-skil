@@ -1,3 +1,4 @@
+
 import * as React from "react";
 import { useState, useEffect } from "react";
 import { Eye, EyeOff, Building2, AlertCircle } from "lucide-react";
@@ -14,12 +15,9 @@ export default function LoginShowcase() {
   // Redirect authenticated users
   useEffect(() => {
     if (isInitialized && user) {
-      if (profile && !profile.tenant_id) {
-        navigate("/setup", { replace: true });
-      } else {
-        const from = location.state?.from?.pathname || "/";
-        navigate(from, { replace: true });
-      }
+      console.log('User authenticated, redirecting...', { user: user.id, profile: profile?.id });
+      const from = location.state?.from?.pathname || "/";
+      navigate(from, { replace: true });
     }
   }, [user, profile, isInitialized, navigate, location]);
 
@@ -85,10 +83,7 @@ function AuthForm() {
         });
       }
     } catch (error: any) {
-      // Only log in development
-      if (process.env.NODE_ENV === 'development') {
-        console.error('Auth error:', error);
-      }
+      console.error('Auth error:', error);
       toast({
         variant: "destructive",
         title: "Authentication Error",

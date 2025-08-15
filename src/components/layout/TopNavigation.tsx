@@ -1,6 +1,6 @@
 
 import React from 'react'
-import { Search, HelpCircle, ChevronDown } from 'lucide-react'
+import { Search, HelpCircle, ChevronDown, User } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -16,10 +16,23 @@ import { useLocation } from 'react-router-dom'
 import VatToggle from '@/components/ui/VatToggle'
 
 export function TopNavigation() {
-  const { profile, signOut } = useAuth()
+  const { profile, user, signOut, loading } = useAuth()
   const { includeVat, setIncludeVat } = useSettings()
   const location = useLocation()
   const isQuickOrderPage = location.pathname === '/'
+
+  const handleSignOut = async () => {
+    try {
+      await signOut()
+    } catch (error) {
+      console.error('Logout failed:', error)
+    }
+  }
+
+  // Get display name with fallbacks
+  const displayName = profile?.full_name || user?.email?.split('@')[0] || 'User'
+  const displayEmail = profile?.email || user?.email || ''
+  const userInitial = displayName[0]?.toUpperCase() || 'U'
 
   return (
     <div className="h-14 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -78,28 +91,30 @@ export function TopNavigation() {
           {/* User Menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="flex items-center space-x-2">
+              <Button variant="ghost" className="flex items-center space-x-2" disabled={loading}>
                 <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                  <span className="text-sm font-medium">
-                    {profile?.full_name?.[0]?.toUpperCase() || 'U'}
-                  </span>
+                  {loading ? (
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                  ) : (
+                    <span className="text-sm font-medium">{userInitial}</span>
+                  )}
                 </div>
-                <span className="hidden sm:inline font-medium">{profile?.full_name || 'User'}</span>
+                <span className="hidden sm:inline font-medium">{displayName}</span>
                 <ChevronDown className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem>
                 <div className="flex flex-col">
-                  <span className="font-medium">{profile?.full_name || 'User'}</span>
-                  <span className="text-sm text-muted-foreground">{profile?.email}</span>
+                  <span className="font-medium">{displayName}</span>
+                  <span className="text-sm text-muted-foreground">{displayEmail}</span>
                 </div>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem>Profile Settings</DropdownMenuItem>
               <DropdownMenuItem>Organization Settings</DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => signOut()}>
+              <DropdownMenuItem onClick={handleSignOut}>
                 Sign Out
               </DropdownMenuItem>
             </DropdownMenuContent>

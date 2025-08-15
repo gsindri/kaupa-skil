@@ -1,5 +1,6 @@
 
 import { createBrowserRouter } from 'react-router-dom'
+import { AuthGate } from '@/components/auth/AuthGate'
 import AppLayout from '@/layouts/AppLayout'
 import Index from '@/pages/Index'
 import Dashboard from '@/pages/Dashboard'
@@ -30,7 +31,11 @@ export const router = createBrowserRouter([
   },
   {
     path: '/',
-    element: <AppLayout />,
+    element: (
+      <AuthGate>
+        <AppLayout />
+      </AuthGate>
+    ),
     errorElement: <ErrorPage />,
     children: [
       {

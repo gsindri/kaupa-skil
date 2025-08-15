@@ -61,10 +61,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .single()
 
       if (error) {
-        // Only log in development
-        if (process.env.NODE_ENV === 'development') {
-          console.warn('Profile fetch failed:', error.message)
+        // If profile doesn't exist, try to create it
+        if (error.code === 'PGRST116') {
+          console.log('Profile not found, attempting to create one...')
+          
+          // Get user data from auth
+          const { data: { user: authUser } } = await supabase.auth.getUser()
+          if (authUser) {
+            const { data: newProfile, error: createError } = await supabase
+              .from('profiles')
+              .insert({
+                id: userId,
+                email: authUser.email,
+                full_name: authUser.user_metadata?.full_name || authUser.email?.split('@')[0] || 'User'
+              })
+              .select()
+              .single()
+
+            if (createError) {
+              console.warn('Failed to create profile:', createError)
+              profileCache.set(userId, { data: null, timestamp: Date.now() })
+              return null
+            }
+
+            profileCache.set(userId, { data: newProfile, timestamp: Date.now() })
+            return newProfile
+          }
         }
+        
+        console.warn('Profile fetch failed:', error.message)
         profileCache.set(userId, { data: null, timestamp: Date.now() })
         return null
       }
@@ -73,10 +98,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       profileCache.set(userId, { data, timestamp: Date.now() })
       return data
     } catch (error) {
-      // Only log in development
-      if (process.env.NODE_ENV === 'development') {
-        console.warn('Profile fetch error:', error)
-      }
+      console.warn('Profile fetch error:', error)
       return null
     } finally {
       fetchingProfile.current = null
@@ -92,21 +114,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signIn = useCallback(async (email: string, password: string) => {
     try {
+      setError(null)
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
       if (error) throw error
     } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('Sign in error:', error)
-      }
+      console.error('Sign in error:', error)
       throw error
     }
   }, [])
 
   const signUp = useCallback(async (email: string, password: string, fullName: string) => {
     try {
+      setError(null)
       const redirectUrl = `${window.location.origin}/`
       
       const { error } = await supabase.auth.signUp({
@@ -121,23 +143,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       })
       if (error) throw error
     } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('Sign up error:', error)
-      }
+      console.error('Sign up error:', error)
       throw error
     }
   }, [])
 
   const signOut = useCallback(async () => {
     try {
+      setError(null)
       // Clear profile cache on sign out
       profileCache.clear()
+      
       const { error } = await supabase.auth.signOut()
       if (error) throw error
+      
+      // Clear local state immediately
+      setUser(null)
+      setSession(null)
+      setProfile(null)
+      setIsFirstTime(false)
+      
+      // Redirect to login page
+      window.location.href = '/login'
     } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('Sign out error:', error)
-      }
+      console.error('Sign out error:', error)
       throw error
     }
   }, [])
@@ -152,6 +181,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Debounce rapid auth state changes
     authStateChangeTimeout.current = setTimeout(async () => {
       try {
+        console.log('Auth state change:', event, session?.user?.id || 'no user')
+        
         setSession(session)
         setUser(session?.user ?? null)
         setError(null)
@@ -165,9 +196,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setIsFirstTime(false)
         }
       } catch (error) {
-        if (process.env.NODE_ENV === 'development') {
-          console.error('Auth state change error:', error)
-        }
+        console.error('Auth state change error:', error)
         setError(error instanceof Error ? error.message : 'Authentication error')
       }
     }, 100) // 100ms debounce
@@ -180,9 +209,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const { data: { session: initialSession }, error: sessionError } = await supabase.auth.getSession()
       
       if (sessionError) {
-        if (process.env.NODE_ENV === 'development') {
-          console.warn('Session error:', sessionError.message)
-        }
+        console.warn('Session error:', sessionError.message)
         setError('Failed to retrieve session')
       }
       
@@ -200,9 +227,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       
     } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('Auth initialization error:', error)
-      }
+      console.error('Auth initialization error:', error)
       setError('Authentication failed to initialize')
     } finally {
       setLoading(false)
@@ -220,9 +245,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Reduced timeout for better UX
     const loadingTimeout = setTimeout(() => {
       if (loading && !isInitialized) {
-        if (process.env.NODE_ENV === 'development') {
-          console.warn('Auth initialization timeout')
-        }
+        console.warn('Auth initialization timeout')
         setLoading(false)
         setIsInitialized(true)
         setError('Authentication timeout - please try refreshing')
