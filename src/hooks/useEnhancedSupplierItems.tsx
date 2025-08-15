@@ -103,7 +103,7 @@ export function useEnhancedSupplierItems(filters: SupplierItemsFilters = {}) {
     retry: (failureCount, error) => {
       // Don't retry on permission errors
       if (error?.message?.includes('Invalid tenant context') || 
-          error?.code === 'PGRST301') {
+          (error as any)?.code === 'PGRST301') {
         return false
       }
       return failureCount < 2

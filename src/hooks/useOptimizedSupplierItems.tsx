@@ -89,7 +89,7 @@ export function useOptimizedSupplierItems(filters: SupplierItemsFilters = {}) {
     // Enhanced retry logic
     retry: (failureCount, error) => {
       if (error?.message?.includes('Invalid tenant context') || 
-          error?.code === 'PGRST301') {
+          (error as any)?.code === 'PGRST301') {
         return false
       }
       return failureCount < 2
