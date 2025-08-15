@@ -1,5 +1,5 @@
 
-import { Home, TrendingUp, Package, ShoppingCart, History, Building2, Search, Heart, Shield, Truck } from "lucide-react"
+import { Home, TrendingUp, Package, ShoppingCart, History, Building2, Search, Heart, Shield, Truck, Zap } from "lucide-react"
 import {
   Sidebar,
   SidebarContent,
@@ -19,39 +19,46 @@ import { useCart } from "@/contexts/CartProvider"
 
 const mainItems = [
   {
-    title: "Home",
+    title: "Quick Order",
     url: "/",
-    icon: Home,
+    icon: Zap,
+    description: "Fast ordering hub"
   },
   {
     title: "Compare",
     url: "/compare",
     icon: TrendingUp,
+    description: "Price comparison"
   },
   {
     title: "Pantry",
     url: "/pantry",
     icon: Heart,
+    description: "Favorites & guides"
   },
   {
     title: "Orders",
     url: "/orders",
     icon: ShoppingCart,
+    description: "Order history"
   },
   {
     title: "Delivery",
     url: "/delivery",
     icon: Truck,
+    description: "Delivery tracking"
   },
   {
     title: "Price History",
     url: "/price-history",
     icon: History,
+    description: "Historical data"
   },
   {
     title: "Suppliers",
     url: "/suppliers",
     icon: Package,
+    description: "Supplier management"
   },
 ]
 
@@ -102,7 +109,12 @@ export function EnhancedAppSidebar() {
                     <Link to={item.url} className="flex items-center justify-between w-full">
                       <div className="flex items-center">
                         <item.icon className="mr-2 h-4 w-4" />
-                        <span>{item.title}</span>
+                        <div className="flex flex-col items-start">
+                          <span>{item.title}</span>
+                          {item.description && (
+                            <span className="text-xs text-muted-foreground">{item.description}</span>
+                          )}
+                        </div>
                       </div>
                       {item.title === "Orders" && basketItemCount > 0 && (
                         <Badge variant="secondary" className="ml-2">
