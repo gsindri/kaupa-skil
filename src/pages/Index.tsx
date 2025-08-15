@@ -45,6 +45,11 @@ export default function Index() {
     sortOrder: 'asc' as 'asc' | 'desc'
   })
 
+  const [hoveredItem, setHoveredItem] = useState<{
+    item: any;
+    position: { x: number; y: number };
+  } | null>(null);
+
   const { getTotalItems, setIsDrawerOpen, addItem } = useCart()
   const { includeVat, setIncludeVat } = useSettings()
   const { data: supplierItems = [], isLoading } = useSupplierItems()
@@ -279,6 +284,24 @@ export default function Index() {
     setIsCompareOpen(true)
   }
 
+  const handleItemHover = (item: any, event: React.MouseEvent) => {
+    setHoveredItem({
+      item: {
+        name: item.name,
+        brand: item.brand,
+        lastOrderDate: 'Dec 10, 2024', // Mock data
+        averagePrice: item.unitPriceIncVat * 0.95,
+        priceChange: Math.random() > 0.5 ? Math.floor(Math.random() * 10) : -Math.floor(Math.random() * 5),
+        orderFrequency: 'Weekly'
+      },
+      position: { x: event.clientX, y: event.clientY }
+    });
+  };
+
+  const handleItemLeave = () => {
+    setHoveredItem(null);
+  };
+
   const showResults = debouncedSearch.trim().length > 0 || selectedLane
   const hasResults = displayItems.length > 0
 
@@ -401,19 +424,32 @@ export default function Index() {
           <div className="max-w-6xl mx-auto">
             {showResults ? (
               hasResults ? (
-                <PerformanceOptimizedList
-                  items={displayItems}
-                  onCompareItem={handleCompareItem}
-                  userMode={userMode}
-                  selectedItems={selectedItems}
-                  onItemSelect={(itemId, isSelected) => {
-                    if (isSelected) {
-                      setSelectedItems(prev => [...prev, itemId])
-                    } else {
-                      setSelectedItems(prev => prev.filter(id => id !== itemId))
+                <div
+                  onMouseMove={(e) => {
+                    if (hoveredItem) {
+                      setHoveredItem(prev => prev ? {
+                        ...prev,
+                        position: { x: e.clientX, y: e.clientY }
+                      } : null);
                     }
                   }}
-                />
+                >
+                  <PerformanceOptimizedList
+                    items={displayItems}
+                    onCompareItem={handleCompareItem}
+                    userMode={userMode}
+                    selectedItems={selectedItems}
+                    onItemSelect={(itemId, isSelected) => {
+                      if (isSelected) {
+                        setSelectedItems(prev => [...prev, itemId])
+                      } else {
+                        setSelectedItems(prev => prev.filter(id => id !== itemId))
+                      }
+                    }}
+                    onItemHover={handleItemHover}
+                    onItemLeave={handleItemLeave}
+                  />
+                </div>
               ) : (
                 <SearchEmptyState 
                   query={debouncedSearch}
@@ -438,6 +474,38 @@ export default function Index() {
           onClose={() => setIsCompareOpen(false)}
         />
         <KeyboardShortcuts onClose={() => {}} />
+
+        {/* Enhanced hover tooltip */}
+        {hoveredItem && userMode === 'analytical' && (
+          <div className="fixed inset-0 pointer-events-none z-50">
+            <div
+              className="absolute bg-background/95 backdrop-blur-sm border border-border/50 rounded-lg p-3 shadow-lg max-w-xs"
+              style={{
+                left: hoveredItem.position.x + 10,
+                top: hoveredItem.position.y - 10,
+              }}
+            >
+              <div className="text-sm font-medium mb-1">{hoveredItem.item.name}</div>
+              <div className="text-xs text-muted-foreground mb-2">{hoveredItem.item.brand}</div>
+              <div className="space-y-1 text-xs">
+                <div className="flex justify-between">
+                  <span>Last ordered:</span>
+                  <span>{hoveredItem.item.lastOrderDate}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Avg price:</span>
+                  <span>{new Intl.NumberFormat('is-IS', { style: 'currency', currency: 'ISK' }).format(hoveredItem.item.averagePrice)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Price change:</span>
+                  <span className={hoveredItem.item.priceChange > 0 ? 'text-red-600' : 'text-green-600'}>
+                    {hoveredItem.item.priceChange > 0 ? '+' : ''}{hoveredItem.item.priceChange}%
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </CacheProvider>
   )

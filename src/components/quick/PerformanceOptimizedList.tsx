@@ -11,6 +11,8 @@ interface PerformanceOptimizedListProps {
   userMode: 'just-order' | 'balanced' | 'analytical'
   selectedItems?: string[]
   onItemSelect?: (itemId: string, isSelected: boolean) => void
+  onItemHover?: (item: any, event: React.MouseEvent) => void
+  onItemLeave?: () => void
 }
 
 export function PerformanceOptimizedList({ 
@@ -18,7 +20,9 @@ export function PerformanceOptimizedList({
   onCompareItem, 
   userMode,
   selectedItems = [],
-  onItemSelect 
+  onItemSelect,
+  onItemHover,
+  onItemLeave
 }: PerformanceOptimizedListProps) {
   // Memoize expensive calculations
   const memoizedItems = useMemo(() => {
@@ -37,7 +41,11 @@ export function PerformanceOptimizedList({
 
     return (
       <div style={style} className="px-2 py-1">
-        <div className="flex items-center gap-3">
+        <div 
+          className="flex items-center gap-3"
+          onMouseEnter={(e) => onItemHover?.(item, e)}
+          onMouseLeave={() => onItemLeave?.()}
+        >
           {onItemSelect && (
             <Checkbox
               checked={isSelected}
@@ -60,7 +68,7 @@ export function PerformanceOptimizedList({
 
   ItemRow.displayName = 'ItemRow'
 
-  const itemHeight = userMode === 'just-order' ? 92 : 124
+  const itemHeight = userMode === 'just-order' ? 104 : 132
   const listHeight = Math.min(items.length * itemHeight, 600)
 
   return (
@@ -71,7 +79,7 @@ export function PerformanceOptimizedList({
         itemSize={itemHeight}
         width="100%"
         className="scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent"
-        overscanCount={5} // Prerender 5 items above/below viewport
+        overscanCount={5}
       >
         {ItemRow}
       </List>

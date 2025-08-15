@@ -1,7 +1,8 @@
 
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
-import { Truck, Clock, Award } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Truck, Clock, Star, TrendingDown, MoreHorizontal } from 'lucide-react';
 
 interface ItemBadgesProps {
   hasCheaperOption: boolean;
@@ -15,60 +16,53 @@ interface ItemBadgesProps {
   itemId: string;
 }
 
-export function ItemBadges({ 
-  hasCheaperOption, 
-  hasDeliveryFee, 
-  deliveryFee, 
-  hasDeliveryInfo, 
-  cutoffTime, 
+export function ItemBadges({
+  hasCheaperOption,
+  hasDeliveryFee,
+  deliveryFee,
+  hasDeliveryInfo,
+  cutoffTime,
   deliveryDay,
   isPremiumBrand,
   onCompareItem,
-  itemId 
+  itemId
 }: ItemBadgesProps) {
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('is-IS', {
-      style: 'currency',
-      currency: 'ISK',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(price)
-  }
-
   return (
     <div className="flex items-center gap-1.5 flex-wrap">
-      {isPremiumBrand && (
-        <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-foreground/5 text-foreground/70 text-xs">
-          <Award className="h-3 w-3" />
-          Premium
-        </div>
+      {hasCheaperOption && (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => onCompareItem(itemId)}
+          className="h-6 px-2 text-xs bg-orange-50 text-orange-700 hover:bg-orange-100 border border-orange-200"
+        >
+          <TrendingDown className="h-3 w-3 mr-1" />
+          Cheaper available
+        </Button>
       )}
       
-      {hasCheaperOption && (
-        <button
-          onClick={() => onCompareItem(itemId)}
-          className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs transition-colors duration-200 border border-blue-200/50"
-          aria-label="View cheaper options"
-        >
-          Cheaper available
-        </button>
+      {isPremiumBrand && (
+        <Badge variant="secondary" className="h-6 px-2 text-xs bg-amber-50 text-amber-700 border border-amber-200">
+          <Star className="h-3 w-3 mr-1" />
+          Premium
+        </Badge>
       )}
       
       {hasDeliveryFee && deliveryFee && (
-        <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-foreground/5 text-foreground/70 text-xs">
-          <Truck className="h-3 w-3" />
-          +{formatPrice(deliveryFee)}
-        </div>
+        <Badge variant="outline" className="h-6 px-2 text-xs text-orange-600 border-orange-200">
+          <Truck className="h-3 w-3 mr-1" />
+          +{new Intl.NumberFormat('is-IS', { style: 'currency', currency: 'ISK', minimumFractionDigits: 0 }).format(deliveryFee)}
+        </Badge>
       )}
       
       {hasDeliveryInfo && cutoffTime && deliveryDay && (
-        <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-foreground/5 text-foreground/70 text-xs">
-          <Clock className="h-3 w-3" />
-          By {cutoffTime}
-        </div>
+        <Badge variant="outline" className="h-6 px-2 text-xs text-green-600 border-green-200">
+          <Clock className="h-3 w-3 mr-1" />
+          {cutoffTime} → {deliveryDay}
+        </Badge>
       )}
     </div>
-  )
+  );
 }
 
 interface PriceDisplayProps {
@@ -78,15 +72,17 @@ interface PriceDisplayProps {
   includeVat: boolean;
   isDiscounted?: boolean;
   originalPrice?: number;
+  compact?: boolean;
 }
 
-export function PriceDisplay({ 
-  unitPrice, 
-  packPrice, 
-  unit, 
-  includeVat, 
-  isDiscounted, 
-  originalPrice 
+export function PriceDisplay({
+  unitPrice,
+  packPrice,
+  unit,
+  includeVat,
+  isDiscounted,
+  originalPrice,
+  compact = false
 }: PriceDisplayProps) {
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('is-IS', {
@@ -94,27 +90,32 @@ export function PriceDisplay({
       currency: 'ISK',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
-    }).format(price)
-  }
+    }).format(price);
+  };
 
   return (
-    <div className="text-right" style={{ fontFeatureSettings: '"tnum" 1' }}>
-      <div className="flex items-center justify-end gap-2">
+    <div className={`text-right ${compact ? 'space-y-0.5' : 'space-y-1'}`}>
+      {/* Main pack price - most prominent */}
+      <div className="flex items-center gap-2 justify-end">
         {isDiscounted && originalPrice && (
-          <span className="text-xs text-muted-foreground line-through">
+          <span className="text-sm text-muted-foreground line-through">
             {formatPrice(originalPrice)}
           </span>
         )}
-        <div className="font-semibold text-lg text-foreground">
-          {formatPrice(unitPrice)}/{unit}
+        <div className={`font-bold ${compact ? 'text-lg' : 'text-xl'} text-foreground leading-none`}>
+          {formatPrice(packPrice)}
         </div>
       </div>
-      <div className="text-xs text-muted-foreground mt-0.5">
-        {formatPrice(packPrice)}/pack
+      
+      {/* Unit price - secondary but clear */}
+      <div className={`${compact ? 'text-xs' : 'text-sm'} text-muted-foreground leading-none`}>
+        {formatPrice(unitPrice)} per {unit}
       </div>
-      <div className="text-xs text-muted-foreground opacity-75">
+      
+      {/* VAT indicator - subtle */}
+      <div className="text-xs text-muted-foreground/70 leading-none">
         {includeVat ? 'inc VAT' : 'ex VAT'}
       </div>
     </div>
-  )
+  );
 }

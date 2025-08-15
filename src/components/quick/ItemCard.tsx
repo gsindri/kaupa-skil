@@ -94,32 +94,37 @@ export function ItemCard({ item, onCompareItem, userMode, compact = false }: Ite
 
   return (
     <div
-      className={`group relative rounded-xl border border-foreground/5 bg-white hover:bg-muted/30 hover:shadow-sm transition-all duration-200 focus-within:ring-2 focus-within:ring-brand-500/40 focus-within:border-brand-500 ${
-        compact ? 'p-3 min-h-[88px]' : 'p-4 min-h-[112px]'
+      className={`group relative rounded-xl border border-border/60 bg-card hover:bg-accent/30 hover:shadow-md hover:border-border transition-all duration-200 focus-within:ring-2 focus-within:ring-brand-500/50 focus-within:border-brand-500 ${
+        compact ? 'p-3 min-h-[100px]' : 'p-4 min-h-[120px]'
       } flex flex-col justify-between`}
       tabIndex={0}
       onKeyDown={handleKeyDown}
+      role="article"
       aria-label={`${item.name}, ${new Intl.NumberFormat('is-IS', { style: 'currency', currency: 'ISK' }).format(unitPrice)} per ${item.unit}, ${includeVat ? 'including' : 'excluding'} VAT`}
     >
       {/* Stock overlay */}
       {!item.stock && (
-        <div className="absolute inset-0 bg-background/80 rounded-xl flex items-center justify-center z-10">
-          <Badge variant="secondary" className="text-sm">
+        <div className="absolute inset-0 bg-background/85 rounded-xl flex items-center justify-center z-10 backdrop-blur-sm">
+          <Badge variant="secondary" className="text-sm font-medium">
             Out of Stock
           </Badge>
         </div>
       )}
 
-      {/* Main content */}
-      <div className="flex items-start justify-between mb-3">
-        <div className="flex-1 min-w-0 mr-4">
-          <h3 className="font-semibold text-base leading-tight truncate group-hover:text-brand-700 transition-colors duration-200">
+      {/* Top section: Product info and price */}
+      <div className="flex items-start justify-between gap-4 mb-3">
+        <div className="flex-1 min-w-0">
+          <h3 className={`font-semibold ${compact ? 'text-sm' : 'text-base'} leading-tight text-foreground group-hover:text-brand-700 transition-colors duration-200 mb-1`}>
             {item.name}
           </h3>
-          <div className="flex items-center gap-2 mt-1">
-            <span className="text-sm text-muted-foreground">{item.brand}</span>
-            <span className="text-muted-foreground">•</span>
-            <span className="text-sm text-muted-foreground">{item.packSize}</span>
+          <div className="flex items-center gap-2">
+            <span className={`${compact ? 'text-xs' : 'text-sm'} text-muted-foreground font-medium`}>
+              {item.brand}
+            </span>
+            <span className="text-muted-foreground/60">•</span>
+            <span className={`${compact ? 'text-xs' : 'text-sm'} text-muted-foreground`}>
+              {item.packSize}
+            </span>
           </div>
         </div>
         
@@ -130,31 +135,36 @@ export function ItemCard({ item, onCompareItem, userMode, compact = false }: Ite
           includeVat={includeVat}
           isDiscounted={item.isDiscounted}
           originalPrice={item.originalPrice}
+          compact={compact}
         />
       </div>
 
-      {/* Bottom row: Badges and Controls */}
-      <div className="flex items-center justify-between">
-        <ItemBadges
-          hasCheaperOption={hasCheaperOption}
-          hasDeliveryFee={hasDeliveryFee}
-          deliveryFee={item.deliveryFee}
-          hasDeliveryInfo={hasDeliveryInfo}
-          cutoffTime={item.cutoffTime}
-          deliveryDay={item.deliveryDay}
-          isPremiumBrand={item.isPremiumBrand}
-          onCompareItem={onCompareItem}
-          itemId={item.id}
-        />
+      {/* Bottom section: Badges and Controls */}
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex-1 min-w-0">
+          <ItemBadges
+            hasCheaperOption={hasCheaperOption}
+            hasDeliveryFee={hasDeliveryFee}
+            deliveryFee={item.deliveryFee}
+            hasDeliveryInfo={hasDeliveryInfo}
+            cutoffTime={item.cutoffTime}
+            deliveryDay={item.deliveryDay}
+            isPremiumBrand={item.isPremiumBrand}
+            onCompareItem={onCompareItem}
+            itemId={item.id}
+          />
+        </div>
 
-        <QuantityControls
-          quantity={quantity}
-          onQuantityChange={handleQuantityChange}
-          disabled={!item.stock}
-          showFlyout={showFlyout}
-          onAdd={handleAdd}
-          onRemove={handleRemove}
-        />
+        <div className="flex-shrink-0">
+          <QuantityControls
+            quantity={quantity}
+            onQuantityChange={handleQuantityChange}
+            disabled={!item.stock}
+            showFlyout={showFlyout}
+            onAdd={handleAdd}
+            onRemove={handleRemove}
+          />
+        </div>
       </div>
     </div>
   );
