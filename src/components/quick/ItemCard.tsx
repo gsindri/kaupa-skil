@@ -1,10 +1,10 @@
 
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Minus, TrendingDown, Truck, Clock } from 'lucide-react';
 import { useSettings } from '@/contexts/SettingsProvider';
 import { useCart } from '@/contexts/CartProvider';
+import { ItemBadges, PriceDisplay } from './ItemCardEnhancements';
+import { QuantityControls } from './QuantityControls';
 
 interface ItemCardProps {
   item: {
@@ -22,6 +22,9 @@ interface ItemCardProps {
     deliveryFee?: number;
     cutoffTime?: string;
     deliveryDay?: string;
+    isPremiumBrand?: boolean;
+    isDiscounted?: boolean;
+    originalPrice?: number;
   };
   onCompareItem: (itemId: string) => void;
   userMode: 'just-order' | 'balanced' | 'analytical';
@@ -34,15 +37,6 @@ export function ItemCard({ item, onCompareItem, userMode, compact = false }: Ite
   const { includeVat } = useSettings();
   const { addItem } = useCart();
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('is-IS', {
-      style: 'currency',
-      currency: 'ISK',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(price);
-  };
-
   const unitPrice = includeVat ? item.unitPriceIncVat : item.unitPriceExVat;
   const packPrice = includeVat ? item.packPriceIncVat : item.packPriceExVat;
 
@@ -52,7 +46,7 @@ export function ItemCard({ item, onCompareItem, userMode, compact = false }: Ite
     
     // Show flyout animation
     setShowFlyout(true);
-    setTimeout(() => setShowFlyout(false), 150);
+    setTimeout(() => setShowFlyout(false), 1200);
     
     addItem({
       id: item.id,
@@ -78,6 +72,10 @@ export function ItemCard({ item, onCompareItem, userMode, compact = false }: Ite
     }
   };
 
+  const handleQuantityChange = (newQuantity: number) => {
+    setQuantity(newQuantity);
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       handleAdd();
@@ -96,114 +94,67 @@ export function ItemCard({ item, onCompareItem, userMode, compact = false }: Ite
 
   return (
     <div
-      className="relative rounded-xl border border-black/5 bg-white hover:bg-muted/30 transition-colors duration-200 p-4 h-24 flex flex-col justify-between"
+      className={`group relative rounded-xl border border-border/50 bg-card hover:bg-accent/30 hover:border-border transition-all duration-200 focus-within:ring-2 focus-within:ring-brand-500/40 focus-within:border-brand-500 ${
+        compact ? 'p-3 h-20' : 'p-4 h-28'
+      } flex flex-col justify-between`}
       tabIndex={0}
       onKeyDown={handleKeyDown}
-      aria-label={`${item.name}, ${formatPrice(unitPrice)} per ${item.unit}, ${includeVat ? 'including' : 'excluding'} VAT`}
+      aria-label={`${item.name}, ${new Intl.NumberFormat('is-IS', { style: 'currency', currency: 'ISK' }).format(unitPrice)} per ${item.unit}, ${includeVat ? 'including' : 'excluding'} VAT`}
     >
-      {/* Flyout animation */}
-      {showFlyout && (
-        <div className="absolute top-2 right-2 text-sm font-medium text-brand-600 animate-flyout pointer-events-none">
-          +1
+      {/* Stock overlay */}
+      {!item.stock && (
+        <div className="absolute inset-0 bg-background/80 rounded-xl flex items-center justify-center z-10">
+          <Badge variant="secondary" className="text-sm">
+            Out of Stock
+          </Badge>
         </div>
       )}
 
+      {/* Main content */}
       <div className="flex items-start justify-between">
-        {/* Row 1: Info */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between">
-            <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-[#0B1220] text-base leading-tight truncate">
-                {item.name}
-              </h3>
-              <div className="flex items-center space-x-2 mt-0.5">
-                <span className="text-xs text-muted-foreground">{item.brand}</span>
-                <span className="text-xs text-muted-foreground">•</span>
-                <span className="text-xs text-muted-foreground">{item.packSize}</span>
-                {!item.stock && (
-                  <>
-                    <span className="text-xs text-muted-foreground">•</span>
-                    <Badge variant="secondary" className="text-xs h-4 px-1">
-                      Out of Stock
-                    </Badge>
-                  </>
-                )}
-              </div>
-            </div>
-            
-            {/* Price display */}
-            <div className="text-right ml-4">
-              <div className="font-semibold text-lg leading-tight" style={{ fontFeatureSettings: '"tnum" 1' }}>
-                {formatPrice(unitPrice)}/{item.unit}
-              </div>
-              <div className="text-xs text-muted-foreground" style={{ fontFeatureSettings: '"tnum" 1' }}>
-                {formatPrice(packPrice)}/pack
-              </div>
-            </div>
+        <div className="flex-1 min-w-0 mr-4">
+          <h3 className="font-semibold text-foreground text-base leading-tight truncate group-hover:text-brand-700 transition-colors duration-200">
+            {item.name}
+          </h3>
+          <div className="flex items-center gap-2 mt-1">
+            <span className="text-sm text-muted-foreground">{item.brand}</span>
+            <span className="text-muted-foreground">•</span>
+            <span className="text-sm text-muted-foreground">{item.packSize}</span>
           </div>
         </div>
+        
+        <PriceDisplay
+          unitPrice={unitPrice}
+          packPrice={packPrice}
+          unit={item.unit}
+          includeVat={includeVat}
+          isDiscounted={item.isDiscounted}
+          originalPrice={item.originalPrice}
+        />
       </div>
 
-      {/* Row 2: Chips and Controls */}
-      <div className="flex items-center justify-between mt-2">
-        {/* Chips */}
-        <div className="flex items-center space-x-2">
-          {hasCheaperOption && (
-            <button
-              onClick={() => onCompareItem(item.id)}
-              className="h-3 px-2 bg-foreground/5 hover:bg-foreground/10 text-foreground/70 text-xs rounded-full transition-colors duration-200 flex items-center space-x-1"
-              aria-label="View cheaper options"
-            >
-              <TrendingDown className="h-3 w-3" />
-              <span>Cheaper available</span>
-            </button>
-          )}
-          
-          {hasDeliveryFee && (
-            <div className="h-3 px-2 bg-foreground/5 text-foreground/70 text-xs rounded-full flex items-center space-x-1">
-              <Truck className="h-3 w-3" />
-              <span>+ {formatPrice(item.deliveryFee!)} delivery</span>
-            </div>
-          )}
-          
-          {hasDeliveryInfo && (
-            <div className="h-3 px-2 bg-foreground/5 text-foreground/70 text-xs rounded-full flex items-center space-x-1">
-              <Clock className="h-3 w-3" />
-              <span>Order by {item.cutoffTime} for {item.deliveryDay}</span>
-            </div>
-          )}
-        </div>
+      {/* Bottom row: Badges and Controls */}
+      <div className="flex items-center justify-between mt-3">
+        <ItemBadges
+          hasCheaperOption={hasCheaperOption}
+          hasDeliveryFee={hasDeliveryFee}
+          deliveryFee={item.deliveryFee}
+          hasDeliveryInfo={hasDeliveryInfo}
+          cutoffTime={item.cutoffTime}
+          deliveryDay={item.deliveryDay}
+          isPremiumBrand={item.isPremiumBrand}
+          onCompareItem={onCompareItem}
+          itemId={item.id}
+        />
 
-        {/* Quantity Controls */}
-        <div className="flex items-center space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleRemove}
-            disabled={quantity === 0}
-            className="h-9 w-9 p-0 rounded-full"
-            aria-label="Decrease quantity"
-          >
-            <Minus className="h-4 w-4" />
-          </Button>
-          
-          <div className="w-14 text-center">
-            <span className="font-medium text-base" style={{ fontFeatureSettings: '"tnum" 1' }}>
-              {quantity}
-            </span>
-          </div>
-          
-          <Button
-            variant="default"
-            size="sm"
-            onClick={handleAdd}
-            disabled={!item.stock}
-            className="h-9 w-9 p-0 rounded-full bg-brand-500 hover:bg-brand-600"
-            aria-label="Increase quantity"
-          >
-            <Plus className="h-4 w-4" />
-          </Button>
-        </div>
+        <QuantityControls
+          quantity={quantity}
+          onQuantityChange={handleQuantityChange}
+          disabled={!item.stock}
+          showFlyout={showFlyout}
+          onAdd={handleAdd}
+          onRemove={handleRemove}
+        />
       </div>
     </div>
   );

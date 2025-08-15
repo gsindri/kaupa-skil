@@ -12,6 +12,7 @@ import { QuickSearch } from '@/components/quick/QuickSearch'
 import { PantryLanes } from '@/components/quick/PantryLanes'
 import { VirtualizedItemList } from '@/components/quick/VirtualizedItemList'
 import { ItemCard } from '@/components/quick/ItemCard'
+import { SearchEmptyState } from '@/components/quick/SearchEmptyState'
 import { BasketDrawer } from '@/components/cart/BasketDrawer'
 import { useSupplierItems } from '@/hooks/useSupplierItems'
 
@@ -44,11 +45,25 @@ export default function Index() {
     setActiveTab('search')
   }, [])
 
-  // Filtered and sorted items with performance optimization
+  // Enhanced filtered items with better mapping
   const filteredItems = useMemo(() => {
-    // If we have a selected search item, show it prominently
     if (selectedSearchItem) {
-      return [selectedSearchItem]
+      return [{
+        id: selectedSearchItem.id,
+        name: selectedSearchItem.display_name || selectedSearchItem.ext_sku || 'Unknown Item',
+        brand: (selectedSearchItem as any).supplier?.name || 'Unknown Brand',
+        packSize: selectedSearchItem.pack_qty ? `${selectedSearchItem.pack_qty} ${(selectedSearchItem as any).pack_unit?.code || 'units'}` : '1 unit',
+        unitPriceExVat: 0,
+        unitPriceIncVat: 0,
+        packPriceExVat: 0,
+        packPriceIncVat: 0,
+        unit: (selectedSearchItem as any).pack_unit?.code || 'unit',
+        suppliers: [(selectedSearchItem as any).supplier?.name || 'Unknown'],
+        stock: true,
+        isPremiumBrand: Math.random() > 0.7, // Mock data
+        isDiscounted: Math.random() > 0.8, // Mock data
+        originalPrice: Math.random() > 0.8 ? 1200 : undefined // Mock data
+      }]
     }
     
     if (!searchQuery.trim()) return []
@@ -60,7 +75,23 @@ export default function Index() {
         item.ext_sku?.toLowerCase().includes(query) ||
         item.ean?.toLowerCase().includes(query)
       )
-      .slice(0, 100) // Limit results for performance
+      .slice(0, 100)
+      .map(item => ({
+        id: item.id,
+        name: item.display_name || item.ext_sku || 'Unknown Item',
+        brand: (item as any).supplier?.name || 'Unknown Brand',
+        packSize: item.pack_qty ? `${item.pack_qty} ${(item as any).pack_unit?.code || 'units'}` : '1 unit',
+        unitPriceExVat: 0,
+        unitPriceIncVat: 0,
+        packPriceExVat: 0,
+        packPriceIncVat: 0,
+        unit: (item as any).pack_unit?.code || 'unit',
+        suppliers: [(item as any).supplier?.name || 'Unknown'],
+        stock: true,
+        isPremiumBrand: Math.random() > 0.7,
+        isDiscounted: Math.random() > 0.8,
+        originalPrice: Math.random() > 0.8 ? 1200 : undefined
+      }))
   }, [supplierItems, searchQuery, selectedSearchItem])
 
   // Clear selected item when search changes
@@ -89,7 +120,7 @@ export default function Index() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header - exact 56px height with proper backdrop blur */}
-      <div className="sticky top-0 z-40 h-14 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-foreground/10">
+      <div className="sticky top-0 z-40 h-14 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border/50">
         <div className="max-w-7xl mx-auto px-4 md:px-6 h-full flex items-center justify-between">
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2">
@@ -98,14 +129,14 @@ export default function Index() {
             </div>
             
             {/* Mode Toggle */}
-            <div className="flex items-center gap-1 bg-muted rounded-lg p-1">
+            <div className="flex items-center gap-1 bg-muted/50 rounded-lg p-1">
               {(['just-order', 'balanced', 'analytical'] as const).map((mode) => (
                 <Button
                   key={mode}
                   variant={userMode === mode ? 'default' : 'ghost'}
                   size="sm"
                   className={`h-7 text-xs transition-all duration-200 ${
-                    userMode === mode ? 'bg-background shadow-sm' : ''
+                    userMode === mode ? 'bg-background shadow-sm' : 'hover:bg-muted/80'
                   }`}
                   onClick={() => handleModeChange(mode)}
                 >
@@ -115,13 +146,13 @@ export default function Index() {
             </div>
           </div>
 
-          {/* Center: Search - 600-720px wide on desktop */}
+          {/* Center: Search */}
           <div className="flex-1 max-w-2xl mx-8">
             <QuickSearch
               value={searchQuery}
               onChange={(value) => {
                 setSearchQuery(value)
-                setSelectedSearchItem(null) // Clear selection when typing
+                setSelectedSearchItem(null)
                 if (value.trim()) {
                   setActiveTab('search')
                 }
@@ -137,7 +168,7 @@ export default function Index() {
               variant="outline"
               size="sm"
               onClick={handleVatToggle}
-              className="transition-all duration-200"
+              className="transition-all duration-200 hover:bg-muted/80"
             >
               <span className={`transition-opacity duration-200 ${includeVat ? 'opacity-100' : 'opacity-50'}`}>
                 Inc VAT
@@ -169,7 +200,7 @@ export default function Index() {
         </div>
       </div>
 
-      {/* Main Content - max-width 1280px with proper spacing */}
+      {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 md:px-6">
         <div className="grid grid-cols-12 gap-6 py-6">
           {/* Left 8 columns: Search/Pantry */}
@@ -208,13 +239,12 @@ export default function Index() {
               ) : (
                 <div className="space-y-4">
                   {isLoading ? (
-                    <div className="text-center py-8">
-                      <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full mx-auto"></div>
-                      <p className="text-muted-foreground mt-2">Searching...</p>
+                    <div className="text-center py-12">
+                      <div className="animate-spin h-8 w-8 border-2 border-brand-500 border-t-transparent rounded-full mx-auto"></div>
+                      <p className="text-muted-foreground mt-3">Searching...</p>
                     </div>
                   ) : filteredItems.length > 0 ? (
                     <div className="space-y-3">
-                      {/* Use virtualization for large lists */}
                       {filteredItems.length > 50 ? (
                         <VirtualizedItemList
                           items={filteredItems}
@@ -231,19 +261,7 @@ export default function Index() {
                               style={{ animationDelay: `${index * 50}ms` }}
                             >
                               <ItemCard
-                                item={{
-                                  id: item.id,
-                                  name: item.display_name || item.ext_sku || 'Unknown Item',
-                                  brand: item.supplier?.name || 'Unknown Brand',
-                                  packSize: item.pack_qty ? `${item.pack_qty} ${item.pack_unit?.code || 'units'}` : '1 unit',
-                                  unitPriceExVat: 0, // These would need to come from price quotes
-                                  unitPriceIncVat: 0,
-                                  packPriceExVat: 0,
-                                  packPriceIncVat: 0,
-                                  unit: item.pack_unit?.code || 'unit',
-                                  suppliers: [item.supplier?.name || 'Unknown'],
-                                  stock: true
-                                }}
+                                item={item}
                                 userMode={userMode}
                                 onCompareItem={(itemId) => console.log('Compare:', itemId)}
                               />
@@ -253,16 +271,10 @@ export default function Index() {
                       )}
                     </div>
                   ) : (searchQuery.trim() && !selectedSearchItem) ? (
-                    <div className="text-center py-8 text-muted-foreground">
-                      <p>No results. Try brand or EAN.</p>
-                      <Button 
-                        variant="outline" 
-                        className="mt-4" 
-                        onClick={() => setActiveTab('pantry')}
-                      >
-                        Browse Pantry
-                      </Button>
-                    </div>
+                    <SearchEmptyState
+                      searchQuery={searchQuery}
+                      onBrowsePantry={() => setActiveTab('pantry')}
+                    />
                   ) : null}
                 </div>
               )}
@@ -272,8 +284,7 @@ export default function Index() {
           {/* Right 4 columns: Basket context & tips */}
           <div className="col-span-12 lg:col-span-4">
             <div className="sticky top-20 space-y-4">
-              {/* Basket summary card would go here */}
-              <Card className="rounded-xl">
+              <Card className="rounded-xl border-border/50">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-sm font-medium">Order Summary</CardTitle>
                 </CardHeader>
