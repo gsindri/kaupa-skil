@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useCallback, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -10,6 +11,7 @@ import { getUserPrefs, saveUserPrefs } from '@/state/userPrefs'
 import { QuickSearch } from '@/components/quick/QuickSearch'
 import { PantryLanes } from '@/components/quick/PantryLanes'
 import { VirtualizedItemList } from '@/components/quick/VirtualizedItemList'
+import { ItemCard } from '@/components/quick/ItemCard'
 import { BasketDrawer } from '@/components/cart/BasketDrawer'
 import { useSupplierItems } from '@/hooks/useSupplierItems'
 
@@ -88,7 +90,7 @@ export default function Index() {
     <div className="min-h-screen bg-background">
       {/* Header - exact 56px height with proper backdrop blur */}
       <div className="sticky top-0 z-40 h-14 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-foreground/10">
-        <div className="max-w-screen-xl mx-auto px-4 md:px-6 h-full flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 h-full flex items-center justify-between">
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2">
               <Zap className="h-5 w-5 text-brand-500" />
@@ -168,7 +170,7 @@ export default function Index() {
       </div>
 
       {/* Main Content - max-width 1280px with proper spacing */}
-      <div className="max-w-screen-xl mx-auto px-4 md:px-6">
+      <div className="max-w-7xl mx-auto px-4 md:px-6">
         <div className="grid grid-cols-12 gap-6 py-6">
           {/* Left 8 columns: Search/Pantry */}
           <div className="col-span-12 lg:col-span-8 space-y-6">
@@ -232,14 +234,14 @@ export default function Index() {
                                 item={{
                                   id: item.id,
                                   name: item.display_name || item.ext_sku || 'Unknown Item',
-                                  brand: item.supplier_name || 'Unknown Brand',
-                                  packSize: item.pack_size || '1 unit',
-                                  unitPriceExVat: item.unit_price_ex_vat || 0,
-                                  unitPriceIncVat: item.unit_price_inc_vat || 0,
-                                  packPriceExVat: item.pack_price_ex_vat || 0,
-                                  packPriceIncVat: item.pack_price_inc_vat || 0,
-                                  unit: item.unit || 'unit',
-                                  suppliers: [item.supplier_name || 'Unknown'],
+                                  brand: item.supplier?.name || 'Unknown Brand',
+                                  packSize: item.pack_qty ? `${item.pack_qty} ${item.pack_unit?.code || 'units'}` : '1 unit',
+                                  unitPriceExVat: 0, // These would need to come from price quotes
+                                  unitPriceIncVat: 0,
+                                  packPriceExVat: 0,
+                                  packPriceIncVat: 0,
+                                  unit: item.pack_unit?.code || 'unit',
+                                  suppliers: [item.supplier?.name || 'Unknown'],
                                   stock: true
                                 }}
                                 userMode={userMode}
