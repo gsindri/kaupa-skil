@@ -53,7 +53,7 @@ function OrdersContent() {
 
 export default function Orders() {
   return (
-    <ErrorBoundary fallback={(props) => <OrdersErrorFallback {...props} />}>
+    <ErrorBoundary fallback={<OrdersErrorFallback resetErrorBoundary={() => window.location.reload()} />}>
       <OrdersContent />
     </ErrorBoundary>
   )
