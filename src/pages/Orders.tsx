@@ -53,7 +53,7 @@ function OrdersContent() {
 
 export default function Orders() {
   return (
-    <ErrorBoundary fallback={<OrdersErrorFallback />}>
+    <ErrorBoundary fallback={OrdersErrorFallback}>
       <OrdersContent />
     </ErrorBoundary>
   )

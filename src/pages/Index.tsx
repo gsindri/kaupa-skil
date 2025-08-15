@@ -555,17 +555,6 @@ function IndexPageContent() {
                       if (item) handleAddToComparison(item)
                     }}
                     userMode={userMode}
-                    renderItem={(item) => (
-                      <ItemCard
-                        key={item.id}
-                        item={item}
-                        onCompareItem={(itemId) => {
-                          const foundItem = filteredItems.find(i => i.id === itemId)
-                          if (foundItem) handleAddToComparison(foundItem)
-                        }}
-                        userMode={userMode}
-                      />
-                    )}
                   />
                 </div>
               </TabsContent>
