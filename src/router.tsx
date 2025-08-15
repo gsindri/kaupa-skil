@@ -13,21 +13,25 @@ import Discovery from '@/pages/Discovery'
 import Pantry from '@/pages/Pantry'
 import PriceHistory from '@/pages/PriceHistory'
 import NotFound from '@/pages/NotFound'
+import ErrorPage from '@/pages/ErrorPage'
 import LoginShowcase from '@/pages/auth/LoginShowcase'
 import PasswordReset from '@/pages/auth/PasswordReset'
 
 export const router = createBrowserRouter([
   {
     path: '/login',
-    element: <LoginShowcase />
+    element: <LoginShowcase />,
+    errorElement: <ErrorPage />
   },
   {
     path: '/reset-password',
-    element: <PasswordReset />
+    element: <PasswordReset />,
+    errorElement: <ErrorPage />
   },
   {
     path: '/',
     element: <AppLayout />,
+    errorElement: <ErrorPage />,
     children: [
       {
         index: true,

@@ -29,6 +29,8 @@ import { SmartCartSidebar } from '@/components/quick/SmartCartSidebar'
 import { PantryLanes } from '@/components/quick/PantryLanes'
 import { CompactOrderGuidesCTA } from '@/components/quick/CompactOrderGuidesCTA'
 import { PerformanceOptimizedList } from '@/components/quick/PerformanceOptimizedList'
+import { ErrorBoundary } from '@/components/common/ErrorBoundary'
+import { QuickOrderErrorFallback } from '@/components/quick/QuickOrderErrorFallback'
 
 interface Item {
   id: string
@@ -211,9 +213,9 @@ function generateRandomPriceHistory(length: number, initialPrice: number, volati
   const history = [currentPrice]
 
   for (let i = 1; i < length; i++) {
-    const change = (Math.random() - 0.5) * 2 * volatility // Random change between -volatility and +volatility
+    const change = (Math.random() - 0.5) * 2 * volatility
     currentPrice += change
-    currentPrice = Math.max(10, currentPrice) // Ensure price doesn't drop below 0
+    currentPrice = Math.max(10, currentPrice)
     history.push(currentPrice)
   }
 
@@ -408,7 +410,7 @@ const MOCK_COMPARISON_ITEMS = [
   },
 ]
 
-export default function IndexPage() {
+function IndexPageContent() {
   const [searchQuery, setSearchQuery] = useState('')
   const [activeTab, setActiveTab] = useState('quick-order')
   const [comparisonItems, setComparisonItems] = useState(MOCK_COMPARISON_ITEMS)
@@ -469,7 +471,6 @@ export default function IndexPage() {
   }, [searchQuery])
 
   const handleAddSuggestedItem = (itemId: string) => {
-    // Find the item and add it to cart
     const item = filteredItems.find(i => i.id === itemId)
     if (item) {
       handleAddToComparison(item)
@@ -554,6 +555,17 @@ export default function IndexPage() {
                       if (item) handleAddToComparison(item)
                     }}
                     userMode={userMode}
+                    renderItem={(item) => (
+                      <ItemCard
+                        key={item.id}
+                        item={item}
+                        onCompareItem={(itemId) => {
+                          const foundItem = filteredItems.find(i => i.id === itemId)
+                          if (foundItem) handleAddToComparison(foundItem)
+                        }}
+                        userMode={userMode}
+                      />
+                    )}
                   />
                 </div>
               </TabsContent>
@@ -578,5 +590,13 @@ export default function IndexPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function IndexPage() {
+  return (
+    <ErrorBoundary fallback={<QuickOrderErrorFallback />}>
+      <IndexPageContent />
+    </ErrorBoundary>
   )
 }
