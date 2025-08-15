@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react'
 import {
   Table,
@@ -13,7 +14,7 @@ import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Plus, Minus, Info, ExternalLink, AlertTriangle } from 'lucide-react'
 import { useSettings } from '@/contexts/SettingsProvider'
-import { useCart } from '@/contexts/CartProvider'
+import { useCart } from '@/contexts/BasketProvider'
 import { Sparkline } from '@/components/ui/Sparkline'
 import { DeliveryFeeIndicator } from '@/components/delivery/DeliveryFeeIndicator'
 import { deliveryCalculator } from '@/services/DeliveryCalculator'

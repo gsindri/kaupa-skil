@@ -1,545 +1,574 @@
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useMemo } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { ShoppingCart, Settings, Zap } from 'lucide-react'
+import { Input } from '@/components/ui/input'
+import { 
+  Search, 
+  Filter, 
+  Grid, 
+  List, 
+  ShoppingCart,
+  TrendingUp,
+  AlertCircle,
+  Package,
+  Clock,
+  Users,
+  Zap
+} from 'lucide-react'
+import { useCart } from '@/contexts/BasketProvider'
+import { useSettings } from '@/contexts/SettingsProvider'
 import { QuickSearch } from '@/components/quick/QuickSearch'
-import { PerformanceOptimizedList } from '@/components/quick/PerformanceOptimizedList'
-import { PantryLanes } from '@/components/quick/PantryLanes'
-import { BasketDrawer } from '@/components/cart/BasketDrawer'
-import { MiniCompareDrawer } from '@/components/quick/MiniCompareDrawer'
-import { SearchEmptyState } from '@/components/quick/SearchEmptyState'
-import { AdvancedFiltering } from '@/components/quick/AdvancedFiltering'
-import { BulkActions } from '@/components/quick/BulkActions'
+import { ItemCard } from '@/components/quick/ItemCard'
 import { SmartSuggestions } from '@/components/quick/SmartSuggestions'
 import { EnhancedCartIntegration } from '@/components/quick/EnhancedCartIntegration'
-import { KeyboardShortcuts } from '@/components/quick/KeyboardShortcuts'
-import { SmartCartSidebar } from '@/components/quick/SmartCartSidebar'
 import { DeliveryOptimizationBanner } from '@/components/quick/DeliveryOptimizationBanner'
-import { CacheProvider } from '@/components/quick/CacheManager'
-import { AnalyticsTrackerComponent } from '@/components/quick/AnalyticsTracker'
-import { AccessibilityEnhancements } from '@/components/quick/AccessibilityEnhancements'
-import VatToggle from '@/components/ui/VatToggle'
-import { useCart } from '@/contexts/CartProvider'
-import { useSettings } from '@/contexts/SettingsProvider'
-import { useSupplierItems } from '@/hooks/useSupplierItems'
-import { useDebounce } from '@/hooks/useDebounce'
-import { PerformanceMonitor } from '@/lib/performance'
-import { Kbd } from '@/components/ui/kbd'
+import { SmartCartSidebar } from '@/components/quick/SmartCartSidebar'
+import { PantryLanes } from '@/components/quick/PantryLanes'
 import { CompactOrderGuidesCTA } from '@/components/quick/CompactOrderGuidesCTA'
-import { EnhancedPriceDisplay } from '@/components/quick/EnhancedPriceDisplay'
-import { useBasket } from '@/contexts/BasketProvider'
+import { PerformanceOptimizedList } from '@/components/quick/PerformanceOptimizedList'
 
-export default function Index() {
+interface Item {
+  id: string
+  name: string
+  brand: string
+  packSize: string
+  unitPriceExVat: number
+  unitPriceIncVat: number
+  packPriceExVat: number
+  packPriceIncVat: number
+  unit: string
+  suppliers: string[]
+  stock: boolean
+  deliveryFee?: number
+  cutoffTime?: string
+  deliveryDay?: string
+  isPremiumBrand?: boolean
+  isDiscounted?: boolean
+  originalPrice?: number
+}
+
+const MOCK_ITEMS: Item[] = [
+  {
+    id: '1',
+    name: 'Organic Apples',
+    brand: 'FreshFarm',
+    packSize: '1kg bag',
+    unitPriceExVat: 250,
+    unitPriceIncVat: 310,
+    packPriceExVat: 250,
+    packPriceIncVat: 310,
+    unit: 'kg',
+    suppliers: ['Metro', 'Costco'],
+    stock: true,
+    deliveryFee: 500,
+    cutoffTime: '14:00',
+    deliveryDay: 'Tomorrow',
+    isPremiumBrand: true,
+    isDiscounted: true,
+    originalPrice: 300,
+  },
+  {
+    id: '2',
+    name: 'Whole Wheat Bread',
+    brand: 'GoodGrain',
+    packSize: '1 loaf',
+    unitPriceExVat: 120,
+    unitPriceIncVat: 150,
+    packPriceExVat: 120,
+    packPriceIncVat: 150,
+    unit: 'loaf',
+    suppliers: ['Bónus', 'Krambúð'],
+    stock: false,
+    deliveryFee: 300,
+    cutoffTime: '16:00',
+    deliveryDay: 'In 2 days',
+  },
+  {
+    id: '3',
+    name: 'Free-Range Eggs',
+    brand: 'HappyHen',
+    packSize: '12 eggs',
+    unitPriceExVat: 300,
+    unitPriceIncVat: 370,
+    packPriceExVat: 300,
+    packPriceIncVat: 370,
+    unit: 'pack',
+    suppliers: ['Hagkaup', 'Fjarðarkaup'],
+    stock: true,
+    isPremiumBrand: true,
+  },
+  {
+    id: '4',
+    name: 'Cheddar Cheese',
+    brand: 'DairyBest',
+    packSize: '500g block',
+    unitPriceExVat: 450,
+    unitPriceIncVat: 560,
+    packPriceExVat: 450,
+    packPriceIncVat: 560,
+    unit: 'block',
+    suppliers: ['Krónan', 'Nettó'],
+    stock: true,
+    deliveryFee: 400,
+    cutoffTime: '12:00',
+    deliveryDay: 'Tomorrow',
+  },
+  {
+    id: '5',
+    name: 'Ground Coffee',
+    brand: 'AromaCafe',
+    packSize: '250g pack',
+    unitPriceExVat: 380,
+    unitPriceIncVat: 470,
+    packPriceExVat: 380,
+    packPriceIncVat: 470,
+    unit: 'pack',
+    suppliers: ['Metro', 'Costco'],
+    stock: true,
+    isDiscounted: true,
+    originalPrice: 420,
+  },
+  {
+    id: '6',
+    name: 'Salmon Fillet',
+    brand: 'OceanFresh',
+    packSize: '200g',
+    unitPriceExVat: 800,
+    unitPriceIncVat: 990,
+    packPriceExVat: 800,
+    packPriceIncVat: 990,
+    unit: 'fillet',
+    suppliers: ['Hagkaup', 'Fjarðarkaup'],
+    stock: false,
+    deliveryFee: 600,
+    cutoffTime: '18:00',
+    deliveryDay: 'In 3 days',
+    isPremiumBrand: true,
+  },
+  {
+    id: '7',
+    name: 'Pasta (Spaghetti)',
+    brand: 'ItalyBest',
+    packSize: '500g pack',
+    unitPriceExVat: 180,
+    unitPriceIncVat: 220,
+    packPriceExVat: 180,
+    packPriceIncVat: 220,
+    unit: 'pack',
+    suppliers: ['Bónus', 'Krónan'],
+    stock: true,
+  },
+  {
+    id: '8',
+    name: 'Olive Oil',
+    brand: 'MediterraneanGold',
+    packSize: '500ml bottle',
+    unitPriceExVat: 600,
+    unitPriceIncVat: 740,
+    packPriceExVat: 600,
+    packPriceIncVat: 740,
+    unit: 'bottle',
+    suppliers: ['Nettó', 'Krambúð'],
+    stock: true,
+    deliveryFee: 350,
+    cutoffTime: '10:00',
+    deliveryDay: 'Today',
+    isPremiumBrand: true,
+  },
+  {
+    id: '9',
+    name: 'Coca Cola',
+    brand: 'Coca Cola',
+    packSize: '6 pack',
+    unitPriceExVat: 1000,
+    unitPriceIncVat: 1240,
+    packPriceExVat: 1000,
+    packPriceIncVat: 1240,
+    unit: 'pack',
+    suppliers: ['Bónus', 'Krónan'],
+    stock: true,
+  },
+  {
+    id: '10',
+    name: 'Ground Beef',
+    brand: 'MeatHouse',
+    packSize: '1kg',
+    unitPriceExVat: 1200,
+    unitPriceIncVat: 1488,
+    packPriceExVat: 1200,
+    packPriceIncVat: 1488,
+    unit: 'kg',
+    suppliers: ['Metro', 'Costco'],
+    stock: true,
+  },
+]
+
+function generateRandomPriceHistory(length: number, initialPrice: number, volatility: number) {
+  let currentPrice = initialPrice
+  const history = [currentPrice]
+
+  for (let i = 1; i < length; i++) {
+    const change = (Math.random() - 0.5) * 2 * volatility // Random change between -volatility and +volatility
+    currentPrice += change
+    currentPrice = Math.max(10, currentPrice) // Ensure price doesn't drop below 0
+    history.push(currentPrice)
+  }
+
+  return history
+}
+
+const enhancedItems = MOCK_ITEMS.map(item => ({
+  ...item,
+  priceHistory: generateRandomPriceHistory(12, item.unitPriceExVat, item.unitPriceExVat * 0.05),
+}))
+
+const MOCK_COMPARISON_ITEMS = [
+  {
+    id: 'item-1',
+    itemName: 'High-Quality Printing Paper',
+    brand: 'OfficePlus',
+    category: 'Office Supplies',
+    image: 'https://picsum.photos/id/237/200/150',
+    description: 'Premium paper for crisp, clear prints and professional documents.',
+    specifications: {
+      size: 'A4',
+      weight: '80gsm',
+      brightness: '96%',
+    },
+    prices: [
+      {
+        supplierId: 'supplier-101',
+        supplierName: 'Metro',
+        price: 5500,
+        priceIncVat: 6820,
+        unit: 'pack',
+        packSize: '500 sheets',
+        availability: 'in-stock',
+        leadTime: '1-2 days',
+        moq: 1,
+        discount: 0.05,
+        lastUpdated: '2024-08-01',
+        priceHistory: generateRandomPriceHistory(12, 5500, 200),
+        isPreferred: true,
+      },
+      {
+        supplierId: 'supplier-102',
+        supplierName: 'Costco',
+        price: 5200,
+        priceIncVat: 6448,
+        unit: 'pack',
+        packSize: '500 sheets',
+        availability: 'low-stock',
+        leadTime: '3-5 days',
+        moq: 5,
+        lastUpdated: '2024-07-28',
+        priceHistory: generateRandomPriceHistory(12, 5200, 180),
+        isPreferred: false,
+      },
+      {
+        supplierId: 'supplier-103',
+        supplierName: 'Bónus',
+        price: 5800,
+        priceIncVat: 7192,
+        unit: 'pack',
+        packSize: '500 sheets',
+        availability: 'out-of-stock',
+        leadTime: '7-10 days',
+        moq: 10,
+        lastUpdated: '2024-07-20',
+        priceHistory: generateRandomPriceHistory(12, 5800, 220),
+        isPreferred: false,
+      },
+    ],
+    averageRating: 4.5,
+    tags: ['paper', 'printing', 'office'],
+  },
+  {
+    id: 'item-2',
+    itemName: 'Ergonomic Office Chair',
+    brand: 'ComfortZone',
+    category: 'Furniture',
+    image: 'https://picsum.photos/id/102/200/150',
+    description: 'Adjustable chair designed for maximum comfort and support during long work hours.',
+    specifications: {
+      material: 'Mesh, Steel',
+      adjustability: 'Height, Lumbar, Armrests',
+      weightCapacity: '150kg',
+    },
+    prices: [
+      {
+        supplierId: 'supplier-201',
+        supplierName: 'Hagkaup',
+        price: 42000,
+        priceIncVat: 52080,
+        unit: 'unit',
+        packSize: '1 chair',
+        availability: 'in-stock',
+        leadTime: '2-3 days',
+        moq: 1,
+        discount: 0.1,
+        lastUpdated: '2024-08-05',
+        priceHistory: generateRandomPriceHistory(12, 42000, 1500),
+        isPreferred: true,
+      },
+      {
+        supplierId: 'supplier-202',
+        supplierName: 'Rúmfatalagerinn',
+        price: 40000,
+        priceIncVat: 49600,
+        unit: 'unit',
+        packSize: '1 chair',
+        availability: 'in-stock',
+        leadTime: '5-7 days',
+        moq: 1,
+        lastUpdated: '2024-08-01',
+        priceHistory: generateRandomPriceHistory(12, 40000, 1400),
+        isPreferred: false,
+      },
+      {
+        supplierId: 'supplier-203',
+        supplierName: 'IKEA',
+        price: 38000,
+        priceIncVat: 47120,
+        unit: 'unit',
+        packSize: '1 chair',
+        availability: 'low-stock',
+        leadTime: '10-14 days',
+        moq: 1,
+        lastUpdated: '2024-07-25',
+        priceHistory: generateRandomPriceHistory(12, 38000, 1300),
+        isPreferred: false,
+      },
+    ],
+    averageRating: 4.8,
+    tags: ['chair', 'ergonomic', 'furniture'],
+  },
+  {
+    id: 'item-3',
+    itemName: 'Wireless Mouse',
+    brand: 'TechMaster',
+    category: 'Electronics',
+    image: 'https://picsum.photos/id/139/200/150',
+    description: 'Comfortable and reliable wireless mouse for everyday use.',
+    specifications: {
+      connectivity: '2.4GHz Wireless',
+      dpi: '1600',
+      batteryLife: '12 months',
+    },
+    prices: [
+      {
+        supplierId: 'supplier-301',
+        supplierName: 'Elko',
+        price: 2500,
+        priceIncVat: 3100,
+        unit: 'unit',
+        packSize: '1 mouse',
+        availability: 'in-stock',
+        leadTime: '1-2 days',
+        moq: 1,
+        discount: 0.0,
+        lastUpdated: '2024-08-07',
+        priceHistory: generateRandomPriceHistory(12, 2500, 100),
+        isPreferred: true,
+      },
+      {
+        supplierId: 'supplier-302',
+        supplierName: ' কম্পিউটার দোকান',
+        price: 2300,
+        priceIncVat: 2852,
+        unit: 'unit',
+        packSize: '1 mouse',
+        availability: 'in-stock',
+        leadTime: '3-5 days',
+        moq: 1,
+        lastUpdated: '2024-08-03',
+        priceHistory: generateRandomPriceHistory(12, 2300, 90),
+        isPreferred: false,
+      },
+      {
+        supplierId: 'supplier-303',
+        supplierName: 'Tölvutek',
+        price: 2700,
+        priceIncVat: 3348,
+        unit: 'unit',
+        packSize: '1 mouse',
+        availability: 'low-stock',
+        leadTime: '5-7 days',
+        moq: 1,
+        lastUpdated: '2024-07-30',
+        priceHistory: generateRandomPriceHistory(12, 2700, 110),
+        isPreferred: false,
+      },
+    ],
+    averageRating: 4.2,
+    tags: ['mouse', 'wireless', 'electronics'],
+  },
+]
+
+export default function IndexPage() {
   const [searchQuery, setSearchQuery] = useState('')
-  const [compareItemId, setCompareItemId] = useState<string | null>(null)
-  const [isCompareOpen, setIsCompareOpen] = useState(false)
-  const [userMode, setUserMode] = useState<'just-order' | 'balanced' | 'analytical'>('just-order')
-  const [selectedLane, setSelectedLane] = useState<string | null>(null)
-  const [showKeyboardHelper, setShowKeyboardHelper] = useState(() => {
-    const visits = localStorage.getItem('quick-order-visits') || '0'
-    return parseInt(visits) < 3
-  })
-  
-  // Phase 5 state
-  const [selectedItems, setSelectedItems] = useState<string[]>([])
-  const [filters, setFilters] = useState({
-    categories: [],
-    suppliers: [],
-    priceRange: [0, 10000] as [number, number],
-    inStockOnly: false,
-    sortBy: 'name' as 'name' | 'price' | 'brand',
-    sortOrder: 'asc' as 'asc' | 'desc'
-  })
+  const [activeTab, setActiveTab] = useState('quick-order')
+  const [comparisonItems, setComparisonItems] = useState(MOCK_COMPARISON_ITEMS)
+  const { items } = useCart()
+  const { userMode } = useSettings()
 
-  const [hoveredItem, setHoveredItem] = useState<{
-    item: any;
-    position: { x: number; y: number };
-  } | null>(null);
-
-  // Phase 3: Smart sidebar visibility
-  const [showSmartSidebar, setShowSmartSidebar] = useState(false)
-
-  const { getTotalItems, setIsDrawerOpen, addItem } = useBasket()
-  const { includeVat, setIncludeVat } = useSettings()
-  const { data: supplierItems = [], isLoading } = useSupplierItems()
-  
-  const debouncedSearch = useDebounce(searchQuery, 300)
-
-  // Track visits for keyboard helper
-  useEffect(() => {
-    const visits = parseInt(localStorage.getItem('quick-order-visits') || '0')
-    if (visits < 3) {
-      localStorage.setItem('quick-order-visits', (visits + 1).toString())
-      if (visits + 1 >= 3) {
-        setTimeout(() => setShowKeyboardHelper(false), 5000)
-      }
-    }
-  }, [])
-
-  // Phase 3: Auto-show smart sidebar when cart has items
-  useEffect(() => {
-    setShowSmartSidebar(getTotalItems() > 0 && userMode !== 'just-order')
-  }, [getTotalItems, userMode])
-
-  // Enhanced filtering and sorting logic with performance monitoring
-  const filteredAndSortedItems = useMemo(() => {
-    PerformanceMonitor.startMeasurement('filtering-and-sorting')
-    
-    // Add mock pricing data to items
-    const itemsWithPricing = supplierItems.map(item => {
-      const seed = item.id.split('').reduce((a, b) => a + b.charCodeAt(0), 0)
-      const basePrice = 100 + (seed % 4900)
-      
-      return {
-        ...item,
-        unit_price_ex_vat: basePrice,
-        unit_price_inc_vat: Math.round(basePrice * 1.24)
-      }
-    })
-
-    let filtered = itemsWithPricing.filter(item => {
-      // Text search
-      if (debouncedSearch.trim()) {
-        const query = debouncedSearch.toLowerCase()
-        const matchesSearch = 
-          item.display_name?.toLowerCase().includes(query) ||
-          item.ext_sku?.toLowerCase().includes(query) ||
-          item.ean?.toLowerCase().includes(query)
-        if (!matchesSearch) return false
-      }
-
-      // Category filter
-      if (filters.categories.length > 0) {
-        const hasCategory = filters.categories.some(cat => 
-          item.display_name?.toLowerCase().includes(cat.toLowerCase())
-        )
-        if (!hasCategory) return false
-      }
-
-      // Supplier filter
-      if (filters.suppliers.length > 0) {
-        const supplierName = (item as any).supplier?.name || 'Unknown'
-        if (!filters.suppliers.includes(supplierName)) return false
-      }
-
-      // Price filter
-      const price = includeVat ? item.unit_price_inc_vat : item.unit_price_ex_vat
-      if (price < filters.priceRange[0] || price > filters.priceRange[1]) {
-        return false
-      }
-
-      // Stock filter
-      if (filters.inStockOnly && !(item as any).stock) {
-        return false
-      }
-
-      return true
-    })
-
-    // Sort items
-    filtered.sort((a, b) => {
-      let comparison = 0
-      
-      switch (filters.sortBy) {
-        case 'name':
-          comparison = (a.display_name || '').localeCompare(b.display_name || '')
-          break
-        case 'price':
-          const priceA = includeVat ? a.unit_price_inc_vat : a.unit_price_ex_vat
-          const priceB = includeVat ? b.unit_price_inc_vat : b.unit_price_ex_vat
-          comparison = priceA - priceB
-          break
-        case 'brand':
-          comparison = (a.display_name || '').localeCompare(b.display_name || '')
-          break
-      }
-
-      return filters.sortOrder === 'desc' ? -comparison : comparison
-    })
-
-    PerformanceMonitor.endMeasurement('filtering-and-sorting')
-    return filtered
-  }, [supplierItems, debouncedSearch, filters, includeVat])
-
-  // Convert to display format with optimized pricing calculation
-  const displayItems = useMemo(() => {
-    PerformanceMonitor.startMeasurement('display-items-conversion')
-    
-    const items = filteredAndSortedItems.map(item => {
-      const unitPriceExVat = item.unit_price_ex_vat
-      const unitPriceIncVat = item.unit_price_inc_vat
-      const packQty = item.pack_qty || 1
-      
-      return {
-        id: item.id,
-        name: item.display_name || 'Unknown Item',
-        brand: (item as any).supplier?.name || 'Unknown Brand',
-        packSize: item.pack_qty ? `${item.pack_qty} ${(item as any).pack_unit?.code || 'units'}` : '1 unit',
-        unitPriceExVat,
-        unitPriceIncVat,
-        packPriceExVat: unitPriceExVat * packQty,
-        packPriceIncVat: unitPriceIncVat * packQty,
-        unit: (item as any).pack_unit?.code || 'unit',
-        suppliers: [(item as any).supplier?.name || 'Unknown Supplier'],
-        stock: true,
-        deliveryFee: Math.random() > 0.7 ? Math.floor(Math.random() * 3000) + 1000 : undefined,
-        cutoffTime: Math.random() > 0.5 ? '14:00' : undefined,
-        deliveryDay: Math.random() > 0.5 ? 'Tomorrow' : undefined,
-        isPremiumBrand: Math.random() > 0.8,
-        isDiscounted: Math.random() > 0.9,
-        originalPrice: Math.random() > 0.9 ? unitPriceIncVat * 1.2 : undefined
-      }
-    })
-    
-    PerformanceMonitor.endMeasurement('display-items-conversion')
-    return items
-  }, [filteredAndSortedItems])
-
-  // Get available categories and suppliers for filtering
-  const availableCategories = [
-    'Dairy Products', 'Fresh Produce', 'Meat & Seafood', 
-    'Bakery Items', 'Cleaning Supplies', 'Beverages'
-  ]
-  
-  const availableSuppliers = [...new Set(
-    supplierItems.map(item => (item as any).supplier?.name).filter(Boolean)
-  )]
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.ctrlKey || e.metaKey) {
-        switch (e.key) {
-          case 'k':
-            e.preventDefault()
-            break
-          case 'a':
-            e.preventDefault()
-            if (displayItems.length > 0) {
-              setSelectedItems(displayItems.map(item => item.id))
-            }
-            break
-          case 'd':
-            e.preventDefault()
-            setSelectedItems([])
-            break
-          case 'b':
-            e.preventDefault()
-            setIsDrawerOpen(true)
-            break
-        }
-      }
-    }
-
-    document.addEventListener('keydown', handleKeyDown)
-    return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [displayItems, setIsDrawerOpen])
-
-  const handleSelectAll = () => {
-    setSelectedItems(displayItems.map(item => item.id))
-  }
-
-  const handleClearSelection = () => {
-    setSelectedItems([])
-  }
-
-  const handleBulkAddToCart = (quantity: number) => {
-    selectedItems.forEach(itemId => {
-      const item = displayItems.find(i => i.id === itemId)
-      if (item) {
-        addItem({
-          id: item.id,
+  const handleAddToComparison = (item: Item) => {
+    const newItem = {
+      id: item.id,
+      itemName: item.name,
+      brand: item.brand,
+      category: 'Various',
+      image: 'https://picsum.photos/id/237/200/150',
+      description: 'This is a test description',
+      specifications: {
+        size: 'A4',
+        weight: '80gsm',
+        brightness: '96%',
+      },
+      prices: [
+        {
           supplierId: item.suppliers[0],
           supplierName: item.suppliers[0],
-          itemName: item.name,
-          sku: item.id,
-          packSize: item.packSize,
-          packPrice: includeVat ? item.packPriceIncVat : item.packPriceExVat,
-          unitPriceExVat: item.unitPriceExVat,
-          unitPriceIncVat: item.unitPriceIncVat,
-          vatRate: 0.24,
+          price: item.unitPriceExVat,
+          priceIncVat: item.unitPriceIncVat,
           unit: item.unit,
-          supplierItemId: item.id,
-          displayName: item.name,
-          packQty: 1
-        }, quantity)
-      }
-    })
-    setSelectedItems([])
-  }
-
-  const handleBulkRemoveFromCart = () => {
-    setSelectedItems([])
-  }
-
-  const handleAddSuggestedItem = (itemId: string) => {
-    const item = displayItems.find(i => i.id === itemId)
-    if (item) {
-      addItem({
-        id: item.id,
-        supplierId: item.suppliers[0],
-        supplierName: item.suppliers[0],
-        itemName: item.name,
-        sku: item.id,
-        packSize: item.packSize,
-        packPrice: includeVat ? item.packPriceIncVat : item.packPriceExVat,
-        unitPriceExVat: item.unitPriceExVat,
-        unitPriceIncVat: item.unitPriceIncVat,
-        vatRate: 0.24,
-        unit: item.unit,
-        supplierItemId: item.id,
-        displayName: item.name,
-        packQty: 1
-      }, 1)
+          packSize: item.packSize,
+          availability: item.stock ? 'in-stock' : 'out-of-stock',
+          leadTime: '1-2 days',
+          moq: 1,
+          discount: 0.05,
+          lastUpdated: '2024-08-01',
+          priceHistory: generateRandomPriceHistory(12, item.unitPriceExVat, item.unitPriceExVat * 0.05),
+          isPreferred: true,
+        }
+      ],
+      averageRating: 4.5,
+      tags: ['test'],
     }
+    setComparisonItems(prev => [...prev, newItem])
   }
 
-  const handleCompareItem = (itemId: string) => {
-    setCompareItemId(itemId)
-    setIsCompareOpen(true)
+  const handleAddToCart = (item: any, supplier: any, quantity: number) => {
+    console.log('Adding to cart', item, supplier, quantity)
   }
 
-  const handleItemHover = (item: any, event: React.MouseEvent) => {
-    setHoveredItem({
-      item: {
-        name: item.name,
-        brand: item.brand,
-        lastOrderDate: 'Dec 10, 2024', // Mock data
-        averagePrice: item.unitPriceIncVat * 0.95,
-        priceChange: Math.random() > 0.5 ? Math.floor(Math.random() * 10) : -Math.floor(Math.random() * 5),
-        orderFrequency: 'Weekly'
-      },
-      position: { x: event.clientX, y: event.clientY }
-    });
-  };
+  const handleRemoveItem = (itemId: string) => {
+    setComparisonItems(prev => prev.filter(item => item.id !== itemId))
+  }
 
-  const handleItemLeave = () => {
-    setHoveredItem(null);
-  };
-
-  const showResults = debouncedSearch.trim().length > 0 || selectedLane
-  const hasResults = displayItems.length > 0
+  const filteredItems = useMemo(() => {
+    const lowerQuery = searchQuery.toLowerCase()
+    return enhancedItems.filter(
+      (item) =>
+        item.name.toLowerCase().includes(lowerQuery) ||
+        item.brand.toLowerCase().includes(lowerQuery)
+    )
+  }, [searchQuery])
 
   return (
-    <CacheProvider>
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-100" style={{ fontFeatureSettings: '"tnum" 1' }}>
-        {/* Accessibility Enhancements */}
-        <AccessibilityEnhancements />
-        
-        {/* Analytics Tracker */}
-        <AnalyticsTrackerComponent 
-          searchQuery={debouncedSearch}
-          resultCount={displayItems.length}
-          userMode={userMode}
-        />
-
-        <header className="sticky top-0 z-40 w-full border-b border-foreground/10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-sm">
-          <div className="container mx-auto px-4 py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <div className="flex items-center space-x-2">
-                  <Zap className="h-6 w-6 text-brand-600" />
-                  <h1 className="text-xl font-semibold text-foreground">Quick Order</h1>
-                </div>
-              </div>
-
-              <div className="flex items-center space-x-3">
-                <VatToggle 
-                  includeVat={includeVat} 
-                  onToggle={setIncludeVat}
-                />
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="relative border-foreground/10 hover:border-foreground/20"
-                  onClick={() => setIsDrawerOpen(true)}
-                >
-                  <ShoppingCart className="h-4 w-4 mr-2" />
-                  Basket · <span className="font-mono" style={{ fontFeatureSettings: '"tnum" 1' }}>{getTotalItems()}</span>
-                  {getTotalItems() > 0 && (
-                    <span className="absolute -top-2 -right-2 bg-brand-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-mono" style={{ fontFeatureSettings: '"tnum" 1' }}>
-                      {getTotalItems()}
-                    </span>
-                  )}
-                </Button>
-                <Button variant="ghost" size="sm">
-                  <Settings className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-
-            {/* Mode selector - right-aligned under title with softer styling */}
-            <div className="flex justify-end mt-2">
-              <div className="inline-flex items-center bg-muted/50 rounded-lg p-1 border border-foreground/10">
-                {(['just-order', 'balanced', 'analytical'] as const).map((mode) => (
-                  <button
-                    key={mode}
-                    onClick={() => setUserMode(mode)}
-                    className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all duration-200 ${
-                      userMode === mode
-                        ? 'bg-brand-600 text-white shadow-sm border border-brand-700/20'
-                        : 'text-foreground/70 hover:text-foreground hover:bg-background/50 border border-transparent'
-                    }`}
-                  >
-                    {mode === 'just-order' ? 'Just Order' : mode === 'balanced' ? 'Balanced' : 'Analytical'}
-                  </button>
-                ))}
-              </div>
+    <div className="container relative">
+      {/* Hero Section */}
+      <section className="relative py-12">
+        <div className="absolute inset-0 bg-brand-100 rounded-xl blur-xl opacity-75 -z-10" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-4">
+            <h1 className="text-3xl font-bold tracking-tight">
+              Streamline Your Procurement Process
+            </h1>
+            <p className="text-muted-foreground">
+              Find the best prices, optimize your orders, and save time with our
+              intelligent procurement platform.
+            </p>
+            <div className="flex gap-3">
+              <Button>
+                <Search className="w-4 h-4 mr-2" />
+                Start Searching
+              </Button>
+              <Button variant="outline">
+                <Users className="w-4 h-4 mr-2" />
+                Learn More
+              </Button>
             </div>
           </div>
-        </header>
+          <div className="flex items-center justify-center">
+            <img
+              src="/hero-image.svg"
+              alt="Procurement Dashboard"
+              className="max-w-md rounded-lg shadow-md"
+            />
+          </div>
+        </div>
+      </section>
 
-        <main className="container mx-auto px-4 py-6 space-y-6">
-          <div className="max-w-2xl mx-auto space-y-2">
+      {/* Smart Cart Integration */}
+      <EnhancedCartIntegration />
+
+      {/* Main Content Area */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-24">
+        {/* Main Content Column */}
+        <div className="md:col-span-3 space-y-6">
+          {/* Search and Tabs */}
+          <div className="space-y-3">
             <QuickSearch
               value={searchQuery}
-              onChange={setSearchQuery}
-              onResultSelect={(item) => {
-                setSearchQuery('')
-                handleAddSuggestedItem(item.id)
-              }}
+              onValueChange={setSearchQuery}
+              className="shadow-md"
             />
-            
-            {/* Keyboard shortcuts helper */}
-            {showKeyboardHelper && (
-              <div className="text-xs text-muted-foreground text-center space-x-4 animate-fade-in">
-                <span>Shortcuts:</span>
-                <span><Kbd>/</Kbd> search</span>
-                <span><Kbd>Enter</Kbd> add</span>
-                <span><Kbd>B</Kbd> basket</span>
-                <span><Kbd>↑/↓</Kbd> qty</span>
-              </div>
-            )}
-          </div>
 
-          {/* Phase 3: Delivery Optimization Banner with softer styling */}
-          <div className="max-w-4xl mx-auto">
-            <div className="border border-foreground/10 rounded-lg shadow-sm">
-              <DeliveryOptimizationBanner />
-            </div>
-          </div>
-
-          {(showResults || selectedItems.length > 0) && (
-            <AdvancedFiltering
-              filters={filters}
-              onFiltersChange={setFilters}
-              availableCategories={availableCategories}
-              availableSuppliers={availableSuppliers}
-            />
-          )}
-
-          <BulkActions
-            selectedItems={selectedItems}
-            allItems={displayItems}
-            onSelectAll={handleSelectAll}
-            onClearSelection={handleClearSelection}
-            onBulkAddToCart={handleBulkAddToCart}
-            onBulkRemoveFromCart={handleBulkRemoveFromCart}
-          />
-
-          {!showResults && (
-            <div className="max-w-4xl mx-auto space-y-6">
-              <SmartSuggestions onAddSuggestedItem={handleAddSuggestedItem} />
-              <CompactOrderGuidesCTA />
-            </div>
-          )}
-
-          {/* Phase 3: Main content with sidebar layout */}
-          <div className="flex gap-6">
-            <div className={`flex-1 transition-all duration-300 ${showSmartSidebar ? 'max-w-[calc(100%-336px)]' : 'max-w-6xl mx-auto'}`}>
-              {showResults ? (
-                hasResults ? (
-                  <div
-                    onMouseMove={(e) => {
-                      if (hoveredItem) {
-                        setHoveredItem(prev => prev ? {
-                          ...prev,
-                          position: { x: e.clientX, y: e.clientY }
-                        } : null);
-                      }
-                    }}
-                  >
-                    <PerformanceOptimizedList
-                      items={displayItems}
-                      onCompareItem={handleCompareItem}
-                      userMode={userMode}
-                      selectedItems={selectedItems}
-                      onItemSelect={(itemId, isSelected) => {
-                        if (isSelected) {
-                          setSelectedItems(prev => [...prev, itemId])
-                        } else {
-                          setSelectedItems(prev => prev.filter(id => id !== itemId))
-                        }
-                      }}
-                      onItemHover={handleItemHover}
-                      onItemLeave={handleItemLeave}
-                    />
-                  </div>
-                ) : (
-                  <SearchEmptyState 
-                    query={debouncedSearch}
-                    onClearSearch={() => setSearchQuery('')}
-                  />
-                )
-              ) : (
-                <PantryLanes
-                  onLaneSelect={setSelectedLane}
-                  selectedLane={selectedLane}
-                  onAddToCart={handleAddSuggestedItem}
-                />
-              )}
-            </div>
-
-            {/* Phase 3: Smart Cart Sidebar */}
-            {showSmartSidebar && (
-              <div className="flex-shrink-0">
-                <div className="sticky top-24">
-                  <SmartCartSidebar />
-                </div>
-              </div>
-            )}
-          </div>
-        </main>
-
-        <EnhancedCartIntegration />
-        <BasketDrawer />
-        <MiniCompareDrawer
-          itemId={compareItemId}
-          isOpen={isCompareOpen}
-          onClose={() => setIsCompareOpen(false)}
-        />
-        <KeyboardShortcuts onClose={() => {}} />
-
-        {/* Enhanced hover tooltip */}
-        {hoveredItem && userMode === 'analytical' && (
-          <div className="fixed inset-0 pointer-events-none z-50">
-            <div
-              className="absolute bg-background/95 backdrop-blur-sm border border-border/50 rounded-lg p-3 shadow-lg max-w-xs"
-              style={{
-                left: hoveredItem.position.x + 10,
-                top: hoveredItem.position.y - 10,
-              }}
+            <Tabs
+              defaultValue="quick-order"
+              className="w-full"
+              onValueChange={setActiveTab}
             >
-              <div className="text-sm font-medium mb-1">{hoveredItem.item.name}</div>
-              <div className="text-xs text-muted-foreground mb-2">{hoveredItem.item.brand}</div>
-              <div className="space-y-1 text-xs">
-                <div className="flex justify-between">
-                  <span>Last ordered:</span>
-                  <span>{hoveredItem.item.lastOrderDate}</span>
+              <TabsList className="bg-muted/50 rounded-md p-1 shadow-sm w-full">
+                <TabsTrigger value="quick-order" className="data-[state=active]:shadow-md">
+                  <Grid className="w-4 h-4 mr-2" />
+                  Quick Order
+                </TabsTrigger>
+                <TabsTrigger value="smart-list" className="data-[state=active]:shadow-md">
+                  <List className="w-4 h-4 mr-2" />
+                  Smart List
+                </TabsTrigger>
+                <TabsTrigger value="pantry-lanes" className="data-[state=active]:shadow-md">
+                  <Package className="w-4 h-4 mr-2" />
+                  Pantry Lanes
+                </TabsTrigger>
+              </TabsList>
+              <TabsContent value="quick-order" className="space-y-4">
+                <DeliveryOptimizationBanner />
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <PerformanceOptimizedList
+                    data={filteredItems}
+                    renderItem={(item) => (
+                      <ItemCard
+                        key={item.id}
+                        item={item}
+                        onCompareItem={() => handleAddToComparison(item)}
+                        userMode={userMode}
+                      />
+                    )}
+                  />
                 </div>
-                <div className="flex justify-between">
-                  <span>Avg price:</span>
-                  <span>{new Intl.NumberFormat('is-IS', { style: 'currency', currency: 'ISK' }).format(hoveredItem.item.averagePrice)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Price change:</span>
-                  <span className={hoveredItem.item.priceChange > 0 ? 'text-red-600' : 'text-green-600'}>
-                    {hoveredItem.item.priceChange > 0 ? '+' : ''}{hoveredItem.item.priceChange}%
-                  </span>
-                </div>
-              </div>
-            </div>
+              </TabsContent>
+              <TabsContent value="smart-list" className="space-y-4">
+                <SmartSuggestions />
+                <CompactOrderGuidesCTA />
+              </TabsContent>
+              <TabsContent value="pantry-lanes" className="space-y-4">
+                <PantryLanes />
+              </TabsContent>
+            </Tabs>
           </div>
-        )}
+        </div>
+
+        {/* Sidebar Column */}
+        <div className="md:col-span-1">
+          <SmartCartSidebar className="sticky top-4" />
+        </div>
       </div>
-    </CacheProvider>
+    </div>
   )
 }

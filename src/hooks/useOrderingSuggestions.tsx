@@ -1,6 +1,6 @@
 
 import { useQuery } from '@tanstack/react-query'
-import { useCart } from '@/contexts/CartProvider'
+import { useCart } from '@/contexts/BasketProvider'
 import { orderingSuggestions } from '@/services/OrderingSuggestions'
 
 export function useOrderingSuggestions() {

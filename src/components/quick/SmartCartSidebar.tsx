@@ -11,7 +11,7 @@ import {
   Plus,
   Lightbulb
 } from 'lucide-react';
-import { useCart } from '@/contexts/CartProvider';
+import { useCart } from '@/contexts/BasketProvider';
 import { useSettings } from '@/contexts/SettingsProvider';
 
 interface SmartCartSidebarProps {

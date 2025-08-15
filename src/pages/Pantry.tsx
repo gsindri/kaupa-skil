@@ -1,13 +1,14 @@
-
-import React, { useState } from 'react'
-import { Heart, Package, Plus, Minus, ShoppingCart } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import React, { useState, useMemo } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
-import { useCart } from '@/contexts/CartProvider'
+import { Button } from '@/components/ui/button'
+import { Plus, Search, Filter, Grid, List } from 'lucide-react'
+import { useCart } from '@/contexts/BasketProvider'
 import { useSettings } from '@/contexts/SettingsProvider'
-import { toast } from '@/hooks/use-toast'
+import { QuickSearch } from '@/components/quick/QuickSearch'
+import { ItemCard } from '@/components/quick/ItemCard'
+import type { CartItem } from '@/lib/types'
 
 interface PantryItem {
   id: string
@@ -16,231 +17,251 @@ interface PantryItem {
   packSize: string
   unitPriceExVat: number
   unitPriceIncVat: number
+  packPriceExVat: number
+  packPriceIncVat: number
   unit: string
-  previousQuantity: number
-  isFavorite: boolean
-  supplierName: string
-  supplierItemId: string
+  suppliers: string[]
+  stock: boolean
+  deliveryFee?: number
+  cutoffTime?: string
+  deliveryDay?: string
+  isPremiumBrand?: boolean
+  isDiscounted?: boolean
+  originalPrice?: number
 }
 
-// Mock data for pantry items
 const mockPantryItems: PantryItem[] = [
   {
-    id: '1',
-    name: 'Extra Virgin Olive Oil',
-    brand: 'Bertolli',
-    packSize: '500ml bottle',
-    unitPriceExVat: 3780,
-    unitPriceIncVat: 4688,
+    id: 'milk-001',
+    name: 'Organic Milk',
+    brand: 'Acme Farms',
+    packSize: '1L',
+    unitPriceExVat: 180,
+    unitPriceIncVat: 223,
+    packPriceExVat: 180,
+    packPriceIncVat: 223,
     unit: 'L',
-    previousQuantity: 2,
-    isFavorite: true,
-    supplierName: 'Véfkaupmenn',
-    supplierItemId: 'supplier-item-1'
+    suppliers: ['Metro', 'Costco'],
+    stock: true,
+    deliveryFee: 2500,
+    cutoffTime: '14:00',
+    deliveryDay: 'Tomorrow',
+    isPremiumBrand: true,
+    isDiscounted: true,
+    originalPrice: 250,
   },
   {
-    id: '2',
-    name: 'Icelandic Skyr Plain',
-    brand: 'KEA',
-    packSize: '1kg container',
-    unitPriceExVat: 850,
-    unitPriceIncVat: 1054,
-    unit: 'kg',
-    previousQuantity: 5,
-    isFavorite: true,
-    supplierName: 'Heilsuhúsið',
-    supplierItemId: 'supplier-item-3'
-  }
+    id: 'bread-002',
+    name: 'Whole Wheat Bread',
+    brand: 'Sunrise Bakery',
+    packSize: '500g',
+    unitPriceExVat: 300,
+    unitPriceIncVat: 372,
+    packPriceExVat: 300,
+    packPriceIncVat: 372,
+    unit: 'loaf',
+    suppliers: ['Metro', 'Bónus'],
+    stock: true,
+    deliveryFee: 1500,
+    cutoffTime: '16:00',
+    deliveryDay: 'Next Day',
+  },
+  {
+    id: 'eggs-003',
+    name: 'Free-Range Eggs',
+    brand: 'Happy Hen Farms',
+    packSize: 'Dozen',
+    unitPriceExVat: 450,
+    unitPriceIncVat: 558,
+    packPriceExVat: 450,
+    packPriceIncVat: 558,
+    unit: 'dozen',
+    suppliers: ['Costco', 'Krónan'],
+    stock: false,
+    deliveryFee: 3000,
+    cutoffTime: '12:00',
+    deliveryDay: 'In 2 Days',
+  },
+  {
+    id: 'butter-004',
+    name: 'Unsalted Butter',
+    brand: 'Golden Dairy',
+    packSize: '250g',
+    unitPriceExVat: 320,
+    unitPriceIncVat: 397,
+    packPriceExVat: 320,
+    packPriceIncVat: 397,
+    unit: 'pack',
+    suppliers: ['Bónus', 'Hagkaup'],
+    stock: true,
+    isPremiumBrand: true,
+  },
+  {
+    id: 'cheese-005',
+    name: 'Cheddar Cheese',
+    brand: 'Valley Farms',
+    packSize: '200g',
+    unitPriceExVat: 400,
+    unitPriceIncVat: 496,
+    packPriceExVat: 400,
+    packPriceIncVat: 496,
+    unit: 'pack',
+    suppliers: ['Krónan', 'Metro'],
+    stock: true,
+    deliveryFee: 2000,
+    cutoffTime: '15:00',
+    deliveryDay: 'Tomorrow',
+  },
+  {
+    id: 'yogurt-006',
+    name: 'Greek Yogurt',
+    brand: 'Olympus Dairy',
+    packSize: '1kg',
+    unitPriceExVat: 600,
+    unitPriceIncVat: 744,
+    packPriceExVat: 600,
+    packPriceIncVat: 744,
+    unit: 'tub',
+    suppliers: ['Hagkaup', 'Costco'],
+    stock: true,
+    isDiscounted: true,
+    originalPrice: 700,
+  },
+  {
+    id: 'pasta-007',
+    name: 'Spaghetti Pasta',
+    brand: 'Italian Harvest',
+    packSize: '500g',
+    unitPriceExVat: 250,
+    unitPriceIncVat: 310,
+    packPriceExVat: 250,
+    packPriceIncVat: 310,
+    unit: 'pack',
+    suppliers: ['Metro', 'Bónus'],
+    stock: true,
+  },
+  {
+    id: 'rice-008',
+    name: 'Basmati Rice',
+    brand: 'Eastern Grains',
+    packSize: '1kg',
+    unitPriceExVat: 350,
+    unitPriceIncVat: 434,
+    packPriceExVat: 350,
+    packPriceIncVat: 434,
+    unit: 'pack',
+    suppliers: ['Costco', 'Krónan'],
+    stock: true,
+    deliveryFee: 2800,
+    cutoffTime: '13:00',
+    deliveryDay: 'Next Day',
+  },
+  {
+    id: 'cereal-009',
+    name: 'Corn Flakes Cereal',
+    brand: 'Morning Start',
+    packSize: '750g',
+    unitPriceExVat: 420,
+    unitPriceIncVat: 521,
+    packPriceExVat: 420,
+    packPriceIncVat: 521,
+    unit: 'box',
+    suppliers: ['Bónus', 'Hagkaup'],
+    stock: true,
+    isPremiumBrand: true,
+  },
+  {
+    id: 'coffee-010',
+    name: 'Ground Coffee',
+    brand: 'Dark Roast Co.',
+    packSize: '500g',
+    unitPriceExVat: 550,
+    unitPriceIncVat: 682,
+    packPriceExVat: 550,
+    packPriceIncVat: 682,
+    unit: 'pack',
+    suppliers: ['Hagkaup', 'Metro'],
+    stock: true,
+    deliveryFee: 1800,
+    cutoffTime: '17:00',
+    deliveryDay: 'In 2 Days',
+  },
 ]
 
-export default function Pantry() {
-  const [quantities, setQuantities] = useState<Record<string, number>>({})
-  const { addItem } = useCart()
+export function Pantry() {
+  const [searchQuery, setSearchQuery] = useState('')
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const { includeVat } = useSettings()
+  const { items: cartItems } = useCart()
 
-  const updateQuantity = (itemId: string, change: number) => {
-    setQuantities(prev => ({
-      ...prev,
-      [itemId]: Math.max(0, (prev[itemId] || 0) + change)
-    }))
+  const filteredItems = useMemo(() => {
+    const lowerQuery = searchQuery.toLowerCase()
+    return mockPantryItems.filter((item) => {
+      return (
+        item.name.toLowerCase().includes(lowerQuery) ||
+        item.brand.toLowerCase().includes(lowerQuery)
+      )
+    })
+  }, [searchQuery])
+
+  const handleCompareItem = (itemId: string) => {
+    alert(`Compare item with ID: ${itemId}`)
   }
-
-  const addToBasket = (item: PantryItem) => {
-    const quantity = quantities[item.id] || item.previousQuantity
-    if (quantity > 0) {
-      addItem({
-        id: item.id,
-        supplierId: item.supplierName.toLowerCase().replace(/\s+/g, '-'),
-        supplierName: item.supplierName,
-        itemName: item.name,
-        sku: `${item.brand}-${item.id}`,
-        packSize: item.packSize,
-        packPrice: includeVat ? item.unitPriceIncVat : item.unitPriceExVat,
-        unitPriceExVat: item.unitPriceExVat,
-        unitPriceIncVat: item.unitPriceIncVat,
-        vatRate: 0.24,
-        unit: item.unit,
-        supplierItemId: item.supplierItemId,
-        displayName: `${item.brand} ${item.name}`,
-        packQty: 1
-      }, quantity)
-      
-      toast({
-        title: "Added to basket",
-        description: `${quantity}x ${item.name} added to your basket`,
-      })
-    }
-  }
-
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('is-IS', {
-      style: 'currency',
-      currency: 'ISK',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(price)
-  }
-
-  const PantryItemCard = ({ item }: { item: PantryItem }) => {
-    const currentQuantity = quantities[item.id] ?? item.previousQuantity
-    const displayPrice = includeVat ? item.unitPriceIncVat : item.unitPriceExVat
-    const vatLabel = includeVat ? 'inc VAT' : 'ex VAT'
-
-    return (
-      <Card className="hover:shadow-md transition-shadow">
-        <CardHeader className="pb-3">
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <CardTitle className="text-lg">{item.name}</CardTitle>
-              <p className="text-sm text-muted-foreground">{item.brand}</p>
-              <p className="text-xs text-muted-foreground">{item.supplierName}</p>
-            </div>
-            {item.isFavorite && (
-              <Heart className="h-4 w-4 text-red-500 fill-current" />
-            )}
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-2xl font-bold">{formatPrice(displayPrice)}</span>
-              <Badge variant="outline" className="text-xs">
-                per {item.unit}, {vatLabel}
-              </Badge>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              Pack: {item.packSize}
-            </p>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => updateQuantity(item.id, -1)}
-                disabled={currentQuantity <= 0}
-              >
-                <Minus className="h-3 w-3" />
-              </Button>
-              <span className="w-8 text-center font-medium">
-                {currentQuantity}
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => updateQuantity(item.id, 1)}
-              >
-                <Plus className="h-3 w-3" />
-              </Button>
-            </div>
-
-            <Button
-              onClick={() => addToBasket(item)}
-              disabled={currentQuantity <= 0}
-              size="sm"
-            >
-              <ShoppingCart className="h-4 w-4 mr-2" />
-              Add to Basket
-            </Button>
-          </div>
-
-          {item.previousQuantity > 0 && (
-            <p className="text-xs text-muted-foreground">
-              Last ordered: {item.previousQuantity} units
-            </p>
-          )}
-        </CardContent>
-      </Card>
-    )
-  }
-
-  const favorites = mockPantryItems.filter(item => item.isFavorite)
-  const orderGuides = mockPantryItems // In a real app, this would be different
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-foreground">Pantry</h1>
-        <p className="text-muted-foreground">
-          Quick reorder your favorite items and order guides
-        </p>
-      </div>
-
-      <Tabs defaultValue="favorites" className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="favorites" className="flex items-center space-x-2">
-            <Heart className="h-4 w-4" />
-            <span>Favorites</span>
-          </TabsTrigger>
-          <TabsTrigger value="guides" className="flex items-center space-x-2">
-            <Package className="h-4 w-4" />
-            <span>Order Guides</span>
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="favorites" className="space-y-6">
-          {favorites.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {favorites.map(item => (
-                <PantryItemCard key={item.id} item={item} />
-              ))}
+    <div className="container mx-auto py-6">
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-2xl font-semibold">Pantry</CardTitle>
+          <div className="flex items-center space-x-2">
+            <Button variant="outline" size="sm">
+              <Plus className="mr-2 h-4 w-4" /> Add Item
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+            <div className="col-span-1 md:col-span-2 lg:col-span-3">
+              <QuickSearch value={searchQuery} onValueChange={setSearchQuery} />
             </div>
-          ) : (
-            <Card className="p-8 text-center">
-              <Heart className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-              <h3 className="text-lg font-medium mb-2">No favorites yet</h3>
-              <p className="text-muted-foreground mb-4">
-                Pin items from Compare to build your pantry
-              </p>
-              <Button asChild>
-                <a href="/compare">Browse Products</a>
+            <div className="col-span-1 lg:col-span-1 flex items-center justify-end space-x-2">
+              <Button variant="ghost" size="icon" onClick={() => setViewMode('grid')}>
+                <Grid className="h-5 w-5" />
               </Button>
-            </Card>
-          )}
-        </TabsContent>
-
-        <TabsContent value="guides" className="space-y-6">
-          {orderGuides.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {orderGuides.map(item => (
-                <PantryItemCard key={item.id} item={item} />
-              ))}
+              <Button variant="ghost" size="icon" onClick={() => setViewMode('list')}>
+                <List className="h-5 w-5" />
+              </Button>
             </div>
-          ) : (
-            <Card className="p-8 text-center">
-              <Package className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-              <h3 className="text-lg font-medium mb-2">No order guides yet</h3>
-              <p className="text-muted-foreground mb-4">
-                Create order guides from your frequently ordered items
-              </p>
-              <Button asChild>
-                <a href="/compare">Browse Products</a>
-              </Button>
-            </Card>
-          )}
-        </TabsContent>
-      </Tabs>
+          </div>
+
+          <div className="mt-6">
+            {viewMode === 'grid' ? (
+              <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                {filteredItems.map((item) => (
+                  <ItemCard
+                    key={item.id}
+                    item={item}
+                    onCompareItem={handleCompareItem}
+                    userMode="balanced"
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {filteredItems.map((item) => (
+                  <ItemCard
+                    key={item.id}
+                    item={item}
+                    onCompareItem={handleCompareItem}
+                    userMode="balanced"
+                    compact
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }

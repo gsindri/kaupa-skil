@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { useSettings } from '@/contexts/SettingsProvider';
-import { useCart } from '@/contexts/CartProvider';
+import { useCart } from '@/contexts/BasketProvider';
 import { ItemBadges, PriceDisplay } from './ItemCardEnhancements';
 import { QuantityControls } from './QuantityControls';
 

@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { ShoppingCart, Truck, AlertCircle, CheckCircle } from 'lucide-react';
-import { useCart } from '@/contexts/CartProvider';
+import { useCart } from '@/contexts/BasketProvider';
 import { useSettings } from '@/contexts/SettingsProvider';
 import { useDeliveryCalculation } from '@/hooks/useDeliveryOptimization';
 

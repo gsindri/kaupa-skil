@@ -1,6 +1,6 @@
 
 import { useQuery } from '@tanstack/react-query'
-import { useCart } from '@/contexts/CartProvider'
+import { useCart } from '@/contexts/BasketProvider'
 import { deliveryCalculator } from '@/services/DeliveryCalculator'
 import type { DeliveryCalculation, OrderDeliveryOptimization } from '@/lib/types/delivery'
 
