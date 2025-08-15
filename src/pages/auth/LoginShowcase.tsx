@@ -1,11 +1,11 @@
-
 import * as React from "react";
 import { useState, useEffect } from "react";
-import { Eye, EyeOff, Building2, AlertCircle } from "lucide-react";
+import { Eye, EyeOff, Building2, AlertCircle, CheckCircle2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthProvider";
 import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { EmailConfirmation } from "@/components/auth/EmailConfirmation";
 
 export default function LoginShowcase() {
   const { user, profile, loading, error, isInitialized } = useAuth();
@@ -62,6 +62,8 @@ function AuthForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
+  const [showEmailConfirmation, setShowEmailConfirmation] = useState(false);
+  const [signupEmail, setSignupEmail] = useState("");
   const { signIn, signUp } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -77,22 +79,61 @@ function AuthForm() {
         });
       } else {
         await signUp(email, password, fullName);
+        
+        // Show success message and email confirmation screen
         toast({
-          title: "Account created!",
+          title: "Account created successfully!",
           description: "Please check your email to verify your account.",
+          duration: 5000,
         });
+        
+        setSignupEmail(email);
+        setShowEmailConfirmation(true);
       }
     } catch (error: any) {
       console.error('Auth error:', error);
+      
+      // Handle specific error cases
+      let errorMessage = "Something went wrong. Please try again.";
+      let errorTitle = "Authentication Error";
+      
+      if (error.message?.includes('Invalid login credentials')) {
+        errorMessage = "Invalid email or password. Please check your credentials and try again.";
+        errorTitle = "Login Failed";
+      } else if (error.message?.includes('User already registered')) {
+        errorMessage = "An account with this email already exists. Please sign in instead.";
+        errorTitle = "Account Exists";
+      } else if (error.message?.includes('over_email_send_rate_limit')) {
+        errorMessage = "Too many emails sent. Please wait a few minutes before trying again.";
+        errorTitle = "Rate Limited";
+      } else if (error.message?.includes('Password should be at least')) {
+        errorMessage = "Password must be at least 6 characters long.";
+        errorTitle = "Weak Password";
+      } else if (error.message?.includes('Invalid email')) {
+        errorMessage = "Please enter a valid email address.";
+        errorTitle = "Invalid Email";
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
       toast({
         variant: "destructive",
-        title: "Authentication Error",
-        description: error.message || "Something went wrong. Please try again.",
+        title: errorTitle,
+        description: errorMessage,
       });
     } finally {
       setIsLoading(false);
     }
   };
+
+  const handleBackToSignup = () => {
+    setShowEmailConfirmation(false);
+    setSignupEmail("");
+  };
+
+  if (showEmailConfirmation) {
+    return <EmailConfirmation email={signupEmail} onBack={handleBackToSignup} />;
+  }
 
   return (
     <form onSubmit={handleSubmit} className="w-full space-y-4">
@@ -154,6 +195,7 @@ function AuthForm() {
             onChange={(e) => setPassword(e.target.value)}
             className="block w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 pr-10 text-gray-900 shadow-xs outline-none ring-0 transition focus:border-gray-300 focus:ring-4 focus:ring-blue-100"
             placeholder="••••••••"
+            minLength={!isLogin ? 6 : undefined}
           />
           <button
             type="button"
@@ -164,15 +206,35 @@ function AuthForm() {
             {showPwd ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
           </button>
         </div>
+        {!isLogin && (
+          <p className="text-xs text-gray-600">Password must be at least 6 characters long</p>
+        )}
       </div>
 
       <button
         type="submit"
         disabled={isLoading}
-        className="inline-flex w-full items-center justify-center rounded-xl bg-gray-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-black focus:outline-none focus-visible:ring-4 focus-visible:ring-black/20 disabled:opacity-50"
+        className="inline-flex w-full items-center justify-center rounded-xl bg-gray-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-black focus:outline-none focus-visible:ring-4 focus-visible:ring-black/20 disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        {isLoading ? "Please wait..." : isLogin ? "Sign in" : "Create account"}
+        {isLoading ? (
+          <>
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+            {isLogin ? "Signing in..." : "Creating account..."}
+          </>
+        ) : (
+          isLogin ? "Sign in" : "Create account"
+        )}
       </button>
+
+      {!isLogin && (
+        <Alert>
+          <CheckCircle2 className="h-4 w-4" />
+          <AlertDescription className="text-sm">
+            After creating your account, you'll receive an email with a confirmation link. 
+            Please check your email (including spam folder) to complete the signup process.
+          </AlertDescription>
+        </Alert>
+      )}
 
       <div className="relative">
         <div className="absolute inset-0 flex items-center" aria-hidden="true">
