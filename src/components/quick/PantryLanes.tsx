@@ -6,7 +6,6 @@ import { ItemCard } from './ItemCard'
 
 interface PantryLanesProps {
   userMode: 'just-order' | 'balanced' | 'analytical'
-  includeVat: boolean
 }
 
 // Mock data - replace with actual data from hooks
@@ -43,7 +42,12 @@ const mockLastOrder = [
   }
 ]
 
-export function PantryLanes({ userMode, includeVat }: PantryLanesProps) {
+export function PantryLanes({ userMode }: PantryLanesProps) {
+  const handleCompareItem = (itemId: string) => {
+    console.log('Compare item:', itemId)
+    // TODO: Implement compare functionality
+  }
+
   return (
     <div className="space-y-6">
       {/* Favorites */}
@@ -62,7 +66,7 @@ export function PantryLanes({ userMode, includeVat }: PantryLanesProps) {
                   key={item.id}
                   item={item}
                   userMode={userMode}
-                  includeVat={includeVat}
+                  onCompareItem={handleCompareItem}
                 />
               ))}
             </div>
@@ -91,7 +95,7 @@ export function PantryLanes({ userMode, includeVat }: PantryLanesProps) {
                   key={item.id}
                   item={item}
                   userMode={userMode}
-                  includeVat={includeVat}
+                  onCompareItem={handleCompareItem}
                 />
               ))}
             </div>

@@ -8,10 +8,14 @@ interface VirtualizedItemListProps {
   height: number
   itemHeight: number
   userMode: 'just-order' | 'balanced' | 'analytical'
-  includeVat: boolean
 }
 
-export function VirtualizedItemList({ items, height, itemHeight, userMode, includeVat }: VirtualizedItemListProps) {
+export function VirtualizedItemList({ items, height, itemHeight, userMode }: VirtualizedItemListProps) {
+  const handleCompareItem = (itemId: string) => {
+    console.log('Compare item:', itemId)
+    // TODO: Implement compare functionality
+  }
+
   const Row = ({ index, style }: { index: number; style: any }) => {
     const item = items[index]
     
@@ -21,7 +25,7 @@ export function VirtualizedItemList({ items, height, itemHeight, userMode, inclu
           key={item.id}
           item={item}
           userMode={userMode}
-          includeVat={includeVat}
+          onCompareItem={handleCompareItem}
         />
       </div>
     )

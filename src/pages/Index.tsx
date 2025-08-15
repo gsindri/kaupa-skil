@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -178,7 +177,7 @@ export default function Index() {
         {/* Content Area */}
         <div className="transition-all duration-300 ease-in-out">
           {activeTab === 'pantry' ? (
-            <PantryLanes userMode={userMode} includeVat={includeVat} />
+            <PantryLanes userMode={userMode} />
           ) : (
             <div className="space-y-4">
               {isLoading ? (
@@ -195,7 +194,6 @@ export default function Index() {
                       height={600}
                       itemHeight={120}
                       userMode={userMode}
-                      includeVat={includeVat}
                     />
                   ) : (
                     <div className="grid gap-2">
