@@ -12,6 +12,8 @@ import { BulkActions } from '@/components/quick/BulkActions'
 import { SmartSuggestions } from '@/components/quick/SmartSuggestions'
 import { EnhancedCartIntegration } from '@/components/quick/EnhancedCartIntegration'
 import { KeyboardShortcuts } from '@/components/quick/KeyboardShortcuts'
+import { SmartCartSidebar } from '@/components/quick/SmartCartSidebar'
+import { DeliveryOptimizationBanner } from '@/components/quick/DeliveryOptimizationBanner'
 import { CacheProvider } from '@/components/quick/CacheManager'
 import { AnalyticsTrackerComponent } from '@/components/quick/AnalyticsTracker'
 import { AccessibilityEnhancements } from '@/components/quick/AccessibilityEnhancements'
@@ -50,6 +52,9 @@ export default function Index() {
     position: { x: number; y: number };
   } | null>(null);
 
+  // Phase 3: Smart sidebar visibility
+  const [showSmartSidebar, setShowSmartSidebar] = useState(false)
+
   const { getTotalItems, setIsDrawerOpen, addItem } = useCart()
   const { includeVat, setIncludeVat } = useSettings()
   const { data: supplierItems = [], isLoading } = useSupplierItems()
@@ -66,6 +71,11 @@ export default function Index() {
       }
     }
   }, [])
+
+  // Phase 3: Auto-show smart sidebar when cart has items
+  useEffect(() => {
+    setShowSmartSidebar(getTotalItems() > 0 && userMode !== 'just-order')
+  }, [getTotalItems, userMode])
 
   // Enhanced filtering and sorting logic with performance monitoring
   const filteredAndSortedItems = useMemo(() => {
@@ -397,6 +407,11 @@ export default function Index() {
             )}
           </div>
 
+          {/* Phase 3: Delivery Optimization Banner */}
+          <div className="max-w-4xl mx-auto">
+            <DeliveryOptimizationBanner />
+          </div>
+
           {(showResults || selectedItems.length > 0) && (
             <AdvancedFiltering
               filters={filters}
@@ -421,47 +436,59 @@ export default function Index() {
             </div>
           )}
 
-          <div className="max-w-6xl mx-auto">
-            {showResults ? (
-              hasResults ? (
-                <div
-                  onMouseMove={(e) => {
-                    if (hoveredItem) {
-                      setHoveredItem(prev => prev ? {
-                        ...prev,
-                        position: { x: e.clientX, y: e.clientY }
-                      } : null);
-                    }
-                  }}
-                >
-                  <PerformanceOptimizedList
-                    items={displayItems}
-                    onCompareItem={handleCompareItem}
-                    userMode={userMode}
-                    selectedItems={selectedItems}
-                    onItemSelect={(itemId, isSelected) => {
-                      if (isSelected) {
-                        setSelectedItems(prev => [...prev, itemId])
-                      } else {
-                        setSelectedItems(prev => prev.filter(id => id !== itemId))
+          {/* Phase 3: Main content with sidebar layout */}
+          <div className="flex gap-6">
+            <div className={`flex-1 transition-all duration-300 ${showSmartSidebar ? 'max-w-[calc(100%-336px)]' : 'max-w-6xl mx-auto'}`}>
+              {showResults ? (
+                hasResults ? (
+                  <div
+                    onMouseMove={(e) => {
+                      if (hoveredItem) {
+                        setHoveredItem(prev => prev ? {
+                          ...prev,
+                          position: { x: e.clientX, y: e.clientY }
+                        } : null);
                       }
                     }}
-                    onItemHover={handleItemHover}
-                    onItemLeave={handleItemLeave}
+                  >
+                    <PerformanceOptimizedList
+                      items={displayItems}
+                      onCompareItem={handleCompareItem}
+                      userMode={userMode}
+                      selectedItems={selectedItems}
+                      onItemSelect={(itemId, isSelected) => {
+                        if (isSelected) {
+                          setSelectedItems(prev => [...prev, itemId])
+                        } else {
+                          setSelectedItems(prev => prev.filter(id => id !== itemId))
+                        }
+                      }}
+                      onItemHover={handleItemHover}
+                      onItemLeave={handleItemLeave}
+                    />
+                  </div>
+                ) : (
+                  <SearchEmptyState 
+                    query={debouncedSearch}
+                    onClearSearch={() => setSearchQuery('')}
                   />
-                </div>
+                )
               ) : (
-                <SearchEmptyState 
-                  query={debouncedSearch}
-                  onClearSearch={() => setSearchQuery('')}
+                <PantryLanes
+                  onLaneSelect={setSelectedLane}
+                  selectedLane={selectedLane}
+                  onAddToCart={handleAddSuggestedItem}
                 />
-              )
-            ) : (
-              <PantryLanes
-                onLaneSelect={setSelectedLane}
-                selectedLane={selectedLane}
-                onAddToCart={handleAddSuggestedItem}
-              />
+              )}
+            </div>
+
+            {/* Phase 3: Smart Cart Sidebar */}
+            {showSmartSidebar && (
+              <div className="flex-shrink-0">
+                <div className="sticky top-24">
+                  <SmartCartSidebar />
+                </div>
+              </div>
             )}
           </div>
         </main>
