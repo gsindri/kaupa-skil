@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { Building, User, Phone, MapPin } from 'lucide-react'
+import { Building, User, Phone, MapPin, AlertTriangle } from 'lucide-react'
 
 const organizationSchema = z.object({
   name: z.string().min(2, 'Organization name must be at least 2 characters'),
@@ -21,9 +21,10 @@ type OrganizationData = z.infer<typeof organizationSchema>
 interface OrganizationSetupStepProps {
   onComplete: (data: { organization: OrganizationData }) => void
   initialData?: OrganizationData
+  error?: string | null
 }
 
-export function OrganizationSetupStep({ onComplete, initialData }: OrganizationSetupStepProps) {
+export function OrganizationSetupStep({ onComplete, initialData, error }: OrganizationSetupStepProps) {
   const form = useForm<OrganizationData>({
     resolver: zodResolver(organizationSchema),
     defaultValues: initialData || {
@@ -47,6 +48,16 @@ export function OrganizationSetupStep({ onComplete, initialData }: OrganizationS
           This information will be used for orders and supplier communications.
         </p>
       </div>
+
+      {error && (
+        <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg flex items-start gap-3">
+          <AlertTriangle className="h-5 w-5 text-destructive mt-0.5 flex-shrink-0" />
+          <div>
+            <p className="text-destructive font-medium">Setup Error</p>
+            <p className="text-destructive/80 text-sm">{error}</p>
+          </div>
+        </div>
+      )}
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">

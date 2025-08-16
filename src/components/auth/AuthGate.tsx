@@ -24,18 +24,18 @@ export function AuthGate({ children }: AuthGateProps) {
     return <Navigate to="/login" state={{ from: location }} replace />
   }
 
-  // Check if user needs onboarding (no tenant_id)
-  if (profile && !profile.tenant_id) {
-    return <ExistingUserOnboarding />
-  }
-
-  // If profile is null but user exists, show loading (profile is still being fetched)
+  // Wait for profile to be loaded before making decisions
   if (!profile) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
       </div>
     )
+  }
+
+  // Check if user needs onboarding (no tenant_id)
+  if (!profile.tenant_id) {
+    return <ExistingUserOnboarding />
   }
 
   return <>{children}</>
