@@ -5,7 +5,6 @@ import { EnhancedAppSidebar } from './EnhancedAppSidebar'
 import { TopNavigation } from './TopNavigation'
 import { ElevationBanner } from './ElevationBanner'
 import { BasketDrawer } from '@/components/cart/BasketDrawer'
-import { Toaster } from '@/components/ui/toaster'
 
 interface AppLayoutProps {
   children: React.ReactNode
@@ -27,7 +26,6 @@ export function AppLayout({ children }: AppLayoutProps) {
         </div>
         
         <BasketDrawer />
-        <Toaster />
       </div>
     </SidebarProvider>
   )
