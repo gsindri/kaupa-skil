@@ -78,61 +78,93 @@ serve(async (req) => {
     }
 
     const nowIso = new Date().toISOString();
-    const items = itemsIn.map((it) => {
-      const sku  = String((it as any).sku ?? (it as any).code ?? (it as any).id ?? "").trim();
+    const processedItems: any[] = [];
+    
+    for (const it of itemsIn) {
+      const sku = String((it as any).sku ?? (it as any).code ?? (it as any).id ?? "").trim();
       const name = String((it as any).name ?? (it as any).title ?? (it as any).Description ?? "").trim();
       const brand = String((it as any).brand ?? (it as any).Brand ?? "").trim();
-      const pack  = String((it as any).pack ?? (it as any).unit ?? (it as any).package ?? "").trim();
+      const pack = String((it as any).pack ?? (it as any).unit ?? (it as any).package ?? "").trim();
       const price = Number((it as any).price_ex_vat ?? (it as any).PriceExVAT ?? (it as any).price ?? 0);
       const vatCode = Number((it as any).vat_code ?? (it as any).VATCode ?? 24) === 11 ? 11 : 24;
 
       const { qty, unit } = parsePack(pack);
-      const isk_per_unit = qty > 0 ? Number((price / qty).toFixed(4)) : null;
 
-      return {
-        relationship_id: `${tenant_id}:${supplier_id}`,
-        supplier_sku: sku || name,
-        name,
+      if (!name || !price) continue;
+
+      processedItems.push({
+        supplier_id,
+        ext_sku: sku || name,
+        display_name: name,
         brand: brand || null,
         pack_qty: qty || 1,
-        pack_unit: unit || "each",
-        vat_code: vatCode.toString(),
-        price_per_pack_ex_vat: price,
-        isk_per_unit,
+        pack_unit_id: unit || "each",
+        vat_code: vatCode,
+        price: price,
+        unit_price_ex_vat: qty > 0 ? Number((price / qty).toFixed(4)) : null,
         last_seen_at: nowIso,
-        seen_at: nowIso,
-      };
-    }).filter(x => x.name && x.price_per_pack_ex_vat);
-
-    if (items.length) {
-      const upsert = await supabase.from("supplier_items").upsert(
-        items.map(i => ({
-          supplier_id: supplier_id,
-          ext_sku: i.supplier_sku,
-          display_name: i.name,
-          brand: i.brand,
-          pack_qty: i.pack_qty,
-          pack_unit_id: i.pack_unit,
-          vat_code: i.vat_code,
-          last_seen_at: i.last_seen_at,
-        })), { onConflict: "supplier_id,ext_sku" }
-      );
-      if (upsert.error) throw upsert.error;
-
-      const quotes = await supabase.from("price_quotes").insert(
-        items.map(i => ({
-          relationship_id: i.relationship_id,
-          supplier_sku: i.supplier_sku,
-          price_per_pack_ex_vat: i.price_per_pack_ex_vat,
-          seen_at: i.seen_at,
-          file_key: fileKey,
-          source: har?.log?.entries?.length ? "har_upload" : "bookmarklet",
-        }))
-      );
-      if (quotes.error) throw quotes.error;
+      });
     }
 
-    return new Response(JSON.stringify({ ok: true, items: items.length, fileKey }), {
+    let upsertedItems: any[] = [];
+    
+    if (processedItems.length) {
+      // Upsert supplier items
+      const upsert = await supabase.from("supplier_items").upsert(
+        processedItems.map(i => ({
+          supplier_id: i.supplier_id,
+          ext_sku: i.ext_sku,
+          display_name: i.display_name,
+          brand: i.brand,
+          pack_qty: i.pack_qty,
+          pack_unit_id: i.pack_unit_id,
+          vat_code: i.vat_code,
+          last_seen_at: i.last_seen_at,
+        })), 
+        { 
+          onConflict: "supplier_id,ext_sku",
+          ignoreDuplicates: false
+        }
+      ).select();
+      
+      if (upsert.error) {
+        console.error("Supplier items upsert error:", upsert.error);
+        throw upsert.error;
+      }
+      
+      upsertedItems = upsert.data || [];
+
+      // Create price quotes for the upserted items
+      if (upsertedItems.length > 0) {
+        const priceQuotes = upsertedItems.map(item => {
+          const processedItem = processedItems.find(p => p.ext_sku === item.ext_sku);
+          return {
+            supplier_item_id: item.id,
+            observed_at: nowIso,
+            pack_price: processedItem?.price || 0,
+            currency: 'ISK',
+            vat_code: String(processedItem?.vat_code || 24),
+            unit_price_ex_vat: processedItem?.unit_price_ex_vat,
+            unit_price_inc_vat: processedItem?.unit_price_ex_vat ? 
+              processedItem.unit_price_ex_vat * (1 + (processedItem.vat_code === 11 ? 0.11 : 0.24)) : null,
+            source: har?.log?.entries?.length ? "har_upload" : "bookmarklet",
+          };
+        });
+
+        const quotes = await supabase.from("price_quotes").insert(priceQuotes);
+        if (quotes.error) {
+          console.error("Price quotes insert error:", quotes.error);
+          throw quotes.error;
+        }
+      }
+    }
+
+    return new Response(JSON.stringify({ 
+      ok: true, 
+      items: processedItems.length, 
+      fileKey,
+      processed: upsertedItems.length 
+    }), {
       headers: { ...cors, "content-type": "application/json" },
     });
   } catch (e) {

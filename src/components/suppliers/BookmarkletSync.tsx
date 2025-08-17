@@ -38,7 +38,8 @@ export function BookmarkletSync({
         Object.assign(bar.style,{position:'fixed',top:0,left:0,right:0,zIndex:999999,background:'#111827',color:'#fff',padding:'8px',font:'12px system-ui',textAlign:'center',boxShadow:'0 2px 10px rgba(0,0,0,.2)'});
         document.documentElement.appendChild(bar);
         const keep=(u)=>/\\/(api|graphql|catalog|products|prices)/i.test(u||'');
-        const cap=[]; const F=window.fetch;
+        const cap=[];
+        const F=window.fetch;
         window.fetch=async(...a)=>{const r=await F(...a);try{const c=r.clone();const u=String(a[0]);if(keep(u)){const d=await c.json().catch(()=>null);if(d)cap.push({u,d,ts:Date.now()});}}catch{}return r;};
         const XO=XMLHttpRequest.prototype.open, XS=XMLHttpRequest.prototype.send;
         XMLHttpRequest.prototype.open=function(...a){this.__u=a[1];return XO.apply(this,a)};
@@ -47,9 +48,21 @@ export function BookmarkletSync({
           window.fetch=F;XMLHttpRequest.prototype.open=XO;XMLHttpRequest.prototype.send=XS;
           bar.textContent='Kaupa: uploading…';
           try{
-            await fetch(URL,{method:'POST',headers:Object.assign({'content-type':'application/json'}, TOK?{'x-ingest-token':TOK}:{}),body:JSON.stringify({tenant_id:ORG,supplier_id:SUP,_captured:cap})});
-            bar.textContent='Kaupa: done'; setTimeout(()=>bar.remove(),1200);
-          }catch(e){ bar.textContent='Kaupa: upload failed'; setTimeout(()=>bar.remove(),2000); }
+            const resp=await fetch(URL,{method:'POST',headers:Object.assign({'content-type':'application/json'}, TOK?{'x-ingest-token':TOK}:{}),body:JSON.stringify({tenant_id:ORG,supplier_id:SUP,_captured:cap})});
+            const result=await resp.json().catch(()=>({}));
+            if(resp.ok){
+              bar.textContent=\`Kaupa: success! \${result.items||0} items found\`;
+              bar.style.background='#10b981';
+            }else{
+              bar.textContent=\`Kaupa: upload failed (\${resp.status})\`;
+              bar.style.background='#ef4444';
+            }
+            setTimeout(()=>bar.remove(),3000);
+          }catch(e){ 
+            bar.textContent='Kaupa: upload failed (network error)'; 
+            bar.style.background='#ef4444';
+            setTimeout(()=>bar.remove(),3000); 
+          }
         },10000);
       })();
     `.replace(/\n+/g,"").replace(/\s{2,}/g," ");
