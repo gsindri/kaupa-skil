@@ -1,4 +1,3 @@
-
 import { Home, TrendingUp, Package, ShoppingCart, History, Building2, Search, Heart, Shield, Truck, Zap } from "lucide-react"
 import {
   Sidebar,
@@ -16,6 +15,7 @@ import { useLocation, Link } from "react-router-dom"
 import { useAuth } from "@/contexts/AuthProvider"
 import { Badge } from "@/components/ui/badge"
 import { useBasket } from "@/contexts/BasketProvider"
+import { usePermissions } from "@/hooks/usePermissions"
 
 // Core workflow pages
 const coreItems = [
@@ -79,9 +79,12 @@ export function EnhancedAppSidebar() {
   const location = useLocation()
   const { profile, user } = useAuth()
   const { getTotalItems } = useBasket()
+  const { memberships } = usePermissions()
 
-  // Check if user has admin access
-  const isAdmin = profile?.role === 'admin'
+  // Check if user has admin access by looking at their memberships
+  const currentTenantMembership = memberships?.find(m => m.tenant_id === profile?.tenant_id)
+  const isAdmin = currentTenantMembership?.base_role === 'admin' || currentTenantMembership?.base_role === 'owner'
+  
   const basketItemCount = getTotalItems()
   
   // Get display name with fallbacks

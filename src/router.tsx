@@ -1,7 +1,7 @@
 
 import { createBrowserRouter } from "react-router-dom";
 import { AuthGate } from "@/components/auth/AuthGate";
-import { AppLayout } from "@/layouts/AppLayout";
+import AppLayout from "@/layouts/AppLayout";
 import Index from "@/pages/Index";
 import Dashboard from "@/pages/Dashboard";
 import Compare from "@/pages/Compare";
