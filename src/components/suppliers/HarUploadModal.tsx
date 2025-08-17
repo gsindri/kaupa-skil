@@ -99,9 +99,13 @@ export function HarUploadModal({
 
       if (error) throw error
 
+      // Enhanced success message with analytics insights
+      const qualityScore = harProcessor.analyticsResult?.qualityMetrics.completenessScore
+      const recommendations = harProcessor.recommendations.length
+
       toast({
         title: 'HAR Import Successful',
-        description: `Imported ${data.items} items with enhanced processing`
+        description: `Imported ${data.items} items${qualityScore ? ` (${Math.round(qualityScore * 100)}% quality)` : ''}${recommendations ? ` with ${recommendations} optimization tips` : ''}`
       })
 
       onSuccess?.()
@@ -129,12 +133,12 @@ export function HarUploadModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <Card className="w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+      <Card className="w-full max-w-4xl mx-4 max-h-[90vh] overflow-y-auto">
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2">
               <Upload className="h-5 w-5" />
-              Enhanced HAR Upload & Processing
+              Intelligent HAR Processing & Analytics
             </CardTitle>
             <Button
               variant="ghost"
@@ -146,7 +150,7 @@ export function HarUploadModal({
             </Button>
           </div>
           <CardDescription>
-            Upload a HAR file with advanced validation and data extraction
+            Upload HAR files with advanced validation, data extraction, and competitive intelligence
           </CardDescription>
         </CardHeader>
         
@@ -154,6 +158,18 @@ export function HarUploadModal({
           {uploadStep === 'select' && (
             <>
               <div className="space-y-3">
+                <div className="text-sm text-muted-foreground">
+                  <p className="font-medium mb-2">Enhanced Processing Features:</p>
+                  <ul className="list-disc list-inside space-y-1 ml-2">
+                    <li>Smart data extraction with confidence scoring</li>
+                    <li>Automatic deduplication and quality validation</li>
+                    <li>Price analysis and outlier detection</li>
+                    <li>Category classification and brand analysis</li>
+                    <li>Optimization recommendations</li>
+                    <li>Competitive intelligence insights</li>
+                  </ul>
+                </div>
+                
                 <div className="text-sm text-muted-foreground">
                   <p className="font-medium mb-2">Instructions:</p>
                   <ol className="list-decimal list-inside space-y-1">
@@ -182,7 +198,7 @@ export function HarUploadModal({
                     disabled:opacity-50 disabled:cursor-not-allowed"
                 />
                 <p className="text-xs text-muted-foreground">
-                  Enhanced processing with validation, deduplication, and quality scoring
+                  Advanced processing with AI-powered analytics and optimization recommendations
                 </p>
               </div>
             </>
@@ -193,6 +209,10 @@ export function HarUploadModal({
               <HarProcessingPreview 
                 validationResult={harProcessor.validationResult}
                 extractionResult={harProcessor.extractionResult}
+                analyticsResult={harProcessor.analyticsResult}
+                recommendations={harProcessor.recommendations}
+                insights={harProcessor.insights}
+                actionPlan={harProcessor.actionPlan}
               />
               
               {harProcessor.extractionResult && (
@@ -204,6 +224,11 @@ export function HarUploadModal({
                   >
                     <FileText className="h-4 w-4 mr-2" />
                     Import {harProcessor.extractionResult.items.length} Items
+                    {harProcessor.recommendations.length > 0 && (
+                      <span className="ml-2 text-xs opacity-80">
+                        +{harProcessor.recommendations.length} tips
+                      </span>
+                    )}
                   </Button>
                   <Button
                     variant="outline"
@@ -221,7 +246,7 @@ export function HarUploadModal({
             <div className="flex items-center justify-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
               <span className="ml-3 text-sm">
-                {uploadStep === 'preview' ? 'Processing HAR file...' : 'Importing data...'}
+                {uploadStep === 'preview' ? 'Processing HAR file with AI analytics...' : 'Importing data with insights...'}
               </span>
             </div>
           )}

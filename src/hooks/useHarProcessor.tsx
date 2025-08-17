@@ -2,12 +2,18 @@
 import { useState } from 'react'
 import { HarDataExtractor, ExtractionResult } from '@/utils/harDataExtractor'
 import { HarValidator, ValidationResult } from '@/utils/harValidator'
+import { HarAnalytics, AnalyticsResult } from '@/utils/harAnalytics'
+import { HarRecommendationsEngine, OptimizationRecommendation, CompetitiveInsight } from '@/utils/harRecommendations'
 import { useToast } from '@/hooks/use-toast'
 
 export interface HarProcessingState {
   isProcessing: boolean
   validationResult: ValidationResult | null
   extractionResult: ExtractionResult | null
+  analyticsResult: AnalyticsResult | null
+  recommendations: OptimizationRecommendation[]
+  insights: CompetitiveInsight[]
+  actionPlan: string[]
   error: string | null
 }
 
@@ -16,12 +22,24 @@ export function useHarProcessor() {
     isProcessing: false,
     validationResult: null,
     extractionResult: null,
+    analyticsResult: null,
+    recommendations: [],
+    insights: [],
+    actionPlan: [],
     error: null
   })
   const { toast } = useToast()
 
   const processHarFile = async (file: File): Promise<{ isValid: boolean, data?: ExtractionResult }> => {
-    setState(prev => ({ ...prev, isProcessing: true, error: null }))
+    setState(prev => ({ 
+      ...prev, 
+      isProcessing: true, 
+      error: null,
+      analyticsResult: null,
+      recommendations: [],
+      insights: [],
+      actionPlan: []
+    }))
 
     try {
       // Read file content
@@ -60,16 +78,34 @@ export function useHarProcessor() {
       const har = JSON.parse(content)
       const extractionResult = extractor.extract(har)
 
+      // Perform analytics
+      const analytics = new HarAnalytics()
+      const analyticsResult = analytics.analyze(extractionResult.items)
+
+      // Generate recommendations and insights
+      const recommendationsEngine = new HarRecommendationsEngine()
+      const recommendations = recommendationsEngine.generateOptimizationRecommendations(
+        extractionResult, 
+        validationResult, 
+        analyticsResult
+      )
+      const insights = recommendationsEngine.generateCompetitiveInsights(extractionResult, analyticsResult)
+      const actionPlan = recommendationsEngine.generateActionPlan(recommendations, insights)
+
       setState(prev => ({ 
         ...prev, 
         extractionResult, 
+        analyticsResult,
+        recommendations,
+        insights,
+        actionPlan,
         isProcessing: false 
       }))
 
-      // Show extraction summary
+      // Show comprehensive summary
       toast({
         title: 'HAR Processing Complete',
-        description: `Found ${extractionResult.items.length} items (${extractionResult.stats.confidence.high} high confidence)`
+        description: `Analyzed ${extractionResult.items.length} items with ${recommendations.length} optimization recommendations`
       })
 
       return { isValid: true, data: extractionResult }
@@ -93,6 +129,10 @@ export function useHarProcessor() {
       isProcessing: false,
       validationResult: null,
       extractionResult: null,
+      analyticsResult: null,
+      recommendations: [],
+      insights: [],
+      actionPlan: [],
       error: null
     })
   }
