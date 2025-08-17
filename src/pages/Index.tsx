@@ -1,8 +1,9 @@
+
 import React, { useState, useEffect, useCallback } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useDebounce } from 'usehooks-ts'
 import { useComparison } from '@/contexts/ComparisonContext'
-import { AppLayout } from '@/layouts/AppLayout'
+import AppLayout from '@/layouts/AppLayout'
 import { supabase } from '@/integrations/supabase/client'
 import { queryKeys } from '@/lib/queryKeys'
 import { Database } from '@/lib/types/database'
@@ -83,10 +84,10 @@ export default function Index() {
           *,
           supplier:suppliers(name, id)
         `)
-        .order('name')
+        .order('display_name')
 
       if (debouncedSearchQuery) {
-        query = query.ilike('name', `%${debouncedSearchQuery}%`)
+        query = query.ilike('display_name', `%${debouncedSearchQuery}%`)
       }
 
       if (selectedSupplierFilter) {
@@ -122,6 +123,10 @@ export default function Index() {
   const handleRemoveFromComparison = useCallback((item: SupplierItem) => {
     removeItem(item)
   }, [removeItem])
+
+  const handlePriceRangeChange = (value: number[]) => {
+    setPriceRange([value[0], value[1]])
+  }
 
   return (
     <AppLayout>
@@ -213,7 +218,7 @@ export default function Index() {
                   max={100}
                   step={1}
                   value={priceRange}
-                  onValueChange={setPriceRange}
+                  onValueChange={handlePriceRangeChange}
                 />
               </div>
             </CardContent>
@@ -233,7 +238,7 @@ export default function Index() {
                     SKU: {item.ext_sku}
                   </div>
                   <div className="text-xs">
-                    Price: €{item.price_ex_vat}
+                    Price: €{item.price_ex_vat || 0}
                   </div>
                   {showCompare ? (
                     comparisonItems.find(i => i.id === item.id) ? (

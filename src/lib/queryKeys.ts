@@ -15,9 +15,17 @@ export const queryKeys = {
     settings: (tenantId: string) => ['tenant', tenantId, 'settings'] as const,
   },
   
+  // Categories
+  categories: {
+    all: () => ['categories'] as const,
+    list: () => ['categories', 'list'] as const,
+    detail: (categoryId: string) => ['category', categoryId] as const,
+  },
+  
   // Supplier related queries
   suppliers: {
     all: () => ['suppliers'] as const,
+    list: () => ['suppliers', 'list'] as const,
     detail: (supplierId: string) => ['supplier', supplierId] as const,
     items: (supplierId?: string, filters?: any) => ['supplier', 'items', supplierId, filters] as const,
     credentials: (supplierId: string) => ['supplier', supplierId, 'credentials'] as const,

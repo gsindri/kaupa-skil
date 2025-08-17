@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect } from 'react'
-import { AppLayout } from '@/layouts/AppLayout'
+import AppLayout from '@/layouts/AppLayout'
 import { QuickSearch } from '@/components/QuickSearch'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -83,7 +84,7 @@ export default function Pantry() {
     setPriceRange([value[0], value[1]])
   }
 
-  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleCategoryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSelectedCategory(e.target.value)
   }
 
@@ -158,7 +159,7 @@ export default function Pantry() {
         {/* Search and Controls */}
         <div className="flex flex-col lg:flex-row gap-4">
           <div className="flex-1">
-            <QuickSearch />
+            <QuickSearch value={searchQuery} onChange={handleSearchChange} />
           </div>
           
           <div className="flex items-center gap-2">
