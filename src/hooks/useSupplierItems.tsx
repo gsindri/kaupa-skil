@@ -15,7 +15,7 @@ export function useSupplierItems(supplierId?: string) {
         .from('supplier_items')
         .select('*')
         .eq('supplier_id', supplierId)
-        .order('last_seen_at', { ascending: false, nullsLast: true })
+        .order('last_seen_at', { ascending: false, nullsFirst: false })
 
       if (error) throw error
       return data || []

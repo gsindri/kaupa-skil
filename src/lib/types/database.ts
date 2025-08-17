@@ -1,3 +1,4 @@
+
 export interface Database {
   public: {
     Tables: {
@@ -442,6 +443,9 @@ export interface Database {
           pack_unit_id: string | null
           yield_pct: number
           category_id: string | null
+          last_seen_at: string | null
+          brand: string | null
+          vat_code: number | null
           created_at: string
           updated_at: string
         }
@@ -455,6 +459,9 @@ export interface Database {
           pack_unit_id?: string | null
           yield_pct?: number
           category_id?: string | null
+          last_seen_at?: string | null
+          brand?: string | null
+          vat_code?: number | null
           created_at?: string
           updated_at?: string
         }
@@ -468,6 +475,9 @@ export interface Database {
           pack_unit_id?: string | null
           yield_pct?: number
           category_id?: string | null
+          last_seen_at?: string | null
+          brand?: string | null
+          vat_code?: number | null
           created_at?: string
           updated_at?: string
         }

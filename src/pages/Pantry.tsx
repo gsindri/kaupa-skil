@@ -1,267 +1,311 @@
-import React, { useState, useMemo } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+import React, { useState, useEffect } from 'react'
+import { AppLayout } from '@/layouts/AppLayout'
+import { QuickSearch } from '@/components/QuickSearch'
 import { Button } from '@/components/ui/button'
-import { Plus, Search, Filter, Grid, List } from 'lucide-react'
-import { useCart } from '@/contexts/BasketProvider'
-import { useSettings } from '@/contexts/SettingsProvider'
-import { QuickSearch } from '@/components/quick/QuickSearch'
-import { ItemCard } from '@/components/quick/ItemCard'
-import type { CartItem } from '@/lib/types'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Slider } from '@/components/ui/slider'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Card, CardContent } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import {
+  Settings,
+  ChevronsUpDown,
+  Grip,
+  List,
+  ArrowDown,
+  ArrowUp,
+  Package2,
+  ShoppingCart,
+  Plus,
+  Minus,
+  LucideIcon
+} from 'lucide-react'
+import { useEnhancedSupplierItems } from '@/hooks/useEnhancedSupplierItems'
+import { useSuppliers } from '@/hooks/useSuppliers'
+import { Separator } from '@/components/ui/separator'
+import { cn } from '@/lib/utils'
+import { Skeleton } from '@/components/ui/skeleton'
+import { useToast } from '@/components/ui/use-toast'
+import { ToastAction } from '@/components/ui/toast'
 
-interface PantryItem {
+interface Item {
   id: string
   name: string
-  brand: string
-  packSize: string
-  unitPriceExVat: number
-  unitPriceIncVat: number
-  packPriceExVat: number
-  packPriceIncVat: number
-  unit: string
-  suppliers: string[]
-  stock: boolean
-  deliveryFee?: number
-  cutoffTime?: string
-  deliveryDay?: string
-  isPremiumBrand?: boolean
-  isDiscounted?: boolean
-  originalPrice?: number
+  price: number
+  supplier: string
+  inStock: boolean
+  imageUrl: string
 }
 
-const mockPantryItems: PantryItem[] = [
-  {
-    id: 'milk-001',
-    name: 'Organic Milk',
-    brand: 'Acme Farms',
-    packSize: '1L',
-    unitPriceExVat: 180,
-    unitPriceIncVat: 223,
-    packPriceExVat: 180,
-    packPriceIncVat: 223,
-    unit: 'L',
-    suppliers: ['Metro', 'Costco'],
-    stock: true,
-    deliveryFee: 2500,
-    cutoffTime: '14:00',
-    deliveryDay: 'Tomorrow',
-    isPremiumBrand: true,
-    isDiscounted: true,
-    originalPrice: 250,
-  },
-  {
-    id: 'bread-002',
-    name: 'Whole Wheat Bread',
-    brand: 'Sunrise Bakery',
-    packSize: '500g',
-    unitPriceExVat: 300,
-    unitPriceIncVat: 372,
-    packPriceExVat: 300,
-    packPriceIncVat: 372,
-    unit: 'loaf',
-    suppliers: ['Metro', 'Bónus'],
-    stock: true,
-    deliveryFee: 1500,
-    cutoffTime: '16:00',
-    deliveryDay: 'Next Day',
-  },
-  {
-    id: 'eggs-003',
-    name: 'Free-Range Eggs',
-    brand: 'Happy Hen Farms',
-    packSize: 'Dozen',
-    unitPriceExVat: 450,
-    unitPriceIncVat: 558,
-    packPriceExVat: 450,
-    packPriceIncVat: 558,
-    unit: 'dozen',
-    suppliers: ['Costco', 'Krónan'],
-    stock: false,
-    deliveryFee: 3000,
-    cutoffTime: '12:00',
-    deliveryDay: 'In 2 Days',
-  },
-  {
-    id: 'butter-004',
-    name: 'Unsalted Butter',
-    brand: 'Golden Dairy',
-    packSize: '250g',
-    unitPriceExVat: 320,
-    unitPriceIncVat: 397,
-    packPriceExVat: 320,
-    packPriceIncVat: 397,
-    unit: 'pack',
-    suppliers: ['Bónus', 'Hagkaup'],
-    stock: true,
-    isPremiumBrand: true,
-  },
-  {
-    id: 'cheese-005',
-    name: 'Cheddar Cheese',
-    brand: 'Valley Farms',
-    packSize: '200g',
-    unitPriceExVat: 400,
-    unitPriceIncVat: 496,
-    packPriceExVat: 400,
-    packPriceIncVat: 496,
-    unit: 'pack',
-    suppliers: ['Krónan', 'Metro'],
-    stock: true,
-    deliveryFee: 2000,
-    cutoffTime: '15:00',
-    deliveryDay: 'Tomorrow',
-  },
-  {
-    id: 'yogurt-006',
-    name: 'Greek Yogurt',
-    brand: 'Olympus Dairy',
-    packSize: '1kg',
-    unitPriceExVat: 600,
-    unitPriceIncVat: 744,
-    packPriceExVat: 600,
-    packPriceIncVat: 744,
-    unit: 'tub',
-    suppliers: ['Hagkaup', 'Costco'],
-    stock: true,
-    isDiscounted: true,
-    originalPrice: 700,
-  },
-  {
-    id: 'pasta-007',
-    name: 'Spaghetti Pasta',
-    brand: 'Italian Harvest',
-    packSize: '500g',
-    unitPriceExVat: 250,
-    unitPriceIncVat: 310,
-    packPriceExVat: 250,
-    packPriceIncVat: 310,
-    unit: 'pack',
-    suppliers: ['Metro', 'Bónus'],
-    stock: true,
-  },
-  {
-    id: 'rice-008',
-    name: 'Basmati Rice',
-    brand: 'Eastern Grains',
-    packSize: '1kg',
-    unitPriceExVat: 350,
-    unitPriceIncVat: 434,
-    packPriceExVat: 350,
-    packPriceIncVat: 434,
-    unit: 'pack',
-    suppliers: ['Costco', 'Krónan'],
-    stock: true,
-    deliveryFee: 2800,
-    cutoffTime: '13:00',
-    deliveryDay: 'Next Day',
-  },
-  {
-    id: 'cereal-009',
-    name: 'Corn Flakes Cereal',
-    brand: 'Morning Start',
-    packSize: '750g',
-    unitPriceExVat: 420,
-    unitPriceIncVat: 521,
-    packPriceExVat: 420,
-    packPriceIncVat: 521,
-    unit: 'box',
-    suppliers: ['Bónus', 'Hagkaup'],
-    stock: true,
-    isPremiumBrand: true,
-  },
-  {
-    id: 'coffee-010',
-    name: 'Ground Coffee',
-    brand: 'Dark Roast Co.',
-    packSize: '500g',
-    unitPriceExVat: 550,
-    unitPriceIncVat: 682,
-    packPriceExVat: 550,
-    packPriceIncVat: 682,
-    unit: 'pack',
-    suppliers: ['Hagkaup', 'Metro'],
-    stock: true,
-    deliveryFee: 1800,
-    cutoffTime: '17:00',
-    deliveryDay: 'In 2 Days',
-  },
+interface SortOption {
+  value: 'name' | 'price' | 'supplier'
+  label: string
+  icon: LucideIcon
+}
+
+const sortOptions: SortOption[] = [
+  { value: 'name', label: 'Name', icon: Package2 },
+  { value: 'price', label: 'Price', icon: ShoppingCart },
+  { value: 'supplier', label: 'Supplier', icon: ChevronsUpDown }
 ]
 
 export default function Pantry() {
   const [searchQuery, setSearchQuery] = useState('')
+  const [selectedSupplier, setSelectedSupplier] = useState('')
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 100])
+  const [selectedCategory, setSelectedCategory] = useState('')
+  const [showInStockOnly, setShowInStockOnly] = useState(false)
+  const [sortBy, setSortBy] = useState<'name' | 'price' | 'supplier'>('name')
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
-  const { includeVat } = useSettings()
-  const { items: cartItems } = useCart()
 
-  const filteredItems = useMemo(() => {
-    const lowerQuery = searchQuery.toLowerCase()
-    return mockPantryItems.filter((item) => {
-      return (
-        item.name.toLowerCase().includes(lowerQuery) ||
-        item.brand.toLowerCase().includes(lowerQuery)
-      )
+  const { suppliers, isLoading: isLoadingSuppliers } = useSuppliers()
+  const { data: items, isLoading, isError } = useEnhancedSupplierItems({
+    search: searchQuery,
+    supplierId: selectedSupplier,
+    minPrice: priceRange[0],
+    maxPrice: priceRange[1],
+    category: selectedCategory,
+    inStock: showInStockOnly
+  })
+  const { toast } = useToast()
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value)
+  }
+
+  const handleSupplierChange = (value: string) => {
+    setSelectedSupplier(value)
+  }
+
+  const handlePriceChange = (value: number[]) => {
+    setPriceRange([value[0], value[1]])
+  }
+
+  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedCategory(e.target.value)
+  }
+
+  const handleInStockChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setShowInStockOnly(e.target.checked)
+  }
+
+  const handleSortChange = (value: 'name' | 'price' | 'supplier') => {
+    setSortBy(value)
+  }
+
+  const handleSortOrderChange = () => {
+    setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')
+  }
+
+  const handleViewModeChange = (mode: 'grid' | 'list') => {
+    setViewMode(mode)
+  }
+
+  const getSortedItems = (items: any[]) => {
+    if (!items) return []
+
+    const sortedItems = [...items]
+
+    sortedItems.sort((a: any, b: any) => {
+      let comparison = 0
+
+      if (sortBy === 'name') {
+        comparison = a.name.localeCompare(b.name)
+      } else if (sortBy === 'price') {
+        comparison = a.price - b.price
+      } else if (sortBy === 'supplier') {
+        comparison = a.supplier.localeCompare(b.supplier)
+      }
+
+      return sortOrder === 'asc' ? comparison : -comparison
     })
-  }, [searchQuery])
 
-  const handleCompareItem = (itemId: string) => {
-    alert(`Compare item with ID: ${itemId}`)
+    return sortedItems
+  }
+
+  const sortedItems = getSortedItems(items || [])
+
+  const addToOrder = (item: any) => {
+    toast({
+      title: 'Added to order',
+      description: `${item.name} added to your current order`,
+      action: <ToastAction altText="Goto order">Go to order</ToastAction>
+    })
   }
 
   return (
-    <div className="container mx-auto py-6">
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-2xl font-semibold">Pantry</CardTitle>
-          <div className="flex items-center space-x-2">
-            <Button variant="outline" size="sm">
-              <Plus className="mr-2 h-4 w-4" /> Add Item
+    <AppLayout>
+      <div className="container mx-auto px-4 py-6 space-y-6">
+        {/* Header */}
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold">Pantry Lanes</h1>
+            <p className="text-muted-foreground">
+              Organize your frequent purchases into virtual aisles
+            </p>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" className="gap-2">
+              <Settings className="h-4 w-4" />
+              Configure Lanes
             </Button>
           </div>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
-            <div className="col-span-1 md:col-span-2 lg:col-span-3">
-              <QuickSearch value={searchQuery} onChange={setSearchQuery} />
-            </div>
-            <div className="col-span-1 lg:col-span-1 flex items-center justify-end space-x-2">
-              <Button variant="ghost" size="icon" onClick={() => setViewMode('grid')}>
-                <Grid className="h-5 w-5" />
-              </Button>
-              <Button variant="ghost" size="icon" onClick={() => setViewMode('list')}>
-                <List className="h-5 w-5" />
-              </Button>
-            </div>
-          </div>
+        </div>
 
-          <div className="mt-6">
-            {viewMode === 'grid' ? (
-              <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-                {filteredItems.map((item) => (
-                  <ItemCard
-                    key={item.id}
-                    item={item}
-                    onCompareItem={handleCompareItem}
-                    userMode="balanced"
-                  />
-                ))}
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {filteredItems.map((item) => (
-                  <ItemCard
-                    key={item.id}
-                    item={item}
-                    onCompareItem={handleCompareItem}
-                    userMode="balanced"
-                    compact
-                  />
-                ))}
-              </div>
-            )}
+        {/* Search and Controls */}
+        <div className="flex flex-col lg:flex-row gap-4">
+          <div className="flex-1">
+            <QuickSearch />
           </div>
-        </CardContent>
-      </Card>
-    </div>
+          
+          <div className="flex items-center gap-2">
+            <Select onValueChange={handleSortChange}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Sort by" />
+              </SelectTrigger>
+              <SelectContent>
+                {sortOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    <option.icon className="mr-2 h-4 w-4" />
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Button variant="outline" size="icon" onClick={handleSortOrderChange}>
+              {sortOrder === 'asc' ? (
+                <ArrowDown className="h-4 w-4" />
+              ) : (
+                <ArrowUp className="h-4 w-4" />
+              )}
+            </Button>
+
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => handleViewModeChange(viewMode === 'grid' ? 'list' : 'grid')}
+            >
+              {viewMode === 'grid' ? <List className="h-4 w-4" /> : <Grip className="h-4 w-4" />}
+            </Button>
+          </div>
+        </div>
+
+        {/* Filters */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+          {/* Supplier Filter */}
+          <Card>
+            <CardContent className="space-y-2">
+              <Label htmlFor="supplier">Supplier</Label>
+              <Select onValueChange={handleSupplierChange}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="All Suppliers" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">All Suppliers</SelectItem>
+                  {isLoadingSuppliers ? (
+                    <SelectItem value="" disabled>
+                      Loading...
+                    </SelectItem>
+                  ) : (
+                    suppliers?.map((supplier) => (
+                      <SelectItem key={supplier.id} value={supplier.id}>
+                        {supplier.name}
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+            </CardContent>
+          </Card>
+
+          {/* Price Range Filter */}
+          <Card>
+            <CardContent className="space-y-2">
+              <Label htmlFor="price">Price Range (€)</Label>
+              <div className="flex items-center justify-between text-sm text-muted-foreground">
+                <span>{priceRange[0]}</span>
+                <span>{priceRange[1]}</span>
+              </div>
+              <Slider
+                defaultValue={priceRange}
+                max={100}
+                step={1}
+                onValueChange={handlePriceChange}
+              />
+            </CardContent>
+          </Card>
+
+          {/* Category Filter */}
+          <Card>
+            <CardContent className="space-y-2">
+              <Label htmlFor="category">Category</Label>
+              <Input type="text" id="category" onChange={handleCategoryChange} />
+            </CardContent>
+          </Card>
+
+          {/* In Stock Filter */}
+          <Card>
+            <CardContent>
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="inStock"
+                  className="h-4 w-4"
+                  onChange={handleInStockChange}
+                />
+                <Label htmlFor="inStock">In Stock Only</Label>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Item List */}
+        {isLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[...Array(6)].map((_, i) => (
+              <Card key={i}>
+                <CardContent className="flex flex-col gap-3">
+                  <Skeleton className="h-32 w-full rounded-md" />
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-3 w-24" />
+                  <Skeleton className="h-8 w-full" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : isError ? (
+          <div className="text-red-500">Error loading items.</div>
+        ) : sortedItems.length === 0 ? (
+          <div className="text-muted-foreground text-center py-4">No items found.</div>
+        ) : (
+          <div className={cn('grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4', {
+              'list-mode': viewMode === 'list'
+            })}
+          >
+            {sortedItems.map((item: any) => (
+              <Card key={item.id}>
+                <CardContent className="flex flex-col gap-3">
+                  <div className="aspect-w-4 aspect-h-3">
+                    <img
+                      src="https://placehold.co/600x400"
+                      alt={item.name}
+                      className="object-cover rounded-md"
+                    />
+                  </div>
+                  <h3 className="font-semibold">{item.name}</h3>
+                  <div className="text-sm text-muted-foreground">Supplier: {item.supplier?.name}</div>
+                  <div className="text-xl font-bold">€{item.price}</div>
+                  <Button onClick={() => addToOrder(item)}>Add to Order</Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+      </div>
+    </AppLayout>
   )
 }
