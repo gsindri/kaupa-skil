@@ -3,7 +3,7 @@ import React from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Play } from 'lucide-react'
+import { Play, Upload } from 'lucide-react'
 import { Database } from '@/lib/types/database'
 
 type Supplier = Database['public']['Tables']['suppliers']['Row']
@@ -17,6 +17,7 @@ interface SupplierListProps {
   selectedSupplier: string | null
   onSelectSupplier: (supplierId: string) => void
   onRunConnector: (supplierId: string) => void
+  onHarUpload?: (supplierId: string) => void
 }
 
 export function SupplierList({ 
@@ -24,7 +25,8 @@ export function SupplierList({
   credentials, 
   selectedSupplier, 
   onSelectSupplier, 
-  onRunConnector 
+  onRunConnector,
+  onHarUpload
 }: SupplierListProps) {
   const getCredentialStatus = (supplierId: string) => {
     const credential = credentials?.find(c => c.supplier_id === supplierId)
@@ -75,6 +77,19 @@ export function SupplierList({
                   </div>
                   <div className="flex items-center space-x-2">
                     {getStatusBadge(status)}
+                    {onHarUpload && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          onHarUpload(supplier.id)
+                        }}
+                        title="Sync via HAR upload"
+                      >
+                        <Upload className="h-3 w-3" />
+                      </Button>
+                    )}
                     {status === 'verified' && (
                       <Button
                         size="sm"
@@ -83,6 +98,7 @@ export function SupplierList({
                           e.stopPropagation()
                           onRunConnector(supplier.id)
                         }}
+                        title="Run connector"
                       >
                         <Play className="h-3 w-3" />
                       </Button>
