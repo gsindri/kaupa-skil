@@ -10,6 +10,8 @@ export interface Database {
           settings: Record<string, any>
           created_at: string
           updated_at: string
+          created_by: string
+          kind: string
         }
         Insert: {
           id?: string
@@ -18,6 +20,8 @@ export interface Database {
           settings?: Record<string, any>
           created_at?: string
           updated_at?: string
+          created_by: string
+          kind?: string
         }
         Update: {
           id?: string
@@ -26,6 +30,8 @@ export interface Database {
           settings?: Record<string, any>
           created_at?: string
           updated_at?: string
+          created_by?: string
+          kind?: string
         }
       }
       profiles: {
@@ -34,7 +40,6 @@ export interface Database {
           tenant_id: string | null
           email: string
           full_name: string | null
-          role: 'admin' | 'buyer' | 'manager'
           created_at: string
           updated_at: string
         }
@@ -43,7 +48,6 @@ export interface Database {
           tenant_id?: string | null
           email: string
           full_name?: string | null
-          role?: 'admin' | 'buyer' | 'manager'
           created_at?: string
           updated_at?: string
         }
@@ -52,7 +56,6 @@ export interface Database {
           tenant_id?: string | null
           email?: string
           full_name?: string | null
-          role?: 'admin' | 'buyer' | 'manager'
           created_at?: string
           updated_at?: string
         }

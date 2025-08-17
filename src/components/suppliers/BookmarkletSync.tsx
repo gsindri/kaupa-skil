@@ -22,7 +22,7 @@ export function BookmarkletSync({
 }: BookmarkletSyncProps) {
   const { toast } = useToast()
   
-  // Use the Supabase function URL directly
+  // Use the Supabase function URL directly from the client config
   const ingestUrl = `https://hcrjkziycryuugzbixhq.supabase.co/functions/v1/ingest_har`
   const ingestToken = '' // Optional token for additional security
 
@@ -86,10 +86,10 @@ export function BookmarkletSync({
   }
 
   return (
-    <Card className={cn("bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200", className)}>
+    <Card className={cn("bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950 border-blue-200 dark:border-blue-800", className)}>
       <CardHeader className="pb-3">
         <div className="flex items-center gap-2">
-          <Bookmark className="h-5 w-5 text-blue-600" />
+          <Bookmark className="h-5 w-5 text-blue-600 dark:text-blue-400" />
           <CardTitle className="text-base">Sync via Bookmarklet</CardTitle>
           <Badge variant="secondary" className="text-xs">No install required</Badge>
         </div>
@@ -100,15 +100,15 @@ export function BookmarkletSync({
       
       <CardContent className="space-y-4">
         <div className="space-y-3">
-          <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
-            <span className="flex items-center justify-center w-5 h-5 rounded-full bg-blue-100 text-blue-600 text-xs font-bold">1</span>
+          <div className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+            <span className="flex items-center justify-center w-5 h-5 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 text-xs font-bold">1</span>
             Drag this button to your bookmarks bar:
           </div>
           
           <div className="flex items-center gap-3">
             <a 
               href={bookmarklet}
-              className="inline-flex items-center gap-2 rounded-lg bg-gray-900 hover:bg-black px-4 py-2 text-white text-sm font-medium shadow-sm transition-colors"
+              className="inline-flex items-center gap-2 rounded-lg bg-gray-900 hover:bg-black dark:bg-gray-100 dark:hover:bg-white px-4 py-2 text-white dark:text-black text-sm font-medium shadow-sm transition-colors"
               onClick={(e) => e.preventDefault()}
             >
               <Bookmark className="h-4 w-4" />
@@ -126,41 +126,41 @@ export function BookmarkletSync({
           </div>
         </div>
 
-        <div className="space-y-2 text-sm text-gray-600">
+        <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
           <div className="flex items-center gap-2">
-            <span className="flex items-center justify-center w-5 h-5 rounded-full bg-blue-100 text-blue-600 text-xs font-bold">2</span>
+            <span className="flex items-center justify-center w-5 h-5 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 text-xs font-bold">2</span>
             <span>Go to the supplier's website {supplierDomainHint && (
-              <code className="text-xs bg-gray-100 px-1 py-0.5 rounded">{supplierDomainHint}</code>
+              <code className="text-xs bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded">{supplierDomainHint}</code>
             )}</span>
           </div>
           
           <div className="flex items-center gap-2">
-            <span className="flex items-center justify-center w-5 h-5 rounded-full bg-blue-100 text-blue-600 text-xs font-bold">3</span>
+            <span className="flex items-center justify-center w-5 h-5 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 text-xs font-bold">3</span>
             <span>Open their product catalog or search results</span>
           </div>
           
           <div className="flex items-center gap-2">
-            <span className="flex items-center justify-center w-5 h-5 rounded-full bg-blue-100 text-blue-600 text-xs font-bold">4</span>
+            <span className="flex items-center justify-center w-5 h-5 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 text-xs font-bold">4</span>
             <span>Click <strong>Kaupa Capture</strong>, then scroll or browse for ~10 seconds</span>
           </div>
           
           <div className="flex items-center gap-2">
-            <span className="flex items-center justify-center w-5 h-5 rounded-full bg-blue-100 text-blue-600 text-xs font-bold">5</span>
+            <span className="flex items-center justify-center w-5 h-5 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 text-xs font-bold">5</span>
             <span>Data uploads automatically when capture completes</span>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-3 border-t border-blue-200">
-          <div className="flex items-center gap-2 text-xs text-gray-500">
-            <Timer className="h-3 w-3 text-blue-500" />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-3 border-t border-blue-200 dark:border-blue-800">
+          <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+            <Timer className="h-3 w-3 text-blue-500 dark:text-blue-400" />
             <span>10 second capture</span>
           </div>
-          <div className="flex items-center gap-2 text-xs text-gray-500">
-            <Globe className="h-3 w-3 text-blue-500" />
+          <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+            <Globe className="h-3 w-3 text-blue-500 dark:text-blue-400" />
             <span>API data only</span>
           </div>
-          <div className="flex items-center gap-2 text-xs text-gray-500">
-            <Shield className="h-3 w-3 text-blue-500" />
+          <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+            <Shield className="h-3 w-3 text-blue-500 dark:text-blue-400" />
             <span>User-initiated only</span>
           </div>
         </div>

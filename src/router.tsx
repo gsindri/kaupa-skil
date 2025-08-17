@@ -1,36 +1,26 @@
 
-import { createBrowserRouter } from 'react-router-dom'
-import { AuthGate } from '@/components/auth/AuthGate'
-import AppLayout from '@/layouts/AppLayout'
-import Index from '@/pages/Index'
-import Dashboard from '@/pages/Dashboard'
-import Orders from '@/pages/Orders'
-import Compare from '@/pages/Compare'
-import Suppliers from '@/pages/Suppliers'
-import Settings from '@/pages/Settings'
-import Admin from '@/pages/Admin'
-import Delivery from '@/pages/Delivery'
-import Discovery from '@/pages/Discovery'
-import Pantry from '@/pages/Pantry'
-import PriceHistory from '@/pages/PriceHistory'
-import NotFound from '@/pages/NotFound'
-import ErrorPage from '@/pages/ErrorPage'
-import LoginShowcase from '@/pages/auth/LoginShowcase'
-import PasswordReset from '@/pages/auth/PasswordReset'
+import { createBrowserRouter } from "react-router-dom";
+import { AuthGate } from "@/components/auth/AuthGate";
+import { AppLayout } from "@/layouts/AppLayout";
+import Index from "@/pages/Index";
+import Dashboard from "@/pages/Dashboard";
+import Compare from "@/pages/Compare";
+import Orders from "@/pages/Orders";
+import Suppliers from "@/pages/Suppliers";
+import Pantry from "@/pages/Pantry";
+import Settings from "@/pages/Settings";
+import PriceHistory from "@/pages/PriceHistory";
+import Delivery from "@/pages/Delivery";
+import Admin from "@/pages/Admin";
+import Discovery from "@/pages/Discovery";
+import LoginShowcase from "@/pages/auth/LoginShowcase";
+import PasswordReset from "@/pages/auth/PasswordReset";
+import ErrorPage from "@/pages/ErrorPage";
+import NotFound from "@/pages/NotFound";
 
 export const router = createBrowserRouter([
   {
-    path: '/login',
-    element: <LoginShowcase />,
-    errorElement: <ErrorPage />
-  },
-  {
-    path: '/reset-password',
-    element: <PasswordReset />,
-    errorElement: <ErrorPage />
-  },
-  {
-    path: '/',
+    path: "/",
     element: (
       <AuthGate>
         <AppLayout />
@@ -40,52 +30,60 @@ export const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <Index />
+        element: <Index />,
       },
       {
-        path: 'dashboard',
-        element: <Dashboard />
+        path: "dashboard",
+        element: <Dashboard />,
       },
       {
-        path: 'orders',
-        element: <Orders />
+        path: "compare",
+        element: <Compare />,
       },
       {
-        path: 'compare',
-        element: <Compare />
+        path: "orders",
+        element: <Orders />,
       },
       {
-        path: 'suppliers',
-        element: <Suppliers />
+        path: "suppliers",
+        element: <Suppliers />,
       },
       {
-        path: 'delivery',
-        element: <Delivery />
+        path: "pantry",
+        element: <Pantry />,
       },
       {
-        path: 'discovery',
-        element: <Discovery />
+        path: "settings",
+        element: <Settings />,
       },
       {
-        path: 'pantry',
-        element: <Pantry />
+        path: "price-history",
+        element: <PriceHistory />,
       },
       {
-        path: 'price-history',
-        element: <PriceHistory />
+        path: "delivery",
+        element: <Delivery />,
       },
       {
-        path: 'settings',
-        element: <Settings />
+        path: "admin",
+        element: <Admin />,
       },
       {
-        path: 'admin',
-        element: <Admin />
-      }
-    ]
+        path: "discovery",
+        element: <Discovery />,
+      },
+    ],
   },
   {
-    path: '*',
-    element: <NotFound />
-  }
-])
+    path: "/login",
+    element: <LoginShowcase />,
+  },
+  {
+    path: "/reset-password",
+    element: <PasswordReset />,
+  },
+  {
+    path: "*",
+    element: <NotFound />,
+  },
+]);
