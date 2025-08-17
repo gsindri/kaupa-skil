@@ -5,7 +5,8 @@ import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { Progress } from '@/components/ui/progress'
 import { TrendingUp, AlertTriangle, Target, Lightbulb, BarChart3, PieChart } from 'lucide-react'
-import { AnalyticsResult, OptimizationRecommendation, CompetitiveInsight } from '@/utils/harAnalytics'
+import { AnalyticsResult } from '@/utils/harAnalytics'
+import { OptimizationRecommendation, CompetitiveInsight } from '@/utils/harRecommendations'
 
 interface HarAnalyticsPreviewProps {
   analytics: AnalyticsResult | null

@@ -27,6 +27,14 @@ export interface AnalyticsResult {
   insights: string[]
 }
 
+interface CategoryStatsAccumulator {
+  [key: string]: { name: string; count: number; totalPrice: number }
+}
+
+interface BrandStatsAccumulator {
+  [key: string]: { brand: string; count: number; totalPrice: number }
+}
+
 export class HarAnalytics {
   analyze(items: any[]): AnalyticsResult {
     const priceAnalysis = this.analyzePrices(items)
@@ -110,36 +118,38 @@ export class HarAnalytics {
 
     // Category analysis
     const categoryStats = Object.values(
-      itemsWithCategories.reduce((acc, item) => {
+      itemsWithCategories.reduce<CategoryStatsAccumulator>((acc, item) => {
         if (!acc[item.category]) {
           acc[item.category] = { name: item.category, count: 0, totalPrice: 0 }
         }
         acc[item.category].count++
         acc[item.category].totalPrice += item.price
         return acc
-      }, {} as Record<string, any>)
+      }, {})
     ).map(cat => ({
-      ...cat,
+      name: cat.name,
+      count: cat.count,
       avgPrice: cat.totalPrice / cat.count
     })).sort((a, b) => b.count - a.count)
 
     // Brand analysis
     const brandStats = Object.values(
-      items.filter(item => item.brand).reduce((acc, item) => {
+      items.filter(item => item.brand).reduce<BrandStatsAccumulator>((acc, item) => {
         if (!acc[item.brand]) {
           acc[item.brand] = { brand: item.brand, count: 0, totalPrice: 0 }
         }
         acc[item.brand].count++
         acc[item.brand].totalPrice += item.price
         return acc
-      }, {} as Record<string, any>)
+      }, {})
     ).map(brand => ({
-      ...brand,
+      brand: brand.brand,
+      count: brand.count,
       avgPrice: brand.totalPrice / brand.count
     })).sort((a, b) => b.count - a.count).slice(0, 10)
 
     // Pack size analysis
-    const packTypes = items.reduce((acc, item) => {
+    const packTypes = items.reduce<Record<string, number>>((acc, item) => {
       const pack = item.pack.toLowerCase()
       let type = 'Unit'
       if (pack.includes('kg') || pack.includes('g')) type = 'Weight'
@@ -148,7 +158,7 @@ export class HarAnalytics {
       
       acc[type] = (acc[type] || 0) + 1
       return acc
-    }, {} as Record<string, number>)
+    }, {})
 
     return {
       categories: categoryStats,

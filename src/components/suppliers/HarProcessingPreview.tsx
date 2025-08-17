@@ -8,7 +8,8 @@ import { CheckCircle, AlertTriangle, Info, TrendingUp, BarChart3, Target } from 
 import { ValidationResult } from '@/utils/harValidator'
 import { ExtractionResult } from '@/utils/harDataExtractor'
 import { HarAnalyticsPreview } from './HarAnalyticsPreview'
-import { AnalyticsResult, OptimizationRecommendation, CompetitiveInsight } from '@/utils/harAnalytics'
+import { AnalyticsResult } from '@/utils/harAnalytics'
+import { OptimizationRecommendation, CompetitiveInsight } from '@/utils/harRecommendations'
 
 interface HarProcessingPreviewProps {
   validationResult: ValidationResult | null
