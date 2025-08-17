@@ -9,6 +9,7 @@ import { ThemeProvider } from 'next-themes'
 import { AuthProvider } from '@/contexts/AuthProvider'
 import { BasketProvider } from '@/contexts/BasketProvider'
 import { SettingsProvider } from '@/contexts/SettingsProvider'
+import { ComparisonProvider } from '@/contexts/ComparisonContext'
 import { router } from '@/router'
 import { RouterProvider } from 'react-router-dom'
 import { queryClient } from '@/lib/queryClient'
@@ -29,8 +30,10 @@ function App() {
                     <BasketProvider>
                       <ErrorBoundary>
                         <SettingsProvider>
-                          <RouterProvider router={router} />
-                          <Toaster />
+                          <ComparisonProvider>
+                            <RouterProvider router={router} />
+                            <Toaster />
+                          </ComparisonProvider>
                         </SettingsProvider>
                       </ErrorBoundary>
                     </BasketProvider>
