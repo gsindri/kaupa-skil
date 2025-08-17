@@ -63,6 +63,17 @@ export function EnhancedSupplierManagement() {
 
   const selectedSupplierData = suppliers?.find(s => s.id === selectedSupplier)
 
+  // Helper function to extract domain from website URL
+  const getDomainHint = (website: string | null) => {
+    if (!website) return undefined
+    try {
+      const url = new URL(website.startsWith('http') ? website : `https://${website}`)
+      return `${url.protocol}//${url.hostname}/*`
+    } catch {
+      return website.includes('.') ? `https://${website}/*` : undefined
+    }
+  }
+
   return (
     <>
       <Tabs defaultValue="suppliers" className="space-y-6">
@@ -120,7 +131,7 @@ export function EnhancedSupplierManagement() {
               <BookmarkletSync
                 tenantId={profile?.tenant_id || ''}
                 supplierId={selectedSupplier}
-                supplierDomainHint={selectedSupplierData.domain ? `https://${selectedSupplierData.domain}/*` : undefined}
+                supplierDomainHint={getDomainHint(selectedSupplierData.website)}
               />
               
               <SupplierItemsWithHarInfo
