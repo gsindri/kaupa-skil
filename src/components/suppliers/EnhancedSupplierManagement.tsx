@@ -6,6 +6,7 @@ import { IngestionRunsList } from './IngestionRunsList'
 import { HarUploadModal } from './HarUploadModal'
 import { HarSyncStatus } from './HarSyncStatus'
 import { SupplierItemsWithHarInfo } from './SupplierItemsWithHarInfo'
+import { BookmarkletSync } from './BookmarkletSync'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Building2, Key, Activity, FileText } from 'lucide-react'
 import { useSuppliers } from '@/hooks/useSuppliers'
@@ -113,6 +114,13 @@ export function EnhancedSupplierManagement() {
                 itemCount={itemStats.total}
                 onHarUpload={() => handleHarUpload(selectedSupplier)}
                 isProcessing={processingSupplier === selectedSupplier}
+              />
+              
+              {/* Add Bookmarklet Sync option */}
+              <BookmarkletSync
+                tenantId={profile?.tenant_id || ''}
+                supplierId={selectedSupplier}
+                supplierDomainHint={selectedSupplierData.domain ? `https://${selectedSupplierData.domain}/*` : undefined}
               />
               
               <SupplierItemsWithHarInfo
