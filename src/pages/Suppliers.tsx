@@ -1,6 +1,6 @@
 
 import React from 'react'
-import { SupplierManagement } from '@/components/suppliers/SupplierManagement'
+import { EnhancedSupplierManagement } from '@/components/suppliers/EnhancedSupplierManagement'
 
 export default function Suppliers() {
   return (
@@ -8,11 +8,11 @@ export default function Suppliers() {
       <div>
         <h1 className="text-3xl font-bold text-foreground">Supplier Management</h1>
         <p className="text-muted-foreground">
-          Manage supplier credentials and ingestion processes
+          Manage supplier credentials, HAR data ingestion, and product synchronization
         </p>
       </div>
       
-      <SupplierManagement />
+      <EnhancedSupplierManagement />
     </div>
   )
 }
