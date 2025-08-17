@@ -1,9 +1,8 @@
 
 import React, { useState, useEffect, useCallback } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { useDebounce } from 'usehooks-ts'
+import { useDebounce } from '@/hooks/useDebounce'
 import { useComparison } from '@/contexts/ComparisonContext'
-import AppLayout from '@/layouts/AppLayout'
 import { supabase } from '@/integrations/supabase/client'
 import { queryKeys } from '@/lib/queryKeys'
 import { Database } from '@/lib/types/database'
@@ -15,21 +14,11 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { CompactOrderGuidesCTA } from '@/components/order-guides/CompactOrderGuidesCTA'
+import { QuickSearch } from '@/components/quick/QuickSearch'
 import { BarChart3 } from 'lucide-react'
 
 type SupplierItem = Database['public']['Tables']['supplier_items']['Row']
 type Category = Database['public']['Tables']['categories']['Row']
-
-interface QuickSearchProps {
-  // value: string
-  // onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
-}
-
-const QuickSearch: React.FC<QuickSearchProps> = () => {
-  return (
-    <Input type="search" placeholder="Search for products..." />
-  )
-}
 
 export default function Index() {
   const [searchQuery, setSearchQuery] = useState('')
@@ -125,146 +114,151 @@ export default function Index() {
   }, [removeItem])
 
   const handlePriceRangeChange = (value: number[]) => {
-    setPriceRange([value[0], value[1]])
+    setPriceRange([value[0], value[1]] as [number, number])
+  }
+
+  const handleItemSelect = (item: any) => {
+    console.log('Item selected:', item)
   }
 
   return (
-    <AppLayout>
-      <div className="container mx-auto px-4 py-6 space-y-6">
-        {/* Enhanced Header */}
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
-          <div>
-            <h1 className="text-2xl font-bold">Quick Order</h1>
-            <p className="text-muted-foreground">
-              Search and order from your suppliers instantly
-            </p>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            <CompactOrderGuidesCTA />
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowCompare(!showCompare)}
-              className="gap-2"
-            >
-              <BarChart3 className="h-4 w-4" />
-              Compare ({comparisonItems.length})
-            </Button>
-          </div>
+    <div className="container mx-auto px-4 py-6 space-y-6">
+      {/* Enhanced Header */}
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
+        <div>
+          <h1 className="text-2xl font-bold">Quick Order</h1>
+          <p className="text-muted-foreground">
+            Search and order from your suppliers instantly
+          </p>
         </div>
-
-        {/* Search and Filters */}
-        <div className="flex flex-col lg:flex-row gap-4">
-          <div className="flex-1">
-            <QuickSearch />
-          </div>
-          
-          <Card className="w-full lg:w-80">
-            <CardContent className="space-y-4">
-              {/* Supplier Filter */}
-              <div>
-                <Label htmlFor="supplier">Supplier</Label>
-                <select
-                  id="supplier"
-                  className="w-full mt-1 p-2 border rounded"
-                  value={selectedSupplierFilter}
-                  onChange={(e) => setSelectedSupplierFilter(e.target.value)}
-                >
-                  <option value="">All Suppliers</option>
-                  {suppliers?.map(supplier => (
-                    <option key={supplier.id} value={supplier.id}>
-                      {supplier.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Category Filter */}
-              <div>
-                <Label htmlFor="category">Category</Label>
-                <select
-                  id="category"
-                  className="w-full mt-1 p-2 border rounded"
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                >
-                  <option value="">All Categories</option>
-                  {categories?.map(category => (
-                    <option key={category.id} value={category.id}>
-                      {category.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* In Stock Only */}
-              <div className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  id="inStock"
-                  className="h-4 w-4"
-                  checked={showInStockOnly}
-                  onChange={(e) => setShowInStockOnly(e.target.checked)}
-                />
-                <Label htmlFor="inStock">In Stock Only</Label>
-              </div>
-
-              {/* Price Range */}
-              <div>
-                <Label>Price Range: €{priceRange[0]} - €{priceRange[1]}</Label>
-                <Slider
-                  min={0}
-                  max={100}
-                  step={1}
-                  value={priceRange}
-                  onValueChange={handlePriceRangeChange}
-                />
-              </div>
-            </CardContent>
-          </Card>
+        
+        <div className="flex items-center gap-2">
+          <CompactOrderGuidesCTA />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowCompare(!showCompare)}
+            className="gap-2"
+          >
+            <BarChart3 className="h-4 w-4" />
+            Compare ({comparisonItems.length})
+          </Button>
         </div>
-
-        {/* Product Grid */}
-        {itemsLoading ? (
-          <div>Loading items...</div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {items?.map(item => (
-              <Card key={item.id}>
-                <CardContent className="space-y-2">
-                  <div className="text-sm font-medium">{item.display_name}</div>
-                  <div className="text-xs text-muted-foreground">
-                    SKU: {item.ext_sku}
-                  </div>
-                  <div className="text-xs">
-                    Price: €{item.price_ex_vat || 0}
-                  </div>
-                  {showCompare ? (
-                    comparisonItems.find(i => i.id === item.id) ? (
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => handleRemoveFromComparison(item)}
-                      >
-                        Remove from Comparison
-                      </Button>
-                    ) : (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleAddToComparison(item)}
-                      >
-                        Add to Comparison
-                      </Button>
-                    )
-                  ) : null}
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
       </div>
-    </AppLayout>
+
+      {/* Search and Filters */}
+      <div className="flex flex-col lg:flex-row gap-4">
+        <div className="flex-1">
+          <QuickSearch 
+            onItemSelect={handleItemSelect}
+            placeholder="Search for products..."
+          />
+        </div>
+        
+        <Card className="w-full lg:w-80">
+          <CardContent className="space-y-4">
+            {/* Supplier Filter */}
+            <div>
+              <Label htmlFor="supplier">Supplier</Label>
+              <select
+                id="supplier"
+                className="w-full mt-1 p-2 border rounded"
+                value={selectedSupplierFilter}
+                onChange={(e) => setSelectedSupplierFilter(e.target.value)}
+              >
+                <option value="">All Suppliers</option>
+                {suppliers?.map(supplier => (
+                  <option key={supplier.id} value={supplier.id}>
+                    {supplier.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Category Filter */}
+            <div>
+              <Label htmlFor="category">Category</Label>
+              <select
+                id="category"
+                className="w-full mt-1 p-2 border rounded"
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+              >
+                <option value="">All Categories</option>
+                {categories?.map(category => (
+                  <option key={category.id} value={category.id}>
+                    {category.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* In Stock Only */}
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="inStock"
+                className="h-4 w-4"
+                checked={showInStockOnly}
+                onChange={(e) => setShowInStockOnly(e.target.checked)}
+              />
+              <Label htmlFor="inStock">In Stock Only</Label>
+            </div>
+
+            {/* Price Range */}
+            <div>
+              <Label>Price Range: €{priceRange[0]} - €{priceRange[1]}</Label>
+              <Slider
+                min={0}
+                max={100}
+                step={1}
+                value={priceRange}
+                onValueChange={handlePriceRangeChange}
+              />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Product Grid */}
+      {itemsLoading ? (
+        <div>Loading items...</div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {items?.map(item => (
+            <Card key={item.id}>
+              <CardContent className="space-y-2">
+                <div className="text-sm font-medium">{item.display_name}</div>
+                <div className="text-xs text-muted-foreground">
+                  SKU: {item.ext_sku}
+                </div>
+                <div className="text-xs">
+                  Price: €{item.price_ex_vat || 0}
+                </div>
+                {showCompare ? (
+                  comparisonItems.find(i => i.id === item.id) ? (
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => handleRemoveFromComparison(item)}
+                    >
+                      Remove from Comparison
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleAddToComparison(item)}
+                    >
+                      Add to Comparison
+                    </Button>
+                  )
+                ) : null}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
   )
 }
