@@ -90,7 +90,7 @@ export function SupplierItemsWithHarInfo({ items, supplierId }: SupplierItemsWit
               <div className="flex flex-col items-end gap-1">
                 {getDataSourceBadge(item.last_seen_at)}
                 <Badge variant="outline" className="text-xs">
-                  VAT: {item.vat_code}%
+                  VAT: {item.vat_code || 0}%
                 </Badge>
               </div>
             </div>

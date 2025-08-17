@@ -109,7 +109,7 @@ export function EnhancedSupplierManagement() {
               <HarSyncStatus
                 supplierId={selectedSupplier}
                 supplierName={selectedSupplierData.name}
-                lastSyncAt={selectedSupplierItems[0]?.last_seen_at}
+                lastSyncAt={selectedSupplierItems[0]?.last_seen_at || null}
                 itemCount={itemStats.total}
                 onHarUpload={() => handleHarUpload(selectedSupplier)}
                 isProcessing={processingSupplier === selectedSupplier}
