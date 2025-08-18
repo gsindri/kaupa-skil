@@ -11,9 +11,10 @@ interface AuthGateProps {
 export function AuthGate({ children }: AuthGateProps) {
   const { user, profile, loading, isInitialized, error, refetch } = useAuth()
   const location = useLocation()
-  const [profileTimeout, setProfileTimeout] = useState(false)
+  const [profileRetryCount, setProfileRetryCount] = useState(0)
+  const [showDetailedError, setShowDetailedError] = useState(false)
 
-  console.log('AuthGate - Detailed state:', { 
+  console.log('AuthGate state:', { 
     user: !!user, 
     userId: user?.id,
     profile: !!profile, 
@@ -23,23 +24,8 @@ export function AuthGate({ children }: AuthGateProps) {
     hasError: !!error,
     errorMessage: error,
     currentPath: location.pathname,
-    profileTimeout,
-    timestamp: new Date().toISOString()
+    profileRetryCount
   })
-
-  // Set timeout for profile loading
-  useEffect(() => {
-    if (user && !profile && !loading && isInitialized) {
-      const timeout = setTimeout(() => {
-        console.log('Profile loading timeout triggered')
-        setProfileTimeout(true)
-      }, 5000) // 5 second timeout for profile loading
-
-      return () => clearTimeout(timeout)
-    } else {
-      setProfileTimeout(false)
-    }
-  }, [user, profile, loading, isInitialized])
 
   // Show loading while auth is initializing
   if (loading || !isInitialized) {
@@ -49,11 +35,9 @@ export function AuthGate({ children }: AuthGateProps) {
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-muted-foreground">Loading authentication...</p>
-          {import.meta.env.DEV && (
-            <p className="text-xs text-muted-foreground mt-2">
-              Loading: {String(loading)}, Initialized: {String(isInitialized)}
-            </p>
-          )}
+          <p className="text-xs text-muted-foreground mt-2">
+            Loading: {String(loading)}, Initialized: {String(isInitialized)}
+          </p>
         </div>
       </div>
     )
@@ -61,7 +45,7 @@ export function AuthGate({ children }: AuthGateProps) {
 
   // Show error state if authentication failed to initialize
   if (error && !user) {
-    console.log('AuthGate - Showing error state:', error)
+    console.log('AuthGate - Showing auth error state:', error)
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center max-w-md p-6">
@@ -92,63 +76,87 @@ export function AuthGate({ children }: AuthGateProps) {
     return <Navigate to="/login" state={{ from: location }} replace />
   }
 
-  // Show loading for profile with timeout handling
-  if (!profile) {
-    console.log('AuthGate - Waiting for profile to load, timeout:', profileTimeout)
-    
-    if (profileTimeout) {
-      return (
-        <div className="min-h-screen flex items-center justify-center bg-background">
-          <div className="text-center max-w-md p-6">
-            <h2 className="text-xl font-semibold mb-2">Profile Loading Issue</h2>
-            <p className="text-muted-foreground mb-4">Your profile is taking longer than expected to load.</p>
-            <div className="space-y-2">
-              <button
-                onClick={() => {
-                  setProfileTimeout(false)
-                  refetch()
-                }}
-                className="px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90 w-full"
-              >
-                Retry Loading Profile
-              </button>
-              <button
-                onClick={() => window.location.reload()}
-                className="px-4 py-2 bg-secondary text-secondary-foreground rounded hover:bg-secondary/90 w-full"
-              >
-                Refresh Page
-              </button>
-            </div>
-            {import.meta.env.DEV && (
-              <details className="mt-4 text-xs text-left">
-                <summary className="cursor-pointer text-muted-foreground">Debug Info</summary>
-                <pre className="bg-muted p-2 rounded mt-2 text-xs">
-                  {JSON.stringify({ user: !!user, userId: user?.id, profile: !!profile, loading, isInitialized, error }, null, 2)}
-                </pre>
-              </details>
-            )}
-          </div>
-        </div>
-      )
-    }
+  // Show profile loading issue if we have a user but no profile and there's an error
+  if (!profile && error) {
+    console.log('AuthGate - Profile loading failed with error:', error)
     
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Setting up your profile...</p>
-          {import.meta.env.DEV && (
-            <p className="text-xs text-muted-foreground mt-2">
-              User ID: {user.id}, Profile: {String(!!profile)}
-            </p>
+        <div className="text-center max-w-md p-6">
+          <h2 className="text-xl font-semibold mb-2">Profile Loading Issue</h2>
+          <p className="text-muted-foreground mb-4">
+            {error.includes('timeout') 
+              ? 'Your profile is taking longer than expected to load.'
+              : `Failed to load your profile: ${error}`
+            }
+          </p>
+          <div className="space-y-2">
+            <button
+              onClick={async () => {
+                console.log('Retrying profile load...')
+                setProfileRetryCount(prev => prev + 1)
+                try {
+                  await refetch()
+                } catch (retryError) {
+                  console.error('Profile retry failed:', retryError)
+                }
+              }}
+              className="px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90 w-full"
+            >
+              Retry Loading Profile (Attempt {profileRetryCount + 1})
+            </button>
+            <button
+              onClick={() => setShowDetailedError(!showDetailedError)}
+              className="px-4 py-2 bg-secondary text-secondary-foreground rounded hover:bg-secondary/90 w-full"
+            >
+              {showDetailedError ? 'Hide' : 'Show'} Details
+            </button>
+            <button
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 bg-secondary text-secondary-foreground rounded hover:bg-secondary/90 w-full"
+            >
+              Refresh Page
+            </button>
+          </div>
+          
+          {showDetailedError && (
+            <details className="mt-4 text-xs text-left">
+              <summary className="cursor-pointer text-muted-foreground mb-2">Debug Information</summary>
+              <div className="bg-muted p-3 rounded text-xs space-y-1">
+                <div>User ID: {user?.id}</div>
+                <div>Session: {user ? 'Valid' : 'Invalid'}</div>
+                <div>Profile: {profile ? 'Loaded' : 'Not loaded'}</div>
+                <div>Error: {error}</div>
+                <div>Retry Count: {profileRetryCount}</div>
+                <div>Loading: {String(loading)}</div>
+                <div>Initialized: {String(isInitialized)}</div>
+              </div>
+            </details>
           )}
         </div>
       </div>
     )
   }
 
+  // Show simple loading for profile (without error)
+  if (!profile && !error) {
+    console.log('AuthGate - Waiting for profile to load')
+    
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Setting up your profile...</p>
+          <p className="text-xs text-muted-foreground mt-2">
+            This should only take a moment
+          </p>
+        </div>
+      </div>
+    )
+  }
+
   // Check if user needs onboarding (no tenant_id)
-  if (!profile.tenant_id) {
+  if (profile && !profile.tenant_id) {
     console.log('AuthGate - User needs onboarding, no tenant_id')
     return <ExistingUserOnboarding />
   }

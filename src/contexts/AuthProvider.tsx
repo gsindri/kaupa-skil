@@ -31,59 +31,90 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isFirstTime, setIsFirstTime] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const fetchProfile = useCallback(async (userId: string): Promise<Profile | null> => {
+  const fetchProfile = useCallback(async (userId: string, userSession?: Session): Promise<Profile | null> => {
     try {
-      console.log('Fetching profile for user:', userId)
+      console.log('=== PROFILE FETCH START ===')
+      console.log('User ID:', userId)
+      console.log('Session exists:', !!userSession)
+      console.log('Access token exists:', !!userSession?.access_token)
       
+      // Ensure we have a valid session before making the request
+      if (!userSession?.access_token) {
+        console.error('No valid session token available')
+        throw new Error('No valid session token')
+      }
+
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
         .maybeSingle()
 
+      console.log('Profile query result:', { data, error })
+
       if (error) {
-        console.warn('Profile fetch error:', error)
+        console.error('Profile fetch error details:', {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint
+        })
+        
         // If profile doesn't exist, try to create it
-        if (error.code === 'PGRST116') {
-          const { data: { user: authUser } } = await supabase.auth.getUser()
-          if (authUser) {
-            console.log('Creating new profile for user:', userId)
-            const { data: newProfile, error: createError } = await supabase
-              .from('profiles')
-              .insert({
-                id: userId,
-                email: authUser.email,
-                full_name: authUser.user_metadata?.full_name || authUser.email?.split('@')[0] || 'User'
-              })
-              .select()
-              .maybeSingle()
+        if (error.code === 'PGRST116' || error.message?.includes('no rows')) {
+          console.log('Profile not found, attempting to create...')
+          
+          const userEmail = userSession.user?.email
+          const userName = userSession.user?.user_metadata?.full_name || userEmail?.split('@')[0] || 'User'
+          
+          const { data: newProfile, error: createError } = await supabase
+            .from('profiles')
+            .insert({
+              id: userId,
+              email: userEmail,
+              full_name: userName
+            })
+            .select()
+            .single()
 
-            if (createError) {
-              console.warn('Failed to create profile:', createError)
-              return null
-            }
-
-            console.log('Profile created successfully:', newProfile)
-            return newProfile
+          if (createError) {
+            console.error('Failed to create profile:', createError)
+            throw createError
           }
+
+          console.log('Profile created successfully:', newProfile)
+          return newProfile
         }
-        return null
+        
+        throw error
       }
 
       console.log('Profile fetched successfully:', data)
+      console.log('=== PROFILE FETCH END ===')
       return data
     } catch (error) {
-      console.error('Profile fetch error:', error)
-      return null
+      console.error('=== PROFILE FETCH ERROR ===')
+      console.error('Error details:', error)
+      console.error('User ID:', userId)
+      console.error('Session valid:', !!userSession?.access_token)
+      throw error
     }
   }, [])
 
   const refetch = useCallback(async () => {
-    if (user) {
-      const profileData = await fetchProfile(user.id)
-      setProfile(profileData)
+    if (user && session) {
+      console.log('Manual profile refetch requested')
+      try {
+        const profileData = await fetchProfile(user.id, session)
+        setProfile(profileData)
+        setIsFirstTime(!profileData?.tenant_id)
+        setError(null)
+      } catch (error) {
+        console.error('Manual profile refetch failed:', error)
+        setError(error instanceof Error ? error.message : 'Failed to load profile')
+      }
     }
-  }, [user, fetchProfile])
+  }, [user, session, fetchProfile])
 
   const signIn = useCallback(async (email: string, password: string) => {
     try {
@@ -157,115 +188,109 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [])
 
-  // Single auth state handler
-  const handleAuthStateChange = useCallback(async (event: string, session: Session | null) => {
-    console.log('Auth state change:', event, 'Session:', !!session, 'User:', !!session?.user)
+  // Single auth state handler - this is the ONLY place auth state changes
+  const handleAuthStateChange = useCallback(async (event: string, newSession: Session | null) => {
+    console.log('=== AUTH STATE CHANGE ===')
+    console.log('Event:', event)
+    console.log('Session exists:', !!newSession)
+    console.log('User exists:', !!newSession?.user)
     
     try {
-      setSession(session)
-      setUser(session?.user ?? null)
+      // Always update session and user state first
+      setSession(newSession)
+      setUser(newSession?.user ?? null)
       setError(null)
       
-      if (session?.user) {
+      if (newSession?.user && event !== 'SIGNED_OUT') {
         console.log('User authenticated, fetching profile...')
-        const profileData = await fetchProfile(session.user.id)
-        setProfile(profileData)
-        setIsFirstTime(!profileData)
-        console.log('Profile set:', !!profileData, 'Is first time:', !profileData)
+        setLoading(true)
+        
+        try {
+          const profileData = await fetchProfile(newSession.user.id, newSession)
+          console.log('Profile loaded successfully:', !!profileData)
+          
+          setProfile(profileData)
+          setIsFirstTime(!profileData?.tenant_id)
+        } catch (profileError) {
+          console.error('Profile fetch failed in auth handler:', profileError)
+          setError('Failed to load user profile')
+          setProfile(null)
+          setIsFirstTime(true)
+        }
       } else {
-        console.log('No user, clearing profile state')
+        console.log('No user or signed out, clearing profile state')
         setProfile(null)
         setIsFirstTime(false)
       }
     } catch (error) {
       console.error('Auth state change error:', error)
       setError(error instanceof Error ? error.message : 'Authentication error')
+    } finally {
+      setLoading(false)
+      setIsInitialized(true)
     }
+    
+    console.log('=== AUTH STATE CHANGE END ===')
   }, [fetchProfile])
 
-  // Initialize auth
+  // Initialize auth - SINGLE path initialization
   useEffect(() => {
-    console.log('Initializing auth...')
+    console.log('=== AUTH INITIALIZATION ===')
     let mounted = true
     
-    const initAuth = async () => {
-      try {
-        setError(null)
-        
-        // Get initial session
-        const { data: { session: initialSession }, error: sessionError } = await supabase.auth.getSession()
-        
-        if (sessionError) {
-          console.warn('Session error:', sessionError.message)
-          setError('Failed to retrieve session')
-        }
-        
-        if (!mounted) return
-        
-        console.log('Initial session:', !!initialSession, 'User:', !!initialSession?.user)
-        
-        setSession(initialSession)
-        setUser(initialSession?.user ?? null)
-        
-        if (initialSession?.user) {
-          console.log('Initial user found, fetching profile...')
-          const profileData = await fetchProfile(initialSession.user.id)
-          if (mounted) {
-            setProfile(profileData)
-            setIsFirstTime(!profileData)
-            console.log('Initial profile set:', !!profileData)
-          }
-        } else {
-          if (mounted) {
-            setProfile(null)
-            setIsFirstTime(false)
-          }
-        }
-        
-      } catch (error) {
-        console.error('Auth initialization error:', error)
-        if (mounted) {
-          setError('Authentication failed to initialize')
-        }
-      } finally {
-        if (mounted) {
-          console.log('Auth initialization complete')
-          setLoading(false)
-          setIsInitialized(true)
-        }
-      }
-    }
-
-    // Set up auth state listener
+    // Set up the auth listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(handleAuthStateChange)
-
-    // Initialize
-    initAuth()
-
-    // Timeout for initialization
-    const loadingTimeout = setTimeout(() => {
-      if (mounted && loading && !isInitialized) {
-        console.warn('Auth initialization timeout')
+    
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session: initialSession }, error: sessionError }) => {
+      if (!mounted) return
+      
+      if (sessionError) {
+        console.warn('Initial session error:', sessionError)
+        setError('Failed to retrieve session')
         setLoading(false)
         setIsInitialized(true)
-        setError('Authentication timeout - please try refreshing')
+        return
       }
-    }, 10000) // 10 second timeout
+      
+      console.log('Initial session retrieved:', !!initialSession)
+      
+      // Trigger the auth state change handler with the initial session
+      if (initialSession) {
+        handleAuthStateChange('SIGNED_IN', initialSession)
+      } else {
+        handleAuthStateChange('SIGNED_OUT', null)
+      }
+    })
+
+    // Safety timeout
+    const safetyTimeout = setTimeout(() => {
+      if (mounted && !isInitialized) {
+        console.warn('Auth initialization safety timeout')
+        setLoading(false)
+        setIsInitialized(true)
+        if (!error) {
+          setError('Authentication initialization timeout')
+        }
+      }
+    }, 8000)
 
     return () => {
       mounted = false
       console.log('Cleaning up auth listeners...')
       subscription.unsubscribe()
-      clearTimeout(loadingTimeout)
+      clearTimeout(safetyTimeout)
     }
-  }, [handleAuthStateChange, fetchProfile])
+  }, []) // Empty dependency array - only run once
 
-  // Debug logging for state changes
+  // Debug logging
   useEffect(() => {
     console.log('Auth state updated:', {
       user: !!user,
+      userId: user?.id,
       session: !!session,
       profile: !!profile,
+      profileTenantId: profile?.tenant_id,
       loading,
       isInitialized,
       isFirstTime,
