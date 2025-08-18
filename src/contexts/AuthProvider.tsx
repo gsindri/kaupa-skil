@@ -43,7 +43,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Check cache first
     const cached = profileCache.get(userId)
     if (cached && Date.now() - cached.timestamp < PROFILE_CACHE_TTL) {
-      console.log('Using cached profile for user:', userId)
       return cached.data
     }
 
@@ -54,7 +53,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     try {
       fetchingProfile.current = userId
-      console.log('Fetching profile for user:', userId)
       
       const { data, error } = await supabase
         .from('profiles')
@@ -65,8 +63,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (error) {
         // If profile doesn't exist, try to create it
         if (error.code === 'PGRST116') {
-          console.log('Profile not found, attempting to create one...')
-          
           // Get user data from auth
           const { data: { user: authUser } } = await supabase.auth.getUser()
           if (authUser) {
@@ -86,7 +82,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               return null
             }
 
-            console.log('Profile created successfully:', newProfile)
             profileCache.set(userId, { data: newProfile, timestamp: Date.now() })
             return newProfile
           }
@@ -97,7 +92,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return null
       }
 
-      console.log('Profile fetched successfully:', data)
       // Cache the result
       profileCache.set(userId, { data, timestamp: Date.now() })
       return data
@@ -119,16 +113,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signIn = useCallback(async (email: string, password: string) => {
     try {
       setError(null)
-      console.log('Starting sign in process...')
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
       if (error) {
-        console.error('Sign in error:', error)
         throw error
       }
-      console.log('Sign in request completed successfully')
     } catch (error) {
       console.error('Sign in error:', error)
       throw error
@@ -138,7 +129,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signUp = useCallback(async (email: string, password: string, fullName: string) => {
     try {
       setError(null)
-      console.log('Starting sign up process...')
       const redirectUrl = `${window.location.origin}/`
       
       const { error } = await supabase.auth.signUp({
@@ -152,10 +142,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         },
       })
       if (error) {
-        console.error('Sign up error:', error)
         throw error
       }
-      console.log('Sign up request completed successfully')
     } catch (error) {
       console.error('Sign up error:', error)
       throw error
@@ -165,7 +153,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signOut = useCallback(async () => {
     try {
       setError(null)
-      console.log('Starting sign out process...')
       // Clear profile cache on sign out
       profileCache.clear()
       
@@ -178,7 +165,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setProfile(null)
       setIsFirstTime(false)
       
-      console.log('Sign out completed, redirecting to login...')
       // Redirect to login page
       window.location.href = '/login'
     } catch (error) {
@@ -197,19 +183,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Debounce rapid auth state changes
     authStateChangeTimeout.current = setTimeout(async () => {
       try {
-        console.log('Auth state change:', event, session?.user?.id || 'no user')
-        
         setSession(session)
         setUser(session?.user ?? null)
         setError(null)
         
         if (session?.user) {
-          console.log('User authenticated, fetching profile...')
           const profileData = await fetchProfile(session.user.id)
           setProfile(profileData)
           setIsFirstTime(!profileData)
         } else {
-          console.log('No user session, clearing profile')
           setProfile(null)
           setIsFirstTime(false)
         }
@@ -223,7 +205,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const initializeAuth = useCallback(async () => {
     try {
       setError(null)
-      console.log('Initializing auth...')
       
       const { data: { session: initialSession }, error: sessionError } = await supabase.auth.getSession()
       
@@ -232,19 +213,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setError('Failed to retrieve session')
       }
       
-      console.log('Initial session:', initialSession?.user?.id || 'no session')
-      
       // Set initial state even if session is null
       setSession(initialSession)
       setUser(initialSession?.user ?? null)
       
       if (initialSession?.user) {
-        console.log('Initial user found, fetching profile...')
         const profileData = await fetchProfile(initialSession.user.id)
         setProfile(profileData)
         setIsFirstTime(!profileData)
       } else {
-        console.log('No initial user found')
         setProfile(null)
         setIsFirstTime(false)
       }
@@ -255,12 +232,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setLoading(false)
       setIsInitialized(true)
-      console.log('Auth initialization completed')
     }
   }, [fetchProfile])
 
   useEffect(() => {
-    console.log('Setting up auth state listener...')
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(handleAuthStateChange)
 

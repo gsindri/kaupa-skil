@@ -34,27 +34,23 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
     }
     setBusy(true);
     try {
-      console.log('Attempting authentication:', { isLogin, email });
       if (isLogin) {
         await signIn(email.trim(), password);
-        console.log('Sign in successful');
         toast({ title: "Welcome back", description: "Signed in successfully." });
       } else {
         await signUp(email.trim(), password, fullName.trim());
-        console.log('Sign up successful');
         setShowConfirm(true);
         toast({ title: "Account created", description: "Check your email to verify.", duration: 5000 });
       }
     } catch (err: any) {
-      console.error('Authentication error:', err);
       const msg = String(err?.message || err);
-      let title = isLogin ? "Login failed" : "Signup failed";
+      let title = isLogin ? "Sign in failed" : "Sign up failed";
       let detail =
-        /Invalid login credentials/i.test(msg) ? "Invalid email or password."
-        : /User already registered/i.test(msg) ? "An account with this email already exists. Try signing in."
-        : /over_email_send_rate_limit/i.test(msg) ? "Too many emails sent. Please wait a few minutes."
+        /Invalid login credentials/i.test(msg) ? "Please check your email and password."
+        : /User already registered/i.test(msg) ? "An account with this email already exists. Try signing in instead."
+        : /over_email_send_rate_limit/i.test(msg) ? "Too many emails sent. Please wait a few minutes before trying again."
         : /invalid/i.test(msg) && /email/i.test(msg) ? "Please enter a valid email address."
-        : msg;
+        : "An error occurred. Please try again.";
       toast({ variant: "destructive", title, description: detail });
     } finally {
       setBusy(false);
