@@ -36,7 +36,7 @@ export function TopNavigation() {
   const userInitial = displayName[0]?.toUpperCase() || 'U'
 
   return (
-    <div className="h-14 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <div className="sticky top-0 z-50 h-14 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="flex h-full items-center justify-between px-4">
         {/* Left side - Tenant switcher and conditional search */}
         <div className="flex items-center space-x-4 flex-1 max-w-2xl">

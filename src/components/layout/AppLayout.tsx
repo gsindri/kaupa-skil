@@ -20,8 +20,10 @@ export function AppLayout({ children }: AppLayoutProps) {
           <ElevationBanner />
           <TopNavigation />
           
-          <main className="flex-1 p-6 overflow-auto">
-            {children}
+          <main className="flex-1 overflow-auto">
+            <div className="p-6">
+              {children}
+            </div>
           </main>
         </div>
         
