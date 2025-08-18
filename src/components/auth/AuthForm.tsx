@@ -34,15 +34,19 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
     }
     setBusy(true);
     try {
+      console.log('Attempting authentication:', { isLogin, email });
       if (isLogin) {
         await signIn(email.trim(), password);
+        console.log('Sign in successful');
         toast({ title: "Welcome back", description: "Signed in successfully." });
       } else {
         await signUp(email.trim(), password, fullName.trim());
+        console.log('Sign up successful');
         setShowConfirm(true);
         toast({ title: "Account created", description: "Check your email to verify.", duration: 5000 });
       }
     } catch (err: any) {
+      console.error('Authentication error:', err);
       const msg = String(err?.message || err);
       let title = isLogin ? "Login failed" : "Signup failed";
       let detail =
