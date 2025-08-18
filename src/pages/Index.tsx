@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useDebounce } from '@/hooks/useDebounce'
@@ -14,6 +15,7 @@ import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { CompactOrderGuidesCTA } from '@/components/order-guides/CompactOrderGuidesCTA'
 import { QuickSearch } from '@/components/quick/QuickSearch'
+import { QuickOrderNavigation } from '@/components/quick/QuickOrderNavigation'
 import { BarChart3 } from 'lucide-react'
 
 type SupplierItem = Database['public']['Tables']['supplier_items']['Row']
@@ -121,8 +123,11 @@ export default function Index() {
   }
 
   return (
-    <div className="min-h-screen">
-      {/* Sticky Header - positioned at very top */}
+    <div className="min-h-screen bg-background">
+      {/* Top Navigation */}
+      <QuickOrderNavigation />
+      
+      {/* Sticky Header - positioned at very top after navigation */}
       <div className="sticky top-0 z-10 bg-background border-b">
         <div className="container mx-auto px-4 py-4">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">

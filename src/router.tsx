@@ -24,15 +24,20 @@ export const router = createBrowserRouter([
     path: "/",
     element: (
       <AuthGate>
+        <Index />
+      </AuthGate>
+    ),
+    errorElement: <ErrorPage />,
+  },
+  {
+    path: "/app",
+    element: (
+      <AuthGate>
         <AppLayout />
       </AuthGate>
     ),
     errorElement: <ErrorPage />,
     children: [
-      {
-        index: true,
-        element: <Index />,
-      },
       {
         path: "dashboard",
         element: <Dashboard />,
