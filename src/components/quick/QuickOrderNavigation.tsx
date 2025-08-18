@@ -17,7 +17,7 @@ import { BasketDrawer } from '@/components/cart/BasketDrawer'
 import { HeildaLogo } from '@/components/branding/HeildaLogo'
 
 export function QuickOrderNavigation() {
-  const { user, signOut } = useAuth()
+  const { user, profile, signOut } = useAuth()
   const navigate = useNavigate()
 
   const handleSignOut = async () => {
@@ -57,11 +57,11 @@ export function QuickOrderNavigation() {
               <Button variant="ghost" size="sm" className="gap-2">
                 <Avatar className="h-6 w-6">
                   <AvatarFallback className="text-xs">
-                    {user?.full_name?.charAt(0) || user?.email?.charAt(0) || 'U'}
+                    {profile?.full_name?.charAt(0) || user?.email?.charAt(0) || 'U'}
                   </AvatarFallback>
                 </Avatar>
                 <span className="hidden sm:inline text-sm">
-                  {user?.full_name || user?.email}
+                  {profile?.full_name || user?.email}
                 </span>
               </Button>
             </DropdownMenuTrigger>
