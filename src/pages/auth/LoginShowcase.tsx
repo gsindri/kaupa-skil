@@ -8,27 +8,27 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { EmailConfirmation } from "@/components/auth/EmailConfirmation";
 
 /** ─────────────────────────────────────────────────────────────────────────────
- *  Top-level page: guards + background + card shell
+ *  Top-level page: guards + background + clean, simple card (BlueCart vibe)
  *  ───────────────────────────────────────────────────────────────────────────*/
 export default function LoginShowcase() {
-  const { user, profile, loading, error, isInitialized } = useAuth();
+  const { user, loading, error, isInitialized } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Redirect authenticated users to where they came from (or home)
+  // Redirect authenticated users
   useEffect(() => {
     if (isInitialized && user) {
       const from = (location.state as any)?.from?.pathname || "/";
       navigate(from, { replace: true });
     }
-  }, [user, profile, isInitialized, navigate, location]);
+  }, [user, isInitialized, navigate, location]);
 
   if (loading || !isInitialized) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto" />
-          <p className="text-sm text-muted-foreground">Checking your session…</p>
+      <div className="min-h-screen grid place-items-center">
+        <div className="text-center space-y-3">
+          <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
+          <p className="text-sm text-gray-500">Checking your session…</p>
           {error && (
             <Alert variant="destructive" className="max-w-md mx-auto">
               <AlertCircle className="h-4 w-4" />
@@ -41,16 +41,10 @@ export default function LoginShowcase() {
   }
 
   return (
-    <main
-      className="relative flex min-h-screen items-center justify-center"
-      style={{
-        background:
-          "radial-gradient(1200px 800px at 20% -10%, rgba(37,99,235,0.15), transparent 60%), radial-gradient(1200px 800px at 120% 110%, rgba(16,185,129,0.12), transparent 60%), linear-gradient(180deg, #eef2ff, #f8fafc)",
-      }}
-    >
-      <div className="w-full max-w-md rounded-3xl border border-white/50 bg-white/60 p-8 shadow-2xl backdrop-blur-xl">
+    <main className="min-h-screen grid place-items-center bg-slate-50">
+      <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-xl ring-1 ring-black/5 mt-[-16rem]">
         <BrandHeader />
-        <div className="mt-6">
+        <div className="mt-5">
           <AuthForm />
         </div>
       </div>
@@ -59,11 +53,11 @@ export default function LoginShowcase() {
 }
 
 /** ─────────────────────────────────────────────────────────────────────────────
- *  Auth form: password sign-in / sign-up + optional Email Link (OTP)
+ *  Auth form: password sign-in / sign-up (simple, no magic-link)
+ *  Keeps: Forgot password, CapsLock hint, EmailConfirmation after signup.
  *  ───────────────────────────────────────────────────────────────────────────*/
 function AuthForm() {
   const [mode, setMode] = useState<"login" | "signup">("login");
-  const [flow, setFlow] = useState<"password" | "magic">("password"); // internal key can stay "magic"
   const [showPwd, setShowPwd] = useState(false);
   const [caps, setCaps] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -75,87 +69,49 @@ function AuthForm() {
   const [showEmailConfirmation, setShowEmailConfirmation] = useState(false);
   const [signupEmail, setSignupEmail] = useState("");
 
-  const auth = useAuth() as any;
-  const { signIn, signUp } = auth;
-  // Optional: your AuthProvider may expose this; we degrade gracefully if not.
-  const signInWithOtp = auth?.signInWithOtp as undefined | ((email: string) => Promise<void>);
-
+  const { signIn, signUp } = useAuth();
   const isLogin = mode === "login";
-  const usingPassword = flow === "password";
-
   const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  const passwordValid = isLogin || password.length >= 6;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (!emailValid) {
       toast({ variant: "destructive", title: "Invalid email", description: "Please enter a valid email address." });
       return;
     }
-    if (usingPassword && !passwordValid) {
+    if (!isLogin && password.length < 6) {
       toast({ variant: "destructive", title: "Weak password", description: "Password must be at least 6 characters." });
       return;
     }
 
     setBusy(true);
     try {
-      if (!usingPassword) {
-        // EMAIL LINK (OTP) FLOW
-        if (typeof signInWithOtp === "function") {
-          await signInWithOtp(email);
-          toast({
-            title: "Email link sent",
-            description: "Check your inbox to finish signing in.",
-          });
-        } else {
-          toast({
-            variant: "destructive",
-            title: "Email link not configured",
-            description: "Expose signInWithOtp(email) in AuthProvider to enable this.",
-          });
-        }
-        return;
-      }
-
-      // PASSWORD FLOW
       if (isLogin) {
-        await signIn(email, password);
+        await signIn(email.trim(), password);
         toast({ title: "Welcome back", description: "Signed in successfully." });
       } else {
-        await signUp(email, password, fullName);
-        toast({
-          title: "Account created",
-          description: "Please verify your email to continue.",
-          duration: 5000,
-        });
-        setSignupEmail(email);
+        await signUp(email.trim(), password, fullName.trim());
+        toast({ title: "Account created", description: "Please verify your email to continue.", duration: 5000 });
+        setSignupEmail(email.trim());
         setShowEmailConfirmation(true);
       }
     } catch (err: any) {
       const msg = String(err?.message || err);
       let title = isLogin ? "Login failed" : "Signup failed";
-      let detail = "Something went wrong. Please try again.";
-
-      if (/Invalid login credentials/i.test(msg)) detail = "Invalid email or password.";
-      else if (/User already registered/i.test(msg)) detail = "An account with this email already exists. Try signing in.";
-      else if (/over_email_send_rate_limit/i.test(msg)) detail = "Too many emails sent. Please wait a few minutes.";
-      else if (/email/i.test(msg) && /invalid/i.test(msg)) detail = "Please enter a valid email address.";
-      else detail = msg;
-
+      let detail =
+        /Invalid login credentials/i.test(msg) ? "Invalid email or password."
+        : /User already registered/i.test(msg) ? "An account with this email already exists. Try signing in."
+        : /over_email_send_rate_limit/i.test(msg) ? "Too many emails sent. Please wait a few minutes."
+        : /invalid/i.test(msg) && /email/i.test(msg) ? "Please enter a valid email address."
+        : msg;
       toast({ variant: "destructive", title, description: detail });
     } finally {
       setBusy(false);
     }
   };
 
-  const handleCaps = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    setCaps(e.getModifierState && e.getModifierState("CapsLock"));
-  };
-
   const toggleMode = () => {
     setMode((m) => (m === "login" ? "signup" : "login"));
-    setFlow("password");
     setPassword("");
   };
 
@@ -169,150 +125,81 @@ function AuthForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="w-full space-y-4" noValidate>
-      {/* Mode + Flow selectors */}
-      <div className="flex items-center justify-between">
-        <div className="inline-flex rounded-lg bg-muted p-1">
-          <button
-            type="button"
-            onClick={() => setMode("login")}
-            className={`px-3 py-1.5 text-sm rounded-md ${isLogin ? "bg-background shadow-sm font-semibold" : "text-muted-foreground"}`}
-            aria-pressed={isLogin}
-          >
-            Sign in
-          </button>
-          <button
-            type="button"
-            onClick={() => setMode("signup")}
-            className={`px-3 py-1.5 text-sm rounded-md ${!isLogin ? "bg-background shadow-sm font-semibold" : "text-muted-foreground"}`}
-            aria-pressed={!isLogin}
-          >
-            Create account
-          </button>
-        </div>
-
-        <div className="inline-flex gap-1 rounded-lg bg-muted p-1">
-          <button
-            type="button"
-            onClick={() => setFlow("password")}
-            className={`px-2.5 py-1.5 text-xs rounded-md ${usingPassword ? "bg-background shadow-sm font-semibold" : "text-muted-foreground"}`}
-            aria-pressed={usingPassword}
-            title="Use email + password"
-          >
-            Password
-          </button>
-          <button
-            type="button"
-            onClick={() => setFlow("magic")}
-            className={`px-2.5 py-1.5 text-xs rounded-md ${!usingPassword ? "bg-background shadow-sm font-semibold" : "text-muted-foreground"}`}
-            aria-pressed={!usingPassword}
-            title="Send a sign-in link to your email"
-          >
-            Email link
-          </button>
-        </div>
-      </div>
-
+    <form onSubmit={handleSubmit} className="space-y-4" noValidate>
       {/* Full name (signup only) */}
       {!isLogin && (
-        <div className="space-y-2">
-          <label htmlFor="fullName" className="block text-sm font-medium text-foreground">
-            Full name
-          </label>
+        <div>
+          <label htmlFor="fullName" className="mb-1 block text-sm text-gray-700">Full name</label>
           <input
             id="fullName"
-            name="fullName"
             type="text"
-            autoComplete="name"
             required
             disabled={busy}
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
-            className="block w-full rounded-xl border border-input bg-white px-3 py-2.5 text-foreground shadow-xs outline-none focus:ring-4 focus:ring-primary/20"
-            placeholder="Your full name"
+            className="w-full rounded-full border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:ring-4 focus:ring-blue-100"
+            placeholder="Your name"
           />
         </div>
       )}
 
       {/* Email */}
-      <div className="space-y-2">
-        <label htmlFor="email" className="block text-sm font-medium text-foreground">
-          Email
-        </label>
+      <div>
         <input
           id="email"
-          name="email"
           type="email"
-          inputMode="email"
-          autoComplete="email"
           required
+          autoComplete="email"
           disabled={busy}
           aria-invalid={!emailValid && email.length > 0}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="block w-full rounded-xl border border-input bg-white px-3 py-2.5 text-foreground shadow-xs outline-none focus:ring-4 focus:ring-primary/20"
-          placeholder="you@company.is"
+          className="w-full rounded-full border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:ring-4 focus:ring-blue-100"
+          placeholder="Email"
         />
       </div>
 
-      {/* Password (password flow only) */}
-      {usingPassword && (
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <label htmlFor="password" className="block text-sm font-medium text-foreground">
-              Password
-            </label>
-            {isLogin && (
-              <a href="/reset-password" className="text-xs font-medium text-primary hover:underline">
-                Forgot?
-              </a>
-            )}
-          </div>
-          <div className="relative">
-            <input
-              id="password"
-              name="password"
-              type={showPwd ? "text" : "password"}
-              autoComplete={isLogin ? "current-password" : "new-password"}
-              required
-              disabled={busy}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              onKeyDown={(e) => setCaps((e as any).getModifierState?.("CapsLock"))}
-              onKeyUp={(e) => setCaps((e as any).getModifierState?.("CapsLock"))}
-              minLength={!isLogin ? 6 : undefined}
-              className="block w-full rounded-xl border border-input bg-white px-3 py-2.5 pr-10 text-foreground shadow-xs outline-none focus:ring-4 focus:ring-primary/20"
-              placeholder="••••••••"
-            />
-            <button
-              type="button"
-              aria-label={showPwd ? "Hide password" : "Show password"}
-              onClick={() => setShowPwd((v) => !v)}
-              className="absolute inset-y-0 right-2 inline-flex items-center rounded-lg p-2 text-muted-foreground hover:bg-muted"
-              disabled={busy}
-            >
-              {showPwd ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-            </button>
-          </div>
-          {caps && <p className="text-xs text-amber-600">Caps Lock is on.</p>}
-          {!isLogin && <p className="text-xs text-muted-foreground">Password must be at least 6 characters.</p>}
+      {/* Password */}
+      <div>
+        <div className="relative">
+          <input
+            id="password"
+            type={showPwd ? "text" : "password"}
+            required
+            autoComplete={isLogin ? "current-password" : "new-password"}
+            disabled={busy}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            onKeyDown={(e) => setCaps((e as any).getModifierState?.("CapsLock"))}
+            onKeyUp={(e) => setCaps((e as any).getModifierState?.("CapsLock"))}
+            className="w-full rounded-full border border-slate-300 bg-white px-4 py-3 pr-10 text-sm outline-none focus:ring-4 focus:ring-blue-100"
+            placeholder="Password"
+            minLength={!isLogin ? 6 : undefined}
+          />
+          <button
+            type="button"
+            aria-label={showPwd ? "Hide password" : "Show password"}
+            onClick={() => setShowPwd((v) => !v)}
+            className="absolute inset-y-0 right-2 inline-flex items-center rounded-lg p-2 text-gray-500 hover:bg-gray-100"
+            disabled={busy}
+          >
+            {showPwd ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+          </button>
         </div>
-      )}
+        {isLogin && (
+          <a href="/reset-password" className="mt-1 inline-block text-xs text-blue-600 hover:underline">Forgot password?</a>
+        )}
+        {caps && <p className="mt-1 text-xs text-amber-600">Caps Lock is on.</p>}
+        {!isLogin && <p className="mt-1 text-xs text-gray-500">Password must be at least 6 characters.</p>}
+      </div>
 
       {/* Submit */}
       <button
         type="submit"
         disabled={busy}
-        className="inline-flex w-full items-center justify-center rounded-xl bg-foreground px-4 py-2.5 text-sm font-semibold text-background shadow-sm transition hover:opacity-95 focus-visible:ring-4 focus-visible:ring-foreground/20 disabled:opacity-50 disabled:cursor-not-allowed"
+        className="mt-1 w-full rounded-full bg-blue-500 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-600 disabled:opacity-50"
       >
-        {busy ? (
-          <>
-            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-background mr-2" />
-            {isLogin ? (usingPassword ? "Signing in…" : "Sending email link…") : "Creating account…"}
-          </>
-        ) : (
-          <>{isLogin ? (usingPassword ? "Sign in" : "Send email link") : "Create account"}</>
-        )}
+        {busy ? (isLogin ? "Signing in…" : "Creating account…") : (isLogin ? "Sign In" : "Create account")}
       </button>
 
       {/* Signup helper notice */}
@@ -325,10 +212,10 @@ function AuthForm() {
         </Alert>
       )}
 
-      {/* Switch mode */}
-      <p className="text-center text-sm text-muted-foreground">
-        {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
-        <button type="button" onClick={toggleMode} className="font-medium text-primary hover:underline">
+      {/* Switch mode link */}
+      <p className="text-center text-sm text-gray-600">
+        {isLogin ? "Don’t have an account?" : "Already have an account?"}{" "}
+        <button type="button" onClick={toggleMode} className="font-medium text-blue-600 hover:underline">
           {isLogin ? "Sign up" : "Sign in"}
         </button>
       </p>
@@ -341,14 +228,54 @@ function AuthForm() {
  *  ───────────────────────────────────────────────────────────────────────────*/
 function BrandHeader() {
   return (
-    <div className="text-center">
-      <img
-        src="/logo.svg"
-        alt="Iceland B2B Wholesale"
-        className="mx-auto h-10 w-auto rounded-xl shadow-sm"
-        draggable={false}
-      />
-      <p className="mt-2 text-xs text-muted-foreground">Sign in to your account</p>
-    </div>
+    <header className="mb-5">
+      {/* h-[26→30] scales nicely; -ml-px aligns the arc with input borders */}
+      <svg
+        className="block h-[30px] md:h-[32px] lg:h-[34px] w-auto -ml-px"
+        viewBox="0 0 320 64"
+        role="img"
+        aria-label="Heilda"
+      >
+        <defs>
+          <linearGradient id="arcGrad" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stopColor="#C7793B" />
+            <stop offset="1" stopColor="#F6B044" />
+          </linearGradient>
+          <linearGradient id="textGrad" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stopColor="#5F7597" />
+            <stop offset="1" stopColor="#D18A3A" />
+          </linearGradient>
+        </defs>
+
+        {/* Arc tucked in */}
+        <path
+          d="M25,34 A16,16 0 0 1 41,20"
+          fill="none"
+          stroke="url(#arcGrad)"
+          strokeWidth="5"
+          strokeLinecap="round"
+        />
+
+        {/* Wordmark – light enough for full legibility */}
+        <text
+          x="46"
+          y="42"
+          fontFamily="Inter, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
+          fontWeight="500"
+          fontSize="30"
+          letterSpacing=".02em"
+          fill="url(#textGrad)"
+          stroke="#0B1220"
+          strokeWidth=".22"
+          strokeOpacity=".10"
+          style={{ paintOrder: "stroke fill", strokeLinejoin: "round" }}
+        >
+          Heilda
+        </text>
+
+        <defs>
+        </defs>
+      </svg>
+    </header>
   );
 }
