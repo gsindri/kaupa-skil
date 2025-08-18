@@ -1,5 +1,5 @@
 
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { useAuth } from '@/contexts/AuthProvider'
 import { Navigate, useLocation } from 'react-router-dom'
 import { ExistingUserOnboarding } from '@/components/onboarding/ExistingUserOnboarding'
@@ -9,8 +9,9 @@ interface AuthGateProps {
 }
 
 export function AuthGate({ children }: AuthGateProps) {
-  const { user, profile, loading, isInitialized, error } = useAuth()
+  const { user, profile, loading, isInitialized, error, refetch } = useAuth()
   const location = useLocation()
+  const [profileTimeout, setProfileTimeout] = useState(false)
 
   console.log('AuthGate - Detailed state:', { 
     user: !!user, 
@@ -22,8 +23,23 @@ export function AuthGate({ children }: AuthGateProps) {
     hasError: !!error,
     errorMessage: error,
     currentPath: location.pathname,
+    profileTimeout,
     timestamp: new Date().toISOString()
   })
+
+  // Set timeout for profile loading
+  useEffect(() => {
+    if (user && !profile && !loading && isInitialized) {
+      const timeout = setTimeout(() => {
+        console.log('Profile loading timeout triggered')
+        setProfileTimeout(true)
+      }, 5000) // 5 second timeout for profile loading
+
+      return () => clearTimeout(timeout)
+    } else {
+      setProfileTimeout(false)
+    }
+  }, [user, profile, loading, isInitialized])
 
   // Show loading while auth is initializing
   if (loading || !isInitialized) {
@@ -65,14 +81,6 @@ export function AuthGate({ children }: AuthGateProps) {
               Go to Login
             </button>
           </div>
-          {import.meta.env.DEV && (
-            <details className="mt-4 text-xs text-left">
-              <summary className="cursor-pointer text-muted-foreground">Debug Info</summary>
-              <pre className="bg-muted p-2 rounded mt-2 text-xs">
-                {JSON.stringify({ user: !!user, profile: !!profile, loading, isInitialized, error }, null, 2)}
-              </pre>
-            </details>
-          )}
         </div>
       </div>
     )
@@ -84,9 +92,46 @@ export function AuthGate({ children }: AuthGateProps) {
     return <Navigate to="/login" state={{ from: location }} replace />
   }
 
-  // Show loading for profile
+  // Show loading for profile with timeout handling
   if (!profile) {
-    console.log('AuthGate - Waiting for profile to load')
+    console.log('AuthGate - Waiting for profile to load, timeout:', profileTimeout)
+    
+    if (profileTimeout) {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-background">
+          <div className="text-center max-w-md p-6">
+            <h2 className="text-xl font-semibold mb-2">Profile Loading Issue</h2>
+            <p className="text-muted-foreground mb-4">Your profile is taking longer than expected to load.</p>
+            <div className="space-y-2">
+              <button
+                onClick={() => {
+                  setProfileTimeout(false)
+                  refetch()
+                }}
+                className="px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90 w-full"
+              >
+                Retry Loading Profile
+              </button>
+              <button
+                onClick={() => window.location.reload()}
+                className="px-4 py-2 bg-secondary text-secondary-foreground rounded hover:bg-secondary/90 w-full"
+              >
+                Refresh Page
+              </button>
+            </div>
+            {import.meta.env.DEV && (
+              <details className="mt-4 text-xs text-left">
+                <summary className="cursor-pointer text-muted-foreground">Debug Info</summary>
+                <pre className="bg-muted p-2 rounded mt-2 text-xs">
+                  {JSON.stringify({ user: !!user, userId: user?.id, profile: !!profile, loading, isInitialized, error }, null, 2)}
+                </pre>
+              </details>
+            )}
+          </div>
+        </div>
+      )
+    }
+    
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
@@ -94,7 +139,7 @@ export function AuthGate({ children }: AuthGateProps) {
           <p className="text-muted-foreground">Setting up your profile...</p>
           {import.meta.env.DEV && (
             <p className="text-xs text-muted-foreground mt-2">
-              User ID: {user.id}
+              User ID: {user.id}, Profile: {String(!!profile)}
             </p>
           )}
         </div>

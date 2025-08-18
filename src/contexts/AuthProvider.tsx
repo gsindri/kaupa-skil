@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react'
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react'
 import { supabase } from '@/integrations/supabase/client'
 import { User, Session } from '@supabase/supabase-js'
 import { Database } from '@/lib/types/database'
@@ -22,9 +22,6 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-// Simplified profile cache - no TTL needed for session
-const profileCache = new Map<string, Profile | null>()
-
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [session, setSession] = useState<Session | null>(null)
@@ -35,11 +32,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [error, setError] = useState<string | null>(null)
 
   const fetchProfile = useCallback(async (userId: string): Promise<Profile | null> => {
-    // Check cache first
-    if (profileCache.has(userId)) {
-      return profileCache.get(userId) || null
-    }
-
     try {
       console.log('Fetching profile for user:', userId)
       
@@ -47,7 +39,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .from('profiles')
         .select('*')
         .eq('id', userId)
-        .maybeSingle() // Use maybeSingle instead of single to handle no rows gracefully
+        .maybeSingle()
 
       if (error) {
         console.warn('Profile fetch error:', error)
@@ -68,34 +60,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
             if (createError) {
               console.warn('Failed to create profile:', createError)
-              profileCache.set(userId, null)
               return null
             }
 
             console.log('Profile created successfully:', newProfile)
-            profileCache.set(userId, newProfile)
             return newProfile
           }
         }
-        
-        profileCache.set(userId, null)
         return null
       }
 
       console.log('Profile fetched successfully:', data)
-      profileCache.set(userId, data)
       return data
     } catch (error) {
       console.error('Profile fetch error:', error)
-      profileCache.set(userId, null)
       return null
     }
   }, [])
 
   const refetch = useCallback(async () => {
     if (user) {
-      // Clear cache to force fresh fetch
-      profileCache.delete(user.id)
       const profileData = await fetchProfile(user.id)
       setProfile(profileData)
     }
@@ -107,9 +91,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setError(null)
       setLoading(true)
       
-      // Clear profile cache to ensure fresh data
-      profileCache.clear()
-      
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -120,18 +101,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw error
       }
 
-      console.log('Sign in successful, updating state immediately...')
-      
-      // Immediately update auth state
-      if (data.session && data.user) {
-        setSession(data.session)
-        setUser(data.user)
-        
-        // Fetch profile immediately
-        const profileData = await fetchProfile(data.user.id)
-        setProfile(profileData)
-        setIsFirstTime(!profileData)
-      }
+      console.log('Sign in successful')
       
     } catch (error) {
       console.error('Sign in error:', error)
@@ -140,7 +110,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setLoading(false)
     }
-  }, [fetchProfile])
+  }, [])
 
   const signUp = useCallback(async (email: string, password: string, fullName: string) => {
     try {
@@ -169,7 +139,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signOut = useCallback(async () => {
     try {
       setError(null)
-      profileCache.clear()
       
       const { error } = await supabase.auth.signOut()
       if (error) throw error
@@ -188,7 +157,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [])
 
-  // Simplified auth state change handler - no debouncing
+  // Single auth state handler
   const handleAuthStateChange = useCallback(async (event: string, session: Session | null) => {
     console.log('Auth state change:', event, 'Session:', !!session, 'User:', !!session?.user)
     
@@ -214,69 +183,82 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [fetchProfile])
 
-  const initializeAuth = useCallback(async () => {
-    console.log('Initializing auth...')
-    try {
-      setError(null)
-      
-      const { data: { session: initialSession }, error: sessionError } = await supabase.auth.getSession()
-      
-      if (sessionError) {
-        console.warn('Session error:', sessionError.message)
-        setError('Failed to retrieve session')
-      }
-      
-      console.log('Initial session:', !!initialSession, 'User:', !!initialSession?.user)
-      
-      setSession(initialSession)
-      setUser(initialSession?.user ?? null)
-      
-      if (initialSession?.user) {
-        console.log('Initial user found, fetching profile...')
-        const profileData = await fetchProfile(initialSession.user.id)
-        setProfile(profileData)
-        setIsFirstTime(!profileData)
-        console.log('Initial profile set:', !!profileData)
-      } else {
-        setProfile(null)
-        setIsFirstTime(false)
-      }
-      
-    } catch (error) {
-      console.error('Auth initialization error:', error)
-      setError('Authentication failed to initialize')
-    } finally {
-      console.log('Auth initialization complete')
-      setLoading(false)
-      setIsInitialized(true)
-    }
-  }, [fetchProfile])
-
+  // Initialize auth
   useEffect(() => {
-    console.log('Setting up auth listeners...')
+    console.log('Initializing auth...')
+    let mounted = true
     
+    const initAuth = async () => {
+      try {
+        setError(null)
+        
+        // Get initial session
+        const { data: { session: initialSession }, error: sessionError } = await supabase.auth.getSession()
+        
+        if (sessionError) {
+          console.warn('Session error:', sessionError.message)
+          setError('Failed to retrieve session')
+        }
+        
+        if (!mounted) return
+        
+        console.log('Initial session:', !!initialSession, 'User:', !!initialSession?.user)
+        
+        setSession(initialSession)
+        setUser(initialSession?.user ?? null)
+        
+        if (initialSession?.user) {
+          console.log('Initial user found, fetching profile...')
+          const profileData = await fetchProfile(initialSession.user.id)
+          if (mounted) {
+            setProfile(profileData)
+            setIsFirstTime(!profileData)
+            console.log('Initial profile set:', !!profileData)
+          }
+        } else {
+          if (mounted) {
+            setProfile(null)
+            setIsFirstTime(false)
+          }
+        }
+        
+      } catch (error) {
+        console.error('Auth initialization error:', error)
+        if (mounted) {
+          setError('Authentication failed to initialize')
+        }
+      } finally {
+        if (mounted) {
+          console.log('Auth initialization complete')
+          setLoading(false)
+          setIsInitialized(true)
+        }
+      }
+    }
+
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(handleAuthStateChange)
 
-    // Initialize auth state
-    initializeAuth()
+    // Initialize
+    initAuth()
 
     // Timeout for initialization
     const loadingTimeout = setTimeout(() => {
-      if (loading && !isInitialized) {
+      if (mounted && loading && !isInitialized) {
         console.warn('Auth initialization timeout')
         setLoading(false)
         setIsInitialized(true)
         setError('Authentication timeout - please try refreshing')
       }
-    }, 5000) // Increase timeout to 5 seconds
+    }, 10000) // 10 second timeout
 
     return () => {
+      mounted = false
       console.log('Cleaning up auth listeners...')
       subscription.unsubscribe()
       clearTimeout(loadingTimeout)
     }
-  }, [handleAuthStateChange, initializeAuth, loading, isInitialized])
+  }, [handleAuthStateChange, fetchProfile])
 
   // Debug logging for state changes
   useEffect(() => {
