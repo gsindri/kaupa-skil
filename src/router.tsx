@@ -13,7 +13,8 @@ import PriceHistory from "@/pages/PriceHistory";
 import Delivery from "@/pages/Delivery";
 import Admin from "@/pages/Admin";
 import Discovery from "@/pages/Discovery";
-import LoginShowcase from "@/pages/auth/LoginShowcase";
+import LoginPage from "@/pages/auth/LoginPage";
+import SignupPage from "@/pages/auth/SignupPage";
 import PasswordReset from "@/pages/auth/PasswordReset";
 import ErrorPage from "@/pages/ErrorPage";
 import NotFound from "@/pages/NotFound";
@@ -76,7 +77,11 @@ export const router = createBrowserRouter([
   },
   {
     path: "/login",
-    element: <LoginShowcase />,
+    element: <LoginPage />,
+  },
+  {
+    path: "/signup", 
+    element: <SignupPage />,
   },
   {
     path: "/reset-password",
