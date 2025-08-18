@@ -12,22 +12,32 @@ export function AuthGate({ children }: AuthGateProps) {
   const { user, profile, loading, isInitialized, error } = useAuth()
   const location = useLocation()
 
-  console.log('AuthGate - Current state:', { 
+  console.log('AuthGate - Detailed state:', { 
     user: !!user, 
+    userId: user?.id,
     profile: !!profile, 
+    profileTenantId: profile?.tenant_id,
     loading, 
     isInitialized,
     hasError: !!error,
-    currentPath: location.pathname
+    errorMessage: error,
+    currentPath: location.pathname,
+    timestamp: new Date().toISOString()
   })
 
   // Show loading while auth is initializing
   if (loading || !isInitialized) {
+    console.log('AuthGate - Showing loading state')
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading...</p>
+          <p className="text-muted-foreground">Loading authentication...</p>
+          {import.meta.env.DEV && (
+            <p className="text-xs text-muted-foreground mt-2">
+              Loading: {String(loading)}, Initialized: {String(isInitialized)}
+            </p>
+          )}
         </div>
       </div>
     )
@@ -35,17 +45,34 @@ export function AuthGate({ children }: AuthGateProps) {
 
   // Show error state if authentication failed to initialize
   if (error && !user) {
+    console.log('AuthGate - Showing error state:', error)
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center max-w-md p-6">
           <h2 className="text-xl font-semibold mb-2">Authentication Error</h2>
           <p className="text-muted-foreground mb-4">{error}</p>
-          <button
-            onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90"
-          >
-            Retry
-          </button>
+          <div className="space-y-2">
+            <button
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90 w-full"
+            >
+              Retry
+            </button>
+            <button
+              onClick={() => window.location.href = '/login'}
+              className="px-4 py-2 bg-secondary text-secondary-foreground rounded hover:bg-secondary/90 w-full"
+            >
+              Go to Login
+            </button>
+          </div>
+          {import.meta.env.DEV && (
+            <details className="mt-4 text-xs text-left">
+              <summary className="cursor-pointer text-muted-foreground">Debug Info</summary>
+              <pre className="bg-muted p-2 rounded mt-2 text-xs">
+                {JSON.stringify({ user: !!user, profile: !!profile, loading, isInitialized, error }, null, 2)}
+              </pre>
+            </details>
+          )}
         </div>
       </div>
     )
@@ -57,13 +84,19 @@ export function AuthGate({ children }: AuthGateProps) {
     return <Navigate to="/login" state={{ from: location }} replace />
   }
 
-  // Wait for profile to be loaded before making decisions
+  // Show loading for profile
   if (!profile) {
+    console.log('AuthGate - Waiting for profile to load')
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-muted-foreground">Setting up your profile...</p>
+          {import.meta.env.DEV && (
+            <p className="text-xs text-muted-foreground mt-2">
+              User ID: {user.id}
+            </p>
+          )}
         </div>
       </div>
     )

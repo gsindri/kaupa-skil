@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { Eye, EyeOff, CheckCircle2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthProvider";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
@@ -11,6 +11,7 @@ export type AuthMode = "login" | "signup";
 export default function AuthForm({ mode }: { mode: AuthMode }) {
   const isLogin = mode === "login";
   const { signIn, signUp } = useAuth();
+  const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -32,17 +33,27 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
       toast({ variant: "destructive", title: "Weak password", description: "Min 6 characters." });
       return;
     }
+    
+    console.log('Form submission started, mode:', mode)
     setBusy(true);
+    
     try {
       if (isLogin) {
+        console.log('Starting sign in process...')
         await signIn(email.trim(), password);
+        console.log('Sign in completed successfully')
         toast({ title: "Welcome back", description: "Signed in successfully." });
+        
+        // Let AuthGate handle the redirect based on auth state
+        // No manual navigation needed
       } else {
+        console.log('Starting sign up process...')
         await signUp(email.trim(), password, fullName.trim());
         setShowConfirm(true);
         toast({ title: "Account created", description: "Check your email to verify.", duration: 5000 });
       }
     } catch (err: any) {
+      console.error('Auth form error:', err)
       const msg = String(err?.message || err);
       let title = isLogin ? "Sign in failed" : "Sign up failed";
       let detail =
