@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react'
 import { supabase } from '@/integrations/supabase/client'
 import { User, Session } from '@supabase/supabase-js'
@@ -39,28 +38,84 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     errorRef.current = error
   }, [isInitialized, error])
 
-  const fetchProfile = useCallback(async (userId: string, userSession?: Session): Promise<Profile | null> => {
+  // Enhanced session validation helper
+  const validateSession = useCallback(async (sessionToValidate: Session): Promise<boolean> => {
     try {
-      console.log('=== PROFILE FETCH START ===')
+      console.log('Validating session token...')
+      
+      // Check if session exists and has required properties
+      if (!sessionToValidate?.access_token || !sessionToValidate?.user?.id) {
+        console.error('Invalid session structure:', { 
+          hasAccessToken: !!sessionToValidate?.access_token,
+          hasUser: !!sessionToValidate?.user,
+          hasUserId: !!sessionToValidate?.user?.id
+        })
+        return false
+      }
+
+      // Verify the session is still valid with Supabase
+      const { data: { user }, error } = await supabase.auth.getUser(sessionToValidate.access_token)
+      
+      if (error || !user) {
+        console.error('Session validation failed:', error?.message || 'No user returned')
+        return false
+      }
+
+      console.log('Session validation successful')
+      return true
+    } catch (error) {
+      console.error('Session validation error:', error)
+      return false
+    }
+  }, [])
+
+  // Enhanced profile fetch with timeout and retry
+  const fetchProfile = useCallback(async (userId: string, userSession: Session, retryCount = 0): Promise<Profile | null> => {
+    const MAX_RETRIES = 2
+    const RETRY_DELAY = 1000 * (retryCount + 1) // 1s, 2s, 3s
+    const QUERY_TIMEOUT = 10000 // 10 seconds
+
+    try {
+      console.log(`=== PROFILE FETCH START (Attempt ${retryCount + 1}) ===`)
       console.log('User ID:', userId)
       console.log('Session exists:', !!userSession)
       console.log('Access token exists:', !!userSession?.access_token)
-      
-      // Ensure we have a valid session before making the request
-      if (!userSession?.access_token) {
-        console.error('No valid session token available')
-        throw new Error('No valid session token')
+
+      // Validate session before making the request
+      const isSessionValid = await validateSession(userSession)
+      if (!isSessionValid) {
+        throw new Error('Invalid session - cannot fetch profile')
       }
 
-      const { data, error } = await supabase
+      // Add a small delay to ensure Supabase client is fully synchronized
+      if (retryCount === 0) {
+        await new Promise(resolve => setTimeout(resolve, 500))
+      }
+
+      console.log('Making profile query...')
+      
+      // Create a timeout promise
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Profile fetch timeout')), QUERY_TIMEOUT)
+      })
+
+      // Create the actual query promise
+      const queryPromise = supabase
         .from('profiles')
         .select('id,email,full_name,tenant_id,created_at,updated_at')
         .eq('id', userId)
         .maybeSingle()
 
-      console.log('Profile query result:', { data, error })
+      // Race between query and timeout
+      const { data, error } = await Promise.race([queryPromise, timeoutPromise]) as any
 
-      // Two cases to treat as "no profile": explicit PostgREST no-rows error OR data === null
+      console.log('Profile query completed:', { 
+        hasData: !!data, 
+        hasError: !!error,
+        errorCode: error?.code,
+        errorMessage: error?.message
+      })
+
       if (error) {
         console.error('Profile fetch error details:', {
           code: error.code,
@@ -68,13 +123,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           details: error.details,
           hint: error.hint
         })
-        // If it's specifically "no rows", fall through to creation below.
+        
+        // If it's specifically "no rows", fall through to creation below
         if (!(error.code === 'PGRST116' || error.message?.includes('no rows'))) {
           throw error
         }
       }
 
-      // If we have no error but also no data, we still need to create the profile.
+      // If we have no error but also no data, we need to create the profile
       if (!data) {
         console.log('Profile not found (no rows). Attempting to create…')
         const userEmail = userSession?.user?.email ?? null
@@ -83,31 +139,52 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           userEmail?.split('@')[0] ||
           'User'
 
-        const { data: newProfile, error: createError } = await supabase
+        const createTimeout = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('Profile creation timeout')), QUERY_TIMEOUT)
+        })
+
+        const createPromise = supabase
           .from('profiles')
           .upsert({ id: userId, email: userEmail, full_name: userName }, { onConflict: 'id' })
           .select('id,email,full_name,tenant_id,created_at,updated_at')
           .single()
 
+        const { data: newProfile, error: createError } = await Promise.race([createPromise, createTimeout]) as any
+
         if (createError) {
           console.error('Failed to create profile:', createError)
           throw createError
         }
+        
         console.log('Profile created successfully:', newProfile)
+        console.log('=== PROFILE FETCH END ===')
         return newProfile
       }
 
       console.log('Profile fetched successfully:', data)
       console.log('=== PROFILE FETCH END ===')
       return data
-    } catch (error) {
+    } catch (error: any) {
       console.error('=== PROFILE FETCH ERROR ===')
       console.error('Error details:', error)
       console.error('User ID:', userId)
       console.error('Session valid:', !!userSession?.access_token)
+      console.error('Retry count:', retryCount)
+
+      // Retry logic for specific errors
+      if (retryCount < MAX_RETRIES && (
+        error.message?.includes('timeout') ||
+        error.message?.includes('network') ||
+        error.code === 'PGRST301' // Temporary auth issues
+      )) {
+        console.log(`Retrying profile fetch in ${RETRY_DELAY}ms...`)
+        await new Promise(resolve => setTimeout(resolve, RETRY_DELAY))
+        return fetchProfile(userId, userSession, retryCount + 1)
+      }
+
       throw error
     }
-  }, [])
+  }, [validateSession])
 
   const refetch = useCallback(async () => {
     if (user && session) {
@@ -196,7 +273,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [])
 
-  // Single auth state handler - this is the ONLY place auth state changes
+  // Enhanced auth state handler with better error handling
   const handleAuthStateChange = useCallback(async (event: string, newSession: Session | null) => {
     console.log('=== AUTH STATE CHANGE ===')
     console.log('Event:', event)
@@ -214,6 +291,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setLoading(true)
         
         try {
+          // Add a small delay to ensure the auth state is fully synchronized
+          await new Promise(resolve => setTimeout(resolve, 100))
+          
           const profileData = await fetchProfile(newSession.user.id, newSession)
           console.log('Profile loaded successfully:', !!profileData)
           
@@ -221,7 +301,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setIsFirstTime(!profileData?.tenant_id)
         } catch (profileError) {
           console.error('Profile fetch failed in auth handler:', profileError)
-          setError('Failed to load user profile')
+          const errorMessage = profileError instanceof Error ? profileError.message : 'Failed to load user profile'
+          setError(errorMessage)
           setProfile(null)
           setIsFirstTime(true)
         }
@@ -241,7 +322,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     console.log('=== AUTH STATE CHANGE END ===')
   }, [fetchProfile])
 
-  // Initialize auth - SINGLE path initialization
+  // Enhanced initialization with better error handling
   useEffect(() => {
     console.log('=== AUTH INITIALIZATION ===')
     let mounted = true
@@ -250,7 +331,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Set up the auth listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(handleAuthStateChange)
     
-    // Get initial session
+    // Get initial session with enhanced error handling
     supabase.auth.getSession().then(({ data: { session: initialSession }, error: sessionError }) => {
       if (!mounted) return
       
@@ -273,7 +354,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     })
 
-    // Safety timeout
+    // Reduced safety timeout since we have better error handling now
     const safetyTimeout = setTimeout(() => {
       if (mounted && !initialized && !isInitializedRef.current) {
         console.warn('Auth initialization safety timeout')
@@ -283,7 +364,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setError('Authentication initialization timeout')
         }
       }
-    }, 8000)
+    }, 15000) // Increased to 15 seconds to allow for retries
 
     return () => {
       mounted = false
@@ -291,7 +372,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       subscription.unsubscribe()
       clearTimeout(safetyTimeout)
     }
-  }, []) // run once
+  }, [handleAuthStateChange])
 
   // Debug logging
   useEffect(() => {
