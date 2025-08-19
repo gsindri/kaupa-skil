@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useCallback } from 'react'
 import {
   Table,
   TableBody,
@@ -40,10 +40,10 @@ export function EnhancedComparisonTable({ data, isLoading }: EnhancedComparisonT
     }).format(price)
   }
 
-  const getCartQuantity = (supplierItemId: string) => {
+  const getCartQuantity = useCallback((supplierItemId: string) => {
     const cartItem = cartItems.find(item => item.supplierItemId === supplierItemId)
     return cartItem?.quantity || 0
-  }
+  }, [cartItems])
 
   const calculateLandedCost = async (supplier: any, quantity: number) => {
     const mockCartItem: CartItem = {
@@ -132,7 +132,7 @@ export function EnhancedComparisonTable({ data, isLoading }: EnhancedComparisonT
         cartQuantity: getCartQuantity(supplier.supplierItemId)
       }))
     }))
-  }, [data, cartItems])
+  }, [data, getCartQuantity])
 
   if (isLoading) {
     return (
