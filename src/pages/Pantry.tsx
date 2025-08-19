@@ -158,6 +158,7 @@ function DeliverySchedule() {
 
 export default function Pantry() {
   const [filters, setFilters] = useState<StockFilters>(initialFilters)
+  const [selectedLane, setSelectedLane] = useState<string | null>(null)
   const { toast } = useToast()
   const { profile } = useAuth()
 
@@ -250,6 +251,18 @@ export default function Pantry() {
     setFilters({ ...filters, sortOrder: value })
   }
 
+  const handleLaneSelect = (lane: string | null) => {
+    setSelectedLane(lane)
+  }
+
+  const handleAddToCart = (itemId: string) => {
+    console.log('Adding item to cart:', itemId)
+    toast({
+      title: "Item added to cart",
+      description: "The item has been added to your cart successfully."
+    })
+  }
+
   return (
     <div className="container space-y-6 py-10">
       <div className="flex items-center justify-between">
@@ -281,7 +294,11 @@ export default function Pantry() {
             <DeliverySchedule />
           </div>
           
-          <PantryLanes />
+          <PantryLanes 
+            onLaneSelect={handleLaneSelect}
+            selectedLane={selectedLane}
+            onAddToCart={handleAddToCart}
+          />
         </TabsContent>
 
         <TabsContent value="inventory" className="space-y-4">
