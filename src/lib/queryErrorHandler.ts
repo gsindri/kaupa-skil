@@ -124,26 +124,26 @@ export const invalidateQueriesWithPattern = (queryClient: any, pattern: string[]
 }
 
 // Request deduplication helper
-export const createDedupedQuery = (baseQueryFn: Function) => {
-  const pendingRequests = new Map()
-  
+export const createDedupedQuery = (
+  baseQueryFn: (...args: any[]) => Promise<any>
+) => {
+  const pendingRequests = new Map<string, Promise<any>>()
+
   return async (...args: any[]) => {
     const key = JSON.stringify(args)
-    
+
     if (pendingRequests.has(key)) {
-      return pendingRequests.get(key)
+      return pendingRequests.get(key) as Promise<any>
     }
-    
+
     const promise = baseQueryFn(...args)
     pendingRequests.set(key, promise)
-    
+
     try {
       const result = await promise
-      pendingRequests.delete(key)
       return result
-    } catch (error) {
+    } finally {
       pendingRequests.delete(key)
-      throw error
     }
   }
 }

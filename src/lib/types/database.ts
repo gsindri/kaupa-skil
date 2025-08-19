@@ -687,7 +687,7 @@ export interface Database {
         Returns: boolean
       }
       get_user_memberships: {
-        Args: {}
+        Args: Record<string, never>
         Returns: {
           membership_id: string
           tenant_id: string

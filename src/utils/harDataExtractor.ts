@@ -187,7 +187,7 @@ export class HarDataExtractor {
 
   private findFieldValue(obj: any, fieldNames: string[]): any {
     for (const field of fieldNames) {
-      if (obj.hasOwnProperty(field) && obj[field] != null && obj[field] !== '') {
+      if (Object.prototype.hasOwnProperty.call(obj, field) && obj[field] != null && obj[field] !== '') {
         return obj[field]
       }
     }
