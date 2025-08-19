@@ -686,6 +686,11 @@ describe('MockSupplierConnector', () => {
     await expect(connector.login(credentials)).resolves.not.toThrow()
   })
 
+  test('should reject login with invalid credentials', async () => {
+    const credentials = { username: 'test', password: 'wrong' }
+    await expect(connector.login(credentials)).rejects.toThrow('Invalid credentials')
+  })
+
   test('should fetch catalog items', async () => {
     await connector.login({ username: 'test', password: 'test123' })
     const catalog = await connector.fetchCatalog()
