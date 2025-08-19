@@ -149,10 +149,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     })
 
-    const storageKey = (supabase.auth as any).storageKey
-    const handleStorage = (event: StorageEvent) => {
-      }
-    }
+    const storageKey = (supabase.auth as any).storageKey;
+    const handleStorage = (event: StorageEvent) => {};
 
     window.addEventListener('storage', handleStorage)
 
