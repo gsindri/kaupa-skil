@@ -46,12 +46,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const { data, error } = await supabase
         .from('profiles')
-        .select('*')
+        .select('id,email,full_name,tenant_id,created_at,updated_at')
         .eq('id', userId)
         .maybeSingle()
 
       console.log('Profile query result:', { data, error })
 
+      // Two cases to treat as "no profile": explicit PostgREST no-rows error OR data === null
       if (error) {
         console.error('Profile fetch error details:', {
           code: error.code,
@@ -59,34 +60,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           details: error.details,
           hint: error.hint
         })
-        
-        // If profile doesn't exist, try to create it
-        if (error.code === 'PGRST116' || error.message?.includes('no rows')) {
-          console.log('Profile not found, attempting to create...')
-          
-          const userEmail = userSession.user?.email
-          const userName = userSession.user?.user_metadata?.full_name || userEmail?.split('@')[0] || 'User'
-          
-          const { data: newProfile, error: createError } = await supabase
-            .from('profiles')
-            .insert({
-              id: userId,
-              email: userEmail,
-              full_name: userName
-            })
-            .select()
-            .single()
-
-          if (createError) {
-            console.error('Failed to create profile:', createError)
-            throw createError
-          }
-
-          console.log('Profile created successfully:', newProfile)
-          return newProfile
+        // If it's specifically "no rows", fall through to creation below.
+        if (!(error.code === 'PGRST116' || error.message?.includes('no rows'))) {
+          throw error
         }
-        
-        throw error
+      }
+
+      // If we have no error but also no data, we still need to create the profile.
+      if (!data) {
+        console.log('Profile not found (no rows). Attempting to create…')
+        const userEmail = userSession?.user?.email ?? null
+        const userName =
+          (userSession?.user?.user_metadata as any)?.full_name ||
+          userEmail?.split('@')[0] ||
+          'User'
+
+        const { data: newProfile, error: createError } = await supabase
+          .from('profiles')
+          .upsert({ id: userId, email: userEmail, full_name: userName }, { onConflict: 'id' })
+          .select('id,email,full_name,tenant_id,created_at,updated_at')
+          .single()
+
+        if (createError) {
+          console.error('Failed to create profile:', createError)
+          throw createError
+        }
+        console.log('Profile created successfully:', newProfile)
+        return newProfile
       }
 
       console.log('Profile fetched successfully:', data)
@@ -181,7 +181,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setIsFirstTime(false)
       
       // Redirect to login page
-      window.location.href = '/login'
+      window.location.assign('/login')
     } catch (error) {
       console.error('Sign out error:', error)
       throw error
@@ -237,6 +237,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     console.log('=== AUTH INITIALIZATION ===')
     let mounted = true
+    let initialized = false
     
     // Set up the auth listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(handleAuthStateChange)
@@ -254,6 +255,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       
       console.log('Initial session retrieved:', !!initialSession)
+      initialized = true
       
       // Trigger the auth state change handler with the initial session
       if (initialSession) {
@@ -265,7 +267,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Safety timeout
     const safetyTimeout = setTimeout(() => {
-      if (mounted && !isInitialized) {
+      if (mounted && !initialized) {
         console.warn('Auth initialization safety timeout')
         setLoading(false)
         setIsInitialized(true)
@@ -281,7 +283,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       subscription.unsubscribe()
       clearTimeout(safetyTimeout)
     }
-  }, []) // Empty dependency array - only run once
+  }, []) // run once
 
   // Debug logging
   useEffect(() => {

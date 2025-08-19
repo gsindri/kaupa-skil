@@ -9,7 +9,7 @@ interface AuthGateProps {
 }
 
 export function AuthGate({ children }: AuthGateProps) {
-  const { user, profile, loading, isInitialized, error, refetch } = useAuth()
+  const { user, session, profile, loading, isInitialized, error, refetch } = useAuth()
   const location = useLocation()
   const [profileRetryCount, setProfileRetryCount] = useState(0)
   const [showDetailedError, setShowDetailedError] = useState(false)
@@ -124,7 +124,7 @@ export function AuthGate({ children }: AuthGateProps) {
               <summary className="cursor-pointer text-muted-foreground mb-2">Debug Information</summary>
               <div className="bg-muted p-3 rounded text-xs space-y-1">
                 <div>User ID: {user?.id}</div>
-                <div>Session: {user ? 'Valid' : 'Invalid'}</div>
+                <div>Session: {session ? 'Valid' : 'Invalid'}</div>
                 <div>Profile: {profile ? 'Loaded' : 'Not loaded'}</div>
                 <div>Error: {error}</div>
                 <div>Retry Count: {profileRetryCount}</div>
