@@ -1,8 +1,8 @@
 
 import React, { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
-import { useSettings } from '@/contexts/SettingsProvider';
-import { useCart } from '@/contexts/BasketProvider';
+import { useSettings } from '@/contexts/SettingsProviderUtils';
+import { useCart } from '@/contexts/BasketProviderUtils';
 import { ItemBadges, PriceDisplay } from './ItemCardEnhancements';
 import { QuantityControls } from './QuantityControls';
 

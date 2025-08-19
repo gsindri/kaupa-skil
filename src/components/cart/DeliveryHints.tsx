@@ -3,8 +3,8 @@ import React from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { TrendingUp, Plus } from 'lucide-react'
-import { useCart } from '@/contexts/BasketProvider'
-import { useSettings } from '@/contexts/SettingsProvider'
+import { useCart } from '@/contexts/BasketProviderUtils'
+import { useSettings } from '@/contexts/SettingsProviderUtils'
 
 interface DeliveryHint {
   supplierId: string

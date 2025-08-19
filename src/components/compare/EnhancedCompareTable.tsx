@@ -21,7 +21,7 @@ import {
 import { Sparkline } from '@/components/ui/Sparkline'
 import PriceBadge from '@/components/ui/PriceBadge'
 import VatToggle from '@/components/ui/VatToggle'
-import { useSettings } from '@/contexts/SettingsProvider'
+import { useSettings } from '@/contexts/SettingsProviderUtils'
 
 interface PriceData {
   supplierId: string

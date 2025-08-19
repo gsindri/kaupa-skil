@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Lightbulb, Plus, TrendingUp, Clock } from 'lucide-react';
 import { useOrderingSuggestions } from '@/hooks/useOrderingSuggestions';
-import { useSettings } from '@/contexts/SettingsProvider';
+import { useSettings } from '@/contexts/SettingsProviderUtils';
 
 interface SmartSuggestionsProps {
   onAddSuggestedItem: (itemId: string) => void;

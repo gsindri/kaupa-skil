@@ -12,9 +12,9 @@ import {
   SidebarHeader
 } from "@/components/ui/sidebar"
 import { NavLink } from "react-router-dom"
-import { useAuth } from "@/contexts/AuthProvider"
+import { useAuth } from '@/contexts/AuthProviderUtils'
 import { Badge } from "@/components/ui/badge"
-import { useBasket } from "@/contexts/BasketProvider"
+import { useBasket } from '@/contexts/BasketProviderUtils'
 import { usePermissions } from "@/hooks/usePermissions"
 
 // Core workflow pages

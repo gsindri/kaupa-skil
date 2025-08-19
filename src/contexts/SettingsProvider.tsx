@@ -1,18 +1,8 @@
 
-import React, { createContext, useContext, useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
+import { SettingsContext } from './SettingsProviderUtils'
 
-interface SettingsContextType {
-  includeVat: boolean
-  setIncludeVat: (value: boolean) => void
-  preferredUnit: string
-  setPreferredUnit: (value: string) => void
-  userMode: 'just-order' | 'balanced' | 'analytical'
-  setUserMode: (value: 'just-order' | 'balanced' | 'analytical') => void
-}
-
-const SettingsContext = createContext<SettingsContextType | undefined>(undefined)
-
-export function SettingsProvider({ children }: { children: React.ReactNode }) {
+export default function SettingsProvider({ children }: { children: React.ReactNode }) {
   const [includeVat, setIncludeVat] = useState(() => {
     const saved = localStorage.getItem('procurewise-include-vat')
     return saved ? JSON.parse(saved) : false
@@ -85,12 +75,4 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
       {children}
     </SettingsContext.Provider>
   )
-}
-
-export function useSettings() {
-  const context = useContext(SettingsContext)
-  if (context === undefined) {
-    throw new Error('useSettings must be used within a SettingsProvider')
-  }
-  return context
 }

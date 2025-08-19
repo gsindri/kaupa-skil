@@ -1,34 +1,7 @@
 
 import React, { useEffect } from 'react'
 import { PerformanceMonitor } from '@/lib/performance'
-
-interface AnalyticsEvent {
-  event: string
-  properties?: Record<string, any>
-}
-
-class AnalyticsTracker {
-  private static events: AnalyticsEvent[] = []
-  
-  static track(event: string, properties?: Record<string, any>) {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('Analytics:', event, properties)
-    }
-    
-    this.events.push({ event, properties })
-    
-    // In production, you would send this to your analytics service
-    // Example: analytics.track(event, properties)
-  }
-  
-  static getEvents() {
-    return this.events
-  }
-  
-  static clearEvents() {
-    this.events = []
-  }
-}
+import { AnalyticsTracker } from './AnalyticsTrackerUtils'
 
 interface AnalyticsTrackerProps {
   searchQuery?: string
@@ -36,7 +9,7 @@ interface AnalyticsTrackerProps {
   userMode?: string
 }
 
-export function AnalyticsTrackerComponent({ 
+export default function AnalyticsTrackerComponent({
   searchQuery, 
   resultCount, 
   userMode 
@@ -70,5 +43,3 @@ export function AnalyticsTrackerComponent({
 
   return null // This component doesn't render anything
 }
-
-export { AnalyticsTracker }
