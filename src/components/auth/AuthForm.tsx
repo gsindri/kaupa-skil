@@ -1,6 +1,4 @@
 
-import React, { useState, useEffect } from "react";
-import { Eye, EyeOff, CheckCircle2, RefreshCw } from "lucide-react";
 import { useAuth } from '@/contexts/useAuth';
 import { Link } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
@@ -21,87 +19,65 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
   const [caps, setCaps] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [remember, setRemember] = useState(true);
-  const [errorType, setErrorType] = useState<null | "existing" | "unconfirmed">(null);
-  const [resending, setResending] = useState(false);
-  const [resendCooldown, setResendCooldown] = useState(0);
-
-  const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  const passwordValid = isLogin ? password.length > 0 : password.length >= 6;
-
-  useEffect(() => {
-    if (resendCooldown > 0) {
-      const t = setTimeout(() => setResendCooldown((c) => c - 1), 1000);
-      return () => clearTimeout(t);
-    }
-  }, [resendCooldown]);
-
-  async function handleResend() {
-    if (resendCooldown > 0 || resending) return;
-    setResending(true);
-    try {
-      const { error } = await supabase.auth.resend({ type: 'signup', email });
-      if (error) throw error;
-      toast({ title: 'Email sent', description: 'Activation email resent.' });
-      setResendCooldown(60);
-    } catch (err: any) {
-      toast({ variant: 'destructive', title: 'Error', description: String(err?.message || err) });
-    } finally {
-      setResending(false);
-    }
-  }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!emailValid) {
-      toast({ variant: "destructive", title: "Invalid email", description: "Enter a valid email address." });
+
+    setEmailError("");
+    setPasswordError("");
+    setFullNameError("");
+    setFormError("");
+
+    const emailTrimmed = email.trim();
+    const fullNameTrimmed = fullName.trim();
+    let hasError = false;
+
+    if (!emailTrimmed) {
+      setEmailError("Email is required.");
+      hasError = true;
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailTrimmed)) {
+      setEmailError("Enter a valid email address.");
+      hasError = true;
+    }
+
+    if (!password) {
+      setPasswordError("Password is required.");
+      hasError = true;
+    } else if (!isLogin && password.length < 6) {
+      setPasswordError("Password must be at least 6 characters.");
+      hasError = true;
+    }
+
+    if (!isLogin && !fullNameTrimmed) {
+      setFullNameError("Full name is required.");
+      hasError = true;
+    }
+
+    if (hasError) {
+      setFormError("Please fix the errors below.");
+      requestAnimationFrame(() => errorRef.current?.focus());
       return;
     }
-    if (!isLogin && password.length < 6) {
-      toast({ variant: "destructive", title: "Weak password", description: "Min 6 characters." });
-      return;
-    }
-    
+
     console.log('Form submission started, mode:', mode)
     setBusy(true);
-    setErrorType(null);
 
     try {
       if (isLogin) {
         console.log('Starting sign in process...')
-        await signIn(email.trim(), password, remember);
+        await signIn(emailTrimmed, password, remember);
         console.log('Sign in completed successfully')
         toast({ title: "Welcome back", description: "Signed in successfully." });
-
-        // Let AuthGate handle the redirect based on auth state
-        // No manual navigation needed
+        
       } else {
         console.log('Starting sign up process...')
-        await signUp(email.trim(), password, fullName.trim());
+        await signUp(emailTrimmed, password, fullNameTrimmed);
         setShowConfirm(true);
         toast({ title: "Account created", description: "Check your email to verify.", duration: 5000 });
       }
     } catch (err: any) {
       console.error('Auth form error:', err)
       const msg = String(err?.message || err);
-      if (isLogin) {
-        const detail =
-          /Invalid login credentials/i.test(msg) ? "Please check your email and password."
-          : /invalid/i.test(msg) && /email/i.test(msg) ? "Please enter a valid email address."
-          : "An error occurred. Please try again.";
-        toast({ variant: "destructive", title: "Sign in failed", description: detail });
-      } else {
-        if (/User already registered/i.test(msg)) {
-          setErrorType("existing");
-        } else if (/Email not confirmed/i.test(msg)) {
-          setErrorType("unconfirmed");
-        } else if (/over_email_send_rate_limit/i.test(msg)) {
-          toast({ variant: "destructive", title: "Sign up failed", description: "Too many emails sent. Please wait a few minutes before trying again." });
-        } else if (/invalid/i.test(msg) && /email/i.test(msg)) {
-          toast({ variant: "destructive", title: "Sign up failed", description: "Please enter a valid email address." });
-        } else {
-          toast({ variant: "destructive", title: "Sign up failed", description: "An error occurred. Please try again." });
-        }
-      }
     } finally {
       setBusy(false);
     }
@@ -179,59 +155,84 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
 
   return (
     <form onSubmit={onSubmit} className="space-y-4" noValidate>
+      {formError && (
+        <div
+          ref={errorRef}
+          role="alert"
+          tabIndex={-1}
+          className="rounded-md border border-red-300 bg-red-50 p-3 text-sm text-red-700"
+        >
+          {formError}
+        </div>
+      )}
       {!isLogin && (
         <div>
           <label htmlFor="fullName" className="sr-only">Full name</label>
           <input
-            id="fullName" 
-            type="text" 
-            required 
+            id="fullName"
+            type="text"
+            required
             disabled={busy}
-            value={fullName} 
+            value={fullName}
             onChange={(e) => setFullName(e.target.value)}
-            className="w-full rounded-full border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:ring-4 focus:ring-blue-100"
+            aria-invalid={!!fullNameError}
+            aria-describedby={fullNameError ? "fullName-error" : undefined}
+            className="w-full rounded-full border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
             placeholder="Full name"
           />
+          {fullNameError && (
+            <p id="fullName-error" className="mt-1 text-xs text-red-600">
+              {fullNameError}
+            </p>
+          )}
         </div>
       )}
 
       <div>
         <label htmlFor="email" className="sr-only">Email</label>
         <input
-          id="email" 
-          type="email" 
-          autoComplete="email" 
-          required 
+          id="email"
+          type="email"
+          autoComplete="email"
+          required
           disabled={busy}
-          aria-invalid={!emailValid && email.length > 0}
-          value={email} 
+          aria-invalid={!!emailError}
+          aria-describedby={emailError ? "email-error" : undefined}
+          value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full rounded-full border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:ring-4 focus:ring-blue-100"
+          className="w-full rounded-full border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
           placeholder="Email"
         />
+        {emailError && (
+          <p id="email-error" className="mt-1 text-xs text-red-600">
+            {emailError}
+          </p>
+        )}
       </div>
 
       <div>
         <div className="relative">
           <input
-            id="password" 
+            id="password"
             type={showPwd ? "text" : "password"}
             autoComplete={isLogin ? "current-password" : "new-password"}
-            required 
+            required
             disabled={busy}
-            value={password} 
+            value={password}
             onChange={(e) => setPassword(e.target.value)}
             onKeyDown={(e) => setCaps((e as any).getModifierState?.("CapsLock"))}
             onKeyUp={(e) => setCaps((e as any).getModifierState?.("CapsLock"))}
             minLength={!isLogin ? 6 : undefined}
-            className="w-full rounded-full border border-slate-300 bg-white px-4 py-3 pr-10 text-sm outline-none focus:ring-4 focus:ring-blue-100"
+            aria-invalid={!!passwordError}
+            aria-describedby={passwordError ? "password-error" : undefined}
+            className="w-full rounded-full border border-slate-300 bg-white px-4 py-3 pr-10 text-sm outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
             placeholder="Password"
           />
           <button
-            type="button" 
+            type="button"
             aria-label={showPwd ? "Hide password" : "Show password"}
             onClick={() => setShowPwd((v) => !v)}
-            className="absolute inset-y-0 right-2 inline-flex items-center rounded-lg p-2 text-gray-500 hover:bg-gray-100"
+            className="absolute inset-y-0 right-2 inline-flex items-center rounded-lg p-2 text-gray-500 hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
             disabled={busy}
           >
             {showPwd ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -239,11 +240,16 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
         </div>
 
         {isLogin ? (
-          <Link to="/reset-password" className="mt-1 inline-block text-xs text-blue-600 hover:underline">
+          <Link to="/forgot-password" className="mt-1 inline-block text-xs text-blue-600 hover:underline">
             Forgot password?
           </Link>
         ) : (
           <p className="mt-1 text-xs text-gray-500">Password must be at least 6 characters.</p>
+        )}
+        {passwordError && (
+          <p id="password-error" className="mt-1 text-xs text-red-600">
+            {passwordError}
+          </p>
         )}
         {caps && <p className="mt-1 text-xs text-amber-600">Caps Lock is on.</p>}
       </div>
@@ -266,8 +272,6 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
 
       <button
         type="submit"
-        disabled={busy || !emailValid || !passwordValid}
-        className="w-full rounded-full bg-blue-500 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-600 disabled:opacity-50"
       >
         {busy ? (isLogin ? "Signing in…" : "Creating account…") : (isLogin ? "Sign In" : "Create account")}
       </button>

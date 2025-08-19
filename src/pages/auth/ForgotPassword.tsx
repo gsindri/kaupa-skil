@@ -6,13 +6,14 @@ import { toast } from "@/hooks/use-toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 /** ─────────────────────────────────────────────────────────────────────────────
- * Password reset page with top banner (logo left / auth links right)
+ * Forgot password page with top banner (logo left / auth links right)
  * Vertical card (narrower) + same input/button style as login
  * ────────────────────────────────────────────────────────────────────────────*/
-export default function PasswordReset() {
+export default function ForgotPassword() {
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [cooldown, setCooldown] = useState(0);
   const emailInputRef = useRef<HTMLInputElement>(null);
 
   const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -20,6 +21,12 @@ export default function PasswordReset() {
   useEffect(() => {
     emailInputRef.current?.focus();
   }, []);
+
+  useEffect(() => {
+    if (!cooldown) return;
+    const timer = setInterval(() => setCooldown((c) => c - 1), 1000);
+    return () => clearInterval(timer);
+  }, [cooldown]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,15 +38,17 @@ export default function PasswordReset() {
       });
       return;
     }
+    if (cooldown > 0) return;
 
     setIsLoading(true);
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-        redirectTo: `${window.location.origin}/login`,
+        redirectTo: `${window.location.origin}/reset-password`,
       });
       if (error) throw error;
 
       setIsSuccess(true);
+      setCooldown(30);
       toast({
         title: "Reset email sent",
         description: "Check your inbox for the password reset link.",
@@ -103,10 +112,14 @@ export default function PasswordReset() {
 
                 <button
                   type="submit"
-                  disabled={isLoading || !emailValid}
+                  disabled={isLoading || !emailValid || cooldown > 0}
                   className="w-full rounded-full bg-blue-500 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-600 disabled:opacity-50"
                 >
-                  {isLoading ? "Sending…" : "Send login link"}
+                  {isLoading
+                    ? "Sending…"
+                    : cooldown > 0
+                    ? `Resend in ${cooldown}s`
+                    : "Send reset link"}
                 </button>
 
                 <div className="relative my-1">
@@ -157,6 +170,7 @@ export default function PasswordReset() {
                     className="font-medium text-blue-600 hover:underline"
                     onClick={() => {
                       setIsSuccess(false);
+                      setCooldown(0);
                       setTimeout(() => emailInputRef.current?.focus(), 0);
                     }}
                   >
