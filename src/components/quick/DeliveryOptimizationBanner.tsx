@@ -15,7 +15,7 @@ import {
   TrendingDown
 } from 'lucide-react';
 import { useCart } from '@/contexts/BasketProviderUtils';
-import { useSettings } from '@/contexts/SettingsProviderUtils';
+import { useSettings } from '@/contexts/useSettings';
 import type { OrderDeliveryOptimization } from '@/lib/types/delivery';
 
 interface DeliveryOptimizationBannerProps {

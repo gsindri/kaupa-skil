@@ -1,4 +1,4 @@
-import { createContext, useContext } from 'react'
+import { createContext } from 'react'
 
 export interface SettingsContextType {
   includeVat: boolean
@@ -11,10 +11,3 @@ export interface SettingsContextType {
 
 export const SettingsContext = createContext<SettingsContextType | undefined>(undefined)
 
-export function useSettings() {
-  const context = useContext(SettingsContext)
-  if (context === undefined) {
-    throw new Error('useSettings must be used within a SettingsProvider')
-  }
-  return context
-}

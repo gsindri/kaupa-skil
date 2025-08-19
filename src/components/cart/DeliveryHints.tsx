@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { TrendingUp, Plus } from 'lucide-react'
 import { useCart } from '@/contexts/BasketProviderUtils'
-import { useSettings } from '@/contexts/SettingsProviderUtils'
+import { useSettings } from '@/contexts/useSettings'
 
 interface DeliveryHint {
   supplierId: string
