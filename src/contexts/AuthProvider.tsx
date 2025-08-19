@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react'
 import { supabase } from '@/integrations/supabase/client'
-import type { User, Session } from '@supabase/supabase-js'
+import type { User, Session, AuthTokenResponse, AuthResponse } from '@supabase/supabase-js'
 import { AuthContext, AuthContextType, Profile } from './AuthProviderUtils'
 
 export default function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -56,41 +56,85 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
   const SESSION_ACTIVE_KEY = 'sb-session-active'
 
   const signIn = useCallback(
-    async (email: string, password: string, remember = true) => {
+    async (
+      email: string,
+      password: string,
+      remember = true
+    ): Promise<AuthTokenResponse> => {
       setLoading(true)
       setError(null)
-      const { error } = await supabase.auth.signInWithPassword({ email, password })
-      if (error) {
-        setError(error.message)
-      } else {
+      try {
+        const result = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        })
+        if (result.error) {
+          setError(result.error.message)
+          throw result.error
+        }
         if (!remember) {
           localStorage.setItem(TEMP_SESSION_KEY, 'true')
         } else {
           localStorage.removeItem(TEMP_SESSION_KEY)
         }
         sessionStorage.setItem(SESSION_ACTIVE_KEY, 'true')
+        return result
+      } finally {
+        setLoading(false)
       }
-      setLoading(false)
     },
     []
   )
 
-  const signUp = useCallback(async (email: string, password: string, fullName: string) => {
-    setLoading(true)
-    setError(null)
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: `${window.location.origin}/`,
-        data: { full_name: fullName },
-      },
-    })
-    if (error) {
-      setError(error.message)
-    }
-    setLoading(false)
-  }, [])
+  const signUp = useCallback(
+    async (
+      email: string,
+      password: string,
+      fullName: string
+    ): Promise<AuthResponse> => {
+      setLoading(true)
+      setError(null)
+      try {
+        const result = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/`,
+            data: { full_name: fullName },
+          },
+        })
+        if (result.error) {
+          setError(result.error.message)
+          throw result.error
+        }
+        return result
+      } finally {
+        setLoading(false)
+      }
+    },
+    []
+  )
+
+  const resendConfirmation = useCallback(
+    async (email: string): Promise<AuthResponse> => {
+      setLoading(true)
+      setError(null)
+      try {
+        const result = await supabase.auth.resend({
+          type: 'signup',
+          email,
+        })
+        if (result.error) {
+          setError(result.error.message)
+          throw result.error
+        }
+        return result
+      } finally {
+        setLoading(false)
+      }
+    },
+    []
+  )
 
   const signOut = useCallback(async () => {
     setLoading(true)
@@ -164,6 +208,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
       signIn,
       signUp,
       signOut,
+      resendConfirmation,
     }}>
       {children}
     </AuthContext.Provider>

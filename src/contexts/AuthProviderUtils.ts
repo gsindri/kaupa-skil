@@ -1,5 +1,10 @@
 import { createContext } from 'react'
-import type { User, Session } from '@supabase/supabase-js'
+import type {
+  User,
+  Session,
+  AuthTokenResponse,
+  AuthResponse,
+} from '@supabase/supabase-js'
 import type { Database } from '@/lib/types/database'
 
 export type Profile = Database['public']['Tables']['profiles']['Row']
@@ -13,9 +18,18 @@ export interface AuthContextType {
   isInitialized: boolean
   error: string | null
   refetch: () => Promise<void>
-  signIn: (email: string, password: string, remember?: boolean) => Promise<void>
-  signUp: (email: string, password: string, fullName: string) => Promise<void>
+  signIn: (
+    email: string,
+    password: string,
+    remember?: boolean
+  ) => Promise<AuthTokenResponse>
+  signUp: (
+    email: string,
+    password: string,
+    fullName: string
+  ) => Promise<AuthResponse>
   signOut: () => Promise<void>
+  resendConfirmation: (email: string) => Promise<AuthResponse>
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined)
