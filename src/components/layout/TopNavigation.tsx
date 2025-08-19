@@ -17,7 +17,7 @@ import VatToggle from '@/components/ui/VatToggle'
 import { TenantSwitcher } from './TenantSwitcher'
 
 export function TopNavigation() {
-  const { profile, user, signOut, loading } = useAuth()
+  const { profile, user, signOut, loading, profileLoading } = useAuth()
   const { includeVat, setIncludeVat } = useSettings()
   const location = useLocation()
   const isQuickOrderPage = location.pathname === '/'
@@ -34,6 +34,8 @@ export function TopNavigation() {
   const displayName = profile?.full_name || user?.email?.split('@')[0] || 'User'
   const displayEmail = profile?.email || user?.email || ''
   const userInitial = displayName[0]?.toUpperCase() || 'U'
+
+  const isBusy = loading || profileLoading
 
   return (
     <div className="sticky top-0 z-50 h-14 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -73,9 +75,9 @@ export function TopNavigation() {
           {/* User Menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="flex items-center space-x-2" disabled={loading}>
+              <Button variant="ghost" className="flex items-center space-x-2" disabled={isBusy}>
                 <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                  {loading ? (
+                  {isBusy ? (
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
                   ) : (
                     <span className="text-sm font-medium">{userInitial}</span>
