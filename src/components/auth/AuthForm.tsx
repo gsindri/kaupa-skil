@@ -1,10 +1,9 @@
 
-import React, { useRef, useState } from "react";
-import { Eye, EyeOff, CheckCircle2 } from "lucide-react";
 import { useAuth } from '@/contexts/useAuth';
 import { Link } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { supabase } from "@/integrations/supabase/client";
 
 export type AuthMode = "login" | "signup";
 
@@ -20,13 +19,6 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
   const [caps, setCaps] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [remember, setRemember] = useState(true);
-  const [emailError, setEmailError] = useState("");
-  const [passwordError, setPasswordError] = useState("");
-  const [fullNameError, setFullNameError] = useState("");
-  const [formError, setFormError] = useState("");
-
-  const errorRef = useRef<HTMLDivElement>(null);
-
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -76,6 +68,7 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
         await signIn(emailTrimmed, password, remember);
         console.log('Sign in completed successfully')
         toast({ title: "Welcome back", description: "Signed in successfully." });
+        
       } else {
         console.log('Starting sign up process...')
         await signUp(emailTrimmed, password, fullNameTrimmed);
@@ -85,15 +78,6 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
     } catch (err: any) {
       console.error('Auth form error:', err)
       const msg = String(err?.message || err);
-      const title = isLogin ? "Sign in failed" : "Sign up failed";
-      const detail =
-        /Invalid login credentials/i.test(msg) ? "Please check your email and password."
-        : /User already registered/i.test(msg) ? "An account with this email already exists. Try signing in instead."
-        : /over_email_send_rate_limit/i.test(msg) ? "Too many emails sent. Please wait a few minutes before trying again."
-        : /invalid/i.test(msg) && /email/i.test(msg) ? "Please enter a valid email address."
-        : "An error occurred. Please try again.";
-      setFormError(detail);
-      requestAnimationFrame(() => errorRef.current?.focus());
     } finally {
       setBusy(false);
     }
@@ -101,12 +85,71 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
 
   if (!isLogin && showConfirm) {
     return (
-      <Alert className="border-green-200 bg-green-50">
-        <CheckCircle2 className="h-4 w-4" />
-        <AlertDescription className="text-sm">
-          We emailed a confirmation link to <span className="font-medium">{email}</span>. Check your inbox/spam.
-        </AlertDescription>
-      </Alert>
+      <div className="space-y-4">
+        <Alert className="border-green-200 bg-green-50">
+          <CheckCircle2 className="h-4 w-4" />
+          <AlertDescription className="text-sm">
+            We’ve sent a confirmation email. Please check your inbox.
+          </AlertDescription>
+        </Alert>
+        <div className="text-center">
+          <Link to="/login" className="text-sm text-blue-600 hover:underline">
+            Back to sign in
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (errorType === "existing") {
+    return (
+      <div className="space-y-4">
+        <Alert variant="destructive">
+          <AlertDescription className="text-sm">
+            An account with this email already exists.
+          </AlertDescription>
+        </Alert>
+        <div className="flex justify-between text-sm">
+          <Link to="/reset-password" className="text-blue-600 hover:underline">
+            Forgot password?
+          </Link>
+          <Link to="/login" className="text-blue-600 hover:underline">
+            Back to sign in
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (errorType === "unconfirmed") {
+    return (
+      <div className="space-y-4">
+        <Alert>
+          <AlertDescription className="text-sm">
+            Check your email to activate your account.
+          </AlertDescription>
+        </Alert>
+        <div className="flex justify-center">
+          <button
+            type="button"
+            onClick={handleResend}
+            disabled={resending || resendCooldown > 0}
+            className="inline-flex items-center gap-2 text-sm text-blue-600 hover:underline disabled:opacity-50"
+          >
+            {resending ? (
+              <RefreshCw className="h-4 w-4 animate-spin" />
+            ) : (
+              <RefreshCw className="h-4 w-4" />
+            )}
+            {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : "Resend activation email"}
+          </button>
+        </div>
+        <div className="text-center">
+          <Link to="/login" className="text-sm text-blue-600 hover:underline">
+            Back to sign in
+          </Link>
+        </div>
+      </div>
     );
   }
 
@@ -229,8 +272,6 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
 
       <button
         type="submit"
-        disabled={busy}
-        className="w-full rounded-full bg-blue-500 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-600 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
       >
         {busy ? (isLogin ? "Signing in…" : "Creating account…") : (isLogin ? "Sign In" : "Create account")}
       </button>
