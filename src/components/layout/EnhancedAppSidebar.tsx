@@ -11,7 +11,7 @@ import {
   SidebarFooter,
   SidebarHeader
 } from "@/components/ui/sidebar"
-import { useLocation, Link } from "react-router-dom"
+import { NavLink } from "react-router-dom"
 import { useAuth } from "@/contexts/AuthProvider"
 import { Badge } from "@/components/ui/badge"
 import { useBasket } from "@/contexts/BasketProvider"
@@ -21,13 +21,13 @@ import { usePermissions } from "@/hooks/usePermissions"
 const coreItems = [
   {
     title: "Quick Order",
-    url: "/",
+    url: "/quick-order",
     icon: Zap,
     description: "Fast ordering hub"
   },
   {
     title: "Basket",
-    url: "/orders",
+    url: "/basket",
     icon: ShoppingCart,
     description: "Current basket & orders"
   },
@@ -76,7 +76,6 @@ const adminItems = [
 ]
 
 export function EnhancedAppSidebar() {
-  const location = useLocation()
   const { profile, user } = useAuth()
   const { getTotalItems } = useBasket()
   const { memberships } = usePermissions()
@@ -105,27 +104,32 @@ export function EnhancedAppSidebar() {
             <SidebarMenu>
               {coreItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={location.pathname === item.url}
-                  >
-                    <Link to={item.url} className="flex items-center justify-between w-full">
-                      <div className="flex items-center">
-                        <item.icon className="mr-2 h-4 w-4" />
-                        <div className="flex flex-col items-start">
-                          <span>{item.title}</span>
-                          {item.description && (
-                            <span className="text-xs text-muted-foreground">{item.description}</span>
+                  <NavLink to={item.url} className="w-full">
+                    {({ isActive }) => (
+                      <SidebarMenuButton asChild isActive={isActive} className="w-full">
+                        <div className="flex items-center justify-between w-full">
+                          <div className="flex items-center">
+                            <item.icon className="mr-2 h-4 w-4" />
+                            <div className="flex flex-col items-start">
+                              <span>{item.title}</span>
+                              {item.description && (
+                                <span className="text-xs text-muted-foreground">{item.description}</span>
+                              )}
+                            </div>
+                          </div>
+                          {item.title === "Basket" && basketItemCount > 0 && (
+                            <Badge
+                              variant="secondary"
+                              className="ml-2 font-mono"
+                              style={{ fontFeatureSettings: '"tnum" 1' }}
+                            >
+                              {basketItemCount}
+                            </Badge>
                           )}
                         </div>
-                      </div>
-                      {item.title === "Basket" && basketItemCount > 0 && (
-                        <Badge variant="secondary" className="ml-2 font-mono" style={{ fontFeatureSettings: '"tnum" 1' }}>
-                          {basketItemCount}
-                        </Badge>
-                      )}
-                    </Link>
-                  </SidebarMenuButton>
+                      </SidebarMenuButton>
+                    )}
+                  </NavLink>
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>
@@ -138,22 +142,21 @@ export function EnhancedAppSidebar() {
             <SidebarMenu>
               {exploreItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={location.pathname === item.url}
-                  >
-                    <Link to={item.url}>
-                      <div className="flex items-center">
-                        <item.icon className="mr-2 h-4 w-4" />
-                        <div className="flex flex-col items-start">
-                          <span>{item.title}</span>
-                          {item.description && (
-                            <span className="text-xs text-muted-foreground">{item.description}</span>
-                          )}
+                  <NavLink to={item.url} className="w-full">
+                    {({ isActive }) => (
+                      <SidebarMenuButton asChild isActive={isActive} className="w-full">
+                        <div className="flex items-center">
+                          <item.icon className="mr-2 h-4 w-4" />
+                          <div className="flex flex-col items-start">
+                            <span>{item.title}</span>
+                            {item.description && (
+                              <span className="text-xs text-muted-foreground">{item.description}</span>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    </Link>
-                  </SidebarMenuButton>
+                      </SidebarMenuButton>
+                    )}
+                  </NavLink>
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>
@@ -167,15 +170,16 @@ export function EnhancedAppSidebar() {
               <SidebarMenu>
                 {adminItems.map((item) => (
                   <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={location.pathname === item.url}
-                    >
-                      <Link to={item.url}>
-                        <item.icon className="mr-2 h-4 w-4" />
-                        <span>{item.title}</span>
-                      </Link>
-                    </SidebarMenuButton>
+                    <NavLink to={item.url} className="w-full">
+                      {({ isActive }) => (
+                        <SidebarMenuButton asChild isActive={isActive} className="w-full">
+                          <div className="flex items-center">
+                            <item.icon className="mr-2 h-4 w-4" />
+                            <span>{item.title}</span>
+                          </div>
+                        </SidebarMenuButton>
+                      )}
+                    </NavLink>
                   </SidebarMenuItem>
                 ))}
               </SidebarMenu>

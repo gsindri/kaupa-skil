@@ -20,7 +20,7 @@ export function TopNavigation() {
   const { profile, user, signOut, loading, profileLoading } = useAuth()
   const { includeVat, setIncludeVat } = useSettings()
   const location = useLocation()
-  const isQuickOrderPage = location.pathname === '/'
+  const isQuickOrderPage = location.pathname === '/quick-order'
 
   const handleSignOut = async () => {
     try {

@@ -1,8 +1,8 @@
 
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter, Outlet } from "react-router-dom";
 import { AuthGate } from "@/components/auth/AuthGate";
 import { AppLayout } from "@/components/layout/AppLayout";
-import Index from "@/pages/Index";
+import QuickOrder from "@/pages/Index";
 import Dashboard from "@/pages/Dashboard";
 import Compare from "@/pages/Compare";
 import Orders from "@/pages/Orders";
@@ -18,20 +18,10 @@ import SignupPage from "@/pages/auth/SignupPage";
 import PasswordReset from "@/pages/auth/PasswordReset";
 import ErrorPage from "@/pages/ErrorPage";
 import NotFound from "@/pages/NotFound";
-import { Outlet } from "react-router-dom";
 
-export const router = createBrowserRouter([
+export const routes = [
   {
     path: "/",
-    element: (
-      <AuthGate>
-        <Index />
-      </AuthGate>
-    ),
-    errorElement: <ErrorPage />,
-  },
-  {
-    path: "/app",
     element: (
       <AuthGate>
         <AppLayout>
@@ -42,16 +32,20 @@ export const router = createBrowserRouter([
     errorElement: <ErrorPage />,
     children: [
       {
-        path: "dashboard",
+        index: true,
         element: <Dashboard />,
+      },
+      {
+        path: "quick-order",
+        element: <QuickOrder />,
+      },
+      {
+        path: "basket",
+        element: <Orders />,
       },
       {
         path: "compare",
         element: <Compare />,
-      },
-      {
-        path: "orders",
-        element: <Orders />,
       },
       {
         path: "suppliers",
@@ -62,24 +56,24 @@ export const router = createBrowserRouter([
         element: <Pantry />,
       },
       {
-        path: "settings",
-        element: <Settings />,
-      },
-      {
         path: "price-history",
         element: <PriceHistory />,
       },
       {
-        path: "delivery",
-        element: <Delivery />,
+        path: "discovery",
+        element: <Discovery />,
       },
       {
         path: "admin",
         element: <Admin />,
       },
       {
-        path: "discovery",
-        element: <Discovery />,
+        path: "settings",
+        element: <Settings />,
+      },
+      {
+        path: "delivery",
+        element: <Delivery />,
       },
     ],
   },
@@ -88,7 +82,7 @@ export const router = createBrowserRouter([
     element: <LoginPage />,
   },
   {
-    path: "/signup", 
+    path: "/signup",
     element: <SignupPage />,
   },
   {
@@ -99,4 +93,8 @@ export const router = createBrowserRouter([
     path: "*",
     element: <NotFound />,
   },
-]);
+];
+
+export const router = createBrowserRouter(routes, {
+  basename: import.meta.env.BASE_URL,
+});
