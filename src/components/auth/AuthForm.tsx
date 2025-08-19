@@ -1,10 +1,11 @@
 
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Eye, EyeOff, CheckCircle2 } from "lucide-react";
 import { useAuth } from '@/contexts/useAuth';
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { supabase } from '@/integrations/supabase/client';
 
 export type AuthMode = "login" | "signup";
 
@@ -21,8 +22,34 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
   const [caps, setCaps] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [remember, setRemember] = useState(true);
+  const [error, setError] = useState<{ message: string; action?: React.ReactNode } | null>(null);
+  const errorRef = useRef<HTMLDivElement>(null);
+  const [resending, setResending] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(false);
 
   const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+  useEffect(() => {
+    if (error) {
+      errorRef.current?.focus();
+    }
+  }, [error]);
+
+  async function handleResend() {
+    if (resending || resendCooldown) return;
+    setResending(true);
+    try {
+      await supabase.auth.resend({ type: 'signup', email: email.trim() });
+      toast({ title: 'Activation email sent', description: 'Check your inbox.' });
+    } catch (err: any) {
+      console.error('Resend activation error:', err);
+      toast({ variant: 'destructive', title: 'Failed to resend', description: String(err?.message || err) });
+    } finally {
+      setResending(false);
+      setResendCooldown(true);
+      setTimeout(() => setResendCooldown(false), 60000);
+    }
+  }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -34,19 +61,17 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
       toast({ variant: "destructive", title: "Weak password", description: "Min 6 characters." });
       return;
     }
-    
     console.log('Form submission started, mode:', mode)
     setBusy(true);
-    
+    setError(null);
+
     try {
       if (isLogin) {
         console.log('Starting sign in process...')
         await signIn(email.trim(), password, remember);
         console.log('Sign in completed successfully')
         toast({ title: "Welcome back", description: "Signed in successfully." });
-        
-        // Let AuthGate handle the redirect based on auth state
-        // No manual navigation needed
+        // AuthGate will redirect
       } else {
         console.log('Starting sign up process...')
         await signUp(email.trim(), password, fullName.trim());
@@ -55,17 +80,49 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
       }
     } catch (err: any) {
       console.error('Auth form error:', err)
-      const msg = String(err?.message || err);
-      const title = isLogin ? "Sign in failed" : "Sign up failed";
-      const detail =
-        /Invalid login credentials/i.test(msg) ? "Please check your email and password."
-        : /User already registered/i.test(msg) ? "An account with this email already exists. Try signing in instead."
-        : /over_email_send_rate_limit/i.test(msg) ? "Too many emails sent. Please wait a few minutes before trying again."
-        : /invalid/i.test(msg) && /email/i.test(msg) ? "Please enter a valid email address."
-        : "An error occurred. Please try again.";
-      toast({ variant: "destructive", title, description: detail });
+      if (isLogin) {
+        const status = err?.status
+        let message = 'An error occurred. Please try again.'
+        let action: React.ReactNode | undefined
+        if (status === 400) {
+          if (/Invalid login credentials/i.test(err?.message)) {
+            message = 'Email or password is incorrect.'
+            action = (
+              <Link to="/reset-password" className="underline">
+                Forgot password?
+              </Link>
+            )
+          } else {
+            message = 'Your account isn’t activated yet.'
+            action = (
+              <button
+                type="button"
+                onClick={handleResend}
+                disabled={resending || resendCooldown}
+                className="underline"
+              >
+                {resending ? 'Sending…' : 'Resend activation email'}
+              </button>
+            )
+          }
+        } else if (status === 429) {
+          message = 'Too many attempts. Please try again later.'
+        } else if (err?.message === 'Failed to fetch' || !status) {
+          message = 'Unable to reach the server. Please try again.'
+        }
+        setError({ message, action })
+      } else {
+        const msg = String(err?.message || err)
+        const title = 'Sign up failed'
+        const detail =
+          /User already registered/i.test(msg) ? 'An account with this email already exists. Try signing in instead.'
+          : /over_email_send_rate_limit/i.test(msg) ? 'Too many emails sent. Please wait a few minutes before trying again.'
+          : /invalid/i.test(msg) && /email/i.test(msg) ? 'Please enter a valid email address.'
+          : 'An error occurred. Please try again.'
+        toast({ variant: 'destructive', title, description: detail })
+      }
     } finally {
-      setBusy(false);
+      setBusy(false)
     }
   }
 
@@ -82,6 +139,18 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
 
   return (
     <form onSubmit={onSubmit} className="space-y-4" noValidate>
+      {error && (
+        <div
+          ref={errorRef}
+          tabIndex={-1}
+          role="alert"
+          aria-live="assertive"
+          className="rounded-md border border-red-300 bg-red-50 p-3 text-sm text-red-700"
+        >
+          <p>{error.message}</p>
+          {error.action && <div className="mt-2">{error.action}</div>}
+        </div>
+      )}
       {!isLogin && (
         <div>
           <label htmlFor="fullName" className="sr-only">Full name</label>
@@ -169,7 +238,7 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
 
       <button
         type="submit"
-        disabled={busy || !emailValid}
+        disabled={busy || !emailValid || password.length === 0}
         className="w-full rounded-full bg-blue-500 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-600 disabled:opacity-50"
       >
         {busy ? (isLogin ? "Signing in…" : "Creating account…") : (isLogin ? "Sign In" : "Create account")}
