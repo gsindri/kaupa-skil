@@ -9,6 +9,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { X, TrendingUp, Truck, Clock, AlertCircle } from 'lucide-react';
+import { useSettings } from '@/contexts/useSettings';
+import { useCart } from '@/contexts/useBasket';
 
 interface MiniCompareDrawerProps {
   itemId: string | null;

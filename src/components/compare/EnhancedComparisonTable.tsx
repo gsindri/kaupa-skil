@@ -17,6 +17,8 @@ import { Sparkline } from '@/components/ui/Sparkline'
 import { DeliveryFeeIndicator } from '@/components/delivery/DeliveryFeeIndicator'
 import { deliveryCalculator } from '@/services/DeliveryCalculator'
 import type { ComparisonItem, CartItem } from '@/lib/types'
+import { useCart } from '@/contexts/useBasket'
+import { useSettings } from '@/contexts/useSettings'
 
 interface EnhancedComparisonTableProps {
   data: ComparisonItem[]

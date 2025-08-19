@@ -10,6 +10,8 @@ import { DeliveryOptimizationBanner } from '@/components/quick/DeliveryOptimizat
 import { DeliveryFeeIndicator } from '@/components/delivery/DeliveryFeeIndicator'
 import { OrderApprovalWorkflow } from './OrderApprovalWorkflow'
 import { useToast } from '@/hooks/use-toast'
+import { useCart } from '@/contexts/useBasket'
+import { useSettings } from '@/contexts/useSettings'
 
 export function OrderComposer() {
   const { items, updateQuantity, removeItem, clearCart, getTotalItems, getTotalPrice } = useCart()

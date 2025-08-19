@@ -13,6 +13,8 @@ import { ShoppingCart, Send, CheckCircle, Save } from 'lucide-react'
 import { useDeliveryCalculation } from '@/hooks/useDeliveryOptimization'
 import { DeliveryHints } from './DeliveryHints'
 import { toast } from '@/hooks/use-toast'
+import { useCart } from '@/contexts/useBasket'
+import { useSettings } from '@/contexts/useSettings'
 
 export function BasketDrawer() {
   const { items, getTotalItems, isDrawerOpen, setIsDrawerOpen, updateQuantity, removeItem } = useCart()

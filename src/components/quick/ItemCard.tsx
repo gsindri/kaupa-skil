@@ -3,6 +3,8 @@ import React, { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { ItemBadges, PriceDisplay } from './ItemCardEnhancements';
 import { QuantityControls } from './QuantityControls';
+import { useSettings } from '@/contexts/useSettings';
+import { useCart } from '@/contexts/useBasket';
 
 interface ItemCardProps {
   item: {
