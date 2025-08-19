@@ -78,7 +78,13 @@ export class HarDataExtractor {
 
     for (const entry of entries) {
       stats.totalResponses++
-      
+      const mimeType = (entry?.response?.content?.mimeType || '').toLowerCase()
+      const responseText = entry?.response?.content?.text
+
+      if (mimeType.includes('application/json') && responseText) {
+        stats.jsonResponses++
+      }
+
       const extracted = this.extractFromEntry(entry)
       if (extracted.length > 0) {
         stats.productArrays++
@@ -100,7 +106,6 @@ export class HarDataExtractor {
     })
 
     stats.extractedItems = validatedItems.length
-    stats.jsonResponses = allItems.length > 0 ? stats.productArrays : 0
 
     return {
       items: validatedItems,
