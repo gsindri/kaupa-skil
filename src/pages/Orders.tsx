@@ -28,7 +28,7 @@ function OrdersErrorFallback({ resetErrorBoundary }: { resetErrorBoundary: () =>
           
           <Button variant="outline" onClick={() => window.location.href = '/quick-order'} className="w-full">
             <ShoppingCart className="h-4 w-4 mr-2" />
-            Go to Quick Order
+            Go to Place Order
           </Button>
         </div>
       </CardContent>

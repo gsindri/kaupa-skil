@@ -20,7 +20,7 @@ export function TopNavigation() {
   const { profile, user, signOut, loading, profileLoading } = useAuth()
   const { includeVat, setIncludeVat } = useSettings()
   const location = useLocation()
-  const isQuickOrderPage = location.pathname === '/quick-order'
+  const isPlaceOrderPage = location.pathname === '/quick-order'
 
   const handleSignOut = async () => {
     try {
@@ -45,8 +45,8 @@ export function TopNavigation() {
           {/* Tenant Switcher */}
           <TenantSwitcher />
 
-          {/* Global Search - only show when NOT on Quick Order page */}
-          {!isQuickOrderPage && (
+          {/* Global Search - only show when NOT on Place Order page */}
+          {!isPlaceOrderPage && (
             <div className="relative flex-1 max-w-md">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input

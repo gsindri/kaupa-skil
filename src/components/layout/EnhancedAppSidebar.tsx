@@ -34,28 +34,24 @@ import { Separator } from "@/components/ui/separator"
 // Core workflow pages
 const coreItems = [
   {
-    title: "Quick Order",
+    title: "Place Order",
     url: "/quick-order",
     icon: Zap,
-    description: "Fast ordering hub"
   },
   {
     title: "Basket",
     url: "/basket",
     icon: ShoppingCart,
-    description: "Current basket & orders"
   },
   {
     title: "Compare",
     url: "/compare",
     icon: TrendingUp,
-    description: "Price comparison"
   },
   {
     title: "Suppliers",
     url: "/suppliers",
     icon: Package,
-    description: "Supplier management"
   }
 ]
 
@@ -65,19 +61,16 @@ const exploreItems = [
     title: "Pantry",
     url: "/pantry",
     icon: Heart,
-    description: "Favorites & guides"
   },
   {
     title: "Price History",
     url: "/price-history",
     icon: History,
-    description: "Historical data"
   },
   {
     title: "Discovery",
     url: "/discovery",
     icon: Search,
-    description: "Find new products"
   },
 ]
 
@@ -119,7 +112,7 @@ export function EnhancedAppSidebar() {
         <SidebarContent>
           <SidebarGroup className="p-2 pb-0">
             <SidebarGroupContent>
-              <SidebarMenu>
+              <SidebarMenu className="gap-2">
               {coreItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <NavLink to={item.url} className="w-full">
@@ -128,12 +121,7 @@ export function EnhancedAppSidebar() {
                         <div className="flex items-center justify-between w-full">
                           <div className="flex items-center">
                             <item.icon className="mr-2 h-4 w-4" />
-                            <div className="flex flex-col items-start">
-                              <span>{item.title}</span>
-                              {item.description && (
-                                <span className="text-xs text-muted-foreground">{item.description}</span>
-                              )}
-                            </div>
+                            <span>{item.title}</span>
                           </div>
                           {item.title === "Basket" && basketItemCount > 0 && (
                             <Badge
@@ -154,11 +142,11 @@ export function EnhancedAppSidebar() {
             </SidebarGroupContent>
           </SidebarGroup>
 
-        <Separator className="my-2 mx-2" />
+        <Separator className="my-4 mx-2" />
 
         <SidebarGroup className="p-2 pt-0">
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="gap-2">
               {exploreItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <NavLink to={item.url} className="w-full">
@@ -166,12 +154,7 @@ export function EnhancedAppSidebar() {
                       <SidebarMenuButton asChild isActive={isActive} className="w-full">
                         <div className="flex items-center">
                           <item.icon className="mr-2 h-4 w-4" />
-                          <div className="flex flex-col items-start">
-                            <span>{item.title}</span>
-                            {item.description && (
-                              <span className="text-xs text-muted-foreground">{item.description}</span>
-                            )}
-                          </div>
+                          <span>{item.title}</span>
                         </div>
                       </SidebarMenuButton>
                     )}
@@ -186,7 +169,7 @@ export function EnhancedAppSidebar() {
           <SidebarGroup>
             <SidebarGroupLabel>Administration</SidebarGroupLabel>
             <SidebarGroupContent>
-              <SidebarMenu>
+              <SidebarMenu className="gap-2">
                 {adminItems.map((item) => (
                   <SidebarMenuItem key={item.title}>
                     <NavLink to={item.url} className="w-full">
