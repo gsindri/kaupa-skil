@@ -3,14 +3,16 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { 
-  ShoppingCart, 
-  TrendingUp, 
-  Truck, 
+import {
+  ShoppingCart,
+  TrendingUp,
+  Truck,
   AlertTriangle,
   Plus,
   Lightbulb
 } from 'lucide-react';
+import { useCart } from '@/contexts/useBasket';
+import { useSettings } from '@/contexts/useSettings';
 
 interface SmartCartSidebarProps {
   className?: string;

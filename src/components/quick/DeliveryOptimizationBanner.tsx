@@ -4,17 +4,19 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { 
-  TrendingUp, 
-  X, 
-  Truck, 
-  Plus, 
+import {
+  TrendingUp,
+  X,
+  Truck,
+  Plus,
   AlertTriangle,
   CheckCircle,
   Lightbulb,
   TrendingDown
 } from 'lucide-react';
 import type { OrderDeliveryOptimization } from '@/lib/types/delivery';
+import { useCart } from '@/contexts/useBasket';
+import { useSettings } from '@/contexts/useSettings';
 
 interface DeliveryOptimizationBannerProps {
   className?: string;

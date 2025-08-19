@@ -13,6 +13,8 @@ import {
 import { useLocation } from 'react-router-dom'
 import VatToggle from '@/components/ui/VatToggle'
 import { TenantSwitcher } from './TenantSwitcher'
+import { useAuth } from '@/contexts/useAuth'
+import { useSettings } from '@/contexts/useSettings'
 
 export function TopNavigation() {
   const { profile, user, signOut, loading, profileLoading } = useAuth()
