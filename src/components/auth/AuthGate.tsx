@@ -13,6 +13,7 @@ export function AuthGate({ children }: AuthGateProps) {
   const location = useLocation()
   const [profileRetryCount, setProfileRetryCount] = useState(0)
   const [showDetailedError, setShowDetailedError] = useState(false)
+  const [isRetrying, setIsRetrying] = useState(false)
 
   console.log('AuthGate state:', { 
     user: !!user, 
@@ -24,7 +25,8 @@ export function AuthGate({ children }: AuthGateProps) {
     hasError: !!error,
     errorMessage: error,
     currentPath: location.pathname,
-    profileRetryCount
+    profileRetryCount,
+    sessionExpiry: session?.expires_at ? new Date(session.expires_at * 1000).toISOString() : 'N/A'
   })
 
   // Show loading while auth is initializing
@@ -36,27 +38,32 @@ export function AuthGate({ children }: AuthGateProps) {
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-muted-foreground">Loading authentication...</p>
           <p className="text-xs text-muted-foreground mt-2">
-            Loading: {String(loading)}, Initialized: {String(isInitialized)}
+            {loading ? 'Initializing...' : 'Setting up...'}
           </p>
         </div>
       </div>
     )
   }
 
-  // Show error state if authentication failed to initialize
-  if (error && !user) {
+  // Show error state if authentication failed to initialize and no user
+  if (error && !user && !loading) {
     console.log('AuthGate - Showing auth error state:', error)
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center max-w-md p-6">
           <h2 className="text-xl font-semibold mb-2">Authentication Error</h2>
-          <p className="text-muted-foreground mb-4">{error}</p>
+          <p className="text-muted-foreground mb-4">
+            {error.includes('timeout') 
+              ? 'Authentication is taking longer than expected. Please try refreshing the page.'
+              : error
+            }
+          </p>
           <div className="space-y-2">
             <button
               onClick={() => window.location.reload()}
               className="px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90 w-full"
             >
-              Retry
+              Refresh Page
             </button>
             <button
               onClick={() => window.location.href = '/login'}
@@ -71,13 +78,13 @@ export function AuthGate({ children }: AuthGateProps) {
   }
 
   // Redirect to login if not authenticated
-  if (!user) {
+  if (!user && isInitialized && !loading) {
     console.log('AuthGate - Redirecting to login, no user found')
     return <Navigate to="/login" state={{ from: location }} replace />
   }
 
   // Show profile loading issue if we have a user but no profile and there's an error
-  if (!profile && error) {
+  if (user && !profile && error && !loading) {
     console.log('AuthGate - Profile loading failed with error:', error)
     
     return (
@@ -87,23 +94,27 @@ export function AuthGate({ children }: AuthGateProps) {
           <p className="text-muted-foreground mb-4">
             {error.includes('timeout') 
               ? 'Your profile is taking longer than expected to load.'
-              : `Failed to load your profile: ${error}`
+              : `Unable to load your profile: ${error}`
             }
           </p>
           <div className="space-y-2">
             <button
               onClick={async () => {
                 console.log('Retrying profile load...')
+                setIsRetrying(true)
                 setProfileRetryCount(prev => prev + 1)
                 try {
                   await refetch()
                 } catch (retryError) {
                   console.error('Profile retry failed:', retryError)
+                } finally {
+                  setIsRetrying(false)
                 }
               }}
-              className="px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90 w-full"
+              disabled={isRetrying}
+              className="px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90 w-full disabled:opacity-50"
             >
-              Retry Loading Profile (Attempt {profileRetryCount + 1})
+              {isRetrying ? 'Retrying...' : `Retry Loading Profile (${profileRetryCount + 1})`}
             </button>
             <button
               onClick={() => setShowDetailedError(!showDetailedError)}
@@ -125,6 +136,7 @@ export function AuthGate({ children }: AuthGateProps) {
               <div className="bg-muted p-3 rounded text-xs space-y-1">
                 <div>User ID: {user?.id}</div>
                 <div>Session: {session ? 'Valid' : 'Invalid'}</div>
+                <div>Session Expiry: {session?.expires_at ? new Date(session.expires_at * 1000).toLocaleString() : 'N/A'}</div>
                 <div>Profile: {profile ? 'Loaded' : 'Not loaded'}</div>
                 <div>Error: {error}</div>
                 <div>Retry Count: {profileRetryCount}</div>
@@ -139,7 +151,7 @@ export function AuthGate({ children }: AuthGateProps) {
   }
 
   // Show simple loading for profile (without error)
-  if (!profile && !error) {
+  if (user && !profile && !error) {
     console.log('AuthGate - Waiting for profile to load')
     
     return (
@@ -156,11 +168,12 @@ export function AuthGate({ children }: AuthGateProps) {
   }
 
   // Check if user needs onboarding (no tenant_id)
-  if (profile && !profile.tenant_id) {
+  if (user && profile && !profile.tenant_id) {
     console.log('AuthGate - User needs onboarding, no tenant_id')
     return <ExistingUserOnboarding />
   }
 
+  // User is authenticated and has profile - show protected content
   console.log('AuthGate - User authenticated and ready, showing protected content')
   return <>{children}</>
 }
