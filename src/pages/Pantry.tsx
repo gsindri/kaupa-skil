@@ -1,313 +1,362 @@
-
-import React, { useState, useEffect } from 'react'
-import { QuickSearch } from '@/components/quick/QuickSearch'
+import React, { useState, useMemo } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { supabase } from '@/integrations/supabase/client'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Slider } from '@/components/ui/slider'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import {
-  Settings,
-  ChevronsUpDown,
-  Grip,
-  List,
-  ArrowDown,
-  ArrowUp,
-  Package2,
-  ShoppingCart,
-  Plus,
-  Minus,
-  LucideIcon
-} from 'lucide-react'
-import { useEnhancedSupplierItems } from '@/hooks/useEnhancedSupplierItems'
-import { useSuppliers } from '@/hooks/useSuppliers'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Separator } from '@/components/ui/separator'
-import { cn } from '@/lib/utils'
-import { Skeleton } from '@/components/ui/skeleton'
-import { useToast } from '@/components/ui/use-toast'
-import { ToastAction } from '@/components/ui/toast'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { 
+  Package, 
+  TrendingUp, 
+  TrendingDown, 
+  AlertTriangle, 
+  Calendar, 
+  Search,
+  Filter,
+  Download,
+  Truck,
+  Clock,
+  CheckCircle,
+  XCircle,
+  BarChart3,
+  ShoppingCart,
+  Plus
+} from 'lucide-react'
+import { PantryLanes } from '@/components/quick/PantryLanes'
+import { useToast } from '@/hooks/use-toast'
+import { useAuth } from '@/contexts/AuthProvider'
 
-interface Item {
+interface StockItem {
   id: string
   name: string
+  sku: string
+  quantity: number
+  unit: string
+  last_ordered: string | null
+  next_delivery: string | null
   price: number
   supplier: string
-  inStock: boolean
-  imageUrl: string
+  status: 'in_stock' | 'low_stock' | 'out_of_stock'
 }
 
-interface SortOption {
-  value: 'name' | 'price' | 'supplier'
-  label: string
-  icon: LucideIcon
+interface StockFilters {
+  search: string
+  status: 'all' | 'in_stock' | 'low_stock' | 'out_of_stock'
+  sortBy: 'name' | 'last_ordered' | 'price'
+  sortOrder: 'asc' | 'desc'
 }
 
-const sortOptions: SortOption[] = [
-  { value: 'name', label: 'Name', icon: Package2 },
-  { value: 'price', label: 'Price', icon: ShoppingCart },
-  { value: 'supplier', label: 'Supplier', icon: ChevronsUpDown }
-]
+const initialFilters: StockFilters = {
+  search: '',
+  status: 'all',
+  sortBy: 'name',
+  sortOrder: 'asc'
+}
+
+function StockItemCard({ item }: { item: StockItem }) {
+  const lastOrderedDate = item.last_ordered ? new Date(item.last_ordered) : null
+  const nextDeliveryDate = item.next_delivery ? new Date(item.next_delivery) : null
+
+  return (
+    <Card className="bg-muted/50">
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-sm font-medium">{item.name}</CardTitle>
+          <Badge variant="secondary">{item.status}</Badge>
+        </div>
+      </CardHeader>
+      <CardContent className="grid gap-2">
+        <div className="text-xs text-muted-foreground">
+          SKU: {item.sku}
+        </div>
+        <div className="text-xs">
+          Quantity: {item.quantity} {item.unit}
+        </div>
+        <div className="text-xs">
+          Price: ${item.price}
+        </div>
+        <div className="text-xs">
+          Supplier: {item.supplier}
+        </div>
+        {lastOrderedDate && (
+          <div className="text-xs">
+            Last Ordered: {lastOrderedDate.toLocaleDateString()}
+          </div>
+        )}
+        {nextDeliveryDate && (
+          <div className="text-xs">
+            Next Delivery: {nextDeliveryDate.toLocaleDateString()}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  )
+}
+
+function StockAlerts() {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Stock Alerts</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <Alert variant="destructive">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>
+            <strong>3 items</strong> are out of stock.
+          </AlertDescription>
+        </Alert>
+      </CardContent>
+    </Card>
+  )
+}
+
+function StockTrends() {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Stock Trends</CardTitle>
+      </CardHeader>
+      <CardContent className="grid gap-4">
+        <div className="flex items-center justify-between">
+          <div className="space-y-1">
+            <p className="text-sm font-medium">Most Popular</p>
+            <p className="text-xs text-muted-foreground">Item X</p>
+          </div>
+          <TrendingUp className="h-5 w-5 text-green-500" />
+        </div>
+        <div className="flex items-center justify-between">
+          <div className="space-y-1">
+            <p className="text-sm font-medium">Least Popular</p>
+            <p className="text-xs text-muted-foreground">Item Y</p>
+          </div>
+          <TrendingDown className="h-5 w-5 text-red-500" />
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+function DeliverySchedule() {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Delivery Schedule</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="text-sm">
+          <Calendar className="mr-2 inline-block h-4 w-4" /> Next delivery on <strong>July 20, 2024</strong>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
 
 export default function Pantry() {
-  const [searchQuery, setSearchQuery] = useState('')
-  const [selectedSupplier, setSelectedSupplier] = useState('')
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 100])
-  const [selectedCategory, setSelectedCategory] = useState('')
-  const [showInStockOnly, setShowInStockOnly] = useState(false)
-  const [sortBy, setSortBy] = useState<'name' | 'price' | 'supplier'>('name')
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
-
-  const { suppliers, isLoading: isLoadingSuppliers } = useSuppliers()
-  const { data: items, isLoading, isError } = useEnhancedSupplierItems({
-    search: searchQuery,
-    supplierId: selectedSupplier,
-    minPrice: priceRange[0],
-    maxPrice: priceRange[1],
-    category: selectedCategory,
-    inStock: showInStockOnly
-  })
+  const [filters, setFilters] = useState<StockFilters>(initialFilters)
   const { toast } = useToast()
+  const { profile } = useAuth()
 
-  const handleItemSelect = (item: any) => {
-    console.log('Item selected from search:', item)
-    setSearchQuery(item.display_name || item.name || '')
-  }
+  const stockItems: StockItem[] = useMemo(() => [
+    {
+      id: '1',
+      name: 'Milk',
+      sku: 'M123',
+      quantity: 10,
+      unit: 'gallon',
+      last_ordered: '2024-07-01',
+      next_delivery: '2024-07-15',
+      price: 3.50,
+      supplier: 'Dairy Corp',
+      status: 'in_stock'
+    },
+    {
+      id: '2',
+      name: 'Eggs',
+      sku: 'E456',
+      quantity: 2,
+      unit: 'dozen',
+      last_ordered: '2024-07-05',
+      next_delivery: '2024-07-18',
+      price: 2.00,
+      supplier: 'Farm Fresh',
+      status: 'low_stock'
+    },
+    {
+      id: '3',
+      name: 'Bread',
+      sku: 'B789',
+      quantity: 0,
+      unit: 'loaf',
+      last_ordered: '2024-06-25',
+      next_delivery: '2024-07-22',
+      price: 2.75,
+      supplier: 'Bakery Inc',
+      status: 'out_of_stock'
+    },
+  ], [])
 
-  const handleSupplierChange = (value: string) => {
-    setSelectedSupplier(value)
-  }
+  const filteredItems = useMemo(() => {
+    let items = stockItems
 
-  const handlePriceChange = (value: number[]) => {
-    setPriceRange([value[0], value[1]] as [number, number])
-  }
+    if (filters.search) {
+      items = items.filter(item =>
+        item.name.toLowerCase().includes(filters.search.toLowerCase()) ||
+        item.sku.toLowerCase().includes(filters.search.toLowerCase())
+      )
+    }
 
-  const handleCategoryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSelectedCategory(e.target.value)
-  }
+    if (filters.status !== 'all') {
+      items = items.filter(item => item.status === filters.status)
+    }
 
-  const handleInStockChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setShowInStockOnly(e.target.checked)
-  }
-
-  const handleSortChange = (value: 'name' | 'price' | 'supplier') => {
-    setSortBy(value)
-  }
-
-  const handleSortOrderChange = () => {
-    setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')
-  }
-
-  const handleViewModeChange = (mode: 'grid' | 'list') => {
-    setViewMode(mode)
-  }
-
-  const getSortedItems = (items: any[]) => {
-    if (!items) return []
-
-    const sortedItems = [...items]
-
-    sortedItems.sort((a: any, b: any) => {
+    // Implement sorting
+    items = [...items].sort((a, b) => {
       let comparison = 0
 
-      if (sortBy === 'name') {
+      if (filters.sortBy === 'name') {
         comparison = a.name.localeCompare(b.name)
-      } else if (sortBy === 'price') {
+      } else if (filters.sortBy === 'last_ordered') {
+        const dateA = a.last_ordered ? new Date(a.last_ordered).getTime() : 0
+        const dateB = b.last_ordered ? new Date(b.last_ordered).getTime() : 0
+        comparison = dateA - dateB
+      } else if (filters.sortBy === 'price') {
         comparison = a.price - b.price
-      } else if (sortBy === 'supplier') {
-        comparison = a.supplier.localeCompare(b.supplier)
       }
 
-      return sortOrder === 'asc' ? comparison : -comparison
+      return filters.sortOrder === 'asc' ? comparison : -comparison
     })
 
-    return sortedItems
+    return items
+  }, [stockItems, filters])
+
+  const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFilters({ ...filters, search: e.target.value })
   }
 
-  const sortedItems = getSortedItems(items || [])
+  const handleStatusChange = (value: StockFilters['status']) => {
+    setFilters({ ...filters, status: value })
+  }
 
-  const addToOrder = (item: any) => {
-    toast({
-      title: 'Added to order',
-      description: `${item.name} added to your current order`,
-      action: <ToastAction altText="Goto order">Go to order</ToastAction>
-    })
+  const handleSortByChange = (value: StockFilters['sortBy']) => {
+    setFilters({ ...filters, sortBy: value })
+  }
+
+  const handleSortOrderChange = (value: StockFilters['sortOrder']) => {
+    setFilters({ ...filters, sortOrder: value })
   }
 
   return (
-    <div className="container mx-auto px-4 py-6 space-y-6">
-      {/* Header */}
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold">Pantry Lanes</h1>
-          <p className="text-muted-foreground">
-            Organize your frequent purchases into virtual aisles
-          </p>
-        </div>
-        
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" className="gap-2">
-            <Settings className="h-4 w-4" />
-            Configure Lanes
+    <div className="container space-y-6 py-10">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">Pantry Inventory</h1>
+        <div className="space-x-2">
+          <Button variant="outline">
+            <Download className="mr-2 h-4 w-4" />
+            Export
+          </Button>
+          <Button>
+            <Plus className="mr-2 h-4 w-4" />
+            Add Item
           </Button>
         </div>
       </div>
 
-      {/* Search and Controls */}
-      <div className="flex flex-col lg:flex-row gap-4">
-        <div className="flex-1">
-          <QuickSearch 
-            onItemSelect={handleItemSelect}
-            placeholder="Search pantry items..."
-          />
-        </div>
+      <Tabs defaultValue="overview" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="inventory">Inventory</TabsTrigger>
+          <TabsTrigger value="deliveries">Deliveries</TabsTrigger>
+          <TabsTrigger value="analytics">Analytics</TabsTrigger>
+        </TabsList>
         
-        <div className="flex items-center gap-2">
-          <Select onValueChange={handleSortChange}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Sort by" />
-            </SelectTrigger>
-            <SelectContent>
-              {sortOptions.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  <option.icon className="mr-2 h-4 w-4" />
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        <TabsContent value="overview" className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <StockAlerts />
+            <StockTrends />
+            <DeliverySchedule />
+          </div>
+          
+          <PantryLanes />
+        </TabsContent>
 
-          <Button variant="outline" size="icon" onClick={handleSortOrderChange}>
-            {sortOrder === 'asc' ? (
-              <ArrowDown className="h-4 w-4" />
-            ) : (
-              <ArrowUp className="h-4 w-4" />
-            )}
-          </Button>
-
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => handleViewModeChange(viewMode === 'grid' ? 'list' : 'grid')}
-          >
-            {viewMode === 'grid' ? <List className="h-4 w-4" /> : <Grip className="h-4 w-4" />}
-          </Button>
-        </div>
-      </div>
-
-      {/* Filters */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-        {/* Supplier Filter */}
-        <Card>
-          <CardContent className="space-y-2">
-            <Label htmlFor="supplier">Supplier</Label>
-            <Select onValueChange={handleSupplierChange}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="All Suppliers" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="">All Suppliers</SelectItem>
-                {isLoadingSuppliers ? (
-                  <SelectItem value="" disabled>
-                    Loading...
-                  </SelectItem>
-                ) : (
-                  suppliers?.map((supplier) => (
-                    <SelectItem key={supplier.id} value={supplier.id}>
-                      {supplier.name}
-                    </SelectItem>
-                  ))
-                )}
-              </SelectContent>
-            </Select>
-          </CardContent>
-        </Card>
-
-        {/* Price Range Filter */}
-        <Card>
-          <CardContent className="space-y-2">
-            <Label htmlFor="price">Price Range (€)</Label>
-            <div className="flex items-center justify-between text-sm text-muted-foreground">
-              <span>{priceRange[0]}</span>
-              <span>{priceRange[1]}</span>
-            </div>
-            <Slider
-              defaultValue={priceRange}
-              max={100}
-              step={1}
-              onValueChange={handlePriceChange}
-            />
-          </CardContent>
-        </Card>
-
-        {/* Category Filter */}
-        <Card>
-          <CardContent className="space-y-2">
-            <Label htmlFor="category">Category</Label>
-            <Input type="text" id="category" onChange={handleCategoryChange} />
-          </CardContent>
-        </Card>
-
-        {/* In Stock Filter */}
-        <Card>
-          <CardContent>
+        <TabsContent value="inventory" className="space-y-4">
+          <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                id="inStock"
-                className="h-4 w-4"
-                onChange={handleInStockChange}
+              <Input
+                type="search"
+                placeholder="Search items..."
+                value={filters.search}
+                onChange={handleFilterChange}
+                className="md:w-64"
               />
-              <Label htmlFor="inStock">In Stock Only</Label>
+              <Select value={filters.status} onValueChange={handleStatusChange}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="All Statuses" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Statuses</SelectItem>
+                  <SelectItem value="in_stock">In Stock</SelectItem>
+                  <SelectItem value="low_stock">Low Stock</SelectItem>
+                  <SelectItem value="out_of_stock">Out of Stock</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-          </CardContent>
-        </Card>
-      </div>
+            <div className="flex items-center space-x-2">
+              <Select value={filters.sortBy} onValueChange={handleSortByChange}>
+                <SelectTrigger className="w-[150px]">
+                  <SelectValue placeholder="Sort By" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="name">Name</SelectItem>
+                  <SelectItem value="last_ordered">Last Ordered</SelectItem>
+                  <SelectItem value="price">Price</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={filters.sortOrder} onValueChange={handleSortOrderChange}>
+                <SelectTrigger className="w-[120px]">
+                  <SelectValue placeholder="Order" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="asc">Ascending</SelectItem>
+                  <SelectItem value="desc">Descending</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
 
-      {/* Item List */}
-      {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[...Array(6)].map((_, i) => (
-            <Card key={i}>
-              <CardContent className="flex flex-col gap-3">
-                <Skeleton className="h-32 w-full rounded-md" />
-                <Skeleton className="h-4 w-32" />
-                <Skeleton className="h-3 w-24" />
-                <Skeleton className="h-8 w-full" />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      ) : isError ? (
-        <div className="text-red-500">Error loading items.</div>
-      ) : sortedItems.length === 0 ? (
-        <div className="text-muted-foreground text-center py-4">No items found.</div>
-      ) : (
-        <div className={cn('grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4', {
-            'list-mode': viewMode === 'list'
-          })}
-        >
-          {sortedItems.map((item: any) => (
-            <Card key={item.id}>
-              <CardContent className="flex flex-col gap-3">
-                <div className="aspect-w-4 aspect-h-3">
-                  <img
-                    src="https://placehold.co/600x400"
-                    alt={item.name}
-                    className="object-cover rounded-md"
-                  />
-                </div>
-                <h3 className="font-semibold">{item.name}</h3>
-                <div className="text-sm text-muted-foreground">Supplier: {item.supplier?.name}</div>
-                <div className="text-xl font-bold">€{item.price}</div>
-                <Button onClick={() => addToOrder(item)}>Add to Order</Button>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
+          <Separator />
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredItems.map(item => (
+              <StockItemCard key={item.id} item={item} />
+            ))}
+            {filteredItems.length === 0 && (
+              <div className="col-span-3 text-center text-muted-foreground">
+                No items found.
+              </div>
+            )}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="deliveries">
+          <div>
+            <h2 className="text-lg font-semibold">Upcoming Deliveries</h2>
+            {/* Delivery Schedule Component */}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="analytics">
+          <div>
+            <h2 className="text-lg font-semibold">Inventory Analytics</h2>
+            {/* Analytics and Reporting Components */}
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }
