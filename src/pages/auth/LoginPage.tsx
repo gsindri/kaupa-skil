@@ -2,7 +2,7 @@
 import React from "react";
 import AuthCard from "@/components/auth/AuthCard";
 import AuthForm from "@/components/auth/AuthForm";
-import { useAuth } from '@/contexts/AuthProviderUtils';
+import { useAuth } from '@/contexts/useAuth';
 import { Navigate, useLocation } from "react-router-dom";
 
 export default function LoginPage() {

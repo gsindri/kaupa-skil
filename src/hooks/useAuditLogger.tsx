@@ -1,7 +1,7 @@
 
 import { useMutation } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
-import { useAuth } from '@/contexts/AuthProviderUtils'
+import { useAuth } from '@/contexts/useAuth'
 
 interface AuditLogEntry {
   action: string

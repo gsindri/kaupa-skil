@@ -5,7 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts'
 import { supabase } from '@/integrations/supabase/client'
-import { useAuth } from '@/contexts/AuthProviderUtils'
+import { useAuth } from '@/contexts/useAuth'
 
 interface PriceHistoryData {
   date: string

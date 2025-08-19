@@ -7,7 +7,7 @@ import { CheckCircle, AlertTriangle } from 'lucide-react'
 import { OrganizationSetupStep } from './steps/OrganizationSetupStep'
 import { SupplierConnectionStep } from './steps/SupplierConnectionStep'
 import { OrderGuideStep } from './steps/OrderGuideStep'
-import { useAuth } from '@/contexts/AuthProviderUtils'
+import { useAuth } from '@/contexts/useAuth'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
 

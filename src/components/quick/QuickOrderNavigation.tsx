@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { ShoppingCart, User, Settings, LogOut, Menu } from 'lucide-react'
-import { useAuth } from '@/contexts/AuthProviderUtils'
+import { useAuth } from '@/contexts/useAuth'
 import { useNavigate } from 'react-router-dom'
 import { BasketDrawer } from '@/components/cart/BasketDrawer'
 import { HeildaLogo } from '@/components/branding/HeildaLogo'

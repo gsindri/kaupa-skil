@@ -28,7 +28,7 @@ import {
 } from 'lucide-react'
 import { PantryLanes } from '@/components/quick/PantryLanes'
 import { useToast } from '@/hooks/use-toast'
-import { useAuth } from '@/contexts/AuthProviderUtils'
+import { useAuth } from '@/contexts/useAuth'
 
 interface StockItem {
   id: string

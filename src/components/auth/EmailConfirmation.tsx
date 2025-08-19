@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Mail, ArrowLeft, RefreshCw } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthProviderUtils';
+import { useAuth } from '@/contexts/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
 import { Alert, AlertDescription } from '@/components/ui/alert';
