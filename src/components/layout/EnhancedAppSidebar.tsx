@@ -1,21 +1,35 @@
-import { Home, TrendingUp, Package, ShoppingCart, History, Building2, Search, Heart, Shield, Truck, Zap } from "lucide-react"
+import {
+  Home,
+  TrendingUp,
+  Package,
+  ShoppingCart,
+  History,
+  Building2,
+  Search,
+  Heart,
+  Shield,
+  Truck,
+  Zap,
+} from "lucide-react"
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
+  SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarFooter,
-  SidebarHeader
 } from "@/components/ui/sidebar"
 import { NavLink } from "react-router-dom"
 import { useAuth } from "@/contexts/AuthProvider"
 import { Badge } from "@/components/ui/badge"
 import { useBasket } from "@/contexts/BasketProvider"
 import { usePermissions } from "@/hooks/usePermissions"
+import { HeildaLogo } from "@/components/branding/HeildaLogo"
+import { Separator } from "@/components/ui/separator"
 
 // Core workflow pages
 const coreItems = [
@@ -81,27 +95,31 @@ export function EnhancedAppSidebar() {
   const { memberships } = usePermissions()
 
   // Check if user has admin access by looking at their memberships
-  const currentTenantMembership = memberships?.find(m => m.tenant_id === profile?.tenant_id)
-  const isAdmin = currentTenantMembership?.base_role === 'admin' || currentTenantMembership?.base_role === 'owner'
-  
+  const currentTenantMembership = memberships?.find(
+    (m) => m.tenant_id === profile?.tenant_id,
+  )
+  const isAdmin =
+    currentTenantMembership?.base_role === "admin" ||
+    currentTenantMembership?.base_role === "owner"
+
   const basketItemCount = getTotalItems()
-  
+
   // Get display name with fallbacks
-  const displayName = profile?.full_name || user?.email?.split('@')[0] || 'User'
+  const displayName =
+    profile?.full_name || user?.email?.split("@")[0] || "User"
 
   return (
-    <Sidebar>
-      <SidebarHeader>
-        <div className="p-4">
-          <h2 className="text-lg font-semibold">Iceland B2B</h2>
-          <p className="text-sm text-muted-foreground">Wholesale Platform</p>
-        </div>
-      </SidebarHeader>
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>Core Workflow</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
+    <nav aria-label="Primary" className="h-full">
+      <Sidebar>
+        <SidebarHeader>
+          <NavLink to="/" className="block p-4">
+            <HeildaLogo className="h-7 w-auto" />
+          </NavLink>
+        </SidebarHeader>
+        <SidebarContent>
+          <SidebarGroup className="p-2 pb-0">
+            <SidebarGroupContent>
+              <SidebarMenu>
               {coreItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <NavLink to={item.url} className="w-full">
@@ -132,12 +150,13 @@ export function EnhancedAppSidebar() {
                   </NavLink>
                 </SidebarMenuItem>
               ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
 
-        <SidebarGroup>
-          <SidebarGroupLabel>Explore & Analyze</SidebarGroupLabel>
+        <Separator className="my-2 mx-2" />
+
+        <SidebarGroup className="p-2 pt-0">
           <SidebarGroupContent>
             <SidebarMenu>
               {exploreItems.map((item) => (
@@ -162,7 +181,7 @@ export function EnhancedAppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-        
+
         {isAdmin && (
           <SidebarGroup>
             <SidebarGroupLabel>Administration</SidebarGroupLabel>
@@ -192,6 +211,7 @@ export function EnhancedAppSidebar() {
           Welcome, {displayName}
         </div>
       </SidebarFooter>
-    </Sidebar>
+      </Sidebar>
+    </nav>
   )
 }
