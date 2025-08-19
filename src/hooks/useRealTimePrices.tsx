@@ -222,7 +222,7 @@ export function useRealTimePrices() {
       unsubscribe()
       setIsConnected(false)
     }
-  }, [handlePriceUpdate, handleStockUpdate])
+  }, [handlePriceUpdate, handleStockUpdate, connectionManager])
 
   const clearAlerts = useCallback(() => {
     setAlerts([])
