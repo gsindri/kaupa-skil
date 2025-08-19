@@ -17,7 +17,7 @@ iceland-b2b-compare/
 ├── apps/
 │   ├── api/                    # NestJS API with OpenAPI spec
 │   ├── ingestor/              # Portal connectors & price list parsers
-│   └── ui/                    # Next.js frontend (this app)
+│   └── ui/                    # Vite React frontend (this app)
 ├── services/
 │   ├── ml-entity-match/       # Python FastAPI for product matching
 │   └── edi-peppol-adapter/    # Future EDI/Peppol integration
@@ -102,7 +102,7 @@ npm run dev
 npm run dev          # Start development server
 npm run build        # Build for production
 npm run lint         # Run ESLint
-npm run type-check   # TypeScript checking
+npm run preview      # Preview production build
 ```
 
 ## 🏆 Acceptance Criteria Status
