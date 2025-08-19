@@ -56,6 +56,18 @@
     --price-good: 165 85% 45%;
     --price-average: 38 92% 50%;
     --price-expensive: 0 84% 60%;
+
+    /* Sidebar */
+    --sidebar-bg: 210 25% 97%;
+    --sidebar-fg: 222 47% 11%;
+    --sidebar-fg-muted: 222 12% 35%;
+    --sidebar-border: 210 16% 90%;
+    --sidebar: var(--sidebar-bg);
+    --sidebar-foreground: var(--sidebar-fg);
+    --sidebar-muted-foreground: var(--sidebar-fg-muted);
+    --sidebar-accent: 212 95% 35% / 0.1;
+    --sidebar-accent-foreground: var(--sidebar-fg);
+    --sidebar-ring: 212 95% 35%;
     
     /* Radius */
     --radius: 0.5rem;
@@ -89,7 +101,19 @@
     --border: 215 25% 20%;
     --input: 215 25% 15%;
     --ring: 212 95% 50%;
-    
+
+    /* Sidebar */
+    --sidebar-bg: 222 22% 12%;
+    --sidebar-fg: 0 0% 100%;
+    --sidebar-fg-muted: 220 9% 70%;
+    --sidebar-border: 220 8% 20%;
+    --sidebar: var(--sidebar-bg);
+    --sidebar-foreground: var(--sidebar-fg);
+    --sidebar-muted-foreground: var(--sidebar-fg-muted);
+    --sidebar-accent: 0 0% 100% / 0.06;
+    --sidebar-accent-foreground: var(--sidebar-fg);
+    --sidebar-ring: 212 95% 50%;
+
     /* Softer borders and shadows */
     --border-soft: hsl(var(--foreground) / 0.15);
   }
