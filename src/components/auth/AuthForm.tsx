@@ -1,7 +1,7 @@
 
 import React, { useState } from "react";
 import { Eye, EyeOff, CheckCircle2 } from "lucide-react";
-import { useAuth } from "@/contexts/AuthProvider";
+import { useAuth } from '@/contexts/AuthProviderUtils';
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";

@@ -13,7 +13,7 @@ import { useSuppliers } from '@/hooks/useSuppliers'
 import { useSupplierCredentials } from '@/hooks/useSupplierCredentials'
 import { useConnectorRuns } from '@/hooks/useConnectorRuns'
 import { useSupplierItems } from '@/hooks/useSupplierItems'
-import { useAuth } from '@/contexts/AuthProvider'
+import { useAuth } from '@/contexts/AuthProviderUtils'
 
 export function EnhancedSupplierManagement() {
   const { profile } = useAuth()

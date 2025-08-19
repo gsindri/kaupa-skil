@@ -1,7 +1,7 @@
 
 import React, { useEffect } from 'react'
 
-export function AccessibilityEnhancements() {
+export default function AccessibilityEnhancements() {
   useEffect(() => {
     // Add focus management for keyboard navigation
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -43,15 +43,4 @@ export function AccessibilityEnhancements() {
       {/* Screen reader announcements will be inserted here */}
     </div>
   )
-}
-
-export function announceToScreenReader(message: string) {
-  const announcer = document.getElementById('accessibility-announcements')
-  if (announcer) {
-    announcer.textContent = message
-    // Clear after a delay to allow for repeated announcements
-    setTimeout(() => {
-      announcer.textContent = ''
-    }, 1000)
-  }
 }

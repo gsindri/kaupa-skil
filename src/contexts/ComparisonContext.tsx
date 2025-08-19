@@ -1,19 +1,11 @@
 
-import React, { createContext, useContext, useState, ReactNode } from 'react'
+import React, { useState, ReactNode } from 'react'
 import { Database } from '@/lib/types/database'
+import { ComparisonContext } from './ComparisonContextUtils'
 
 type SupplierItem = Database['public']['Tables']['supplier_items']['Row']
 
-interface ComparisonContextType {
-  comparisonItems: SupplierItem[]
-  addItem: (item: SupplierItem) => void
-  removeItem: (item: SupplierItem) => void
-  clearItems: () => void
-}
-
-const ComparisonContext = createContext<ComparisonContextType | undefined>(undefined)
-
-export function ComparisonProvider({ children }: { children: ReactNode }) {
+export default function ComparisonProvider({ children }: { children: ReactNode }) {
   const [comparisonItems, setComparisonItems] = useState<SupplierItem[]>([])
 
   const addItem = (item: SupplierItem) => {
@@ -36,12 +28,4 @@ export function ComparisonProvider({ children }: { children: ReactNode }) {
       {children}
     </ComparisonContext.Provider>
   )
-}
-
-export function useComparison() {
-  const context = useContext(ComparisonContext)
-  if (!context) {
-    throw new Error('useComparison must be used within a ComparisonProvider')
-  }
-  return context
 }

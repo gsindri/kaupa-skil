@@ -9,7 +9,7 @@ import { Building2, Key, Activity } from 'lucide-react'
 import { useSuppliers } from '@/hooks/useSuppliers'
 import { useSupplierCredentials } from '@/hooks/useSupplierCredentials'
 import { useConnectorRuns } from '@/hooks/useConnectorRuns'
-import { useAuth } from '@/contexts/AuthProvider'
+import { useAuth } from '@/contexts/AuthProviderUtils'
 
 export function SupplierManagement() {
   const { profile } = useAuth()

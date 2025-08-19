@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Plus, Mail, Crown, Shield, Users } from 'lucide-react'
 import { useUserInvitation } from '@/hooks/useUserInvitation'
-import { useAuth } from '@/contexts/AuthProvider'
+import { useAuth } from '@/contexts/AuthProviderUtils'
 import { BaseRole } from '@/lib/types/permissions'
 
 export function InviteUserDialog() {

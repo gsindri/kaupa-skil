@@ -1,5 +1,5 @@
 import React from 'react'
-import { useAuth } from '@/contexts/AuthProvider'
+import { useAuth } from '@/contexts/AuthProviderUtils'
 import { Navigate, useLocation } from 'react-router-dom'
 import { ExistingUserOnboarding } from '@/components/onboarding/ExistingUserOnboarding'
 

@@ -1,24 +1,10 @@
 
-import React, { createContext, useContext, useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useToast } from '@/hooks/use-toast'
 import type { CartItem } from '@/lib/types'
+import { BasketContext } from './BasketProviderUtils'
 
-interface BasketContextType {
-  items: CartItem[]
-  addItem: (item: Omit<CartItem, 'quantity'>, quantity?: number) => void
-  updateQuantity: (supplierItemId: string, quantity: number) => void
-  removeItem: (supplierItemId: string) => void
-  clearBasket: () => void
-  clearCart: () => void // Added for backward compatibility
-  getTotalItems: () => number
-  getTotalPrice: (includeVat: boolean) => number
-  isDrawerOpen: boolean
-  setIsDrawerOpen: (open: boolean) => void
-}
-
-const BasketContext = createContext<BasketContextType | undefined>(undefined)
-
-export function BasketProvider({ children }: { children: React.ReactNode }) {
+export default function BasketProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>(() => {
     const saved = localStorage.getItem('procurewise-basket')
     return saved ? JSON.parse(saved) : []
@@ -138,14 +124,3 @@ export function BasketProvider({ children }: { children: React.ReactNode }) {
     </BasketContext.Provider>
   )
 }
-
-export function useBasket() {
-  const context = useContext(BasketContext)
-  if (context === undefined) {
-    throw new Error('useBasket must be used within a BasketProvider')
-  }
-  return context
-}
-
-// Keep the old useCart export for backward compatibility
-export const useCart = useBasket

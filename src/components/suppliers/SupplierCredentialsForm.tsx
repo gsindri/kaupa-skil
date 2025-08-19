@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { Trash2, Key, TestTube, CheckCircle, XCircle, Clock } from 'lucide-react'
 import { useSupplierCredentials } from '@/hooks/useSupplierCredentials'
 import { useSuppliers } from '@/hooks/useSuppliers'
-import { useAuth } from '@/contexts/AuthProvider'
+import { useAuth } from '@/contexts/AuthProviderUtils'
 
 export function SupplierCredentialsForm() {
   const { profile } = useAuth()
