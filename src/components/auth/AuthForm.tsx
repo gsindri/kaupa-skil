@@ -197,7 +197,7 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
         </div>
 
         {isLogin ? (
-          <Link to="/reset-password" className="mt-1 inline-block text-xs text-blue-600 hover:underline">
+          <Link to="/forgot-password" className="mt-1 inline-block text-xs text-blue-600 hover:underline">
             Forgot password?
           </Link>
         ) : (
