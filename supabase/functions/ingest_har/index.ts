@@ -183,10 +183,10 @@ function parsePack(s: string) {
     if (unit === "g") { per = per / 1000; unit = "kg"; }
     return { qty: n * per, unit: unit === "kg" ? "kg" : "L" };
   }
-  const mOne = t.match(/^(\d+(?:[\.,]\d+)?)(l|kg|g)$/);
-  if (mOne) {
-    let qty = Number(mOne[1].replace(",", "."));
-    let unit = mOne[2];
+  const singleMatch = t.match(/^(\d+(?:[\.,]\d+)?)(l|kg|g)$/);
+  if (singleMatch) {
+    let qty = Number(singleMatch[1].replace(",", "."));
+    let unit = singleMatch[2];
     if (unit === "g") { qty = qty / 1000; unit = "kg"; }
     return { qty, unit: unit === "kg" ? "kg" : "L" };
   }
