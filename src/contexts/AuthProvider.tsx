@@ -374,6 +374,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [handleAuthStateChange])
 
+  // Keep session state in sync across tabs
+  useEffect(() => {
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key && event.key.includes('auth-token')) {
+        supabase.auth.getSession().then(({ data: { session } }) => {
+          handleAuthStateChange(session ? 'SIGNED_IN' : 'SIGNED_OUT', session)
+        })
+      }
+    }
+
+    window.addEventListener('storage', handleStorageChange)
+    return () => window.removeEventListener('storage', handleStorageChange)
+  }, [handleAuthStateChange])
+
   // Debug logging
   useEffect(() => {
     console.log('Auth state updated:', {
