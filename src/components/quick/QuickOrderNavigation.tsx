@@ -33,7 +33,7 @@ export function QuickOrderNavigation() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => navigate('/app/dashboard')}
+            onClick={() => navigate('/')}
             className="gap-2"
           >
             <Menu className="h-4 w-4" />
@@ -66,7 +66,7 @@ export function QuickOrderNavigation() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => navigate('/app/settings')}>
+              <DropdownMenuItem onClick={() => navigate('/settings')}>
                 <Settings className="h-4 w-4 mr-2" />
                 Settings
               </DropdownMenuItem>
