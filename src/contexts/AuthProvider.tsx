@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useEffect, useState, useCallback } from 'react'
+import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react'
 import { supabase } from '@/integrations/supabase/client'
 import { User, Session } from '@supabase/supabase-js'
 import { Database } from '@/lib/types/database'
@@ -30,6 +30,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isInitialized, setIsInitialized] = useState(false)
   const [isFirstTime, setIsFirstTime] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  const isInitializedRef = useRef(isInitialized)
+  const errorRef = useRef(error)
+
+  useEffect(() => {
+    isInitializedRef.current = isInitialized
+    errorRef.current = error
+  }, [isInitialized, error])
 
   const fetchProfile = useCallback(async (userId: string, userSession?: Session): Promise<Profile | null> => {
     try {
@@ -267,11 +275,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Safety timeout
     const safetyTimeout = setTimeout(() => {
-      if (mounted && !initialized) {
+      if (mounted && !initialized && !isInitializedRef.current) {
         console.warn('Auth initialization safety timeout')
         setLoading(false)
         setIsInitialized(true)
-        if (!error) {
+        if (!errorRef.current) {
           setError('Authentication initialization timeout')
         }
       }
