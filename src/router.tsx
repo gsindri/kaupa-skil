@@ -1,7 +1,7 @@
 
 import { createBrowserRouter } from "react-router-dom";
 import { AuthGate } from "@/components/auth/AuthGate";
-import AppLayout from "@/layouts/AppLayout";
+import { AppLayout } from "@/components/layout/AppLayout";
 import Index from "@/pages/Index";
 import Dashboard from "@/pages/Dashboard";
 import Compare from "@/pages/Compare";
@@ -18,6 +18,7 @@ import SignupPage from "@/pages/auth/SignupPage";
 import PasswordReset from "@/pages/auth/PasswordReset";
 import ErrorPage from "@/pages/ErrorPage";
 import NotFound from "@/pages/NotFound";
+import { Outlet } from "react-router-dom";
 
 export const router = createBrowserRouter([
   {
@@ -33,7 +34,9 @@ export const router = createBrowserRouter([
     path: "/app",
     element: (
       <AuthGate>
-        <AppLayout />
+        <AppLayout>
+          <Outlet />
+        </AppLayout>
       </AuthGate>
     ),
     errorElement: <ErrorPage />,
