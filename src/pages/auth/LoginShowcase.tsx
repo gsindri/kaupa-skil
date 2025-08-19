@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
 import { Eye, EyeOff, AlertCircle, CheckCircle2 } from "lucide-react";
-import { useAuth } from '@/contexts/AuthProviderUtils';
+import { useAuth } from '@/contexts/useAuth';
 import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";

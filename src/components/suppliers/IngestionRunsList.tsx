@@ -6,7 +6,7 @@ import { Progress } from '@/components/ui/progress'
 import { Play, RefreshCw, CheckCircle, XCircle, Clock } from 'lucide-react'
 import { useConnectorRuns } from '@/hooks/useConnectorRuns'
 import { useSupplierCredentials } from '@/hooks/useSupplierCredentials'
-import { useAuth } from '@/contexts/AuthProviderUtils'
+import { useAuth } from '@/contexts/useAuth'
 
 export function IngestionRunsList() {
   const { profile } = useAuth()

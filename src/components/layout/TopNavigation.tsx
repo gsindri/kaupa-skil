@@ -10,7 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { useAuth } from '@/contexts/AuthProviderUtils'
+import { useAuth } from '@/contexts/useAuth'
 import { useSettings } from '@/contexts/SettingsProviderUtils'
 import { useLocation } from 'react-router-dom'
 import VatToggle from '@/components/ui/VatToggle'

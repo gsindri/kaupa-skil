@@ -24,7 +24,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 import { NavLink } from "react-router-dom"
-import { useAuth } from '@/contexts/AuthProviderUtils'
+import { useAuth } from '@/contexts/useAuth'
 import { Badge } from "@/components/ui/badge"
 import { useBasket } from '@/contexts/BasketProviderUtils'
 import { usePermissions } from "@/hooks/usePermissions"
