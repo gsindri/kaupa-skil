@@ -5,8 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { ShoppingCart, Truck, AlertCircle, CheckCircle } from 'lucide-react';
-import { useCart } from '@/contexts/BasketProviderUtils';
-import { useSettings } from '@/contexts/SettingsProviderUtils';
+import { useCart } from '@/contexts/useBasket';
+import { useSettings } from '@/contexts/useSettings';
 import { useDeliveryCalculation } from '@/hooks/useDeliveryOptimization';
 
 export function EnhancedCartIntegration() {

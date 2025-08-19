@@ -2,7 +2,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
 import { queryKeys } from '@/lib/queryKeys'
-import { useAuth } from '@/contexts/AuthProviderUtils'
+import { useAuth } from '@/contexts/useAuth'
 import { handleQueryError, createDedupedQuery } from '@/lib/queryErrorHandler'
 import { useTenantValidation } from './useTenantValidation'
 import { useAuditLogger } from './useAuditLogger'
