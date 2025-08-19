@@ -15,7 +15,8 @@ import Admin from "@/pages/Admin";
 import Discovery from "@/pages/Discovery";
 import LoginPage from "@/pages/auth/LoginPage";
 import SignupPage from "@/pages/auth/SignupPage";
-import PasswordReset from "@/pages/auth/PasswordReset";
+import ForgotPassword from "@/pages/auth/ForgotPassword";
+import ResetPassword from "@/pages/auth/ResetPassword";
 import ErrorPage from "@/pages/ErrorPage";
 import NotFound from "@/pages/NotFound";
 
@@ -86,8 +87,12 @@ export const routes = [
     element: <SignupPage />,
   },
   {
+    path: "/forgot-password",
+    element: <ForgotPassword />,
+  },
+  {
     path: "/reset-password",
-    element: <PasswordReset />,
+    element: <ResetPassword />,
   },
   {
     path: "*",

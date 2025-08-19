@@ -19,3 +19,15 @@ describe('sidebar route definitions', () => {
     })
   }
 })
+
+describe('public auth routes', () => {
+  it('does not gate reset-password route', () => {
+    expect(childPaths.has('reset-password')).toBe(false)
+  })
+  it('does not gate forgot-password route', () => {
+    expect(childPaths.has('forgot-password')).toBe(false)
+  })
+  it('defines reset-password route', () => {
+    expect(routes.some(r => r.path === '/reset-password')).toBe(true)
+  })
+})

@@ -23,7 +23,11 @@ export function AuthGate({ children }: AuthGateProps) {
   }
 
   if (!user) {
-    return <Navigate to="/login" state={{ from: location }} replace />
+    const bypass = ["/reset-password", "/forgot-password"]
+    if (!bypass.includes(location.pathname)) {
+      return <Navigate to="/login" state={{ from: location }} replace />
+    }
+    return <>{children}</>
   }
 
   if (profile && !profile.tenant_id) {
