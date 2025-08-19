@@ -1,4 +1,4 @@
-import { createContext, useContext } from 'react'
+import { createContext } from 'react'
 import type { CartItem } from '@/lib/types'
 
 export interface BasketContextType {
@@ -15,13 +15,3 @@ export interface BasketContextType {
 }
 
 export const BasketContext = createContext<BasketContextType | undefined>(undefined)
-
-export function useBasket() {
-  const context = useContext(BasketContext)
-  if (context === undefined) {
-    throw new Error('useBasket must be used within a BasketProvider')
-  }
-  return context
-}
-
-export const useCart = useBasket

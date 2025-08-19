@@ -14,7 +14,7 @@ import {
   Lightbulb,
   TrendingDown
 } from 'lucide-react';
-import { useCart } from '@/contexts/BasketProviderUtils';
+import { useCart } from '@/contexts/useBasket';
 import { useSettings } from '@/contexts/SettingsProviderUtils';
 import type { OrderDeliveryOptimization } from '@/lib/types/delivery';
 
