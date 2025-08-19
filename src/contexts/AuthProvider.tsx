@@ -100,18 +100,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signOut = useCallback(async () => {
     setLoading(true)
     setError(null)
-    const { error } = await supabase.auth.signOut()
-    if (error) {
-      setError(error.message)
+    try {
+      const { error } = await supabase.auth.signOut({ scope: 'local' })
+      if (error) throw error
+    } catch (err: any) {
+      console.error('Sign out error:', err)
+      setError(err.message)
+    } finally {
+      // Ensure local session is fully cleared to avoid rehydration
+      try {
+        const storageKey = (supabase.auth as any).storageKey
+        if (storageKey) {
+          localStorage.removeItem(storageKey)
+          localStorage.removeItem(`${storageKey}-user`)
+        }
+      } catch (storageErr) {
+        console.error('Failed to clear auth storage:', storageErr)
+      }
+      setUser(null)
+      setSession(null)
+      setProfile(null)
+      setLoading(false)
     }
-    setUser(null)
-    setSession(null)
-    setProfile(null)
-    setLoading(false)
   }, [])
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session)
       setUser(session?.user ?? null)
       if (session?.user) {
@@ -120,6 +136,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setProfile(null)
       }
     })
+
+    const storageKey = (supabase.auth as any).storageKey
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key === storageKey && event.newValue === null) {
+        setSession(null)
+        setUser(null)
+        setProfile(null)
+      }
+    }
+
+    window.addEventListener('storage', handleStorage)
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
@@ -132,6 +159,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     return () => {
       subscription.unsubscribe()
+      window.removeEventListener('storage', handleStorage)
     }
   }, [fetchProfile])
 
