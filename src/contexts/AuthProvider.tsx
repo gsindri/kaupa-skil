@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react'
 import { supabase } from '@/integrations/supabase/client'
 import { User, Session } from '@supabase/supabase-js'
@@ -32,32 +33,54 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const isInitializedRef = useRef(isInitialized)
   const errorRef = useRef(error)
+  const sessionRef = useRef<Session | null>(null)
+  const profileFetchingRef = useRef(false)
 
   useEffect(() => {
     isInitializedRef.current = isInitialized
     errorRef.current = error
-  }, [isInitialized, error])
+    sessionRef.current = session
+  }, [isInitialized, error, session])
 
-  // Enhanced session validation helper
-  const validateSession = useCallback(async (sessionToValidate: Session): Promise<boolean> => {
+  // Enhanced session validation with retry mechanism
+  const validateSession = useCallback(async (sessionToValidate: Session, retryCount = 0): Promise<boolean> => {
+    const MAX_RETRIES = 2
+    
     try {
-      console.log('Validating session token...')
+      console.log(`Validating session (attempt ${retryCount + 1})...`)
       
-      // Check if session exists and has required properties
       if (!sessionToValidate?.access_token || !sessionToValidate?.user?.id) {
-        console.error('Invalid session structure:', { 
-          hasAccessToken: !!sessionToValidate?.access_token,
-          hasUser: !!sessionToValidate?.user,
-          hasUserId: !!sessionToValidate?.user?.id
-        })
+        console.error('Invalid session structure')
         return false
       }
 
-      // Verify the session is still valid with Supabase
+      // Check token expiry before making request
+      const now = Math.floor(Date.now() / 1000)
+      const expiresAt = sessionToValidate.expires_at
+      
+      if (expiresAt && now >= expiresAt) {
+        console.log('Session token expired, attempting refresh...')
+        const { data, error } = await supabase.auth.refreshSession()
+        
+        if (error || !data.session) {
+          console.error('Session refresh failed:', error?.message)
+          return false
+        }
+        
+        console.log('Session refreshed successfully')
+        return true
+      }
+
+      // Verify session with Supabase
       const { data: { user }, error } = await supabase.auth.getUser(sessionToValidate.access_token)
       
       if (error || !user) {
-        console.error('Session validation failed:', error?.message || 'No user returned')
+        if (retryCount < MAX_RETRIES && error?.message?.includes('JWT')) {
+          console.log('JWT error, retrying session validation...')
+          await new Promise(resolve => setTimeout(resolve, 1000))
+          return validateSession(sessionToValidate, retryCount + 1)
+        }
+        console.error('Session validation failed:', error?.message)
         return false
       }
 
@@ -69,79 +92,66 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [])
 
-  // Enhanced profile fetch with timeout and retry
+  // Enhanced profile fetch with better session handling
   const fetchProfile = useCallback(async (userId: string, userSession: Session, retryCount = 0): Promise<Profile | null> => {
     const MAX_RETRIES = 2
-    const RETRY_DELAY = 1000 * (retryCount + 1) // 1s, 2s, 3s
-    const QUERY_TIMEOUT = 10000 // 10 seconds
+    const RETRY_DELAY = 1000 * (retryCount + 1)
+    const QUERY_TIMEOUT = 10000
+
+    if (profileFetchingRef.current) {
+      console.log('Profile fetch already in progress, skipping...')
+      return null
+    }
 
     try {
+      profileFetchingRef.current = true
       console.log(`=== PROFILE FETCH START (Attempt ${retryCount + 1}) ===`)
       console.log('User ID:', userId)
-      console.log('Session exists:', !!userSession)
-      console.log('Access token exists:', !!userSession?.access_token)
 
       // Validate session before making the request
       const isSessionValid = await validateSession(userSession)
       if (!isSessionValid) {
-        throw new Error('Invalid session - cannot fetch profile')
+        // Try to get a fresh session
+        const { data: { session: freshSession }, error: sessionError } = await supabase.auth.getSession()
+        if (sessionError || !freshSession) {
+          throw new Error('Cannot fetch profile - session invalid and refresh failed')
+        }
+        userSession = freshSession
       }
 
-      // Add a small delay to ensure Supabase client is fully synchronized
+      // Small delay to ensure Supabase client state synchronization
       if (retryCount === 0) {
-        await new Promise(resolve => setTimeout(resolve, 500))
+        await new Promise(resolve => setTimeout(resolve, 300))
       }
 
       console.log('Making profile query...')
       
-      // Create a timeout promise
       const timeoutPromise = new Promise((_, reject) => {
         setTimeout(() => reject(new Error('Profile fetch timeout')), QUERY_TIMEOUT)
       })
 
-      // Create the actual query promise
       const queryPromise = supabase
         .from('profiles')
         .select('id,email,full_name,tenant_id,created_at,updated_at')
         .eq('id', userId)
         .maybeSingle()
 
-      // Race between query and timeout
       const { data, error } = await Promise.race([queryPromise, timeoutPromise]) as any
 
       console.log('Profile query completed:', { 
         hasData: !!data, 
         hasError: !!error,
-        errorCode: error?.code,
         errorMessage: error?.message
       })
 
-      if (error) {
-        console.error('Profile fetch error details:', {
-          code: error.code,
-          message: error.message,
-          details: error.details,
-          hint: error.hint
-        })
-        
-        // If it's specifically "no rows", fall through to creation below
-        if (!(error.code === 'PGRST116' || error.message?.includes('no rows'))) {
-          throw error
-        }
+      if (error && !(error.code === 'PGRST116' || error.message?.includes('no rows'))) {
+        throw error
       }
 
-      // If we have no error but also no data, we need to create the profile
       if (!data) {
-        console.log('Profile not found (no rows). Attempting to create…')
+        console.log('Profile not found, creating...')
         const userEmail = userSession?.user?.email ?? null
-        const userName =
-          (userSession?.user?.user_metadata as any)?.full_name ||
-          userEmail?.split('@')[0] ||
-          'User'
-
-        const createTimeout = new Promise((_, reject) => {
-          setTimeout(() => reject(new Error('Profile creation timeout')), QUERY_TIMEOUT)
-        })
+        const userName = (userSession?.user?.user_metadata as any)?.full_name || userEmail?.split('@')[0] || 'User'
 
         const createPromise = supabase
           .from('profiles')
@@ -149,33 +159,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           .select('id,email,full_name,tenant_id,created_at,updated_at')
           .single()
 
+        const createTimeout = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('Profile creation timeout')), QUERY_TIMEOUT)
+        })
+
         const { data: newProfile, error: createError } = await Promise.race([createPromise, createTimeout]) as any
 
         if (createError) {
-          console.error('Failed to create profile:', createError)
           throw createError
         }
         
-        console.log('Profile created successfully:', newProfile)
-        console.log('=== PROFILE FETCH END ===')
+        console.log('Profile created successfully')
         return newProfile
       }
 
-      console.log('Profile fetched successfully:', data)
-      console.log('=== PROFILE FETCH END ===')
+      console.log('Profile fetched successfully')
       return data
     } catch (error: any) {
-      console.error('=== PROFILE FETCH ERROR ===')
-      console.error('Error details:', error)
-      console.error('User ID:', userId)
-      console.error('Session valid:', !!userSession?.access_token)
-      console.error('Retry count:', retryCount)
+      console.error('Profile fetch error:', error)
 
-      // Retry logic for specific errors
       if (retryCount < MAX_RETRIES && (
         error.message?.includes('timeout') ||
         error.message?.includes('network') ||
-        error.code === 'PGRST301' // Temporary auth issues
+        error.code === 'PGRST301'
       )) {
         console.log(`Retrying profile fetch in ${RETRY_DELAY}ms...`)
         await new Promise(resolve => setTimeout(resolve, RETRY_DELAY))
@@ -183,6 +189,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       throw error
+    } finally {
+      profileFetchingRef.current = false
+      console.log('=== PROFILE FETCH END ===')
     }
   }, [validateSession])
 
@@ -273,7 +282,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [])
 
-  // Enhanced auth state handler with better error handling
+  // Enhanced auth state handler with session persistence improvements
   const handleAuthStateChange = useCallback(async (event: string, newSession: Session | null) => {
     console.log('=== AUTH STATE CHANGE ===')
     console.log('Event:', event)
@@ -281,17 +290,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     console.log('User exists:', !!newSession?.user)
     
     try {
-      // Always update session and user state first
-      setSession(newSession)
-      setUser(newSession?.user ?? null)
       setError(null)
       
-      if (newSession?.user && event !== 'SIGNED_OUT') {
+      // Handle session updates
+      setSession(newSession)
+      setUser(newSession?.user ?? null)
+      
+      if (newSession?.user && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED')) {
         console.log('User authenticated, fetching profile...')
-        setLoading(true)
+        
+        // Don't set loading for token refresh to avoid UI flicker
+        if (event === 'SIGNED_IN') {
+          setLoading(true)
+        }
         
         try {
-          // Add a small delay to ensure the auth state is fully synchronized
+          // Ensure client state is synchronized
           await new Promise(resolve => setTimeout(resolve, 100))
           
           const profileData = await fetchProfile(newSession.user.id, newSession)
@@ -302,18 +316,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } catch (profileError) {
           console.error('Profile fetch failed in auth handler:', profileError)
           const errorMessage = profileError instanceof Error ? profileError.message : 'Failed to load user profile'
-          setError(errorMessage)
+          
+          // Only set error for sign-in, not token refresh
+          if (event === 'SIGNED_IN') {
+            setError(errorMessage)
+          }
           setProfile(null)
           setIsFirstTime(true)
         }
-      } else {
-        console.log('No user or signed out, clearing profile state')
+      } else if (event === 'SIGNED_OUT') {
+        console.log('User signed out, clearing state')
         setProfile(null)
         setIsFirstTime(false)
       }
     } catch (error) {
       console.error('Auth state change error:', error)
-      setError(error instanceof Error ? error.message : 'Authentication error')
+      if (event === 'SIGNED_IN') {
+        setError(error instanceof Error ? error.message : 'Authentication error')
+      }
     } finally {
       setLoading(false)
       setIsInitialized(true)
@@ -322,39 +342,51 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     console.log('=== AUTH STATE CHANGE END ===')
   }, [fetchProfile])
 
-  // Enhanced initialization with better error handling
+  // Session persistence and auto-refresh setup
   useEffect(() => {
     console.log('=== AUTH INITIALIZATION ===')
     let mounted = true
     let initialized = false
     
-    // Set up the auth listener FIRST
+    // Set up auth state listener with all events
     const { data: { subscription } } = supabase.auth.onAuthStateChange(handleAuthStateChange)
     
-    // Get initial session with enhanced error handling
-    supabase.auth.getSession().then(({ data: { session: initialSession }, error: sessionError }) => {
-      if (!mounted) return
-      
-      if (sessionError) {
-        console.warn('Initial session error:', sessionError)
-        setError('Failed to retrieve session')
-        setLoading(false)
-        setIsInitialized(true)
-        return
+    // Initialize session
+    const initializeAuth = async () => {
+      try {
+        const { data: { session: initialSession }, error: sessionError } = await supabase.auth.getSession()
+        
+        if (!mounted) return
+        
+        if (sessionError) {
+          console.warn('Initial session error:', sessionError)
+          setError('Failed to retrieve session')
+          setLoading(false)
+          setIsInitialized(true)
+          return
+        }
+        
+        console.log('Initial session retrieved:', !!initialSession)
+        initialized = true
+        
+        if (initialSession) {
+          handleAuthStateChange('SIGNED_IN', initialSession)
+        } else {
+          handleAuthStateChange('SIGNED_OUT', null)
+        }
+      } catch (error) {
+        console.error('Auth initialization error:', error)
+        if (mounted) {
+          setError('Failed to initialize authentication')
+          setLoading(false)
+          setIsInitialized(true)
+        }
       }
-      
-      console.log('Initial session retrieved:', !!initialSession)
-      initialized = true
-      
-      // Trigger the auth state change handler with the initial session
-      if (initialSession) {
-        handleAuthStateChange('SIGNED_IN', initialSession)
-      } else {
-        handleAuthStateChange('SIGNED_OUT', null)
-      }
-    })
+    }
+    
+    initializeAuth()
 
-    // Reduced safety timeout since we have better error handling now
+    // Enhanced safety timeout
     const safetyTimeout = setTimeout(() => {
       if (mounted && !initialized && !isInitializedRef.current) {
         console.warn('Auth initialization safety timeout')
@@ -364,7 +396,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setError('Authentication initialization timeout')
         }
       }
-    }, 15000) // Increased to 15 seconds to allow for retries
+    }, 20000)
 
     return () => {
       mounted = false
@@ -374,13 +406,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [handleAuthStateChange])
 
-  // Keep session state in sync across tabs
+  // Enhanced cross-tab session synchronization
   useEffect(() => {
     const handleStorageChange = (event: StorageEvent) => {
-      if (event.key && event.key.includes('auth-token')) {
-        supabase.auth.getSession().then(({ data: { session } }) => {
-          handleAuthStateChange(session ? 'SIGNED_IN' : 'SIGNED_OUT', session)
-        })
+      if (event.key && event.key.includes('supabase.auth.token')) {
+        console.log('Auth token changed in another tab, syncing...')
+        
+        // Debounce multiple storage events
+        setTimeout(async () => {
+          try {
+            const { data: { session }, error } = await supabase.auth.getSession()
+            if (!error && sessionRef.current?.access_token !== session?.access_token) {
+              handleAuthStateChange(session ? 'SIGNED_IN' : 'SIGNED_OUT', session)
+            }
+          } catch (error) {
+            console.error('Cross-tab sync error:', error)
+          }
+        }, 100)
       }
     }
 
@@ -388,12 +430,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener('storage', handleStorageChange)
   }, [handleAuthStateChange])
 
+  // Handle page visibility changes for session validation
+  useEffect(() => {
+    const handleVisibilityChange = async () => {
+      if (document.visibilityState === 'visible' && session && user) {
+        console.log('Page became visible, validating session...')
+        
+        try {
+          const isValid = await validateSession(session)
+          if (!isValid) {
+            console.log('Session invalid after page focus, refreshing...')
+            const { data, error } = await supabase.auth.refreshSession()
+            if (error) {
+              console.error('Session refresh failed on focus:', error)
+              // Let the auth state change handler deal with the invalid session
+            }
+          }
+        } catch (error) {
+          console.error('Session validation on focus failed:', error)
+        }
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
+  }, [session, user, validateSession])
+
   // Debug logging
   useEffect(() => {
     console.log('Auth state updated:', {
       user: !!user,
       userId: user?.id,
       session: !!session,
+      sessionValid: session ? new Date(session.expires_at! * 1000) > new Date() : false,
       profile: !!profile,
       profileTenantId: profile?.tenant_id,
       loading,
