@@ -20,6 +20,7 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
   const [busy, setBusy] = useState(false);
   const [caps, setCaps] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [remember, setRemember] = useState(true);
 
   const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
@@ -40,7 +41,7 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
     try {
       if (isLogin) {
         console.log('Starting sign in process...')
-        await signIn(email.trim(), password);
+        await signIn(email.trim(), password, remember);
         console.log('Sign in completed successfully')
         toast({ title: "Welcome back", description: "Signed in successfully." });
         
@@ -150,9 +151,25 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
         {caps && <p className="mt-1 text-xs text-amber-600">Caps Lock is on.</p>}
       </div>
 
+      {isLogin && (
+        <div className="flex items-center">
+          <input
+            id="remember"
+            type="checkbox"
+            checked={remember}
+            onChange={(e) => setRemember(e.target.checked)}
+            disabled={busy}
+            className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+          />
+          <label htmlFor="remember" className="ml-2 text-sm text-gray-700">
+            Remember me
+          </label>
+        </div>
+      )}
+
       <button
-        type="submit" 
-        disabled={busy || (!emailValid)}
+        type="submit"
+        disabled={busy || !emailValid}
         className="w-full rounded-full bg-blue-500 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-600 disabled:opacity-50"
       >
         {busy ? (isLogin ? "Signing in…" : "Creating account…") : (isLogin ? "Sign In" : "Create account")}

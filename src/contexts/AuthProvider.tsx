@@ -14,7 +14,7 @@ interface AuthContextType {
   isInitialized: boolean
   error: string | null
   refetch: () => Promise<void>
-  signIn: (email: string, password: string) => Promise<void>
+  signIn: (email: string, password: string, remember?: boolean) => Promise<void>
   signUp: (email: string, password: string, fullName: string) => Promise<void>
   signOut: () => Promise<void>
 }
@@ -70,15 +70,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [user, fetchProfile])
 
-  const signIn = useCallback(async (email: string, password: string) => {
-    setLoading(true)
-    setError(null)
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
-    if (error) {
-      setError(error.message)
-    }
-    setLoading(false)
-  }, [])
+  const TEMP_SESSION_KEY = 'sb-temp-session'
+  const SESSION_ACTIVE_KEY = 'sb-session-active'
+
+  const signIn = useCallback(
+    async (email: string, password: string, remember = true) => {
+      setLoading(true)
+      setError(null)
+      const { error } = await supabase.auth.signInWithPassword({ email, password })
+      if (error) {
+        setError(error.message)
+      } else {
+        if (!remember) {
+          localStorage.setItem(TEMP_SESSION_KEY, 'true')
+        } else {
+          localStorage.removeItem(TEMP_SESSION_KEY)
+        }
+        sessionStorage.setItem(SESSION_ACTIVE_KEY, 'true')
+      }
+      setLoading(false)
+    },
+    []
+  )
 
   const signUp = useCallback(async (email: string, password: string, fullName: string) => {
     setLoading(true)
@@ -100,18 +113,53 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signOut = useCallback(async () => {
     setLoading(true)
     setError(null)
-    const { error } = await supabase.auth.signOut()
-    if (error) {
-      setError(error.message)
+    try {
+      const { error } = await supabase.auth.signOut({ scope: 'local' })
+      if (error) throw error
+    } catch (err: any) {
+      console.error('Sign out error:', err)
+      setError(err.message)
+    } finally {
+      try {
+        const storageKey = (supabase.auth as any).storageKey
+        if (storageKey) {
+          localStorage.removeItem(storageKey)
+          localStorage.removeItem(`${storageKey}-user`)
+        }
+        localStorage.removeItem(TEMP_SESSION_KEY)
+        sessionStorage.removeItem(SESSION_ACTIVE_KEY)
+      } catch (storageErr) {
+        console.error('Failed to clear auth storage:', storageErr)
+      }
+      setUser(null)
+      setSession(null)
+      setProfile(null)
+      setLoading(false)
     }
-    setUser(null)
-    setSession(null)
-    setProfile(null)
-    setLoading(false)
   }, [])
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    const tempSessionKey = TEMP_SESSION_KEY
+    const sessionActiveKey = SESSION_ACTIVE_KEY
+
+    if (!sessionStorage.getItem(sessionActiveKey) && localStorage.getItem(tempSessionKey)) {
+      try {
+        const storageKey = (supabase.auth as any).storageKey
+        if (storageKey) {
+          localStorage.removeItem(storageKey)
+          localStorage.removeItem(`${storageKey}-user`)
+        }
+      } catch (err) {
+        console.error('Failed to clear temp session on init:', err)
+      }
+      localStorage.removeItem(tempSessionKey)
+    }
+
+    sessionStorage.setItem(sessionActiveKey, 'true')
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session)
       setUser(session?.user ?? null)
       if (session?.user) {
@@ -120,6 +168,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setProfile(null)
       }
     })
+
+    const storageKey = (supabase.auth as any).storageKey
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key === storageKey) {
+        if (event.newValue) {
+          try {
+            const parsed = JSON.parse(event.newValue)
+            const newSession: Session | null = parsed?.currentSession ?? null
+            setSession(newSession)
+            setUser(newSession?.user ?? null)
+            if (newSession?.user) {
+              fetchProfile(newSession.user.id)
+            } else {
+              setProfile(null)
+            }
+          } catch (err) {
+            console.error('Error parsing session from storage event:', err)
+          }
+        } else {
+          setSession(null)
+          setUser(null)
+          setProfile(null)
+          sessionStorage.removeItem(sessionActiveKey)
+        }
+      }
+      if (event.key === tempSessionKey && event.newValue === null) {
+        sessionStorage.removeItem(sessionActiveKey)
+      }
+    }
+
+    window.addEventListener('storage', handleStorage)
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
@@ -132,6 +211,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     return () => {
       subscription.unsubscribe()
+      window.removeEventListener('storage', handleStorage)
     }
   }, [fetchProfile])
 
