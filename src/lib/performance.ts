@@ -38,23 +38,22 @@ export class PerformanceMonitor {
   }
 
   static measureAsync<T>(name: string, fn: () => Promise<T>): Promise<T> {
-    return new Promise(async (resolve, reject) => {
-      this.startMeasurement(name)
-      
-      try {
-        const result = await fn()
+    this.startMeasurement(name)
+
+    return fn()
+      .then((result) => {
         const duration = this.endMeasurement(name)
-        
+
         if (this.isEnabled && duration > 0) {
           console.log(`${name} completed in ${duration.toFixed(2)}ms`)
         }
-        
-        resolve(result)
-      } catch (error) {
+
+        return result
+      })
+      .catch((error) => {
         this.endMeasurement(name)
-        reject(error)
-      }
-    })
+        throw error
+      })
   }
 
   static getMemoryUsage(): BrowserMemoryInfo | null {

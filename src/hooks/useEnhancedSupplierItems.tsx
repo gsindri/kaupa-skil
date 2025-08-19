@@ -86,7 +86,7 @@ export function useEnhancedSupplierItems(filters: SupplierItemsFilters = {}) {
         throw new Error('Invalid tenant context')
       }
 
-      const data = await dedupedSupplierItemsQuery(filters, profile?.tenant_id!)
+      const data = await dedupedSupplierItemsQuery(filters, profile!.tenant_id)
       
       // Log data access for audit purposes
       logDataAccess('supplier_items', 'bulk_access', 'query_supplier_items')

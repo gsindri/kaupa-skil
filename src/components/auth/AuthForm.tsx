@@ -55,8 +55,8 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
     } catch (err: any) {
       console.error('Auth form error:', err)
       const msg = String(err?.message || err);
-      let title = isLogin ? "Sign in failed" : "Sign up failed";
-      let detail =
+      const title = isLogin ? "Sign in failed" : "Sign up failed";
+      const detail =
         /Invalid login credentials/i.test(msg) ? "Please check your email and password."
         : /User already registered/i.test(msg) ? "An account with this email already exists. Try signing in instead."
         : /over_email_send_rate_limit/i.test(msg) ? "Too many emails sent. Please wait a few minutes before trying again."

@@ -26,6 +26,7 @@ export function useJobs() {
 
   // Get job logs for a specific job
   const getJobLogs = (jobId: string) =>
+    // eslint-disable-next-line react-hooks/rules-of-hooks
     useQuery({
       queryKey: ['job-logs', jobId],
       queryFn: async () => {

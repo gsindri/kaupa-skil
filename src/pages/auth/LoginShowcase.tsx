@@ -97,8 +97,8 @@ function AuthForm() {
       }
     } catch (err: any) {
       const msg = String(err?.message || err);
-      let title = isLogin ? "Login failed" : "Signup failed";
-      let detail =
+      const title = isLogin ? "Login failed" : "Signup failed";
+      const detail =
         /Invalid login credentials/i.test(msg) ? "Invalid email or password."
         : /User already registered/i.test(msg) ? "An account with this email already exists. Try signing in."
         : /over_email_send_rate_limit/i.test(msg) ? "Too many emails sent. Please wait a few minutes."
