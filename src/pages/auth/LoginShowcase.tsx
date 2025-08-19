@@ -188,7 +188,7 @@ function AuthForm() {
           </button>
         </div>
         {isLogin && (
-          <a href="/reset-password" className="mt-1 inline-block text-xs text-blue-600 hover:underline">Forgot password?</a>
+          <a href="/forgot-password" className="mt-1 inline-block text-xs text-blue-600 hover:underline">Forgot password?</a>
         )}
         {caps && <p className="mt-1 text-xs text-amber-600">Caps Lock is on.</p>}
         {!isLogin && <p className="mt-1 text-xs text-gray-500">Password must be at least 6 characters.</p>}
