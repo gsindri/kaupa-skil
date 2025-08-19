@@ -12,7 +12,7 @@ import {
   Lightbulb
 } from 'lucide-react';
 import { useCart } from '@/contexts/BasketProviderUtils';
-import { useSettings } from '@/contexts/SettingsProviderUtils';
+import { useSettings } from '@/contexts/useSettings';
 
 interface SmartCartSidebarProps {
   className?: string;

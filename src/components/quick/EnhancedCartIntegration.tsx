@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { ShoppingCart, Truck, AlertCircle, CheckCircle } from 'lucide-react';
 import { useCart } from '@/contexts/BasketProviderUtils';
-import { useSettings } from '@/contexts/SettingsProviderUtils';
+import { useSettings } from '@/contexts/useSettings';
 import { useDeliveryCalculation } from '@/hooks/useDeliveryOptimization';
 
 export function EnhancedCartIntegration() {
