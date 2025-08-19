@@ -29,6 +29,12 @@ export default tseslint.config(
     },
   },
   {
+    files: ["src/hooks/**/*.{ts,tsx}", "src/contexts/**/*.{ts,tsx}"],
+    rules: {
+      "react-refresh/only-export-components": "off",
+    },
+  },
+  {
     files: ["**/*.{test,spec}.{ts,tsx}"],
     languageOptions: {
       globals: {
