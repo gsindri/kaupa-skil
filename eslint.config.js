@@ -27,5 +27,14 @@ export default tseslint.config(
       "@typescript-eslint/no-explicit-any": "off",
       "no-useless-escape": "off",
     },
+  },
+  {
+    files: ["**/*.{test,spec}.{ts,tsx}"],
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+        ...globals.jest,
+      },
+    },
   }
 );
