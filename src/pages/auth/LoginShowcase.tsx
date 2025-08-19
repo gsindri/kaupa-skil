@@ -68,6 +68,7 @@ function AuthForm() {
 
   const [showEmailConfirmation, setShowEmailConfirmation] = useState(false);
   const [signupEmail, setSignupEmail] = useState("");
+  const [remember, setRemember] = useState(true);
 
   const { signIn, signUp } = useAuth();
   const isLogin = mode === "login";
@@ -87,7 +88,7 @@ function AuthForm() {
     setBusy(true);
     try {
       if (isLogin) {
-        await signIn(email.trim(), password);
+        await signIn(email.trim(), password, remember);
         toast({ title: "Welcome back", description: "Signed in successfully." });
       } else {
         await signUp(email.trim(), password, fullName.trim());
@@ -192,6 +193,22 @@ function AuthForm() {
         {caps && <p className="mt-1 text-xs text-amber-600">Caps Lock is on.</p>}
         {!isLogin && <p className="mt-1 text-xs text-gray-500">Password must be at least 6 characters.</p>}
       </div>
+
+      {isLogin && (
+        <div className="flex items-center">
+          <input
+            id="remember"
+            type="checkbox"
+            checked={remember}
+            onChange={(e) => setRemember(e.target.checked)}
+            disabled={busy}
+            className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+          />
+          <label htmlFor="remember" className="ml-2 text-sm text-gray-700">
+            Remember me
+          </label>
+        </div>
+      )}
 
       {/* Submit */}
       <button

@@ -14,7 +14,7 @@ interface AuthContextType {
   isInitialized: boolean
   error: string | null
   refetch: () => Promise<void>
-  signIn: (email: string, password: string) => Promise<void>
+  signIn: (email: string, password: string, remember?: boolean) => Promise<void>
   signUp: (email: string, password: string, fullName: string) => Promise<void>
   signOut: () => Promise<void>
 }
@@ -70,15 +70,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [user, fetchProfile])
 
-  const signIn = useCallback(async (email: string, password: string) => {
-    setLoading(true)
-    setError(null)
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
-    if (error) {
-      setError(error.message)
-    }
-    setLoading(false)
-  }, [])
+  const TEMP_SESSION_KEY = 'sb-temp-session'
+  const SESSION_ACTIVE_KEY = 'sb-session-active'
+
+  const signIn = useCallback(
+    async (email: string, password: string, remember = true) => {
+      setLoading(true)
+      setError(null)
+      const { error } = await supabase.auth.signInWithPassword({ email, password })
+      if (error) {
+        setError(error.message)
+      } else {
+        if (!remember) {
+          localStorage.setItem(TEMP_SESSION_KEY, 'true')
+        } else {
+          localStorage.removeItem(TEMP_SESSION_KEY)
+        }
+        sessionStorage.setItem(SESSION_ACTIVE_KEY, 'true')
+      }
+      setLoading(false)
+    },
+    []
+  )
 
   const signUp = useCallback(async (email: string, password: string, fullName: string) => {
     setLoading(true)
@@ -107,7 +120,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.error('Sign out error:', err)
       setError(err.message)
     } finally {
-      // Ensure local session is fully cleared to avoid rehydration
       try {
         const storageKey = (supabase.auth as any).storageKey
         if (storageKey) {
@@ -139,10 +151,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const storageKey = (supabase.auth as any).storageKey
     const handleStorage = (event: StorageEvent) => {
-      if (event.key === storageKey && event.newValue === null) {
-        setSession(null)
-        setUser(null)
-        setProfile(null)
       }
     }
 
