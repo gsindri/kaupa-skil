@@ -1,8 +1,10 @@
 
-import { useAuth } from '@/contexts/useAuth';
+import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { toast } from "@/hooks/use-toast";
+import { CheckCircle2, Eye, EyeOff, RefreshCw } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { toast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 
 export type AuthMode = "login" | "signup";
@@ -19,6 +21,15 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
   const [caps, setCaps] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [remember, setRemember] = useState(true);
+
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [fullNameError, setFullNameError] = useState("");
+  const [formError, setFormError] = useState("");
+  const errorRef = useRef<HTMLDivElement>(null);
+  const [errorType, setErrorType] = useState<"existing" | "unconfirmed" | "">("");
+  const [resending, setResending] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -76,10 +87,43 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
         toast({ title: "Account created", description: "Check your email to verify.", duration: 5000 });
       }
     } catch (err: any) {
-      console.error('Auth form error:', err)
+      console.error('Auth form error:', err);
       const msg = String(err?.message || err);
+      if (msg.toLowerCase().includes("already registered")) {
+        setErrorType("existing");
+      } else if (msg.toLowerCase().includes("confirm")) {
+        setErrorType("unconfirmed");
+      } else {
+        setFormError(msg);
+        requestAnimationFrame(() => errorRef.current?.focus());
+      }
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function handleResend() {
+    setResending(true);
+    try {
+      await supabase.auth.resend({
+        type: "signup",
+        email: email.trim(),
+      });
+      toast({ title: "Email sent", description: "Activation email resent." });
+      setResendCooldown(60);
+      const interval = setInterval(() => {
+        setResendCooldown((prev) => {
+          if (prev <= 1) {
+            clearInterval(interval);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    } catch (err: any) {
+      toast({ variant: "destructive", title: "Error", description: err?.message || String(err) });
+    } finally {
+      setResending(false);
     }
   }
 
