@@ -10,16 +10,20 @@ export function LanguageSwitcher() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" className="flex items-center">
-          <span className="mr-1" aria-hidden>{language === 'is' ? '🇮🇸' : '🇬🇧'}</span>
-          <span className="hidden sm:inline" aria-label="language">{language.toUpperCase()}</span>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="flex items-center"
+          aria-label="Language"
+        >
+          <span>{language === 'is' ? 'Icelandic' : 'English'}</span>
           <ChevronDown className="ml-1 h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuRadioGroup value={language} onValueChange={(v) => setLanguage(v as any)}>
-          <DropdownMenuRadioItem value="is">🇮🇸 IS</DropdownMenuRadioItem>
-          <DropdownMenuRadioItem value="en">🇬🇧 EN</DropdownMenuRadioItem>
+          <DropdownMenuRadioItem value="is">Icelandic</DropdownMenuRadioItem>
+          <DropdownMenuRadioItem value="en">English</DropdownMenuRadioItem>
         </DropdownMenuRadioGroup>
       </DropdownMenuContent>
     </DropdownMenu>

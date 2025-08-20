@@ -17,14 +17,15 @@ import { useCart } from '@/contexts/useBasket'
 import MiniCart from '@/components/cart/MiniCart'
 import { LanguageSwitcher } from './LanguageSwitcher'
 import { HeildaLogo } from '@/components/branding/HeildaLogo'
+import { useSidebar } from '@/components/ui/use-sidebar'
 
 export function TopNavigation() {
   const { profile, user, signOut, loading, profileLoading } = useAuth()
-  const { setIsDrawerOpen } = useCart()
 
   const searchRef = useRef<HTMLInputElement>(null)
   const [helpOpen, setHelpOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+  const [searchExpanded, setSearchExpanded] = useState(false)
   const lastKey = useRef<string>('')
 
   useEffect(() => {
@@ -54,6 +55,19 @@ export function TopNavigation() {
     return () => window.removeEventListener('keydown', handleKey)
   }, [setIsDrawerOpen])
 
+  const handleSearchFocus = () => setSearchExpanded(true)
+  const handleSearchBlur = () => {
+    if (!searchRef.current?.value) {
+      setSearchExpanded(false)
+    }
+  }
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Escape' && !searchRef.current?.value) {
+      setSearchExpanded(false)
+      searchRef.current?.blur()
+    }
+  }
+
   const handleSignOut = async () => {
     try {
       await signOut()
@@ -69,9 +83,24 @@ export function TopNavigation() {
   return (
     <header
       role="banner"
-      className={`fixed top-0 inset-x-0 z-50 h-[var(--header-h)] border-b bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/75 transition-shadow ${scrolled ? 'shadow-sm' : ''}`}
+      style={{
+        '--sidebar-w': sidebarOpen ? 'var(--sidebar-width)' : '0px',
+        marginLeft: 'var(--sidebar-w)',
+        width: 'calc(100% - var(--sidebar-w))',
+      } as React.CSSProperties}
+      className={`fixed top-0 right-0 left-0 z-50 h-[var(--header-h)] border-b bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/75 transition-shadow transition-[margin-left,width] duration-200 ${scrolled ? 'shadow-sm' : ''}`}
     >
-      <div className="flex h-full items-center px-4">
+      <div className="flex h-full items-center px-4 gap-4">
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label="Toggle sidebar"
+          aria-controls="app-sidebar"
+          aria-expanded={sidebarOpen}
+          onClick={toggleSidebar}
+        >
+          <span aria-hidden>☰</span>
+        </Button>
         <div className="flex items-center flex-1 space-x-4">
           <Link to="/" className="flex items-center" aria-label="Heilda home">
             <HeildaLogo className="h-6 w-auto" />
@@ -84,8 +113,13 @@ export function TopNavigation() {
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               ref={searchRef}
-              placeholder="Search products, suppliers, orders..."
-              className="pl-10"
+              aria-label="Search"
+              placeholder="Search..."
+              onFocus={handleSearchFocus}
+              onBlur={handleSearchBlur}
+              onKeyDown={handleSearchKeyDown}
+              onChange={() => setSearchExpanded(true)}
+              className={`pl-10 transition-all duration-200 ease-in-out border ${searchExpanded ? 'w-full' : 'w-40'}`}
             />
           </div>
         </div>
