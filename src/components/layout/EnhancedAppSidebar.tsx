@@ -30,6 +30,7 @@ import { useBasket } from '@/contexts/useBasket'
 import { usePermissions } from "@/hooks/usePermissions"
 import { HeildaLogo } from "@/components/branding/HeildaLogo"
 import { Separator } from "@/components/ui/separator"
+import { useSidebar } from "@/components/ui/use-sidebar"
 
 // Core workflow pages
 const coreItems = [
@@ -86,6 +87,8 @@ export function EnhancedAppSidebar() {
   const { profile, user } = useAuth()
   const { getTotalItems } = useBasket()
   const { memberships } = usePermissions()
+  const { open, openMobile, isMobile } = useSidebar()
+  const sidebarOpen = isMobile ? openMobile : open
 
   // Check if user has admin access by looking at their memberships
   const currentTenantMembership = memberships?.find(
@@ -105,7 +108,14 @@ export function EnhancedAppSidebar() {
     <nav aria-label="Primary" id="app-sidebar" className="h-full">
       <Sidebar className="w-64">
         <SidebarHeader>
-          <NavLink to="/" className="block p-4">
+          <NavLink
+            to="/"
+            className={`block p-4 transition-all duration-150 ${
+              sidebarOpen ? 'opacity-100' : 'opacity-0 -translate-y-1 pointer-events-none'
+            }`}
+            aria-hidden={!sidebarOpen}
+            tabIndex={sidebarOpen ? 0 : -1}
+          >
             <HeildaLogo className="h-7 w-auto" />
           </NavLink>
         </SidebarHeader>

@@ -11,7 +11,7 @@ export function HeildaLogo({ className = "h-[30px] w-auto" }: HeildaLogoProps) {
       className={className}
       viewBox="0 0 320 64"
       role="img"
-      aria-label="Heilda"
+      aria-label="Deilda"
     >
       <defs>
         <linearGradient id="arcGrad" x1="0" y1="0" x2="1" y2="0">
@@ -47,7 +47,7 @@ export function HeildaLogo({ className = "h-[30px] w-auto" }: HeildaLogoProps) {
         strokeOpacity=".10"
         style={{ paintOrder: "stroke fill", strokeLinejoin: "round" }}
       >
-        Heilda
+        Deilda
       </text>
     </svg>
   );
