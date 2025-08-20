@@ -14,7 +14,7 @@ test.beforeEach(async ({ page }) => {
   if (page.url().includes('/login')) {
     await page.getByPlaceholder('Email').fill(email!);
     await page.getByPlaceholder('Password').fill(password!);
-    await page.getByRole('button', { name: /sign in/i }).click();
+    await page.getByRole('button', { name: /log in/i }).click();
     await page.waitForURL('**/');
   }
 });

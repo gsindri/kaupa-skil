@@ -55,7 +55,7 @@ export default function ResetPassword() {
       const { error } = await supabase.auth.updateUser({ password });
       if (error) throw error;
       await supabase.auth.signOut();
-      toast({ title: "Password updated", description: "Please sign in with your new password." });
+      toast({ title: "Password updated", description: "Please log in with your new password." });
       navigate("/login");
     } catch (err: any) {
       setFormError(String(err?.message || err));
