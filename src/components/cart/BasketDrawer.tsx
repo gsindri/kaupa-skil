@@ -104,15 +104,18 @@ export function BasketDrawer() {
 
   return (
     <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
-      <DrawerContent className="max-w-2xl ml-auto h-full">
-    <DrawerHeader className="flex items-center justify-between">
-      <DrawerTitle className="flex items-center">
-        <ShoppingCart className="h-5 w-5 mr-2" />
-        Your Order ({getTotalItems()} items)
-      </DrawerTitle>
-      <VatToggle includeVat={includeVat} onToggle={setIncludeVat} />
-    </DrawerHeader>
-        
+      <DrawerContent
+        className="left-auto right-0 top-0 bottom-0 h-full w-full max-w-[420px] rounded-none border-l"
+        style={{ width: 'min(35vw, 420px)' }}
+      >
+        <DrawerHeader className="flex items-center justify-between">
+          <DrawerTitle className="flex items-center">
+            <ShoppingCart className="h-5 w-5 mr-2" />
+            Your Order ({getTotalItems()} items)
+          </DrawerTitle>
+          <VatToggle includeVat={includeVat} onToggle={setIncludeVat} />
+        </DrawerHeader>
+
         <div className="px-4 pb-4 overflow-y-auto flex-1 space-y-4">
           {items.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
