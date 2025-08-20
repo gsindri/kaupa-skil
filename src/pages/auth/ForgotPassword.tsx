@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { CheckCircle2, Lock } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -16,6 +16,7 @@ export default function ForgotPassword() {
   const [isSuccess, setIsSuccess] = useState(false);
   const [cooldown, setCooldown] = useState(0);
   const emailInputRef = useRef<HTMLInputElement>(null);
+  const navigate = useNavigate();
 
   const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
@@ -142,7 +143,7 @@ export default function ForgotPassword() {
 
                   <button
                     type="button"
-                    onClick={() => (window.location.href = "/login")}
+                    onClick={() => navigate("/login")}
                     className="mt-2 w-full rounded-full border border-slate-300 bg-white py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2"
                   >
                     Back to login
@@ -161,7 +162,7 @@ export default function ForgotPassword() {
                   <button
                     type="button"
                     className="w-full rounded-full bg-brand-500 py-3 text-sm font-semibold text-white shadow-md transition-colors duration-[120ms] ease-in-out hover:bg-brand-600 active:bg-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2"
-                    onClick={() => (window.location.href = "/login")}
+                    onClick={() => navigate("/login")}
                   >
                     Go to login
                   </button>
