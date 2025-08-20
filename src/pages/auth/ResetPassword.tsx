@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Lock } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,6 +13,7 @@ export default function ResetPassword() {
   const [confirm, setConfirm] = useState("");
   const [busy, setBusy] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const hasAttempted = useRef(false);
 
   useEffect(() => {
     async function getSession() {
@@ -20,11 +21,14 @@ export default function ResetPassword() {
         const { error } = await supabase.auth.getSessionFromUrl({ storeSession: true });
         if (error) throw error;
       } catch (err: any) {
+        await supabase.auth.signOut();
         setPageError("This password reset link is invalid or has expired.");
       } finally {
         setLoading(false);
       }
     }
+    if (hasAttempted.current) return;
+    hasAttempted.current = true;
     getSession();
   }, []);
 
