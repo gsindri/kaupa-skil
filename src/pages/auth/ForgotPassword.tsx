@@ -108,7 +108,7 @@ export default function ForgotPassword() {
                       onChange={(e) => setEmail(e.target.value)}
                       required
                       aria-invalid={!emailValid && email.length > 0}
-                      className="w-full rounded-full border border-slate-300 bg-white px-4 py-3 text-sm outline-none transition-colors duration-[120ms] ease-in-out focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+                      className="w-full rounded-full border border-slate-300 bg-white px-4 py-3 text-sm outline-none transition-colors duration-120 ease-in-out focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
                       placeholder="Email"
                     />
                   </div>
@@ -116,7 +116,7 @@ export default function ForgotPassword() {
                   <button
                     type="submit"
                     disabled={isLoading || !emailValid || cooldown > 0}
-                    className="w-full rounded-full bg-brand-500 py-3 text-sm font-semibold text-white shadow-md transition-colors duration-[120ms] ease-in-out hover:bg-brand-600 active:bg-brand-700 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2"
+                    className="w-full rounded-full bg-brand-500 py-3 text-sm font-semibold text-white shadow-md transition-colors duration-120 ease-in-out hover:bg-brand-600 active:bg-brand-700 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2"
                   >
                     {isLoading
                       ? "Sending…"
@@ -161,7 +161,7 @@ export default function ForgotPassword() {
 
                   <button
                     type="button"
-                    className="w-full rounded-full bg-brand-500 py-3 text-sm font-semibold text-white shadow-md transition-colors duration-[120ms] ease-in-out hover:bg-brand-600 active:bg-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2"
+                    className="w-full rounded-full bg-brand-500 py-3 text-sm font-semibold text-white shadow-md transition-colors duration-120 ease-in-out hover:bg-brand-600 active:bg-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2"
                     onClick={() => navigate("/login")}
                   >
                     Go to login
