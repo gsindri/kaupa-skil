@@ -28,7 +28,7 @@ export type Capability =
   | 'manage_vat_rules'
   | 'read_audit_logs'
 
-export type PermissionScope = 'tenant' | 'relationship' | 'supplier'
+export type PermissionScope = 'tenant' | 'relationship' | 'supplier' | 'personal'
 
 export interface GrantInput {
   capability: Capability

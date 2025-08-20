@@ -128,12 +128,18 @@ serve(async (req) => {
     }
 
     // Check if membership already exists
-    const { data: existingMembership, error: membershipCheckError } = await supabaseClient
+    let membershipQuery = supabaseClient
       .from('memberships')
       .select('id')
-      .eq('tenant_id', tenantId)
       .eq('user_id', userId)
-      .single()
+
+    if (tenantId) {
+      membershipQuery = membershipQuery.eq('tenant_id', tenantId)
+    } else {
+      membershipQuery = membershipQuery.is('tenant_id', null)
+    }
+
+    const { data: existingMembership, error: membershipCheckError } = await membershipQuery.single()
 
     if (membershipCheckError && membershipCheckError.code !== 'PGRST116') {
       throw new Error(`Failed to check existing membership: ${membershipCheckError.message}`)

@@ -5,18 +5,24 @@ import { useAuth } from '@/contexts/useAuth'
 import { Capability, PermissionScope, GrantInput, UserMembership } from '@/lib/types/permissions'
 import { useToast } from './use-toast'
 
-export function usePermissions() {
+export function usePermissions(tenantId?: string | null) {
   const { user } = useAuth()
   const queryClient = useQueryClient()
   const { toast } = useToast()
 
   // Get user's memberships across all tenants
   const { data: memberships, isLoading: membershipsLoading } = useQuery({
-    queryKey: ['user-memberships', user?.id],
+    queryKey: ['user-memberships', user?.id, tenantId],
     queryFn: async (): Promise<UserMembership[]> => {
       const { data, error } = await supabase.rpc('get_user_memberships')
       if (error) throw error
-      return data || []
+      let result = data || []
+      if (tenantId) {
+        result = result.filter(m => m.tenant_id === tenantId)
+      } else {
+        result = result.filter(m => !m.tenant_id)
+      }
+      return result
     },
     enabled: !!user
   })
@@ -29,9 +35,11 @@ export function usePermissions() {
   ): Promise<boolean> => {
     if (!user) return false
 
+    const effectiveScope = !tenantId && scope === 'tenant' ? 'personal' : scope
+
     const { data, error } = await supabase.rpc('has_capability', {
       cap: capability,
-      target_scope: scope,
+      target_scope: effectiveScope,
       target_id: scopeId || null
     })
 
@@ -45,9 +53,9 @@ export function usePermissions() {
 
   // Get grants for a specific membership
   const { data: grants, isLoading: grantsLoading } = useQuery({
-    queryKey: ['membership-grants', user?.id],
+    queryKey: ['membership-grants', user?.id, tenantId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('grants')
         .select(`
           *,
@@ -59,6 +67,14 @@ export function usePermissions() {
           )
         `)
         .eq('membership.user_id', user?.id)
+
+      if (tenantId) {
+        query = query.eq('tenant_id', tenantId)
+      } else {
+        query = query.is('tenant_id', null)
+      }
+
+      const { data, error } = await query
 
       if (error) throw error
       return data
