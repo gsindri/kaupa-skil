@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Search, HelpCircle, ChevronDown, ShoppingCart } from 'lucide-react'
+import { Search, HelpCircle, ChevronDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -10,17 +10,17 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card'
 import { Separator } from '@/components/ui/separator'
 import { TenantSwitcher } from './TenantSwitcher'
 import { useAuth } from '@/contexts/useAuth'
 import { useCart } from '@/contexts/useBasket'
+import MiniCart from '@/components/cart/MiniCart'
 import { LanguageSwitcher } from './LanguageSwitcher'
 import { HeildaLogo } from '@/components/branding/HeildaLogo'
 
 export function TopNavigation() {
   const { profile, user, signOut, loading, profileLoading } = useAuth()
-  const { getTotalItems, items, setIsDrawerOpen } = useCart()
+  const { setIsDrawerOpen } = useCart()
 
   const searchRef = useRef<HTMLInputElement>(null)
   const [helpOpen, setHelpOpen] = useState(false)
@@ -66,8 +66,6 @@ export function TopNavigation() {
   const displayEmail = profile?.email || user?.email || ''
   const userInitial = displayName[0]?.toUpperCase() || 'U'
   const isBusy = loading || profileLoading
-  const cartCount = getTotalItems()
-
   return (
     <header
       role="banner"
@@ -108,36 +106,7 @@ export function TopNavigation() {
             </DropdownMenuContent>
           </DropdownMenu>
           <Separator orientation="vertical" className="mx-2 h-6" />
-          <HoverCard openDelay={0} closeDelay={100}>
-            <HoverCardTrigger asChild>
-              <Button variant="ghost" size="sm" className="relative" onClick={() => setIsDrawerOpen(true)}>
-                <ShoppingCart className="h-5 w-5" />
-                {cartCount > 0 && (
-                  <span aria-live="polite" className="absolute -top-1 -right-1 h-4 min-w-4 rounded-full bg-brand-600 px-1 text-[10px] text-white flex items-center justify-center">
-                    {cartCount}
-                  </span>
-                )}
-                <span className="hidden sm:inline ml-2">Cart</span>
-              </Button>
-            </HoverCardTrigger>
-            <HoverCardContent className="w-64" align="end" sideOffset={8}>
-              {cartCount === 0 ? (
-                <div className="text-sm text-muted-foreground">Cart is empty</div>
-              ) : (
-                <div className="space-y-1 text-sm">
-                  {items.slice(0, 3).map(item => (
-                    <div key={item.supplierItemId} className="flex justify-between">
-                      <span>{item.itemName}</span>
-                      <span>{item.quantity}x</span>
-                    </div>
-                  ))}
-                  {items.length > 3 && (
-                    <div className="text-xs text-muted-foreground">+ {items.length - 3} more</div>
-                  )}
-                </div>
-              )}
-            </HoverCardContent>
-          </HoverCard>
+          <MiniCart />
           <Separator orientation="vertical" className="mx-2 h-6" />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
