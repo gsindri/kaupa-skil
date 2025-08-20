@@ -54,7 +54,7 @@ export default function BasketProvider({ children }: { children: React.ReactNode
       
       if (options.showToast !== false) {
         toast({
-          title: `Added to basket`,
+          title: `Added to cart`,
           description: `${item.itemName} (${quantity}x ${item.packSize})`
         })
       }
@@ -89,10 +89,11 @@ export default function BasketProvider({ children }: { children: React.ReactNode
   const clearBasket = () => {
     setItems([])
     syncBasket([])
-    toast({
-      title: 'Basket cleared',
-      description: 'All items have been removed from your basket'
-    })
+  }
+
+  const restoreItems = (items: CartItem[]) => {
+    setItems(items)
+    syncBasket(items)
   }
 
   // Add clearCart method for backward compatibility
@@ -117,6 +118,7 @@ export default function BasketProvider({ children }: { children: React.ReactNode
       removeItem,
       clearBasket,
       clearCart,
+      restoreItems,
       getTotalItems,
       getTotalPrice,
       isDrawerOpen,

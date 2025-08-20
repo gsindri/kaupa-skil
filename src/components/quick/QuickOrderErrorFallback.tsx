@@ -51,9 +51,9 @@ export function QuickOrderErrorFallback({
             Try Again
           </Button>
           
-          <Button variant="outline" onClick={() => window.location.href = '/basket'} className="w-full">
+          <Button variant="outline" onClick={() => window.location.href = '/cart'} className="w-full">
             <ShoppingCart className="h-4 w-4 mr-2" />
-            Go to Basket Instead
+            Go to Cart Instead
           </Button>
         </div>
       </CardContent>

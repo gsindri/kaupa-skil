@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useRef } from 'react'
 import {
   Drawer,
   DrawerContent,
@@ -16,11 +16,29 @@ import { toast } from '@/hooks/use-toast'
 import { useCart } from '@/contexts/useBasket'
 import { useSettings } from '@/contexts/useSettings'
 import VatToggle from '@/components/ui/VatToggle'
+import { ToastAction } from '@/components/ui/toast'
 
-export function BasketDrawer() {
-  const { items, getTotalItems, isDrawerOpen, setIsDrawerOpen, updateQuantity, removeItem } = useCart()
+export function CartDrawer() {
+  const { items, getTotalItems, isDrawerOpen, setIsDrawerOpen, clearCart, restoreItems } = useCart()
   const { includeVat, setIncludeVat } = useSettings()
   const { data: deliveryCalculations = [], isLoading: deliveryLoading } = useDeliveryCalculation()
+  const lastItems = useRef(items)
+
+  const handleClearCart = () => {
+    if (items.length === 0) return
+    if (!window.confirm('Clear all items?')) return
+    lastItems.current = items.map(item => ({ ...item }))
+    clearCart()
+    toast({
+      title: 'Cart cleared',
+      action: (
+        <ToastAction altText="Undo" onClick={() => restoreItems(lastItems.current)}>
+          Undo
+        </ToastAction>
+      ),
+      duration: 7000,
+    })
+  }
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('is-IS', {
@@ -105,21 +123,29 @@ export function BasketDrawer() {
   return (
     <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
       <DrawerContent
-        className="left-auto right-0 top-0 bottom-0 h-full w-full max-w-[420px] rounded-none border-l"
-        style={{ width: 'min(35vw, 420px)' }}
+        showBar={false}
+        role="dialog"
+        aria-modal="true"
+        className="left-auto right-0 top-0 mt-0 bottom-0 h-full w-full max-w-[400px] md:max-w-[35vw] rounded-none border-l z-[60]"
+        style={{ width: 'min(35vw, 380px)' }}
       >
         <DrawerHeader className="flex items-center justify-between">
-          <DrawerTitle className="flex items-center">
+          <DrawerTitle className="flex items-center" aria-live="polite">
             <ShoppingCart className="h-5 w-5 mr-2" />
-            Your Order ({getTotalItems()} items)
+            Your Cart ({getTotalItems()} items)
           </DrawerTitle>
-          <VatToggle includeVat={includeVat} onToggle={setIncludeVat} />
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="sm" onClick={handleClearCart} disabled={items.length === 0}>
+              Clear cart
+            </Button>
+            <VatToggle includeVat={includeVat} onToggle={setIncludeVat} />
+          </div>
         </DrawerHeader>
 
         <div className="px-4 pb-4 overflow-y-auto flex-1 space-y-4">
           {items.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              Your basket is empty
+            <div className="text-center py-8 text-muted-foreground" aria-live="polite">
+              Your cart is empty
             </div>
           ) : (
             <>
