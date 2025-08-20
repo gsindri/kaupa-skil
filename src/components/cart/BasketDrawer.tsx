@@ -15,10 +15,11 @@ import { DeliveryHints } from './DeliveryHints'
 import { toast } from '@/hooks/use-toast'
 import { useCart } from '@/contexts/useBasket'
 import { useSettings } from '@/contexts/useSettings'
+import VatToggle from '@/components/ui/VatToggle'
 
 export function BasketDrawer() {
   const { items, getTotalItems, isDrawerOpen, setIsDrawerOpen, updateQuantity, removeItem } = useCart()
-  const { includeVat } = useSettings()
+  const { includeVat, setIncludeVat } = useSettings()
   const { data: deliveryCalculations = [], isLoading: deliveryLoading } = useDeliveryCalculation()
 
   const formatPrice = (price: number) => {
@@ -104,12 +105,13 @@ export function BasketDrawer() {
   return (
     <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
       <DrawerContent className="max-w-2xl ml-auto h-full">
-        <DrawerHeader>
-          <DrawerTitle className="flex items-center">
-            <ShoppingCart className="h-5 w-5 mr-2" />
-            Your Order ({getTotalItems()} items)
-          </DrawerTitle>
-        </DrawerHeader>
+    <DrawerHeader className="flex items-center justify-between">
+      <DrawerTitle className="flex items-center">
+        <ShoppingCart className="h-5 w-5 mr-2" />
+        Your Order ({getTotalItems()} items)
+      </DrawerTitle>
+      <VatToggle includeVat={includeVat} onToggle={setIncludeVat} />
+    </DrawerHeader>
         
         <div className="px-4 pb-4 overflow-y-auto flex-1 space-y-4">
           {items.length === 0 ? (
