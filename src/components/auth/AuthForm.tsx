@@ -89,13 +89,36 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
     } catch (err: any) {
       console.error('Auth form error:', err);
       const msg = String(err?.message || err);
-      if (msg.toLowerCase().includes("already registered")) {
-        setErrorType("existing");
-      } else if (msg.toLowerCase().includes("confirm")) {
-        setErrorType("unconfirmed");
-      } else {
-        setFormError(msg);
+
+      if (isLogin) {
+        const code = err?.code;
+        const status = err?.status;
+
+        if (code === 'invalid_credentials' || status === 400) {
+          setFormError('Email or password is incorrect.');
+        } else if (
+          code === 'email_not_confirmed' ||
+          status === 403 ||
+          msg.toLowerCase().includes('confirm')
+        ) {
+          setErrorType('unconfirmed');
+        } else if (code === 'over_rate_limit' || status === 429) {
+          setFormError('Too many attempts. Please try again later.');
+        } else if (!status || status >= 500) {
+          setFormError("We couldn't reach the server. Please try again.");
+        } else {
+          setFormError(msg);
+        }
         requestAnimationFrame(() => errorRef.current?.focus());
+      } else {
+        if (msg.toLowerCase().includes('already registered')) {
+          setErrorType('existing');
+        } else if (msg.toLowerCase().includes('confirm')) {
+          setErrorType('unconfirmed');
+        } else {
+          setFormError(msg);
+          requestAnimationFrame(() => errorRef.current?.focus());
+        }
       }
     } finally {
       setBusy(false);
