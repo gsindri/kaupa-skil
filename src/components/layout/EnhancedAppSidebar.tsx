@@ -102,7 +102,7 @@ export function EnhancedAppSidebar() {
     profile?.full_name || user?.email?.split("@")[0] || "User"
 
   return (
-    <nav aria-label="Primary" className="h-full">
+    <nav aria-label="Primary" id="app-sidebar" className="h-full">
       <Sidebar className="w-64">
         <SidebarHeader>
           <NavLink to="/" className="block p-4">
