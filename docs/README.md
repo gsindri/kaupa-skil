@@ -10,7 +10,7 @@ A comprehensive buyer-side B2B wholesale comparison and ordering tool designed s
 - **Supplier Credential Management** - Encrypted storage of supplier portal credentials with test functionality
 - **Unit-Normalized Price Comparison** - Compare prices per kg, L, or unit across suppliers with VAT toggle
 - **VAT Management** - Iceland-specific VAT rates (24% standard, 11% reduced) with ex-VAT/inc-VAT toggle
-- **Order Composition** - Smart basket that automatically splits orders by supplier
+- **Order Composition** - Smart cart that automatically splits orders by supplier
 - **Email Dispatch** - Generate and send orders via email with CSV/PDF attachments
 - **Price History Tracking** - Visualize price trends over time per item and supplier
 - **Audit Logging** - Complete audit trail for compliance and security

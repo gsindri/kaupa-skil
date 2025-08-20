@@ -26,7 +26,7 @@ import {
 import { NavLink } from "react-router-dom"
 import { useAuth } from '@/contexts/useAuth'
 import { Badge } from "@/components/ui/badge"
-import { useBasket } from '@/contexts/useBasket'
+import { useCart } from '@/contexts/useBasket'
 import { usePermissions } from "@/hooks/usePermissions"
 import { HeildaLogo } from "@/components/branding/HeildaLogo"
 import { Separator } from "@/components/ui/separator"
@@ -40,8 +40,8 @@ const coreItems = [
     icon: Zap,
   },
   {
-    title: "Basket",
-    url: "/basket",
+    title: "Cart",
+    url: "/cart",
     icon: ShoppingCart,
   },
   {
@@ -85,7 +85,7 @@ const adminItems = [
 
 export function EnhancedAppSidebar() {
   const { profile, user } = useAuth()
-  const { getTotalItems } = useBasket()
+  const { getTotalItems } = useCart()
   const { memberships } = usePermissions()
   const { open, openMobile, isMobile } = useSidebar()
   const sidebarOpen = isMobile ? openMobile : open
@@ -98,7 +98,7 @@ export function EnhancedAppSidebar() {
     currentTenantMembership?.base_role === "admin" ||
     currentTenantMembership?.base_role === "owner"
 
-  const basketItemCount = getTotalItems()
+  const cartItemCount = getTotalItems()
 
   // Get display name with fallbacks
   const displayName =
@@ -133,13 +133,13 @@ export function EnhancedAppSidebar() {
                             <item.icon className="mr-2 h-4 w-4" />
                             <span>{item.title}</span>
                           </div>
-                          {item.title === "Basket" && basketItemCount > 0 && (
+                          {item.title === "Cart" && cartItemCount > 0 && (
                             <Badge
                               variant="secondary"
                               className="ml-2 font-mono"
                               style={{ fontFeatureSettings: '"tnum" 1' }}
                             >
-                              {basketItemCount}
+                              {cartItemCount}
                             </Badge>
                           )}
                         </div>

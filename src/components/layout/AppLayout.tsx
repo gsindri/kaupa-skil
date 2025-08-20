@@ -4,7 +4,7 @@ import { SidebarProvider } from '@/components/ui/sidebar-provider'
 import { EnhancedAppSidebar } from './EnhancedAppSidebar'
 import { TopNavigation } from './TopNavigation'
 import { ElevationBanner } from './ElevationBanner'
-import { BasketDrawer } from '@/components/cart/BasketDrawer'
+import { CartDrawer } from '@/components/cart/CartDrawer'
 
 interface AppLayoutProps {
   children: React.ReactNode
@@ -27,7 +27,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           </main>
         </div>
         
-        <BasketDrawer />
+        <CartDrawer />
       </div>
     </SidebarProvider>
   )

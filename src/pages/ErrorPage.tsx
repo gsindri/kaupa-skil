@@ -62,9 +62,9 @@ export default function ErrorPage() {
                 </Link>
               </Button>
               <Button variant="outline" asChild className="flex-1">
-                <Link to="/basket">
+                <Link to="/cart">
                   <ShoppingCart className="h-4 w-4 mr-2" />
-                  Basket
+                  Cart
                 </Link>
               </Button>
             </div>

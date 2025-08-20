@@ -13,7 +13,7 @@ import {
 import { ShoppingCart, User, Settings, LogOut, Menu } from 'lucide-react'
 import { useAuth } from '@/contexts/useAuth'
 import { useNavigate } from 'react-router-dom'
-import { BasketDrawer } from '@/components/cart/BasketDrawer'
+import { CartDrawer } from '@/components/cart/CartDrawer'
 import { HeildaLogo } from '@/components/branding/HeildaLogo'
 import { useCart } from '@/contexts/useBasket'
 
@@ -82,7 +82,7 @@ export function QuickOrderNavigation() {
           </DropdownMenu>
         </div>
       </div>
-      <BasketDrawer />
+      <CartDrawer />
     </>
   )
 }

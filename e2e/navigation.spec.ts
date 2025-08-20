@@ -22,7 +22,7 @@ test.beforeEach(async ({ page }) => {
 test('sidebar links route correctly', async ({ page }) => {
   const links = [
     { label: 'Place Order', path: '/quick-order' },
-    { label: 'Basket', path: '/basket' },
+    { label: 'Cart', path: '/cart' },
     { label: 'Compare', path: '/compare' },
     { label: 'Suppliers', path: '/suppliers' },
   ];

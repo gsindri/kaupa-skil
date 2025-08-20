@@ -43,7 +43,7 @@ export const routes = [
         element: <QuickOrder />,
       },
       {
-        path: "basket",
+        path: "cart",
         element: <Orders />,
       },
       {
