@@ -380,7 +380,7 @@ export type Database = {
           revoked_at: string | null
           revoked_by: string | null
           starts_at: string | null
-          tenant_id: string
+          tenant_id: string | null
         }
         Insert: {
           actor_id: string
@@ -391,7 +391,7 @@ export type Database = {
           revoked_at?: string | null
           revoked_by?: string | null
           starts_at?: string | null
-          tenant_id: string
+          tenant_id?: string | null
         }
         Update: {
           actor_id?: string
@@ -402,7 +402,7 @@ export type Database = {
           revoked_at?: string | null
           revoked_by?: string | null
           starts_at?: string | null
-          tenant_id?: string
+          tenant_id?: string | null
         }
         Relationships: [
           {
