@@ -1,7 +1,6 @@
 import React from 'react'
 import { useAuth } from '@/contexts/useAuth'
 import { Navigate, useLocation } from 'react-router-dom'
-import { ExistingUserOnboarding } from '@/components/onboarding/ExistingUserOnboarding'
 
 interface AuthGateProps {
   children: React.ReactNode
@@ -29,14 +28,5 @@ export function AuthGate({ children }: AuthGateProps) {
     }
     return <>{children}</>
   }
-
-  const hasSkippedOnboarding =
-    typeof window !== 'undefined' &&
-    localStorage.getItem('onboardingSkipped') === 'true'
-
-  if (profile && !profile.tenant_id && !hasSkippedOnboarding) {
-    return <ExistingUserOnboarding />
-  }
-
   return <>{children}</>
 }
