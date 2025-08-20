@@ -31,6 +31,16 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
   const [resending, setResending] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
 
+  const trimmedEmail = email.trim();
+  const trimmedFullName = fullName.trim();
+  const isFormValid =
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail) &&
+    password.length >= (isLogin ? 1 : 6) &&
+    (isLogin || trimmedFullName.length > 0) &&
+    !emailError &&
+    !passwordError &&
+    (isLogin || !fullNameError);
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
 
@@ -316,6 +326,8 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
 
       <button
         type="submit"
+        disabled={busy || !isFormValid}
+        className="mt-1 w-full rounded-full bg-blue-500 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-600 disabled:opacity-50"
       >
         {busy ? (isLogin ? "Signing in…" : "Creating account…") : (isLogin ? "Sign In" : "Create account")}
       </button>
