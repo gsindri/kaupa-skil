@@ -18,7 +18,13 @@ export default function ResetPassword() {
   useEffect(() => {
     async function getSession() {
       try {
-        const { error } = await supabase.auth.getSessionFromUrl({ storeSession: true });
+        const code = new URLSearchParams(window.location.search).get("code");
+        let error: any = null;
+        if (code) {
+          ({ error } = await supabase.auth.exchangeCodeForSession(code));
+        } else {
+          ({ error } = await supabase.auth.getSessionFromUrl({ storeSession: true }));
+        }
         if (error) throw error;
       } catch (err: any) {
         await supabase.auth.signOut();
