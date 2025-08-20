@@ -92,7 +92,8 @@ export function ExistingUserOnboarding() {
           <Building className="h-16 w-16 text-primary mx-auto mb-4" />
           <h1 className="text-3xl font-bold mb-2">Welcome to ProcureWise</h1>
           <p className="text-muted-foreground">
-            You need to join or create an organization to get started.
+            You can join or create an organization now, or skip and set it up
+            later in Settings.
           </p>
         </div>
 
@@ -102,10 +103,11 @@ export function ExistingUserOnboarding() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Plus className="h-5 w-5" />
-                Create New Organization
+                Create New Organization (Optional)
               </CardTitle>
               <CardDescription>
-                Set up a new organization for your business
+                Set up a new organization for your business now or do it later in
+                Settings.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -124,10 +126,10 @@ export function ExistingUserOnboarding() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Users className="h-5 w-5" />
-                  Join Existing Organization
+                  Join Existing Organization (Optional)
                 </CardTitle>
                 <CardDescription>
-                  Join one of these existing organizations
+                  Join one of these existing organizations now or come back later.
                 </CardDescription>
               </CardHeader>
               <CardContent>
