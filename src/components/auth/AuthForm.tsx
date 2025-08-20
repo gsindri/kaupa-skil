@@ -1,7 +1,15 @@
 
 import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { CheckCircle2, Eye, EyeOff, RefreshCw } from "lucide-react";
+import {
+  CheckCircle2,
+  Eye,
+  EyeOff,
+  RefreshCw,
+  Mail,
+  Lock,
+  Loader2,
+} from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/useAuth";
@@ -204,7 +212,7 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
       <div className="space-y-4">
         <Alert>
           <AlertDescription className="text-sm">
-            Check your email to activate your account.
+            Your account isn’t activated yet.
           </AlertDescription>
         </Alert>
         <div className="flex justify-center">
@@ -232,133 +240,154 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-4" noValidate>
+    <form onSubmit={onSubmit} className="space-y-6" noValidate>
       {formError && (
         <div
           ref={errorRef}
           role="alert"
           tabIndex={-1}
-          className="rounded-md border border-red-300 bg-red-50 p-3 text-sm text-red-700"
+          className="rounded-md border border-error/20 bg-error/10 p-3 text-sm text-error"
         >
           {formError}
         </div>
       )}
-      {!isLogin && (
-        <div>
-          <label htmlFor="fullName" className="sr-only">Full name</label>
+
+      <div className="space-y-4">
+        {!isLogin && (
+          <div>
+            <label htmlFor="fullName" className="sr-only">Full name</label>
+            <input
+              id="fullName"
+              type="text"
+              required
+              disabled={busy}
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              aria-invalid={!!fullNameError}
+              aria-describedby={fullNameError ? "fullName-error" : undefined}
+              className="w-full rounded-full border border-slate-300 bg-white px-4 py-3 text-sm outline-none transition-colors duration-[120ms] ease-in-out focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+              placeholder="Full name"
+            />
+            {fullNameError && (
+              <p id="fullName-error" className="mt-1 text-xs text-red-600">
+                {fullNameError}
+              </p>
+            )}
+          </div>
+        )}
+
+        <div className="relative">
+          <label htmlFor="email" className="sr-only">Email</label>
+          <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
           <input
-            id="fullName"
-            type="text"
+            id="email"
+            type="email"
+            autoComplete="email"
             required
             disabled={busy}
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
-            aria-invalid={!!fullNameError}
-            aria-describedby={fullNameError ? "fullName-error" : undefined}
-            className="w-full rounded-full border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
-            placeholder="Full name"
+            aria-invalid={!!emailError}
+            aria-describedby={emailError ? "email-error" : undefined}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full rounded-full border border-slate-300 bg-white pl-10 pr-4 py-3 text-sm outline-none transition-colors duration-[120ms] ease-in-out focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+            placeholder="Email"
           />
-          {fullNameError && (
-            <p id="fullName-error" className="mt-1 text-xs text-red-600">
-              {fullNameError}
+          {emailError && (
+            <p id="email-error" className="mt-1 text-xs text-red-600">
+              {emailError}
             </p>
           )}
         </div>
-      )}
 
-      <div>
-        <label htmlFor="email" className="sr-only">Email</label>
-        <input
-          id="email"
-          type="email"
-          autoComplete="email"
-          required
-          disabled={busy}
-          aria-invalid={!!emailError}
-          aria-describedby={emailError ? "email-error" : undefined}
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="w-full rounded-full border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
-          placeholder="Email"
-        />
-        {emailError && (
-          <p id="email-error" className="mt-1 text-xs text-red-600">
-            {emailError}
-          </p>
-        )}
-      </div>
-
-      <div>
-        <div className="relative">
-          <input
-            id="password"
-            type={showPwd ? "text" : "password"}
-            autoComplete={isLogin ? "current-password" : "new-password"}
-            required
-            disabled={busy}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            onKeyDown={(e) => setCaps((e as any).getModifierState?.("CapsLock"))}
-            onKeyUp={(e) => setCaps((e as any).getModifierState?.("CapsLock"))}
-            minLength={!isLogin ? 6 : undefined}
-            aria-invalid={!!passwordError}
-            aria-describedby={passwordError ? "password-error" : undefined}
-            className="w-full rounded-full border border-slate-300 bg-white px-4 py-3 pr-10 text-sm outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
-            placeholder="Password"
-          />
-          <button
-            type="button"
-            aria-label={showPwd ? "Hide password" : "Show password"}
-            onClick={() => setShowPwd((v) => !v)}
-            className="absolute inset-y-0 right-2 inline-flex items-center rounded-lg p-2 text-gray-500 hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
-            disabled={busy}
-          >
-            {showPwd ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-          </button>
+        <div>
+          <div className="relative">
+            <label htmlFor="password" className="sr-only">Password</label>
+            <Lock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
+            <input
+              id="password"
+              type={showPwd ? "text" : "password"}
+              autoComplete={isLogin ? "current-password" : "new-password"}
+              required
+              disabled={busy}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              onKeyDown={(e) => setCaps((e as any).getModifierState?.("CapsLock"))}
+              onKeyUp={(e) => setCaps((e as any).getModifierState?.("CapsLock"))}
+              onFocus={(e) => setCaps((e as any).getModifierState?.("CapsLock"))}
+              onBlur={() => setCaps(false)}
+              minLength={!isLogin ? 6 : undefined}
+              aria-invalid={!!passwordError}
+              aria-describedby={passwordError ? "password-error" : undefined}
+              className="w-full rounded-full border border-slate-300 bg-white pl-10 pr-10 py-3 text-sm outline-none transition-colors duration-[120ms] ease-in-out focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+              placeholder="Password"
+            />
+            <button
+              type="button"
+              aria-label={showPwd ? "Hide password" : "Show password"}
+              aria-pressed={showPwd}
+              onClick={() => setShowPwd((v) => !v)}
+              className="absolute inset-y-0 right-2 inline-flex items-center rounded-lg p-2 text-gray-500 transition-colors duration-[120ms] ease-in-out hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+              disabled={busy}
+            >
+              {showPwd ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </button>
+          </div>
+          {!isLogin && (
+            <p className="mt-1 text-xs text-gray-500">Password must be at least 6 characters.</p>
+          )}
+          {passwordError && (
+            <p id="password-error" className="mt-1 text-xs text-red-600">
+              {passwordError}
+            </p>
+          )}
+          {caps && <p className="mt-1 text-xs text-amber-600">Caps Lock is on.</p>}
         </div>
-
-        {isLogin ? (
-          <Link to="/forgot-password" className="mt-1 inline-block text-xs text-blue-600 hover:underline">
-            Forgot password?
-          </Link>
-        ) : (
-          <p className="mt-1 text-xs text-gray-500">Password must be at least 6 characters.</p>
-        )}
-        {passwordError && (
-          <p id="password-error" className="mt-1 text-xs text-red-600">
-            {passwordError}
-          </p>
-        )}
-        {caps && <p className="mt-1 text-xs text-amber-600">Caps Lock is on.</p>}
       </div>
 
       {isLogin && (
-        <div className="flex items-center">
+        <Link
+          to="/forgot-password"
+          className="block text-right text-sm text-blue-600 transition-colors duration-[120ms] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2"
+        >
+          Forgot password?
+        </Link>
+      )}
+
+      {isLogin && (
+        <label htmlFor="remember" className="flex items-center gap-2 py-2">
           <input
             id="remember"
             type="checkbox"
             checked={remember}
             onChange={(e) => setRemember(e.target.checked)}
             disabled={busy}
-            className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+            className="h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500"
           />
-          <label htmlFor="remember" className="ml-2 text-sm text-gray-700">
-            Remember me
-          </label>
-        </div>
+          <span className="text-sm text-gray-700">Remember me</span>
+        </label>
       )}
 
       <button
         type="submit"
         disabled={busy || !isFormValid}
-        className="mt-1 w-full rounded-full bg-blue-500 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-600 disabled:opacity-50"
+        className="w-full rounded-full bg-brand-500 py-3 text-sm font-semibold text-white shadow-md transition-colors duration-[120ms] ease-in-out hover:bg-brand-600 active:bg-brand-700 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2"
       >
-        {busy ? (isLogin ? "Signing in…" : "Creating account…") : (isLogin ? "Sign In" : "Create account")}
+        {busy ? (
+          <span className="flex items-center justify-center gap-2">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            {isLogin ? "Signing in…" : "Creating account…"}
+          </span>
+        ) : (
+          isLogin ? "Sign In" : "Create account"
+        )}
       </button>
 
-      <p className="text-center text-sm text-gray-600">
+      <p className="border-t border-slate-200 pt-4 text-center text-sm text-gray-600">
         {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
-        <Link to={isLogin ? "/signup" : "/login"} className="font-medium text-blue-600 hover:underline">
+        <Link
+          to={isLogin ? "/signup" : "/login"}
+          className="font-medium text-blue-600 transition-colors duration-[120ms] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2"
+        >
           {isLogin ? "Sign up" : "Sign in"}
         </Link>
       </p>
