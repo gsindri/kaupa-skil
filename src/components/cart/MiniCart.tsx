@@ -27,6 +27,11 @@ export function MiniCart() {
           variant="ghost"
           size="sm"
           className="relative"
+          onClick={e => {
+            e.preventDefault()
+            setOpen(false)
+            setIsDrawerOpen(true)
+          }}
         >
           <ShoppingCart className="h-5 w-5" />
           {cartCount > 0 && (
