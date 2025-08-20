@@ -1,6 +1,6 @@
 
 import React from 'react'
-import { SidebarProvider } from '@/components/ui/use-sidebar'
+import { SidebarProvider } from '@/components/ui/sidebar-provider'
 import { EnhancedAppSidebar } from './EnhancedAppSidebar'
 import { TopNavigation } from './TopNavigation'
 import { ElevationBanner } from './ElevationBanner'

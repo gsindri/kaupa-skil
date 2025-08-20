@@ -14,12 +14,12 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { useSidebar } from "@/components/ui/use-sidebar"
 import {
-  useSidebar,
   SIDEBAR_WIDTH,
   SIDEBAR_WIDTH_MOBILE,
   SIDEBAR_WIDTH_ICON,
-} from "@/components/ui/use-sidebar"
+} from "@/components/ui/sidebar-constants"
 
 const Sidebar = React.forwardRef<
   HTMLDivElement,

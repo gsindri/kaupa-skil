@@ -7,7 +7,7 @@ import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 
-export type AuthMode = "login" | "signup";
+type AuthMode = "login" | "signup";
 
 export default function AuthForm({ mode }: { mode: AuthMode }) {
   const isLogin = mode === "login";
