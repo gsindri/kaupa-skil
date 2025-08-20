@@ -29,15 +29,6 @@ export function AuthGate({ children }: AuthGateProps) {
     return <>{children}</>
   }
 
-  if (profile) {
-    const tenantId = profile.tenant_id
-    if (tenantId === null) {
-      if (!['/', '/onboarding'].includes(location.pathname)) {
-        return <Navigate to="/" replace />
-      }
-    } else if (location.pathname === '/onboarding') {
-      return <Navigate to="/" replace />
-    }
   }
 
   return <>{children}</>

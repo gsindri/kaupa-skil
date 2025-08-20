@@ -12,9 +12,11 @@ import {
 import { useAuth } from '@/contexts/useAuth'
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
+import { useNavigate } from 'react-router-dom'
 
 export function TenantSwitcher() {
   const { profile, user } = useAuth()
+  const navigate = useNavigate()
 
   // Get all tenants the user has membership in
   const { data: userMemberships } = useQuery({
@@ -52,7 +54,7 @@ export function TenantSwitcher() {
     ? String(currentTenant.name)
     : 'No Organization'
 
-  const handleTenantSwitch = async (tenantId: string) => {
+  const handleTenantSwitch = async (tenantId: string | null) => {
     if (!user?.id) return
 
     try {
@@ -80,6 +82,13 @@ export function TenantSwitcher() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start">
+        <DropdownMenuItem
+          onClick={() => handleTenantSwitch(null)}
+          className={!profile?.tenant_id ? 'bg-muted' : ''}
+        >
+          <span className="font-medium">No Organization</span>
+        </DropdownMenuItem>
+
         {userMemberships?.map((membership) => {
           const tenant = membership.tenant
           const tenantId = tenant && typeof tenant === 'object' && 'id' in tenant ? tenant.id : null
@@ -101,15 +110,12 @@ export function TenantSwitcher() {
           )
         })}
         
-        {(!userMemberships || userMemberships.length === 0) && (
-          <DropdownMenuItem disabled>
-            <span className="text-sm text-muted-foreground">No organizations</span>
-          </DropdownMenuItem>
-        )}
-        
         <DropdownMenuSeparator />
-        <DropdownMenuItem>
-          <span className="text-sm text-muted-foreground">Create organization</span>
+        <DropdownMenuItem onClick={() => navigate('/settings/organization/create')}>
+          <span className="text-sm text-muted-foreground">Create Organization</span>
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => navigate('/settings/organization/join')}>
+          <span className="text-sm text-muted-foreground">Join Organization</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

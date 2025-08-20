@@ -75,6 +75,8 @@ Deno.serve(async (req) => {
 
       if (filters.tenant_id) {
         query = query.eq('tenant_id', filters.tenant_id)
+      } else {
+        query = query.is('tenant_id', null)
       }
 
       if (filters.actor_id) {

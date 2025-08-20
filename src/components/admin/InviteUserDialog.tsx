@@ -25,7 +25,7 @@ export function InviteUserDialog() {
         email: newUserEmail,
         tenantId: profile.tenant_id,
         baseRole: newUserRole,
-        fullName: newUserFullName
+        fullName: newUserFullName.trim() || undefined
       })
 
       setIsOpen(false)
