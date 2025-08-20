@@ -296,7 +296,7 @@ export interface Database {
       delivery_analytics: {
         Row: {
           id: string
-          tenant_id: string
+          tenant_id: string | null
           supplier_id: string
           month: string
           total_fees_paid: number
@@ -306,7 +306,7 @@ export interface Database {
         }
         Insert: {
           id?: string
-          tenant_id: string
+          tenant_id?: string | null
           supplier_id: string
           month: string
           total_fees_paid?: number
@@ -316,7 +316,7 @@ export interface Database {
         }
         Update: {
           id?: string
-          tenant_id?: string
+          tenant_id?: string | null
           supplier_id?: string
           month?: string
           total_fees_paid?: number
@@ -529,7 +529,7 @@ export interface Database {
       orders: {
         Row: {
           id: string
-          tenant_id: string
+          tenant_id: string | null
           created_by: string | null
           status: 'draft' | 'submitted' | 'confirmed' | 'cancelled'
           notes: string | null
@@ -538,7 +538,7 @@ export interface Database {
         }
         Insert: {
           id?: string
-          tenant_id: string
+          tenant_id?: string | null
           created_by?: string | null
           status?: 'draft' | 'submitted' | 'confirmed' | 'cancelled'
           notes?: string | null
@@ -547,7 +547,7 @@ export interface Database {
         }
         Update: {
           id?: string
-          tenant_id?: string
+          tenant_id?: string | null
           created_by?: string | null
           status?: 'draft' | 'submitted' | 'confirmed' | 'cancelled'
           notes?: string | null
@@ -634,7 +634,7 @@ export interface Database {
       connector_runs: {
         Row: {
           id: string
-          tenant_id: string
+          tenant_id: string | null
           supplier_id: string | null
           connector_type: string
           status: 'pending' | 'running' | 'completed' | 'failed'
@@ -648,7 +648,7 @@ export interface Database {
         }
         Insert: {
           id?: string
-          tenant_id: string
+          tenant_id?: string | null
           supplier_id?: string | null
           connector_type: string
           status?: 'pending' | 'running' | 'completed' | 'failed'
@@ -662,7 +662,7 @@ export interface Database {
         }
         Update: {
           id?: string
-          tenant_id?: string
+          tenant_id?: string | null
           supplier_id?: string | null
           connector_type?: string
           status?: 'pending' | 'running' | 'completed' | 'failed'
