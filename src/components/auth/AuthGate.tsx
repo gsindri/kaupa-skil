@@ -30,7 +30,11 @@ export function AuthGate({ children }: AuthGateProps) {
     return <>{children}</>
   }
 
-  if (profile && !profile.tenant_id) {
+  const hasSkippedOnboarding =
+    typeof window !== 'undefined' &&
+    localStorage.getItem('onboardingSkipped') === 'true'
+
+  if (profile && !profile.tenant_id && !hasSkippedOnboarding) {
     return <ExistingUserOnboarding />
   }
 

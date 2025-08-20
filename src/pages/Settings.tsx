@@ -11,9 +11,19 @@ import { Slider } from '@/components/ui/slider'
 import { Badge } from '@/components/ui/badge'
 import { Settings as SettingsIcon, Bell, Shield, Database, Zap, Users, Mail } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
+import { OnboardingWizard } from '@/components/onboarding/OnboardingWizard'
+import { useAuth } from '@/contexts/useAuth'
+import { useSearchParams, useNavigate } from 'react-router-dom'
 
 export default function Settings() {
   const { toast } = useToast()
+  const { profile } = useAuth()
+  const [searchParams] = useSearchParams()
+  const navigate = useNavigate()
+  const [showOnboarding, setShowOnboarding] = useState(
+    searchParams.get('onboarding') === '1'
+  )
+
   const [notificationSettings, setNotificationSettings] = useState({
     priceAlerts: true,
     stockAlerts: true,
@@ -57,6 +67,21 @@ export default function Settings() {
     }))
   }
 
+  if (showOnboarding) {
+    return (
+      <OnboardingWizard
+        onSkip={() => {
+          setShowOnboarding(false)
+          navigate('/settings')
+        }}
+        onComplete={() => {
+          setShowOnboarding(false)
+          navigate('/settings')
+        }}
+      />
+    )
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -65,6 +90,22 @@ export default function Settings() {
           Configure your procurement platform preferences
         </p>
       </div>
+
+      {!profile?.tenant_id && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5" />
+              Organization Setup
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Button onClick={() => setShowOnboarding(true)}>
+              Start Setup Wizard
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
       <Tabs defaultValue="notifications" className="space-y-6">
         <TabsList className="grid w-full grid-cols-5">
