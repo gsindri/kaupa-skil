@@ -92,7 +92,11 @@ export function TopNavigation() {
         marginLeft: 'var(--sidebar-w)',
         width: 'calc(100% - var(--sidebar-w))',
       } as React.CSSProperties}
-      className={`fixed top-0 right-0 left-0 z-50 h-[var(--header-h)] border-b bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/75 transition-shadow transition-[margin-left,width] duration-200 ${scrolled ? 'shadow-sm' : ''}`}
+      className={cn(
+        'fixed top-0 right-0 left-0 z-50 h-[var(--header-h)] border-b bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/75 transition-shadow transition-[margin-left,width] duration-200 will-change-[margin-left,width] motion-reduce:transition-none',
+        scrolled ? 'shadow-sm' : '',
+        sidebarOpen ? 'ease-in-out' : 'ease-out'
+      )}
     >
       <div className="flex h-full items-center px-4 gap-4">
         <Button
@@ -109,8 +113,10 @@ export function TopNavigation() {
           <Link
             to="/"
             className={cn(
-              'flex items-center transition-all duration-150',
-              sidebarOpen ? 'opacity-0 -translate-y-1 pointer-events-none' : 'opacity-100 translate-y-0'
+              'flex items-center transition-[opacity,transform] duration-150 will-change-[transform,opacity] motion-reduce:transition-none motion-reduce:transform-none',
+              sidebarOpen
+                ? 'opacity-0 translate-y-1 scale-95 pointer-events-none ease-out'
+                : 'opacity-100 translate-y-0 scale-100 delay-[40ms] ease-in-out'
             )}
             aria-label="Deilda home"
             aria-hidden={sidebarOpen}
