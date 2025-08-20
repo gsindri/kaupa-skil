@@ -15,10 +15,12 @@ import { useAuth } from '@/contexts/useAuth'
 import { useNavigate } from 'react-router-dom'
 import { BasketDrawer } from '@/components/cart/BasketDrawer'
 import { HeildaLogo } from '@/components/branding/HeildaLogo'
+import { useCart } from '@/contexts/useBasket'
 
 export function QuickOrderNavigation() {
   const { user, profile, signOut } = useAuth()
   const navigate = useNavigate()
+  const { setIsDrawerOpen } = useCart()
 
   const handleSignOut = async () => {
     await signOut()
@@ -46,6 +48,7 @@ export function QuickOrderNavigation() {
             variant="ghost"
             size="sm"
             className="gap-2"
+            onClick={() => setIsDrawerOpen(true)}
           >
             <ShoppingCart className="h-4 w-4" />
             Cart
