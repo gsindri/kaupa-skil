@@ -63,25 +63,18 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
     ): Promise<AuthTokenResponse> => {
       setLoading(true)
       setError(null)
-      try {
-        const result = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        })
-        if (result.error) {
-          setError(result.error.message)
-          throw result.error
-        }
+      const { error } = await supabase.auth.signInWithPassword({ email, password })
+      if (error) {
+        setError(error.message)
+      } else {
         if (!remember) {
           localStorage.setItem(TEMP_SESSION_KEY, 'true')
         } else {
           localStorage.removeItem(TEMP_SESSION_KEY)
         }
         sessionStorage.setItem(SESSION_ACTIVE_KEY, 'true')
-        return result
-      } finally {
-        setLoading(false)
       }
+      setLoading(false)
     },
     []
   )
