@@ -17,7 +17,7 @@ export default function LoginPage() {
   }
 
   return (
-    <AuthCard title="Welcome back" description="Sign in to continue.">
+    <AuthCard title="Welcome back" description="Log in to continue.">
       <AuthForm mode="login" />
     </AuthCard>
   );

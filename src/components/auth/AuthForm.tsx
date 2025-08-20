@@ -93,10 +93,10 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
 
     try {
       if (isLogin) {
-        console.log('Starting sign in process...')
+        console.log('Starting log in process...')
         await signIn(emailTrimmed, password, remember);
-        console.log('Sign in completed successfully')
-        toast({ title: "Welcome back", description: "Signed in successfully." });
+        console.log('Log in completed successfully')
+        toast({ title: "Welcome back", description: "Logged in successfully." });
         
       } else {
         console.log('Starting sign up process...')
@@ -180,7 +180,7 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
         </Alert>
         <div className="text-center">
           <Link to="/login" className="text-sm text-blue-600 hover:underline">
-            Back to sign in
+            Back to log in
           </Link>
         </div>
       </div>
@@ -200,7 +200,7 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
             Forgot password?
           </Link>
           <Link to="/login" className="text-blue-600 hover:underline">
-            Back to sign in
+            Back to log in
           </Link>
         </div>
       </div>
@@ -232,7 +232,7 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
         </div>
         <div className="text-center">
           <Link to="/login" className="text-sm text-blue-600 hover:underline">
-            Back to sign in
+            Back to log in
           </Link>
         </div>
       </div>
@@ -375,10 +375,10 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
         {busy ? (
           <span className="flex items-center justify-center gap-2">
             <Loader2 className="h-4 w-4 animate-spin" />
-            {isLogin ? "Signing in…" : "Creating account…"}
+            {isLogin ? "Logging in…" : "Creating account…"}
           </span>
         ) : (
-          isLogin ? "Sign In" : "Create account"
+          isLogin ? "Log In" : "Create account"
         )}
       </button>
 
@@ -388,7 +388,7 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
           to={isLogin ? "/signup" : "/login"}
           className="font-medium text-blue-600 transition-colors duration-[120ms] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2"
         >
-          {isLogin ? "Sign up" : "Sign in"}
+          {isLogin ? "Sign up" : "Log in"}
         </Link>
       </p>
     </form>

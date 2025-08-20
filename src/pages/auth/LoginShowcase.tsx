@@ -89,7 +89,7 @@ function AuthForm() {
     try {
       if (isLogin) {
         await signIn(email.trim(), password, remember);
-        toast({ title: "Welcome back", description: "Signed in successfully." });
+        toast({ title: "Welcome back", description: "Logged in successfully." });
       } else {
         await signUp(email.trim(), password, fullName.trim());
         toast({ title: "Account created", description: "Please verify your email to continue.", duration: 5000 });
@@ -101,7 +101,7 @@ function AuthForm() {
       const title = isLogin ? "Login failed" : "Signup failed";
       const detail =
         /Invalid login credentials/i.test(msg) ? "Invalid email or password."
-        : /User already registered/i.test(msg) ? "An account with this email already exists. Try signing in."
+        : /User already registered/i.test(msg) ? "An account with this email already exists. Try logging in."
         : /over_email_send_rate_limit/i.test(msg) ? "Too many emails sent. Please wait a few minutes."
         : /invalid/i.test(msg) && /email/i.test(msg) ? "Please enter a valid email address."
         : msg;
@@ -216,7 +216,7 @@ function AuthForm() {
         disabled={busy}
         className="mt-1 w-full rounded-full bg-blue-500 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-600 disabled:opacity-50"
       >
-        {busy ? (isLogin ? "Signing in…" : "Creating account…") : (isLogin ? "Sign In" : "Create account")}
+        {busy ? (isLogin ? "Logging in…" : "Creating account…") : (isLogin ? "Log In" : "Create account")}
       </button>
 
       {/* Signup helper notice */}
@@ -233,7 +233,7 @@ function AuthForm() {
       <p className="text-center text-sm text-gray-600">
         {isLogin ? "Don’t have an account?" : "Already have an account?"}{" "}
         <button type="button" onClick={toggleMode} className="font-medium text-blue-600 hover:underline">
-          {isLogin ? "Sign up" : "Sign in"}
+          {isLogin ? "Sign up" : "Log in"}
         </button>
       </p>
     </form>

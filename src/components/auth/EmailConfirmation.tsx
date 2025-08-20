@@ -93,7 +93,7 @@ export function EmailConfirmation({ email, onBack }: EmailConfirmationProps) {
               onClick={() => navigate('/login')}
               className="text-sm text-blue-600 hover:text-blue-700 font-medium"
             >
-              Already confirmed? Sign in
+              Already confirmed? Log in
             </button>
           </div>
         </div>
