@@ -21,6 +21,8 @@ import { useSidebar } from '@/components/ui/use-sidebar'
 
 export function TopNavigation() {
   const { profile, user, signOut, loading, profileLoading } = useAuth()
+  const { setIsDrawerOpen } = useCart()
+  const { open: sidebarOpen, toggleSidebar } = useSidebar()
 
   const searchRef = useRef<HTMLInputElement>(null)
   const [helpOpen, setHelpOpen] = useState(false)
