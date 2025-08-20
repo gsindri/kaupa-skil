@@ -103,7 +103,7 @@ export function EnhancedAppSidebar() {
 
   return (
     <nav aria-label="Primary" className="h-full">
-      <Sidebar>
+      <Sidebar className="w-64">
         <SidebarHeader>
           <NavLink to="/" className="block p-4">
             <HeildaLogo className="h-7 w-auto" />
