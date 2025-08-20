@@ -35,7 +35,7 @@ export default function BasketProvider({ children }: { children: React.ReactNode
     channel.close()
   }
 
-  const addItem = (item: Omit<CartItem, 'quantity'>, quantity = 1) => {
+  const addItem = (item: Omit<CartItem, 'quantity'>, quantity = 1, options: { showToast?: boolean } = {}) => {
     setItems(prev => {
       const existingIndex = prev.findIndex(i => i.supplierItemId === item.supplierItemId)
       
@@ -52,10 +52,12 @@ export default function BasketProvider({ children }: { children: React.ReactNode
       
       syncBasket(newItems)
       
-      toast({
-        title: `Added to basket`,
-        description: `${item.itemName} (${quantity}x ${item.packSize})`
-      })
+      if (options.showToast !== false) {
+        toast({
+          title: `Added to basket`,
+          description: `${item.itemName} (${quantity}x ${item.packSize})`
+        })
+      }
       
       return newItems
     })

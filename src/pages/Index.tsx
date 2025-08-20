@@ -1,127 +1,119 @@
+import React from 'react'
+import { useSearchParams, Link } from 'react-router-dom'
+import { useVendors } from '@/hooks/useVendors'
+import { SupplierFilter } from '@/components/place-order/SupplierFilter'
+import { CatalogFilters } from '@/components/place-order/CatalogFilters'
+import { SortControl } from '@/components/place-order/SortControl'
+import { ViewToggle } from '@/components/place-order/ViewToggle'
+import { ProductCard, Product } from '@/components/place-order/ProductCard'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
-import React, { useState } from 'react'
-import { QuickSearch } from '@/components/quick/QuickSearch'
-import { VirtualizedSupplierItemsList } from '@/components/quick/VirtualizedSupplierItemsList'
-import { SmartCartSidebar } from '@/components/quick/SmartCartSidebar'
-import { SmartSuggestions } from '@/components/quick/SmartSuggestions'
-import { DeliveryOptimizationBanner } from '@/components/quick/DeliveryOptimizationBanner'
-import { QuickOrderNavigation } from '@/components/quick/QuickOrderNavigation'
-import AccessibilityEnhancements from '@/components/quick/AccessibilityEnhancements'
-import { KeyboardShortcuts } from '@/components/quick/KeyboardShortcuts'
-import AnalyticsTrackerComponent from '@/components/quick/AnalyticsTracker'
-import CacheProvider from '@/components/quick/CacheManager'
-import { BulkActions } from '@/components/quick/BulkActions'
-import { MiniCompareDrawer } from '@/components/quick/MiniCompareDrawer'
-import { AdvancedFiltering } from '@/components/quick/AdvancedFiltering'
-import { CompactOrderGuidesCTA } from '@/components/quick/CompactOrderGuidesCTA'
-import { ErrorBoundary } from '@/components/common/ErrorBoundary'
-import { QuickOrderErrorFallback } from '@/components/quick/QuickOrderErrorFallback'
+// Temporary mock products to demonstrate catalog behaviour
+const mockProducts: Product[] = [
+  { id: 'p1', name: 'Íslenskt smjör', supplierId: '1', supplierName: 'Vefkaupmenn', pack: '1 kg', price: 1200 },
+  { id: 'p2', name: 'Rúgbrauð', supplierId: '2', supplierName: 'Heilsuhúsið', pack: '1 stk', price: 500 },
+  { id: 'p3', name: 'Harðfiskur', supplierId: '1', supplierName: 'Vefkaupmenn', pack: '500 g', price: 1500 }
+]
 
-function QuickOrder() {
-  const [selectedItems, setSelectedItems] = useState<string[]>([])
-  const [compareItemId, setCompareItemId] = useState<string | null>(null)
-  const [isCompareDrawerOpen, setIsCompareDrawerOpen] = useState(false)
-  const [isKeyboardShortcutsOpen, setIsKeyboardShortcutsOpen] = useState(false)
-  const [filters, setFilters] = useState({
-    categories: [],
-    suppliers: [],
-    priceRange: [0, 10000] as [number, number],
-    inStockOnly: false,
-    sortBy: 'name' as 'name' | 'price' | 'brand',
-    sortOrder: 'asc' as 'asc' | 'desc'
+export default function QuickOrder() {
+  const { vendors } = useVendors()
+  const [searchParams, setSearchParams] = useSearchParams()
+
+  const supplier = searchParams.get('supplier') ?? ''
+  const sort = searchParams.get('sort') ?? 'name'
+  const view = (searchParams.get('view') as 'grid' | 'list') || 'grid'
+  const category = searchParams.get('category') ?? ''
+  const inStock = searchParams.get('stock') === '1'
+
+  const updateParam = (key: string, value: string | boolean) => {
+    setSearchParams(prev => {
+      const p = new URLSearchParams(prev)
+      if (typeof value === 'boolean') {
+        if (value) p.set(key, '1')
+        else p.delete(key)
+      } else {
+        if (value) p.set(key, value)
+        else p.delete(key)
+      }
+      return p
+    })
+  }
+
+  const filtered = mockProducts
+    .filter(p => !supplier || p.supplierId === supplier)
+    .filter(p => !category || p.pack.toLowerCase().includes(category.toLowerCase()))
+    .filter(p => !inStock || true)
+
+  const products = [...filtered].sort((a, b) => {
+    switch (sort) {
+      case 'price':
+        return a.price - b.price
+      case 'newest':
+      case 'popular':
+        return 0
+      default:
+        return a.name.localeCompare(b.name)
+    }
   })
 
-  const mockItems = [
-    { id: '1', name: 'Item 1' },
-    { id: '2', name: 'Item 2' }
-  ]
-
-  const handleSelectAll = () => {
-    setSelectedItems(mockItems.map(item => item.id))
-  }
-
-  const handleClearSelection = () => {
-    setSelectedItems([])
-  }
-
-  const handleBulkAddToCart = (quantity: number) => {
-    console.log('Adding selected items to cart:', selectedItems, 'quantity:', quantity)
-  }
-
-  const handleBulkRemoveFromCart = () => {
-    console.log('Removing selected items from cart:', selectedItems)
-  }
-
-  const handleCompareItem = (itemId: string) => {
-    setCompareItemId(itemId)
-    setIsCompareDrawerOpen(true)
-  }
-
-  const handleAddSuggestedItem = (itemId: string) => {
-    console.log('Adding suggested item:', itemId)
-  }
-
-  const handleItemSelect = (itemId: string, isSelected: boolean) => {
-    if (isSelected) {
-      setSelectedItems(prev => [...prev, itemId])
-    } else {
-      setSelectedItems(prev => prev.filter(id => id !== itemId))
-    }
+  if (vendors.length === 0) {
+    return (
+      <div className="flex h-full items-center justify-center p-4">
+        <Card className="max-w-md w-full text-center">
+          <CardHeader>
+            <CardTitle>Connect a wholesaler to start ordering</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-muted-foreground">Link your first supplier to see their catalog and start placing orders.</p>
+            <Button className="w-full" onClick={() => alert('connect flow')}>Connect a wholesaler</Button>
+            <div className="flex justify-center gap-4 text-sm">
+              <Link to="/discovery" className="underline">Browse suppliers</Link>
+              <a href="#" className="underline">Learn how it works</a>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    )
   }
 
   return (
-    <CacheProvider>
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 min-h-screen">
-        {/* Main Content Area */}
-        <main className="lg:col-span-3 flex flex-col">
-          <ErrorBoundary fallback={<QuickOrderErrorFallback />}>
-            <QuickOrderNavigation />
-            <QuickSearch />
-            <SmartSuggestions onAddSuggestedItem={handleAddSuggestedItem} />
-            <BulkActions 
-              selectedItems={selectedItems}
-              allItems={mockItems}
-              onSelectAll={handleSelectAll}
-              onClearSelection={handleClearSelection}
-              onBulkAddToCart={handleBulkAddToCart}
-              onBulkRemoveFromCart={handleBulkRemoveFromCart}
-            />
-            <AdvancedFiltering 
-              filters={filters}
-              onFiltersChange={setFilters}
-              availableCategories={['Dairy', 'Bakery', 'Meat']}
-              availableSuppliers={['Costco', 'Metro', 'Nordic']}
-            />
-            <VirtualizedSupplierItemsList 
-              onCompareItem={handleCompareItem}
-              userMode="balanced"
-              selectedItems={selectedItems}
-              onItemSelect={handleItemSelect}
-            />
-          </ErrorBoundary>
-        </main>
-
-        {/* Sidebar */}
-        <aside className="lg:col-span-1">
-          <ErrorBoundary fallback={<QuickOrderErrorFallback />}>
-            <SmartCartSidebar />
-            <DeliveryOptimizationBanner />
-            <CompactOrderGuidesCTA />
-            <MiniCompareDrawer 
-              itemId={compareItemId}
-              isOpen={isCompareDrawerOpen}
-              onClose={() => setIsCompareDrawerOpen(false)}
-            />
-          </ErrorBoundary>
-        </aside>
-
-        {/* Accessibility and Utilities */}
-        <AccessibilityEnhancements />
-        <KeyboardShortcuts onClose={() => setIsKeyboardShortcutsOpen(false)} />
-        <AnalyticsTrackerComponent />
+    <div className="space-y-4 p-4">
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <SupplierFilter
+          suppliers={vendors}
+          value={supplier}
+          onChange={(v) => updateParam('supplier', v)}
+        />
+        <CatalogFilters
+          category={category}
+          categories={['Bakery', 'Dairy', 'Seafood']}
+          inStock={inStock}
+          onCategoryChange={(v) => updateParam('category', v)}
+          onInStockChange={(v) => updateParam('stock', v)}
+        />
+        <SortControl value={sort} onChange={(v) => updateParam('sort', v)} />
+        <ViewToggle value={view} onChange={(v) => updateParam('view', v)} />
       </div>
-    </CacheProvider>
+
+      {products.length === 0 ? (
+        <div className="text-center py-20">
+          <p className="mb-4 text-muted-foreground">No items match your filters</p>
+          <Button variant="outline" onClick={() => setSearchParams(new URLSearchParams())}>Clear filters</Button>
+        </div>
+      ) : view === 'grid' ? (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {products.map(p => (
+            <ProductCard key={p.id} product={p} />
+          ))}
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {products.map(p => (
+            <ProductCard key={p.id} product={p} />
+          ))}
+        </div>
+      )}
+    </div>
   )
 }
-
-export default QuickOrder
