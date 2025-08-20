@@ -103,10 +103,26 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
             data: { full_name: fullName },
           },
         })
+
         if (result.error) {
+          const status = (result.error as any).status
+          const message = result.error.message?.toLowerCase()
+          if (status === 400 || message?.includes('already registered')) {
+            const err = new Error('already registered')
+            setError(err.message)
+            throw err
+          }
           setError(result.error.message)
           throw result.error
         }
+
+        const identities = result.data.user?.identities
+        if (Array.isArray(identities) && identities.length === 0) {
+          const err = new Error('already registered')
+          setError(err.message)
+          throw err
+        }
+
         return result
       } finally {
         setLoading(false)

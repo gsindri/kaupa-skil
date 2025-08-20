@@ -121,9 +121,10 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
         }
         requestAnimationFrame(() => errorRef.current?.focus());
       } else {
-        if (msg.toLowerCase().includes('already registered')) {
+        const status = err?.status;
+        if (status === 400 || msg.toLowerCase().includes('already registered')) {
           setErrorType('existing');
-        } else if (msg.toLowerCase().includes('confirm')) {
+        } else if (msg.toLowerCase().includes('confirm') || status === 403) {
           setErrorType('unconfirmed');
         } else {
           setFormError(msg);
