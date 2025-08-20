@@ -20,6 +20,7 @@ import ResetPassword from "@/pages/auth/ResetPassword";
 import ErrorPage from "@/pages/ErrorPage";
 import NotFound from "@/pages/NotFound";
 import { ExistingUserOnboarding } from "@/components/onboarding/ExistingUserOnboarding";
+import { OnboardingWizard } from "@/components/onboarding/OnboardingWizard";
 
 export const routes = [
   {
@@ -97,6 +98,22 @@ export const routes = [
   },
   {
     path: "/onboarding",
+    element: (
+      <AuthGate>
+        <ExistingUserOnboarding />
+      </AuthGate>
+    ),
+  },
+  {
+    path: "/settings/organization/create",
+    element: (
+      <AuthGate>
+        <OnboardingWizard />
+      </AuthGate>
+    ),
+  },
+  {
+    path: "/settings/organization/join",
     element: (
       <AuthGate>
         <ExistingUserOnboarding />
