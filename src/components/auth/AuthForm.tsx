@@ -1,12 +1,11 @@
 
-import React, { useState } from "react";
-import { Eye, EyeOff, CheckCircle2 } from "lucide-react";
 import { useAuth } from '@/contexts/useAuth';
 import { Link } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { supabase } from "@/integrations/supabase/client";
 
-type AuthMode = "login" | "signup";
+export type AuthMode = "login" | "signup";
 
 export default function AuthForm({ mode }: { mode: AuthMode }) {
   const isLogin = mode === "login";
@@ -20,8 +19,6 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
   const [caps, setCaps] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [remember, setRemember] = useState(true);
-
-  const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -61,10 +58,10 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
       requestAnimationFrame(() => errorRef.current?.focus());
       return;
     }
-    
+
     console.log('Form submission started, mode:', mode)
     setBusy(true);
-    
+
     try {
       if (isLogin) {
         console.log('Starting sign in process...')
@@ -72,8 +69,6 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
         console.log('Sign in completed successfully')
         toast({ title: "Welcome back", description: "Signed in successfully." });
         
-        // Let AuthGate handle the redirect based on auth state
-        // No manual navigation needed
       } else {
         console.log('Starting sign up process...')
         await signUp(emailTrimmed, password, fullNameTrimmed);
@@ -83,16 +78,8 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
     } catch (err: any) {
       console.error('Auth form error:', err)
       const msg = String(err?.message || err);
-      const title = isLogin ? "Sign in failed" : "Sign up failed";
-      const detail =
-        /Invalid login credentials/i.test(msg) ? "Please check your email and password."
-        : /User already registered/i.test(msg) ? "An account with this email already exists. Try signing in instead."
-        : /over_email_send_rate_limit/i.test(msg) ? "Too many emails sent. Please wait a few minutes before trying again."
-        : /invalid/i.test(msg) && /email/i.test(msg) ? "Please enter a valid email address."
-        : "An error occurred. Please try again.";
-      toast({ variant: "destructive", title, description: detail });
     } finally {
-      setBusy(false)
+      setBusy(false);
     }
   }
 
@@ -168,6 +155,16 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
 
   return (
     <form onSubmit={onSubmit} className="space-y-4" noValidate>
+      {formError && (
+        <div
+          ref={errorRef}
+          role="alert"
+          tabIndex={-1}
+          className="rounded-md border border-red-300 bg-red-50 p-3 text-sm text-red-700"
+        >
+          {formError}
+        </div>
+      )}
       {!isLogin && (
         <div>
           <label htmlFor="fullName" className="sr-only">Full name</label>
@@ -275,8 +272,6 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
 
       <button
         type="submit"
-        disabled={busy || !emailValid}
-        className="w-full rounded-full bg-blue-500 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-600 disabled:opacity-50"
       >
         {busy ? (isLogin ? "Signing in…" : "Creating account…") : (isLogin ? "Sign In" : "Create account")}
       </button>
