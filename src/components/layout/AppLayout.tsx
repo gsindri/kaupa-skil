@@ -17,10 +17,10 @@ export function AppLayout({ children }: AppLayoutProps) {
         <EnhancedAppSidebar />
         
         <div className="flex-1 flex flex-col">
-          <ElevationBanner />
           <TopNavigation />
-          
-          <main className="flex-1 overflow-auto">
+
+          <main className="flex-1 overflow-auto pt-[var(--header-h)] min-h-screen">
+            <ElevationBanner />
             <div className="p-6">
               {children}
             </div>
