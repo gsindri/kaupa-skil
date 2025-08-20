@@ -19,6 +19,7 @@ import ForgotPassword from "@/pages/auth/ForgotPassword";
 import ResetPassword from "@/pages/auth/ResetPassword";
 import ErrorPage from "@/pages/ErrorPage";
 import NotFound from "@/pages/NotFound";
+import { ExistingUserOnboarding } from "@/components/onboarding/ExistingUserOnboarding";
 
 export const routes = [
   {
@@ -93,6 +94,14 @@ export const routes = [
   {
     path: "/reset-password",
     element: <ResetPassword />,
+  },
+  {
+    path: "/onboarding",
+    element: (
+      <AuthGate>
+        <ExistingUserOnboarding />
+      </AuthGate>
+    ),
   },
   {
     path: "*",

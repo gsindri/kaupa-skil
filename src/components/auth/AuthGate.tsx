@@ -1,7 +1,6 @@
 import React from 'react'
 import { useAuth } from '@/contexts/useAuth'
 import { Navigate, useLocation } from 'react-router-dom'
-import { ExistingUserOnboarding } from '@/components/onboarding/ExistingUserOnboarding'
 
 interface AuthGateProps {
   children: React.ReactNode
@@ -30,8 +29,15 @@ export function AuthGate({ children }: AuthGateProps) {
     return <>{children}</>
   }
 
-  if (profile && !profile.tenant_id) {
-    return <ExistingUserOnboarding />
+  if (profile) {
+    const tenantId = profile.tenant_id
+    if (tenantId === null) {
+      if (!['/', '/onboarding'].includes(location.pathname)) {
+        return <Navigate to="/" replace />
+      }
+    } else if (location.pathname === '/onboarding') {
+      return <Navigate to="/" replace />
+    }
   }
 
   return <>{children}</>
