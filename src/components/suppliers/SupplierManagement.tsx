@@ -24,13 +24,11 @@ export function SupplierManagement() {
   }
 
   const handleRunConnector = async (supplierId: string) => {
-    if (!profile?.tenant_id) return
-
     const supplier = suppliers?.find(s => s.id === supplierId)
     if (!supplier) return
 
     await createRun.mutateAsync({
-      tenant_id: profile.tenant_id,
+      tenant_id: profile?.tenant_id ?? null,
       supplier_id: supplierId,
       connector_type: supplier.connector_type || 'generic',
       status: 'pending'

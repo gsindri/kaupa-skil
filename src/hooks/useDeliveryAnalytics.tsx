@@ -7,20 +7,23 @@ export function useDeliveryAnalytics(months: number = 6) {
   const { profile } = useAuth()
 
   return useQuery({
-    queryKey: ['delivery-analytics', profile?.tenant_id, months],
+    queryKey: ['delivery-analytics', profile?.tenant_id || 'solo', months],
     queryFn: async () => {
-      if (!profile?.tenant_id) return null
+      const tenantId = profile?.tenant_id
 
       // Get monthly delivery spending
-      const { data: monthlyData } = await supabase
+      const baseMonthly = supabase
         .from('delivery_analytics')
         .select('*')
-        .eq('tenant_id', profile.tenant_id)
         .gte('month', new Date(Date.now() - months * 30 * 24 * 60 * 60 * 1000).toISOString())
         .order('month', { ascending: true })
 
+      const { data: monthlyData } = tenantId
+        ? await baseMonthly.eq('tenant_id', tenantId)
+        : await baseMonthly.is('tenant_id', null)
+
       // Get supplier breakdown - fixed the query structure
-      const { data: supplierData } = await supabase
+      const baseSupplier = supabase
         .from('delivery_analytics')
         .select(`
           supplier_id,
@@ -29,8 +32,11 @@ export function useDeliveryAnalytics(months: number = 6) {
           total_orders,
           orders_under_threshold
         `)
-        .eq('tenant_id', profile.tenant_id)
         .gte('month', new Date(Date.now() - months * 30 * 24 * 60 * 60 * 1000).toISOString())
+
+      const { data: supplierData } = tenantId
+        ? await baseSupplier.eq('tenant_id', tenantId)
+        : await baseSupplier.is('tenant_id', null)
 
       // Process the data
       const monthlySpend = monthlyData?.reduce((acc, item) => {
@@ -97,7 +103,7 @@ export function useDeliveryAnalytics(months: number = 6) {
         }
       }
     },
-    enabled: !!profile?.tenant_id,
+    enabled: !!profile,
     staleTime: 5 * 60 * 1000, // 5 minutes
   })
 }

@@ -14,10 +14,8 @@ export function IngestionRunsList() {
   const { credentials } = useSupplierCredentials()
 
   const handleStartIngestion = async (supplierId: string, connectorType: string) => {
-    if (!profile?.tenant_id) return
-
     await createRun.mutateAsync({
-      tenant_id: profile.tenant_id,
+      tenant_id: profile?.tenant_id ?? null,
       supplier_id: supplierId,
       connector_type: connectorType,
       status: 'pending'
