@@ -15,30 +15,35 @@ export function useConnectorRuns() {
   const { toast } = useToast()
 
   const { data: runs, isLoading } = useQuery({
-    queryKey: ['connector-runs', profile?.tenant_id],
+    queryKey: ['connector-runs', profile?.tenant_id || 'solo'],
     queryFn: async (): Promise<ConnectorRun[]> => {
-      if (!profile?.tenant_id) return []
+      const tenantId = profile?.tenant_id
 
-      const { data, error } = await supabase
+      const query = supabase
         .from('connector_runs')
         .select(`
           *,
           supplier:suppliers(*)
         `)
-        .eq('tenant_id', profile.tenant_id)
         .order('created_at', { ascending: false })
+
+      const { data, error } = tenantId
+        ? await query.eq('tenant_id', tenantId)
+        : await query.is('tenant_id', null)
 
       if (error) throw error
       return data || []
     },
-    enabled: !!profile?.tenant_id
+    enabled: !!profile
   })
 
   const createRun = useMutation({
     mutationFn: async (run: Omit<ConnectorRunInsert, 'id' | 'created_at'>) => {
+      const payload = { ...run, tenant_id: profile?.tenant_id ?? null }
+
       const { data, error } = await supabase
         .from('connector_runs')
-        .insert(run)
+        .insert(payload)
         .select()
         .single()
 

@@ -16,29 +16,34 @@ export function useSupplierCredentials() {
   const { toast } = useToast()
 
   const { data: credentials, isLoading } = useQuery({
-    queryKey: ['supplier-credentials', profile?.tenant_id],
+    queryKey: ['supplier-credentials', profile?.tenant_id || 'solo'],
     queryFn: async (): Promise<SupplierCredential[]> => {
-      if (!profile?.tenant_id) return []
+      const tenantId = profile?.tenant_id
 
-      const { data, error } = await supabase
+      const query = supabase
         .from('supplier_credentials')
         .select(`
           *,
           supplier:suppliers(*)
         `)
-        .eq('tenant_id', profile.tenant_id)
+
+      const { data, error } = tenantId
+        ? await query.eq('tenant_id', tenantId)
+        : await query.is('tenant_id', null)
 
       if (error) throw error
       return data || []
     },
-    enabled: !!profile?.tenant_id
+    enabled: !!profile
   })
 
   const createCredential = useMutation({
     mutationFn: async (credential: Omit<SupplierCredentialInsert, 'id' | 'created_at' | 'updated_at'>) => {
+      const payload = { ...credential, tenant_id: profile?.tenant_id ?? null }
+
       const { data, error } = await supabase
         .from('supplier_credentials')
-        .insert(credential)
+        .insert(payload)
         .select()
         .single()
 
