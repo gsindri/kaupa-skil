@@ -7,12 +7,12 @@ import { useAuth } from '@/contexts/useAuth'
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
-import { OnboardingWizard } from './OnboardingWizard'
+import { useNavigate } from 'react-router-dom'
 
 export function ExistingUserOnboarding() {
   const { user, refetch } = useAuth()
   const { toast } = useToast()
-  const [showCreateFlow, setShowCreateFlow] = useState(false)
+  const navigate = useNavigate()
   const [isJoining, setIsJoining] = useState(false)
 
   // Get existing organizations (for demo purposes, you might want to limit this)
@@ -74,8 +74,15 @@ export function ExistingUserOnboarding() {
     }
   }
 
-  if (showCreateFlow) {
-    return <OnboardingWizard />
+  const handleSkip = () => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('onboardingSkipped', 'true')
+    }
+    toast({
+      title: 'Setup skipped',
+      description: 'You can complete organization setup later in Settings.'
+    })
+    navigate('/')
   }
 
   return (
@@ -102,7 +109,10 @@ export function ExistingUserOnboarding() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button onClick={() => setShowCreateFlow(true)} className="w-full">
+              <Button
+                onClick={() => navigate('/settings?onboarding=1')}
+                className="w-full"
+              >
                 Create Organization
               </Button>
             </CardContent>
@@ -146,6 +156,12 @@ export function ExistingUserOnboarding() {
               </CardContent>
             </Card>
           )}
+
+          <div className="text-center">
+            <Button variant="ghost" onClick={handleSkip}>
+              Skip for now
+            </Button>
+          </div>
         </div>
       </div>
     </div>

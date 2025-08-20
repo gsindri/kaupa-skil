@@ -10,6 +10,7 @@ import { OrderGuideStep } from './steps/OrderGuideStep'
 import { useAuth } from '@/contexts/useAuth'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
+import { useNavigate } from 'react-router-dom'
 
 interface OnboardingData {
   organization?: {
@@ -25,13 +26,19 @@ interface OnboardingData {
   }
 }
 
-export function OnboardingWizard() {
+interface OnboardingWizardProps {
+  onSkip?: () => void
+  onComplete?: () => void
+}
+
+export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) {
   const [currentStep, setCurrentStep] = useState(1)
   const [data, setData] = useState<OnboardingData>({})
   const [isCompleting, setIsCompleting] = useState(false)
   const [setupError, setSetupError] = useState<string | null>(null)
   const { user, profile, refetch } = useAuth()
   const { toast } = useToast()
+  const navigate = useNavigate()
 
   const steps = [
     { id: 1, title: 'Organization Setup', description: 'Set up your organization details' },
@@ -62,6 +69,12 @@ export function OnboardingWizard() {
         description: 'Your organization is ready to use.'
       })
       await refetch()
+      localStorage.removeItem('onboardingSkipped')
+      if (onComplete) {
+        onComplete()
+      } else {
+        navigate('/settings')
+      }
       return
     }
 
@@ -136,6 +149,12 @@ export function OnboardingWizard() {
 
       // Refresh auth to update the user's profile
       await refetch()
+      localStorage.removeItem('onboardingSkipped')
+      if (onComplete) {
+        onComplete()
+      } else {
+        navigate('/settings')
+      }
     } catch (error: any) {
       console.error('Failed to complete onboarding:', error)
       setSetupError(error.message || 'Failed to complete setup. Please try again.')
@@ -159,6 +178,21 @@ export function OnboardingWizard() {
   const retrySetup = () => {
     setSetupError(null)
     setCurrentStep(1) // Go back to organization setup to change name
+  }
+
+  const handleSkip = () => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('onboardingSkipped', 'true')
+    }
+    toast({
+      title: 'Setup skipped',
+      description: 'You can complete organization setup later in Settings.'
+    })
+    if (onSkip) {
+      onSkip()
+    } else {
+      navigate('/settings')
+    }
   }
 
   if (isCompleting) {
@@ -219,6 +253,11 @@ export function OnboardingWizard() {
   return (
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-4xl mx-auto">
+        <div className="flex justify-end mb-4">
+          <Button variant="ghost" onClick={handleSkip}>
+            Skip for now
+          </Button>
+        </div>
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold mb-2">Welcome to ProcureWise</h1>
