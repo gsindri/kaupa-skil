@@ -100,6 +100,33 @@ serve(async (req) => {
       console.log(`Created new user ${email} with ID ${userId}`)
     }
 
+    // Check the user's current profile to see if they belong to a tenant
+    let profileTenantId: string | null = null
+    const { data: profile, error: profileError } = await supabaseAdmin
+      .from('profiles')
+      .select('tenant_id')
+      .eq('id', userId)
+      .maybeSingle()
+
+    if (profileError && profileError.code !== 'PGRST116') {
+      throw new Error(`Failed to check user profile: ${profileError.message}`)
+    }
+
+    profileTenantId = profile?.tenant_id ?? null
+
+    if (profileTenantId && profileTenantId !== tenantId) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          message: 'User already belongs to another organization'
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 400
+        }
+      )
+    }
+
     // Check if membership already exists
     const { data: existingMembership, error: membershipCheckError } = await supabaseClient
       .from('memberships')
@@ -114,12 +141,12 @@ serve(async (req) => {
 
     if (existingMembership) {
       return new Response(
-        JSON.stringify({ 
-          success: false, 
+        JSON.stringify({
+          success: false,
           message: 'User is already a member of this tenant',
           membershipId: existingMembership.id
         }),
-        { 
+        {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 400
         }
@@ -142,6 +169,20 @@ serve(async (req) => {
     }
 
     console.log(`Created membership ${membership.id} for user ${userId}`)
+
+    // If user previously had no tenant, set their profile tenant_id now
+    if (!profileTenantId) {
+      const { error: profileUpdateError } = await supabaseAdmin
+        .from('profiles')
+        .update({ tenant_id: tenantId })
+        .eq('id', userId)
+
+      if (profileUpdateError) {
+        throw new Error(`Failed to update profile tenant_id: ${profileUpdateError.message}`)
+      }
+
+      console.log(`Updated profile tenant_id for user ${userId}`)
+    }
 
     // If user is owner, set up owner grants
     if (baseRole === 'owner') {
