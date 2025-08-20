@@ -18,11 +18,13 @@ import MiniCart from '@/components/cart/MiniCart'
 import { LanguageSwitcher } from './LanguageSwitcher'
 import { HeildaLogo } from '@/components/branding/HeildaLogo'
 import { useSidebar } from '@/components/ui/use-sidebar'
+import { cn } from '@/lib/utils'
 
 export function TopNavigation() {
   const { profile, user, signOut, loading, profileLoading } = useAuth()
   const { setIsDrawerOpen } = useCart()
-  const { open: sidebarOpen, toggleSidebar } = useSidebar()
+  const { open, openMobile, isMobile, toggleSidebar } = useSidebar()
+  const sidebarOpen = isMobile ? openMobile : open
 
   const searchRef = useRef<HTMLInputElement>(null)
   const [helpOpen, setHelpOpen] = useState(false)
@@ -104,7 +106,16 @@ export function TopNavigation() {
           <span aria-hidden>☰</span>
         </Button>
         <div className="flex items-center flex-1 space-x-4">
-          <Link to="/" className="flex items-center" aria-label="Heilda home">
+          <Link
+            to="/"
+            className={cn(
+              'flex items-center transition-all duration-150',
+              sidebarOpen ? 'opacity-0 -translate-y-1 pointer-events-none' : 'opacity-100 translate-y-0'
+            )}
+            aria-label="Deilda home"
+            aria-hidden={sidebarOpen}
+            tabIndex={sidebarOpen ? -1 : 0}
+          >
             <HeildaLogo className="h-6 w-auto" />
           </Link>
           <TenantSwitcher />
