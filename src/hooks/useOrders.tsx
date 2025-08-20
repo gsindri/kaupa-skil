@@ -16,24 +16,29 @@ export function useOrders() {
   const { toast } = useToast()
 
   const { data: orders, isLoading } = useQuery({
-    queryKey: ['orders', profile?.tenant_id],
+    queryKey: ['orders', profile?.tenant_id ?? 'no-tenant'],
     queryFn: async (): Promise<Order[]> => {
-      if (!profile?.tenant_id) return []
-
-      const { data, error } = await supabase
+      let query = supabase
         .from('orders')
         .select(`
           *,
           created_by_profile:profiles(full_name, email),
           order_lines(*)
         `)
-        .eq('tenant_id', profile.tenant_id)
         .order('created_at', { ascending: false })
+
+      if (profile?.tenant_id) {
+        query = query.eq('tenant_id', profile.tenant_id)
+      } else {
+        query = query.is('organization_id', null)
+      }
+
+      const { data, error } = await query
 
       if (error) throw error
       return data || []
     },
-    enabled: !!profile?.tenant_id
+    enabled: !!profile
   })
 
   const createOrder = useMutation({
