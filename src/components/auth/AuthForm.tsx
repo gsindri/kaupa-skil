@@ -265,7 +265,7 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
               onChange={(e) => setFullName(e.target.value)}
               aria-invalid={!!fullNameError}
               aria-describedby={fullNameError ? "fullName-error" : undefined}
-              className="w-full rounded-full border border-slate-300 bg-white px-4 py-3 text-sm outline-none transition-colors duration-[120ms] ease-in-out focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+              className="w-full rounded-full border border-slate-300 bg-white px-4 py-3 text-sm outline-none transition-colors duration-120 ease-in-out focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
               placeholder="Full name"
             />
             {fullNameError && (
@@ -289,7 +289,7 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
             aria-describedby={emailError ? "email-error" : undefined}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-full border border-slate-300 bg-white pl-10 pr-4 py-3 text-sm outline-none transition-colors duration-[120ms] ease-in-out focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+            className="w-full rounded-full border border-slate-300 bg-white pl-10 pr-4 py-3 text-sm outline-none transition-colors duration-120 ease-in-out focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
             placeholder="Email"
           />
           {emailError && (
@@ -318,7 +318,7 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
               minLength={!isLogin ? 6 : undefined}
               aria-invalid={!!passwordError}
               aria-describedby={passwordError ? "password-error" : undefined}
-              className="w-full rounded-full border border-slate-300 bg-white pl-10 pr-10 py-3 text-sm outline-none transition-colors duration-[120ms] ease-in-out focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+              className="w-full rounded-full border border-slate-300 bg-white pl-10 pr-10 py-3 text-sm outline-none transition-colors duration-120 ease-in-out focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
               placeholder="Password"
             />
             <button
@@ -326,7 +326,7 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
               aria-label={showPwd ? "Hide password" : "Show password"}
               aria-pressed={showPwd}
               onClick={() => setShowPwd((v) => !v)}
-              className="absolute inset-y-0 right-2 inline-flex items-center rounded-lg p-2 text-gray-500 transition-colors duration-[120ms] ease-in-out hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+              className="absolute inset-y-0 right-2 inline-flex items-center rounded-lg p-2 text-gray-500 transition-colors duration-120 ease-in-out hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
               disabled={busy}
             >
               {showPwd ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -347,7 +347,7 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
       {isLogin && (
         <Link
           to="/forgot-password"
-          className="block text-right text-sm text-blue-600 transition-colors duration-[120ms] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2"
+          className="block text-right text-sm text-blue-600 transition-colors duration-120 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2"
         >
           Forgot password?
         </Link>
@@ -370,7 +370,7 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
       <button
         type="submit"
         disabled={busy || !isFormValid}
-        className="w-full rounded-full bg-brand-500 py-3 text-sm font-semibold text-white shadow-md transition-colors duration-[120ms] ease-in-out hover:bg-brand-600 active:bg-brand-700 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2"
+        className="w-full rounded-full bg-brand-500 py-3 text-sm font-semibold text-white shadow-md transition-colors duration-120 ease-in-out hover:bg-brand-600 active:bg-brand-700 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2"
       >
         {busy ? (
           <span className="flex items-center justify-center gap-2">
@@ -386,7 +386,7 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
         {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
         <Link
           to={isLogin ? "/signup" : "/login"}
-          className="font-medium text-blue-600 transition-colors duration-[120ms] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2"
+          className="font-medium text-blue-600 transition-colors duration-120 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2"
         >
           {isLogin ? "Sign up" : "Log in"}
         </Link>
