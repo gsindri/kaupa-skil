@@ -5,8 +5,10 @@ import { useAuth } from '@/contexts/useAuth'
 import { useToast } from './use-toast'
 import { Database } from '@/lib/types/database'
 
-type Order = Database['public']['Tables']['orders']['Row']
-type OrderInsert = Database['public']['Tables']['orders']['Insert']
+type Order = Database['public']['Tables']['orders']['Row'] & { tenant_id: string | null }
+type OrderInsert = Database['public']['Tables']['orders']['Insert'] & {
+  tenant_id?: string | null
+}
 type OrderLine = Database['public']['Tables']['order_lines']['Row']
 type OrderLineInsert = Database['public']['Tables']['order_lines']['Insert']
 
@@ -30,7 +32,7 @@ export function useOrders() {
       if (profile?.tenant_id) {
         query = query.eq('tenant_id', profile.tenant_id)
       } else {
-        query = query.is('organization_id', null)
+        query = query.is('tenant_id', null)
       }
 
       const { data, error } = await query
@@ -42,10 +44,12 @@ export function useOrders() {
   })
 
   const createOrder = useMutation({
-    mutationFn: async (order: Omit<OrderInsert, 'id' | 'created_at' | 'updated_at'>) => {
+    mutationFn: async (
+      order: Omit<OrderInsert, 'id' | 'created_at' | 'updated_at' | 'tenant_id'>
+    ) => {
       const { data, error } = await supabase
         .from('orders')
-        .insert(order)
+        .insert({ ...order, tenant_id: profile?.tenant_id ?? null })
         .select()
         .single()
 
@@ -72,7 +76,7 @@ export function useOrders() {
     mutationFn: async ({ id, ...updates }: Partial<Order> & { id: string }) => {
       const { data, error } = await supabase
         .from('orders')
-        .update(updates)
+        .update({ ...updates, tenant_id: profile?.tenant_id ?? null })
         .eq('id', id)
         .select()
         .single()
