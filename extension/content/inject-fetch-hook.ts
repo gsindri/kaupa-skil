@@ -11,9 +11,13 @@
           .then(body => {
             window.postMessage({ __KPS: true, type: 'NETWORK_JSON', body }, '*');
           })
-          .catch(() => {});
+          .catch(() => {
+            /* intentionally ignored */
+          });
       }
-    } catch {}
+    } catch (e) {
+      /* intentionally ignored */
+    }
     return res;
   }) as typeof fetch;
 
@@ -26,7 +30,9 @@
           const body = this.responseType === 'json' ? this.response : JSON.parse(this.responseText);
           window.postMessage({ __KPS: true, type: 'NETWORK_JSON', body }, '*');
         }
-      } catch {}
+      } catch (e) {
+        /* intentionally ignored */
+      }
     });
     return origOpen.apply(this, openArgs as any);
   };

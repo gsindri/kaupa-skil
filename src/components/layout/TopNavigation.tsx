@@ -1,8 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Search, HelpCircle, ChevronDown } from 'lucide-react'
+import { HelpCircle, ChevronDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,6 +18,7 @@ import { LanguageSwitcher } from './LanguageSwitcher'
 import { HeildaLogo } from '@/components/branding/HeildaLogo'
 import { useSidebar } from '@/components/ui/use-sidebar'
 import { cn } from '@/lib/utils'
+import { HeaderSearch } from '@/components/search/HeaderSearch'
 
 export function TopNavigation() {
   const { profile, user, signOut, loading, profileLoading } = useAuth()
@@ -29,7 +29,6 @@ export function TopNavigation() {
   const searchRef = useRef<HTMLInputElement>(null)
   const [helpOpen, setHelpOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
-  const [searchExpanded, setSearchExpanded] = useState(false)
   const lastKey = useRef<string>('')
 
   useEffect(() => {
@@ -58,19 +57,6 @@ export function TopNavigation() {
     window.addEventListener('keydown', handleKey)
     return () => window.removeEventListener('keydown', handleKey)
   }, [setIsDrawerOpen])
-
-  const handleSearchFocus = () => setSearchExpanded(true)
-  const handleSearchBlur = () => {
-    if (!searchRef.current?.value) {
-      setSearchExpanded(false)
-    }
-  }
-  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Escape' && !searchRef.current?.value) {
-      setSearchExpanded(false)
-      searchRef.current?.blur()
-    }
-  }
 
   const handleSignOut = async () => {
     try {
@@ -128,19 +114,7 @@ export function TopNavigation() {
         </div>
 
         <div className="flex-1 max-w-md">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              ref={searchRef}
-              aria-label="Search"
-              placeholder="Search..."
-              onFocus={handleSearchFocus}
-              onBlur={handleSearchBlur}
-              onKeyDown={handleSearchKeyDown}
-              onChange={() => setSearchExpanded(true)}
-              className={`pl-10 transition-all duration-200 ease-in-out border ${searchExpanded ? 'w-full' : 'w-40'}`}
-            />
-          </div>
+          <HeaderSearch ref={searchRef} />
         </div>
 
         <nav aria-label="Global actions" className="flex items-center justify-end flex-1 pl-4">
