@@ -97,6 +97,14 @@ npm run dev
 # Open browser to http://localhost:8080
 ```
 
+### Environment Variables
+Create a `.env` file based on `.env.example` and set the following variables:
+
+- `VITE_SUPABASE_URL` – your Supabase project URL
+- `VITE_SUPABASE_PUBLISHABLE_KEY` – your Supabase anonymous public key
+
+In CI, configure these as `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` secrets.
+
 ### Available Commands
 ```bash
 npm run dev          # Start development server
