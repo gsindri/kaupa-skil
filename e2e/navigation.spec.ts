@@ -21,15 +21,19 @@ test.beforeEach(async ({ page }) => {
 
 test('sidebar links route correctly', async ({ page }) => {
   const links = [
+    { label: 'Dashboard', path: '/' },
     { label: 'Place Order', path: '/quick-order' },
-    { label: 'Cart', path: '/cart' },
     { label: 'Compare', path: '/compare' },
     { label: 'Suppliers', path: '/suppliers' },
   ];
 
   for (const { label, path } of links) {
     await page.getByRole('link', { name: label }).click();
-    await expect(page).toHaveURL(new RegExp(path));
+    if (path === '/') {
+      await expect(page).toHaveURL(/\/$/);
+    } else {
+      await expect(page).toHaveURL(new RegExp(path));
+    }
   }
 });
 

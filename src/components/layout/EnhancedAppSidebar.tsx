@@ -2,13 +2,10 @@ import {
   Home,
   TrendingUp,
   Package,
-  ShoppingCart,
   History,
-  Building2,
   Search,
   Heart,
   Shield,
-  Truck,
   Zap,
 } from "lucide-react"
 import {
@@ -25,8 +22,6 @@ import {
 } from "@/components/ui/sidebar"
 import { NavLink } from "react-router-dom"
 import { useAuth } from '@/contexts/useAuth'
-import { Badge } from "@/components/ui/badge"
-import { useCart } from '@/contexts/useBasket'
 import { usePermissions } from "@/hooks/usePermissions"
 import { HeildaLogo } from "@/components/branding/HeildaLogo"
 import { Separator } from "@/components/ui/separator"
@@ -35,14 +30,14 @@ import { useSidebar } from "@/components/ui/use-sidebar"
 // Core workflow pages
 const coreItems = [
   {
+    title: "Dashboard",
+    url: "/",
+    icon: Home,
+  },
+  {
     title: "Place Order",
     url: "/quick-order",
     icon: Zap,
-  },
-  {
-    title: "Cart",
-    url: "/cart",
-    icon: ShoppingCart,
   },
   {
     title: "Compare",
@@ -85,7 +80,6 @@ const adminItems = [
 
 export function EnhancedAppSidebar() {
   const { profile, user } = useAuth()
-  const { getTotalItems } = useCart()
   const { memberships } = usePermissions()
   const { open, openMobile, isMobile } = useSidebar()
   const sidebarOpen = isMobile ? openMobile : open
@@ -97,8 +91,6 @@ export function EnhancedAppSidebar() {
   const isAdmin =
     currentTenantMembership?.base_role === "admin" ||
     currentTenantMembership?.base_role === "owner"
-
-  const cartItemCount = getTotalItems()
 
   // Get display name with fallbacks
   const displayName =
@@ -128,20 +120,9 @@ export function EnhancedAppSidebar() {
                   <NavLink to={item.url} className="w-full">
                     {({ isActive }) => (
                       <SidebarMenuButton asChild isActive={isActive} className="w-full">
-                        <div className="flex items-center justify-between w-full">
-                          <div className="flex items-center">
-                            <item.icon className="mr-2 h-4 w-4" />
-                            <span>{item.title}</span>
-                          </div>
-                          {item.title === "Cart" && cartItemCount > 0 && (
-                            <Badge
-                              variant="secondary"
-                              className="ml-2 font-mono"
-                              style={{ fontFeatureSettings: '"tnum" 1' }}
-                            >
-                              {cartItemCount}
-                            </Badge>
-                          )}
+                        <div className="flex items-center">
+                          <item.icon className="mr-2 h-4 w-4" />
+                          <span>{item.title}</span>
                         </div>
                       </SidebarMenuButton>
                     )}
