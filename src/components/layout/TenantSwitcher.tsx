@@ -10,7 +10,6 @@ import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
   Command,
@@ -90,17 +89,6 @@ export function TenantSwitcher() {
     }
   }
 
-  const roleBadgeVariant = (role: string) => {
-    switch (role.toLowerCase()) {
-      case 'owner':
-        return 'default'
-      case 'admin':
-        return 'secondary'
-      default:
-        return 'outline'
-    }
-  }
-
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -116,17 +104,18 @@ export function TenantSwitcher() {
           <ChevronDown className="h-4 w-4 shrink-0" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[270px] p-2">
+      <PopoverContent className="w-[280px] p-2">
         <Command>
           <CommandInput
             placeholder="Search workspaces..."
-            className="h-9"
+            className="h-9 text-sm pl-8 pr-2 rounded-md border"
           />
+          <CommandSeparator className="my-2 h-px bg-border/50" />
           <CommandList>
             <CommandEmpty>No workspaces found.</CommandEmpty>
             <CommandGroup
               heading="Workspaces"
-              className="px-0 [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:pb-1 [&_[cmdk-group-heading]]:pt-2 [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-wide"
+              className="px-0 [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:pt-2 [&_[cmdk-group-heading]]:pb-1 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-wide [&_[cmdk-group-heading]]:text-foreground/60"
             >
               <CommandItem
                 value="personal"
@@ -135,22 +124,31 @@ export function TenantSwitcher() {
                   setOpen(false)
                 }}
                 className={cn(
-                  'relative grid grid-cols-[24px,1fr,auto,16px] items-center gap-2 rounded-md px-2 py-2 h-9 border cursor-pointer text-sm transition-[background-color,border-color,box-shadow] duration-150 ease-in-out motion-reduce:transition-none',
+                  'group relative grid grid-cols-[24px,1fr,auto,16px] items-center gap-2 px-2 py-2 rounded-md border border-transparent transition',
                   !profile?.tenant_id
-                    ? 'border-2 border-brand-600 text-foreground before:absolute before:left-0 before:top-0 before:bottom-0 before:w-0.5 before:bg-brand-600'
-                    : 'border border-transparent text-foreground/80 hover:border-border hover:bg-foreground/5 hover:text-foreground',
-                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2',
-                  'data-[selected=true]:border-brand-700 data-[selected=true]:bg-foreground/10'
+                    ? 'border-2 border-brand-600 bg-transparent before:absolute before:left-0 before:top-0 before:bottom-0 before:w-0.5 before:bg-brand-600'
+                    : 'hover:border-border-subtle hover:bg-foreground/[0.02]',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50 focus-visible:ring-offset-1'
                 )}
               >
-                <House className="h-5 w-5" />
-                <span className="truncate" title="Personal workspace">
+                <House
+                  className={cn(
+                    'size-5',
+                    !profile?.tenant_id
+                      ? 'text-foreground'
+                      : 'text-foreground/70 group-hover:text-foreground/90'
+                  )}
+                />
+                <span
+                  className="truncate text-sm text-foreground"
+                  title="Personal workspace"
+                >
                   Personal workspace
                 </span>
                 <span className="justify-self-end" />
                 <Check
                   className={cn(
-                    'h-4 w-4 justify-self-end text-brand-600 transition-opacity duration-150',
+                    'size-4 justify-self-end text-brand-600 transition-opacity',
                     !profile?.tenant_id ? 'opacity-100' : 'opacity-0'
                   )}
                 />
@@ -168,29 +166,42 @@ export function TenantSwitcher() {
                       setOpen(false)
                     }}
                     className={cn(
-                      'relative grid grid-cols-[24px,1fr,auto,16px] items-center gap-2 rounded-md px-2 py-2 h-9 border cursor-pointer text-sm transition-[background-color,border-color,box-shadow] duration-150 ease-in-out motion-reduce:transition-none',
+                      'group relative grid grid-cols-[24px,1fr,auto,16px] items-center gap-2 px-2 py-2 rounded-md border border-transparent transition',
                       isCurrent
-                        ? 'border-2 border-brand-600 text-foreground before:absolute before:left-0 before:top-0 before:bottom-0 before:w-0.5 before:bg-brand-600'
-                        : 'border border-transparent text-foreground/80 hover:border-border hover:bg-foreground/5 hover:text-foreground',
-                      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2',
-                      'data-[selected=true]:border-brand-700 data-[selected=true]:bg-foreground/10'
+                        ? 'border-2 border-brand-600 bg-transparent before:absolute before:left-0 before:top-0 before:bottom-0 before:w-0.5 before:bg-brand-600'
+                        : 'hover:border-border-subtle hover:bg-foreground/[0.02]',
+                      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50 focus-visible:ring-offset-1'
                     )}
                   >
-                    <Avatar className="h-6 w-6 text-foreground/80">
+                    <Avatar
+                      className={cn(
+                        'h-6 w-6',
+                        isCurrent
+                          ? 'text-foreground'
+                          : 'text-foreground/70 group-hover:text-foreground/90'
+                      )}
+                    >
                       <AvatarFallback>{getInitials(tenant.name)}</AvatarFallback>
                     </Avatar>
-                    <span className="truncate text-left" title={tenant.name}>
+                    <span
+                      className="truncate text-left text-sm text-foreground"
+                      title={tenant.name}
+                    >
                       {tenant.name}
                     </span>
-                    <Badge
-                      variant={roleBadgeVariant(membership.base_role)}
-                      className="justify-self-end whitespace-nowrap capitalize"
+                    <span
+                      className={cn(
+                        'ml-2 justify-self-end whitespace-nowrap text-xs px-2 py-0.5 rounded-full',
+                        isCurrent
+                          ? 'bg-brand-50 text-brand-700'
+                          : 'bg-muted text-foreground'
+                      )}
                     >
                       {membership.base_role}
-                    </Badge>
+                    </span>
                     <Check
                       className={cn(
-                        'h-4 w-4 justify-self-end text-brand-600 transition-opacity duration-150',
+                        'size-4 justify-self-end text-brand-600 transition-opacity',
                         isCurrent ? 'opacity-100' : 'opacity-0'
                       )}
                     />
@@ -198,30 +209,30 @@ export function TenantSwitcher() {
                 )
               })}
             </CommandGroup>
-            <CommandSeparator />
+            <CommandSeparator className="my-2 h-px bg-border/50" />
             <CommandGroup
               heading="Actions"
-              className="px-0 [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:pb-1 [&_[cmdk-group-heading]]:pt-2 [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-wide"
+              className="px-0 [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:pt-2 [&_[cmdk-group-heading]]:pb-1 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-wide [&_[cmdk-group-heading]]:text-foreground/60"
             >
               <CommandItem
                 onSelect={() => {
                   navigate('/settings/organization/create')
                   setOpen(false)
                 }}
-                className="group grid grid-cols-[24px,1fr] items-center gap-2 rounded-lg px-2 h-9 text-sm text-foreground/80 hover:bg-muted hover:text-foreground"
+                className="group grid grid-cols-[24px,1fr] items-center gap-2 px-2 py-2 rounded-md border border-transparent text-sm transition hover:border-border-subtle hover:bg-foreground/[0.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50 focus-visible:ring-offset-1"
               >
-                <Plus className="h-5 w-5" />
-                <span>Create workspace</span>
+                <Plus className="size-5 text-foreground/70 group-hover:text-foreground/90" />
+                <span className="text-sm text-foreground">Create workspace</span>
               </CommandItem>
               <CommandItem
                 onSelect={() => {
                   navigate('/settings/organization/join')
                   setOpen(false)
                 }}
-                className="group grid grid-cols-[24px,1fr] items-center gap-2 rounded-lg px-2 h-9 text-sm text-foreground/80 hover:bg-muted hover:text-foreground"
+                className="group grid grid-cols-[24px,1fr] items-center gap-2 px-2 py-2 rounded-md border border-transparent text-sm transition hover:border-border-subtle hover:bg-foreground/[0.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50 focus-visible:ring-offset-1"
               >
-                <LogIn className="h-5 w-5" />
-                <span>Join workspace</span>
+                <LogIn className="size-5 text-foreground/70 group-hover:text-foreground/90" />
+                <span className="text-sm text-foreground">Join workspace</span>
               </CommandItem>
             </CommandGroup>
           </CommandList>
