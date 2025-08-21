@@ -7,7 +7,6 @@ The following tables list hardcoded demo data and mock implementations found in 
 | Location | Snippet / Example | Why it's a hardcode | Proposed source of truth | Removal / Replacement Steps |
 |---|---|---|---|---|
 | `src/hooks/useComparisonItems.tsx` | `const mockItems: ComparisonItem[] = […]` | Product comparison uses static mock items and suppliers | `supplier_items`, `price_quotes` tables | Replace mock array with Supabase query using tenant‑scoped filters |
-| `src/pages/Index.tsx` | `const mockProducts: Product[] = […]` | Catalog shows fixed products, prices, suppliers | `products`, `supplier_items`, `prices` | Fetch items with React Query; show onboarding when result empty |
 | `src/pages/Discovery.tsx` | `const mockSuppliers: SupplierCard[] = […]` | Supplier discovery uses hardcoded cards and sample products | `suppliers`, `supplier_items` | Query suppliers from DB; derive sample products from stock/price history |
 | `src/lib/landedCost.ts` | `const mockSupplierRules: SupplierRule[] = […]` | Delivery fees calculated from demo rules | `delivery_rules` table | Fetch rule per supplier; move calculations to service that reads DB |
 | `src/components/dashboard/RecentOrdersTable.tsx` | `const mockRecentOrders: RecentOrder[] = […]` | Dashboard orders summary uses fabricated records | `orders` table | Query recent orders for workspace; remove mock list |
