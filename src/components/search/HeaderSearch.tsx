@@ -85,7 +85,7 @@ export const HeaderSearch = React.forwardRef<HTMLInputElement>((_props, ref) => 
   }
 
   return (
-    <div className="relative w-[320px] md:w-[380px]">
+    <div className="relative">
       <SearchInput
         ref={ref}
         value={query}
