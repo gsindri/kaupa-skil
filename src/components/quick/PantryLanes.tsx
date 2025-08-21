@@ -3,6 +3,9 @@ import React from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Heart, History, BookOpen } from 'lucide-react'
 import { ItemCard } from './ItemCard'
+import { useQuery } from '@tanstack/react-query'
+import { supabase } from '@/integrations/supabase/client'
+import { useAuth } from '@/contexts/useAuth'
 
 interface PantryLanesProps {
   onLaneSelect: (lane: string | null) => void;
@@ -10,41 +13,91 @@ interface PantryLanesProps {
   onAddToCart: (itemId: string) => void;
 }
 
-// Mock data - replace with actual data from hooks
-const mockFavorites = [
-  {
-    id: 'fav-1',
-    name: 'Premium Organic Milk',
-    brand: 'MS Dairies',
-    packSize: '12×1L',
-    unitPriceExVat: 180,
-    unitPriceIncVat: 223,
-    packPriceExVat: 2160,
-    packPriceIncVat: 2676,
-    unit: 'L',
-    suppliers: ['costco', 'metro'],
-    stock: true
-  }
-]
-
-const mockLastOrder = [
-  {
-    id: 'last-1',
-    name: 'Artisan Bread',
-    brand: 'Reykjavik Bakehouse',
-    packSize: '8×500g',
-    unitPriceExVat: 320,
-    unitPriceIncVat: 397,
-    packPriceExVat: 2560,
-    packPriceIncVat: 3176,
-    unit: 'loaf',
-    suppliers: ['bakehouse'],
-    stock: true,
-    lastQuantity: 2
-  }
-]
-
 export function PantryLanes({ onLaneSelect, selectedLane, onAddToCart }: PantryLanesProps) {
+  const { profile } = useAuth()
+
+  const { data: favorites = [], isLoading: favLoading } = useQuery({
+    queryKey: ['favorites', profile?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('favorites')
+        .select(`
+          id,
+          supplier_items(
+            id,
+            display_name,
+            brand,
+            pack_qty,
+            supplier_id,
+            price_quotes(pack_price, unit_price_ex_vat, unit_price_inc_vat)
+          )
+        `)
+      if (error) throw error
+
+      return (data || []).map((fav: any) => {
+        const item = fav.supplier_items
+        const price = item?.price_quotes?.[0]
+        return {
+          id: item?.id || '',
+          name: item?.display_name || '',
+          brand: item?.brand || '',
+          packSize: item ? `${item.pack_qty}` : '',
+          unitPriceExVat: price?.unit_price_ex_vat || 0,
+          unitPriceIncVat: price?.unit_price_inc_vat || 0,
+          packPriceExVat: price?.pack_price || 0,
+          packPriceIncVat: price?.pack_price ? price.pack_price * 1.24 : 0,
+          unit: 'unit',
+          suppliers: item ? [item.supplier_id] : [],
+          stock: true
+        }
+      })
+    },
+    enabled: !!profile
+  })
+
+  const { data: lastOrder = [], isLoading: lastLoading } = useQuery({
+    queryKey: ['last-order', profile?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('order_lines')
+        .select(`
+          id,
+          quantity,
+          supplier_items(
+            id,
+            display_name,
+            brand,
+            pack_qty,
+            supplier_id,
+            price_quotes(pack_price, unit_price_ex_vat, unit_price_inc_vat)
+          )
+        `)
+        .order('created_at', { ascending: false })
+        .limit(10)
+      if (error) throw error
+
+      return (data || []).map((line: any) => {
+        const item = line.supplier_items
+        const price = item?.price_quotes?.[0]
+        return {
+          id: item?.id || '',
+          name: item?.display_name || '',
+          brand: item?.brand || '',
+          packSize: item ? `${item.pack_qty}` : '',
+          unitPriceExVat: price?.unit_price_ex_vat || 0,
+          unitPriceIncVat: price?.unit_price_inc_vat || 0,
+          packPriceExVat: price?.pack_price || 0,
+          packPriceIncVat: price?.pack_price ? price.pack_price * 1.24 : 0,
+          unit: 'unit',
+          suppliers: item ? [item.supplier_id] : [],
+          stock: true,
+          lastQuantity: line.quantity
+        }
+      })
+    },
+    enabled: !!profile
+  })
+
   const handleCompareItem = (itemId: string) => {
     console.log('Compare item:', itemId)
     // TODO: Implement compare functionality
@@ -61,9 +114,11 @@ export function PantryLanes({ onLaneSelect, selectedLane, onAddToCart }: PantryL
           </CardTitle>
         </CardHeader>
         <CardContent className="pt-0">
-          {mockFavorites.length > 0 ? (
+          {favLoading ? (
+            <div className="text-center py-12 text-muted-foreground">Loading favorites...</div>
+          ) : favorites.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {mockFavorites.map(item => (
+              {favorites.map(item => (
                 <ItemCard
                   key={item.id}
                   item={item}
@@ -90,9 +145,11 @@ export function PantryLanes({ onLaneSelect, selectedLane, onAddToCart }: PantryL
           </CardTitle>
         </CardHeader>
         <CardContent className="pt-0">
-          {mockLastOrder.length > 0 ? (
+          {lastLoading ? (
+            <div className="text-center py-12 text-muted-foreground">Loading last order...</div>
+          ) : lastOrder.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {mockLastOrder.map(item => (
+              {lastOrder.map(item => (
                 <ItemCard
                   key={item.id}
                   item={item}
