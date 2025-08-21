@@ -151,7 +151,7 @@ export function CartDrawer() {
                   Your cart is empty.
                 </p>
                 <Button asChild>
-                  <Link to="/">Place Order</Link>
+                  <Link to="/quick-order">Place Order</Link>
                 </Button>
               </div>
             ) : (
