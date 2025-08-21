@@ -5,7 +5,13 @@ let originalOverflow = ''
 export function lockBody() {
   if (typeof window === 'undefined') return
   if (lockCount === 0) {
-    const scrollBarGap = window.innerWidth - document.documentElement.clientWidth
+    let scrollBarGap = window.innerWidth - document.documentElement.clientWidth
+    const scrollbarGutter = (
+      getComputedStyle(document.documentElement) as any
+    ).scrollbarGutter
+    if (scrollbarGutter && scrollbarGutter !== 'auto') {
+      scrollBarGap = 0
+    }
     originalPaddingRight = document.body.style.paddingRight
     originalOverflow = document.body.style.overflow
     if (scrollBarGap > 0) {
