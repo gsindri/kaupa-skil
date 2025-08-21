@@ -13,7 +13,7 @@ export function LanguageSwitcher() {
         <Button
           variant="ghost"
           size="sm"
-          className="flex items-center"
+          className="flex items-center flex-shrink-0 active:translate-y-[1px]"
           aria-label="Language"
         >
           <span>{language === 'is' ? 'Icelandic' : 'English'}</span>

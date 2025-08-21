@@ -92,6 +92,7 @@ export function TopNavigation() {
           aria-controls="app-sidebar"
           aria-expanded={sidebarOpen}
           onClick={toggleSidebar}
+          className="flex-shrink-0 active:translate-y-[1px]"
         >
           <span aria-hidden>☰</span>
         </Button>
@@ -122,7 +123,11 @@ export function TopNavigation() {
           <Separator orientation="vertical" className="mx-2 h-6" />
           <DropdownMenu open={helpOpen} onOpenChange={setHelpOpen}>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="flex-shrink-0 active:translate-y-[1px]"
+              >
                 <HelpCircle className="h-5 w-5" />
                 <span className="hidden sm:inline ml-2">Help</span>
               </Button>
@@ -137,7 +142,11 @@ export function TopNavigation() {
           <Separator orientation="vertical" className="mx-2 h-6" />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="flex items-center space-x-2" disabled={isBusy}>
+              <Button
+                variant="ghost"
+                className="flex items-center space-x-2 flex-shrink-0 active:translate-y-[1px]"
+                disabled={isBusy}
+              >
                 <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
                   {isBusy ? (
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>

@@ -26,7 +26,7 @@ export function MiniCart() {
         <Button
           variant="ghost"
           size="sm"
-          className="relative"
+          className="relative flex-shrink-0 active:translate-y-[1px]"
           onClick={e => {
             e.preventDefault()
             setOpen(false)
