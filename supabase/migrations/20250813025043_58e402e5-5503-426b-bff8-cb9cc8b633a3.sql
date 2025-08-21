@@ -191,7 +191,10 @@ CREATE POLICY "Tenant members can view tenant jobs" ON public.jobs
   );
 
 CREATE POLICY "System can manage jobs" ON public.jobs
-  FOR ALL USING (true);
+  TO service_role
+  FOR INSERT, UPDATE, DELETE
+  USING (auth.role() = 'service_role')
+  WITH CHECK (auth.role() = 'service_role');
 
 -- RLS Policies for job_logs
 CREATE POLICY "Job requesters can view logs" ON public.job_logs
