@@ -48,14 +48,14 @@ export function inferVatFlag(text: string): 'incl' | 'excl' | 'unknown' {
   return 'unknown';
 }
 
-export function normalize(raw: RawPrice, source: 'network' | 'dom', url: string): PricePayload {
+export function normalize(raw: RawPrice & { url: string }, source: 'network' | 'dom'): PricePayload {
   const priceDisplay = parsePrice(raw.priceText);
   const currency = raw.currencyText || parseCurrencySymbol(raw.priceText) || undefined;
   const packInfo = raw.packText ? parsePack(raw.packText) : undefined;
   const pricePerUnit = packInfo ? +(priceDisplay / packInfo.packSize).toFixed(2) : undefined;
-  const vatFlag = inferVatFlag(raw.priceText + ' ' + (raw.packText || ''));
+  const vatFlag = inferVatFlag(raw.priceText + ' ' + (raw.packText || '') + ' ' + (raw.contextText || ''));
   return {
-    url,
+    url: raw.url,
     source,
     priceDisplay,
     currency,
@@ -67,3 +67,4 @@ export function normalize(raw: RawPrice, source: 'network' | 'dom', url: string)
     ts: new Date().toISOString()
   };
 }
+
