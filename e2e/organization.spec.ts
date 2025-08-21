@@ -17,7 +17,7 @@ test('sign-up, solo data access, organization creation and switch', async ({ pag
   await page.getByRole('button', { name: /sign up/i }).click()
 
   await expect(page.getByText(/Tell us about your organization/i)).toBeVisible()
-  await expect(page.getByText(/No Organization/i)).toBeVisible()
+  await expect(page.getByText(/Personal workspace/i)).toBeVisible()
 
   const orgName = `Org ${Math.random().toString(36).slice(2,8)}`
   await page.getByLabel('Organization Name').fill(orgName)
