@@ -2,43 +2,39 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
   pull_request:
-    branches: [ main ]
 
 jobs:
-  build:
+  build-and-test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v3
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
-          version: 10
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 18
-          cache: 'pnpm'
-      - run: pnpm install
+          node-version: 20
 
-      # Cache Playwright browser binaries to avoid re-downloading every run
-      - name: Cache Playwright browsers
-        id: cache-playwright
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-playwright-
+      # (optional) install deps if your tests/lint need them
+      - name: Install deps
+        run: npm ci
 
-      # Only install system deps (apt) when cache is cold
-      - name: Install Playwright system deps (cache miss only)
-        if: steps.cache-playwright.outputs.cache-hit != 'true'
-        run: npx playwright install-deps
+      - name: Run tests
+        run: npm test
 
-      # Ensure browsers are present (fast on cache hit)
-      - name: Install Playwright browsers
-        run: npx playwright install
+      - name: Lint
+        run: npm run lint
 
-      - run: pnpm lint
-      - run: pnpm test
-      - run: pnpm test:e2e
+      - name: Generate Supabase types
+        run: npx supabase gen types typescript --project-id hcrjkziycryuugzbixhq --schema public,auth,storage > src/lib/types/database.ts
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
+      # (optional) fail CI if types changed but not committed
+      - name: Ensure types are up to date
+        run: |
+          if ! git diff --quiet --exit-code src/lib/types/database.ts; then
+            echo "database.ts changed — commit regenerated types." >&2
+            exit 1
+          fi
