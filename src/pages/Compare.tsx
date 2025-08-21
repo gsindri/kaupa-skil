@@ -184,6 +184,18 @@ export default function Compare() {
     )
   }
 
+  if (!isLoading && items.length === 0) {
+    return (
+      <Card>
+        <CardContent className="p-8 text-center">
+          <p className="text-muted-foreground">
+            No items available for comparison.
+          </p>
+        </CardContent>
+      </Card>
+    )
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
