@@ -72,35 +72,3 @@ CREATE POLICY "Users can manage supplier items"
   FOR ALL 
   USING (auth.uid() IS NOT NULL);
 
--- Insert some sample data for testing
-INSERT INTO public.categories (name, description) VALUES
-  ('Vegetables', 'Fresh vegetables and produce'),
-  ('Fruits', 'Fresh fruits and berries'),
-  ('Dairy', 'Milk, cheese, and dairy products'),
-  ('Meat', 'Fresh meat and poultry'),
-  ('Bakery', 'Bread, pastries, and baked goods');
-
-INSERT INTO public.suppliers (name, website, contact_email) VALUES
-  ('Fresh Farm Foods', 'https://freshfarmfoods.com', 'orders@freshfarmfoods.com'),
-  ('Quality Produce Co.', 'https://qualityproduce.com', 'sales@qualityproduce.com'),
-  ('Local Dairy', 'https://localdairy.com', 'info@localdairy.com');
-
--- Insert some sample supplier items
-INSERT INTO public.supplier_items (supplier_id, category_id, ext_sku, display_name, description, price_ex_vat, in_stock) 
-SELECT 
-  s.id,
-  c.id,
-  'SKU-' || generate_random_uuid()::text,
-  CASE 
-    WHEN c.name = 'Vegetables' THEN 'Fresh ' || (ARRAY['Carrots', 'Potatoes', 'Onions', 'Tomatoes', 'Lettuce'])[floor(random() * 5 + 1)]
-    WHEN c.name = 'Fruits' THEN 'Organic ' || (ARRAY['Apples', 'Bananas', 'Oranges', 'Grapes', 'Berries'])[floor(random() * 5 + 1)]
-    WHEN c.name = 'Dairy' THEN (ARRAY['Whole Milk', 'Cheese', 'Yogurt', 'Butter', 'Cream'])[floor(random() * 5 + 1)]
-    WHEN c.name = 'Meat' THEN 'Premium ' || (ARRAY['Chicken Breast', 'Ground Beef', 'Pork Chops', 'Salmon', 'Turkey'])[floor(random() * 5 + 1)]
-    ELSE 'Fresh ' || (ARRAY['Bread', 'Croissants', 'Muffins', 'Bagels', 'Rolls'])[floor(random() * 5 + 1)]
-  END,
-  'High quality product from ' || s.name,
-  (random() * 50 + 5)::decimal(10,2),
-  random() > 0.1
-FROM public.suppliers s
-CROSS JOIN public.categories c
-WHERE random() > 0.7; -- Only create some items, not all combinations

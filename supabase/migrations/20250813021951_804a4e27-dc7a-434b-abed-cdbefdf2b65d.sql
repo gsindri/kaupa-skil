@@ -257,14 +257,6 @@ INSERT INTO public.units (code, name, base_unit, conversion_factor) VALUES
   ('pack', 'Pack', NULL, NULL)
 ON CONFLICT (code) DO NOTHING;
 
-INSERT INTO public.categories (name, vat_code) VALUES
-  ('Food & Beverages', 'STANDARD'),
-  ('Cleaning Supplies', 'STANDARD'),
-  ('Office Supplies', 'STANDARD'),
-  ('Kitchen Equipment', 'STANDARD'),
-  ('Disposables', 'STANDARD')
-ON CONFLICT DO NOTHING;
-
 INSERT INTO public.vat_rules (code, rate) VALUES
   ('STANDARD', 0.24),
   ('REDUCED', 0.11),
