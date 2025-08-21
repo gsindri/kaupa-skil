@@ -1,6 +1,4 @@
 import React, { useState, useMemo } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { supabase } from '@/integrations/supabase/client'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -8,27 +6,9 @@ import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Separator } from '@/components/ui/separator'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { 
-  Package, 
-  TrendingUp, 
-  TrendingDown, 
-  AlertTriangle, 
-  Calendar, 
-  Search,
-  Filter,
-  Download,
-  Truck,
-  Clock,
-  CheckCircle,
-  XCircle,
-  BarChart3,
-  ShoppingCart,
-  Plus
-} from 'lucide-react'
+import { Download, Plus } from 'lucide-react'
 import { PantryLanes } from '@/components/quick/PantryLanes'
 import { useToast } from '@/hooks/use-toast'
-import { useAuth } from '@/contexts/useAuth'
 
 interface StockItem {
   id: string
@@ -104,12 +84,7 @@ function StockAlerts() {
         <CardTitle>Stock Alerts</CardTitle>
       </CardHeader>
       <CardContent>
-        <Alert variant="destructive">
-          <AlertTriangle className="h-4 w-4" />
-          <AlertDescription>
-            <strong>3 items</strong> are out of stock.
-          </AlertDescription>
-        </Alert>
+        <div className="text-sm text-muted-foreground text-center">No stock alerts</div>
       </CardContent>
     </Card>
   )
@@ -121,21 +96,8 @@ function StockTrends() {
       <CardHeader>
         <CardTitle>Stock Trends</CardTitle>
       </CardHeader>
-      <CardContent className="grid gap-4">
-        <div className="flex items-center justify-between">
-          <div className="space-y-1">
-            <p className="text-sm font-medium">Most Popular</p>
-            <p className="text-xs text-muted-foreground">Item X</p>
-          </div>
-          <TrendingUp className="h-5 w-5 text-green-500" />
-        </div>
-        <div className="flex items-center justify-between">
-          <div className="space-y-1">
-            <p className="text-sm font-medium">Least Popular</p>
-            <p className="text-xs text-muted-foreground">Item Y</p>
-          </div>
-          <TrendingDown className="h-5 w-5 text-red-500" />
-        </div>
+      <CardContent>
+        <div className="text-sm text-muted-foreground text-center">No trend data</div>
       </CardContent>
     </Card>
   )
@@ -148,58 +110,18 @@ function DeliverySchedule() {
         <CardTitle>Delivery Schedule</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="text-sm">
-          <Calendar className="mr-2 inline-block h-4 w-4" /> Next delivery on <strong>July 20, 2024</strong>
-        </div>
+        <div className="text-sm text-muted-foreground text-center">No deliveries scheduled</div>
       </CardContent>
     </Card>
   )
 }
 
 export default function Pantry() {
-  const [filters, setFilters] = useState<StockFilters>(initialFilters)
-  const [selectedLane, setSelectedLane] = useState<string | null>(null)
-  const { toast } = useToast()
-  const { profile } = useAuth()
+    const [filters, setFilters] = useState<StockFilters>(initialFilters)
+    const [selectedLane, setSelectedLane] = useState<string | null>(null)
+    const { toast } = useToast()
 
-  const stockItems: StockItem[] = useMemo(() => [
-    {
-      id: '1',
-      name: 'Milk',
-      sku: 'M123',
-      quantity: 10,
-      unit: 'gallon',
-      last_ordered: '2024-07-01',
-      next_delivery: '2024-07-15',
-      price: 3.50,
-      supplier: 'Dairy Corp',
-      status: 'in_stock'
-    },
-    {
-      id: '2',
-      name: 'Eggs',
-      sku: 'E456',
-      quantity: 2,
-      unit: 'dozen',
-      last_ordered: '2024-07-05',
-      next_delivery: '2024-07-18',
-      price: 2.00,
-      supplier: 'Farm Fresh',
-      status: 'low_stock'
-    },
-    {
-      id: '3',
-      name: 'Bread',
-      sku: 'B789',
-      quantity: 0,
-      unit: 'loaf',
-      last_ordered: '2024-06-25',
-      next_delivery: '2024-07-22',
-      price: 2.75,
-      supplier: 'Bakery Inc',
-      status: 'out_of_stock'
-    },
-  ], [])
+    const stockItems: StockItem[] = useMemo(() => [], [])
 
   const filteredItems = useMemo(() => {
     let items = stockItems
