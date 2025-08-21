@@ -1,7 +1,6 @@
 
 import React from 'react'
 import DashboardOverview from '@/components/dashboard/DashboardOverview'
-import { RealTimeUpdates } from '@/components/dashboard/RealTimeUpdates'
 import { PriceAnomalyAlert } from '@/components/dashboard/PriceAnomalyAlert'
 import { PriceAnalyticsDashboard } from '@/components/analytics/PriceAnalyticsDashboard'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -108,14 +107,7 @@ export default function Dashboard() {
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2">
-              <DashboardOverview />
-            </div>
-            <div>
-              <RealTimeUpdates />
-            </div>
-          </div>
+          <DashboardOverview />
         </TabsContent>
 
         <TabsContent value="analytics" className="space-y-6">
