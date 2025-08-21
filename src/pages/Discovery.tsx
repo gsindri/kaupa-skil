@@ -1,6 +1,8 @@
 
 import React, { useState } from 'react'
-import { Search, Building2, Package, CheckCircle, Clock } from 'lucide-react'
+import { Search, Building2, CheckCircle, Clock } from 'lucide-react'
+import { useQuery } from '@tanstack/react-query'
+import { supabase } from '@/integrations/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -10,59 +12,80 @@ import { toast } from '@/hooks/use-toast'
 interface SupplierCard {
   id: string
   name: string
-  logo?: string
   categories: string[]
   sampleProducts: {
     name: string
     indicativePrice: number
-    unit: string
+    unit: string | null
   }[]
   status: 'available' | 'requested' | 'connected'
-  description: string
+  description?: string | null
 }
 
-const mockSuppliers: SupplierCard[] = [
-  {
-    id: 'sup-new-1',
-    name: 'Nordic Fresh',
-    categories: ['Fresh Produce', 'Organic', 'Local'],
-    sampleProducts: [
-      { name: 'Organic Carrots', indicativePrice: 450, unit: 'kg' },
-      { name: 'Icelandic Potatoes', indicativePrice: 320, unit: 'kg' },
-      { name: 'Fresh Lettuce', indicativePrice: 890, unit: 'kg' }
-    ],
-    status: 'available',
-    description: 'Premium fresh produce supplier specializing in organic and locally sourced vegetables.'
-  },
-  {
-    id: 'sup-new-2',
-    name: 'Arctic Seafood Co.',
-    categories: ['Seafood', 'Frozen', 'Premium'],
-    sampleProducts: [
-      { name: 'Atlantic Salmon Fillet', indicativePrice: 3200, unit: 'kg' },
-      { name: 'Icelandic Cod', indicativePrice: 2800, unit: 'kg' },
-      { name: 'Arctic Char', indicativePrice: 3500, unit: 'kg' }
-    ],
-    status: 'requested',
-    description: 'Sustainable seafood supplier with direct access to Iceland\'s finest catch.'
-  },
-  {
-    id: 'sup-new-3',
-    name: 'Bakery Wholesale Plus',
-    categories: ['Bakery', 'Frozen', 'Desserts'],
-    sampleProducts: [
-      { name: 'Artisan Bread Rolls', indicativePrice: 1200, unit: 'dozen' },
-      { name: 'Croissants', indicativePrice: 2200, unit: 'dozen' },
-      { name: 'Danish Pastries', indicativePrice: 1800, unit: 'dozen' }
-    ],
-    status: 'available',
-    description: 'Professional bakery supplier offering fresh and frozen baked goods.'
-  }
-]
+async function fetchSuppliers(): Promise<SupplierCard[]> {
+  const { data, error } = await supabase
+    .from('suppliers')
+    .select(`
+      id,
+      name,
+      website,
+      supplier_items (
+        id,
+        display_name,
+        pack_unit_id,
+        last_seen_at,
+        categories ( name ),
+        price_quotes ( unit_price_ex_vat, pack_price, observed_at )
+      )
+    `)
+
+  if (error) throw error
+
+  return (data || []).map((supplier: any) => {
+    const items = supplier.supplier_items || []
+
+    const categories = Array.from(
+      new Set(
+        items.flatMap((item: any) =>
+          item.categories?.name ? [item.categories.name] : []
+        )
+      )
+    )
+
+    const sampleProducts = items
+      .sort((a: any, b: any) => {
+        const dateA = a.price_quotes?.[0]?.observed_at || a.last_seen_at || 0
+        const dateB = b.price_quotes?.[0]?.observed_at || b.last_seen_at || 0
+        return new Date(dateB).getTime() - new Date(dateA).getTime()
+      })
+      .slice(0, 3)
+      .map((item: any) => ({
+        name: item.display_name,
+        indicativePrice:
+          item.price_quotes?.[0]?.unit_price_ex_vat ??
+          item.price_quotes?.[0]?.pack_price ??
+          0,
+        unit: item.pack_unit_id || null
+      }))
+
+    return {
+      id: supplier.id,
+      name: supplier.name,
+      categories,
+      sampleProducts,
+      status: 'available',
+      description: supplier.website
+    }
+  })
+}
 
 export default function Discovery() {
   const [searchTerm, setSearchTerm] = useState('')
-  const [requestedSuppliers, setRequestedSuppliers] = useState<Set<string>>(new Set(['sup-new-2']))
+  const [requestedSuppliers, setRequestedSuppliers] = useState<Set<string>>(new Set())
+  const { data: suppliers = [], isLoading } = useQuery({
+    queryKey: ['discovery-suppliers'],
+    queryFn: fetchSuppliers
+  })
 
   const requestAccess = (supplierId: string, supplierName: string) => {
     setRequestedSuppliers(prev => new Set([...prev, supplierId]))
@@ -81,10 +104,10 @@ export default function Discovery() {
     }).format(price)
   }
 
-  const filteredSuppliers = mockSuppliers.filter(supplier =>
+  const filteredSuppliers = suppliers.filter(supplier =>
     supplier.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     supplier.categories.some(cat => cat.toLowerCase().includes(searchTerm.toLowerCase())) ||
-    supplier.description.toLowerCase().includes(searchTerm.toLowerCase())
+    (supplier.description || '').toLowerCase().includes(searchTerm.toLowerCase())
   )
 
   const getStatusIcon = (status: string) => {
@@ -144,7 +167,12 @@ export default function Discovery() {
 
       {/* Suppliers Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredSuppliers.map(supplier => {
+        {isLoading && (
+          <div className="col-span-full text-center text-muted-foreground py-8">
+            Loading suppliers...
+          </div>
+        )}
+        {!isLoading && filteredSuppliers.map(supplier => {
           const isRequested = requestedSuppliers.has(supplier.id)
           const status = isRequested ? 'requested' : supplier.status
 
@@ -221,7 +249,7 @@ export default function Discovery() {
         })}
       </div>
 
-      {filteredSuppliers.length === 0 && (
+      {!isLoading && filteredSuppliers.length === 0 && (
         <Card className="p-8 text-center">
           <Search className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
           <h3 className="text-lg font-medium mb-2">No suppliers found</h3>
