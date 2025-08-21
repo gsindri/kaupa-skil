@@ -179,19 +179,3 @@ INSERT INTO public.zones (name, country_code, postal_codes, base_delivery_fee) V
   ('Reykjavik Metro', 'IS', ARRAY['101', '102', '103', '104', '105', '107', '108', '109', '110', '111', '112', '113', '116', '121', '125', '127', '128', '129', '130', '132', '150', '155', '170', '172', '190', '200', '201', '202', '203', '210', '212', '225', '270'], 1500),
   ('Iceland - Other', 'IS', ARRAY[], 3500)
 ON CONFLICT DO NOTHING;
-
--- Insert some sample delivery rules (you can customize these)
-INSERT INTO public.delivery_rules (supplier_id, zone, free_threshold_ex_vat, flat_fee, fuel_surcharge_pct, delivery_days) 
-SELECT 
-  s.id,
-  'default',
-  50000, -- ISK 50,000 threshold
-  2500,  -- ISK 2,500 flat fee
-  5.0,   -- 5% fuel surcharge
-  ARRAY[1,2,3,4,5] -- Monday to Friday
-FROM public.suppliers s
-WHERE NOT EXISTS (
-  SELECT 1 FROM public.delivery_rules dr 
-  WHERE dr.supplier_id = s.id
-)
-LIMIT 3; -- Just add rules for first 3 suppliers if any exist

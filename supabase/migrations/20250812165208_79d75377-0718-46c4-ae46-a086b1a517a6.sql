@@ -290,23 +290,10 @@ INSERT INTO public.units (code, name, base_unit, conversion_factor) VALUES
     ('pack', 'Pack', 'each', 1.0),
     ('case', 'Case', 'each', 1.0);
 
-INSERT INTO public.categories (name, vat_code) VALUES
-    ('Food & Beverages', 'standard'),
-    ('Dairy Products', 'standard'),
-    ('Meat & Seafood', 'standard'),
-    ('Vegetables & Fruits', 'reduced'),
-    ('Cleaning Supplies', 'standard'),
-    ('Kitchen Equipment', 'standard');
-
 INSERT INTO public.vat_rules (code, rate) VALUES
     ('standard', 0.24),
     ('reduced', 0.11),
     ('zero', 0.00);
-
-INSERT INTO public.suppliers (name, contact_email, ordering_email, connector_type) VALUES
-    ('Véfkaupmenn', 'contact@vefkaupmenn.is', 'orders@vefkaupmenn.is', 'portal'),
-    ('Heilsuhúsið', 'contact@heilsukhusid.is', 'orders@heilsukhusid.is', 'email'),
-    ('Matfuglinn', 'contact@matfuglinn.is', 'orders@matfuglinn.is', 'portal');
 
 -- Create function to handle new user signup
 CREATE OR REPLACE FUNCTION public.handle_new_user()

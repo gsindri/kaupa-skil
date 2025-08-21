@@ -127,12 +127,14 @@ npm run preview      # Preview production build
 
 ## 📊 Sample Data
 
-The application includes realistic sample data for Icelandic wholesale scenarios:
+Database migrations no longer seed demo suppliers, categories or delivery rules. To load the optional development data:
 
-- **Suppliers**: Véfkaupmenn, Heilsuhúsið, Matfuglinn
-- **Products**: Local and imported goods with proper VAT categorization
-- **Price Ranges**: Realistic ISK pricing for wholesale quantities
-- **Pack Sizes**: Common wholesale packaging (500ml, 1kg, etc.)
+```bash
+supabase db reset
+DEV_SAMPLE_DATA=true supabase db seed --file supabase/seed/dev_seed.sql
+```
+
+The `DEV_SAMPLE_DATA` flag ensures the sample dataset is only loaded for local development.
 
 ## 🔒 Security & Compliance
 
