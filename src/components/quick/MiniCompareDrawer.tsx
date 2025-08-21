@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   Drawer,
   DrawerContent,
@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { X, TrendingUp, Truck, Clock, AlertCircle } from 'lucide-react';
 import { useSettings } from '@/contexts/useSettings';
 import { useCart } from '@/contexts/useBasket';
+import { lockBody, unlockBody } from '@/lib/lockBody';
 
 interface MiniCompareDrawerProps {
   itemId: string | null;
@@ -76,6 +77,14 @@ const mockSupplierOptions = [
 export function MiniCompareDrawer({ itemId, isOpen, onClose }: MiniCompareDrawerProps) {
   const { includeVat } = useSettings();
   const { addItem } = useCart();
+
+  useEffect(() => {
+    if (isOpen) {
+      lockBody();
+    } else {
+      unlockBody();
+    }
+  }, [isOpen]);
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('is-IS', {

@@ -3,8 +3,36 @@ import * as DialogPrimitive from "@radix-ui/react-dialog"
 import { X } from "lucide-react"
 
 import { cn } from "@/lib/utils"
+import { lockBody, unlockBody } from "@/lib/lockBody"
+const Dialog = ({
+  open,
+  onOpenChange,
+  ...props
+}: React.ComponentProps<typeof DialogPrimitive.Root>) => {
+  React.useEffect(() => {
+    if (open) {
+      lockBody()
+    } else {
+      unlockBody()
+    }
+  }, [open])
 
-const Dialog = DialogPrimitive.Root
+  return (
+    <DialogPrimitive.Root
+      open={open}
+      onOpenChange={o => {
+        if (o) {
+          lockBody()
+        } else {
+          unlockBody()
+        }
+        onOpenChange?.(o)
+      }}
+      {...props}
+    />
+  )
+}
+Dialog.displayName = "Dialog"
 
 const DialogTrigger = DialogPrimitive.Trigger
 

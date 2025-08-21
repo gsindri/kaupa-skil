@@ -3,8 +3,37 @@ import * as AlertDialogPrimitive from "@radix-ui/react-alert-dialog"
 
 import { cn } from "@/lib/utils"
 import { buttonVariants } from "@/components/ui/button-variants"
+import { lockBody, unlockBody } from "@/lib/lockBody"
 
-const AlertDialog = AlertDialogPrimitive.Root
+const AlertDialog = ({
+  open,
+  onOpenChange,
+  ...props
+}: React.ComponentProps<typeof AlertDialogPrimitive.Root>) => {
+  React.useEffect(() => {
+    if (open) {
+      lockBody()
+    } else {
+      unlockBody()
+    }
+  }, [open])
+
+  return (
+    <AlertDialogPrimitive.Root
+      open={open}
+      onOpenChange={o => {
+        if (o) {
+          lockBody()
+        } else {
+          unlockBody()
+        }
+        onOpenChange?.(o)
+      }}
+      {...props}
+    />
+  )
+}
+AlertDialog.displayName = "AlertDialog"
 
 const AlertDialogTrigger = AlertDialogPrimitive.Trigger
 

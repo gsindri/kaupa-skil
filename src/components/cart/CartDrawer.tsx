@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import React, { useRef, useEffect } from 'react'
 import {
   Drawer,
   DrawerContent,
@@ -27,6 +27,7 @@ import { ToastAction } from '@/components/ui/toast'
 import { useCart } from '@/contexts/useBasket'
 import { useSettings } from '@/contexts/useSettings'
 import { Link } from 'react-router-dom'
+import { lockBody, unlockBody } from '@/lib/lockBody'
 
 export function CartDrawer() {
   const {
@@ -41,6 +42,14 @@ export function CartDrawer() {
   } = useCart()
   const { includeVat, setIncludeVat } = useSettings()
   const lastItems = useRef(items)
+
+  useEffect(() => {
+    if (isDrawerOpen) {
+      lockBody()
+    } else {
+      unlockBody()
+    }
+  }, [isDrawerOpen])
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('is-IS', {

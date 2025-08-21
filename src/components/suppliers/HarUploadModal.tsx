@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { X, Upload, FileText } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -7,6 +7,7 @@ import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
 import { useHarProcessor } from '@/hooks/useHarProcessor'
 import { HarProcessingPreview } from './HarProcessingPreview'
+import { lockBody, unlockBody } from '@/lib/lockBody'
 
 interface HarUploadModalProps {
   open: boolean
@@ -27,6 +28,14 @@ export function HarUploadModal({
   const [uploadStep, setUploadStep] = useState<'select' | 'preview' | 'uploading'>('select')
   const { toast } = useToast()
   const harProcessor = useHarProcessor()
+
+  useEffect(() => {
+    if (open) {
+      lockBody()
+    } else {
+      unlockBody()
+    }
+  }, [open])
 
   if (!open) return null
 
@@ -129,6 +138,7 @@ export function HarUploadModal({
     setUploadStep('select')
     setBusy(false)
     onClose()
+    unlockBody()
   }
 
   return (
