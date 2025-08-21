@@ -21,6 +21,11 @@ export const queryKeys = {
     list: () => ['categories', 'list'] as const,
     detail: (categoryId: string) => ['category', categoryId] as const,
   },
+
+  // Product queries
+  products: {
+    list: (filters?: any) => ['products', filters] as const,
+  },
   
   // Supplier related queries
   suppliers: {
