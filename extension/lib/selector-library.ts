@@ -10,7 +10,9 @@ const SELECTORS = [
   '[itemprop="price"]',
   '.price .amount',
   '.product-price',
+  '.product-price',
   '.price',
+  '.price .amount',
   '.price__current'
 ];
 
