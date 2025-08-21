@@ -48,7 +48,11 @@ export function inferVatFlag(text: string): 'incl' | 'excl' | 'unknown' {
   return 'unknown';
 }
 
-export function normalize(raw: RawPrice & { url: string }, source: 'network' | 'dom'): PricePayload {
+interface RawPriceWithUrl extends RawPrice {
+  url: string;
+}
+
+export function normalize(raw: RawPriceWithUrl, source: 'network' | 'dom'): PricePayload {
   const priceDisplay = parsePrice(raw.priceText);
   const currency = raw.currencyText || parseCurrencySymbol(raw.priceText) || undefined;
   const packInfo = raw.packText ? parsePack(raw.packText) : undefined;
