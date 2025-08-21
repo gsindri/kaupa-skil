@@ -19,7 +19,26 @@ jobs:
           node-version: 18
           cache: 'pnpm'
       - run: pnpm install
+
+      # Cache Playwright browser binaries to avoid re-downloading every run
+      - name: Cache Playwright browsers
+        id: cache-playwright
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-
+
+      # Only install system deps (apt) when cache is cold
+      - name: Install Playwright system deps (cache miss only)
+        if: steps.cache-playwright.outputs.cache-hit != 'true'
+        run: npx playwright install-deps
+
+      # Ensure browsers are present (fast on cache hit)
+      - name: Install Playwright browsers
+        run: npx playwright install
+
       - run: pnpm lint
       - run: pnpm test
-      - run: npx playwright install --with-deps
-      - run: npx playwright test
+      - run: pnpm test:e2e
