@@ -93,7 +93,16 @@ async function runSync(url?: string, tabId?: number): Promise<PricePayload | nul
   try {
     await chrome.scripting.executeScript({ target: { tabId }, files: ['content/inject-fetch-hook.js'], world: 'MAIN' });
   } catch (e) {
+    const injectionResults = await chrome.scripting.executeScript({ target: { tabId }, files: ['content/inject-fetch-hook.js'], world: 'MAIN' });
+    if (!injectionResults || injectionResults.length === 0) {
+      log('bg', 'executeScript', 'Script injection failed or injected into no frames');
+      if (createdId) await chrome.tabs.remove(createdId);
+      return null;
+    }
+  } catch (e) {
     log('bg', 'executeScript', e);
+    if (createdId) await chrome.tabs.remove(createdId);
+    return null;
   }
 
   chrome.tabs.sendMessage(tabId, { type: MsgType.BEGIN_CAPTURE }, undefined, () => checkErr('tabs.sendMessage'));
