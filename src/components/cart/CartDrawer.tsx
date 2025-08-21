@@ -21,7 +21,7 @@ import {
   AlertDialogAction,
 } from '@/components/ui/alert-dialog'
 import { Badge } from '@/components/ui/badge'
-import { ShoppingCart, X, Trash2 } from 'lucide-react'
+import { ShoppingCart, Trash2 } from 'lucide-react'
 import { toast } from '@/hooks/use-toast'
 import { ToastAction } from '@/components/ui/toast'
 import { useCart } from '@/contexts/useBasket'
@@ -96,7 +96,11 @@ export function CartDrawer() {
                 Your Cart
               </DrawerTitle>
             </div>
-            <VatToggle includeVat={includeVat} onToggle={setIncludeVat} />
+            <VatToggle
+              includeVat={includeVat}
+              onToggle={setIncludeVat}
+              size="sm"
+            />
 
             <div
               className="text-sm text-muted-foreground"
@@ -113,12 +117,12 @@ export function CartDrawer() {
                   className="justify-self-end text-sm text-muted-foreground"
                 >
                   <Trash2 className="h-4 w-4 mr-1" />
-                  Clear cart
+                  Clear Cart
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Clear cart?</AlertDialogTitle>
+                  <AlertDialogTitle>Clear Cart?</AlertDialogTitle>
                   <AlertDialogDescription>
                     This will remove all items from your cart.
                   </AlertDialogDescription>
@@ -132,14 +136,7 @@ export function CartDrawer() {
               </AlertDialogContent>
             </AlertDialog>
 
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsDrawerOpen(false)}
-              className="absolute top-4 right-4 h-8 w-8 text-muted-foreground"
-            >
-              <X className="h-4 w-4" />
-            </Button>
+            {/* Close button removed as requested */}
           </DrawerHeader>
           <Separator className="opacity-10" />
 
@@ -154,7 +151,7 @@ export function CartDrawer() {
                   Your cart is empty.
                 </p>
                 <Button asChild>
-                  <Link to="/">Browse catalog</Link>
+                  <Link to="/">Place Order</Link>
                 </Button>
               </div>
             ) : (
