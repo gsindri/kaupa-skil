@@ -1,0 +1,98 @@
+# Page snapshot
+
+```yaml
+- navigation "Primary":
+  - link "Heilda":
+    - /url: /
+    - img "Heilda"
+  - list:
+    - listitem:
+      - link "Place Order":
+        - /url: /quick-order
+        - img
+        - text: Place Order
+    - listitem:
+      - link "Basket":
+        - /url: /basket
+        - img
+        - text: Basket
+    - listitem:
+      - link "Compare":
+        - /url: /compare
+        - img
+        - text: Compare
+    - listitem:
+      - link "Suppliers":
+        - /url: /suppliers
+        - img
+        - text: Suppliers
+  - list:
+    - listitem:
+      - link "Pantry":
+        - /url: /pantry
+        - img
+        - text: Pantry
+    - listitem:
+      - link "Price History":
+        - /url: /price-history
+        - img
+        - text: Price History
+    - listitem:
+      - link "Discovery":
+        - /url: /discovery
+        - img
+        - text: Discovery
+  - text: Administration
+  - list:
+    - listitem:
+      - link "Admin":
+        - /url: /admin
+        - img
+        - text: Admin
+  - text: Welcome, testtest
+- button "No Organization":
+  - text: No Organization
+  - img
+- button "Ex VAT"
+- button "Inc VAT"
+- button "Help":
+  - img
+  - text: Help
+- button "T testtest":
+  - text: T testtest
+  - img
+- main:
+  - main:
+    - img "Heilda"
+    - button "Menu":
+      - img
+      - text: Menu
+    - button "Cart 0":
+      - img
+      - text: Cart 0
+    - button "t testtest"
+    - img
+    - textbox "Search items...": test
+    - button:
+      - img
+    - text: No items found
+    - button "Filters":
+      - img
+      - text: Filters
+      - img
+    - combobox: Name
+    - combobox: ↑
+    - paragraph: No items found matching your criteria.
+  - complementary:
+    - img
+    - paragraph: Your cart is empty
+    - img
+    - heading "Create Order Guides" [level=3]
+    - paragraph: Save time with custom order templates
+    - button "Setup":
+      - text: Setup
+      - img
+- region "Notifications alt+T"
+- button "Open Tanstack query devtools":
+  - img
+```
