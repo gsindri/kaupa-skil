@@ -4,9 +4,7 @@ import {
   ChevronDown,
   House,
   LogIn,
-  Plus,
-  Star,
-  StarOff
+  Plus
 } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
@@ -26,6 +24,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { useAuth } from '@/contexts/useAuth'
 import { supabase } from '@/integrations/supabase/client'
+import { cn } from '@/lib/utils'
 
 type Membership = {
   id: string
@@ -46,15 +45,7 @@ export function TenantSwitcher() {
   const { profile, user } = useAuth()
   const navigate = useNavigate()
 
-  // Local state for popover and pinned orgs
   const [open, setOpen] = React.useState(false)
-  const [pinned, setPinned] = React.useState<string[]>(() => {
-    try {
-      return JSON.parse(localStorage.getItem('pinned-tenants') || '[]')
-    } catch {
-      return []
-    }
-  })
 
   // Load memberships
   const { data: userMemberships = [] } = useQuery<Membership[]>({
@@ -81,28 +72,6 @@ export function TenantSwitcher() {
   )?.tenant
 
   const displayName = currentTenant?.name || 'Personal workspace'
-
-  const sortedMemberships = React.useMemo(() => {
-    const items = [...userMemberships]
-    items.sort((a, b) => {
-      const aPinned = a.tenant && pinned.includes(a.tenant.id)
-      const bPinned = b.tenant && pinned.includes(b.tenant.id)
-      if (aPinned && !bPinned) return -1
-      if (!aPinned && bPinned) return 1
-      return 0
-    })
-    return items
-  }, [userMemberships, pinned])
-
-  const togglePin = (tenantId: string) => {
-    setPinned((prev) => {
-      const next = prev.includes(tenantId)
-        ? prev.filter((id) => id !== tenantId)
-        : [...prev, tenantId]
-      localStorage.setItem('pinned-tenants', JSON.stringify(next))
-      return next
-    })
-  }
 
   const handleTenantSwitch = async (tenantId: string | null) => {
     if (!user?.id) return
@@ -147,32 +116,42 @@ export function TenantSwitcher() {
           <ChevronDown className="h-4 w-4 shrink-0" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-72 p-0">
+      <PopoverContent className="w-[270px] p-2">
         <Command>
-          <CommandInput placeholder="Search organizations..." />
+          <CommandInput
+            placeholder="Search workspaces..."
+            className="h-9"
+          />
           <CommandList>
-            <CommandEmpty>No organizations found.</CommandEmpty>
-            <CommandGroup heading="Workspaces" className="px-1 py-2">
+            <CommandEmpty>No workspaces found.</CommandEmpty>
+            <CommandGroup
+              heading="Workspaces"
+              className="px-0 [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:pb-1 [&_[cmdk-group-heading]]:pt-2 [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-wide"
+            >
               <CommandItem
                 value="personal"
                 onSelect={() => {
                   handleTenantSwitch(null)
                   setOpen(false)
                 }}
-                className="group flex items-center gap-2 px-2 py-2"
+                className="group grid grid-cols-[24px,1fr,auto,16px] items-center gap-2 rounded-lg px-2 h-9 text-sm text-foreground/80 hover:bg-muted hover:text-foreground data-[selected=true]:bg-[hsl(var(--ws-item-bg-selected))] data-[selected=true]:text-[hsl(var(--ws-item-fg-selected))]"
               >
-                <House className="h-4 w-4" />
-                <span className="flex-1 truncate" title="Personal workspace">
+                <House className="h-5 w-5" />
+                <span className="truncate" title="Personal workspace">
                   Personal workspace
                 </span>
-                {!profile?.tenant_id && (
-                  <Check className="h-4 w-4" />
-                )}
+                <span className="justify-self-end" />
+                <Check
+                  className={cn(
+                    'h-4 w-4 justify-self-end opacity-0 group-data-[selected=true]:opacity-100',
+                    { 'opacity-100': !profile?.tenant_id }
+                  )}
+                />
               </CommandItem>
-              {sortedMemberships.map((membership) => {
+              {userMemberships.map((membership) => {
                 const tenant = membership.tenant
                 if (!tenant) return null
-                const pinnedTenant = pinned.includes(tenant.id)
+                const isCurrent = tenant.id === profile?.tenant_id
                 return (
                   <CommandItem
                     key={membership.id}
@@ -181,68 +160,54 @@ export function TenantSwitcher() {
                       handleTenantSwitch(tenant.id)
                       setOpen(false)
                     }}
-                    className="group flex items-center gap-2 px-2 py-2"
+                    className="group grid grid-cols-[24px,1fr,auto,16px] items-center gap-2 rounded-lg px-2 h-9 text-sm text-foreground/80 hover:bg-muted hover:text-foreground data-[selected=true]:bg-[hsl(var(--ws-item-bg-selected))] data-[selected=true]:text-[hsl(var(--ws-item-fg-selected))]"
                   >
                     <Avatar className="h-6 w-6">
-                      <AvatarFallback>
-                        {getInitials(tenant.name)}
-                      </AvatarFallback>
+                      <AvatarFallback>{getInitials(tenant.name)}</AvatarFallback>
                     </Avatar>
-                    <span
-                      className="flex-1 truncate text-left"
-                      title={tenant.name}
-                    >
+                    <span className="truncate text-left" title={tenant.name}>
                       {tenant.name}
                     </span>
                     <Badge
                       variant={roleBadgeVariant(membership.base_role)}
-                      className="capitalize"
+                      className="justify-self-end whitespace-nowrap capitalize"
                     >
                       {membership.base_role}
                     </Badge>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="ml-1 h-6 w-6 opacity-0 group-hover:opacity-100"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        togglePin(tenant.id)
-                      }}
-                    >
-                      {pinnedTenant ? (
-                        <Star className="h-4 w-4 fill-current" />
-                      ) : (
-                        <StarOff className="h-4 w-4" />
+                    <Check
+                      className={cn(
+                        'h-4 w-4 justify-self-end opacity-0 group-data-[selected=true]:opacity-100',
+                        { 'opacity-100': isCurrent }
                       )}
-                    </Button>
-                    {tenant.id === profile?.tenant_id && (
-                      <Check className="ml-1 h-4 w-4" />
-                    )}
+                    />
                   </CommandItem>
                 )
               })}
             </CommandGroup>
             <CommandSeparator />
-            <CommandGroup heading="Actions" className="px-1 py-2">
+            <CommandGroup
+              heading="Actions"
+              className="px-0 [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:pb-1 [&_[cmdk-group-heading]]:pt-2 [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-wide"
+            >
               <CommandItem
                 onSelect={() => {
                   navigate('/settings/organization/create')
                   setOpen(false)
                 }}
-                className="flex items-center gap-2 px-2 py-2"
+                className="group grid grid-cols-[24px,1fr] items-center gap-2 rounded-lg px-2 h-9 text-sm text-foreground/80 hover:bg-muted hover:text-foreground"
               >
-                <Plus className="h-4 w-4" />
-                Create organization
+                <Plus className="h-5 w-5" />
+                <span>Create workspace</span>
               </CommandItem>
               <CommandItem
                 onSelect={() => {
                   navigate('/settings/organization/join')
                   setOpen(false)
                 }}
-                className="flex items-center gap-2 px-2 py-2"
+                className="group grid grid-cols-[24px,1fr] items-center gap-2 rounded-lg px-2 h-9 text-sm text-foreground/80 hover:bg-muted hover:text-foreground"
               >
-                <LogIn className="h-4 w-4" />
-                Join organization
+                <LogIn className="h-5 w-5" />
+                <span>Join workspace</span>
               </CommandItem>
             </CommandGroup>
           </CommandList>
