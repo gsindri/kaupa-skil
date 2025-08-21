@@ -5,16 +5,10 @@ import { SupplierFilter } from '@/components/place-order/SupplierFilter'
 import { CatalogFilters } from '@/components/place-order/CatalogFilters'
 import { SortControl } from '@/components/place-order/SortControl'
 import { ViewToggle } from '@/components/place-order/ViewToggle'
-import { ProductCard, Product } from '@/components/place-order/ProductCard'
+import { ProductCard } from '@/components/place-order/ProductCard'
+import { useProducts } from '@/hooks/useProducts'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-
-// Temporary mock products to demonstrate catalog behaviour
-const mockProducts: Product[] = [
-  { id: 'p1', name: 'Íslenskt smjör', supplierId: '1', supplierName: 'Vefkaupmenn', pack: '1 kg', price: 1200 },
-  { id: 'p2', name: 'Rúgbrauð', supplierId: '2', supplierName: 'Heilsuhúsið', pack: '1 stk', price: 500 },
-  { id: 'p3', name: 'Harðfiskur', supplierId: '1', supplierName: 'Vefkaupmenn', pack: '500 g', price: 1500 }
-]
 
 export default function QuickOrder() {
   const { vendors } = useVendors()
@@ -40,12 +34,9 @@ export default function QuickOrder() {
     })
   }
 
-  const filtered = mockProducts
-    .filter(p => !supplier || p.supplierId === supplier)
-    .filter(p => !category || p.pack.toLowerCase().includes(category.toLowerCase()))
-    .filter(p => !inStock || true)
+  const { data: queryProducts = [], isLoading } = useProducts({ supplier, category, inStock })
 
-  const products = [...filtered].sort((a, b) => {
+  const products = [...queryProducts].sort((a, b) => {
     switch (sort) {
       case 'price':
         return a.price - b.price
@@ -57,7 +48,7 @@ export default function QuickOrder() {
     }
   })
 
-  if (vendors.length === 0) {
+  if (vendors.length === 0 || (!isLoading && products.length === 0)) {
     return (
       <div className="flex h-full items-center justify-center p-4">
         <Card className="max-w-md w-full text-center">
@@ -96,12 +87,7 @@ export default function QuickOrder() {
         <ViewToggle value={view} onChange={(v) => updateParam('view', v)} />
       </div>
 
-      {products.length === 0 ? (
-        <div className="text-center py-20">
-          <p className="mb-4 text-muted-foreground">No items match your filters</p>
-          <Button variant="outline" onClick={() => setSearchParams(new URLSearchParams())}>Clear filters</Button>
-        </div>
-      ) : view === 'grid' ? (
+      {view === 'grid' ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {products.map(p => (
             <ProductCard key={p.id} product={p} />
