@@ -1,24 +1,25 @@
 
 import React from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { TrendingUp, TrendingDown, AlertTriangle, Eye, Archive } from 'lucide-react'
 
+export interface PriceAnomaly {
+  id: string
+  itemName: string
+  supplier: string
+  type: 'spike' | 'drop' | 'volatile'
+  severity: 'low' | 'medium' | 'high'
+  currentPrice: number
+  previousPrice: number
+  changePercent: number
+  detectedAt: string
+  description: string
+}
+
 interface PriceAnomalyAlertProps {
-  anomaly: {
-    id: string
-    itemName: string
-    supplier: string
-    type: 'spike' | 'drop' | 'volatile'
-    severity: 'low' | 'medium' | 'high'
-    currentPrice: number
-    previousPrice: number
-    changePercent: number
-    detectedAt: string
-    description: string
-  }
+  anomaly: PriceAnomaly
   onView: (id: string) => void
   onDismiss: (id: string) => void
 }
