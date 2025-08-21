@@ -5,46 +5,27 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { LineChart, Line, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts'
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
 import { TrendingUp, TrendingDown, DollarSign, Package, AlertTriangle, Target } from 'lucide-react'
-
-interface AnalyticsData {
-  priceChanges: Array<{
-    date: string
-    avgChange: number
-    totalItems: number
-  }>
-  supplierPerformance: Array<{
-    supplier: string
-    avgPrice: number
-    priceStability: number
-    stockLevel: number
-  }>
-  categoryTrends: Array<{
-    category: string
-    avgPrice: number
-    changePercent: number
-    itemCount: number
-  }>
-  savingsOpportunities: Array<{
-    item: string
-    currentSupplier: string
-    bestSupplier: string
-    potentialSaving: number
-    confidence: number
-  }>
-}
+import type { PriceAnalyticsData } from '@/hooks/usePriceAnalytics'
 
 interface PriceAnalyticsDashboardProps {
-  data: AnalyticsData
+  data?: PriceAnalyticsData
 }
 
 export function PriceAnalyticsDashboard({ data }: PriceAnalyticsDashboardProps) {
+  const resolvedData: PriceAnalyticsData = data || {
+    priceChanges: [],
+    supplierPerformance: [],
+    categoryTrends: [],
+    savingsOpportunities: [],
+  }
+
   const kpiData = useMemo(() => {
-    const totalPotentialSavings = data.savingsOpportunities.reduce((sum, opp) => sum + opp.potentialSaving, 0)
-    const avgPriceChange = data.priceChanges.length > 0 
-      ? data.priceChanges[data.priceChanges.length - 1]?.avgChange || 0 
+    const totalPotentialSavings = resolvedData.savingsOpportunities.reduce((sum, opp) => sum + opp.potentialSaving, 0)
+    const avgPriceChange = resolvedData.priceChanges.length > 0
+      ? resolvedData.priceChanges[resolvedData.priceChanges.length - 1]?.avgChange || 0
       : 0
-    const totalTrackedItems = data.categoryTrends.reduce((sum, cat) => sum + cat.itemCount, 0)
-    const highConfidenceOpportunities = data.savingsOpportunities.filter(opp => opp.confidence > 80).length
+    const totalTrackedItems = resolvedData.categoryTrends.reduce((sum, cat) => sum + cat.itemCount, 0)
+    const highConfidenceOpportunities = resolvedData.savingsOpportunities.filter(opp => opp.confidence > 80).length
 
     return {
       totalPotentialSavings,
@@ -52,7 +33,21 @@ export function PriceAnalyticsDashboard({ data }: PriceAnalyticsDashboardProps) 
       totalTrackedItems,
       highConfidenceOpportunities
     }
-  }, [data])
+  }, [resolvedData])
+
+  const isEmpty =
+    resolvedData.priceChanges.length === 0 &&
+    resolvedData.supplierPerformance.length === 0 &&
+    resolvedData.categoryTrends.length === 0 &&
+    resolvedData.savingsOpportunities.length === 0
+
+  if (isEmpty) {
+    return (
+      <div className="text-center py-12 text-muted-foreground">
+        No pricing analytics available yet. Connect suppliers to start tracking price trends.
+      </div>
+    )
+  }
 
   const chartConfig = {
     avgChange: {
@@ -193,7 +188,7 @@ export function PriceAnalyticsDashboard({ data }: PriceAnalyticsDashboardProps) 
             <CardContent>
               <ChartContainer config={chartConfig} className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={data.priceChanges}>
+                  <AreaChart data={resolvedData.priceChanges}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="date" />
                     <YAxis />
@@ -220,7 +215,7 @@ export function PriceAnalyticsDashboard({ data }: PriceAnalyticsDashboardProps) 
             <CardContent>
               <ChartContainer config={chartConfig} className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={data.supplierPerformance} layout="horizontal">
+                  <BarChart data={resolvedData.supplierPerformance} layout="horizontal">
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis type="number" />
                     <YAxis dataKey="supplier" type="category" width={100} />
@@ -240,7 +235,7 @@ export function PriceAnalyticsDashboard({ data }: PriceAnalyticsDashboardProps) 
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {data.categoryTrends.map((category, index) => (
+                {resolvedData.categoryTrends.map((category, index) => (
                   <div key={category.category} className="flex items-center justify-between p-4 border rounded-lg">
                     <div className="flex-1">
                       <div className="font-medium">{category.category}</div>
@@ -274,7 +269,7 @@ export function PriceAnalyticsDashboard({ data }: PriceAnalyticsDashboardProps) 
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {data.savingsOpportunities.map((opportunity, index) => (
+                {resolvedData.savingsOpportunities.map((opportunity, index) => (
                   <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
                     <div className="flex-1">
                       <div className="font-medium">{opportunity.item}</div>
