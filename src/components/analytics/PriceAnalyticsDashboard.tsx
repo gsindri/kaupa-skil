@@ -12,12 +12,16 @@ interface PriceAnalyticsDashboardProps {
 }
 
 export function PriceAnalyticsDashboard({ data }: PriceAnalyticsDashboardProps) {
-  const resolvedData: PriceAnalyticsData = data || {
-    priceChanges: [],
-    supplierPerformance: [],
-    categoryTrends: [],
-    savingsOpportunities: [],
-  }
+  const resolvedData = useMemo<PriceAnalyticsData>(() => {
+    return (
+      data || {
+        priceChanges: [],
+        supplierPerformance: [],
+        categoryTrends: [],
+        savingsOpportunities: [],
+      }
+    )
+  }, [data])
 
   const kpiData = useMemo(() => {
     const totalPotentialSavings = resolvedData.savingsOpportunities.reduce((sum, opp) => sum + opp.potentialSaving, 0)

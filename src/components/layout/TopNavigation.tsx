@@ -92,7 +92,7 @@ export function TopNavigation() {
           aria-controls="app-sidebar"
           aria-expanded={sidebarOpen}
           onClick={toggleSidebar}
-          className="flex-shrink-0 active:translate-y-[1px]"
+          className="flex-shrink-0"
         >
           <span aria-hidden>☰</span>
         </Button>
@@ -126,7 +126,7 @@ export function TopNavigation() {
               <Button
                 variant="ghost"
                 size="sm"
-                className="flex-shrink-0 active:translate-y-[1px]"
+                className="flex-shrink-0"
               >
                 <HelpCircle className="h-5 w-5" />
                 <span className="hidden sm:inline ml-2">Help</span>
@@ -144,7 +144,7 @@ export function TopNavigation() {
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
-                className="flex items-center space-x-2 flex-shrink-0 active:translate-y-[1px]"
+                className="flex items-center space-x-2 flex-shrink-0"
                 disabled={isBusy}
               >
                 <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
