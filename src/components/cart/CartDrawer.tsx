@@ -151,7 +151,12 @@ export function CartDrawer() {
                   Your cart is empty.
                 </p>
                 <Button asChild>
-                  <Link to="/quick-order">Place Order</Link>
+                  <Link
+                    to="/quick-order"
+                    onClick={() => setIsDrawerOpen(false)}
+                  >
+                    Place Order
+                  </Link>
                 </Button>
               </div>
             ) : (
