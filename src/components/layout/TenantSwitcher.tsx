@@ -134,7 +134,14 @@ export function TenantSwitcher() {
                   handleTenantSwitch(null)
                   setOpen(false)
                 }}
-                className="group grid grid-cols-[24px,1fr,auto,16px] items-center gap-2 rounded-lg px-2 h-9 text-sm text-foreground/80 hover:bg-muted hover:text-foreground data-[selected=true]:bg-[hsl(var(--ws-item-bg-selected))] data-[selected=true]:text-[hsl(var(--ws-item-fg-selected))]"
+                className={cn(
+                  'relative grid grid-cols-[24px,1fr,auto,16px] items-center gap-2 rounded-md px-2 py-2 h-9 border cursor-pointer text-sm transition-[background-color,border-color,box-shadow] duration-150 ease-in-out motion-reduce:transition-none',
+                  !profile?.tenant_id
+                    ? 'border-2 border-brand-600 text-foreground before:absolute before:left-0 before:top-0 before:bottom-0 before:w-0.5 before:bg-brand-600'
+                    : 'border border-transparent text-foreground/80 hover:border-border hover:bg-foreground/5 hover:text-foreground',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2',
+                  'data-[selected=true]:border-brand-700 data-[selected=true]:bg-foreground/10'
+                )}
               >
                 <House className="h-5 w-5" />
                 <span className="truncate" title="Personal workspace">
@@ -143,8 +150,8 @@ export function TenantSwitcher() {
                 <span className="justify-self-end" />
                 <Check
                   className={cn(
-                    'h-4 w-4 justify-self-end opacity-0 group-data-[selected=true]:opacity-100',
-                    { 'opacity-100': !profile?.tenant_id }
+                    'h-4 w-4 justify-self-end text-brand-600 transition-opacity duration-150',
+                    !profile?.tenant_id ? 'opacity-100' : 'opacity-0'
                   )}
                 />
               </CommandItem>
@@ -160,9 +167,16 @@ export function TenantSwitcher() {
                       handleTenantSwitch(tenant.id)
                       setOpen(false)
                     }}
-                    className="group grid grid-cols-[24px,1fr,auto,16px] items-center gap-2 rounded-lg px-2 h-9 text-sm text-foreground/80 hover:bg-muted hover:text-foreground data-[selected=true]:bg-[hsl(var(--ws-item-bg-selected))] data-[selected=true]:text-[hsl(var(--ws-item-fg-selected))]"
+                    className={cn(
+                      'relative grid grid-cols-[24px,1fr,auto,16px] items-center gap-2 rounded-md px-2 py-2 h-9 border cursor-pointer text-sm transition-[background-color,border-color,box-shadow] duration-150 ease-in-out motion-reduce:transition-none',
+                      isCurrent
+                        ? 'border-2 border-brand-600 text-foreground before:absolute before:left-0 before:top-0 before:bottom-0 before:w-0.5 before:bg-brand-600'
+                        : 'border border-transparent text-foreground/80 hover:border-border hover:bg-foreground/5 hover:text-foreground',
+                      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2',
+                      'data-[selected=true]:border-brand-700 data-[selected=true]:bg-foreground/10'
+                    )}
                   >
-                    <Avatar className="h-6 w-6">
+                    <Avatar className="h-6 w-6 text-foreground/80">
                       <AvatarFallback>{getInitials(tenant.name)}</AvatarFallback>
                     </Avatar>
                     <span className="truncate text-left" title={tenant.name}>
@@ -176,8 +190,8 @@ export function TenantSwitcher() {
                     </Badge>
                     <Check
                       className={cn(
-                        'h-4 w-4 justify-self-end opacity-0 group-data-[selected=true]:opacity-100',
-                        { 'opacity-100': isCurrent }
+                        'h-4 w-4 justify-self-end text-brand-600 transition-opacity duration-150',
+                        isCurrent ? 'opacity-100' : 'opacity-0'
                       )}
                     />
                   </CommandItem>
