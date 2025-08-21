@@ -7,6 +7,8 @@ function log(scope: string, ...args: any[]) {
   console.log(new Date().toISOString(), `[${scope}]`, ...args);
 }
 
+log('bg', 'loaded', version);
+
 function checkErr(scope: string) {
   const err = chrome.runtime.lastError;
   if (err) log('bg', scope, err.message);
@@ -34,7 +36,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   switch (msg.type) {
     case MsgType.PING:
       sendResponse({ ok: true, where: 'bg', version });
-      break;
+      return true;
     case MsgType.REQUEST_ORIGIN_PERMISSION:
       ensureOriginPermission(msg.origin)
         .then(granted => sendResponse({ granted }))
