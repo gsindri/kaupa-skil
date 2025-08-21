@@ -1,6 +1,7 @@
 import React from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
 import { useVendors } from '@/hooks/useVendors'
+import { useCategories } from '@/hooks/useCategories'
 import { SupplierFilter } from '@/components/place-order/SupplierFilter'
 import { CatalogFilters } from '@/components/place-order/CatalogFilters'
 import { SortControl } from '@/components/place-order/SortControl'
@@ -12,6 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 export default function QuickOrder() {
   const { vendors } = useVendors()
+  const { data: categories = [] } = useCategories()
   const [searchParams, setSearchParams] = useSearchParams()
 
   const supplier = searchParams.get('supplier') ?? ''
@@ -78,7 +80,7 @@ export default function QuickOrder() {
         />
         <CatalogFilters
           category={category}
-          categories={['Bakery', 'Dairy', 'Seafood']}
+          categories={categories.map(c => c.name)}
           inStock={inStock}
           onCategoryChange={(v) => updateParam('category', v)}
           onInStockChange={(v) => updateParam('stock', v)}
