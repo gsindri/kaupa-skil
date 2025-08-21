@@ -1,44 +1,17 @@
 
-import { deliveryCalculator } from '@/services/DeliveryCalculator';
+import { deliveryRules } from '@/services/DeliveryRules'
 
-export interface SupplierRule {
-  supplierId: string;
-  name: string;
-  freeThresholdExVat: number;
-  flatFee: number;
-  cutoff: string;
-  deliveryDays: string[];
-}
+export async function estimateFee(supplierId: string, subtotalExVat: number): Promise<number> {
+  try {
+    const rule = await deliveryRules.getRule(supplierId)
+    if (!rule) return 0
 
-// Mock supplier rules - replace with actual data
-const mockSupplierRules: SupplierRule[] = [
-  {
-    supplierId: 'costco',
-    name: 'Costco',
-    freeThresholdExVat: 25000,
-    flatFee: 2500,
-    cutoff: '14:00',
-    deliveryDays: ['Mon', 'Wed', 'Fri']
-  },
-  {
-    supplierId: 'metro',
-    name: 'Metro',
-    freeThresholdExVat: 30000,
-    flatFee: 3000,
-    cutoff: '12:00',
-    deliveryDays: ['Tue', 'Thu']
+    const threshold = rule.free_threshold_ex_vat
+    return threshold !== null && subtotalExVat >= threshold ? 0 : rule.flat_fee
+  } catch (error) {
+    console.error('Failed to estimate delivery fee:', error)
+    return 0
   }
-];
-
-export function getSupplierRule(supplierId: string): SupplierRule | null {
-  return mockSupplierRules.find(rule => rule.supplierId === supplierId) || null;
-}
-
-export function estimateFee(supplierId: string, subtotalExVat: number): number {
-  const rule = getSupplierRule(supplierId);
-  if (!rule) return 0;
-  
-  return subtotalExVat >= rule.freeThresholdExVat ? 0 : rule.flatFee;
 }
 
 export function calculateBreakEven(
@@ -46,22 +19,31 @@ export function calculateBreakEven(
   cheaperPrice: number,
   deliveryFee: number
 ): number {
-  const unitSavings = currentPrice - cheaperPrice;
-  if (unitSavings <= 0) return 0;
-  
-  return Math.ceil(deliveryFee / unitSavings);
+  const unitSavings = currentPrice - cheaperPrice
+  if (unitSavings <= 0) return 0
+
+  return Math.ceil(deliveryFee / unitSavings)
 }
 
-export function getDeliveryHint(supplierId: string): string | null {
-  const rule = getSupplierRule(supplierId);
-  if (!rule) return null;
-  
-  const today = new Date();
-  const currentDay = today.toLocaleDateString('en-US', { weekday: 'short' });
-  
-  const nextDeliveryDay = rule.deliveryDays.find(day => 
-    rule.deliveryDays.indexOf(day) > rule.deliveryDays.indexOf(currentDay)
-  ) || rule.deliveryDays[0];
-  
-  return `Order by ${rule.cutoff} for ${nextDeliveryDay}`;
+export async function getDeliveryHint(supplierId: string): Promise<string | null> {
+  try {
+    const rule = await deliveryRules.getRule(supplierId)
+    if (!rule || !rule.cutoff_time || !rule.delivery_days?.length) return null
+
+    const today = new Date()
+    const currentDay = today.getDay() === 0 ? 7 : today.getDay()
+
+    const sortedDays = [...rule.delivery_days].sort((a, b) => a - b)
+    const nextDay = sortedDays.find(day => day > currentDay) || sortedDays[0]
+
+    const daysUntil = nextDay > currentDay ? nextDay - currentDay : 7 - currentDay + nextDay
+    const deliveryDate = new Date(today)
+    deliveryDate.setDate(today.getDate() + daysUntil)
+    const nextDeliveryDay = deliveryDate.toLocaleDateString('en-US', { weekday: 'short' })
+
+    return `Order by ${rule.cutoff_time} for ${nextDeliveryDay}`
+  } catch (error) {
+    console.error('Failed to get delivery hint:', error)
+    return null
+  }
 }
