@@ -27,3 +27,6 @@ body {
 main > *:first-child {
   margin-top: 0;
 }
+
+html { scrollbar-gutter: stable both-edges; }
+html { overflow-y: scroll; } /* Safari/legacy fallback */
