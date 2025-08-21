@@ -1,6 +1,8 @@
 import React from 'react'
 import { ResultItem } from './ResultItem'
 import { RecentSearches } from './RecentSearches'
+import { SearchScope } from '@/hooks/useGlobalSearch'
+import { cn } from '@/lib/utils'
 
 interface SearchSections {
   products: { id: string; name: string }[]
@@ -17,6 +19,8 @@ interface SearchResultsPopoverProps {
   onSelectItem: (item: { id: string; name: string; section: string }) => void
   recentSearches: string[]
   onRecentSelect: (q: string) => void
+  scope: SearchScope
+  onScopeChange: (s: SearchScope) => void
 }
 
 export function SearchResultsPopover({
@@ -27,7 +31,9 @@ export function SearchResultsPopover({
   onHoverIndex,
   onSelectItem,
   recentSearches,
-  onRecentSelect
+  onRecentSelect,
+  scope,
+  onScopeChange
 }: SearchResultsPopoverProps) {
   if (!open) return null
 
@@ -70,6 +76,31 @@ export function SearchResultsPopover({
       role="listbox"
       className="absolute z-50 mt-1 w-full overflow-hidden rounded-md border bg-background shadow-md"
     >
+      <div className="flex gap-2 border-b p-2 text-xs">
+        {(
+          [
+            { label: 'All', value: 'all' },
+            { label: 'Products', value: 'products' },
+            { label: 'Suppliers', value: 'suppliers' },
+            { label: 'Orders', value: 'orders' }
+          ] as { label: string; value: SearchScope }[]
+        ).map((s) => (
+          <button
+            key={s.value}
+            type="button"
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => onScopeChange(s.value)}
+            className={cn(
+              'rounded-full px-2 py-0.5',
+              scope === s.value
+                ? 'bg-primary text-primary-foreground'
+                : 'text-muted-foreground hover:bg-muted'
+            )}
+          >
+            {s.label}
+          </button>
+        ))}
+      </div>
       {query && hasResults && (
         <>
           {renderSection('products', 'Products')}
