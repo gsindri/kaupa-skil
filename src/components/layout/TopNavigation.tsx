@@ -132,7 +132,7 @@ export function TopNavigation() {
                 <span className="hidden sm:inline ml-2">Help</span>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align="end" sideOffset={0}>
               <DropdownMenuItem>Keyboard Shortcuts</DropdownMenuItem>
               <DropdownMenuItem>Support</DropdownMenuItem>
             </DropdownMenuContent>
@@ -158,7 +158,7 @@ export function TopNavigation() {
                 <ChevronDown className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align="end" sideOffset={0}>
               <DropdownMenuItem>
                 <div className="flex flex-col">
                   <span className="font-medium">{displayName}</span>

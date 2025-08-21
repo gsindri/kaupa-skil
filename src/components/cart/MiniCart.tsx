@@ -45,10 +45,10 @@ export function MiniCart() {
           <span className="hidden sm:inline ml-2">Cart</span>
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-80" align="end" sideOffset={8} onMouseLeave={() => setOpen(false)}>
-        {cartCount === 0 ? (
-          <div className="text-sm text-muted-foreground">Cart is empty</div>
-        ) : (
+        <PopoverContent className="w-80" align="end" sideOffset={0} onMouseLeave={() => setOpen(false)}>
+          {cartCount === 0 ? (
+            <div className="text-sm text-muted-foreground">Cart is empty</div>
+          ) : (
           <div className="space-y-2">
             <div className="space-y-1 text-sm">
               {items.slice(0, 3).map(item => (
