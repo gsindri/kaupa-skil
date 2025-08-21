@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { SearchInput } from './SearchInput'
 import { SearchResultsPopover } from './SearchResultsPopover'
-import { ScopeControl } from './ScopeControl'
 import { useGlobalSearch, SearchScope } from '@/hooks/useGlobalSearch'
 
 function useRecentSearches(orgId: string) {
@@ -62,6 +61,7 @@ export const HeaderSearch = React.forwardRef<HTMLInputElement>((_props, ref) => 
         setExpanded(false)
       }
     } else if (e.key === 'Escape') {
+      setQuery('')
       setExpanded(false)
     }
   }
@@ -85,31 +85,30 @@ export const HeaderSearch = React.forwardRef<HTMLInputElement>((_props, ref) => 
   }
 
   return (
-    <div className="flex items-center">
-      <ScopeControl scope={scope} onChange={setScope} />
-      <div className="relative flex-1">
-        <SearchInput
-          ref={ref}
-          value={query}
-          onChange={setQuery}
-          onFocus={() => setExpanded(true)}
-          onBlur={handleBlur}
-          onKeyDown={handleKeyDown}
-          expanded={expanded}
-          onClear={() => setQuery('')}
-          isLoading={isLoading}
-        />
-        <SearchResultsPopover
-          open={open}
-          sections={sections}
-          query={query}
-          activeIndex={activeIndex}
-          onHoverIndex={setActiveIndex}
-          onSelectItem={handleSelect}
-          recentSearches={recent}
-          onRecentSelect={handleRecentSelect}
-        />
-      </div>
+    <div className="relative w-[320px] md:w-[380px]">
+      <SearchInput
+        ref={ref}
+        value={query}
+        onChange={setQuery}
+        onFocus={() => setExpanded(true)}
+        onBlur={handleBlur}
+        onKeyDown={handleKeyDown}
+        expanded={expanded}
+        onClear={() => setQuery('')}
+        isLoading={isLoading}
+      />
+      <SearchResultsPopover
+        open={open}
+        scope={scope}
+        onScopeChange={setScope}
+        sections={sections}
+        query={query}
+        activeIndex={activeIndex}
+        onHoverIndex={setActiveIndex}
+        onSelectItem={handleSelect}
+        recentSearches={recent}
+        onRecentSelect={handleRecentSelect}
+      />
     </div>
   )
 })

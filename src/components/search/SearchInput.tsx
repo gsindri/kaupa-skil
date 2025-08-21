@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useRef, useImperativeHandle } from 'react'
 import { Search, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -27,15 +27,28 @@ export const SearchInput = React.forwardRef<HTMLInputElement, SearchInputProps>(
     },
     ref
   ) => {
+    const inputRef = useRef<HTMLInputElement>(null)
+
+    useImperativeHandle(ref, () => inputRef.current as HTMLInputElement)
+
     return (
       <div className="relative">
-        {isLoading ? (
-          <div className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin rounded-full border-2 border-muted border-t-primary" />
-        ) : (
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        )}
+        <button
+          type="button"
+          onMouseDown={(e) => {
+            e.preventDefault()
+            inputRef.current?.focus()
+          }}
+          className="absolute left-3 top-1/2 -translate-y-1/2 cursor-text text-muted-foreground"
+        >
+          {isLoading ? (
+            <div className="h-4 w-4 animate-spin rounded-full border-2 border-muted border-t-primary" />
+          ) : (
+            <Search className="h-4 w-4" />
+          )}
+        </button>
         <input
-          ref={ref}
+          ref={inputRef}
           role="combobox"
           aria-expanded={expanded}
           aria-controls="global-search-results"
@@ -46,8 +59,8 @@ export const SearchInput = React.forwardRef<HTMLInputElement, SearchInputProps>(
           onKeyDown={onKeyDown}
           placeholder="Search products, suppliers, orders..."
           className={cn(
-            'h-10 w-40 rounded-full border pl-9 pr-8 transition-all duration-200 ease-in-out focus:outline-none',
-            expanded ? 'w-72 shadow-md' : 'w-40'
+            'h-10 w-full rounded-full border border-border bg-background pl-10 pr-9 text-sm focus:outline-none focus:ring-2 focus:ring-brand/50',
+            expanded && 'shadow-md'
           )}
         />
         {!expanded && !value && (
