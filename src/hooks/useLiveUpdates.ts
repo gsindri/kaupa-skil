@@ -16,7 +16,7 @@ export function useLiveUpdates() {
   const { data: updates, isLoading } = useQuery<LiveUpdate[]>({
     queryKey: [...queryKeys.dashboard.liveUpdates(), profile?.tenant_id],
     queryFn: async () => {
-      let query = supabase
+      const query = supabase
         .from('connector_runs')
         .select('id, status, created_at, supplier:suppliers(name)')
         .order('created_at', { ascending: false })

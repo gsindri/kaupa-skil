@@ -18,7 +18,7 @@ export function useSupplierConnections() {
   const { data: suppliers, isLoading } = useQuery<SupplierConnection[]>({
     queryKey: [...queryKeys.dashboard.suppliers(), profile?.tenant_id],
     queryFn: async () => {
-      let query = supabase
+      const query = supabase
         .from('supplier_connections')
         .select('id, status, last_sync, next_run, supplier:suppliers(name)')
         .order('created_at', { ascending: false })
