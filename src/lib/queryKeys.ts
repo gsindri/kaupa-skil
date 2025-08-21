@@ -81,7 +81,15 @@ export const queryKeys = {
     pricing: (filters?: any) => ['analytics', 'pricing', filters] as const,
     usage: () => ['analytics', 'usage'] as const,
   },
-  
+
+  // Dashboard queries
+  dashboard: {
+    alerts: () => ['dashboard', 'alerts'] as const,
+    anomalies: () => ['dashboard', 'anomalies'] as const,
+    suppliers: () => ['dashboard', 'suppliers'] as const,
+    liveUpdates: () => ['dashboard', 'liveUpdates'] as const,
+  },
+
   // Mutation keys for optimistic updates
   mutations: {
     createOrder: () => ['mutation', 'createOrder'] as const,

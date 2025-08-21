@@ -1,23 +1,20 @@
 import React from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Pause, Play, ShoppingCart, RefreshCcw } from 'lucide-react'
+import { Pause, Play, RefreshCcw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-
-interface UpdateItem {
-  id: string
-  icon: React.ReactNode
-  message: string
-  time: string
-}
-
-const mockUpdates: UpdateItem[] = [
-  { id: '1', icon: <RefreshCcw className="h-4 w-4" />, message: 'Sync started for Véfkaupmenn', time: 'Just now' },
-  { id: '2', icon: <ShoppingCart className="h-4 w-4" />, message: 'Order placed with Heilsuhúsið', time: '5m ago' }
-]
+import { useLiveUpdates } from '@/hooks/useLiveUpdates'
 
 export function LiveUpdates() {
   const [paused, setPaused] = React.useState(false)
+  const { updates, isLoading } = useLiveUpdates()
+
+  const getIcon = (type: string) => {
+    switch (type) {
+      default:
+        return <RefreshCcw className="h-4 w-4" />
+    }
+  }
 
   return (
     <Card className="h-full flex flex-col">
@@ -28,17 +25,19 @@ export function LiveUpdates() {
         </Button>
       </CardHeader>
       <CardContent className="p-0 flex-1">
-        {mockUpdates.length === 0 ? (
+        {isLoading ? (
+          <div className="p-4 text-sm text-muted-foreground text-center">Loading updates...</div>
+        ) : updates.length === 0 ? (
           <div className="p-4 text-sm text-muted-foreground text-center">No updates</div>
         ) : (
           <ScrollArea className="h-full">
             <ul className="p-4 space-y-4">
-              {mockUpdates.map((u) => (
+              {updates.map((u) => (
                 <li key={u.id} className="flex items-start gap-2 text-sm">
-                  {u.icon}
+                  {getIcon(u.type)}
                   <div>
                     <div>{u.message}</div>
-                    <div className="text-xs text-muted-foreground">{u.time}</div>
+                    <div className="text-xs text-muted-foreground">{new Date(u.created_at).toLocaleString('is-IS')}</div>
                   </div>
                 </li>
               ))}

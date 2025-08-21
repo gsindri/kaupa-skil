@@ -3,7 +3,7 @@ import React from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Eye, MoreHorizontal } from 'lucide-react'
+import { Eye } from 'lucide-react'
 import {
   Table,
   TableBody,
@@ -12,44 +12,11 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-
-interface RecentOrder {
-  id: string
-  date: string
-  supplierCount: number
-  totalExVat: number
-  totalIncVat: number
-  status: 'draft' | 'pending_approval' | 'sent' | 'acknowledged' | 'error'
-}
-
-const mockRecentOrders: RecentOrder[] = [
-  {
-    id: 'ORD-2024-001',
-    date: '2024-08-14',
-    supplierCount: 2,
-    totalExVat: 125000,
-    totalIncVat: 155000,
-    status: 'sent'
-  },
-  {
-    id: 'ORD-2024-002',
-    date: '2024-08-13',
-    supplierCount: 1,
-    totalExVat: 67500,
-    totalIncVat: 83700,
-    status: 'acknowledged'
-  },
-  {
-    id: 'ORD-2024-003',
-    date: '2024-08-12',
-    supplierCount: 3,
-    totalExVat: 89200,
-    totalIncVat: 110648,
-    status: 'pending_approval'
-  }
-]
+import { useRecentOrders } from '@/hooks/useRecentOrders'
 
 export function RecentOrdersTable() {
+  const { orders, isLoading } = useRecentOrders()
+
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('is-IS', {
       style: 'currency',
@@ -97,40 +64,46 @@ export function RecentOrdersTable() {
         <CardTitle>Recent Orders</CardTitle>
       </CardHeader>
       <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Order ID</TableHead>
-              <TableHead>Date</TableHead>
-              <TableHead>Suppliers</TableHead>
-              <TableHead className="text-right">Total (ex VAT)</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead></TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {mockRecentOrders.map((order) => (
-              <TableRow key={order.id}>
-                <TableCell className="font-medium">{order.id}</TableCell>
-                <TableCell>{new Date(order.date).toLocaleDateString('is-IS')}</TableCell>
-                <TableCell>{order.supplierCount} supplier{order.supplierCount !== 1 ? 's' : ''}</TableCell>
-                <TableCell className="text-right font-mono">
-                  {formatPrice(order.totalExVat)}
-                </TableCell>
-                <TableCell>
-                  <Badge variant={getStatusVariant(order.status)}>
-                    {getStatusText(order.status)}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <Button variant="ghost" size="sm">
-                    <Eye className="h-4 w-4" />
-                  </Button>
-                </TableCell>
+        {isLoading ? (
+          <div className="p-4 text-sm text-muted-foreground text-center">Loading orders...</div>
+        ) : orders.length === 0 ? (
+          <div className="p-4 text-sm text-muted-foreground text-center">No recent orders</div>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Order ID</TableHead>
+                <TableHead>Date</TableHead>
+                <TableHead>Suppliers</TableHead>
+                <TableHead className="text-right">Total (ex VAT)</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead></TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {orders.map((order) => (
+                <TableRow key={order.id}>
+                  <TableCell className="font-medium">{order.id}</TableCell>
+                  <TableCell>{new Date(order.created_at).toLocaleDateString('is-IS')}</TableCell>
+                  <TableCell>{order.supplier_count} supplier{order.supplier_count !== 1 ? 's' : ''}</TableCell>
+                  <TableCell className="text-right font-mono">
+                    {formatPrice(order.total_ex_vat)}
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={getStatusVariant(order.status)}>
+                      {getStatusText(order.status)}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <Button variant="ghost" size="sm">
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
       </CardContent>
     </Card>
   )
