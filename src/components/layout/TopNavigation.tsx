@@ -114,7 +114,7 @@ export function TopNavigation() {
           <TenantSwitcher />
         </div>
 
-        <div className="w-[320px] md:w-[380px]">
+        <div className="w-[360px] md:w-[420px] flex-shrink-0">
           <HeaderSearch ref={searchRef} />
         </div>
 
