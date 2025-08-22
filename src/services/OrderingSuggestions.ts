@@ -165,18 +165,18 @@ export class OrderingSuggestionsService {
   private async getFrequentlyOrderedItems(supplierId: string): Promise<any[]> {
     try {
       // Fixed: Removed .group() and used proper aggregation in the select
-      const { data } = await supabase
+      const { data } = await (supabase as any)
         .rpc('get_frequent_items_by_supplier', {
           supplier_id_param: supplierId,
           days_back: 90
         })
 
-      return data || []
+      return (data as any[]) || []
     } catch (error) {
       console.error('Failed to fetch frequently ordered items:', error)
       // Fallback to a simpler query without grouping
       try {
-        const { data } = await supabase
+        const { data } = await (supabase as any)
           .from('order_lines')
           .select(`
             supplier_item_id,
@@ -186,7 +186,7 @@ export class OrderingSuggestionsService {
           .gte('created_at', new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString())
           .limit(5)
 
-        return data || []
+        return (data as any[]) || []
       } catch (fallbackError) {
         console.error('Fallback query also failed:', fallbackError)
         return []

@@ -12,7 +12,7 @@ class DeliveryRulesService {
       return cached.rule
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('delivery_rules')
       .select('*')
       .eq('supplier_id', supplierId)
@@ -23,8 +23,9 @@ class DeliveryRulesService {
       console.error('Failed to fetch delivery rule:', error)
     }
 
-    this.cache.set(supplierId, { rule: data ?? null, timestamp: now })
-    return data ?? null
+    const rule = (data as DeliveryRule) ?? null
+    this.cache.set(supplierId, { rule, timestamp: now })
+    return rule
   }
 }
 

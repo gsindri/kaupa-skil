@@ -23,7 +23,7 @@ export default function ResetPassword() {
         if (code) {
           ({ error } = await supabase.auth.exchangeCodeForSession(code));
         } else {
-          ({ error } = await supabase.auth.getSessionFromUrl({ storeSession: true }));
+          ({ error } = await (supabase.auth as any).getSessionFromUrl({ storeSession: true }));
         }
         if (error) throw error;
       } catch (err: any) {

@@ -1,8 +1,16 @@
 
-import { Database } from './types/database'
+export interface Unit {
+  code: string
+  base_unit: string
+  conversion_factor: number | null
+  [key: string]: any
+}
 
-type Unit = Database['public']['Tables']['units']['Row']
-type VatRule = Database['public']['Tables']['vat_rules']['Row']
+export interface VatRule {
+  code: string
+  rate: number
+  [key: string]: any
+}
 
 export interface UnitConversion {
   fromUnit: string

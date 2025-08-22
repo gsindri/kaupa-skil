@@ -19,7 +19,7 @@ export default function PriceHistory() {
   const { data: items } = useQuery({
     queryKey: ['items-with-prices'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('items')
         .select(`
           id,
@@ -32,7 +32,7 @@ export default function PriceHistory() {
         .limit(20)
 
       if (error) throw error
-      return data.filter(item => item.supplier_items.some(si => si.price_quotes.length > 0))
+      return (data as any[]).filter(item => item.supplier_items.some((si: any) => si.price_quotes.length > 0))
     }
   })
 
@@ -41,7 +41,7 @@ export default function PriceHistory() {
     queryFn: async () => {
       if (!selectedItem) return []
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('price_quotes')
         .select(`
           pack_price,

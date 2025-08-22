@@ -1,9 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { UnitVatEngine } from '../unitVat'
-import type { Database } from '../types/database'
-
-type Unit = Database['public']['Tables']['units']['Row']
-type VatRule = Database['public']['Tables']['vat_rules']['Row']
+import { UnitVatEngine, type Unit, type VatRule } from '../unitVat'
 
 const units: Unit[] = [
   { id: '1', code: 'kg', name: 'Kilogram', base_unit: 'kg', conversion_factor: 1, created_at: '' },

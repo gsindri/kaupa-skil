@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { vi } from 'vitest'
+import { vi, type Mock } from 'vitest'
 
 vi.mock('@/hooks/useAuditLogs', () => ({
   useAuditLogs: vi.fn(),
@@ -12,7 +12,7 @@ vi.mock('@/contexts/useAuth', () => ({
 import { useAuditLogs } from '@/hooks/useAuditLogs'
 import { ActivityList } from '../ActivityList'
 
-const mockUseAuditLogs = useAuditLogs as unknown as vi.Mock
+const mockUseAuditLogs = useAuditLogs as unknown as Mock
 
 function renderComponent() {
   const queryClient = new QueryClient()
