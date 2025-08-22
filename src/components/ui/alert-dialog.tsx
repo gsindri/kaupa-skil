@@ -3,7 +3,7 @@ import * as AlertDialogPrimitive from "@radix-ui/react-alert-dialog"
 
 import { cn } from "@/lib/utils"
 import { buttonVariants } from "@/components/ui/button-variants"
-import { lockBody, unlockBody } from "@/lib/lockBody"
+import { lockScroll, unlockScroll } from "@/lib/lockScroll"
 
 const AlertDialog = ({
   open,
@@ -12,9 +12,9 @@ const AlertDialog = ({
 }: React.ComponentProps<typeof AlertDialogPrimitive.Root>) => {
   React.useEffect(() => {
     if (open) {
-      lockBody()
+        lockScroll()
     } else {
-      unlockBody()
+        unlockScroll()
     }
   }, [open])
 
@@ -23,9 +23,9 @@ const AlertDialog = ({
       open={open}
       onOpenChange={o => {
         if (o) {
-          lockBody()
+          lockScroll()
         } else {
-          unlockBody()
+          unlockScroll()
         }
         onOpenChange?.(o)
       }}
@@ -40,19 +40,20 @@ const AlertDialogTrigger = AlertDialogPrimitive.Trigger
 const AlertDialogPortal = AlertDialogPrimitive.Portal
 
 const AlertDialogOverlay = React.forwardRef<
-  React.ElementRef<typeof AlertDialogPrimitive.Overlay>,
-  React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Overlay>
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
-  <AlertDialogPrimitive.Overlay
+  <div
+    ref={ref}
+    data-state="open"
     className={cn(
-      "fixed inset-0 z-50 bg-black/80  data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+      "fixed inset-0 z-50 bg-black/80",
       className
     )}
     {...props}
-    ref={ref}
   />
 ))
-AlertDialogOverlay.displayName = AlertDialogPrimitive.Overlay.displayName
+AlertDialogOverlay.displayName = "AlertDialogOverlay"
 
 const AlertDialogContent = React.forwardRef<
   React.ElementRef<typeof AlertDialogPrimitive.Content>,

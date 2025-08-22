@@ -13,18 +13,18 @@ interface AppLayoutProps {
 export function AppLayout({ children }: AppLayoutProps) {
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-background">
+        <div className="flex w-full h-screen overflow-hidden bg-background">
         <EnhancedAppSidebar />
         
-        <div className="flex-1 flex flex-col">
-          <TopNavigation />
+          <div className="flex-1 flex flex-col">
+            <TopNavigation />
 
-          <main className="flex-1 overflow-auto pt-[var(--header-h)] min-h-screen">
-            <ElevationBanner />
-            <div className="p-6">
-              {children}
-            </div>
-          </main>
+            <main className="app-scroll flex-1 pt-[var(--header-h)]">
+              <ElevationBanner />
+              <div className="p-6">
+                {children}
+              </div>
+            </main>
         </div>
         
         <CartDrawer />
