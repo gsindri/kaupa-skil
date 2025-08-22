@@ -102,6 +102,8 @@ Create a `.env` file based on `.env.example` and set the following variables:
 
 - `VITE_SUPABASE_URL` – your Supabase project URL
 - `VITE_SUPABASE_PUBLISHABLE_KEY` – your Supabase anonymous public key
+- `E2E_EMAIL` – account email used for Playwright tests
+- `E2E_PASSWORD` – password for the above account
 
 In CI, configure these as `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` secrets.
 
