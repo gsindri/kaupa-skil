@@ -11,24 +11,44 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
+      CI: true
       VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
       VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
       SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-      CI: true
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - uses: pnpm/action-setup@v3
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
-          version: 10
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 18
+          node-version: 20
           cache: 'pnpm'
 
-      - run: pnpm install --frozen-lockfile
+      # Use the packageManager pin in package.json
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Show versions
+        run: |
+          node -v
+          pnpm -v
+
+      - name: Enforce single lockfile (pnpm only)
+        run: |
+          if [ -f package-lock.json ] || [ -f yarn.lock ]; then
+            echo "Error: Remove package-lock.json/yarn.lock. Use pnpm-lock.yaml only."
+            exit 1
+          fi
+
+      - name: Install deps (fail on drift)
+        run: pnpm install --frozen-lockfile
+
+      # You pinned trustedDependencies in package.json, so no interactive approvals needed.
+      # Keeping this here as a no-op safety; it won't hurt if esbuild/@swc/core appear.
+      - name: Approve native builds (idempotent)
+        run: pnpm approve-builds esbuild @swc/core || true
 
       - name: Sanity-check env presence
         run: |
@@ -62,8 +82,8 @@ jobs:
       - name: Lint
         run: pnpm lint
 
-      - name: Unit/Integration tests
+      - name: Unit/Integration tests (Vitest)
         run: pnpm test -- --run
 
-      - name: E2E tests
-        run: pnpm test:e2e
+      - name: E2E tests (Playwright, headless via xvfb)
+        run: xvfb-run -a pnpm test:e2e
