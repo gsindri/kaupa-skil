@@ -39,6 +39,7 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install
 
+      - run: pnpm format:check
       - run: pnpm lint
       - run: pnpm test
       - run: pnpm test:e2e
