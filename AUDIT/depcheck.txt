@@ -1,0 +1,12 @@
+Progress: resolved 1, reused 0, downloaded 0, added 0
+Progress: resolved 76, reused 44, downloaded 26, added 0
+Packages: +112
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Progress: resolved 112, reused 74, downloaded 38, added 112, done
+Unused dependencies
+* dotenv
+Unused devDependencies
+* @tailwindcss/typography
+* @vitest/coverage-v8
+* autoprefixer
+* postcss
