@@ -2,26 +2,31 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '@/lib/types/database'
 
 const env = (typeof import.meta !== 'undefined' && (import.meta as any).env) || {}
-const IS_TEST = !!(process.env.CI || process.env.VITEST)
+
+// Safe access to Node's process.env (undefined in browser)
+const nodeEnv: Record<string, any> | undefined =
+  typeof process !== 'undefined' && process && 'env' in process ? (process as any).env : undefined
+
+// Treat CI/Vitest as test envs only when running in Node
+const IS_TEST = !!(nodeEnv?.CI || nodeEnv?.VITEST)
 
 const URL =
   env.VITE_SUPABASE_URL ||
-  process.env.VITE_SUPABASE_URL ||
-  process.env.NEXT_PUBLIC_SUPABASE_URL ||
+  nodeEnv?.VITE_SUPABASE_URL ||
+  nodeEnv?.NEXT_PUBLIC_SUPABASE_URL ||
   (IS_TEST ? 'http://localhost:54321' : undefined)
 
 const KEY =
   env.VITE_SUPABASE_ANON_KEY ||
-  process.env.VITE_SUPABASE_ANON_KEY ||
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+  nodeEnv?.VITE_SUPABASE_ANON_KEY ||
+  nodeEnv?.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
   (IS_TEST ? 'test-anon-key' : undefined)
 
 // Extremely forgiving proxy that safely no-ops any method/property.
-// Prevents TypeErrors like "x is not a function" if app calls rpc(), channel(), storage(), etc.
 function makeChain(): any {
   const handler: ProxyHandler<any> = {
     get(_t, prop) {
-      if (prop === 'then') return undefined // don't act like a Promise
+      if (prop === 'then') return undefined
       if (prop === 'unsubscribe') return () => {}
       if (prop === 'subscribe') return () => ({ unsubscribe() {} })
       if (prop === 'download') return async () => ({ data: null, error: null })
@@ -31,7 +36,6 @@ function makeChain(): any {
       if (prop === 'select' || prop === 'eq' || prop === 'insert' || prop === 'update' || prop === 'delete') {
         return () => chain
       }
-      // default: return chainable fn
       return chain
     },
     apply() {
@@ -45,7 +49,6 @@ function makeChain(): any {
 function makeDummyClient(): SupabaseClient<Database> {
   const chain = makeChain()
   return {
-    // minimal auth surface so providers relying on it don't explode
     auth: {
       getSession: async () => ({ data: { session: null }, error: null }),
       onAuthStateChange: () => ({ data: { subscription: { unsubscribe() {} } }, error: null } as any),
