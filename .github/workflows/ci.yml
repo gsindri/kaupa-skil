@@ -26,6 +26,14 @@ jobs:
           node-version: 20
           cache: 'pnpm'
 
+      - name: Ensure pnpm on PATH (global fallback)
+        run: |
+          if ! command -v pnpm >/dev/null 2>&1; then
+            echo "pnpm missing; installing globally…"
+            npm i -g pnpm@10.14.0
+          fi
+          echo "pnpm version: $(pnpm -v)"
+
       - name: Setup pnpm
         uses: pnpm/action-setup@v3
         with:
