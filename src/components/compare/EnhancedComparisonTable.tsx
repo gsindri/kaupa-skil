@@ -15,8 +15,8 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Plus, Minus, Info, ExternalLink, AlertTriangle } from 'lucide-react'
 import { Sparkline } from '@/components/ui/Sparkline'
 import { DeliveryFeeIndicator } from '@/components/delivery/DeliveryFeeIndicator'
-import { deliveryCalculator } from '@/services/DeliveryCalculator'
 import type { ComparisonItem, CartItem } from '@/lib/types'
+import type { DeliveryCalculation } from '@/lib/types/delivery'
 import { useCart } from '@/contexts/useBasket'
 import { useSettings } from '@/contexts/useSettings'
 
@@ -25,11 +25,65 @@ interface EnhancedComparisonTableProps {
   isLoading?: boolean
 }
 
+export async function calculateLandedCostForSupplier(
+  supplier: any,
+  quantity: number,
+  cache: Map<string, DeliveryCalculation>,
+  setCache: React.Dispatch<
+    React.SetStateAction<Map<string, DeliveryCalculation>>
+  >
+): Promise<number> {
+  const cached = cache.get(supplier.supplierItemId)
+  if (cached) {
+    return cached.landed_cost
+  }
+
+  const mockCartItem: CartItem = {
+    id: supplier.id,
+    supplierItemId: supplier.supplierItemId,
+    supplierId: supplier.id,
+    supplierName: supplier.name,
+    itemName: supplier.name,
+    sku: supplier.sku,
+    packSize: supplier.packSize,
+    packPrice: supplier.packPrice,
+    unitPriceExVat: supplier.unitPriceExVat,
+    unitPriceIncVat: supplier.unitPriceIncVat,
+    vatRate: 0.24,
+    unit: supplier.unit,
+    displayName: supplier.name,
+    packQty: 1,
+    quantity
+  }
+
+  try {
+    const { deliveryCalculator } = await import(
+      '@/services/DeliveryCalculator'
+    )
+    const calculation = await deliveryCalculator.calculateDeliveryForSupplier(
+      supplier.id,
+      supplier.name,
+      [mockCartItem]
+    )
+    setCache(prev => {
+      const updated = new Map(prev)
+      updated.set(supplier.supplierItemId, calculation)
+      return updated
+    })
+    return calculation.landed_cost
+  } catch (error) {
+    console.error('Failed to calculate delivery:', error)
+    return supplier.unitPriceExVat * quantity
+  }
+}
+
 export function EnhancedComparisonTable({ data, isLoading }: EnhancedComparisonTableProps) {
   const { includeVat } = useSettings()
   const { addItem, updateQuantity, items: cartItems } = useCart()
   const [quantities, setQuantities] = useState<Record<string, number>>({})
-  const [deliveryCalculations, setDeliveryCalculations] = useState<Map<string, any>>(new Map())
+  const [deliveryCalculations, setDeliveryCalculations] = useState<
+    Map<string, DeliveryCalculation>
+  >(new Map())
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('is-IS', {
@@ -45,39 +99,16 @@ export function EnhancedComparisonTable({ data, isLoading }: EnhancedComparisonT
     return cartItem?.quantity || 0
   }, [cartItems])
 
-  const calculateLandedCost = async (supplier: any, quantity: number) => {
-    const mockCartItem: CartItem = {
-      id: supplier.id,
-      supplierItemId: supplier.supplierItemId,
-      supplierId: supplier.id,
-      supplierName: supplier.name,
-      itemName: supplier.name,
-      sku: supplier.sku,
-      packSize: supplier.packSize,
-      packPrice: supplier.packPrice,
-      unitPriceExVat: supplier.unitPriceExVat,
-      unitPriceIncVat: supplier.unitPriceIncVat,
-      vatRate: 0.24,
-      unit: supplier.unit,
-      displayName: supplier.name,
-      packQty: 1,
-      quantity
-    }
-
-    try {
-      const calculation = await deliveryCalculator.calculateDeliveryForSupplier(
-        supplier.id,
-        supplier.name,
-        [mockCartItem]
-      )
-      
-      setDeliveryCalculations(prev => new Map(prev.set(supplier.supplierItemId, calculation)))
-      return calculation.landed_cost
-    } catch (error) {
-      console.error('Failed to calculate delivery:', error)
-      return supplier.unitPriceExVat * quantity
-    }
-  }
+  const calculateLandedCost = useCallback(
+    (supplier: any, quantity: number) =>
+      calculateLandedCostForSupplier(
+        supplier,
+        quantity,
+        deliveryCalculations,
+        setDeliveryCalculations
+      ),
+    [deliveryCalculations]
+  )
 
   const handleQuantityChange = async (supplierItemId: string, newQuantity: number) => {
     const currentCartQuantity = getCartQuantity(supplierItemId)
