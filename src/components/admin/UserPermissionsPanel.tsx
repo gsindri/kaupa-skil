@@ -73,7 +73,7 @@ export function UserPermissionsPanel({
 
   const handleUpdateCustomGrant = (index: number, field: keyof GrantInput, value: any) => {
     const updated = [...customGrants]
-    updated[index] = { ...updated[index], [field]: value }
+    updated[index] = { ...updated[index], [field]: value } as GrantInput
     setCustomGrants(updated)
   }
 

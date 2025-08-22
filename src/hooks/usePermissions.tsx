@@ -18,9 +18,9 @@ export function usePermissions(tenantId?: string | null) {
       if (error) throw error
       let result = data || []
       if (tenantId) {
-        result = result.filter(m => m.tenant_id === tenantId)
+        result = result.filter((m: UserMembership) => m.tenant_id === tenantId)
       } else {
-        result = result.filter(m => !m.tenant_id)
+        result = result.filter((m: UserMembership) => !m.tenant_id)
       }
       return result
     },

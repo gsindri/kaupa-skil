@@ -57,7 +57,7 @@ export function useComparisonItems() {
             id: row.id,
             itemName: row.display_name,
             brand: row.brand || undefined,
-            category: row.category?.name || undefined,
+            category: row.category?.[0]?.name || undefined,
             suppliers: []
           }
         }
@@ -65,8 +65,8 @@ export function useComparisonItems() {
         const quote = Array.isArray(row.price_quotes) ? row.price_quotes[0] : null
 
         itemsMap[key].suppliers.push({
-          id: row.supplier?.id,
-          name: row.supplier?.name,
+          id: row.supplier?.[0]?.id,
+          name: row.supplier?.[0]?.name,
           packSize: row.pack_size ? String(row.pack_size) : '',
           unitPriceIncVat: quote?.unit_price_inc_vat ?? 0,
           inStock: row.in_stock ?? false

@@ -19,10 +19,10 @@ interface SupplierItemsFilters {
 
 export function useOptimizedSupplierItems(filters: SupplierItemsFilters = {}) {
   const { user, profile } = useAuth()
-  const { data: tenantValidation } = useTenantValidation(profile?.tenant_id)
+  const { data: tenantValidation } = useTenantValidation(profile?.tenant_id ?? undefined)
 
   return useQuery({
-    queryKey: queryKeys.suppliers.items(filters.supplierId, filters),
+    queryKey: queryKeys.suppliers.items(filters.supplierId ?? undefined, filters),
     queryFn: async () => {
       // Validate tenant context before proceeding
       if (!tenantValidation?.isValid) {

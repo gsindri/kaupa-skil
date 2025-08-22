@@ -122,8 +122,8 @@ export class HarAnalytics {
         if (!acc[item.category]) {
           acc[item.category] = { name: item.category, count: 0, totalPrice: 0 }
         }
-        acc[item.category].count++
-        acc[item.category].totalPrice += item.price
+        acc[item.category]!.count++
+        acc[item.category]!.totalPrice += item.price
         return acc
       }, {})
     ).map(cat => ({
@@ -138,8 +138,8 @@ export class HarAnalytics {
         if (!acc[item.brand]) {
           acc[item.brand] = { brand: item.brand, count: 0, totalPrice: 0 }
         }
-        acc[item.brand].count++
-        acc[item.brand].totalPrice += item.price
+        acc[item.brand]!.count++
+        acc[item.brand]!.totalPrice += item.price
         return acc
       }, {})
     ).map(brand => ({
@@ -256,15 +256,15 @@ export class HarAnalytics {
   private generateInsights(items: any[], priceAnalysis: PriceAnalysis, categoryAnalysis: CategoryAnalysis): string[] {
     const insights = []
 
-    if (categoryAnalysis.categories.length > 0) {
-      const topCategory = categoryAnalysis.categories[0]
-      insights.push(`Most common category: ${topCategory.name} (${topCategory.count} items, avg €${topCategory.avgPrice.toFixed(2)})`)
-    }
+      if (categoryAnalysis.categories.length > 0) {
+        const topCategory = categoryAnalysis.categories[0]!
+        insights.push(`Most common category: ${topCategory.name} (${topCategory.count} items, avg €${topCategory.avgPrice.toFixed(2)})`)
+      }
 
-    if (categoryAnalysis.topBrands.length > 0) {
-      const topBrand = categoryAnalysis.topBrands[0]
-      insights.push(`Top brand: ${topBrand.brand} (${topBrand.count} items, avg €${topBrand.avgPrice.toFixed(2)})`)
-    }
+      if (categoryAnalysis.topBrands.length > 0) {
+        const topBrand = categoryAnalysis.topBrands[0]!
+        insights.push(`Top brand: ${topBrand.brand} (${topBrand.count} items, avg €${topBrand.avgPrice.toFixed(2)})`)
+      }
 
     if (priceAnalysis.distribution.high > priceAnalysis.distribution.low) {
       insights.push('Premium product focus detected - mostly higher-priced items')

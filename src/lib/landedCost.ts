@@ -34,7 +34,7 @@ export async function getDeliveryHint(supplierId: string): Promise<string | null
     const currentDay = today.getDay() === 0 ? 7 : today.getDay()
 
     const sortedDays = [...rule.delivery_days].sort((a, b) => a - b)
-    const nextDay = sortedDays.find(day => day > currentDay) || sortedDays[0]
+    const nextDay = sortedDays.find(day => day > currentDay) ?? sortedDays[0]!
 
     const daysUntil = nextDay > currentDay ? nextDay - currentDay : 7 - currentDay + nextDay
     const deliveryDate = new Date(today)

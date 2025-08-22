@@ -17,10 +17,10 @@ const Dialog = ({
     }
   }, [open])
 
-  return (
-    <DialogPrimitive.Root
-      open={open}
-      onOpenChange={o => {
+    return (
+      <DialogPrimitive.Root
+        {...(open !== undefined ? { open } : {})}
+        onOpenChange={o => {
         if (o) {
           lockBody()
         } else {

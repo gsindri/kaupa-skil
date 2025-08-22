@@ -91,7 +91,7 @@ export class OrderingSuggestionsService {
       if (!groups[item.supplierId]) {
         groups[item.supplierId] = []
       }
-      groups[item.supplierId].push(item)
+      groups[item.supplierId]!.push(item)
       return groups
     }, {} as Record<string, CartItem[]>)
     

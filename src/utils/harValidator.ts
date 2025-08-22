@@ -177,7 +177,7 @@ export class HarValidator {
     // Check timestamp range
     const timestamps = entries
       .map((e: any) => new Date(e?.startedDateTime).getTime())
-      .filter(t => !isNaN(t))
+      .filter((t: number) => !isNaN(t))
       .sort()
 
     if (timestamps.length > 0) {

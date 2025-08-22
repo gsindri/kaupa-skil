@@ -44,10 +44,10 @@ async function fetchSuppliers(): Promise<SupplierCard[]> {
   return (data || []).map((supplier: any) => {
     const items = supplier.supplier_items || []
 
-    const categories = Array.from(
+    const categories: string[] = Array.from(
       new Set(
         items.flatMap((item: any) =>
-          item.categories?.name ? [item.categories.name] : []
+          item.categories?.name ? [item.categories.name as string] : []
         )
       )
     )

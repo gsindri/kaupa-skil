@@ -21,4 +21,3 @@ export function useCategories() {
   })
 }
 
-export type { Category }

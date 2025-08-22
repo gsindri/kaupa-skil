@@ -77,10 +77,10 @@ const dedupedSupplierItemsQuery = createDedupedQuery(
 export function useEnhancedSupplierItems(filters: SupplierItemsFilters = {}) {
   const { user, profile } = useAuth()
   const { logDataAccess } = useAuditLogger()
-  const { data: tenantValidation } = useTenantValidation(profile?.tenant_id)
+  const { data: tenantValidation } = useTenantValidation(profile?.tenant_id ?? undefined)
 
   return useQuery({
-    queryKey: queryKeys.suppliers.items(filters.supplierId, filters),
+    queryKey: queryKeys.suppliers.items(filters.supplierId ?? undefined, filters),
     queryFn: async () => {
       if (!tenantValidation?.isValid) {
         throw new Error('Invalid tenant context')

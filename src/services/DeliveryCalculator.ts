@@ -75,8 +75,8 @@ export class DeliveryCalculator {
         const applicableTiers = rule.tiers_json
           .filter(tier => subtotalExVat >= tier.threshold)
           .sort((a, b) => b.threshold - a.threshold)
-        
-        deliveryFee = applicableTiers.length > 0 ? applicableTiers[0].fee : rule.flat_fee
+
+        deliveryFee = applicableTiers.length > 0 ? applicableTiers[0]!.fee : rule.flat_fee
       } else {
         deliveryFee = rule.flat_fee
       }
@@ -189,10 +189,10 @@ export class DeliveryCalculator {
 
     // Find next available delivery day
     const sortedDays = [...deliveryDays].sort((a, b) => a - b)
-    const nextDay = sortedDays.find(day => day > currentDay) || sortedDays[0]
+    const nextDay = sortedDays.find(day => day > currentDay) ?? sortedDays[0]!
 
-    const daysUntilDelivery = nextDay > currentDay 
-      ? nextDay - currentDay 
+    const daysUntilDelivery = nextDay > currentDay
+      ? nextDay - currentDay
       : 7 - currentDay + nextDay
 
     const deliveryDate = new Date(today)

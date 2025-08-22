@@ -41,7 +41,7 @@ export function useDeliveryAnalytics(months: number = 6) {
       // Process the data
       const monthlySpend = monthlyData?.reduce((acc, item) => {
         const month = new Date(item.month).toLocaleDateString('is-IS', { month: 'short', year: 'numeric' })
-        const existing = acc.find(a => a.month === month)
+        const existing = acc.find((a: { month: string; fees: number; orders: number }) => a.month === month)
         
         if (existing) {
           existing.fees += item.total_fees_paid
@@ -60,7 +60,7 @@ export function useDeliveryAnalytics(months: number = 6) {
       // Fixed supplier breakdown processing to handle the correct data structure
       const supplierBreakdown = supplierData?.reduce((acc, item) => {
         const supplierName = (item.suppliers as any)?.name || 'Unknown Supplier'
-        const existing = acc.find(a => a.supplier === supplierName)
+        const existing = acc.find((a: { supplier: string; fees: number; orders: number; efficiency: number }) => a.supplier === supplierName)
         const efficiency = item.total_orders > 0 
           ? Math.round(((item.total_orders - item.orders_under_threshold) / item.total_orders) * 100)
           : 0

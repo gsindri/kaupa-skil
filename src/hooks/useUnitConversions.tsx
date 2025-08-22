@@ -15,14 +15,14 @@ export function useUnitConversions() {
     return data.units.map(unit => ({
       code: unit.code,
       name: unit.name,
-      baseUnit: unit.base_unit
+      baseUnit: unit.base_unit || ''
     }))
   }, [data?.units])
 
   const baseUnits = useMemo(() => {
-    const bases = new Set(availableUnits.map(unit => unit.baseUnit))
+    const bases = new Set(availableUnits.map(unit => unit.baseUnit).filter(Boolean))
     return Array.from(bases).map(baseUnit => ({
-      baseUnit,
+      baseUnit: baseUnit as string,
       units: availableUnits.filter(unit => unit.baseUnit === baseUnit)
     }))
   }, [availableUnits])

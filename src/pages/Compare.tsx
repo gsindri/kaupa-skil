@@ -22,7 +22,6 @@ function transformToEnhancedItems(items: ComparisonItem[]) {
     name: item.itemName,
     brand: item.brand || 'Unknown',
     category: item.category || 'Uncategorized',
-    image: undefined,
     description: `${item.brand || 'Generic'} ${item.itemName}`,
     specifications: {},
     prices: item.suppliers.map(supplier => ({

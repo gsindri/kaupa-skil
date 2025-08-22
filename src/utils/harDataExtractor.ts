@@ -173,16 +173,19 @@ export class HarDataExtractor {
     if (brand) confidence += 0.1
     if (pack) confidence += 0.1
 
-    return {
+    const result: ExtractedItem = {
       sku: String(sku || name || '').trim(),
       name: String(name || sku || '').trim(),
-      brand: brand ? String(brand).trim() : undefined,
       pack: String(pack || '').trim(),
       price: Number(price),
       vatCode: Number(vatCode || 24),
       confidence,
       source
     }
+    if (brand) {
+      result.brand = String(brand).trim()
+    }
+    return result
   }
 
   private findFieldValue(obj: any, fieldNames: string[]): any {
@@ -236,14 +239,17 @@ export class HarDataExtractor {
     // Validate VAT code
     const validVatCode = [11, 24].includes(item.vatCode) ? item.vatCode : 24
 
-    return {
+    const sanitized: ExtractedItem = {
       ...item,
       pack: enhancedPack,
       vatCode: validVatCode,
       name: item.name.trim(),
-      sku: item.sku.trim(),
-      brand: item.brand?.trim()
+      sku: item.sku.trim()
     }
+    if (item.brand) {
+      sanitized.brand = item.brand.trim()
+    }
+    return sanitized
   }
 
   private enhancePackInfo(pack: string): string {

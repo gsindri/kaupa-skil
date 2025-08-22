@@ -52,8 +52,8 @@ export function SecurityTesting() {
       const { data, error } = await supabase.rpc('validate_security_policies')
       if (error) throw error
 
-      const riskyTables = data.filter(p => p.status.includes('RISK'))
-      const warningTables = data.filter(p => p.status.includes('WARNING'))
+      const riskyTables = data.filter((p: any) => p.status.includes('RISK'))
+      const warningTables = data.filter((p: any) => p.status.includes('WARNING'))
 
       if (riskyTables.length > 0) {
         return {
@@ -159,10 +159,10 @@ export function SecurityTesting() {
   const runSupportSessionTest = async (): Promise<TestResult> => {
     try {
       // Test support session creation
-      const { data: tenants } = await supabase
-        .from('tenants')
-        .select('id')
-        .limit(1)
+        const { data: tenants } = await supabase
+          .from<{ id: string }>('tenants')
+          .select('id')
+          .limit(1)
 
       if (!tenants || tenants.length === 0) {
         return {
@@ -172,11 +172,11 @@ export function SecurityTesting() {
         }
       }
 
-      const { data: session, error: createError } = await supabase.rpc('create_support_session', {
-        target_tenant_id: tenants[0].id,
-        reason_text: 'Security test session',
-        duration_minutes: 1
-      })
+        const { data: session, error: createError } = await supabase.rpc('create_support_session', {
+          target_tenant_id: tenants[0]!.id,
+          reason_text: 'Security test session',
+          duration_minutes: 1
+        })
 
       if (createError) {
         if (createError.message.includes('Only platform admins')) {

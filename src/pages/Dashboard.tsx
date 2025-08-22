@@ -9,7 +9,7 @@ import { usePriceAnomalies } from '@/hooks/usePriceAnomalies'
 
 export default function Dashboard() {
   const { data: analyticsData, isLoading: analyticsLoading } = usePriceAnalytics()
-  const { data: anomalies = [], isLoading: anomaliesLoading } = usePriceAnomalies()
+  const { anomalies, isLoading: anomaliesLoading } = usePriceAnomalies()
   const handleViewAnomaly = (id: string) => {
     console.log('View anomaly:', id)
   }
@@ -44,7 +44,7 @@ export default function Dashboard() {
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
             </div>
           ) : (
-            <PriceAnalyticsDashboard data={analyticsData} />
+            analyticsData ? <PriceAnalyticsDashboard data={analyticsData} /> : null
           )}
         </TabsContent>
 

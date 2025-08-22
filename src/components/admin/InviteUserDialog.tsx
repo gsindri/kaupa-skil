@@ -21,11 +21,12 @@ export function InviteUserDialog() {
     if (!newUserEmail || !profile?.tenant_id) return
 
     try {
+      const fullName = newUserFullName.trim()
       await inviteUser.mutateAsync({
         email: newUserEmail,
         tenantId: profile.tenant_id,
         baseRole: newUserRole,
-        fullName: newUserFullName.trim() || undefined
+        ...(fullName ? { fullName } : {})
       })
 
       setIsOpen(false)

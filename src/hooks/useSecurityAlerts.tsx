@@ -38,7 +38,10 @@ export function useSecurityAlerts() {
         // Check for failed jobs
         const { data: failedJobs } = await supabase.rpc('get_failed_jobs_summary')
         if (failedJobs && failedJobs.length > 0) {
-          const totalFailed = failedJobs.reduce((sum, job) => sum + Number(job.failed_count), 0)
+          const totalFailed = failedJobs.reduce(
+            (sum: number, job: { failed_count: number }) => sum + Number(job.failed_count),
+            0
+          )
           if (totalFailed > 10) {
             alerts.push({
               id: 'failed-jobs',
