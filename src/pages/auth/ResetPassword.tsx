@@ -19,14 +19,14 @@ export default function ResetPassword() {
     async function getSession() {
       try {
         const code = new URLSearchParams(window.location.search).get("code");
-        let error: any = null;
+        let error: unknown = null;
         if (code) {
           ({ error } = await supabase.auth.exchangeCodeForSession(code));
         } else {
           ({ error } = await supabase.auth.getSessionFromUrl({ storeSession: true }));
         }
         if (error) throw error;
-      } catch (err: any) {
+      } catch (err: unknown) {
         await supabase.auth.signOut();
         setPageError("This password reset link is invalid or has expired.");
       } finally {
@@ -57,8 +57,8 @@ export default function ResetPassword() {
       await supabase.auth.signOut();
       toast({ title: "Password updated", description: "Please log in with your new password." });
       navigate("/login");
-    } catch (err: any) {
-      setFormError(String(err?.message || err));
+    } catch (err: unknown) {
+      setFormError(err instanceof Error ? err.message : String(err));
     } finally {
       setBusy(false);
     }

@@ -16,7 +16,7 @@ import { Plus, Minus, Info, ExternalLink, AlertTriangle } from 'lucide-react'
 import { Sparkline } from '@/components/ui/Sparkline'
 import { DeliveryFeeIndicator } from '@/components/delivery/DeliveryFeeIndicator'
 import { deliveryCalculator } from '@/services/DeliveryCalculator'
-import type { ComparisonItem, CartItem } from '@/lib/types'
+import type { ComparisonItem, CartItem, SupplierQuote, DeliveryCalculation } from '@/lib/types'
 import { useCart } from '@/contexts/useBasket'
 import { useSettings } from '@/contexts/useSettings'
 
@@ -29,7 +29,7 @@ export function EnhancedComparisonTable({ data, isLoading }: EnhancedComparisonT
   const { includeVat } = useSettings()
   const { addItem, updateQuantity, items: cartItems } = useCart()
   const [quantities, setQuantities] = useState<Record<string, number>>({})
-  const [deliveryCalculations, setDeliveryCalculations] = useState<Map<string, any>>(new Map())
+  const [deliveryCalculations, setDeliveryCalculations] = useState<Map<string, DeliveryCalculation>>(new Map())
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('is-IS', {
@@ -45,32 +45,49 @@ export function EnhancedComparisonTable({ data, isLoading }: EnhancedComparisonT
     return cartItem?.quantity || 0
   }, [cartItems])
 
-  const calculateLandedCost = async (supplier: any, quantity: number) => {
-    const mockCartItem: CartItem = {
-      id: supplier.id,
-      supplierItemId: supplier.supplierItemId,
-      supplierId: supplier.id,
-      supplierName: supplier.name,
-      itemName: supplier.name,
-      sku: supplier.sku,
-      packSize: supplier.packSize,
-      packPrice: supplier.packPrice,
-      unitPriceExVat: supplier.unitPriceExVat,
-      unitPriceIncVat: supplier.unitPriceIncVat,
-      vatRate: 0.24,
-      unit: supplier.unit,
-      displayName: supplier.name,
-      packQty: 1,
-      quantity
-    }
+  type SupplierWithItem = SupplierQuote & { itemName: string }
+
+  const calculateLandedCost = async (supplier: SupplierWithItem, quantity: number) => {
+    const supplierCartItems = cartItems.filter(item => item.supplierId === supplier.id)
+
+    const itemsForCalculation = (() => {
+      const existing = supplierCartItems.find(
+        item => item.supplierItemId === supplier.supplierItemId
+      )
+      if (existing) {
+        return supplierCartItems.map(item =>
+          item.supplierItemId === supplier.supplierItemId
+            ? { ...item, quantity: item.quantity + quantity }
+            : item
+        )
+      }
+      const newItem: CartItem = {
+        id: supplier.id,
+        supplierItemId: supplier.supplierItemId,
+        supplierId: supplier.id,
+        supplierName: supplier.name,
+        itemName: supplier.itemName,
+        sku: supplier.sku,
+        packSize: supplier.packSize,
+        packPrice: supplier.packPrice,
+        unitPriceExVat: supplier.unitPriceExVat,
+        unitPriceIncVat: supplier.unitPriceIncVat,
+        vatRate: 0.24,
+        unit: supplier.unit,
+        displayName: supplier.itemName,
+        packQty: 1,
+        quantity,
+      }
+      return [...supplierCartItems, newItem]
+    })()
 
     try {
       const calculation = await deliveryCalculator.calculateDeliveryForSupplier(
         supplier.id,
         supplier.name,
-        [mockCartItem]
+        itemsForCalculation
       )
-      
+
       setDeliveryCalculations(prev => new Map(prev.set(supplier.supplierItemId, calculation)))
       return calculation.landed_cost
     } catch (error) {
@@ -83,7 +100,7 @@ export function EnhancedComparisonTable({ data, isLoading }: EnhancedComparisonT
     const currentCartQuantity = getCartQuantity(supplierItemId)
     
     if (newQuantity > currentCartQuantity) {
-      const supplierQuote = data.flatMap(item => 
+      const supplierQuote: SupplierWithItem | undefined = data.flatMap(item =>
         item.suppliers.map(supplier => ({
           ...supplier,
           itemName: item.itemName,

@@ -24,7 +24,7 @@ export const queryKeys = {
 
   // Product queries
   products: {
-    list: (filters?: any) => ['products', filters] as const,
+    list: (filters?: Record<string, unknown>) => ['products', filters] as const,
   },
   
   // Supplier related queries
@@ -32,7 +32,7 @@ export const queryKeys = {
     all: () => ['suppliers'] as const,
     list: () => ['suppliers', 'list'] as const,
     detail: (supplierId: string) => ['supplier', supplierId] as const,
-    items: (supplierId?: string, filters?: any) => ['supplier', 'items', supplierId, filters] as const,
+    items: (supplierId?: string, filters?: Record<string, unknown>) => ['supplier', 'items', supplierId, filters] as const,
     credentials: (supplierId: string) => ['supplier', supplierId, 'credentials'] as const,
     runs: (supplierId: string) => ['supplier', supplierId, 'runs'] as const,
   },
@@ -47,9 +47,9 @@ export const queryKeys = {
   
   // Price and comparison queries
   prices: {
-    quotes: (filters?: any) => ['prices', 'quotes', filters] as const,
+    quotes: (filters?: Record<string, unknown>) => ['prices', 'quotes', filters] as const,
     history: (itemId: string) => ['prices', 'history', itemId] as const,
-    comparison: (filters?: any) => ['prices', 'comparison', filters] as const,
+    comparison: (filters?: Record<string, unknown>) => ['prices', 'comparison', filters] as const,
     realTime: () => ['prices', 'realTime'] as const,
   },
   
@@ -58,7 +58,7 @@ export const queryKeys = {
     elevations: () => ['admin', 'elevations'] as const,
     activeElevation: () => ['admin', 'activeElevation'] as const,
     supportSessions: () => ['admin', 'supportSessions'] as const,
-    auditLogs: (filters?: any) => ['admin', 'auditLogs', filters] as const,
+    auditLogs: (filters?: Record<string, unknown>) => ['admin', 'auditLogs', filters] as const,
     jobs: () => ['admin', 'jobs'] as const,
     pendingActions: () => ['admin', 'pendingActions'] as const,
   },
@@ -82,8 +82,8 @@ export const queryKeys = {
   
   // Analytics queries
   analytics: {
-    delivery: (filters?: any) => ['analytics', 'delivery', filters] as const,
-    pricing: (filters?: any) => ['analytics', 'pricing', filters] as const,
+    delivery: (filters?: Record<string, unknown>) => ['analytics', 'delivery', filters] as const,
+    pricing: (filters?: Record<string, unknown>) => ['analytics', 'pricing', filters] as const,
     usage: () => ['analytics', 'usage'] as const,
   },
 

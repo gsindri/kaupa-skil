@@ -57,8 +57,12 @@ export class PerformanceMonitor {
   }
 
   static getMemoryUsage(): BrowserMemoryInfo | null {
+    interface PerformanceWithMemory extends Performance {
+      memory?: BrowserMemoryInfo
+    }
+
     if ('memory' in performance) {
-      return (performance as any).memory as BrowserMemoryInfo
+      return (performance as PerformanceWithMemory).memory || null
     }
     return null
   }

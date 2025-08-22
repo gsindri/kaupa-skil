@@ -26,12 +26,13 @@ export const queryClient = new QueryClient({
     },
     mutations: {
       // Retry mutations once with exponential backoff
-      retry: (failureCount, error) => {
+      retry: (failureCount: number, error: unknown) => {
+        const err = error as { message?: string; code?: string }
         // Don't retry auth errors or permission errors
-        if (error?.message?.includes('JWT') || 
-            error?.message?.includes('auth') ||
-            (error as any)?.code === 'PGRST301' ||
-            (error as any)?.code === '42501') {
+        if (err?.message?.includes('JWT') ||
+            err?.message?.includes('auth') ||
+            err?.code === 'PGRST301' ||
+            err?.code === '42501') {
           return false
         }
         return failureCount < 1
@@ -40,11 +41,12 @@ export const queryClient = new QueryClient({
       // Centralized mutation error handling
       onError: (error, variables, context) => {
         handleQueryError(error, 'mutation')
-        
+
+        const err = error as { code?: string; message?: string }
         // Log security-relevant mutation failures
-        if ((error as any)?.code === 'PGRST301' || (error as any)?.code === '42501') {
+        if (err?.code === 'PGRST301' || err?.code === '42501') {
           console.warn('Unauthorized mutation attempt:', {
-            error: error?.message,
+            error: err?.message,
             variables,
             timestamp: new Date().toISOString()
           })
@@ -59,7 +61,7 @@ export const queryClient = new QueryClient({
 // Enhanced error handling for development and security monitoring
 if (process.env.NODE_ENV === 'development') {
   queryClient.setMutationDefaults(['supplier-items'], {
-    mutationFn: async (variables: any) => {
+    mutationFn: async (variables: unknown) => {
       throw new Error('Mutation not implemented')
     },
   })
@@ -75,8 +77,8 @@ if (import.meta.env.DEV) {
     
     // Monitor for potential security issues
     if (event.type === 'updated' && event.action.type === 'error') {
-      const error = event.action.error
-      if ((error as any)?.code === 'PGRST301' || (error as any)?.code === '42501') {
+      const error = event.action.error as { code?: string; message?: string }
+      if (error?.code === 'PGRST301' || error?.code === '42501') {
         console.warn('Security: Unauthorized query detected:', {
           queryKey: event.query.queryKey,
           error: error?.message,
@@ -89,8 +91,8 @@ if (import.meta.env.DEV) {
   // Memory usage monitoring
   queryClient.getMutationCache().subscribe((event) => {
     if (event.type === 'updated' && event.action.type === 'error') {
-      const error = event.action.error
-      if ((error as any)?.code === 'PGRST301' || (error as any)?.code === '42501') {
+      const error = event.action.error as { code?: string; message?: string }
+      if (error?.code === 'PGRST301' || error?.code === '42501') {
         console.warn('Security: Unauthorized mutation detected:', {
           mutationKey: event.mutation.options.mutationKey,
           error: error?.message,

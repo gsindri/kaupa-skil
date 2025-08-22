@@ -142,7 +142,7 @@ export default function Compare() {
     setSearchParams(params)
   }, [searchTerm, filters, setSearchParams])
 
-  const handleAddToCart = (item: any, supplier: any, quantity: number) => {
+  const handleAddToCart = (item: ComparisonItem, supplier: SupplierQuote, quantity: number) => {
     toast({
       title: 'Added to cart',
       description: `${quantity}x ${item.name} from ${supplier.supplierName}`

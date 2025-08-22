@@ -100,7 +100,7 @@ export default function PriceHistory() {
   }, [priceHistory])
 
   const chartConfig = React.useMemo(() => {
-    const config: any = {}
+    const config: Record<string, { label: string; color: string }> = {}
     suppliers.forEach((supplier, index) => {
       config[supplier] = {
         label: supplier,

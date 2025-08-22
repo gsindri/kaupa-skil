@@ -41,25 +41,39 @@ async function fetchSuppliers(): Promise<SupplierCard[]> {
 
   if (error) throw error
 
-  return (data || []).map((supplier: any) => {
+  type SupplierRow = {
+    id: string
+    name: string
+    website: string | null
+    supplier_items: Array<{
+      id: string
+      display_name: string
+      pack_unit_id: string | null
+      last_seen_at: string | null
+      categories: { name: string } | null
+      price_quotes: Array<{ unit_price_ex_vat: number | null; pack_price: number | null; observed_at: string | null }> | null
+    }> | null
+  }
+
+  return ((data as SupplierRow[]) || []).map((supplier) => {
     const items = supplier.supplier_items || []
 
     const categories = Array.from(
       new Set(
-        items.flatMap((item: any) =>
+        items.flatMap(item =>
           item.categories?.name ? [item.categories.name] : []
         )
       )
     )
 
     const sampleProducts = items
-      .sort((a: any, b: any) => {
-        const dateA = a.price_quotes?.[0]?.observed_at || a.last_seen_at || 0
-        const dateB = b.price_quotes?.[0]?.observed_at || b.last_seen_at || 0
+      .sort((a, b) => {
+        const dateA = a.price_quotes?.[0]?.observed_at || a.last_seen_at || ''
+        const dateB = b.price_quotes?.[0]?.observed_at || b.last_seen_at || ''
         return new Date(dateB).getTime() - new Date(dateA).getTime()
       })
       .slice(0, 3)
-      .map((item: any) => ({
+      .map(item => ({
         name: item.display_name,
         indicativePrice:
           item.price_quotes?.[0]?.unit_price_ex_vat ??
@@ -73,7 +87,7 @@ async function fetchSuppliers(): Promise<SupplierCard[]> {
       name: supplier.name,
       categories,
       sampleProducts,
-      status: 'available',
+      status: 'available' as const,
       description: supplier.website
     }
   })

@@ -7,7 +7,7 @@ export function lockBody() {
   if (lockCount === 0) {
     let scrollBarGap =
       window.innerWidth - document.documentElement.clientWidth
-    const root = getComputedStyle(document.documentElement) as any
+    const root = getComputedStyle(document.documentElement)
     const gutterReserved =
       (root.scrollbarGutter && root.scrollbarGutter !== 'auto') ||
       root.overflowY === 'scroll'

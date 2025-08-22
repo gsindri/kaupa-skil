@@ -1,5 +1,6 @@
 
 import { toast } from 'sonner'
+import type { QueryClient, Query } from '@tanstack/react-query'
 
 export interface QueryError {
   message: string
@@ -8,15 +9,17 @@ export interface QueryError {
   hint?: string
 }
 
-export const handleQueryError = (error: any, context?: string) => {
+export const handleQueryError = (error: unknown, context?: string) => {
   console.error(`Query error${context ? ` in ${context}` : ''}:`, error)
+
+  const err = error as { message?: string; code?: string; status?: number; name?: string }
 
   let errorMessage = 'An unexpected error occurred'
   let shouldShowToast = true
 
   // Handle Supabase errors
-  if (error?.code) {
-    switch (error.code) {
+  if (err?.code) {
+    switch (err.code) {
       case 'PGRST116':
         errorMessage = 'No data found'
         shouldShowToast = false // Don't show toast for "not found" errors
@@ -38,19 +41,19 @@ export const handleQueryError = (error: any, context?: string) => {
         shouldShowToast = false
         break
       default:
-        errorMessage = error.message || errorMessage
+        errorMessage = err.message || errorMessage
     }
-  } else if (error?.message) {
-    errorMessage = error.message
+  } else if (err?.message) {
+    errorMessage = err.message
   }
 
   // Handle network errors
-  if (error?.name === 'NetworkError' || error?.code === 'NETWORK_ERROR') {
+  if (err?.name === 'NetworkError' || err?.code === 'NETWORK_ERROR') {
     errorMessage = 'Network connection error. Please check your internet connection.'
   }
 
   // Handle authentication errors
-  if (error?.message?.includes('JWT') || error?.message?.includes('auth')) {
+  if (err?.message?.includes('JWT') || err?.message?.includes('auth')) {
     errorMessage = 'Authentication error. Please log in again.'
     // Optionally redirect to login
     if (typeof window !== 'undefined') {
@@ -60,13 +63,13 @@ export const handleQueryError = (error: any, context?: string) => {
   }
 
   // Handle tenant context errors
-  if (error?.message?.includes('tenant') || error?.code === 'TENANT_ACCESS_DENIED') {
+  if (err?.message?.includes('tenant') || err?.code === 'TENANT_ACCESS_DENIED') {
     errorMessage = 'Access denied for this organization'
     shouldShowToast = true
   }
 
   // Handle rate limiting
-  if (error?.status === 429 || error?.code === 'RATE_LIMIT_EXCEEDED') {
+  if (err?.status === 429 || err?.code === 'RATE_LIMIT_EXCEEDED') {
     errorMessage = 'Too many requests. Please wait a moment and try again.'
     shouldShowToast = true
   }
@@ -82,24 +85,25 @@ export const handleQueryError = (error: any, context?: string) => {
 }
 
 // Retry logic for failed queries with enhanced tenant-aware logic
-export const getRetryOptions = (failureCount: number, error: any) => {
+export const getRetryOptions = (failureCount: number, error: unknown) => {
+  const err = error as { message?: string; code?: string; status?: number }
   // Don't retry on authentication errors
-  if (error?.message?.includes('JWT') || error?.message?.includes('auth')) {
+  if (err?.message?.includes('JWT') || err?.message?.includes('auth')) {
     return false
   }
 
   // Don't retry on permission errors
-  if (error?.code === 'PGRST301' || error?.code === '42501' || error?.code === 'TENANT_ACCESS_DENIED') {
+  if (err?.code === 'PGRST301' || err?.code === '42501' || err?.code === 'TENANT_ACCESS_DENIED') {
     return false
   }
 
   // Don't retry on client errors (4xx) except rate limiting
-  if (error?.status >= 400 && error?.status < 500 && error?.status !== 429) {
+  if (err?.status && err.status >= 400 && err.status < 500 && err.status !== 429) {
     return false
   }
 
   // Don't retry on data constraint violations
-  if (error?.code === '23505' || error?.code === '23503') {
+  if (err?.code === '23505' || err?.code === '23503') {
     return false
   }
 
@@ -115,25 +119,25 @@ export const getRetryDelay = (attemptIndex: number) => {
 }
 
 // Centralized query invalidation helper
-export const invalidateQueriesWithPattern = (queryClient: any, pattern: string[]) => {
+export const invalidateQueriesWithPattern = (queryClient: QueryClient, pattern: string[]) => {
   return queryClient.invalidateQueries({
-    predicate: (query: any) => {
+    predicate: (query: Query) => {
       return pattern.some(p => query.queryKey.includes(p))
     }
   })
 }
 
 // Request deduplication helper
-export const createDedupedQuery = (
-  baseQueryFn: (...args: any[]) => Promise<any>
+export const createDedupedQuery = <TArgs extends unknown[], T>(
+  baseQueryFn: (...args: TArgs) => Promise<T>
 ) => {
-  const pendingRequests = new Map<string, Promise<any>>()
+  const pendingRequests = new Map<string, Promise<T>>()
 
-  return async (...args: any[]) => {
+  return async (...args: TArgs): Promise<T> => {
     const key = JSON.stringify(args)
 
     if (pendingRequests.has(key)) {
-      return pendingRequests.get(key) as Promise<any>
+      return pendingRequests.get(key) as Promise<T>
     }
 
     const promise = baseQueryFn(...args)

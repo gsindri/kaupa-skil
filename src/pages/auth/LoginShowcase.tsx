@@ -2,7 +2,7 @@ import * as React from "react";
 import { useState, useEffect } from "react";
 import { Eye, EyeOff, AlertCircle, CheckCircle2 } from "lucide-react";
 import { useAuth } from '@/contexts/useAuth';
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, type Location } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { EmailConfirmation } from "@/components/auth/EmailConfirmation";
@@ -13,12 +13,12 @@ import { EmailConfirmation } from "@/components/auth/EmailConfirmation";
 export default function LoginShowcase() {
   const { user, loading, error, isInitialized } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
+  const location = useLocation<{ from?: Location }>();
 
   // Redirect authenticated users
   useEffect(() => {
     if (isInitialized && user) {
-      const from = (location.state as any)?.from?.pathname || "/";
+      const from = location.state?.from?.pathname || "/";
       navigate(from, { replace: true });
     }
   }, [user, isInitialized, navigate, location]);
@@ -96,8 +96,8 @@ function AuthForm() {
         setSignupEmail(email.trim());
         setShowEmailConfirmation(true);
       }
-    } catch (err: any) {
-      const msg = String(err?.message || err);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
       const title = isLogin ? "Login failed" : "Signup failed";
       const detail =
         /Invalid login credentials/i.test(msg) ? "Invalid email or password."
@@ -171,8 +171,8 @@ function AuthForm() {
             disabled={busy}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            onKeyDown={(e) => setCaps((e as any).getModifierState?.("CapsLock"))}
-            onKeyUp={(e) => setCaps((e as any).getModifierState?.("CapsLock"))}
+            onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => setCaps(e.getModifierState?.("CapsLock"))}
+            onKeyUp={(e: React.KeyboardEvent<HTMLInputElement>) => setCaps(e.getModifierState?.("CapsLock"))}
             className="w-full rounded-full border border-slate-300 bg-white px-4 py-3 pr-10 text-sm outline-none focus:ring-4 focus:ring-blue-100"
             placeholder="Password"
             minLength={!isLogin ? 6 : undefined}

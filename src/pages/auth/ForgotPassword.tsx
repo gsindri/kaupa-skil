@@ -55,8 +55,8 @@ export default function ForgotPassword() {
         title: "Reset email sent",
         description: "Check your inbox for the password reset link.",
       });
-    } catch (err: any) {
-      const msg = String(err?.message || err);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
       const friendly =
         /over_email_send_rate_limit/i.test(msg)
           ? "Too many reset emails sent. Please wait a few minutes and try again."

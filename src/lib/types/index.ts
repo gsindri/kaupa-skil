@@ -14,6 +14,9 @@ export type SupplierItem = Database['public']['Tables']['supplier_items']['Row']
 export type PriceQuote = Database['public']['Tables']['price_quotes']['Row']
 export type Supplier = Database['public']['Tables']['suppliers']['Row']
 
+// Delivery calculation result
+export type { DeliveryCalculation } from './delivery'
+
 // Cart item type that properly maps to database
 export interface CartItem {
   id: string // This should be supplier_items.id
