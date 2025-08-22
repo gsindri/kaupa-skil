@@ -1,8 +1,11 @@
 import dotenv from "dotenv"
 
-// Load test env vars first, then fall back to .env
-const r = dotenv.config({ path: ".env.test" })
-if (r.error) dotenv.config()
+// Prefer .env.test when running Vitest; otherwise load .env
+if (process.env.VITEST) {
+  dotenv.config({ path: ".env.test" })
+} else {
+  dotenv.config()
+}
 
 import { defineConfig } from "vite"
 import { configDefaults } from "vitest/config"
@@ -30,7 +33,7 @@ export default defineConfig(({ mode }) => ({
     environment: "jsdom",
     setupFiles: "./src/setupTests.ts",
     exclude: [...configDefaults.exclude, "e2e/**"],
-    // 👇 forward env vars into Vitest runtime (important for CI)
+    // Forward env vars into Vitest runtime (important for CI)
     env: {
       VITE_SUPABASE_URL: process.env.VITE_SUPABASE_URL,
       VITE_SUPABASE_ANON_KEY: process.env.VITE_SUPABASE_ANON_KEY,
