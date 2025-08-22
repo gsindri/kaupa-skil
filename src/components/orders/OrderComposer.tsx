@@ -94,7 +94,7 @@ export function OrderComposer() {
         items: []
       }
     }
-    groups[item.supplierId].items.push(item)
+    groups[item.supplierId]!.items.push(item)
     return groups
   }, {} as Record<string, { supplierName: string; items: typeof items }>)
 

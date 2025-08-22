@@ -60,8 +60,8 @@ export function HarProcessingPreview({
           </TabsContent>
 
           <TabsContent value="analytics">
-            <HarAnalyticsPreview 
-              analytics={analyticsResult}
+            <HarAnalyticsPreview
+              analytics={analyticsResult ?? null}
               recommendations={recommendations}
               insights={insights}
               actionPlan={actionPlan}

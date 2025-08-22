@@ -21,7 +21,7 @@ export function Sparkline({ data, width = 60, height = 20, className = "" }: Spa
     return `${x},${y}`
   }).join(' ')
 
-  const isPositive = data[data.length - 1] >= data[0]
+  const isPositive = data[data.length - 1]! >= data[0]!
   
   return (
     <div className={`inline-flex items-center ${className}`}>

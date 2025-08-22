@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { useCart } from '@/contexts/useBasket'
 import { useToast } from '@/hooks/use-toast'
+import { ToastAction } from '@/components/ui/toast'
 
 export interface Product {
   id: string
@@ -44,10 +45,11 @@ export function ProductCard({ product }: { product: Product }) {
     )
     toast({
       title: 'Added to cart',
-      action: {
-        label: 'Undo',
-        onClick: () => removeItem(product.id)
-      }
+      action: (
+        <ToastAction altText="Undo" onClick={() => removeItem(product.id)}>
+          Undo
+        </ToastAction>
+      )
     })
     setQty(0)
   }

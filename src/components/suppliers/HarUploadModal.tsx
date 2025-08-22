@@ -72,7 +72,10 @@ export function HarUploadModal({
       // Prepare the HAR data for the edge function
       const harData = {
         log: {
-          entries: [] // We'll reconstruct this from the extraction results
+          entries: [] as {
+            request: { url: string }
+            response: { content: { mimeType: string; text: string } }
+          }[]
         }
       }
 

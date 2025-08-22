@@ -106,8 +106,8 @@ export function EnhancedCompareTable({ items, onAddToCart, onRemoveItem }: Enhan
 
   const getPriceTrend = (history: number[]) => {
     if (history.length < 2) return 'stable'
-    const recent = history[history.length - 1]
-    const previous = history[history.length - 2]
+    const recent = history[history.length - 1]!
+    const previous = history[history.length - 2]!
     if (recent > previous) return 'up'
     if (recent < previous) return 'down'
     return 'stable'

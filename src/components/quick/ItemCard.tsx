@@ -50,8 +50,8 @@ export function ItemCard({ item, onCompareItem, userMode, compact = false }: Ite
     
     addItem({
       id: item.id,
-      supplierId: item.suppliers[0],
-      supplierName: item.suppliers[0],
+      supplierId: item.suppliers[0]!,
+      supplierName: item.suppliers[0]!,
       itemName: item.name,
       sku: item.id,
       packSize: item.packSize,

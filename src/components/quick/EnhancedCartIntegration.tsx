@@ -91,8 +91,12 @@ export function EnhancedCartIntegration() {
                     <div className="text-orange-700">
                       Add {formatPrice(opportunity.amount_to_free_delivery!)} more for free delivery
                     </div>
-                    <Progress 
-                      value={(opportunity.subtotal_ex_vat / opportunity.threshold_amount) * 100} 
+                    <Progress
+                      value={
+                        opportunity.threshold_amount
+                          ? (opportunity.subtotal_ex_vat / opportunity.threshold_amount) * 100
+                          : 0
+                      }
                       className="mt-1 h-1"
                     />
                   </div>

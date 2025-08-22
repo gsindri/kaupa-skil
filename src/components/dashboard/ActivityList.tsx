@@ -5,7 +5,7 @@ import { useAuditLogs } from '@/hooks/useAuditLogs'
 
 export function ActivityList() {
   const { profile } = useAuth()
-  const { auditLogs = [], isLoading } = useAuditLogs({ tenantId: profile?.tenant_id })
+  const { auditLogs = [], isLoading } = useAuditLogs({ tenantId: profile?.tenant_id ?? undefined })
 
   return (
     <Card className="h-full flex flex-col">

@@ -95,7 +95,7 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
         throw checkError
       }
 
-      let tenant = existingTenant
+        let tenant = existingTenant
 
       // If tenant exists and user created it, just associate the user
       if (existingTenant && existingTenant.created_by === user.id) {
@@ -130,6 +130,10 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
 
         tenant = newTenant
         console.log('New tenant created:', tenant)
+      }
+
+      if (!tenant) {
+        throw new Error('Tenant was not created')
       }
 
       // Update the user's profile with the tenant_id
