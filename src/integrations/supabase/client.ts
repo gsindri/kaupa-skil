@@ -3,8 +3,9 @@ import type { Database } from '@/lib/types/database'
 
 const env = (typeof import.meta !== 'undefined' && (import.meta as any).env) || {}
 
-// Treat CI/Vitest as test environments (Vitest sets VITEST, GitHub sets CI)
-const IS_TEST = !!(process.env.VITEST || process.env.CI)
+// CI (GitHub) sets CI=true; Vitest sets VITEST.
+// In those cases, use safe dummy values if real envs aren't present.
+const IS_TEST = !!(process.env.CI || process.env.VITEST)
 
 const SUPABASE_URL =
   env.VITE_SUPABASE_URL ||
