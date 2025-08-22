@@ -1,4 +1,9 @@
 import { defineConfig, devices } from '@playwright/test';
+import { config as dotenvConfig } from 'dotenv';
+
+// Load environment variables from .env files so e2e tests can access
+// credentials like E2E_EMAIL and E2E_PASSWORD without manual export.
+dotenvConfig();
 
 export default defineConfig({
   testDir: './e2e',
