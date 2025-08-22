@@ -191,8 +191,13 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
       }
     })
 
-    const storageKey = (supabase.auth as any).storageKey;
-    const handleStorage = (event: StorageEvent) => {};
+    const storageKey = (supabase.auth as any).storageKey
+
+    const handleStorage = (event: StorageEvent) => {
+      if (storageKey && event.key?.startsWith(storageKey) && event.newValue === null) {
+        void signOut()
+      }
+    }
 
     window.addEventListener('storage', handleStorage)
 
@@ -209,7 +214,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
       subscription.unsubscribe()
       window.removeEventListener('storage', handleStorage)
     }
-  }, [fetchProfile])
+  }, [fetchProfile, signOut])
 
   return (
     <AuthContext.Provider value={{
