@@ -1,3 +1,4 @@
+
 // src/integrations/supabase/client.ts
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 
@@ -54,6 +55,9 @@ function makeDummyClient(): SupabaseClient<any> {
       getSession: async () => ({ data: { session: null }, error: null }),
       onAuthStateChange: () => ({ data: { subscription: { unsubscribe() {} } }, error: null } as any),
       signInWithOtp: async () => ({ data: null, error: null } as any),
+      signInWithPassword: async () => ({ data: null, error: new Error('Supabase env is missing; cannot sign in.') } as any),
+      signUp: async () => ({ data: null, error: new Error('Supabase env is missing; cannot sign up.') } as any),
+      resend: async () => ({ data: null, error: new Error('Supabase env is missing; cannot resend email.') } as any),
       signOut: async () => ({ error: null } as any),
     } as any,
     from: () => chain,
