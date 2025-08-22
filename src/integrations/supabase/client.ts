@@ -1,3 +1,4 @@
+// src/integrations/supabase/client.ts
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '@/lib/types/database'
 
@@ -9,6 +10,7 @@ const nodeEnv: Record<string, any> | undefined =
 
 // Treat CI/Vitest as test envs only when running in Node
 const IS_TEST = !!(nodeEnv?.CI || nodeEnv?.VITEST)
+const IS_PROD = env.MODE === 'production'
 
 const URL =
   env.VITE_SUPABASE_URL ||
@@ -58,15 +60,25 @@ function makeDummyClient(): SupabaseClient<Database> {
     from: () => chain,
     rpc: async () => ({ data: null, error: null } as any),
     channel: () => ({ subscribe: () => ({ unsubscribe() {} }) } as any),
-    storage: { from: () => ({ upload: async () => ({ data: null, error: null } as any), download: async () => ({ data: null, error: null } as any), remove: async () => ({ data: null, error: null } as any) }) } as any,
+    storage: {
+      from: () => ({
+        upload: async () => ({ data: null, error: null } as any),
+        download: async () => ({ data: null, error: null } as any),
+        remove: async () => ({ data: null, error: null } as any),
+      }),
+    } as any,
   } as unknown as SupabaseClient<Database>
 }
 
 export const supabase: SupabaseClient<Database> =
   URL && KEY
     ? createClient<Database>(URL, KEY, { auth: { persistSession: true, autoRefreshToken: true } })
-    : (console.error(
-        '[Supabase] Missing env vars. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.',
-        { hasUrl: !!URL, hasKey: !!KEY, mode: env.MODE }
-      ),
-      makeDummyClient())
+    : IS_PROD
+      ? (() => {
+          throw new Error('[Supabase] Missing env in production (VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY)')
+        })()
+      : (console.error(
+          '[Supabase] Missing env (dev/test). Using dummy client.',
+          { hasUrl: !!URL, hasKey: !!KEY, mode: env.MODE }
+        ),
+        makeDummyClient())
