@@ -31,15 +31,14 @@ jobs:
         with:
           version: 10.14.0
 
-
-      # Use the packageManager pin in package.json
-      - name: Enable Corepack
-        run: corepack enable
-
-      - name: Show versions
+      - name: Verify pnpm on PATH (fallback via Corepack)
         run: |
-          node -v
-          pnpm -v
+          if ! command -v pnpm >/dev/null 2>&1; then
+            echo "pnpm not found, activating via Corepack…"
+            corepack enable
+            corepack prepare pnpm@10.14.0 --activate
+          fi
+          echo "pnpm version: $(pnpm -v)"
 
       - name: Enforce single lockfile (pnpm only)
         run: |
@@ -78,12 +77,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-playwright-
 
-      - name: Install Playwright system deps (cache miss only)
-        if: steps.cache-playwright.outputs.cache-hit != 'true'
-        run: npx playwright install-deps
-
-      - name: Install Playwright browsers
-        run: npx playwright install
+      # Robust Playwright setup (browsers + deps)
+      - name: Install Playwright (browsers + deps)
+        uses: microsoft/playwright-github-action@v1
+        with:
+          version: 1.55.0
 
       - name: Lint
         run: pnpm lint
