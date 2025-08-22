@@ -152,7 +152,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
     []
   )
 
-  const signOut = useCallback(async () => {
+  const doSignOut = useCallback(async () => {
     setLoading(true)
     setError(null)
     try {
@@ -171,12 +171,20 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
       } catch (storageErr) {
         console.error('Failed to clear auth storage:', storageErr)
       }
+      sessionStorage.removeItem(SESSION_ACTIVE_KEY)
       setUser(null)
       setSession(null)
       setProfile(null)
       setLoading(false)
     }
   }, [])
+
+  const signOut = useCallback(async () => {
+    await doSignOut()
+    const channel = new BroadcastChannel('procurewise-auth')
+    channel.postMessage({ type: 'SIGN_OUT' })
+    channel.close()
+  }, [doSignOut])
 
   useEffect(() => {
     const {
@@ -191,10 +199,26 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
       }
     })
 
-    const storageKey = (supabase.auth as any).storageKey;
-    const handleStorage = (event: StorageEvent) => {};
+    const storageKey = (supabase.auth as any).storageKey
+    const handleStorage = (event: StorageEvent) => {
+      if (
+        event.storageArea === localStorage &&
+        (event.key === storageKey || event.key === `${storageKey}-user`) &&
+        event.newValue === null
+      ) {
+        doSignOut()
+      }
+    }
 
     window.addEventListener('storage', handleStorage)
+
+    const channel = new BroadcastChannel('procurewise-auth')
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data?.type === 'SIGN_OUT') {
+        doSignOut()
+      }
+    }
+    channel.addEventListener('message', handleMessage)
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
@@ -208,8 +232,10 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
     return () => {
       subscription.unsubscribe()
       window.removeEventListener('storage', handleStorage)
+      channel.removeEventListener('message', handleMessage)
+      channel.close()
     }
-  }, [fetchProfile])
+  }, [fetchProfile, doSignOut])
 
   return (
     <AuthContext.Provider value={{
