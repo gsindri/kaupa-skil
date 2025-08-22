@@ -1,0 +1,21 @@
+
+> vite_react_shadcn_ts@0.0.0 build /workspace/kaupa-skil
+> vite build
+
+vite v5.4.19 building for production...
+transforming...
+
+warn - The class `delay-[40ms]` is ambiguous and matches multiple utilities.
+warn - If this is content and not a class, replace it with `delay-&lsqb;40ms&rsqb;` to silence this warning.
+✓ 3106 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                     0.99 kB │ gzip:   0.43 kB
+dist/assets/index-Bz7JjKiF.css     92.86 kB │ gzip:  15.75 kB
+dist/assets/index-Ch-IaOa1.js   1,539.90 kB │ gzip: 429.35 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 9.49s

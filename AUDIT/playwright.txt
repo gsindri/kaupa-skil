@@ -1,0 +1,12 @@
+
+> vite_react_shadcn_ts@0.0.0 test:e2e /workspace/kaupa-skil
+> playwright test
+
+
+Running 3 tests using 2 workers
+
+  -  1 e2e/navigation.spec.ts:22:1 › sidebar links route correctly
+  -  2 e2e/navigation.spec.ts:40:1 › quick order search flow
+  -  3 e2e/organization.spec.ts:10:1 › sign-up, solo data access, organization creation and switch
+
+  3 skipped

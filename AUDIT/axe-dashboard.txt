@@ -1,0 +1,12 @@
+Progress: resolved 1, reused 0, downloaded 0, added 0
+Progress: resolved 44, reused 8, downloaded 28, added 0
+Progress: resolved 94, reused 16, downloaded 65, added 0
+Packages: +94
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Progress: resolved 94, reused 20, downloaded 74, added 94, done
+[1mRunning axe-core 4.10.3 in chrome-headless[22m
+[31m[1mError: Error: spawn /root/.cache/pnpm/dlx/1b97179e8ea3c8de0e08c15452800dc572333b4b4a773c062be27aedd38d8ade/198d2f9f17c-1507/node_modules/.pnpm/chromedriver@139.0.2/node_modules/chromedriver/lib/chromedriver/chromedriver ENOENT
+    at /root/.cache/pnpm/dlx/1b97179e8ea3c8de0e08c15452800dc572333b4b4a773c062be27aedd38d8ade/198d2f9f17c-1507/node_modules/.pnpm/selenium-webdriver@4.22.0/node_modules/selenium-webdriver/remote/index.js:256:70
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)[22m[39m
+Please report the problem to: [4m[34mhttps://github.com/dequelabs/axe-core-npm/issues/[39m[24m
+

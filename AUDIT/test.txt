@@ -1,0 +1,49 @@
+
+> vite_react_shadcn_ts@0.0.0 test /workspace/kaupa-skil
+> vitest run -- --coverage
+
+
+ RUN  v3.2.4 /workspace/kaupa-skil
+
+ ✓ src/utils/harValidator.test.ts (5 tests) 9ms
+ ✓ src/services/__tests__/OrderingSuggestions.test.ts (3 tests) 47ms
+ ✓ src/services/__tests__/DeliveryCalculator.test.ts (6 tests) 56ms
+ ✓ src/lib/__tests__/unitVat.test.ts (6 tests) 7ms
+ ✓ src/lib/__tests__/landedCost.test.ts (4 tests) 34ms
+ ✓ src/hooks/__tests__/useComparisonItems.test.tsx (2 tests) 149ms
+ ✓ src/hooks/__tests__/useProducts.test.tsx (2 tests) 142ms
+ ✓ src/lib/__tests__/lockBody.test.ts (3 tests) 24ms
+stderr | src/components/cart/CartDrawer.test.tsx > CartDrawer > closes drawer when Place Order is clicked
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ ✓ src/components/cart/CartDrawer.test.tsx (1 test) 201ms
+ ↓ src/lib/__tests__/multiTenantFlow.test.ts (1 test | 1 skipped)
+stderr | src/pages/auth/ResetPassword.test.tsx > ResetPassword > shows error and signs out for invalid or reused links
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ ✓ src/pages/auth/ResetPassword.test.tsx (2 tests) 96ms
+ ✓ src/hooks/__tests__/useDebounce.test.tsx (2 tests) 27ms
+ ✓ src/components/dashboard/__tests__/AnomaliesList.test.tsx (2 tests) 81ms
+ ✓ src/components/dashboard/__tests__/SuppliersPanel.test.tsx (2 tests) 58ms
+ ✓ src/components/dashboard/__tests__/ActivityList.test.tsx (2 tests) 78ms
+ ✓ src/components/dashboard/__tests__/RecentOrdersTable.test.tsx (2 tests) 78ms
+ ✓ src/components/dashboard/__tests__/LiveUpdates.test.tsx (2 tests) 91ms
+ ✓ src/components/dashboard/__tests__/AlertsPanel.test.tsx (2 tests) 107ms
+stderr | src/components/ui/drawer.test.tsx > Drawer > locks body scroll when open
+`DialogContent` requires a `DialogTitle` for the component to be accessible for screen reader users.
+
+If you want to hide the `DialogTitle`, you can wrap it with our VisuallyHidden component.
+
+For more information, see https://radix-ui.com/primitives/docs/components/dialog
+Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+
+ ✓ src/components/ui/drawer.test.tsx (1 test) 136ms
+ ✓ src/router.test.ts (12 tests) 5ms
+
+ Test Files  19 passed | 1 skipped (20)
+      Tests  61 passed | 1 skipped (62)
+   Start at  18:09:33
+   Duration  13.46s (transform 2.43s, setup 1.71s, collect 8.13s, tests 1.42s, environment 13.69s, prepare 2.69s)
+
