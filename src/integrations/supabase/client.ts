@@ -3,15 +3,20 @@ import type { Database } from '@/lib/types/database'
 
 const env = (typeof import.meta !== 'undefined' && (import.meta as any).env) || {}
 
+// Treat CI/Vitest as test environments (Vitest sets VITEST, GitHub sets CI)
+const IS_TEST = !!(process.env.VITEST || process.env.CI)
+
 const SUPABASE_URL =
   env.VITE_SUPABASE_URL ||
   process.env.VITE_SUPABASE_URL ||
-  process.env.NEXT_PUBLIC_SUPABASE_URL
+  process.env.NEXT_PUBLIC_SUPABASE_URL ||
+  (IS_TEST ? 'http://localhost:54321' : undefined)
 
 const SUPABASE_ANON_KEY =
   env.VITE_SUPABASE_ANON_KEY ||
   process.env.VITE_SUPABASE_ANON_KEY ||
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+  (IS_TEST ? 'test-anon-key' : undefined)
 
 if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
   throw new Error('Missing Supabase environment variables')
