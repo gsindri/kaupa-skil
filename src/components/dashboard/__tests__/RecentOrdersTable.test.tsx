@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { vi } from 'vitest'
+import { vi, type Mock } from 'vitest'
 
 vi.mock('@/hooks/useRecentOrders', () => ({
   useRecentOrders: vi.fn(),
@@ -9,7 +9,7 @@ vi.mock('@/hooks/useRecentOrders', () => ({
 import { useRecentOrders } from '@/hooks/useRecentOrders'
 import { RecentOrdersTable } from '../RecentOrdersTable'
 
-const mockUseRecentOrders = useRecentOrders as unknown as vi.Mock
+const mockUseRecentOrders = useRecentOrders as unknown as Mock
 
 function renderComponent() {
   const queryClient = new QueryClient()

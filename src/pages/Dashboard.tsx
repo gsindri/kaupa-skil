@@ -9,7 +9,7 @@ import { usePriceAnomalies } from '@/hooks/usePriceAnomalies'
 
 export default function Dashboard() {
   const { data: analyticsData, isLoading: analyticsLoading } = usePriceAnalytics()
-  const { data: anomalies = [], isLoading: anomaliesLoading } = usePriceAnomalies()
+  const { anomalies = [], isLoading: anomaliesLoading } = usePriceAnomalies()
   const handleViewAnomaly = (id: string) => {
     console.log('View anomaly:', id)
   }

@@ -23,7 +23,7 @@ interface SupplierCard {
 }
 
 async function fetchSuppliers(): Promise<SupplierCard[]> {
-  const { data, error } = await supabase
+  const { data, error } = await (supabase as any)
     .from('suppliers')
     .select(`
       id,
@@ -50,7 +50,7 @@ async function fetchSuppliers(): Promise<SupplierCard[]> {
           item.categories?.name ? [item.categories.name] : []
         )
       )
-    )
+    ) as string[]
 
     const sampleProducts = items
       .sort((a: any, b: any) => {
@@ -66,7 +66,7 @@ async function fetchSuppliers(): Promise<SupplierCard[]> {
           item.price_quotes?.[0]?.pack_price ??
           0,
         unit: item.pack_unit_id || null
-      }))
+      })) as SupplierCard['sampleProducts']
 
     return {
       id: supplier.id,
@@ -76,7 +76,7 @@ async function fetchSuppliers(): Promise<SupplierCard[]> {
       status: 'available',
       description: supplier.website
     }
-  })
+  }) as SupplierCard[]
 }
 
 export default function Discovery() {

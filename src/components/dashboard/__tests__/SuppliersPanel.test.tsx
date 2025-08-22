@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { vi } from 'vitest'
+import { vi, type Mock } from 'vitest'
 
 vi.mock('@/hooks/useSupplierConnections', () => ({
   useSupplierConnections: vi.fn(),
@@ -9,7 +9,7 @@ vi.mock('@/hooks/useSupplierConnections', () => ({
 import { useSupplierConnections } from '@/hooks/useSupplierConnections'
 import { SuppliersPanel } from '../SuppliersPanel'
 
-const mockUseSupplierConnections = useSupplierConnections as unknown as vi.Mock
+const mockUseSupplierConnections = useSupplierConnections as unknown as Mock
 
 function renderComponent() {
   const queryClient = new QueryClient()

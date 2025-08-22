@@ -9,17 +9,17 @@ import { AnalyticsResult } from '@/utils/harAnalytics'
 import { OptimizationRecommendation, CompetitiveInsight } from '@/utils/harRecommendations'
 
 interface HarAnalyticsPreviewProps {
-  analytics: AnalyticsResult | null
+  analytics?: AnalyticsResult | null
   recommendations: OptimizationRecommendation[]
   insights: CompetitiveInsight[]
   actionPlan: string[]
 }
 
-export function HarAnalyticsPreview({ 
-  analytics, 
-  recommendations, 
-  insights, 
-  actionPlan 
+export function HarAnalyticsPreview({
+  analytics,
+  recommendations,
+  insights,
+  actionPlan
 }: HarAnalyticsPreviewProps) {
   if (!analytics) return null
 

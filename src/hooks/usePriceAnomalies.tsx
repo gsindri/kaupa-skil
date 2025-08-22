@@ -6,7 +6,7 @@ import type { PriceAnomaly } from '@/components/dashboard/PriceAnomalyAlert'
 export function usePriceAnomalies() {
   const { profile } = useAuth()
 
-  return useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ['price-anomalies', profile?.tenant_id],
     queryFn: async (): Promise<PriceAnomaly[]> => {
       const tenantId = profile?.tenant_id
@@ -35,5 +35,7 @@ export function usePriceAnomalies() {
     enabled: !!profile,
     staleTime: 60 * 1000,
   })
+
+  return { anomalies: data || [], isLoading }
 }
 

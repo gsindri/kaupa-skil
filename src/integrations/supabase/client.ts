@@ -1,6 +1,5 @@
 // src/integrations/supabase/client.ts
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
-import type { Database } from '@/lib/types/database'
 
 const env = (typeof import.meta !== 'undefined' && (import.meta as any).env) || {}
 
@@ -48,7 +47,7 @@ function makeChain(): any {
   return chain
 }
 
-function makeDummyClient(): SupabaseClient<Database> {
+function makeDummyClient(): SupabaseClient<any> {
   const chain = makeChain()
   return {
     auth: {
@@ -67,12 +66,12 @@ function makeDummyClient(): SupabaseClient<Database> {
         remove: async () => ({ data: null, error: null } as any),
       }),
     } as any,
-  } as unknown as SupabaseClient<Database>
+  } as unknown as SupabaseClient<any>
 }
 
-export const supabase: SupabaseClient<Database> =
+export const supabase: SupabaseClient<any> =
   URL && KEY
-    ? createClient<Database>(URL, KEY, { auth: { persistSession: true, autoRefreshToken: true } })
+    ? createClient(URL, KEY, { auth: { persistSession: true, autoRefreshToken: true } })
     : IS_PROD
       ? (() => {
           throw new Error('[Supabase] Missing env in production (VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY)')

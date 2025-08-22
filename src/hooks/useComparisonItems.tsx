@@ -22,7 +22,7 @@ export interface SupplierQuote {
 export function useComparisonItems() {
   const { profile } = useAuth()
 
-  const { data: items = [], isLoading } = useQuery({
+  const { data: items = [], isLoading } = useQuery<ComparisonItem[]>({
     queryKey: ['comparison-items', profile?.tenant_id ?? 'no-tenant'],
     queryFn: async (): Promise<ComparisonItem[]> => {
       let query = supabase
@@ -53,20 +53,22 @@ export function useComparisonItems() {
       for (const row of data || []) {
         const key = row.display_name
         if (!itemsMap[key]) {
+          const categoryData = Array.isArray(row.category) ? row.category[0] : row.category
           itemsMap[key] = {
             id: row.id,
             itemName: row.display_name,
             brand: row.brand || undefined,
-            category: row.category?.name || undefined,
+            category: categoryData?.name || undefined,
             suppliers: []
           }
         }
 
         const quote = Array.isArray(row.price_quotes) ? row.price_quotes[0] : null
+        const supplierData = Array.isArray(row.supplier) ? row.supplier[0] : row.supplier
 
         itemsMap[key].suppliers.push({
-          id: row.supplier?.id,
-          name: row.supplier?.name,
+          id: supplierData?.id,
+          name: supplierData?.name,
           packSize: row.pack_size ? String(row.pack_size) : '',
           unitPriceIncVat: quote?.unit_price_inc_vat ?? 0,
           inStock: row.in_stock ?? false

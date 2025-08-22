@@ -60,7 +60,7 @@ describe('OrderingSuggestionsService', () => {
       }
     ])
 
-    rpcMock.mockResolvedValue({ data: [{ id: 'freq1' }] })
+    rpcMock.mockResolvedValue({ data: [{ id: 'freq1' }] } as any)
 
     const cart: CartItem[] = [
       {

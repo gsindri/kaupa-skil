@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { vi } from 'vitest'
+import { vi, type Mock } from 'vitest'
 
 vi.mock('@/hooks/usePriceAnomalies', () => ({
   usePriceAnomalies: vi.fn(),
@@ -9,7 +9,7 @@ vi.mock('@/hooks/usePriceAnomalies', () => ({
 import { usePriceAnomalies } from '@/hooks/usePriceAnomalies'
 import { AnomaliesList } from '../AnomaliesList'
 
-const mockUsePriceAnomalies = usePriceAnomalies as unknown as vi.Mock
+const mockUsePriceAnomalies = usePriceAnomalies as unknown as Mock
 
 function renderComponent() {
   const queryClient = new QueryClient()
@@ -29,7 +29,18 @@ test('shows empty state', () => {
 test('shows anomalies', () => {
   mockUsePriceAnomalies.mockReturnValue({
     anomalies: [
-      { id: '1', type: 'price_spike', item: 'Item', supplier: 'Supp', description: 'desc', impact: 'high', created_at: '2024-01-01' },
+      {
+        id: '1',
+        type: 'spike',
+        itemName: 'Item',
+        supplier: 'Supp',
+        description: 'desc',
+        severity: 'high',
+        currentPrice: 0,
+        previousPrice: 0,
+        changePercent: 0,
+        detectedAt: '2024-01-01'
+      }
     ],
     isLoading: false,
   })

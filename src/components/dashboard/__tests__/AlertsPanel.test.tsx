@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { vi } from 'vitest'
+import { vi, type Mock } from 'vitest'
 
 vi.mock('@/hooks/useAlerts', () => ({
   useAlerts: vi.fn(),
@@ -9,7 +9,7 @@ vi.mock('@/hooks/useAlerts', () => ({
 import { useAlerts } from '@/hooks/useAlerts'
 import { AlertsPanel } from '../AlertsPanel'
 
-const mockUseAlerts = useAlerts as unknown as vi.Mock
+const mockUseAlerts = useAlerts as unknown as Mock
 
 function renderComponent() {
   const queryClient = new QueryClient()

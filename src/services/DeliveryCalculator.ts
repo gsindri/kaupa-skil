@@ -18,14 +18,14 @@ export class DeliveryCalculator {
     const now = Date.now()
     
     if (now - this.lastRulesFetch > this.CACHE_DURATION) {
-      const { data } = await supabase
+      const { data } = await (supabase as any)
         .from('delivery_rules')
         .select('*')
         .eq('is_active', true)
 
       if (data) {
-        this.deliveryRules.clear()
-        data.forEach(rule => {
+        this.deliveryRules.clear();
+        (data as DeliveryRule[]).forEach(rule => {
           this.deliveryRules.set(rule.supplier_id, rule)
         })
         this.lastRulesFetch = now

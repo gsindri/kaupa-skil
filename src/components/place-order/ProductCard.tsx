@@ -44,10 +44,11 @@ export function ProductCard({ product }: { product: Product }) {
     )
     toast({
       title: 'Added to cart',
-      action: {
-        label: 'Undo',
-        onClick: () => removeItem(product.id)
-      }
+      action: (
+        <Button variant="outline" onClick={() => removeItem(product.id)}>
+          Undo
+        </Button>
+      )
     })
     setQty(0)
   }
