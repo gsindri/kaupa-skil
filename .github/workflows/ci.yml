@@ -23,6 +23,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # 👉 install pnpm first so setup-node's pnpm cache works
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 10.14.0
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
@@ -36,11 +42,6 @@ jobs:
             npm i -g pnpm@10.14.0
           fi
           echo "pnpm version: $(pnpm -v)"
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v3
-        with:
-          version: 10.14.0
 
       # Use the packageManager pin in package.json
       - name: Enable Corepack
@@ -61,8 +62,6 @@ jobs:
       - name: Install deps (fail on drift)
         run: pnpm install --frozen-lockfile
 
-      # You pinned trustedDependencies in package.json, so no interactive approvals needed.
-      # Keeping this here as a no-op safety; it won't hurt if esbuild/@swc/core appear.
       - name: Approve native builds (idempotent)
         run: pnpm approve-builds esbuild @swc/core || true
 
@@ -103,3 +102,23 @@ jobs:
 
       - name: E2E tests (Playwright, headless via xvfb)
         run: xvfb-run -a pnpm test:e2e
+
+      - name: Start preview server for axe
+        run: |
+          pnpm build
+          nohup pnpm preview --port 4173 --strictPort >/dev/null 2>&1 &
+          for i in {1..30}; do
+            if curl -fsS http://localhost:4173 >/dev/null; then echo "Preview up"; break; fi
+            sleep 1
+          done
+
+      - name: Accessibility scan with axe (uses Playwright Chromium)
+        run: |
+          CHROME_PATH="$(node -e "console.log(require('playwright-core').chromium.executablePath())")"
+          echo "Using Chrome at $CHROME_PATH"
+          pnpm dlx @axe-core/cli http://localhost:4173 --chrome-path="$CHROME_PATH" --exit
+
+      - name: Stop preview server
+        if: always()
+        run: |
+          (kill $(lsof -t -i:4173) 2>/dev/null) || (pkill -f "vite preview" || true)
