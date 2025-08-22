@@ -155,6 +155,7 @@ export function HarUploadModal({
               size="sm"
               onClick={handleClose}
               disabled={busy}
+              aria-label="Close"
             >
               <X className="h-4 w-4" />
             </Button>

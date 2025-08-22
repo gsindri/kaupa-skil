@@ -121,11 +121,11 @@ export function TenantUserManagement() {
                   </Badge>
                   
                   <Dialog>
-                    <DialogTrigger asChild>
-                      <Button variant="ghost" size="sm">
-                        <Settings className="h-4 w-4" />
-                      </Button>
-                    </DialogTrigger>
+                      <DialogTrigger asChild>
+                        <Button variant="ghost" size="sm" aria-label="Manage permissions">
+                          <Settings className="h-4 w-4" />
+                        </Button>
+                      </DialogTrigger>
                     <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
                       <DialogHeader>
                         <DialogTitle>

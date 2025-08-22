@@ -178,7 +178,7 @@ export function MiniCompareDrawer({ itemId, isOpen, onClose }: MiniCompareDrawer
               <span>Compare Suppliers</span>
             </DrawerTitle>
             <DrawerClose asChild>
-              <Button variant="ghost" size="sm">
+              <Button variant="ghost" size="sm" aria-label="Close">
                 <X className="h-4 w-4" />
               </Button>
             </DrawerClose>

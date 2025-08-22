@@ -68,17 +68,18 @@ export function RealTimePriceUpdates() {
               {isConnected ? 'Live' : 'Disconnected'}
             </Badge>
             {alerts.length > 0 && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={clearAlerts}
-                className="h-6 w-6 p-0"
-              >
-                <Trash2 className="h-3 w-3" />
-              </Button>
-            )}
-          </div>
-        </CardHeader>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={clearAlerts}
+                  className="h-6 w-6 p-0"
+                  aria-label="Clear alerts"
+                >
+                  <Trash2 className="h-3 w-3" />
+                </Button>
+              )}
+            </div>
+          </CardHeader>
         <CardContent>
           <ScrollArea className="h-[300px]">
             {alerts.length === 0 ? (

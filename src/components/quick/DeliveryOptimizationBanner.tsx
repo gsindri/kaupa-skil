@@ -176,6 +176,7 @@ export function DeliveryOptimizationBanner({
             size="sm"
             onClick={() => setIsDismissed(true)}
             className="text-orange-600 hover:text-orange-700"
+            aria-label="Dismiss"
           >
             <X className="h-4 w-4" />
           </Button>

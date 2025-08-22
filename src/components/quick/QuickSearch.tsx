@@ -36,17 +36,18 @@ export function QuickSearch({ onItemSelect, placeholder = "Search items...", cla
           onChange={(e) => setSearchTerm(e.target.value)}
           className="pl-10 pr-10"
         />
-        {searchTerm && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleClear}
-            className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0"
-          >
-            <X className="h-3 w-3" />
-          </Button>
-        )}
-      </div>
+          {searchTerm && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleClear}
+              className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0"
+              aria-label="Clear search"
+            >
+              <X className="h-3 w-3" />
+            </Button>
+          )}
+        </div>
 
       {searchTerm && (
         <div className="absolute top-full left-0 right-0 bg-background border rounded-md shadow-lg z-50 max-h-60 overflow-y-auto">
@@ -56,17 +57,18 @@ export function QuickSearch({ onItemSelect, placeholder = "Search items...", cla
             <div className="p-3 text-sm text-muted-foreground">No items found</div>
           ) : (
             items.map((item) => (
-              <div
+              <button
                 key={item.id}
+                type="button"
                 onClick={() => onItemSelect?.(item)}
-                className="p-3 hover:bg-muted cursor-pointer border-b last:border-b-0"
+                className="p-3 hover:bg-muted cursor-pointer border-b last:border-b-0 text-left w-full"
               >
                 <div className="font-medium text-sm">{item.display_name}</div>
                 <div className="text-xs text-muted-foreground">
                   SKU: {item.ext_sku}
                   {item.brand && ` • ${item.brand}`}
                 </div>
-              </div>
+              </button>
             ))
           )}
         </div>

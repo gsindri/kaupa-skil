@@ -95,7 +95,7 @@ export function RecentOrdersTable() {
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <Button variant="ghost" size="sm">
+                    <Button variant="ghost" size="sm" aria-label="View order">
                       <Eye className="h-4 w-4" />
                     </Button>
                   </TableCell>

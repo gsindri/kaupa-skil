@@ -270,10 +270,11 @@ export function EnhancedComparisonTable({ data, isLoading }: EnhancedComparisonT
                             size="sm"
                             variant="outline"
                             onClick={() => handleQuantityChange(
-                              supplier.supplierItemId, 
+                              supplier.supplierItemId,
                               Math.max(0, supplier.cartQuantity - 1)
                             )}
                             disabled={!supplier.inStock || supplier.cartQuantity === 0}
+                            aria-label="Decrease quantity"
                           >
                             <Minus className="h-3 w-3" />
                           </Button>
@@ -290,17 +291,18 @@ export function EnhancedComparisonTable({ data, isLoading }: EnhancedComparisonT
                             disabled={!supplier.inStock}
                           />
                           
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleQuantityChange(
-                              supplier.supplierItemId,
-                              supplier.cartQuantity + 1
-                            )}
-                            disabled={!supplier.inStock}
-                          >
-                            <Plus className="h-3 w-3" />
-                          </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleQuantityChange(
+                                supplier.supplierItemId,
+                                supplier.cartQuantity + 1
+                              )}
+                              disabled={!supplier.inStock}
+                              aria-label="Increase quantity"
+                            >
+                              <Plus className="h-3 w-3" />
+                            </Button>
                         </div>
                         
                         {isNewSupplier && deliveryCalc && deliveryCalc.total_delivery_cost > 0 && (
@@ -310,11 +312,11 @@ export function EnhancedComparisonTable({ data, isLoading }: EnhancedComparisonT
                         )}
                       </TableCell>
                       <TableCell className="text-center">
-                        <Button size="sm" variant="ghost">
-                          <Info className="h-4 w-4" />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
+                          <Button size="sm" variant="ghost" aria-label="More info">
+                            <Info className="h-4 w-4" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
                   )
                 })}
               </TableBody>

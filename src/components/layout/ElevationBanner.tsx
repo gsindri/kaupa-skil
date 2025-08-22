@@ -30,15 +30,16 @@ export function ElevationBanner() {
             </p>
           </div>
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleDismiss}
-          className="text-orange-600 hover:text-orange-800"
-        >
-          <X className="h-4 w-4" />
-        </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleDismiss}
+            className="text-orange-600 hover:text-orange-800"
+            aria-label="Dismiss elevation banner"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
-    </div>
-  )
+    )
 }

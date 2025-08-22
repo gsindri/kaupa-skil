@@ -144,12 +144,12 @@ export function JobManagement() {
                     Cancel
                   </Button>
                 )}
-                <Button size="sm" variant="ghost">
-                  <FileText className="h-3 w-3" />
-                </Button>
+                  <Button size="sm" variant="ghost" aria-label="View job details">
+                    <FileText className="h-3 w-3" />
+                  </Button>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
         </div>
       </CardContent>
     </Card>
