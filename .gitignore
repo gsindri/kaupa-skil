@@ -25,3 +25,16 @@ dist-ssr
 
 # Playwright artifacts
 test-results/
+.env
+.env.local
+.env.*
+src/lib/types/database.ts
+test-results/
+supabase/.temp/
+.env
+.env.local
+.env.*
+!.env.example
+src/lib/types/database.ts
+test-results/
+supabase/.temp/

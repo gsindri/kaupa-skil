@@ -9,21 +9,40 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     env:
       VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+      VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      CI: true
+
     steps:
       - uses: actions/checkout@v4
+
       - uses: pnpm/action-setup@v3
         with:
           version: 10
+
       - uses: actions/setup-node@v4
         with:
           node-version: 18
           cache: 'pnpm'
-      - run: pnpm install
 
-      # Cache Playwright browser binaries to avoid re-downloading every run
+      - run: pnpm install --frozen-lockfile
+
+      - name: Sanity-check env presence
+        run: |
+          [ -n "${VITE_SUPABASE_URL}" ] && echo "Has URL: yes" || (echo "Has URL: no"; exit 1)
+          [ -n "${VITE_SUPABASE_ANON_KEY}" ] && echo "Has ANON: yes" || (echo "Has ANON: no"; exit 1)
+          [ -n "${SUPABASE_ACCESS_TOKEN}" ] && echo "Has Typegen Token: yes" || (echo "Has Typegen Token: no"; exit 1)
+
+      - name: Generate Supabase types
+        run: |
+          npx supabase gen types typescript \
+            --project-id hcrjkziycryuugzbixhq \
+            --schema public > src/lib/types/database.ts
+          test -s src/lib/types/database.ts || (echo "Typegen produced an empty file"; exit 1)
+
       - name: Cache Playwright browsers
         id: cache-playwright
         uses: actions/cache@v4
@@ -33,15 +52,18 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-playwright-
 
-      # Only install system deps (apt) when cache is cold
       - name: Install Playwright system deps (cache miss only)
         if: steps.cache-playwright.outputs.cache-hit != 'true'
         run: npx playwright install-deps
 
-      # Ensure browsers are present (fast on cache hit)
       - name: Install Playwright browsers
         run: npx playwright install
 
-      - run: pnpm lint
-      - run: pnpm test
-      - run: pnpm test:e2e
+      - name: Lint
+        run: pnpm lint
+
+      - name: Unit/Integration tests
+        run: pnpm test -- --run
+
+      - name: E2E tests
+        run: pnpm test:e2e
