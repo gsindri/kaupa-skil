@@ -7,7 +7,6 @@ import { CatalogFilters } from '@/components/place-order/CatalogFilters'
 import { SortControl } from '@/components/place-order/SortControl'
 import { ViewToggle } from '@/components/place-order/ViewToggle'
 import { ProductCard } from '@/components/place-order/ProductCard'
-import { useOrgOffers } from '@/hooks/useOrgOffers'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
@@ -36,13 +35,6 @@ export default function QuickOrder() {
       return p
     })
   }
-
-  const { data: queryProducts = [], isLoading } = useOrgOffers('', {
-    supplier,
-    category,
-    brand,
-    hasPrice
-  })
 
   const products = [...queryProducts].sort((a, b) => a.name.localeCompare(b.name))
 
