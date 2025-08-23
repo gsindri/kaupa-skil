@@ -135,7 +135,6 @@ export function TopNavigation() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent
-              align="end"
               side="bottom"
               sideOffset={8}
               collisionPadding={8}
@@ -170,7 +169,6 @@ export function TopNavigation() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent
-              align="end"
               side="bottom"
               sideOffset={8}
               collisionPadding={8}

@@ -47,7 +47,6 @@ export function MiniCart() {
       </PopoverTrigger>
       <PopoverContent
         className="w-80"
-        align="end"
         side="bottom"
         sideOffset={8}
         collisionPadding={8}

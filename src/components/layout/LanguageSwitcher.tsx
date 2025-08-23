@@ -21,7 +21,6 @@ export function LanguageSwitcher() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
-        align="end"
         side="bottom"
         sideOffset={8}
         collisionPadding={8}

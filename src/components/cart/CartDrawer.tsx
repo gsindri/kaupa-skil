@@ -82,10 +82,11 @@ export function CartDrawer() {
   return (
     <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
       <DrawerContent
+        side="right"
         showBar={false}
         role="dialog"
         aria-modal="true"
-        className="left-auto right-0 top-0 mt-0 bottom-0 h-full w-full max-w-[400px] md:max-w-[35vw] rounded-none border-l z-[60]"
+        className="max-w-[400px] md:max-w-[35vw] rounded-none z-[60]"
         style={{ width: 'min(35vw, 380px)' }}
       >
         <div className="flex h-full flex-col">
