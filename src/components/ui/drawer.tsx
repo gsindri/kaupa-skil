@@ -10,7 +10,7 @@ const Drawer = ({
   <DrawerPrimitive.Root
     shouldScaleBackground={shouldScaleBackground}
     noBodyStyles
-    disablePreventScroll={false}
+    disablePreventScroll
     {...props}
   />
 )
