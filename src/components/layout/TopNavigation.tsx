@@ -79,13 +79,13 @@ export function TopNavigation() {
         width: 'calc(100% - var(--sidebar-w))',
       } as React.CSSProperties}
       className={cn(
-        'fixed top-0 right-0 left-0 z-50 h-[var(--header-h)] border-b bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/75 transition-shadow transition-[margin-left,width] duration-200 will-change-[margin-left,width] motion-reduce:transition-none',
+        'fixed top-0 inset-x-0 z-50 w-full h-[var(--header-h)] border-b bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/75 transition-shadow transition-[margin-left,width] duration-200 will-change-[margin-left,width] motion-reduce:transition-none',
         scrolled ? 'shadow-sm' : '',
         sidebarOpen ? 'ease-in-out' : 'ease-out'
       )}
     >
-      <div className="grid h-full items-center px-4 gap-4 grid-cols-[auto,1fr,auto]">
-        <div className="flex items-center gap-4">
+      <div className="grid grid-cols-[auto,1fr,auto] items-center gap-3 max-w-[var(--page-max)] mx-auto px-4 h-full">
+        <div className="flex items-center gap-2 min-w-0">
           <Button
             variant="ghost"
             size="icon"
@@ -114,14 +114,16 @@ export function TopNavigation() {
           <TenantSwitcher />
         </div>
 
-        <div className="w-[360px] md:w-[420px] flex-shrink-0 justify-self-center">
-          <HeaderSearch ref={searchRef} />
+        <div className="flex justify-center">
+          <div className="w-[360px] md:w-[420px] flex-shrink-0">
+            <HeaderSearch ref={searchRef} />
+          </div>
         </div>
 
-        <nav aria-label="Global actions" className="flex items-center justify-end gap-2">
+        <nav aria-label="Global actions" className="flex items-center gap-2 flex-shrink-0">
           <LanguageSwitcher />
           <Separator orientation="vertical" className="h-6" />
-          <DropdownMenu open={helpOpen} onOpenChange={setHelpOpen}>
+          <DropdownMenu open={helpOpen} onOpenChange={setHelpOpen} modal={false}>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="outline"
@@ -132,7 +134,15 @@ export function TopNavigation() {
                 <span className="hidden sm:inline ml-2">Help</span>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" sideOffset={0}>
+            <DropdownMenuContent
+              align="end"
+              side="bottom"
+              sideOffset={8}
+              collisionPadding={8}
+              sticky="partial"
+              strategy="fixed"
+              className="min-w-[200px]"
+            >
               <DropdownMenuItem>Keyboard Shortcuts</DropdownMenuItem>
               <DropdownMenuItem>Support</DropdownMenuItem>
             </DropdownMenuContent>
@@ -140,7 +150,7 @@ export function TopNavigation() {
           <Separator orientation="vertical" className="h-6" />
           <MiniCart />
           <Separator orientation="vertical" className="h-6" />
-          <DropdownMenu>
+          <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="outline"
@@ -159,7 +169,15 @@ export function TopNavigation() {
                 <ChevronDown className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" sideOffset={0}>
+            <DropdownMenuContent
+              align="end"
+              side="bottom"
+              sideOffset={8}
+              collisionPadding={8}
+              sticky="partial"
+              strategy="fixed"
+              className="min-w-[200px]"
+            >
               <DropdownMenuItem>
                 <div className="flex flex-col">
                   <span className="font-medium">{displayName}</span>

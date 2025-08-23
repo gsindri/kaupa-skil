@@ -8,7 +8,7 @@ export function LanguageSwitcher() {
   const { language, setLanguage } = useLanguage()
 
   return (
-    <DropdownMenu>
+    <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
         <Button
           variant="outline"
@@ -20,7 +20,15 @@ export function LanguageSwitcher() {
           <ChevronDown className="ml-1 h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent
+        align="end"
+        side="bottom"
+        sideOffset={8}
+        collisionPadding={8}
+        sticky="partial"
+        strategy="fixed"
+        className="min-w-[200px]"
+      >
         <DropdownMenuRadioGroup value={language} onValueChange={(v) => setLanguage(v as any)}>
           <DropdownMenuRadioItem value="is">Icelandic</DropdownMenuRadioItem>
           <DropdownMenuRadioItem value="en">English</DropdownMenuRadioItem>

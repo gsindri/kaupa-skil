@@ -45,7 +45,15 @@ export function MiniCart() {
           <span className="hidden sm:inline ml-2">Cart</span>
         </Button>
       </PopoverTrigger>
-        <PopoverContent className="w-80" align="end" sideOffset={0} onMouseLeave={() => setOpen(false)}>
+      <PopoverContent
+        className="w-80"
+        align="end"
+        side="bottom"
+        sideOffset={8}
+        collisionPadding={8}
+        sticky="partial"
+        onMouseLeave={() => setOpen(false)}
+      >
           {cartCount === 0 ? (
             <div className="text-sm text-muted-foreground">Cart is empty</div>
           ) : (
