@@ -10,7 +10,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "merge:mock-items": "node supabase/scripts/mergeMockItems.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
