@@ -1,36 +1,46 @@
--- Create catalog products table
 CREATE TABLE public.catalog_product (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    sku TEXT NOT NULL UNIQUE,
+    catalog_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    gtin TEXT,
+    brand TEXT,
     name TEXT NOT NULL,
-    description TEXT,
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+    size TEXT,
+    category_id UUID,
+    specs_json JSONB,
+    image_main TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- Create supplier products table
 CREATE TABLE public.supplier_product (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    catalog_product_id UUID REFERENCES public.catalog_product(id) ON DELETE CASCADE,
-    supplier_id UUID REFERENCES public.suppliers(id) ON DELETE CASCADE,
+    supplier_product_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    supplier_id UUID NOT NULL REFERENCES public.suppliers(id) ON DELETE CASCADE,
+    catalog_id UUID REFERENCES public.catalog_product(catalog_id) ON DELETE SET NULL,
     supplier_sku TEXT NOT NULL,
-    additional_info JSONB DEFAULT '{}',
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    pack_size TEXT,
+    min_order_qty INTEGER,
+    status TEXT,
+    source_url TEXT,
+    data_provenance TEXT,
+    provenance_confidence REAL,
+    raw_payload_json JSONB,
+    raw_hash TEXT,
+    first_seen_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    last_seen_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     UNIQUE (supplier_id, supplier_sku)
 );
 
--- Create offers table
 CREATE TABLE public.offer (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    supplier_product_id UUID REFERENCES public.supplier_product(id) ON DELETE CASCADE,
-    org_id UUID REFERENCES public.tenants(id) ON DELETE CASCADE,
-    price NUMERIC(12,2) NOT NULL,
-    currency TEXT DEFAULT 'USD',
-    valid_from DATE DEFAULT CURRENT_DATE,
-    valid_to DATE,
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+    offer_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID NOT NULL REFERENCES public.tenants(id) ON DELETE CASCADE,
+    supplier_product_id UUID REFERENCES public.supplier_product(supplier_product_id) ON DELETE CASCADE,
+    price NUMERIC(12,4),
+    currency TEXT,
+    availability TEXT,
+    discounts_json JSONB,
+    valid_from TIMESTAMPTZ DEFAULT NOW(),
+    valid_to TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 -- Updated_at triggers
