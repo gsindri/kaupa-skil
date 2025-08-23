@@ -84,19 +84,19 @@ export function TopNavigation() {
         sidebarOpen ? 'ease-in-out' : 'ease-out'
       )}
     >
-      <div className="flex h-full items-center px-4 gap-4">
-        <Button
-          variant="ghost"
-          size="icon"
-          aria-label="Toggle sidebar"
-          aria-controls="app-sidebar"
-          aria-expanded={sidebarOpen}
-          onClick={toggleSidebar}
-          className="flex-shrink-0"
-        >
-          <span aria-hidden>☰</span>
-        </Button>
-        <div className="flex items-center flex-1 space-x-4">
+      <div className="grid h-full items-center px-4 gap-4 grid-cols-[auto,1fr,auto]">
+        <div className="flex items-center gap-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label="Toggle sidebar"
+            aria-controls="app-sidebar"
+            aria-expanded={sidebarOpen}
+            onClick={toggleSidebar}
+            className="flex-shrink-0"
+          >
+            <span aria-hidden>☰</span>
+          </Button>
           <Link
             to="/"
             className={cn(
@@ -114,19 +114,19 @@ export function TopNavigation() {
           <TenantSwitcher />
         </div>
 
-        <div className="w-[360px] md:w-[420px] flex-shrink-0">
+        <div className="w-[360px] md:w-[420px] flex-shrink-0 justify-self-center">
           <HeaderSearch ref={searchRef} />
         </div>
 
-        <nav aria-label="Global actions" className="flex items-center justify-end flex-1 pl-4">
+        <nav aria-label="Global actions" className="flex items-center justify-end gap-2">
           <LanguageSwitcher />
-          <Separator orientation="vertical" className="mx-2 h-6" />
+          <Separator orientation="vertical" className="h-6" />
           <DropdownMenu open={helpOpen} onOpenChange={setHelpOpen}>
             <DropdownMenuTrigger asChild>
               <Button
-                variant="ghost"
+                variant="outline"
                 size="sm"
-                className="flex-shrink-0"
+                className="flex-shrink-0 border-border focus-visible:ring-brand/50"
               >
                 <HelpCircle className="h-5 w-5" />
                 <span className="hidden sm:inline ml-2">Help</span>
@@ -137,14 +137,15 @@ export function TopNavigation() {
               <DropdownMenuItem>Support</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-          <Separator orientation="vertical" className="mx-2 h-6" />
+          <Separator orientation="vertical" className="h-6" />
           <MiniCart />
-          <Separator orientation="vertical" className="mx-2 h-6" />
+          <Separator orientation="vertical" className="h-6" />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
-                variant="ghost"
-                className="flex items-center space-x-2 flex-shrink-0"
+                variant="outline"
+                size="sm"
+                className="flex items-center space-x-2 flex-shrink-0 border-border focus-visible:ring-brand/50"
                 disabled={isBusy}
               >
                 <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">

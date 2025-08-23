@@ -32,7 +32,7 @@ export const SearchInput = React.forwardRef<HTMLInputElement, SearchInputProps>(
     useImperativeHandle(ref, () => inputRef.current as HTMLInputElement)
 
     return (
-      <div className="relative">
+      <div className="relative" style={{ contain: 'layout paint' }}>
         <button
           type="button"
           onMouseDown={(e) => {
