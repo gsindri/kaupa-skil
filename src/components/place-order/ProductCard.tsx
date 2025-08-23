@@ -24,9 +24,6 @@ export function ProductCard({ product }: { product: Product }) {
         <h3 className="font-medium">{product.name}</h3>
         <p className="text-sm text-muted-foreground">{product.brand}</p>
         <p className="text-sm text-muted-foreground">{product.pack}</p>
-        <div className="flex flex-wrap gap-1">
-          {product.suppliers.map(s => (
-            <Badge key={s}>{s}</Badge>
           ))}
         </div>
       </CardContent>
