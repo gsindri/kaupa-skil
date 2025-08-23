@@ -44,6 +44,7 @@ A modern procurement platform that streamlines supplier management, price compar
    ```env
    VITE_SUPABASE_URL="https://your-project.supabase.co"
    VITE_SUPABASE_ANON_KEY="your-anon-public-key"
+   VITE_CDN_URL="https://your-cdn.example.com"
    ```
 
 5. Start the development server:
@@ -111,6 +112,7 @@ Configure these in your `.env` file:
 
 - `VITE_SUPABASE_URL` – your Supabase project URL
 - `VITE_SUPABASE_ANON_KEY` – your Supabase anonymous public key
+- `VITE_CDN_URL` – base URL for serving cached images
 - `E2E_EMAIL` – account email used for Playwright tests
 - `E2E_PASSWORD` – password for the above account
 - `E2E_SIGNUP_PASSWORD` — password used in sign-up flow tests
