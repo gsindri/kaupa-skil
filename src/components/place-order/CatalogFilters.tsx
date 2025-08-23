@@ -1,21 +1,26 @@
 import { memo } from 'react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Checkbox } from '@/components/ui/checkbox'
+import { Input } from '@/components/ui/input'
 
 interface CatalogFiltersProps {
   category: string
+  brand: string
   categories: string[]
-  inStock: boolean
+  hasPrice: boolean
   onCategoryChange: (value: string) => void
-  onInStockChange: (value: boolean) => void
+  onBrandChange: (value: string) => void
+  onHasPriceChange: (value: boolean) => void
 }
 
 export const CatalogFilters = memo(function CatalogFilters({
   category,
+  brand,
   categories,
-  inStock,
+  hasPrice,
   onCategoryChange,
-  onInStockChange
+  onBrandChange,
+  onHasPriceChange
 }: CatalogFiltersProps) {
   return (
     <div className="flex items-center gap-4">
@@ -31,9 +36,16 @@ export const CatalogFilters = memo(function CatalogFilters({
         </SelectContent>
       </Select>
 
+      <Input
+        placeholder="Brand"
+        value={brand}
+        onChange={e => onBrandChange(e.target.value)}
+        className="h-10 w-36"
+      />
+
       <div className="flex items-center space-x-2">
-        <Checkbox id="stock" checked={inStock} onCheckedChange={v => onInStockChange(Boolean(v))} />
-        <label htmlFor="stock" className="text-sm">In stock</label>
+        <Checkbox id="price" checked={hasPrice} onCheckedChange={v => onHasPriceChange(Boolean(v))} />
+        <label htmlFor="price" className="text-sm">Has price</label>
       </div>
     </div>
   )

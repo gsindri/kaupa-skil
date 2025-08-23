@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Shield, Users, Activity, AlertTriangle, TestTube, BookOpen } from 'lucide-react'
+import { Shield, Users, Activity, AlertTriangle, TestTube, BookOpen, PackageSearch } from 'lucide-react'
 import { ElevationBanner } from '@/components/layout/ElevationBanner'
 import { SupportSessionBanner } from '@/components/admin/SupportSessionBanner'
 import { ElevationDialog } from '@/components/admin/ElevationDialog'
@@ -15,6 +15,7 @@ import { SecurityMonitoring } from '@/components/admin/SecurityMonitoring'
 import { SecurityTesting } from '@/components/admin/SecurityTesting'
 import { SecurityDocumentation } from '@/components/admin/SecurityDocumentation'
 import { Button } from '@/components/ui/button'
+import { UnmatchedProductsTable } from '@/components/admin/UnmatchedProductsTable'
 
 export default function Admin() {
   const [elevationDialogOpen, setElevationDialogOpen] = useState(false)
@@ -42,7 +43,7 @@ export default function Admin() {
       </div>
 
       <Tabs defaultValue="monitoring" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-7">
           <TabsTrigger value="monitoring" className="flex items-center gap-2">
             <Activity className="h-4 w-4" />
             Monitoring
@@ -58,6 +59,10 @@ export default function Admin() {
           <TabsTrigger value="jobs" className="flex items-center gap-2">
             <Activity className="h-4 w-4" />
             Jobs
+          </TabsTrigger>
+          <TabsTrigger value="unmatched" className="flex items-center gap-2">
+            <PackageSearch className="h-4 w-4" />
+            Unmatched
           </TabsTrigger>
           <TabsTrigger value="testing" className="flex items-center gap-2">
             <TestTube className="h-4 w-4" />
@@ -105,6 +110,10 @@ export default function Admin() {
 
         <TabsContent value="jobs" className="space-y-6">
           <JobManagement />
+        </TabsContent>
+
+        <TabsContent value="unmatched" className="space-y-6">
+          <UnmatchedProductsTable />
         </TabsContent>
 
         <TabsContent value="testing" className="space-y-6">

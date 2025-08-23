@@ -11,7 +11,9 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:e2e": "playwright test",
-    "merge:mock-items": "node supabase/scripts/mergeMockItems.js"
+    "merge:mock-items": "node supabase/scripts/mergeMockItems.js",
+    "db:seed:catalog": "node supabase/scripts/seedCatalog.js",
+    "cache:images": "node supabase/scripts/cacheImages.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
@@ -62,6 +64,7 @@
     "react-router-dom": "^6.30.1",
     "react-window": "^1.8.11",
     "recharts": "^2.15.4",
+    "sharp": "^0.33.5",
     "sonner": "^1.7.4",
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
@@ -97,6 +100,10 @@
   },
   "packageManager": "pnpm@10.14.0",
   "pnpm": {
-    "trustedDependencies": ["esbuild", "@swc/core"]
+    "trustedDependencies": [
+      "esbuild",
+      "@swc/core",
+      "sharp"
+    ]
   }
 }

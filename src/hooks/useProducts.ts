@@ -1,7 +1,15 @@
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
 import { queryKeys } from '@/lib/queryKeys'
-import { Product } from '@/components/place-order/ProductCard'
+
+export interface Product {
+  id: string
+  name: string
+  supplierId: string
+  supplierName: string
+  pack: string
+  price: number
+}
 
 interface ProductFilters {
   supplier?: string
@@ -42,5 +50,5 @@ export function useProducts(filters: ProductFilters) {
   })
 }
 
-export type { ProductFilters }
+export type { Product, ProductFilters }
 
