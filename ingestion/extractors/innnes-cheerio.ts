@@ -72,7 +72,7 @@ async function scrapeCategory(url: string) {
                         || undefined;
 
       // availability
-      const availability = norm($el.find(".productcard__availability").first().text())
+      const availabilityText = norm($el.find(".productcard__availability").first().text())
                         || undefined;
 
       // image
@@ -86,7 +86,7 @@ async function scrapeCategory(url: string) {
           url: urlAbs,
           supplierSku: skuMatch,
           packSize,
-          availability,
+          availabilityText,
           imageUrl,
           dataProvenance: "site",
           provenanceConfidence: 0.7,

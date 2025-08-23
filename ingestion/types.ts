@@ -13,6 +13,7 @@ export type NormalizedItem = {
   gtin?: string;
   categoryPath?: string[];
   imageUrl?: string;
+  availabilityText?: string;
   sourceUrl?: string;
   dataProvenance: 'api'|'csv'|'sitemap'|'manual';
   provenanceConfidence: number;
