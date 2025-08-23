@@ -1,5 +1,6 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { Image } from 'https://deno.land/x/imagescript@1.3.0/mod.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -90,6 +91,9 @@ Deno.serve(async (req) => {
             break
           case 'admin_action':
             result = await processAdminActionJob(job, supabase)
+            break
+          case 'fetch_image':
+            result = await processFetchImageJob(job, supabase)
             break
           default:
             throw new Error(`Unknown job type: ${job.type}`)
@@ -224,6 +228,91 @@ async function processTestConnectorJob(job: any, supabase: any) {
     api_version: '2.1',
     last_tested: new Date().toISOString()
   }
+}
+
+async function processFetchImageJob(job: any, supabase: any) {
+  console.log('Processing image fetch job:', job.data)
+
+  const imageId = job.data?.image_id
+  if (!imageId) {
+    throw new Error('image_id is required')
+  }
+
+  const { data: imageRec, error } = await supabase
+    .from('image_cache')
+    .select('*')
+    .eq('id', imageId)
+    .single()
+
+  if (error || !imageRec) {
+    throw new Error('Image record not found')
+  }
+
+  const headers: Record<string, string> = {}
+  if (imageRec.etag) headers['If-None-Match'] = imageRec.etag
+  if (imageRec.last_modified)
+    headers['If-Modified-Since'] = new Date(imageRec.last_modified).toUTCString()
+
+  const response = await fetch(imageRec.original_image_url, { headers })
+  const nowIso = new Date().toISOString()
+
+  if (response.status === 304) {
+    await supabase
+      .from('image_cache')
+      .update({ last_fetched_at: nowIso })
+      .eq('id', imageId)
+    return { status: 'not_modified' }
+  }
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch image: ${response.status}`)
+  }
+
+  const arrayBuffer = await response.arrayBuffer()
+  const bytes = new Uint8Array(arrayBuffer)
+  const contentType = response.headers.get('content-type') || 'application/octet-stream'
+  const ext = contentType.split('/').pop()?.split(';')[0] || 'bin'
+
+  const bucket = 'images'
+  const objectPath = `${imageId}/original.${ext}`
+
+  const { error: uploadError } = await supabase.storage
+    .from(bucket)
+    .upload(objectPath, new Blob([bytes]), { upsert: true, contentType })
+
+  if (uploadError) {
+    throw uploadError
+  }
+
+  // Generate thumbnails in multiple sizes
+  const sizes = [64, 128, 256]
+  for (const size of sizes) {
+    const img = await Image.decode(bytes)
+    img.resize(size, Image.RESIZE_AUTO)
+    const thumbBytes: Uint8Array = await (img as any).encode('webp')
+    const thumbPath = `${imageId}/thumb-${size}.webp`
+    const { error: tErr } = await supabase.storage
+      .from(bucket)
+      .upload(thumbPath, new Blob([thumbBytes]), {
+        upsert: true,
+        contentType: 'image/webp',
+      })
+    if (tErr) throw tErr
+  }
+
+  await supabase
+    .from('image_cache')
+    .update({
+      cached_image_path: `${bucket}/${objectPath}`,
+      etag: response.headers.get('etag'),
+      last_modified: response.headers.get('last-modified')
+        ? new Date(response.headers.get('last-modified')!).toISOString()
+        : null,
+      last_fetched_at: nowIso,
+    })
+    .eq('id', imageId)
+
+  return { status: 'fetched', path: `${bucket}/${objectPath}` }
 }
 
 async function processAdminActionJob(job: any, supabase: any) {
