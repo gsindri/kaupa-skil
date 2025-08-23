@@ -36,6 +36,7 @@ function transformToEnhancedItems(items: ComparisonItem[]) {
       leadTime: '1-2 days',
       moq: 1,
       discount: 0,
+      source: Math.random() > 0.5 ? 'Supplier website' : 'CSV upload',
       lastUpdated: new Date().toISOString(),
       priceHistory: [
         supplier.unitPriceIncVat * 1.1,
