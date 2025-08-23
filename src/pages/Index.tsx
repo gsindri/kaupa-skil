@@ -7,7 +7,7 @@ import { CatalogFilters } from '@/components/place-order/CatalogFilters'
 import { SortControl } from '@/components/place-order/SortControl'
 import { ViewToggle } from '@/components/place-order/ViewToggle'
 import { ProductCard } from '@/components/place-order/ProductCard'
-import { useProducts } from '@/hooks/useProducts'
+import { useCatalogProducts } from '@/hooks/useCatalogProducts'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
@@ -36,19 +36,9 @@ export default function QuickOrder() {
     })
   }
 
-  const { data: queryProducts = [], isLoading } = useProducts({ supplier, category, inStock })
+  const { data: queryProducts = [], isLoading } = useCatalogProducts('', { supplier, category })
 
-  const products = [...queryProducts].sort((a, b) => {
-    switch (sort) {
-      case 'price':
-        return a.price - b.price
-      case 'newest':
-      case 'popular':
-        return 0
-      default:
-        return a.name.localeCompare(b.name)
-    }
-  })
+  const products = [...queryProducts].sort((a, b) => a.name.localeCompare(b.name))
 
   if (vendors.length === 0 || (!isLoading && products.length === 0)) {
     return (
