@@ -22,6 +22,7 @@ import { Sparkline } from '@/components/ui/Sparkline'
 import PriceBadge from '@/components/ui/PriceBadge'
 import VatToggle from '@/components/ui/VatToggle'
 import { useSettings } from '@/contexts/useSettings'
+import { formatDistanceToNow } from 'date-fns'
 
 interface PriceData {
   supplierId: string
@@ -34,6 +35,7 @@ interface PriceData {
   leadTime: string
   moq: number
   discount?: number
+  source: string
   lastUpdated: string
   priceHistory: number[]
   isPreferred: boolean
@@ -403,6 +405,12 @@ export function EnhancedCompareTable({ items, onAddToCart, onRemoveItem }: Enhan
                                             <div className="flex items-center gap-1">
                                               <Calendar className="h-3 w-3" />
                                               <span>Lead time: {price.leadTime}</span>
+                                            </div>
+                                            <div className="flex items-center gap-1">
+                                              <Badge variant="outline" className="text-xs">{price.source}</Badge>
+                                              <span>
+                                                Updated {formatDistanceToNow(new Date(price.lastUpdated), { addSuffix: true })}
+                                              </span>
                                             </div>
                                           </div>
                                           
