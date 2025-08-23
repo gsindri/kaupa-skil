@@ -6,7 +6,6 @@ export interface CatalogFilters {
   brand?: string
   supplier?: string
   category?: string
-  hasPrice?: boolean
 }
 
 export interface CatalogProduct {

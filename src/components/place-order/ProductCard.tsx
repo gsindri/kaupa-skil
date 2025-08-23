@@ -8,7 +8,6 @@ export interface Product {
   pack: string
   image?: string
   suppliers: string[]
-  price?: number
 }
 
 export function ProductCard({ product }: { product: Product }) {
@@ -25,14 +24,6 @@ export function ProductCard({ product }: { product: Product }) {
         <h3 className="font-medium">{product.name}</h3>
         <p className="text-sm text-muted-foreground">{product.brand}</p>
         <p className="text-sm text-muted-foreground">{product.pack}</p>
-        {product.price !== undefined && (
-          <p className="text-sm font-medium">${product.price.toFixed(2)}</p>
-        )}
-        <div className="flex flex-wrap gap-1">
-          {product.suppliers.map(s => (
-            <Badge key={s} data-testid="supplier-badge">
-              {s}
-            </Badge>
           ))}
         </div>
       </CardContent>
