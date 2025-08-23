@@ -19,7 +19,7 @@ vi.mock('@/components/ui/drawer', () => {
 import { CartDrawer } from './CartDrawer'
 
 describe('CartDrawer', () => {
-  it('closes drawer when Place Order is clicked', async () => {
+  it('closes drawer when Browse Catalog is clicked', async () => {
     const mockSetIsDrawerOpen = vi.fn()
     render(
       <MemoryRouter>
@@ -54,7 +54,7 @@ describe('CartDrawer', () => {
       </MemoryRouter>
     )
 
-    await userEvent.click(screen.getByRole('link', { name: /place order/i }))
+    await userEvent.click(screen.getByRole('link', { name: /browse catalog/i }))
     expect(mockSetIsDrawerOpen).toHaveBeenCalledWith(false)
   })
 })
