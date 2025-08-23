@@ -1,10 +1,17 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.55.0";
+import { createHash } from "https://deno.land/std@0.224.0/hash/mod.ts";
 import { parsePack } from "./parsePack.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE_KEY = Deno.env.get("SERVICE_ROLE_KEY")!;
 const INGEST_HAR_TOKEN = Deno.env.get("INGEST_HAR_TOKEN") || "";
+const MISSING_CYCLE_THRESHOLD =
+  Number(Deno.env.get("MISSING_CYCLE_THRESHOLD")) || 3;
+const DELTA_ALERT_THRESHOLD =
+  Number(Deno.env.get("DELTA_ALERT_THRESHOLD")) || 100;
+const SLACK_WEBHOOK_URL = Deno.env.get("SLACK_WEBHOOK_URL");
+const ALERT_EMAIL_URL = Deno.env.get("ALERT_EMAIL_URL");
 
 const ALLOW_ORIGINS = new Set([
   "http://localhost:8080",
@@ -29,6 +36,8 @@ serve(async (req) => {
   };
   if (req.method === "OPTIONS") return new Response(null, { headers: cors });
 
+  const startTime = Date.now();
+  let supabase: any;
   try {
     if (INGEST_HAR_TOKEN) {
       const token = req.headers.get("x-ingest-token") || "";
@@ -70,7 +79,7 @@ serve(async (req) => {
       return new Response("nothing to ingest", { status: 400, headers: cors });
     }
 
-    const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
+    supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
       auth: { persistSession: false },
     });
 
@@ -127,6 +136,9 @@ serve(async (req) => {
 
       if (!name || !price) continue;
 
+      const rawHash = createHash("sha256").
+        update(JSON.stringify(it)).toString();
+
       processedItems.push({
         supplier_id,
         ext_sku: sku || name,
@@ -138,63 +150,138 @@ serve(async (req) => {
         price: price,
         unit_price_ex_vat: qty > 0 ? Number((price / qty).toFixed(4)) : null,
         last_seen_at: nowIso,
+        raw_hash: rawHash,
       });
     }
-
+    let newCount = 0;
+    let changedCount = 0;
+    let unavailableCount = 0;
     let upsertedItems: any[] = [];
 
-    if (processedItems.length) {
-      // Upsert supplier items
-      const upsert = await supabase.from("supplier_items").upsert(
-        processedItems.map((i) => ({
-          supplier_id: i.supplier_id,
-          ext_sku: i.ext_sku,
-          display_name: i.display_name,
-          brand: i.brand,
-          pack_qty: i.pack_qty,
-          pack_unit_id: i.pack_unit_id,
-          vat_code: i.vat_code,
-          last_seen_at: i.last_seen_at,
-        })),
-        {
-          onConflict: "supplier_id,ext_sku",
-          ignoreDuplicates: false,
-        },
-      ).select();
+    const { data: existingRows, error: existingErr } = await supabase
+      .from("supplier_items")
+      .select("id, ext_sku, raw_hash, missing_cycles, status")
+      .eq("supplier_id", supplier_id);
+    if (existingErr) throw existingErr;
+    const existingMap = new Map((existingRows || []).map((r: any) => [r.ext_sku, r]));
 
+    const itemsToUpsert: any[] = [];
+    const unchangedIds: string[] = [];
+
+    for (const item of processedItems) {
+      const existing = existingMap.get(item.ext_sku);
+      if (!existing) {
+        itemsToUpsert.push({ ...item, status: "available", missing_cycles: 0 });
+        newCount++;
+      } else if (existing.raw_hash !== item.raw_hash) {
+        itemsToUpsert.push({
+          ...item,
+          id: existing.id,
+          status: "available",
+          missing_cycles: 0,
+        });
+        changedCount++;
+        existingMap.delete(item.ext_sku);
+      } else {
+        unchangedIds.push(existing.id);
+        existingMap.delete(item.ext_sku);
+      }
+    }
+
+    if (itemsToUpsert.length) {
+      const upsert = await supabase.from("supplier_items").upsert(
+        itemsToUpsert,
+        { onConflict: "supplier_id,ext_sku", ignoreDuplicates: false },
+      ).select();
       if (upsert.error) {
         console.error("Supplier items upsert error:", upsert.error);
         throw upsert.error;
       }
-
       upsertedItems = upsert.data || [];
+    }
 
-      // Create price quotes for the upserted items
-      if (upsertedItems.length > 0) {
-        const priceQuotes = upsertedItems.map((item) => {
-          const processedItem = processedItems.find((p) =>
-            p.ext_sku === item.ext_sku
-          );
-          return {
-            supplier_item_id: item.id,
-            observed_at: nowIso,
-            pack_price: processedItem?.price || 0,
-            currency: "ISK",
-            vat_code: String(processedItem?.vat_code || 24),
-            unit_price_ex_vat: processedItem?.unit_price_ex_vat,
-            unit_price_inc_vat: processedItem?.unit_price_ex_vat
-              ? processedItem.unit_price_ex_vat *
-                (1 + (processedItem.vat_code === 11 ? 0.11 : 0.24))
-              : null,
-            source: har?.log?.entries?.length ? "har_upload" : "bookmarklet",
-          };
-        });
+    if (unchangedIds.length) {
+      const upd = await supabase.from("supplier_items").update({
+        last_seen_at: nowIso,
+        missing_cycles: 0,
+        status: "available",
+      }).in("id", unchangedIds);
+      if (upd.error) {
+        console.error("Supplier items update error:", upd.error);
+        throw upd.error;
+      }
+    }
 
-        const quotes = await supabase.from("price_quotes").insert(priceQuotes);
-        if (quotes.error) {
-          console.error("Price quotes insert error:", quotes.error);
-          throw quotes.error;
-        }
+    const unseen = Array.from(existingMap.values());
+    if (unseen.length) {
+      const updates = unseen.map((r: any) => {
+        const mc = (r.missing_cycles || 0) + 1;
+        const status = mc >= MISSING_CYCLE_THRESHOLD ? "unavailable" : r.status || "available";
+        if (status === "unavailable" && r.status !== "unavailable") unavailableCount++;
+        return { id: r.id, missing_cycles: mc, status };
+      });
+      const upd = await supabase.from("supplier_items").upsert(updates);
+      if (upd.error) {
+        console.error("Supplier items missing update error:", upd.error);
+        throw upd.error;
+      }
+    }
+
+    if (upsertedItems.length) {
+      const priceQuotes = upsertedItems.map((item) => {
+        const processedItem = processedItems.find((p) => p.ext_sku === item.ext_sku);
+        return {
+          supplier_item_id: item.id,
+          observed_at: nowIso,
+          pack_price: processedItem?.price || 0,
+          currency: "ISK",
+          vat_code: String(processedItem?.vat_code || 24),
+          unit_price_ex_vat: processedItem?.unit_price_ex_vat,
+          unit_price_inc_vat: processedItem?.unit_price_ex_vat
+            ? processedItem.unit_price_ex_vat *
+              (1 + (processedItem.vat_code === 11 ? 0.11 : 0.24))
+            : null,
+          source: har?.log?.entries?.length ? "har_upload" : "bookmarklet",
+        };
+      });
+
+      const quotes = await supabase.from("price_quotes").insert(priceQuotes);
+      if (quotes.error) {
+        console.error("Price quotes insert error:", quotes.error);
+        throw quotes.error;
+      }
+    }
+
+    const latencyMs = Date.now() - startTime;
+    await supabase.from("ingestion_runs").insert({
+      tenant_id,
+      supplier_id,
+      started_at: new Date(startTime).toISOString(),
+      finished_at: new Date().toISOString(),
+      status: "succeeded",
+      latency_ms: latencyMs,
+      new_count: newCount,
+      changed_count: changedCount,
+      unavailable_count: unavailableCount,
+    });
+
+    if (
+      SLACK_WEBHOOK_URL &&
+      (changedCount + newCount > DELTA_ALERT_THRESHOLD || unavailableCount > 0)
+    ) {
+      const msg =
+        `Ingestion alert for supplier ${supplier_id}: ${newCount} new, ${changedCount} changed, ${unavailableCount} unavailable`;
+      await fetch(SLACK_WEBHOOK_URL, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ text: msg }),
+      }).catch(() => {});
+      if (ALERT_EMAIL_URL) {
+        await fetch(ALERT_EMAIL_URL, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ subject: "Ingestion alert", text: msg }),
+        }).catch(() => {});
       }
     }
 
@@ -204,6 +291,10 @@ serve(async (req) => {
         items: processedItems.length,
         fileKey,
         processed: upsertedItems.length,
+        new: newCount,
+        changed: changedCount,
+        unavailable: unavailableCount,
+        latency_ms: latencyMs,
       }),
       {
         headers: { ...cors, "content-type": "application/json" },
@@ -211,6 +302,32 @@ serve(async (req) => {
     );
   } catch (e) {
     console.error("Ingest error:", e);
+    const msg = `Ingestion failed for supplier ${tenant_id}/${supplier_id}: ${e?.message || e}`;
+    await supabase
+      .from("ingestion_runs")
+      .insert({
+        tenant_id,
+        supplier_id,
+        started_at: new Date(startTime).toISOString(),
+        finished_at: new Date().toISOString(),
+        status: "failed",
+        error: String(e?.message || e),
+      })
+      .catch(() => {});
+    if (SLACK_WEBHOOK_URL) {
+      await fetch(SLACK_WEBHOOK_URL, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ text: msg }),
+      }).catch(() => {});
+      if (ALERT_EMAIL_URL) {
+        await fetch(ALERT_EMAIL_URL, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ subject: "Ingestion failed", text: msg }),
+        }).catch(() => {});
+      }
+    }
     return new Response(`error: ${e?.message || e}`, {
       status: 500,
       headers: cors,
