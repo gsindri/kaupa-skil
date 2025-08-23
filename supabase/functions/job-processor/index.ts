@@ -249,6 +249,36 @@ async function processAdminActionJob(job: any, supabase: any) {
     case 'update_vat_rules':
       // Would implement VAT rule updates
       break
+    case 'merge_items':
+      await supabase.from('item_redirects').upsert({
+        from_item_id: job.data.from_item_id,
+        to_item_id: job.data.to_item_id,
+        created_by: job.data.actor_id || null
+      })
+      await supabase.rpc('log_audit_event', {
+        action_name: 'merge_items',
+        entity_type_name: 'item',
+        entity_id_val: job.data.from_item_id,
+        reason_text: job.data.reason || null,
+        meta_data_val: { to_item_id: job.data.to_item_id },
+        tenant_id_val: job.tenant_id
+      })
+      break
+    case 'redirect_item':
+      await supabase.from('item_redirects').upsert({
+        from_item_id: job.data.from_item_id,
+        to_item_id: job.data.to_item_id,
+        created_by: job.data.actor_id || null
+      })
+      await supabase.rpc('log_audit_event', {
+        action_name: 'redirect_item',
+        entity_type_name: 'item',
+        entity_id_val: job.data.from_item_id,
+        reason_text: job.data.reason || null,
+        meta_data_val: { to_item_id: job.data.to_item_id },
+        tenant_id_val: job.tenant_id
+      })
+      break
     default:
       throw new Error(`Unknown admin action: ${job.data.action}`)
   }
