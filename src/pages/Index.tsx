@@ -7,7 +7,6 @@ import { CatalogFilters } from '@/components/place-order/CatalogFilters'
 import { SortControl } from '@/components/place-order/SortControl'
 import { ViewToggle } from '@/components/place-order/ViewToggle'
 import { ProductCard } from '@/components/place-order/ProductCard'
-import { useCatalogProducts } from '@/hooks/useCatalogProducts'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
@@ -20,7 +19,8 @@ export default function QuickOrder() {
   const sort = searchParams.get('sort') ?? 'name'
   const view = (searchParams.get('view') as 'grid' | 'list') || 'grid'
   const category = searchParams.get('category') ?? ''
-  const inStock = searchParams.get('stock') === '1'
+  const brand = searchParams.get('brand') ?? ''
+  const hasPrice = searchParams.get('price') === '1'
 
   const updateParam = (key: string, value: string | boolean) => {
     setSearchParams(prev => {
@@ -35,8 +35,6 @@ export default function QuickOrder() {
       return p
     })
   }
-
-  const { data: queryProducts = [], isLoading } = useCatalogProducts('', { supplier, category })
 
   const products = [...queryProducts].sort((a, b) => a.name.localeCompare(b.name))
 
@@ -70,10 +68,12 @@ export default function QuickOrder() {
         />
         <CatalogFilters
           category={category}
+          brand={brand}
           categories={categories.map(c => c.name)}
-          inStock={inStock}
+          hasPrice={hasPrice}
           onCategoryChange={(v) => updateParam('category', v)}
-          onInStockChange={(v) => updateParam('stock', v)}
+          onBrandChange={(v) => updateParam('brand', v)}
+          onHasPriceChange={(v) => updateParam('price', v)}
         />
         <SortControl value={sort} onChange={(v) => updateParam('sort', v)} />
         <ViewToggle value={view} onChange={(v) => updateParam('view', v)} />
