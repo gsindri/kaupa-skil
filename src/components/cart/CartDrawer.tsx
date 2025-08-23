@@ -27,7 +27,7 @@ import { ToastAction } from '@/components/ui/toast'
 import { useCart } from '@/contexts/useBasket'
 import { useSettings } from '@/contexts/useSettings'
 import { Link } from 'react-router-dom'
-import { lockBody, unlockBody } from '@/lib/lockBody'
+import { lockScroll, unlockScroll } from '@/lib/lockScroll'
 
 export function CartDrawer() {
   const {
@@ -45,9 +45,9 @@ export function CartDrawer() {
 
   useEffect(() => {
     if (isDrawerOpen) {
-      lockBody()
+        lockScroll()
     } else {
-      unlockBody()
+        unlockScroll()
     }
   }, [isDrawerOpen])
 

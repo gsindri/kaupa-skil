@@ -7,7 +7,7 @@ import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
 import { useHarProcessor } from '@/hooks/useHarProcessor'
 import { HarProcessingPreview } from './HarProcessingPreview'
-import { lockBody, unlockBody } from '@/lib/lockBody'
+import { lockScroll, unlockScroll } from '@/lib/lockScroll'
 
 interface HarUploadModalProps {
   open: boolean
@@ -31,9 +31,9 @@ export function HarUploadModal({
 
   useEffect(() => {
     if (open) {
-      lockBody()
+      lockScroll()
     } else {
-      unlockBody()
+      unlockScroll()
     }
   }, [open])
 
@@ -138,7 +138,7 @@ export function HarUploadModal({
     setUploadStep('select')
     setBusy(false)
     onClose()
-    unlockBody()
+    unlockScroll()
   }
 
   return (

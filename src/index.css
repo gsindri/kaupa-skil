@@ -30,3 +30,10 @@ main > *:first-child {
 
 html { scrollbar-gutter: stable both-edges; }
 html { overflow-y: scroll; } /* Safari/legacy fallback */
+
+.app-scroll {
+  height: 100vh;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+  overscroll-behavior: contain;
+}

@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { X, TrendingUp, Truck, Clock, AlertCircle } from 'lucide-react';
 import { useSettings } from '@/contexts/useSettings';
 import { useCart } from '@/contexts/useBasket';
-import { lockBody, unlockBody } from '@/lib/lockBody';
+import { lockScroll, unlockScroll } from '@/lib/lockScroll';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { deliveryCalculator } from '@/services/DeliveryCalculator';
@@ -46,9 +46,9 @@ export function MiniCompareDrawer({ itemId, isOpen, onClose }: MiniCompareDrawer
 
   useEffect(() => {
     if (isOpen) {
-      lockBody();
+      lockScroll();
     } else {
-      unlockBody();
+      unlockScroll();
     }
   }, [isOpen]);
 
