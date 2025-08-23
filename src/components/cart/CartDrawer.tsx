@@ -153,10 +153,10 @@ export function CartDrawer() {
                 </p>
                 <Button asChild>
                   <Link
-                    to="/quick-order"
+                    to="/catalog"
                     onClick={() => setIsDrawerOpen(false)}
                   >
-                    Place Order
+                    Browse Catalog
                   </Link>
                 </Button>
               </div>

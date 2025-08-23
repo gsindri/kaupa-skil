@@ -6,7 +6,6 @@ import {
   Search,
   Heart,
   Shield,
-  Zap,
 } from "lucide-react"
 import {
   Sidebar,
@@ -35,9 +34,9 @@ const coreItems = [
     icon: Home,
   },
   {
-    title: "Place Order",
-    url: "/quick-order",
-    icon: Zap,
+    title: "Catalog",
+    url: "/catalog",
+    icon: Search,
   },
   {
     title: "Compare",

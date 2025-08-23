@@ -2,7 +2,6 @@
 import { createBrowserRouter, Outlet } from "react-router-dom";
 import { AuthGate } from "@/components/auth/AuthGate";
 import { AppLayout } from "@/components/layout/AppLayout";
-import QuickOrder from "@/pages/Index";
 import Dashboard from "@/pages/Dashboard";
 import Compare from "@/pages/Compare";
 import Orders from "@/pages/Orders";
@@ -38,10 +37,6 @@ export const routes = [
       {
         index: true,
         element: <Dashboard />,
-      },
-      {
-        path: "quick-order",
-        element: <QuickOrder />,
       },
       {
         path: "cart",

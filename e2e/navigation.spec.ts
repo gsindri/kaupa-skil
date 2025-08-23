@@ -7,7 +7,7 @@ test('sidebar links route correctly', async ({ page }) => {
 
   const links = [
     { label: 'Dashboard', path: '/' },
-    { label: 'Place Order', path: '/quick-order' },
+    { label: 'Catalog', path: '/catalog' },
     { label: 'Compare', path: '/compare' },
     { label: 'Suppliers', path: '/suppliers' },
   ];
@@ -22,13 +22,13 @@ test('sidebar links route correctly', async ({ page }) => {
   }
 });
 
-test('quick order search flow', async ({ page }) => {
+test('catalog search flow', async ({ page }) => {
   await page.goto('/');
 
-  await page.getByRole('link', { name: 'Place Order' }).click();
-  await expect(page).toHaveURL(/quick-order/);
+  await page.getByRole('link', { name: 'Catalog' }).click();
+  await expect(page).toHaveURL(/catalog/);
 
-  const searchBox = page.getByPlaceholder('Search items...');
+  const searchBox = page.getByPlaceholder('Search products');
   await searchBox.fill('test');
-  await expect(page.getByText(/Searching|No items found/i)).toBeVisible();
+  await expect(page.getByTestId('product-card').first()).toBeVisible();
 });
