@@ -32,7 +32,7 @@ const sha256 = (s: string) => createHash("sha256").update(s).digest("hex");
 async function scrapeCategory(url: string) {
   const out: {
     name: string; url: string; supplierSku: string; packSize?: string;
-    availability?: string; imageUrl?: string; rawHash: string;
+    availabilityText?: string; imageUrl?: string; rawHash: string;
   }[] = [];
 
   let pageUrl: string | undefined = url;
@@ -65,14 +65,14 @@ async function scrapeCategory(url: string) {
       const packSize = (packText.match(/(\d+\s*[x×]\s*\d+\s*(?:ml|l|g|kg)|\d+\s*(?:kg|g|ml|l)|\d+\s*stk)/i)?.[0] || "")
         .replace(/\s+/g, "") || undefined;
 
-      const availability = norm($el.find(".productcard__availability").first().text()) || undefined;
+      const availabilityText = norm($el.find(".productcard__availability").first().text()) || undefined;
 
       const img = $el.find(".productcard__image img, img").first();
       const imageUrl = absUrl(img.attr("data-src") || img.attr("src"));
 
       const urlAbs = absUrl(href);
       out.push({
-        name, url: urlAbs, supplierSku, packSize, availability, imageUrl,
+        name, url: urlAbs, supplierSku, packSize, availabilityText, imageUrl,
         rawHash: sha256(JSON.stringify({ name, url: urlAbs, supplierSku }))
       });
     });
@@ -116,6 +116,8 @@ async function upsertSupplierProduct(catalogId: string | null, i: {
   supplierSku: string;
   url: string;
   packSize?: string;
+  availabilityText?: string;
+  imageUrl?: string;
   rawHash: string;
 }) {
   // Check existing to avoid needless updates when raw_hash matches
@@ -142,6 +144,8 @@ async function upsertSupplierProduct(catalogId: string | null, i: {
     supplier_sku: i.supplierSku,
     pack_size: i.packSize ?? null,
     source_url: i.url,
+    availability_text: i.availabilityText ?? null,
+    image_url: i.imageUrl ?? null,
     data_provenance: "site",
     provenance_confidence: 0.7,
     raw_hash: i.rawHash,

@@ -35,6 +35,8 @@ export async function runOnce(supabaseUrl: string, serviceRoleKey: string, suppl
         catalog_id: catalogId,
         supplier_sku: n.supplierSku,
         pack_size: n.packSize ?? null,
+        availability_text: n.availabilityText ?? null,
+        image_url: n.imageUrl ?? null,
         source_url: n.sourceUrl ?? null,
         data_provenance: n.dataProvenance,
         provenance_confidence: n.provenanceConfidence,
