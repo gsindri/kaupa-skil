@@ -10,7 +10,7 @@ const Drawer = ({
   <DrawerPrimitive.Root
     shouldScaleBackground={shouldScaleBackground}
     noBodyStyles
-    disablePreventScroll={false}
+    disablePreventScroll
     {...props}
   />
 )
@@ -36,24 +36,31 @@ DrawerOverlay.displayName = DrawerPrimitive.Overlay.displayName
 
 const DrawerContent = React.forwardRef<
   React.ElementRef<typeof DrawerPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Content> & { showBar?: boolean }
->(({ className, children, showBar = true, ...props }, ref) => (
+  React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Content> & {
+    showBar?: boolean
+    side?: 'bottom' | 'right'
+  }
+>(({ className, children, showBar = true, side = 'bottom', ...props }, ref) => (
   <DrawerPortal>
     <DrawerOverlay />
     <DrawerPrimitive.Content
       ref={ref}
       className={cn(
-        "fixed inset-x-0 bottom-0 z-50 mt-24 flex h-auto flex-col rounded-t-[10px] border bg-background",
+        'fixed z-50 flex flex-col bg-background',
+        side === 'bottom' && 'inset-x-0 bottom-0 mt-24 h-auto rounded-t-[10px] border',
+        side === 'right' && 'inset-y-0 right-0 h-full w-full border-l',
         className
       )}
       {...props}
     >
-      {showBar && <div className="mx-auto mt-4 h-2 w-[100px] rounded-full bg-muted" />}
+      {showBar && side === 'bottom' && (
+        <div className="mx-auto mt-4 h-2 w-[100px] rounded-full bg-muted" />
+      )}
       {children}
     </DrawerPrimitive.Content>
   </DrawerPortal>
 ))
-DrawerContent.displayName = "DrawerContent"
+DrawerContent.displayName = 'DrawerContent'
 
 const DrawerHeader = ({
   className,
