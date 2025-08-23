@@ -95,11 +95,11 @@ async function scrapeCategory(url: string) {
   });
 }
 
-async function matchOrCreateCatalog(name: string, packSize?: string) {
+async function matchCatalog(name: string, packSize?: string) {
   // simple heuristic: match by name (and size if present)
   const { data: candidates, error } = await sb
     .from("catalog_product")
-    .select("id,name,size")
+    .select("catalog_id,name,size")
     .ilike("name", `%${name.slice(0, 48)}%`)
     .limit(20);
 
@@ -108,30 +108,44 @@ async function matchOrCreateCatalog(name: string, packSize?: string) {
   const pick = candidates?.find(c =>
     (!packSize || (c.size || "").replace(/\s/g, "").toLowerCase() === packSize.toLowerCase())
   );
-  if (pick?.id) return pick.id;
-
-  const { data: created, error: insErr } = await sb
-    .from("catalog_product")
-    .insert({ name, size: packSize ?? null })
-    .select("id")
-    .single();
-  if (insErr) throw insErr;
-  return created!.id;
+  return pick?.catalog_id || null;
 }
 
-async function upsertSupplierProduct(catalogId: string, i: {
-  supplierSku: string; url: string; packSize?: string; rawHash: string;
+async function upsertSupplierProduct(catalogId: string | null, i: {
+  name: string;
+  supplierSku: string;
+  url: string;
+  packSize?: string;
+  rawHash: string;
 }) {
-  // NOTE: adjust column names if your FK is catalog_product_id (most likely)
+  // Check existing to avoid needless updates when raw_hash matches
+  const { data: existing } = await sb
+    .from("supplier_product")
+    .select("raw_hash")
+    .eq("supplier_id", SUPPLIER_ID)
+    .eq("supplier_sku", i.supplierSku)
+    .maybeSingle();
+
+  if (existing && existing.raw_hash === i.rawHash) {
+    const { error: updErr } = await sb
+      .from("supplier_product")
+      .update({ last_seen_at: new Date().toISOString(), catalog_id: catalogId })
+      .eq("supplier_id", SUPPLIER_ID)
+      .eq("supplier_sku", i.supplierSku);
+    if (updErr) throw updErr;
+    return;
+  }
+
   const payload: any = {
     supplier_id: SUPPLIER_ID,
-    catalog_product_id: catalogId,         // <-- change to 'catalog_id' if that's your column
+    catalog_id: catalogId,
     supplier_sku: i.supplierSku,
-    pack_size: i.packSize ?? null,         // <-- drop if you don't have this column
+    pack_size: i.packSize ?? null,
     source_url: i.url,
     data_provenance: "site",
     provenance_confidence: 0.7,
     raw_hash: i.rawHash,
+    raw_payload_json: i,
     last_seen_at: new Date().toISOString(),
   };
 
@@ -139,6 +153,31 @@ async function upsertSupplierProduct(catalogId: string, i: {
     .from("supplier_product")
     .upsert(payload, { onConflict: "supplier_id,supplier_sku" });
   if (error) throw error;
+}
+
+async function recordUnmatched(i: { name: string; supplierSku: string }) {
+  const { data: existing } = await sb
+    .from("unmatched_products")
+    .select("unmatched_id")
+    .eq("supplier_id", SUPPLIER_ID)
+    .eq("supplier_sku", i.supplierSku)
+    .maybeSingle();
+
+  const payload = {
+    supplier_id: SUPPLIER_ID,
+    supplier_sku: i.supplierSku,
+    raw_name: i.name,
+    payload: i,
+  };
+
+  if (existing) {
+    await sb
+      .from("unmatched_products")
+      .update(payload)
+      .eq("unmatched_id", existing.unmatched_id);
+  } else {
+    await sb.from("unmatched_products").insert(payload);
+  }
 }
 
 async function run() {
@@ -149,8 +188,9 @@ async function run() {
     total += items.length;
 
     for (const it of items) {
-      const catalogId = await matchOrCreateCatalog(it.name, it.packSize);
+      const catalogId = await matchCatalog(it.name, it.packSize);
       await upsertSupplierProduct(catalogId, it);
+      if (!catalogId) await recordUnmatched(it);
     }
   }
   console.log(`Upserted ${total} items for supplier ${SUPPLIER_ID}`);

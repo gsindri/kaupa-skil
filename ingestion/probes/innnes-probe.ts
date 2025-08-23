@@ -27,7 +27,12 @@ async function maybeAcceptCookies(page: Page) {
   for (const s of candidates) {
     const b = await page.$(s);
     if (b) {
-      try { await b.click(); await page.waitForTimeout(300); } catch {}
+      try {
+        await b.click();
+        await page.waitForTimeout(300);
+      } catch (e) {
+        // ignore errors from blocking dialogs
+      }
       break;
     }
   }

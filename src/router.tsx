@@ -13,6 +13,7 @@ import PriceHistory from "@/pages/PriceHistory";
 import Delivery from "@/pages/Delivery";
 import Admin from "@/pages/Admin";
 import Discovery from "@/pages/Discovery";
+import CatalogPage from "@/pages/catalog/CatalogPage";
 import LoginPage from "@/pages/auth/LoginPage";
 import SignupPage from "@/pages/auth/SignupPage";
 import ForgotPassword from "@/pages/auth/ForgotPassword";
@@ -65,6 +66,10 @@ export const routes = [
       {
         path: "discovery",
         element: <Discovery />,
+      },
+      {
+        path: "catalog",
+        element: <CatalogPage />,
       },
       {
         path: "admin",
