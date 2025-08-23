@@ -35,8 +35,8 @@ A comprehensive buyer-side B2B wholesale comparison and ordering tool designed s
 The platform uses a multi-tenant PostgreSQL database with Row Level Security (RLS) for data isolation:
 
 - **Core Tables**: `tenants`, `profiles`, `suppliers`, `supplier_credentials`
-- **Product Data**: `items`, `supplier_items`, `categories`, `units`, `vat_rules`
-- **Pricing**: `price_quotes`, `item_matches` (for entity resolution)
+- **Product Data**: `catalog_product`, `supplier_product`, `categories`, `units`, `vat_rules`
+- **Pricing**: `offer`, `item_matches` (for entity resolution)
 - **Orders**: `orders`, `order_lines`, `order_dispatches`
 - **System**: `connector_runs`, `audit_events`
 
