@@ -1,27 +1,10 @@
 import { test, expect } from '@playwright/test';
 
-const email = process.env.E2E_EMAIL;
-const password = process.env.E2E_PASSWORD;
-
-if (!email || !password) {
-  test.skip(true, 'E2E_EMAIL and E2E_PASSWORD must be set to run header stability tests');
-}
-
-test.beforeEach(async ({ page }) => {
-  await page.goto('/');
-  const dashboardLink = page.getByRole('link', { name: 'Dashboard' });
-  if (await dashboardLink.count().then(c => c > 0)) {
-    await expect(dashboardLink).toBeVisible();
-    return;
-  }
-  await page.goto('/auth/signin');
-  await page.getByPlaceholder(/email/i).fill(email!);
-  await page.getByPlaceholder(/password/i).fill(password!);
-  await page.getByRole('button', { name: /sign in|log in/i }).click();
-  await expect(page.getByRole('link', { name: 'Dashboard' })).toBeVisible();
-});
+// Already authenticated via global-setup storageState.
+// No per-test login or env vars needed anymore.
 
 test('header remains fixed when overlay opens and closes', async ({ page }) => {
+  await page.goto('/'); // ensure we start from the app
   const header = page.getByRole('banner');
   const before = await header.boundingBox();
   await page.getByRole('button', { name: 'Help' }).click();
@@ -35,6 +18,7 @@ test('header remains fixed when overlay opens and closes', async ({ page }) => {
 });
 
 test('header position is stable when search is focused', async ({ page }) => {
+  await page.goto('/');
   const header = page.getByRole('banner');
   const search = page.getByPlaceholder('Search products, suppliers, orders...');
   const before = await header.boundingBox();
@@ -49,6 +33,7 @@ test('header position is stable when search is focused', async ({ page }) => {
 });
 
 test('right action buttons keep width and styles on focus', async ({ page }) => {
+  await page.goto('/');
   const buttons = page.locator('header nav button');
   const count = await buttons.count();
   for (let i = 0; i < count; i++) {
