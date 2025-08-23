@@ -2,11 +2,12 @@ import React from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
 import { useVendors } from '@/hooks/useVendors'
 import { useCategories } from '@/hooks/useCategories'
+import { useProducts } from '@/hooks/useProducts'
 import { SupplierFilter } from '@/components/place-order/SupplierFilter'
 import { CatalogFilters } from '@/components/place-order/CatalogFilters'
 import { SortControl } from '@/components/place-order/SortControl'
 import { ViewToggle } from '@/components/place-order/ViewToggle'
-import { ProductCard } from '@/components/place-order/ProductCard'
+import { ProductCard, type Product as CardProduct } from '@/components/place-order/ProductCard'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
@@ -36,7 +37,37 @@ export default function QuickOrder() {
     })
   }
 
-  const products = [...queryProducts].sort((a, b) => a.name.localeCompare(b.name))
+  const { data: rawProducts = [], isLoading } = useProducts({
+    supplier: supplier || undefined,
+    category: category || undefined
+  })
+
+  let filtered = rawProducts
+
+  if (brand) {
+    const search = brand.toLowerCase()
+    filtered = filtered.filter(p => p.name.toLowerCase().includes(search))
+  }
+  if (hasPrice) {
+    filtered = filtered.filter(p => p.price > 0)
+  }
+
+  filtered = [...filtered].sort((a, b) => {
+    switch (sort) {
+      case 'price':
+        return (a.price ?? 0) - (b.price ?? 0)
+      default:
+        return a.name.localeCompare(b.name)
+    }
+  })
+
+  const products: CardProduct[] = filtered.map(p => ({
+    id: p.id,
+    name: p.name,
+    brand: '',
+    pack: p.pack,
+    suppliers: [p.supplierName]
+  }))
 
   if (vendors.length === 0 || (!isLoading && products.length === 0)) {
     return (
