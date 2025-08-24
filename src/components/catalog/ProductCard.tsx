@@ -22,7 +22,9 @@ export function ProductCard({ product, showPrice }: { product: CatalogItem; show
           />
         )}
         <h3 className="font-medium">{product.name}</h3>
-        <p className="text-sm text-muted-foreground">{product.brand}</p>
+        {product.brand && (
+          <p className="text-sm text-muted-foreground">{product.brand}</p>
+        )}
         <Badge variant="secondary" data-testid="supplier-count">
           {product.supplier_count} suppliers
         </Badge>
