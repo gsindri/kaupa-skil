@@ -49,9 +49,8 @@ type ScrapedItem = {
 
 async function scrapeCategory(categoryUrl: string): Promise<ScrapedItem[]> {
   const out: ScrapedItem[] = [];
-  const seen = new Set<string>();
+  const seenItem = new Set<string>();
 
-  // helper to fetch + parse
   const fetchPage = async (url: string) => {
     const res = await fetch(url, {
       headers: {
@@ -59,25 +58,22 @@ async function scrapeCategory(categoryUrl: string): Promise<ScrapedItem[]> {
         "user-agent": "KaupaCrawler/1.0 (+contact: you@example.is)",
       },
     });
-    return cheerio.load(await res.text());
+    const html = await res.text();
+    return cheerio.load(html);
   };
 
-  // 1. load first page to detect total pages
-  const $first = await fetchPage(categoryUrl);
-  const pageNumbers = $first(".pagination a, .page-numbers, .pagination__item")
-    .map((_, el) => parseInt(norm($first(el).text()), 10))
-    .get()
-    .filter(n => !isNaN(n));
-  const maxPage = Math.max(...pageNumbers, 1);
-
+  // scrape all cards on a page
   const scrapeOne = ($: cheerio.CheerioAPI, pageUrl: string) => {
     $(CARD_SEL).each((_, el) => {
       const $el = $(el);
+
       const name =
         norm($el.find("h3.productcard__heading").first().text()) ||
         norm($el.find(".woocommerce-loop-product__title, .product-title, h2, h3").first().text());
 
-      const href = $el.find("a[href]").first().attr("href") || "";
+      const href =
+        $el.find("a[href]").first().attr("href") ||
+        $el.find(".productcard__image a[href], .productcard__heading a[href]").attr("href") || "";
       if (!name || !href) return;
 
       const skuText = norm($el.find(".productcard__sku, [class*=sku]").first().text());
@@ -94,11 +90,11 @@ async function scrapeCategory(categoryUrl: string): Promise<ScrapedItem[]> {
       const availabilityText = norm($el.find(".productcard__availability").first().text()) || undefined;
       const img = $el.find(".productcard__image img, img").first();
       const imageUrl = absUrl(img.attr("data-src") || img.attr("src"));
-
       const urlAbs = absUrl(href);
+
       const key = `${supplierSku}::${urlAbs}`;
-      if (seen.has(key)) return;
-      seen.add(key);
+      if (seenItem.has(key)) return;
+      seenItem.add(key);
 
       out.push({
         name,
@@ -114,15 +110,29 @@ async function scrapeCategory(categoryUrl: string): Promise<ScrapedItem[]> {
     console.log(`Scraped page ${pageUrl} → ${out.length} total`);
   };
 
-  // 2. scrape first page
-  scrapeOne($first, categoryUrl);
+  // 1) Load first page and collect ALL real pagination links
+  const $first = await fetchPage(categoryUrl);
 
-  // 3. scrape remaining pages using ?p=N
-  for (let p = 2; p <= maxPage; p++) {
-    const pageUrl = `${categoryUrl}?p=${p}`;
-    const $ = await fetchPage(pageUrl);
-    scrapeOne($, pageUrl);
-    await new Promise(r => setTimeout(r, 400)); // polite delay
+  // selectors cover typical Innnes/WooCommerce pagers
+  const pageHrefs = new Set<string>();
+  // include the current page
+  pageHrefs.add(absUrl(categoryUrl));
+
+  $first(".pagination a[href], .pagination__item a[href], .page-numbers a[href], .woocommerce-pagination a[href]")
+    .each((_, a) => {
+      const href = absUrl($first(a).attr("href"));
+      if (href) pageHrefs.add(href);
+    });
+
+  // 2) Sort for stability (so we go 1..N)
+  const pages = [...pageHrefs].sort((a, b) => a.localeCompare(b));
+  console.log("Discovered pages:", pages);
+
+  // 3) Fetch each discovered page and scrape
+  for (const pUrl of pages) {
+    const $ = await fetchPage(pUrl);
+    scrapeOne($, pUrl);
+    await new Promise(r => setTimeout(r, 300)); // polite
   }
 
   return out;
