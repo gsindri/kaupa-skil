@@ -47,36 +47,55 @@ type ScrapedItem = {
   rawHash: string;
 };
 
-async function scrapeCategory(url: string): Promise<ScrapedItem[]> {
+async function scrapeCategory(categoryUrl: string): Promise<ScrapedItem[]> {
   const out: ScrapedItem[] = [];
 
-  let pageUrl: string | undefined = url;
-  while (pageUrl) {
-    const res = await fetch(pageUrl, {
+  // Build ?page=N URLs
+  const pageUrl = (base: string, n: number) => {
+    const u = new URL(base);
+    if (n <= 1) {
+      u.searchParams.delete("page");
+    } else {
+      u.searchParams.set("page", String(n));
+    }
+    return u.toString();
+  };
+
+  // Fetch and parse a page
+  const fetchPage = async (url: string) => {
+    const res = await fetch(url, {
       headers: {
         "accept-language": "is-IS,is;q=0.9,en;q=0.8",
         "user-agent": "KaupaCrawler/1.0 (+contact: you@example.is)",
       },
     });
     const html = await res.text();
-    const $ = cheerio.load(html);
+    return cheerio.load(html);
+  };
 
+  // Probe first page to detect total pages
+  const firstUrl = pageUrl(categoryUrl, 1);
+  const $first = await fetchPage(firstUrl);
+
+  const pageNums: number[] = [];
+  $first(".pagination__item a, .page-numbers a").each((_, a) => {
+    const n = Number($first(a).text().trim());
+    if (Number.isFinite(n)) pageNums.push(n);
+  });
+  const maxPages = pageNums.length ? Math.max(...pageNums) : 1;
+
+  // Scrape helper
+  const scrapeOne = ($: cheerio.CheerioAPI, urlAbs: string) => {
     $(CARD_SEL).each((_, el) => {
       const $el = $(el);
 
       const name =
         norm($el.find("h3.productcard__heading").first().text()) ||
-        norm(
-          $el
-            .find(".woocommerce-loop-product__title, .product-title, h2, h3")
-            .first()
-            .text()
-        );
+        norm($el.find(".woocommerce-loop-product__title, .product-title, h2, h3").first().text());
 
       const href =
         $el.find("a[href]").first().attr("href") ||
-        $el.find(".productcard__image a[href], .productcard__heading a[href]").attr("href") ||
-        "";
+        $el.find(".productcard__image a[href], .productcard__heading a[href]").attr("href") || "";
 
       if (!name || !href) return;
 
@@ -88,48 +107,49 @@ async function scrapeCategory(url: string): Promise<ScrapedItem[]> {
 
       const packText = norm($el.find(".productcard__size, .productcard__unit").first().text());
       const packSize =
-        (packText.match(
-          /(\d+\s*[x×]\s*\d+\s*(?:ml|l|g|kg)|\d+\s*(?:kg|g|ml|l)|\d+\s*stk)/i
-        )?.[0] || "")
+        (packText.match(/(\d+\s*[x×]\s*\d+\s*(?:ml|l|g|kg)|\d+\s*(?:kg|g|ml|l)|\d+\s*stk)/i)?.[0] || "")
           .replace(/\s+/g, "") || undefined;
 
-      const availabilityText =
-        norm($el.find(".productcard__availability").first().text()) || undefined;
-
+      const availabilityText = norm($el.find(".productcard__availability").first().text()) || undefined;
       const img = $el.find(".productcard__image img, img").first();
       const imageUrl = absUrl(img.attr("data-src") || img.attr("src"));
 
-      const urlAbs = absUrl(href);
+      const urlAbsItem = absUrl(href);
       out.push({
         name,
-        url: urlAbs,
+        url: urlAbsItem,
         supplierSku,
         packSize,
         availabilityText,
         imageUrl,
-        rawHash: sha256(JSON.stringify({ name, url: urlAbs, supplierSku })),
+        rawHash: sha256(JSON.stringify({ name, url: urlAbsItem, supplierSku })),
       });
     });
 
-    // pagination (rel=next or active → next)
-    const nextHref =
-      $("a[rel=next]").attr("href") ||
-      $(".pagination__item--active").next().find("a[href]").attr("href") ||
-      $(".pagination .page-numbers .next").attr("href") ||
-      undefined;
+    console.log(`Scraped ${out.length} total so far from ${urlAbs}`);
+  };
 
-    pageUrl = nextHref ? absUrl(nextHref) : undefined;
+  // Scrape page 1
+  scrapeOne($first, firstUrl);
+
+  // Scrape 2..maxPages
+  for (let p = 2; p <= maxPages; p++) {
+    const url = pageUrl(categoryUrl, p);
+    const $p = await fetchPage(url);
+    scrapeOne($p, url);
+    await new Promise(r => setTimeout(r, 400)); // polite delay
   }
 
-  // de-dupe by (supplierSku,url)
+  // De-dupe
   const seen = new Set<string>();
-  return out.filter((i) => {
+  return out.filter(i => {
     const key = `${i.supplierSku}::${i.url}`;
     if (seen.has(key)) return false;
     seen.add(key);
     return true;
   });
 }
+
 
 /** Find an existing catalog_product by name/size, or create one. Returns its id. */
 async function matchOrCreateCatalog(name: string, packSize?: string): Promise<string> {
