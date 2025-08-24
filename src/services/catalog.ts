@@ -28,14 +28,16 @@ export async function fetchPublicCatalogItems(
   if (filters.brand) query = query.eq('brand', filters.brand)
   const { data, error } = await query.limit(50)
   if (error) throw error
-  return (data ?? []).map((item: any) => ({
+  const items = (data ?? []).map((item: any) => ({
     catalog_id: item.catalog_id,
     name: item.name,
     brand: item.brand ?? null,
-    image_main: item.sample_image_url ?? null,
+    image_main: item.image_main ?? item.sample_image_url ?? null,
     supplier_count: item.suppliers_count ?? item.supplier_count ?? 0,
     best_price: item.best_price ?? null,
   }))
+  console.log('fetchPublicCatalogItems', items)
+  return items
 }
 
 export async function fetchOrgCatalogItems(orgId: string, filters: OrgCatalogFilters) {
