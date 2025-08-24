@@ -62,18 +62,16 @@ async function scrapeCategory(categoryUrl: string): Promise<ScrapedItem[]> {
     return cheerio.load(html);
   };
 
-  // scrape all cards on a page
   const scrapeOne = ($: cheerio.CheerioAPI, pageUrl: string) => {
     $(CARD_SEL).each((_, el) => {
       const $el = $(el);
-
       const name =
         norm($el.find("h3.productcard__heading").first().text()) ||
         norm($el.find(".woocommerce-loop-product__title, .product-title, h2, h3").first().text());
-
       const href =
         $el.find("a[href]").first().attr("href") ||
-        $el.find(".productcard__image a[href], .productcard__heading a[href]").attr("href") || "";
+        $el.find(".productcard__image a[href], .productcard__heading a[href]").attr("href") ||
+        "";
       if (!name || !href) return;
 
       const skuText = norm($el.find(".productcard__sku, [class*=sku]").first().text());
@@ -110,29 +108,53 @@ async function scrapeCategory(categoryUrl: string): Promise<ScrapedItem[]> {
     console.log(`Scraped page ${pageUrl} → ${out.length} total`);
   };
 
-  // 1) Load first page and collect ALL real pagination links
+  // 1) Load first page to discover numbers and a query template
   const $first = await fetchPage(categoryUrl);
 
-  // selectors cover typical Innnes/WooCommerce pagers
-  const pageHrefs = new Set<string>();
-  // include the current page
-  pageHrefs.add(absUrl(categoryUrl));
+  // read numeric buttons (max page)
+  const nums = $first(".pagination a, .pagination__item, .page-numbers a")
+    .map((_, el) => parseInt(norm($first(el).text()), 10))
+    .get()
+    .filter((n) => Number.isFinite(n));
+  const maxPage = Math.max(...nums, 1);
 
-  $first(".pagination a[href], .pagination__item a[href], .page-numbers a[href], .woocommerce-pagination a[href]")
-    .each((_, a) => {
-      const href = absUrl($first(a).attr("href"));
-      if (href) pageHrefs.add(href);
-    });
+  // find a link that contains the page param (e.g., ?page=2&filter=&orderby=)
+  let queryTemplate = "";
+  $first(".pagination a[href], .pagination__item a[href], .page-numbers a[href]").each((_, a) => {
+    const href = absUrl($first(a).attr("href"));
+    const u = new URL(href);
+    const hasPageParam = [...u.searchParams.keys()].some((k) => /^(page|p)$/i.test(k));
+    if (hasPageParam && !queryTemplate) {
+      // keep everything but the page number so we can re-use it with our category base
+      // e.g. "?page={n}&filter=&orderby="
+      const pageKey = [...u.searchParams.keys()].find((k) => /^(page|p)$/i.test(k))!;
+      u.searchParams.set(pageKey, "{n}");
+      queryTemplate = "?" + u.searchParams.toString().replace("%7Bn%7D", "{n}");
+    }
+  });
 
-  // 2) Sort for stability (so we go 1..N)
-  const pages = [...pageHrefs].sort((a, b) => a.localeCompare(b));
-  console.log("Discovered pages:", pages);
+  // helper to build a page URL from template
+  const buildUrl = (n: number) => {
+    const base = new URL(categoryUrl);
+    base.search = ""; // ensure we keep the category path
+    if (queryTemplate) {
+      return base.origin + base.pathname + queryTemplate.replace("{n}", String(n));
+    }
+    // fallbacks if no template was found
+    const u = new URL(categoryUrl);
+    u.searchParams.set("page", String(n));
+    return u.toString();
+  };
 
-  // 3) Fetch each discovered page and scrape
-  for (const pUrl of pages) {
-    const $ = await fetchPage(pUrl);
-    scrapeOne($, pUrl);
-    await new Promise(r => setTimeout(r, 300)); // polite
+  // 2) Scrape page 1
+  scrapeOne($first, categoryUrl);
+
+  // 3) Scrape remaining pages 2..maxPage using the template (keeps filter/orderby)
+  for (let p = 2; p <= maxPage; p++) {
+    const pageUrl = buildUrl(p);
+    const $ = await fetchPage(pageUrl);
+    scrapeOne($, pageUrl);
+    await new Promise((r) => setTimeout(r, 350));
   }
 
   return out;
