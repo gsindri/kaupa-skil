@@ -49,19 +49,8 @@ type ScrapedItem = {
 
 async function scrapeCategory(categoryUrl: string): Promise<ScrapedItem[]> {
   const out: ScrapedItem[] = [];
+  const seenPage = new Set<string>();
 
-  // Build ?page=N URLs
-  const pageUrl = (base: string, n: number) => {
-    const u = new URL(base);
-    if (n <= 1) {
-      u.searchParams.delete("page");
-    } else {
-      u.searchParams.set("page", String(n));
-    }
-    return u.toString();
-  };
-
-  // Fetch and parse a page
   const fetchPage = async (url: string) => {
     const res = await fetch(url, {
       headers: {
@@ -73,18 +62,6 @@ async function scrapeCategory(categoryUrl: string): Promise<ScrapedItem[]> {
     return cheerio.load(html);
   };
 
-  // Probe first page to detect total pages
-  const firstUrl = pageUrl(categoryUrl, 1);
-  const $first = await fetchPage(firstUrl);
-
-  const pageNums: number[] = [];
-  $first(".pagination__item a, .page-numbers a").each((_, a) => {
-    const n = Number($first(a).text().trim());
-    if (Number.isFinite(n)) pageNums.push(n);
-  });
-  const maxPages = pageNums.length ? Math.max(...pageNums) : 1;
-
-  // Scrape helper
   const scrapeOne = ($: cheerio.CheerioAPI, urlAbs: string) => {
     $(CARD_SEL).each((_, el) => {
       const $el = $(el);
@@ -96,7 +73,6 @@ async function scrapeCategory(categoryUrl: string): Promise<ScrapedItem[]> {
       const href =
         $el.find("a[href]").first().attr("href") ||
         $el.find(".productcard__image a[href], .productcard__heading a[href]").attr("href") || "";
-
       if (!name || !href) return;
 
       const skuText = norm($el.find(".productcard__sku, [class*=sku]").first().text());
@@ -129,18 +105,34 @@ async function scrapeCategory(categoryUrl: string): Promise<ScrapedItem[]> {
     console.log(`Scraped ${out.length} total so far from ${urlAbs}`);
   };
 
-  // Scrape page 1
-  scrapeOne($first, firstUrl);
+  // Follow rel=next until it disappears (with a safety cap)
+  let url: string | undefined = categoryUrl;
+  for (let hop = 0; url && hop < 50; hop++) {
+    const canonical = new URL(url).toString();
+    if (seenPage.has(canonical)) break; // avoid loops
+    seenPage.add(canonical);
 
-  // Scrape 2..maxPages
-  for (let p = 2; p <= maxPages; p++) {
-    const url = pageUrl(categoryUrl, p);
-    const $p = await fetchPage(url);
-    scrapeOne($p, url);
-    await new Promise(r => setTimeout(r, 400)); // polite delay
+    const $ = await fetchPage(url);
+    scrapeOne($, canonical);
+
+   // prefer rel=next (both <a> and <link>), then common WooCommerce selectors
+const nextHref =
+  $('a[rel="next"]').attr("href") ||                 // <a rel="next" ...>
+  $('link[rel="next"]').attr("href") ||              // <link rel="next" ...> in <head>
+  $(".pagination__item--active").next().find("a[href]").attr("href") ||
+  $(".page-numbers .next").attr("href") ||           // Woo nav-links
+  $(".woocommerce-pagination .next").attr("href") || // WooCommerce specific
+  $('.nav-links a.next, a:contains("Næsta"), a:contains("Next")').attr("href") ||
+  "";
+
+
+    url = nextHref ? absUrl(nextHref) : undefined;
+
+    // small politeness delay
+    if (url) await new Promise(r => setTimeout(r, 400));
   }
 
-  // De-dupe
+  // De-dupe by (supplierSku, url)
   const seen = new Set<string>();
   return out.filter(i => {
     const key = `${i.supplierSku}::${i.url}`;
@@ -149,7 +141,6 @@ async function scrapeCategory(categoryUrl: string): Promise<ScrapedItem[]> {
     return true;
   });
 }
-
 
 /** Find an existing catalog_product by name/size, or create one. Returns its id. */
 async function matchOrCreateCatalog(name: string, packSize?: string): Promise<string> {
