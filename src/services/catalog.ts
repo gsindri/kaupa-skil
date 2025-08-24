@@ -11,13 +11,31 @@ export type OrgCatalogFilters = {
   onlyWithPrice?: boolean
 }
 
-export async function fetchPublicCatalogItems(filters: PublicCatalogFilters) {
+export interface PublicCatalogItem {
+  catalog_id: string
+  name: string
+  brand: string | null
+  image_main: string | null
+  supplier_count: number
+  best_price: number | null
+}
+
+export async function fetchPublicCatalogItems(
+  filters: PublicCatalogFilters,
+): Promise<PublicCatalogItem[]> {
   let query: any = supabase.from('v_public_catalog').select('*')
   if (filters.search) query = query.ilike('name', `%${filters.search}%`)
   if (filters.brand) query = query.eq('brand', filters.brand)
   const { data, error } = await query.limit(50)
   if (error) throw error
-  return data
+  return (data ?? []).map((item: any) => ({
+    catalog_id: item.catalog_id,
+    name: item.name,
+    brand: item.brand ?? null,
+    image_main: item.sample_image_url ?? null,
+    supplier_count: item.suppliers_count ?? item.supplier_count ?? 0,
+    best_price: item.best_price ?? null,
+  }))
 }
 
 export async function fetchOrgCatalogItems(orgId: string, filters: OrgCatalogFilters) {
