@@ -4,9 +4,9 @@ import { Badge } from '@/components/ui/badge'
 interface CatalogItem {
   catalog_id: string
   name: string
-  brand: string | null
+  brand?: string | null
   image_main?: string | null
-  supplier_count: number
+  supplier_count?: number
   best_price?: number | null
 }
 
@@ -26,7 +26,7 @@ export function ProductCard({ product, showPrice }: { product: CatalogItem; show
           <p className="text-sm text-muted-foreground">{product.brand}</p>
         )}
         <Badge variant="secondary" data-testid="supplier-count">
-          {product.supplier_count} suppliers
+          {product.supplier_count ?? 0} suppliers
         </Badge>
         {showPrice && product.best_price != null && (
           <div data-testid="price-badge" className="text-sm font-medium">

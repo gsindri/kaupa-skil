@@ -16,7 +16,9 @@ export default function CatalogPage() {
 
   const orgQuery = useOrgCatalog(orgId, { search, brand, onlyWithPrice })
   const publicQuery = useCatalogProducts({ search, brand })
+  console.log('CatalogPage useCatalogProducts', publicQuery.data)
   const products = (orgId ? orgQuery.data : publicQuery.data) || []
+  console.log('CatalogPage products', products)
 
   return (
     <div className="space-y-4 p-4">

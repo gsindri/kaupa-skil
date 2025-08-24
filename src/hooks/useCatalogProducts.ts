@@ -4,8 +4,10 @@ import { fetchPublicCatalogItems, type PublicCatalogItem } from '@/services/cata
 type Filters = { search?: string; brand?: string }
 
 export function useCatalogProducts(filters: Filters) {
-  return useQuery<PublicCatalogItem[]>({
+  const query = useQuery<PublicCatalogItem[]>({
     queryKey: ['catalog', filters],
     queryFn: () => fetchPublicCatalogItems(filters),
   })
+  console.log('useCatalogProducts', query.data)
+  return query
 }
