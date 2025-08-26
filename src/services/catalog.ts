@@ -138,3 +138,43 @@ export async function fetchCatalogFacets(filters: FacetFilters): Promise<Catalog
   return result
 }
 
+export interface CatalogSupplier {
+  supplier_id: string
+  name: string
+  pack_size: string | null
+  availability: string | null
+  price: number | null
+}
+
+export async function fetchCatalogItemSuppliers(
+  catalogId: string,
+  orgId?: string | null,
+): Promise<CatalogSupplier[]> {
+  const { data, error } = await supabase
+    .from('supplier_product')
+    .select(
+      'supplier_id, pack_size, availability_text, suppliers(name), offer(price, org_id)'
+    )
+    .eq('catalog_id', catalogId)
+
+  if (error) throw error
+
+  return (data ?? []).map((item: any) => {
+    const supplier = Array.isArray(item.suppliers)
+      ? item.suppliers[0]
+      : item.suppliers
+    const offers = Array.isArray(item.offer) ? item.offer : []
+    const offer = orgId
+      ? offers.find((o: any) => o.org_id === orgId)
+      : null
+
+    return {
+      supplier_id: item.supplier_id,
+      name: supplier?.name ?? '',
+      pack_size: item.pack_size ?? null,
+      availability: item.availability_text ?? null,
+      price: offer?.price ?? null,
+    }
+  })
+}
+
