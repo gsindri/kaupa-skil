@@ -189,11 +189,11 @@ while (p <= HARD_CAP && emptyStreak < 2) {
 }
 
 
-/** Find an existing catalog_product by name/size, or create one. Returns its id. */
+/** Find an existing catalog_product by name/size, or create one. Returns its catalog_id. */
 async function matchOrCreateCatalog(name: string, packSize?: string): Promise<string> {
   const { data: candidates, error } = await sb
     .from("catalog_product")
-    .select("id,name,size")
+    .select("catalog_id,name,size")
     .ilike("name", `%${name.slice(0, 48)}%`)
     .limit(20);
 
@@ -204,23 +204,23 @@ async function matchOrCreateCatalog(name: string, packSize?: string): Promise<st
       !packSize ||
       (c.size || "").replace(/\s/g, "").toLowerCase() === packSize.toLowerCase()
   );
-  if (pick?.id) return pick.id;
+  if (pick?.catalog_id) return pick.catalog_id;
 
   const { data: created, error: insErr } = await sb
     .from("catalog_product")
     .insert({ name, size: packSize ?? null })
-    .select("id")
+    .select("catalog_id")
     .single();
 
   if (insErr) throw insErr;
-  return created!.id;
+  return created!.catalog_id;
 }
 
-/** Upsert a supplier_product row pointing at the given catalog_product id. */
+/** Upsert a supplier_product row pointing at the given catalog_id. */
 async function upsertSupplierProduct(catalogId: string, i: ScrapedItem) {
   const payload: any = {
     supplier_id: SUPPLIER_ID,
-    catalog_product_id: catalogId, // ✅ correct FK column
+    catalog_id: catalogId, // ✅ correct FK column
     supplier_sku: i.supplierSku,
     pack_size: i.packSize ?? null,
     source_url: i.url,

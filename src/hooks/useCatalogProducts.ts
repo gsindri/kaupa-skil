@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
 import { fetchPublicCatalogItems, type PublicCatalogItem } from '@/services/catalog'
 
-type Filters = { search?: string; brand?: string }
+type Filters = { search?: string; brand?: string; page?: number }
 
 export function useCatalogProducts(filters: Filters) {
   const queryClient = useQueryClient()
