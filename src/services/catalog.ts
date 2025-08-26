@@ -15,6 +15,8 @@ export interface PublicCatalogItem {
   name: string
   brand: string | null
   image_main: string | null
+  pack_size: string | null
+  availability: string | null
   supplier_count: number
   best_price: number | null
 }
@@ -44,7 +46,9 @@ export async function fetchPublicCatalogItems(
     catalog_id: item.catalog_id,
     name: item.name,
     brand: item.brand ?? null,
-    image_main: item.image_main ?? item.sample_image_url ?? null,
+    image_main: item.image_main ?? item.image_url ?? item.sample_image_url ?? null,
+    pack_size: item.pack_size ?? null,
+    availability: item.availability_text ?? null,
     supplier_count: item.suppliers_count ?? item.supplier_count ?? 0,
     best_price: item.best_price ?? null,
   }))
