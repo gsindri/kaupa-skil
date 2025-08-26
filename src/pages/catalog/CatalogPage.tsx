@@ -2,14 +2,9 @@ import { useEffect, useState } from 'react'
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
-import { Button } from '@/components/ui/button'
 import { useAuth } from '@/contexts/useAuth'
 import { useCatalogProducts } from '@/hooks/useCatalogProducts'
 import { useOrgCatalog } from '@/hooks/useOrgCatalog'
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
-import { LayoutGrid, Table as TableIcon } from 'lucide-react'
-import { CatalogGrid } from '@/components/catalog/CatalogGrid'
-import { CatalogTable } from '@/components/catalog/CatalogTable'
 
 export default function CatalogPage() {
   const { profile } = useAuth()
@@ -17,18 +12,16 @@ export default function CatalogPage() {
   const [search, setSearch] = useState('')
   const [brand, setBrand] = useState('')
   const [onlyWithPrice, setOnlyWithPrice] = useState(false)
-  const [page, setPage] = useState(1)
+  const [cursor, setCursor] = useState<string | null>(null)
   const [products, setProducts] = useState<any[]>([])
-  const [view, setView] = useState<'grid' | 'table'>('grid')
-  const [selected, setSelected] = useState<string[]>([])
 
-  const orgQuery = useOrgCatalog(orgId, { search, brand, onlyWithPrice })
-  const publicQuery = useCatalogProducts({ search, brand, page })
+  const orgQuery = useOrgCatalog(orgId, { search, brand, onlyWithPrice, cursor })
+  const publicQuery = useCatalogProducts({ search, brand, cursor })
   console.log('CatalogPage orgQuery', orgQuery.data, orgQuery.error)
   console.log('CatalogPage useCatalogProducts', publicQuery.data)
 
   useEffect(() => {
-    setPage(1)
+    setCursor(null)
     setProducts([])
   }, [search, brand])
 
@@ -80,32 +73,6 @@ export default function CatalogPage() {
           </ToggleGroupItem>
         </ToggleGroup>
       </div>
-      {selected.length > 0 && (
-        <div className="flex gap-2">
-          <Button>Add to comparison</Button>
-          <Button variant="secondary">Add to cart</Button>
-        </div>
-      )}
-      {view === 'grid' ? (
-        <CatalogGrid
-          products={displayedProducts}
-          selected={selected}
-          onSelect={toggleSelect}
-          showPrice={!!orgId}
-        />
-      ) : (
-        <CatalogTable
-          products={displayedProducts}
-          selected={selected}
-          onSelect={toggleSelect}
-          onSelectAll={handleSelectAll}
-        />
-      )}
-      {!orgQuery.data?.length && publicQuery.data?.length === 50 && (
-        <div className="flex justify-center">
-          <Button onClick={() => setPage(p => p + 1)}>Load more</Button>
-        </div>
-      )}
     </div>
   )
 }
