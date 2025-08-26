@@ -3,11 +3,10 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
 import {
   fetchOrgCatalogItems,
-  type FacetFilters,
+  type OrgCatalogFilters,
 } from '@/services/catalog'
 
-
-export function useOrgCatalog(orgId: string, filters: Filters) {
+export function useOrgCatalog(orgId: string, filters: OrgCatalogFilters) {
   const queryClient = useQueryClient()
 
   useEffect(() => {
@@ -46,3 +45,4 @@ export function useOrgCatalog(orgId: string, filters: Filters) {
     nextCursor: query.data?.nextCursor,
   }
 }
+

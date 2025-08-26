@@ -3,6 +3,14 @@ import { supabase } from '@/integrations/supabase/client'
 export type FacetFilters = {
   search?: string
   brand?: string
+  category?: string
+  supplier?: string
+  availability?: string
+  packSizeRange?: string
+}
+
+export type PublicCatalogFilters = FacetFilters & {
+  cursor?: string | null
 }
 
 export type OrgCatalogFilters = FacetFilters & {
@@ -21,41 +29,47 @@ export interface PublicCatalogItem {
   best_price: number | null
 }
 
-async function getCatalogIdsForFilters(filters: FacetFilters) {
-  let facetQuery: any = supabase.from('catalog_facets').select('catalog_id', { distinct: true })
-  if (filters.search) facetQuery = facetQuery.ilike('name', `%${filters.search}%`)
-  if (filters.brand) facetQuery = facetQuery.eq('brand', filters.brand)
-  if (filters.category) facetQuery = facetQuery.eq('category_id', filters.category)
-  if (filters.supplier) facetQuery = facetQuery.eq('supplier_id', filters.supplier)
-  if (filters.availability) facetQuery = facetQuery.eq('availability', filters.availability)
-  if (filters.packSizeRange) facetQuery = facetQuery.eq('pack_size_range', filters.packSizeRange)
-  const { data, error } = await facetQuery
-  if (error) throw error
-  return (data ?? []).map((d: any) => d.catalog_id)
-}
-
 export async function fetchPublicCatalogItems(
   filters: PublicCatalogFilters,
+): Promise<{ items: PublicCatalogItem[]; nextCursor: string | null }> {
+  let query: any = supabase
+    .from('v_public_catalog')
+    .select(
+      'catalog_id, name, brand, image_main, pack_size, availability_text, image_url, supplier_count'
+    )
+    .order('catalog_id', { ascending: true })
+    .limit(50)
+
   if (filters.search) query = query.ilike('name', `%${filters.search}%`)
   if (filters.brand) query = query.eq('brand', filters.brand)
   if (filters.cursor) query = query.gt('catalog_id', filters.cursor)
 
   const { data, error } = await query
   if (error) throw error
-  const items = (data ?? []).map((item: any) => ({
+
+  const items: PublicCatalogItem[] = (data ?? []).map((item: any) => ({
     catalog_id: item.catalog_id,
     name: item.name,
     brand: item.brand ?? null,
-    image_main: item.image_main ?? item.image_url ?? item.sample_image_url ?? null,
+    image_main: item.image_main ?? item.image_url ?? null,
     pack_size: item.pack_size ?? null,
     availability: item.availability_text ?? null,
-    supplier_count: item.suppliers_count ?? item.supplier_count ?? 0,
-    best_price: item.best_price ?? null,
+    supplier_count: item.supplier_count ?? 0,
+    best_price: null,
   }))
   const nextCursor = items.length ? items[items.length - 1].catalog_id : null
-  console.log('fetchPublicCatalogItems', items, nextCursor)
   return { items, nextCursor }
 }
+
+export async function fetchOrgCatalogItems(
+  orgId: string,
+  filters: OrgCatalogFilters,
+): Promise<{ items: any[]; nextCursor: string | null }> {
+  let query: any = supabase
+    .rpc('v_org_catalog', { _org: orgId })
+    .select('*')
+    .order('catalog_id', { ascending: true })
+    .limit(50)
 
   if (filters.search) query = query.ilike('name', `%${filters.search}%`)
   if (filters.brand) query = query.eq('brand', filters.brand)
@@ -64,6 +78,7 @@ export async function fetchPublicCatalogItems(
 
   const { data, error } = await query
   if (error) throw error
+
   const items = data ?? []
   const nextCursor = items.length ? items[items.length - 1].catalog_id : null
   return { items, nextCursor }

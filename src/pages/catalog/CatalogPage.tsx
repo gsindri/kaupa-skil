@@ -1,17 +1,34 @@
+import { useEffect, useState } from 'react'
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/button'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
+import { LayoutGrid, Table as TableIcon } from 'lucide-react'
 import { useAuth } from '@/contexts/useAuth'
 import { useCatalogProducts } from '@/hooks/useCatalogProducts'
 import { useOrgCatalog } from '@/hooks/useOrgCatalog'
+import {
+  logSearch,
+  logFilter,
+  logFacetInteraction,
+  logZeroResults,
+} from '@/lib/analytics'
 
 export default function CatalogPage() {
   const { profile } = useAuth()
   const orgId = profile?.tenant_id || ''
-  console.log('CatalogPage orgQuery', orgQuery.data, orgQuery.error)
-  console.log('CatalogPage useCatalogProducts', publicQuery.data)
 
-  useEffect(() => {
+  const [search, setSearch] = useState('')
+  const [brand, setBrand] = useState('')
+  const [onlyWithPrice, setOnlyWithPrice] = useState(false)
+  const [view, setView] = useState<'grid' | 'table'>('grid')
+  const [cursor, setCursor] = useState<string | null>(null)
+  const [nextCursor, setNextCursor] = useState<string | null>(null)
+  const [products, setProducts] = useState<any[]>([])
+
+  const publicQuery = useCatalogProducts({ search, brand, cursor })
+  const orgQuery = useOrgCatalog(orgId, { search, brand, onlyWithPrice, cursor })
 
   useEffect(() => {
     if (search) logSearch(search)
@@ -30,72 +47,23 @@ export default function CatalogPage() {
   }, [onlyWithPrice])
 
   useEffect(() => {
-    if (!orgQuery.data?.length && publicQuery.data)
-      setProducts(prev => (page === 1 ? publicQuery.data : [...prev, ...publicQuery.data]))
-  }, [publicQuery.data, orgQuery.data, page])
-
-  const queryKey = searchParams.toString()
-  const restored = useRef(false)
-
-  useEffect(() => {
-    if (!restored.current) {
-      const pos = sessionStorage.getItem(queryKey)
-      if (pos) window.scrollTo(0, parseInt(pos, 10))
-      restored.current = true
+    const data = orgQuery.data?.length ? orgQuery.data : publicQuery.data
+    const next = orgQuery.data?.length ? orgQuery.nextCursor : publicQuery.nextCursor
+    if (data) {
+      setProducts(prev => (cursor ? [...prev, ...data] : data))
+      setNextCursor(next ?? null)
     }
-  }, [queryKey])
+  }, [publicQuery.data, orgQuery.data, cursor, publicQuery.nextCursor, orgQuery.nextCursor])
 
   useEffect(() => {
-    return () => {
-      sessionStorage.setItem(queryKey, String(window.scrollY))
-    }
-  }, [queryKey])
-
-  const displayedProducts = orgQuery.data?.length ? orgQuery.data : products
-  const sentinelIndex = Math.floor(displayedProducts.length * 0.7)
-
-  useEffect(() => {
-    if (!autoLoad) return
-    const el = sentinelRef.current
-    if (!el) return
-    const observer = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting) {
-        setPage(p => p + 1)
-      }
-    })
-    observer.observe(el)
-    return () => observer.disconnect()
-  }, [autoLoad, displayedProducts.length])
-
-  useEffect(() => {
-    if (!autoLoad) return
-    if (publicQuery.data?.length === 50) {
-      queryClient.prefetchQuery({
-        queryKey: ['catalog', { search, brand, page: page + 1 }],
-        queryFn: () => fetchPublicCatalogItems({ search, brand, page: page + 1 }),
-      })
-    }
-  }, [autoLoad, publicQuery.data, search, brand, page, queryClient])
-
-  const toggleSelect = (id: string) => {
-    setSelected(prev =>
-      prev.includes(id) ? prev.filter(p => p !== id) : [...prev, id],
-    )
-  }
-
-  const handleSelectAll = (checked: boolean) => {
-    if (checked) setSelected(displayedProducts.map((p: any) => p.catalog_id))
-    else setSelected([])
-  }
-
-  useEffect(() => {
-    if (
-      (orgQuery.isFetched || publicQuery.isFetched) &&
-      displayedProducts.length === 0
-    ) {
+    if ((orgQuery.isFetched || publicQuery.isFetched) && products.length === 0) {
       logZeroResults(search, { brand, onlyWithPrice })
     }
-  }, [displayedProducts, orgQuery.isFetched, publicQuery.isFetched, search, brand, onlyWithPrice])
+  }, [orgQuery.isFetched, publicQuery.isFetched, products.length, search, brand, onlyWithPrice])
+
+  const loadMore = () => {
+    if (nextCursor) setCursor(nextCursor)
+  }
 
   return (
     <div className="space-y-4 p-4">
@@ -103,18 +71,35 @@ export default function CatalogPage() {
         <Input
           placeholder="Search products"
           className="max-w-xs"
+          value={search}
+          onChange={e => {
+            setCursor(null)
+            setSearch(e.target.value)
+          }}
         />
         <Input
           placeholder="Brand"
           className="max-w-xs"
+          value={brand}
+          onChange={e => {
+            setCursor(null)
+            setBrand(e.target.value)
+          }}
         />
         {orgId && (
           <div className="flex items-center space-x-2">
-            <Switch id="with-price" checked={onlyWithPrice} onCheckedChange={setOnlyWithPrice} />
+            <Switch id="with-price" checked={onlyWithPrice} onCheckedChange={val => {
+              setCursor(null)
+              setOnlyWithPrice(val)
+            }} />
             <Label htmlFor="with-price">Has price</Label>
           </div>
         )}
-        <ToggleGroup type="single" value={view} onValueChange={(v) => setView((v as 'grid' | 'table') || 'grid')}>
+        <ToggleGroup
+          type="single"
+          value={view}
+          onValueChange={v => setView((v as 'grid' | 'table') || 'grid')}
+        >
           <ToggleGroupItem value="grid" aria-label="Grid view">
             <LayoutGrid className="h-4 w-4" />
           </ToggleGroupItem>
@@ -123,6 +108,18 @@ export default function CatalogPage() {
           </ToggleGroupItem>
         </ToggleGroup>
       </div>
+
+      {/* Placeholder for rendered catalog items */}
+      <div className="min-h-[200px] bg-muted/20 flex items-center justify-center">
+        {products.length === 0 ? 'No products' : `${products.length} products loaded`}
+      </div>
+
+      {nextCursor && (
+        <Button onClick={loadMore} disabled={publicQuery.isFetching || orgQuery.isFetching}>
+          Load more
+        </Button>
+      )}
     </div>
   )
 }
+
