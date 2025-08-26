@@ -132,30 +132,58 @@ async function scrapeCategory(categoryUrl: string): Promise<ScrapedItem[]> {
       queryTemplate = "?" + u.searchParams.toString().replace("%7Bn%7D", "{n}");
     }
   });
+    console.log("pagination template:", queryTemplate || "(none)");
+
 
   // helper to build a page URL from template
-  const buildUrl = (n: number) => {
-    const base = new URL(categoryUrl);
-    base.search = ""; // ensure we keep the category path
-    if (queryTemplate) {
-      return base.origin + base.pathname + queryTemplate.replace("{n}", String(n));
-    }
-    // fallbacks if no template was found
-    const u = new URL(categoryUrl);
-    u.searchParams.set("page", String(n));
-    return u.toString();
-  };
+const buildUrl = (n: number) => {
+  const base = new URL(categoryUrl);
+  base.search = "";
+
+  if (queryTemplate) {
+    return base.origin + base.pathname + queryTemplate.replace("{n}", String(n));
+  }
+
+  // fallback #1: ?page=N
+  const u = new URL(categoryUrl);
+  u.searchParams.set("page", String(n));
+
+  // fallback #2: /page/N/ (WooCommerce style)
+  const alt = new URL(categoryUrl);
+  const parts = alt.pathname.replace(/\/+$/, "").split("/");
+  alt.pathname = n === 1
+    ? parts.join("/") + "/"
+    : parts.concat(["page", String(n)]).join("/") + "/";
+
+  return n === 1 ? categoryUrl : u.toString(); // if needed, swap to alt.toString()
+};
 
   // 2) Scrape page 1
   scrapeOne($first, categoryUrl);
 
-  // 3) Scrape remaining pages 2..maxPage using the template (keeps filter/orderby)
-  for (let p = 2; p <= maxPage; p++) {
-    const pageUrl = buildUrl(p);
-    const $ = await fetchPage(pageUrl);
-    scrapeOne($, pageUrl);
-    await new Promise((r) => setTimeout(r, 350));
+// 3) Scrape remaining pages: keep going until a page adds 0 new items
+let p = 2;
+let emptyStreak = 0;            // stop after two empty pages in a row (safety)
+const HARD_CAP = 100;           // absolute max
+
+while (p <= HARD_CAP && emptyStreak < 2) {
+  const pageUrl = buildUrl(p);
+  const $ = await fetchPage(pageUrl);
+  const before = out.length;
+  scrapeOne($, pageUrl);
+  const added = out.length - before;
+
+  if (added === 0) {
+    emptyStreak += 1;
+  } else {
+    emptyStreak = 0;
   }
+
+  console.log(`page=${p} added=${added} total=${out.length}`);
+  p += 1;
+
+  await new Promise(r => setTimeout(r, 350)); // polite delay
+}
 
   return out;
 }
