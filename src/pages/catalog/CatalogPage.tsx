@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
@@ -9,30 +10,32 @@ import { useOrgCatalog } from '@/hooks/useOrgCatalog'
 export default function CatalogPage() {
   const { profile } = useAuth()
   const orgId = profile?.tenant_id || ''
-  const [filters, setFilters] = useState<FacetFilters>({
-    search: '',
-    brand: '',
-    category: '',
-    supplier: '',
-    availability: '',
-    packSizeRange: '',
-  })
-  const [onlyWithPrice, setOnlyWithPrice] = useState(false)
-  const [cursor, setCursor] = useState<string | null>(null)
-  const [products, setProducts] = useState<any[]>([])
-
   console.log('CatalogPage orgQuery', orgQuery.data, orgQuery.error)
   console.log('CatalogPage useCatalogProducts', publicQuery.data)
 
   useEffect(() => {
-    setCursor(null)
-    setProducts([])
-  }, [filters])
 
   useEffect(() => {
     if (!orgQuery.data?.length && publicQuery.data)
-      setProducts(prev => [...prev, ...publicQuery.data])
-  }, [publicQuery.data, orgQuery.data])
+      setProducts(prev => (page === 1 ? publicQuery.data : [...prev, ...publicQuery.data]))
+  }, [publicQuery.data, orgQuery.data, page])
+
+  const queryKey = searchParams.toString()
+  const restored = useRef(false)
+
+  useEffect(() => {
+    if (!restored.current) {
+      const pos = sessionStorage.getItem(queryKey)
+      if (pos) window.scrollTo(0, parseInt(pos, 10))
+      restored.current = true
+    }
+  }, [queryKey])
+
+  useEffect(() => {
+    return () => {
+      sessionStorage.setItem(queryKey, String(window.scrollY))
+    }
+  }, [queryKey])
 
   const displayedProducts = orgQuery.data?.length ? orgQuery.data : products
 
@@ -52,14 +55,10 @@ export default function CatalogPage() {
       <div className="flex flex-wrap items-end gap-4">
         <Input
           placeholder="Search products"
-          value={filters.search}
-          onChange={e => setFilters(f => ({ ...f, search: e.target.value }))}
           className="max-w-xs"
         />
         <Input
           placeholder="Brand"
-          value={filters.brand}
-          onChange={e => setFilters(f => ({ ...f, brand: e.target.value }))}
           className="max-w-xs"
         />
         {orgId && (
