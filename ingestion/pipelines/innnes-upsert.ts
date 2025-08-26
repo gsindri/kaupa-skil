@@ -216,11 +216,6 @@ async function matchOrCreateCatalog(name: string, packSize?: string): Promise<st
   return created!.catalog_id;
 }
 
-/** Upsert a supplier_product row pointing at the given catalog_product catalog_id. */
-async function upsertSupplierProduct(catalogId: string, i: ScrapedItem) {
-  const payload: any = {
-    supplier_id: SUPPLIER_ID,
-    catalog_id: catalogId,
     supplier_sku: i.supplierSku,
     pack_size: i.packSize ?? null,
     source_url: i.url,
