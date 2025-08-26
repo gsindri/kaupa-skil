@@ -5,8 +5,6 @@ import { Label } from '@/components/ui/label'
 import { useAuth } from '@/contexts/useAuth'
 import { useCatalogProducts } from '@/hooks/useCatalogProducts'
 import { useOrgCatalog } from '@/hooks/useOrgCatalog'
-import { ProductCard } from '@/components/catalog/ProductCard'
-import { VirtualizedGrid } from '@/components/catalog/VirtualizedGrid'
 
 export default function CatalogPage() {
   const { profile } = useAuth()
@@ -16,7 +14,6 @@ export default function CatalogPage() {
   const [onlyWithPrice, setOnlyWithPrice] = useState(false)
   const [cursor, setCursor] = useState<string | null>(null)
   const [products, setProducts] = useState<any[]>([])
-  const PAGE_SIZE = 50
 
   const orgQuery = useOrgCatalog(orgId, { search, brand, onlyWithPrice, cursor })
   const publicQuery = useCatalogProducts({ search, brand, cursor })
@@ -34,6 +31,17 @@ export default function CatalogPage() {
   }, [publicQuery.data, orgQuery.data])
 
   const displayedProducts = orgQuery.data?.length ? orgQuery.data : products
+
+  const toggleSelect = (id: string) => {
+    setSelected(prev =>
+      prev.includes(id) ? prev.filter(p => p !== id) : [...prev, id],
+    )
+  }
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) setSelected(displayedProducts.map((p: any) => p.catalog_id))
+    else setSelected([])
+  }
 
   return (
     <div className="space-y-4 p-4">
@@ -56,14 +64,15 @@ export default function CatalogPage() {
             <Label htmlFor="with-price">Has price</Label>
           </div>
         )}
+        <ToggleGroup type="single" value={view} onValueChange={(v) => setView((v as 'grid' | 'table') || 'grid')}>
+          <ToggleGroupItem value="grid" aria-label="Grid view">
+            <LayoutGrid className="h-4 w-4" />
+          </ToggleGroupItem>
+          <ToggleGroupItem value="table" aria-label="Table view">
+            <TableIcon className="h-4 w-4" />
+          </ToggleGroupItem>
+        </ToggleGroup>
       </div>
-      <VirtualizedGrid
-        items={displayedProducts}
-        loadMore={() => setPage(p => p + 1)}
-        hasMore={!orgQuery.data?.length && publicQuery.data?.length === PAGE_SIZE}
-        isLoading={publicQuery.isFetching}
-        renderItem={(p: any) => (
-          <ProductCard key={p.catalog_id} product={p} showPrice={!!orgId} />
     </div>
   )
 }
