@@ -26,6 +26,7 @@ export interface PublicCatalogItem {
   pack_size: string | null
   availability: string | null
   supplier_count: number
+  suppliers: string[]
   best_price: number | null
 }
 
@@ -37,6 +38,7 @@ export interface OrgCatalogItem {
   pack_size: string | null
   availability: string | null
   supplier_count: number
+  suppliers: string[]
   best_price: number | null
 }
 
@@ -46,7 +48,7 @@ export async function fetchPublicCatalogItems(
   let query: any = supabase
     .from('v_public_catalog')
     .select(
-      'catalog_id, name, brand, size, gtin, image_main, supplier_count'
+      'catalog_id, name, brand, size, gtin, image_main, supplier_count, supplier_names'
     )
     .order('catalog_id', { ascending: true })
     .limit(50)
@@ -66,6 +68,7 @@ export async function fetchPublicCatalogItems(
     pack_size: item.size ?? null,
     availability: null,
     supplier_count: item.supplier_count ?? 0,
+    suppliers: item.supplier_names ?? [],
     best_price: null,
   }))
   const nextCursor = items.length ? items[items.length - 1].catalog_id : null
@@ -79,7 +82,7 @@ export async function fetchOrgCatalogItems(
   let query: any = supabase
     .rpc('v_org_catalog', { _org: orgId })
     .select(
-      'catalog_id, name, brand, image_main, size, availability_text, image_url, supplier_count, best_price',
+      'catalog_id, name, brand, image_main, size, availability_text, image_url, supplier_count, best_price, supplier_names',
     )
     .order('catalog_id', { ascending: true })
     .limit(50)
@@ -100,6 +103,7 @@ export async function fetchOrgCatalogItems(
     pack_size: item.size ?? null,
     availability: item.availability_text ?? null,
     supplier_count: item.supplier_count ?? 0,
+    suppliers: item.supplier_names ?? [],
     best_price: item.best_price ?? null,
   }))
   const nextCursor = items.length ? items[items.length - 1].catalog_id : null

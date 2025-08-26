@@ -7,10 +7,13 @@ select
   c.size,
   c.gtin,
   c.image_main,
-  count(distinct sp.supplier_id) as supplier_count
+  count(distinct sp.supplier_id) as supplier_count,
+  array_remove(array_agg(distinct s.name), null) as supplier_names
 from public.catalog_product c
 left join public.supplier_product sp
   on sp.catalog_id = c.catalog_id
+left join public.suppliers s
+  on s.id = sp.supplier_id
 group by c.catalog_id, c.name, c.brand, c.size, c.gtin, c.image_main;
 
 -- Org-specific catalog: best offer across all supplier_products of a catalog
@@ -22,6 +25,7 @@ returns table (
   gtin text,
   image_main text,
   supplier_count bigint,
+  supplier_names text[],
   best_price numeric,
   currency text
 )
@@ -29,6 +33,7 @@ language sql stable as $$
   select
     c.catalog_id, c.name, c.brand, c.gtin, c.image_main,
     count(distinct sp.supplier_id) as supplier_count,
+    array_remove(array_agg(distinct s.name), null) as supplier_names,
     (
       select min(o.price)
       from public.offer o
@@ -41,5 +46,7 @@ language sql stable as $$
   from public.catalog_product c
   left join public.supplier_product sp
     on sp.catalog_id = c.catalog_id
+  left join public.suppliers s
+    on s.id = sp.supplier_id
   group by c.catalog_id, c.name, c.brand, c.gtin, c.image_main;
 $$;
