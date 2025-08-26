@@ -3,13 +3,14 @@ import { supabase } from '@/integrations/supabase/client'
 export type PublicCatalogFilters = {
   search?: string
   brand?: string
-  page?: number
+  cursor?: string | null
 }
 
 export type OrgCatalogFilters = {
   search?: string
   brand?: string
   onlyWithPrice?: boolean
+  cursor?: string | null
 }
 
 export interface PublicCatalogItem {
@@ -23,15 +24,19 @@ export interface PublicCatalogItem {
 
 export async function fetchPublicCatalogItems(
   filters: PublicCatalogFilters,
-): Promise<PublicCatalogItem[]> {
-  let query: any = supabase.from('v_public_catalog').select('*')
+): Promise<{ items: PublicCatalogItem[]; nextCursor: string | null }> {
+  const PAGE_SIZE = 50
+  let query: any = supabase
+    .from('v_public_catalog')
+    .select('*')
+    .order('catalog_id', { ascending: true })
+    .limit(PAGE_SIZE)
+
   if (filters.search) query = query.ilike('name', `%${filters.search}%`)
   if (filters.brand) query = query.eq('brand', filters.brand)
-  const page = filters.page ?? 1
-  const PAGE_SIZE = 50
-  const from = (page - 1) * PAGE_SIZE
-  const to = from + PAGE_SIZE - 1
-  const { data, error } = await query.range(from, to)
+  if (filters.cursor) query = query.gt('catalog_id', filters.cursor)
+
+  const { data, error } = await query
   if (error) throw error
   const items = (data ?? []).map((item: any) => ({
     catalog_id: item.catalog_id,
@@ -41,17 +46,30 @@ export async function fetchPublicCatalogItems(
     supplier_count: item.suppliers_count ?? item.supplier_count ?? 0,
     best_price: item.best_price ?? null,
   }))
-  console.log('fetchPublicCatalogItems', items)
-  return items
+  const nextCursor = items.length ? items[items.length - 1].catalog_id : null
+  console.log('fetchPublicCatalogItems', items, nextCursor)
+  return { items, nextCursor }
 }
 
-export async function fetchOrgCatalogItems(orgId: string, filters: OrgCatalogFilters) {
-  let query: any = supabase.rpc('v_org_catalog', { _org: orgId })
+export async function fetchOrgCatalogItems(
+  orgId: string,
+  filters: OrgCatalogFilters,
+): Promise<{ items: any[]; nextCursor: string | null }> {
+  const PAGE_SIZE = 50
+  let query: any = supabase
+    .rpc('v_org_catalog', { _org: orgId })
+    .order('catalog_id', { ascending: true })
+    .limit(PAGE_SIZE)
+
   if (filters.search) query = query.ilike('name', `%${filters.search}%`)
   if (filters.brand) query = query.eq('brand', filters.brand)
   if (filters.onlyWithPrice) query = query.not('best_price', 'is', null)
+  if (filters.cursor) query = query.gt('catalog_id', filters.cursor)
+
   const { data, error } = await query
   if (error) throw error
-  return data
+  const items = data ?? []
+  const nextCursor = items.length ? items[items.length - 1].catalog_id : null
+  return { items, nextCursor }
 }
 
