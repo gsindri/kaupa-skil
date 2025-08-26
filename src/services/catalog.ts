@@ -82,7 +82,7 @@ export async function fetchOrgCatalogItems(
   let query: any = supabase
     .rpc('v_org_catalog', { _org: orgId })
     .select(
-      'catalog_id, name, brand, image_main, size, availability_text, image_url, supplier_count, best_price, supplier_names',
+      'catalog_id, name, brand, gtin, image_main, supplier_count, supplier_names, best_price, currency',
     )
     .order('catalog_id', { ascending: true })
     .limit(50)
@@ -99,9 +99,9 @@ export async function fetchOrgCatalogItems(
     catalog_id: item.catalog_id,
     name: item.name,
     brand: item.brand ?? null,
-    image_main: item.image_main ?? item.image_url ?? null,
-    pack_size: item.size ?? null,
-    availability: item.availability_text ?? null,
+    image_main: item.image_main ?? null,
+    pack_size: null,
+    availability: null,
     supplier_count: item.supplier_count ?? 0,
     suppliers: item.supplier_names ?? [],
     best_price: item.best_price ?? null,
