@@ -9,21 +9,25 @@ import { useOrgCatalog } from '@/hooks/useOrgCatalog'
 export default function CatalogPage() {
   const { profile } = useAuth()
   const orgId = profile?.tenant_id || ''
-  const [search, setSearch] = useState('')
-  const [brand, setBrand] = useState('')
+  const [filters, setFilters] = useState<FacetFilters>({
+    search: '',
+    brand: '',
+    category: '',
+    supplier: '',
+    availability: '',
+    packSizeRange: '',
+  })
   const [onlyWithPrice, setOnlyWithPrice] = useState(false)
   const [cursor, setCursor] = useState<string | null>(null)
   const [products, setProducts] = useState<any[]>([])
 
-  const orgQuery = useOrgCatalog(orgId, { search, brand, onlyWithPrice, cursor })
-  const publicQuery = useCatalogProducts({ search, brand, cursor })
   console.log('CatalogPage orgQuery', orgQuery.data, orgQuery.error)
   console.log('CatalogPage useCatalogProducts', publicQuery.data)
 
   useEffect(() => {
     setCursor(null)
     setProducts([])
-  }, [search, brand])
+  }, [filters])
 
   useEffect(() => {
     if (!orgQuery.data?.length && publicQuery.data)
@@ -48,14 +52,14 @@ export default function CatalogPage() {
       <div className="flex flex-wrap items-end gap-4">
         <Input
           placeholder="Search products"
-          value={search}
-          onChange={e => setSearch(e.target.value)}
+          value={filters.search}
+          onChange={e => setFilters(f => ({ ...f, search: e.target.value }))}
           className="max-w-xs"
         />
         <Input
           placeholder="Brand"
-          value={brand}
-          onChange={e => setBrand(e.target.value)}
+          value={filters.brand}
+          onChange={e => setFilters(f => ({ ...f, brand: e.target.value }))}
           className="max-w-xs"
         />
         {orgId && (

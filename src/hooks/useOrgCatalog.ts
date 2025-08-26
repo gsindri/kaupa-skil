@@ -1,9 +1,11 @@
 import { useEffect } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
-import { fetchOrgCatalogItems } from '@/services/catalog'
+import {
+  fetchOrgCatalogItems,
+  type FacetFilters,
+} from '@/services/catalog'
 
-type Filters = { search?: string; brand?: string; onlyWithPrice?: boolean; cursor?: string | null }
 
 export function useOrgCatalog(orgId: string, filters: Filters) {
   const queryClient = useQueryClient()
