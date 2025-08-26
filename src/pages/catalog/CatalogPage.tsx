@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
@@ -28,6 +28,7 @@ export default function CatalogPage() {
   const [cursor, setCursor] = useState<string | null>(null)
   const [nextCursor, setNextCursor] = useState<string | null>(null)
   const [products, setProducts] = useState<any[]>([])
+  const lastCursor = useRef<string | null>(null)
   const [selected, setSelected] = useState<string[]>([])
 
   const publicQuery = useCatalogProducts({ search, brand, cursor })
@@ -49,14 +50,39 @@ export default function CatalogPage() {
     logFacetInteraction('onlyWithPrice', onlyWithPrice)
   }, [onlyWithPrice])
 
+  const {
+    data: publicData,
+    nextCursor: publicNext,
+    isFetching: publicFetching,
+  } = publicQuery
+  const {
+    data: orgData,
+    nextCursor: orgNext,
+    isFetching: orgFetching,
+  } = orgQuery
+
   useEffect(() => {
-    const data = orgQuery.data?.length ? orgQuery.data : publicQuery.data
-    const next = orgQuery.data?.length ? orgQuery.nextCursor : publicQuery.nextCursor
-    if (data) {
-      setProducts(prev => (cursor ? [...prev, ...data] : data))
-      setNextCursor(next ?? null)
-    }
-  }, [publicQuery.data, orgQuery.data, cursor, publicQuery.nextCursor, orgQuery.nextCursor])
+    const hasOrgData = !!orgData?.length
+    const data = hasOrgData ? orgData : publicData
+    const next = hasOrgData ? orgNext : publicNext
+    const fetching = hasOrgData ? orgFetching : publicFetching
+    if (fetching) return
+
+    if (!data) return
+    if (cursor && cursor === lastCursor.current) return
+
+    setProducts(prev => (cursor ? [...prev, ...data] : data))
+    setNextCursor(next ?? null)
+    lastCursor.current = cursor
+  }, [
+    orgData,
+    publicData,
+    orgNext,
+    publicNext,
+    orgFetching,
+    publicFetching,
+    cursor,
+  ])
 
   useEffect(() => {
     if ((orgQuery.isFetched || publicQuery.isFetched) && products.length === 0) {
