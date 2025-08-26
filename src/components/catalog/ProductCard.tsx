@@ -53,7 +53,10 @@ export function ProductCard({ product }: { product: CatalogItem }) {
           <img
             src={product.image_main}
             alt={product.name}
-            className="h-32 w-full rounded object-cover"
+            loading="lazy"
+            width={200}
+            height={200}
+            className="aspect-square w-full rounded object-cover"
           />
         )}
         <h3 className="font-medium">{product.name}</h3>
