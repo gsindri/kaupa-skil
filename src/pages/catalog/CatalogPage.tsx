@@ -4,7 +4,8 @@ import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
-import { LayoutGrid, Table as TableIcon } from 'lucide-react'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { LayoutGrid, Table as TableIcon, AlertCircle } from 'lucide-react'
 import { useAuth } from '@/contexts/useAuth'
 import { useCatalogProducts } from '@/hooks/useCatalogProducts'
 import { useOrgCatalog } from '@/hooks/useOrgCatalog'
@@ -16,6 +17,7 @@ import {
   logFacetInteraction,
   logZeroResults,
 } from '@/lib/analytics'
+import { AnalyticsTracker } from '@/components/quick/AnalyticsTrackerUtils'
 
 export default function CatalogPage() {
   const { profile } = useAuth()
@@ -50,15 +52,35 @@ export default function CatalogPage() {
     logFacetInteraction('onlyWithPrice', onlyWithPrice)
   }, [onlyWithPrice])
 
+  useEffect(() => {
+    if (publicError) {
+      console.error(publicError)
+      AnalyticsTracker.track('catalog_public_error', {
+        message: String(publicError),
+      })
+    }
+  }, [publicError])
+
+  useEffect(() => {
+    if (orgError) {
+      console.error(orgError)
+      AnalyticsTracker.track('catalog_org_error', {
+        message: String(orgError),
+      })
+    }
+  }, [orgError])
+
   const {
     data: publicData,
     nextCursor: publicNext,
     isFetching: publicFetching,
+    error: publicError,
   } = publicQuery
   const {
     data: orgData,
     nextCursor: orgNext,
     isFetching: orgFetching,
+    error: orgError,
   } = orgQuery
 
   useEffect(() => {
@@ -151,6 +173,12 @@ export default function CatalogPage() {
           </ToggleGroupItem>
         </ToggleGroup>
       </div>
+      {(publicError || orgError) && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{String(publicError || orgError)}</AlertDescription>
+        </Alert>
+      )}
 
       <div className="min-h-[200px]">
         {products.length === 0 && (publicQuery.isFetching || orgQuery.isFetching) && (
