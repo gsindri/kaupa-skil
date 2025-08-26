@@ -7,25 +7,33 @@ import { useAuth } from '@/contexts/useAuth'
 import { useCatalogProducts } from '@/hooks/useCatalogProducts'
 import { useOrgCatalog } from '@/hooks/useOrgCatalog'
 import { ProductCard } from '@/components/catalog/ProductCard'
+import CatalogFiltersPanel from '@/components/catalog/CatalogFiltersPanel'
+import type { FacetFilters } from '@/services/catalog'
 
 export default function CatalogPage() {
   const { profile } = useAuth()
   const orgId = profile?.tenant_id || ''
-  const [search, setSearch] = useState('')
-  const [brand, setBrand] = useState('')
+  const [filters, setFilters] = useState<FacetFilters>({
+    search: '',
+    brand: '',
+    category: '',
+    supplier: '',
+    availability: '',
+    packSizeRange: '',
+  })
   const [onlyWithPrice, setOnlyWithPrice] = useState(false)
   const [page, setPage] = useState(1)
   const [products, setProducts] = useState<any[]>([])
 
-  const orgQuery = useOrgCatalog(orgId, { search, brand, onlyWithPrice })
-  const publicQuery = useCatalogProducts({ search, brand, page })
+  const orgQuery = useOrgCatalog(orgId, { ...filters, onlyWithPrice })
+  const publicQuery = useCatalogProducts({ ...filters, page })
   console.log('CatalogPage orgQuery', orgQuery.data, orgQuery.error)
   console.log('CatalogPage useCatalogProducts', publicQuery.data)
 
   useEffect(() => {
     setPage(1)
     setProducts([])
-  }, [search, brand])
+  }, [filters])
 
   useEffect(() => {
     if (!orgQuery.data?.length && publicQuery.data)
@@ -39,14 +47,14 @@ export default function CatalogPage() {
       <div className="flex flex-wrap items-end gap-4">
         <Input
           placeholder="Search products"
-          value={search}
-          onChange={e => setSearch(e.target.value)}
+          value={filters.search}
+          onChange={e => setFilters(f => ({ ...f, search: e.target.value }))}
           className="max-w-xs"
         />
         <Input
           placeholder="Brand"
-          value={brand}
-          onChange={e => setBrand(e.target.value)}
+          value={filters.brand}
+          onChange={e => setFilters(f => ({ ...f, brand: e.target.value }))}
           className="max-w-xs"
         />
         {orgId && (
@@ -56,6 +64,10 @@ export default function CatalogPage() {
           </div>
         )}
       </div>
+      <CatalogFiltersPanel
+        filters={filters}
+        onChange={(f) => setFilters(prev => ({ ...prev, ...f }))}
+      />
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {displayedProducts.map((p: any) => (
           <ProductCard key={p.catalog_id} product={p} showPrice={!!orgId} />

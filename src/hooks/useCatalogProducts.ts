@@ -1,9 +1,13 @@
 import { useEffect } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
-import { fetchPublicCatalogItems, type PublicCatalogItem } from '@/services/catalog'
+import {
+  fetchPublicCatalogItems,
+  type PublicCatalogItem,
+  type FacetFilters,
+} from '@/services/catalog'
 
-type Filters = { search?: string; brand?: string; page?: number }
+type Filters = FacetFilters & { page?: number }
 
 export function useCatalogProducts(filters: Filters) {
   const queryClient = useQueryClient()
