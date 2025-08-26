@@ -29,6 +29,17 @@ export interface PublicCatalogItem {
   best_price: number | null
 }
 
+export interface OrgCatalogItem {
+  catalog_id: string
+  name: string
+  brand: string | null
+  image_main: string | null
+  pack_size: string | null
+  availability: string | null
+  supplier_count: number
+  best_price: number | null
+}
+
 export async function fetchPublicCatalogItems(
   filters: PublicCatalogFilters,
 ): Promise<{ items: PublicCatalogItem[]; nextCursor: string | null }> {
@@ -64,10 +75,12 @@ export async function fetchPublicCatalogItems(
 export async function fetchOrgCatalogItems(
   orgId: string,
   filters: OrgCatalogFilters,
-): Promise<{ items: any[]; nextCursor: string | null }> {
+): Promise<{ items: OrgCatalogItem[]; nextCursor: string | null }> {
   let query: any = supabase
     .rpc('v_org_catalog', { _org: orgId })
-    .select('*')
+    .select(
+      'catalog_id, name, brand, image_main, size, availability_text, image_url, supplier_count, best_price',
+    )
     .order('catalog_id', { ascending: true })
     .limit(50)
 
@@ -79,7 +92,16 @@ export async function fetchOrgCatalogItems(
   const { data, error } = await query
   if (error) throw error
 
-  const items = data ?? []
+  const items: OrgCatalogItem[] = (data ?? []).map((item: any) => ({
+    catalog_id: item.catalog_id,
+    name: item.name,
+    brand: item.brand ?? null,
+    image_main: item.image_main ?? item.image_url ?? null,
+    pack_size: item.size ?? null,
+    availability: item.availability_text ?? null,
+    supplier_count: item.supplier_count ?? 0,
+    best_price: item.best_price ?? null,
+  }))
   const nextCursor = items.length ? items[items.length - 1].catalog_id : null
   return { items, nextCursor }
 }
