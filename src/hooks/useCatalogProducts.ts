@@ -1,8 +1,12 @@
 import { useEffect } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
+import {
+  fetchPublicCatalogItems,
+  type PublicCatalogFilters,
+} from '@/services/catalog'
 
-export function useCatalogProducts(filters: Filters) {
+export function useCatalogProducts(filters: PublicCatalogFilters) {
   const queryClient = useQueryClient()
 
   useEffect(() => {
@@ -32,10 +36,11 @@ export function useCatalogProducts(filters: Filters) {
     queryKey: ['catalog', filters],
     queryFn: () => fetchPublicCatalogItems(filters),
   })
-  console.log('useCatalogProducts', query.data)
+
   return {
     ...query,
     data: query.data?.items,
     nextCursor: query.data?.nextCursor,
   }
 }
+
