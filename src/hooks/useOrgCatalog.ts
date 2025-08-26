@@ -6,7 +6,6 @@ import {
   type FacetFilters,
 } from '@/services/catalog'
 
-type Filters = FacetFilters & { onlyWithPrice?: boolean }
 
 export function useOrgCatalog(orgId: string, filters: Filters) {
   const queryClient = useQueryClient()
@@ -35,9 +34,15 @@ export function useOrgCatalog(orgId: string, filters: Filters) {
     }
   }, [queryClient, orgId])
 
-  return useQuery({
+  const query = useQuery({
     queryKey: ['orgCatalog', orgId, filters],
     queryFn: () => fetchOrgCatalogItems(orgId, filters),
     enabled: !!orgId,
   })
+
+  return {
+    ...query,
+    data: query.data?.items,
+    nextCursor: query.data?.nextCursor,
+  }
 }

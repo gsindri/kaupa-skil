@@ -3,18 +3,11 @@ import { supabase } from '@/integrations/supabase/client'
 export type FacetFilters = {
   search?: string
   brand?: string
-  category?: string
-  supplier?: string
-  availability?: string
-  packSizeRange?: string
-}
-
-export type PublicCatalogFilters = FacetFilters & {
-  page?: number
 }
 
 export type OrgCatalogFilters = FacetFilters & {
   onlyWithPrice?: boolean
+  cursor?: string | null
 }
 
 export interface PublicCatalogItem {
@@ -41,25 +34,11 @@ async function getCatalogIdsForFilters(filters: FacetFilters) {
 
 export async function fetchPublicCatalogItems(
   filters: PublicCatalogFilters,
-): Promise<PublicCatalogItem[]> {
-  let query: any = supabase.from('v_public_catalog').select('*')
-  if (
-    filters.category ||
-    filters.supplier ||
-    filters.availability ||
-    filters.packSizeRange
-  ) {
-    const ids = await getCatalogIdsForFilters(filters)
-    if (ids.length === 0) return []
-    query = query.in('catalog_id', ids)
-  }
   if (filters.search) query = query.ilike('name', `%${filters.search}%`)
   if (filters.brand) query = query.eq('brand', filters.brand)
-  const page = filters.page ?? 1
-  const PAGE_SIZE = 50
-  const from = (page - 1) * PAGE_SIZE
-  const to = from + PAGE_SIZE - 1
-  const { data, error } = await query.range(from, to)
+  if (filters.cursor) query = query.gt('catalog_id', filters.cursor)
+
+  const { data, error } = await query
   if (error) throw error
   const items = (data ?? []).map((item: any) => ({
     catalog_id: item.catalog_id,
@@ -69,28 +48,21 @@ export async function fetchPublicCatalogItems(
     supplier_count: item.suppliers_count ?? item.supplier_count ?? 0,
     best_price: item.best_price ?? null,
   }))
-  console.log('fetchPublicCatalogItems', items)
-  return items
+  const nextCursor = items.length ? items[items.length - 1].catalog_id : null
+  console.log('fetchPublicCatalogItems', items, nextCursor)
+  return { items, nextCursor }
 }
 
-export async function fetchOrgCatalogItems(orgId: string, filters: OrgCatalogFilters) {
-  let query: any = supabase.rpc('v_org_catalog', { _org: orgId })
-  if (
-    filters.category ||
-    filters.supplier ||
-    filters.availability ||
-    filters.packSizeRange
-  ) {
-    const ids = await getCatalogIdsForFilters(filters)
-    if (ids.length === 0) return []
-    query = query.in('catalog_id', ids)
-  }
   if (filters.search) query = query.ilike('name', `%${filters.search}%`)
   if (filters.brand) query = query.eq('brand', filters.brand)
   if (filters.onlyWithPrice) query = query.not('best_price', 'is', null)
+  if (filters.cursor) query = query.gt('catalog_id', filters.cursor)
+
   const { data, error } = await query
   if (error) throw error
-  return data
+  const items = data ?? []
+  const nextCursor = items.length ? items[items.length - 1].catalog_id : null
+  return { items, nextCursor }
 }
 
 export interface FacetCount {
