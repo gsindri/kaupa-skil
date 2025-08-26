@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client'
 export type PublicCatalogFilters = {
   search?: string
   brand?: string
+  page?: number
 }
 
 export type OrgCatalogFilters = {
@@ -26,7 +27,11 @@ export async function fetchPublicCatalogItems(
   let query: any = supabase.from('v_public_catalog').select('*')
   if (filters.search) query = query.ilike('name', `%${filters.search}%`)
   if (filters.brand) query = query.eq('brand', filters.brand)
-  const { data, error } = await query.limit(50)
+  const page = filters.page ?? 1
+  const PAGE_SIZE = 50
+  const from = (page - 1) * PAGE_SIZE
+  const to = from + PAGE_SIZE - 1
+  const { data, error } = await query.range(from, to)
   if (error) throw error
   const items = (data ?? []).map((item: any) => ({
     catalog_id: item.catalog_id,

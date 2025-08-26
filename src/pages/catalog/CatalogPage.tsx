@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/button'
 import { useAuth } from '@/contexts/useAuth'
 import { useCatalogProducts } from '@/hooks/useCatalogProducts'
 import { useOrgCatalog } from '@/hooks/useOrgCatalog'
@@ -13,14 +14,25 @@ export default function CatalogPage() {
   const [search, setSearch] = useState('')
   const [brand, setBrand] = useState('')
   const [onlyWithPrice, setOnlyWithPrice] = useState(false)
+  const [page, setPage] = useState(1)
+  const [products, setProducts] = useState<any[]>([])
 
   const orgQuery = useOrgCatalog(orgId, { search, brand, onlyWithPrice })
-  const publicQuery = useCatalogProducts({ search, brand })
+  const publicQuery = useCatalogProducts({ search, brand, page })
   console.log('CatalogPage orgQuery', orgQuery.data, orgQuery.error)
   console.log('CatalogPage useCatalogProducts', publicQuery.data)
-  const products =
-    orgQuery.data?.length ? orgQuery.data : publicQuery.data ?? []
-  console.log('CatalogPage products', products)
+
+  useEffect(() => {
+    setPage(1)
+    setProducts([])
+  }, [search, brand])
+
+  useEffect(() => {
+    if (!orgQuery.data?.length && publicQuery.data)
+      setProducts(prev => [...prev, ...publicQuery.data])
+  }, [publicQuery.data, orgQuery.data])
+
+  const displayedProducts = orgQuery.data?.length ? orgQuery.data : products
 
   return (
     <div className="space-y-4 p-4">
@@ -45,10 +57,15 @@ export default function CatalogPage() {
         )}
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {products.map((p: any) => (
+        {displayedProducts.map((p: any) => (
           <ProductCard key={p.catalog_id} product={p} showPrice={!!orgId} />
         ))}
       </div>
+      {!orgQuery.data?.length && publicQuery.data?.length === 50 && (
+        <div className="flex justify-center">
+          <Button onClick={() => setPage(p => p + 1)}>Load more</Button>
+        </div>
+      )}
     </div>
   )
 }
