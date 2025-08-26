@@ -2,11 +2,11 @@ import { useEffect, useState } from 'react'
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
-import { Button } from '@/components/ui/button'
 import { useAuth } from '@/contexts/useAuth'
 import { useCatalogProducts } from '@/hooks/useCatalogProducts'
 import { useOrgCatalog } from '@/hooks/useOrgCatalog'
 import { ProductCard } from '@/components/catalog/ProductCard'
+import { VirtualizedGrid } from '@/components/catalog/VirtualizedGrid'
 
 export default function CatalogPage() {
   const { profile } = useAuth()
@@ -16,6 +16,7 @@ export default function CatalogPage() {
   const [onlyWithPrice, setOnlyWithPrice] = useState(false)
   const [page, setPage] = useState(1)
   const [products, setProducts] = useState<any[]>([])
+  const PAGE_SIZE = 50
 
   const orgQuery = useOrgCatalog(orgId, { search, brand, onlyWithPrice })
   const publicQuery = useCatalogProducts({ search, brand, page })
@@ -56,16 +57,15 @@ export default function CatalogPage() {
           </div>
         )}
       </div>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {displayedProducts.map((p: any) => (
+      <VirtualizedGrid
+        items={displayedProducts}
+        loadMore={() => setPage(p => p + 1)}
+        hasMore={!orgQuery.data?.length && publicQuery.data?.length === PAGE_SIZE}
+        isLoading={publicQuery.isFetching}
+        renderItem={(p: any) => (
           <ProductCard key={p.catalog_id} product={p} showPrice={!!orgId} />
-        ))}
-      </div>
-      {!orgQuery.data?.length && publicQuery.data?.length === 50 && (
-        <div className="flex justify-center">
-          <Button onClick={() => setPage(p => p + 1)}>Load more</Button>
-        </div>
-      )}
+        )}
+      />
     </div>
   )
 }
