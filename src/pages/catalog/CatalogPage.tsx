@@ -14,16 +14,16 @@ export default function CatalogPage() {
   const [search, setSearch] = useState('')
   const [brand, setBrand] = useState('')
   const [onlyWithPrice, setOnlyWithPrice] = useState(false)
-  const [page, setPage] = useState(1)
+  const [cursor, setCursor] = useState<string | null>(null)
   const [products, setProducts] = useState<any[]>([])
 
-  const orgQuery = useOrgCatalog(orgId, { search, brand, onlyWithPrice })
-  const publicQuery = useCatalogProducts({ search, brand, page })
+  const orgQuery = useOrgCatalog(orgId, { search, brand, onlyWithPrice, cursor })
+  const publicQuery = useCatalogProducts({ search, brand, cursor })
   console.log('CatalogPage orgQuery', orgQuery.data, orgQuery.error)
   console.log('CatalogPage useCatalogProducts', publicQuery.data)
 
   useEffect(() => {
-    setPage(1)
+    setCursor(null)
     setProducts([])
   }, [search, brand])
 
@@ -63,7 +63,7 @@ export default function CatalogPage() {
       </div>
       {!orgQuery.data?.length && publicQuery.data?.length === 50 && (
         <div className="flex justify-center">
-          <Button onClick={() => setPage(p => p + 1)}>Load more</Button>
+          <Button onClick={() => setCursor(publicQuery.nextCursor || null)}>Load more</Button>
         </div>
       )}
     </div>
