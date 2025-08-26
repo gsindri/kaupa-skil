@@ -14,6 +14,22 @@ export default function CatalogPage() {
   useEffect(() => {
 
   useEffect(() => {
+    if (search) logSearch(search)
+  }, [search])
+
+  useEffect(() => {
+    logFilter({ brand, onlyWithPrice })
+  }, [brand, onlyWithPrice])
+
+  useEffect(() => {
+    if (brand) logFacetInteraction('brand', brand)
+  }, [brand])
+
+  useEffect(() => {
+    logFacetInteraction('onlyWithPrice', onlyWithPrice)
+  }, [onlyWithPrice])
+
+  useEffect(() => {
     if (!orgQuery.data?.length && publicQuery.data)
       setProducts(prev => (page === 1 ? publicQuery.data : [...prev, ...publicQuery.data]))
   }, [publicQuery.data, orgQuery.data, page])
@@ -72,6 +88,15 @@ export default function CatalogPage() {
     else setSelected([])
   }
 
+  useEffect(() => {
+    if (
+      (orgQuery.isFetched || publicQuery.isFetched) &&
+      displayedProducts.length === 0
+    ) {
+      logZeroResults(search, { brand, onlyWithPrice })
+    }
+  }, [displayedProducts, orgQuery.isFetched, publicQuery.isFetched, search, brand, onlyWithPrice])
+
   return (
     <div className="space-y-4 p-4">
       <div className="flex flex-wrap items-end gap-4">
@@ -83,10 +108,6 @@ export default function CatalogPage() {
           placeholder="Brand"
           className="max-w-xs"
         />
-        <div className="flex items-center space-x-2">
-          <Switch id="auto-load" checked={autoLoad} onCheckedChange={handleAutoLoadChange} />
-          <Label htmlFor="auto-load">Auto load</Label>
-        </div>
         {orgId && (
           <div className="flex items-center space-x-2">
             <Switch id="with-price" checked={onlyWithPrice} onCheckedChange={setOnlyWithPrice} />
