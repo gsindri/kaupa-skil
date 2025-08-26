@@ -8,6 +8,8 @@ import { LayoutGrid, Table as TableIcon } from 'lucide-react'
 import { useAuth } from '@/contexts/useAuth'
 import { useCatalogProducts } from '@/hooks/useCatalogProducts'
 import { useOrgCatalog } from '@/hooks/useOrgCatalog'
+import { CatalogGrid } from '@/components/catalog/CatalogGrid'
+import { CatalogTable } from '@/components/catalog/CatalogTable'
 import {
   logSearch,
   logFilter,
@@ -26,6 +28,7 @@ export default function CatalogPage() {
   const [cursor, setCursor] = useState<string | null>(null)
   const [nextCursor, setNextCursor] = useState<string | null>(null)
   const [products, setProducts] = useState<any[]>([])
+  const [selected, setSelected] = useState<string[]>([])
 
   const publicQuery = useCatalogProducts({ search, brand, cursor })
   const orgQuery = useOrgCatalog(orgId, { search, brand, onlyWithPrice, cursor })
@@ -63,6 +66,20 @@ export default function CatalogPage() {
 
   const loadMore = () => {
     if (nextCursor) setCursor(nextCursor)
+  }
+
+  const toggleSelect = (id: string) => {
+    setSelected(prev =>
+      prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id],
+    )
+  }
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelected(products.map(p => p.catalog_id))
+    } else {
+      setSelected([])
+    }
   }
 
   return (
@@ -109,9 +126,33 @@ export default function CatalogPage() {
         </ToggleGroup>
       </div>
 
-      {/* Placeholder for rendered catalog items */}
-      <div className="min-h-[200px] bg-muted/20 flex items-center justify-center">
-        {products.length === 0 ? 'No products' : `${products.length} products loaded`}
+      <div className="min-h-[200px]">
+        {products.length === 0 && (publicQuery.isFetching || orgQuery.isFetching) && (
+          <div className="flex h-[200px] items-center justify-center bg-muted/20">
+            Loading products...
+          </div>
+        )}
+        {products.length === 0 && !(publicQuery.isFetching || orgQuery.isFetching) && (
+          <div className="flex h-[200px] items-center justify-center bg-muted/20">
+            No products
+          </div>
+        )}
+        {products.length > 0 &&
+          (view === 'grid' ? (
+            <CatalogGrid
+              products={products}
+              selected={selected}
+              onSelect={toggleSelect}
+              showPrice={!!orgId}
+            />
+          ) : (
+            <CatalogTable
+              products={products}
+              selected={selected}
+              onSelect={toggleSelect}
+              onSelectAll={handleSelectAll}
+            />
+          ))}
       </div>
 
       {nextCursor && (
