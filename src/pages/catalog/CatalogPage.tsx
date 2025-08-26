@@ -36,6 +36,19 @@ export default function CatalogPage() {
   const publicQuery = useCatalogProducts({ search, brand, cursor })
   const orgQuery = useOrgCatalog(orgId, { search, brand, onlyWithPrice, cursor })
 
+  const {
+    data: publicData,
+    nextCursor: publicNext,
+    isFetching: publicFetching,
+    error: publicError,
+  } = publicQuery
+  const {
+    data: orgData,
+    nextCursor: orgNext,
+    isFetching: orgFetching,
+    error: orgError,
+  } = orgQuery
+
   useEffect(() => {
     if (search) logSearch(search)
   }, [search])
@@ -69,19 +82,6 @@ export default function CatalogPage() {
       })
     }
   }, [orgError])
-
-  const {
-    data: publicData,
-    nextCursor: publicNext,
-    isFetching: publicFetching,
-    error: publicError,
-  } = publicQuery
-  const {
-    data: orgData,
-    nextCursor: orgNext,
-    isFetching: orgFetching,
-    error: orgError,
-  } = orgQuery
 
   useEffect(() => {
     const hasOrgData = !!orgData?.length
