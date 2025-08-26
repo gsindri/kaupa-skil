@@ -13,10 +13,10 @@ export const queryClient = new QueryClient({
       // Enhanced retry with tenant-aware logic
       retry: getRetryOptions,
       retryDelay: getRetryDelay,
-      // Security-focused refetch settings
-      refetchOnWindowFocus: true, // Re-enabled for security updates
-      refetchOnReconnect: true,
-      refetchOnMount: true,
+      // Disable automatic refetching to avoid flashing on tab focus
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+      refetchOnMount: false,
       // Enhanced error handling
       throwOnError: false,
       // Add request deduplication
