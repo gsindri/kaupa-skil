@@ -17,13 +17,20 @@ import {
   type CatalogItem,
   type CatalogSupplier,
 } from '@/services/catalog'
+import { Skeleton } from '@/components/ui/skeleton'
+import { cn } from '@/lib/utils'
 
 interface ProductCardProps {
   product: CatalogItem
   showPrice?: boolean
+  density?: 'comfortable' | 'compact'
 }
 
-export function ProductCard({ product, showPrice = true }: ProductCardProps) {
+export function ProductCard({
+  product,
+  showPrice = true,
+  density = 'comfortable',
+}: ProductCardProps) {
   const { suppliers: connectedSuppliers } = useSupplierConnections()
   const { profile } = useAuth()
   const orgId = profile?.tenant_id || null
@@ -44,22 +51,46 @@ export function ProductCard({ product, showPrice = true }: ProductCardProps) {
       : 'secondary'
     : 'secondary'
 
+  const [imgLoaded, setImgLoaded] = useState(false)
+
   return (
     <Card data-testid="product-card">
-      <CardContent className="space-y-2 p-4">
-        {product.image_main && (
-          <img
-            src={product.image_main}
-            alt={product.name}
-            loading="lazy"
-            width={200}
-            height={200}
-            className="aspect-square w-full rounded object-cover"
-          />
+      <CardContent
+        className={cn(
+          density === 'compact' ? 'space-y-1 p-2' : 'space-y-2 p-4',
         )}
-        <h3 className="font-medium">{product.name}</h3>
+      >
+        <div className="relative w-full">
+          <Skeleton
+            className={cn('aspect-square w-full', imgLoaded && 'hidden')}
+          />
+          {product.image_main && (
+            <img
+              src={product.image_main}
+              alt={product.name}
+              loading="lazy"
+              width={200}
+              height={200}
+              onLoad={() => setImgLoaded(true)}
+              className={cn(
+                'aspect-square w-full rounded object-cover',
+                !imgLoaded && 'hidden',
+              )}
+            />
+          )}
+        </div>
+        <h3 className={cn('font-medium', density === 'compact' && 'text-sm')}>
+          {product.name}
+        </h3>
         {product.pack_size && (
-          <p className="text-sm text-muted-foreground">{product.pack_size}</p>
+          <p
+            className={cn(
+              'text-sm text-muted-foreground',
+              density === 'compact' && 'text-xs',
+            )}
+          >
+            {product.pack_size}
+          </p>
         )}
         {product.availability && (
           <Badge variant={availabilityVariant}>{product.availability}</Badge>
