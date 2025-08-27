@@ -177,7 +177,7 @@ export default function CatalogPage() {
           (view === 'grid' ? (
             <div
               className="grid gap-4"
-              style={{ gridTemplateColumns: 'repeat(auto-fill,minmax(220px,1fr))' }}
+              style={{ gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))' }}
             >
               {products.map(product => {
                 const id = product.catalog_id
