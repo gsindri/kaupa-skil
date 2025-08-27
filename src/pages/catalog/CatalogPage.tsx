@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { AlertCircle } from 'lucide-react'
+import { AlertCircle, Loader2 } from 'lucide-react'
 import { useAuth } from '@/contexts/useAuth'
 import { useCatalogProducts } from '@/hooks/useCatalogProducts'
 import { useOrgCatalog } from '@/hooks/useOrgCatalog'
@@ -140,6 +140,16 @@ export default function CatalogPage() {
     }
   }
 
+  const total =
+    orgQuery.isFetched && typeof orgTotal === 'number'
+      ? orgTotal
+      : publicQuery.isFetched && typeof publicTotal === 'number'
+        ? publicTotal
+        : null
+
+  const isLoading = publicQuery.isFetching || orgQuery.isFetching
+  const loadingMore = isLoading && cursor !== null
+
   return (
     <div className="w-full px-4">
       {(publicError || orgError) && (
@@ -185,16 +195,12 @@ export default function CatalogPage() {
         >
           Clear Filters
         </Button>
+        {total !== null && (
+          <div className="ml-auto text-sm text-muted-foreground">
+            {total} products
+          </div>
+        )}
       </div>
-
-      <div className="space-y-4 mt-4">
-        <div className="min-h-[200px] w-full">
-          {products.length === 0 && (publicQuery.isFetching || orgQuery.isFetching) && (
-            <div className="flex h-[200px] items-center justify-center bg-muted/20">
-              Loading products...
-            </div>
-          )}
-        {products.length === 0 && !(publicQuery.isFetching || orgQuery.isFetching) && (
           <div className="flex h-[200px] items-center justify-center bg-muted/20">
             No products
           </div>
@@ -235,13 +241,6 @@ export default function CatalogPage() {
             </div>
           ))}
         </div>
-
-        {nextCursor && (
-          <Button onClick={loadMore} disabled={publicQuery.isFetching || orgQuery.isFetching}>
-            Load more
-          </Button>
-        )}
-      </div>
     </div>
   )
 }
