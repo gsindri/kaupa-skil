@@ -1,9 +1,3 @@
--- Add availability and image columns to supplier_product
-ALTER TABLE public.supplier_product
-  ADD COLUMN IF NOT EXISTS pack_size text,
-  ADD COLUMN IF NOT EXISTS availability_text text,
-  ADD COLUMN IF NOT EXISTS image_url text;
-
 -- Expose new fields via public catalog view
 create or replace view public.v_public_catalog as
 select

@@ -17,6 +17,8 @@ CREATE TABLE public.supplier_product (
     catalog_id UUID REFERENCES public.catalog_product(catalog_id) ON DELETE SET NULL,
     supplier_sku TEXT NOT NULL,
     pack_size TEXT,
+    availability_text TEXT,
+    image_url TEXT,
     min_order_qty INTEGER,
     status TEXT,
     source_url TEXT,
