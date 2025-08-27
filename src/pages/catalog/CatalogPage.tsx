@@ -1,30 +1,20 @@
 import { useEffect, useRef, useState } from 'react'
-import { Input } from '@/components/ui/input'
-import { Switch } from '@/components/ui/switch'
-import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { LayoutGrid, Table as TableIcon, AlertCircle } from 'lucide-react'
+import { AlertCircle } from 'lucide-react'
 import { useAuth } from '@/contexts/useAuth'
 import { useCatalogProducts } from '@/hooks/useCatalogProducts'
 import { useOrgCatalog } from '@/hooks/useOrgCatalog'
 import { CatalogTable } from '@/components/catalog/CatalogTable'
 import { ProductCard } from '@/components/catalog/ProductCard'
 import { Checkbox } from '@/components/ui/checkbox'
-import {
-  logSearch,
-  logFilter,
-  logFacetInteraction,
-  logZeroResults,
-} from '@/lib/analytics'
+import { logFilter, logFacetInteraction } from '@/lib/analytics'
 import { AnalyticsTracker } from '@/components/quick/AnalyticsTrackerUtils'
 
 export default function CatalogPage() {
   const { profile } = useAuth()
   const orgId = profile?.tenant_id || ''
 
-  const [search, setSearch] = useState('')
   const [brand, setBrand] = useState('')
   const [onlyWithPrice, setOnlyWithPrice] = useState(false)
   const [view, setView] = useState<'grid' | 'table'>('grid')
@@ -35,8 +25,8 @@ export default function CatalogPage() {
   const [selected, setSelected] = useState<string[]>([])
   const [density, setDensity] = useState<'comfortable' | 'compact'>('comfortable')
 
-  const publicQuery = useCatalogProducts({ search, brand, cursor })
-  const orgQuery = useOrgCatalog(orgId, { search, brand, onlyWithPrice, cursor })
+  const publicQuery = useCatalogProducts({ brand, cursor })
+  const orgQuery = useOrgCatalog(orgId, { brand, onlyWithPrice, cursor })
 
   const {
     data: publicData,
@@ -52,10 +42,6 @@ export default function CatalogPage() {
     error: orgError,
     total: orgTotal,
   } = orgQuery
-
-  useEffect(() => {
-    if (search) logSearch(search)
-  }, [search])
 
   useEffect(() => {
     logFilter({ brand, onlyWithPrice })
@@ -110,11 +96,6 @@ export default function CatalogPage() {
     cursor,
   ])
 
-  useEffect(() => {
-    if ((orgQuery.isFetched || publicQuery.isFetched) && products.length === 0) {
-      logZeroResults(search, { brand, onlyWithPrice })
-    }
-  }, [orgQuery.isFetched, publicQuery.isFetched, products.length, search, brand, onlyWithPrice])
 
   const loadMore = () => {
     if (nextCursor) setCursor(nextCursor)
@@ -134,28 +115,9 @@ export default function CatalogPage() {
     }
   }
 
-  const clearFilters = () => {
-    setSearch('')
-    setBrand('')
-    setOnlyWithPrice(false)
-    setCursor(null)
-  }
-
-  const totalCount = orgData && orgData.length ? orgTotal : publicTotal
-
   return (
     <div className="space-y-4 p-4">
-      <div className="sticky top-0 z-10 -mx-4 -mt-4 space-y-2 bg-background p-4">
-        <div className="flex flex-wrap items-end gap-4">
-          <Input
-            placeholder="Search products"
-            className="max-w-xs"
-            value={search}
-          onChange={e => setSearch(e.target.value)}
-        />
-      </div>
-    </div>
-    {(publicError || orgError) && (
+      {(publicError || orgError) && (
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>{String(publicError || orgError)}</AlertDescription>
