@@ -7,7 +7,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { AlertCircle } from 'lucide-react'
+import { AlertCircle, Loader2 } from 'lucide-react'
 import { useAuth } from '@/contexts/useAuth'
 import { useCatalogProducts } from '@/hooks/useCatalogProducts'
 import { useOrgCatalog } from '@/hooks/useOrgCatalog'
@@ -16,6 +16,8 @@ import { useCatalogSearchSuggestions } from '@/hooks/useCatalogSearchSuggestions
 import { CatalogTable } from '@/components/catalog/CatalogTable'
 import { ProductCard } from '@/components/catalog/ProductCard'
 import { Checkbox } from '@/components/ui/checkbox'
+import CatalogFiltersPanel from '@/components/catalog/CatalogFiltersPanel'
+import type { FacetFilters } from '@/services/catalog'
 import {
   logFilter,
   logFacetInteraction,
@@ -30,8 +32,7 @@ export default function CatalogPage() {
   const { profile } = useAuth()
   const orgId = profile?.tenant_id || ''
 
-  const [search, setSearch] = useState('')
-  const [brand, setBrand] = useState('')
+  const [filters, setFilters] = useState<FacetFilters>({})
   const [onlyWithPrice, setOnlyWithPrice] = useState(false)
   const [view, setView] = useState<'grid' | 'list'>('grid')
   const [cursor, setCursor] = useState<string | null>(null)
@@ -55,30 +56,6 @@ export default function CatalogPage() {
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [activeSuggestion, setActiveSuggestion] = useState(0)
 
-  useEffect(() => {
-    setActiveSuggestion(0)
-  }, [suggestions])
-
-  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (!showSuggestions || suggestions.length === 0) return
-    if (e.key === 'ArrowDown') {
-      e.preventDefault()
-      setActiveSuggestion((p) => (p + 1) % suggestions.length)
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault()
-      setActiveSuggestion((p) => (p - 1 + suggestions.length) % suggestions.length)
-    } else if (e.key === 'Enter') {
-      e.preventDefault()
-      const value = suggestions[activeSuggestion]
-      if (value) {
-        setSearch(value)
-        setShowSuggestions(false)
-      }
-    } else if (e.key === 'Escape') {
-      setShowSuggestions(false)
-    }
-  }
-
   const {
     data: publicData,
     nextCursor: publicNext,
@@ -95,16 +72,24 @@ export default function CatalogPage() {
   } = orgQuery
 
   useEffect(() => {
-    logFilter({ brand, onlyWithPrice })
-  }, [brand, onlyWithPrice])
+    logFilter({ ...filters, onlyWithPrice })
+  }, [filters, onlyWithPrice])
 
   useEffect(() => {
-    if (debouncedSearch) logSearch(debouncedSearch)
-  }, [debouncedSearch])
 
   useEffect(() => {
-    if (brand) logFacetInteraction('brand', brand)
-  }, [brand])
+    if (filters.brand) logFacetInteraction('brand', filters.brand)
+    if (filters.category) logFacetInteraction('category', filters.category)
+    if (filters.supplier) logFacetInteraction('supplier', filters.supplier)
+    if (filters.availability) logFacetInteraction('availability', filters.availability)
+    if (filters.packSizeRange) logFacetInteraction('packSizeRange', filters.packSizeRange)
+  }, [
+    filters.brand,
+    filters.category,
+    filters.supplier,
+    filters.availability,
+    filters.packSizeRange,
+  ])
 
   useEffect(() => {
     logFacetInteraction('onlyWithPrice', onlyWithPrice)
@@ -153,14 +138,11 @@ export default function CatalogPage() {
 
   useEffect(() => {
     if ((orgQuery.isFetched || publicQuery.isFetched) && products.length === 0) {
-      logZeroResults(debouncedSearch, { brand, onlyWithPrice })
     }
   }, [
     orgQuery.isFetched,
     publicQuery.isFetched,
     products.length,
-    debouncedSearch,
-    brand,
     onlyWithPrice,
   ])
 
@@ -183,140 +165,30 @@ export default function CatalogPage() {
     }
   }
 
+  const total =
+    orgQuery.isFetched && typeof orgTotal === 'number'
+      ? orgTotal
+      : publicQuery.isFetched && typeof publicTotal === 'number'
+        ? publicTotal
+        : null
+
+  const isLoading = publicQuery.isFetching || orgQuery.isFetching
+  const loadingMore = isLoading && cursor !== null
+
   return (
-    <div className="space-y-4 p-4">
+    <div className="w-full px-4">
       {(publicError || orgError) && (
-        <Alert variant="destructive">
+        <Alert variant="destructive" className="mb-4">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>{String(publicError || orgError)}</AlertDescription>
         </Alert>
       )}
-
-      <ViewToggle value={view} onChange={setView} />
-
-      <div className="flex flex-wrap items-end gap-2">
-        <div className="relative max-w-xs">
-          <Input
-            placeholder="Search products..."
-            value={search}
-            onChange={e => {
-              setSearch(e.target.value)
-              setShowSuggestions(true)
-            }}
-            onFocus={() => {
-              if (search) setShowSuggestions(true)
-            }}
-            onBlur={() => setTimeout(() => setShowSuggestions(false), 100)}
-            onKeyDown={handleKeyDown}
-          />
-          {showSuggestions && suggestions.length > 0 && (
-            <ul
-              className="absolute z-10 mt-1 w-full overflow-hidden rounded-md border bg-background text-sm shadow-md"
-              role="listbox"
-            >
-              {suggestions.map((s, i) => (
-                <li
-                  key={s}
-                  role="option"
-                  aria-selected={i === activeSuggestion}
-                  className={cn(
-                    'cursor-pointer px-2 py-1',
-                    i === activeSuggestion && 'bg-accent text-accent-foreground',
-                  )}
-                  onMouseEnter={() => setActiveSuggestion(i)}
-                  onMouseDown={e => {
-                    e.preventDefault()
-                    setSearch(s)
-                    setShowSuggestions(false)
-                  }}
-                >
-                  {s}
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
         <Input
           placeholder="Brand"
-          value={brand}
-          onChange={e => setBrand(e.target.value)}
+          value={filters.brand ?? ''}
+          onChange={e => setFilters(prev => ({ ...prev, brand: e.target.value }))}
           className="max-w-xs"
         />
-        {orgId && (
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="only-with-price"
-              checked={onlyWithPrice}
-              onCheckedChange={checked => setOnlyWithPrice(!!checked)}
-            />
-            <label htmlFor="only-with-price" className="text-sm">
-              Only with price
-            </label>
-          </div>
-        )}
-        <Button
-          variant="outline"
-          onClick={() => {
-            setSearch('')
-            setBrand('')
-            setOnlyWithPrice(false)
-          }}
-        >
-          Clear Filters
-        </Button>
-      </div>
-
-      <div className="min-h-[200px]">
-        {products.length === 0 && (publicQuery.isFetching || orgQuery.isFetching) && (
-          <div className="flex h-[200px] items-center justify-center bg-muted/20">
-            Loading products...
-          </div>
-        )}
-        {products.length === 0 && !(publicQuery.isFetching || orgQuery.isFetching) && (
-          <div className="flex h-[200px] items-center justify-center bg-muted/20">
-            No products
-          </div>
-        )}
-        {products.length > 0 &&
-          (view === 'grid' ? (
-            <div
-              className="grid gap-4"
-              style={{ gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))' }}
-            >
-              {products.map(product => {
-                const id = product.catalog_id
-                const isSelected = selected.includes(id)
-                return (
-                  <div key={id} className="relative">
-                    <ProductCard
-                      product={product}
-                      showPrice={!!orgId}
-                      density={density}
-                    />
-                    <Checkbox
-                      checked={isSelected}
-                      onCheckedChange={() => toggleSelect(id)}
-                      className="absolute top-2 left-2"
-                    />
-                  </div>
-                )
-              })}
-            </div>
-          ) : (
-            <CatalogTable
-              products={products}
-              selected={selected}
-              onSelect={toggleSelect}
-              onSelectAll={handleSelectAll}
-            />
-          ))}
-      </div>
-
-      {nextCursor && (
-        <Button onClick={loadMore} disabled={publicQuery.isFetching || orgQuery.isFetching}>
-          Load more
-        </Button>
-      )}
     </div>
   )
 }
