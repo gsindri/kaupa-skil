@@ -12,6 +12,7 @@ const CDN_BASE =
  */
 export function getCachedImageUrl(path?: string): string {
   if (!path) return ''
+  if (/^https?:\/\//i.test(path)) return path
   if (!CDN_BASE) return path
   return `${CDN_BASE}/${path}`
 }
