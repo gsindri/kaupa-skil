@@ -152,7 +152,6 @@ export default function CatalogPage() {
             className="max-w-xs"
             value={search}
             onChange={e => {
-              setCursor(null)
       </div>
       {(publicError || orgError) && (
         <Alert variant="destructive">
