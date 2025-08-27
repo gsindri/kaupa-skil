@@ -9,8 +9,9 @@ import { LayoutGrid, Table as TableIcon, AlertCircle } from 'lucide-react'
 import { useAuth } from '@/contexts/useAuth'
 import { useCatalogProducts } from '@/hooks/useCatalogProducts'
 import { useOrgCatalog } from '@/hooks/useOrgCatalog'
-import { CatalogGrid } from '@/components/catalog/CatalogGrid'
 import { CatalogTable } from '@/components/catalog/CatalogTable'
+import { ProductCard } from '@/components/catalog/ProductCard'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   logSearch,
   logFilter,
@@ -32,6 +33,7 @@ export default function CatalogPage() {
   const [products, setProducts] = useState<any[]>([])
   const lastCursor = useRef<string | null>(null)
   const [selected, setSelected] = useState<string[]>([])
+  const [density, setDensity] = useState<'comfortable' | 'compact'>('comfortable')
 
   const publicQuery = useCatalogProducts({ search, brand, cursor })
   const orgQuery = useOrgCatalog(orgId, { search, brand, onlyWithPrice, cursor })
@@ -41,12 +43,14 @@ export default function CatalogPage() {
     nextCursor: publicNext,
     isFetching: publicFetching,
     error: publicError,
+    total: publicTotal,
   } = publicQuery
   const {
     data: orgData,
     nextCursor: orgNext,
     isFetching: orgFetching,
     error: orgError,
+    total: orgTotal,
   } = orgQuery
 
   useEffect(() => {
@@ -130,48 +134,86 @@ export default function CatalogPage() {
     }
   }
 
+  const clearFilters = () => {
+    setSearch('')
+    setBrand('')
+    setOnlyWithPrice(false)
+    setCursor(null)
+  }
+
+  const totalCount = orgData && orgData.length ? orgTotal : publicTotal
+
   return (
     <div className="space-y-4 p-4">
-      <div className="flex flex-wrap items-end gap-4">
-        <Input
-          placeholder="Search products"
-          className="max-w-xs"
-          value={search}
-          onChange={e => {
-            setCursor(null)
-            setSearch(e.target.value)
-          }}
-        />
-        <Input
-          placeholder="Brand"
-          className="max-w-xs"
-          value={brand}
-          onChange={e => {
-            setCursor(null)
-            setBrand(e.target.value)
-          }}
-        />
-        {orgId && (
-          <div className="flex items-center space-x-2">
-            <Switch id="with-price" checked={onlyWithPrice} onCheckedChange={val => {
+      <div className="sticky top-0 z-10 -mx-4 -mt-4 space-y-2 bg-background p-4">
+        <div className="flex flex-wrap items-end gap-4">
+          <Input
+            placeholder="Search products"
+            className="max-w-xs"
+            value={search}
+            onChange={e => {
               setCursor(null)
-              setOnlyWithPrice(val)
-            }} />
-            <Label htmlFor="with-price">Has price</Label>
-          </div>
-        )}
-        <ToggleGroup
-          type="single"
-          value={view}
-          onValueChange={v => setView((v as 'grid' | 'table') || 'grid')}
-        >
-          <ToggleGroupItem value="grid" aria-label="Grid view">
-            <LayoutGrid className="h-4 w-4" />
-          </ToggleGroupItem>
-          <ToggleGroupItem value="table" aria-label="Table view">
-            <TableIcon className="h-4 w-4" />
-          </ToggleGroupItem>
-        </ToggleGroup>
+              setSearch(e.target.value)
+            }}
+          />
+          <Input
+            placeholder="Brand"
+            className="max-w-xs"
+            value={brand}
+            onChange={e => {
+              setCursor(null)
+              setBrand(e.target.value)
+            }}
+          />
+          {orgId && (
+            <div className="flex items-center space-x-2">
+              <Switch id="with-price" checked={onlyWithPrice} onCheckedChange={val => {
+                setCursor(null)
+                setOnlyWithPrice(val)
+              }} />
+              <Label htmlFor="with-price">Has price</Label>
+            </div>
+          )}
+          <ToggleGroup
+            type="single"
+            value={view}
+            onValueChange={v => setView((v as 'grid' | 'table') || 'grid')}
+          >
+            <ToggleGroupItem value="grid" aria-label="Grid view">
+              <LayoutGrid className="h-4 w-4" />
+            </ToggleGroupItem>
+            <ToggleGroupItem value="table" aria-label="Table view">
+              <TableIcon className="h-4 w-4" />
+            </ToggleGroupItem>
+          </ToggleGroup>
+          {view === 'grid' && (
+            <ToggleGroup
+              type="single"
+              value={density}
+              onValueChange={v =>
+                setDensity((v as 'comfortable' | 'compact') || 'comfortable')
+              }
+            >
+              <ToggleGroupItem value="comfortable" aria-label="Comfortable density">
+                Comfort
+              </ToggleGroupItem>
+              <ToggleGroupItem value="compact" aria-label="Compact density">
+                Compact
+              </ToggleGroupItem>
+            </ToggleGroup>
+          )}
+        </div>
+        <div className="flex items-center justify-between text-sm text-muted-foreground">
+          <span>
+            {products.length} loaded
+            {typeof totalCount === 'number' ? ` of ${totalCount}` : ''}
+          </span>
+          {(search || brand || onlyWithPrice) && (
+            <Button variant="link" onClick={clearFilters} className="px-0">
+              Clear filters
+            </Button>
+          )}
+        </div>
       </div>
       {(publicError || orgError) && (
         <Alert variant="destructive">
@@ -193,12 +235,29 @@ export default function CatalogPage() {
         )}
         {products.length > 0 &&
           (view === 'grid' ? (
-            <CatalogGrid
-              products={products}
-              selected={selected}
-              onSelect={toggleSelect}
-              showPrice={!!orgId}
-            />
+            <div
+              className="grid gap-4"
+              style={{ gridTemplateColumns: 'repeat(auto-fill,minmax(220px,1fr))' }}
+            >
+              {products.map(product => {
+                const id = product.catalog_id
+                const isSelected = selected.includes(id)
+                return (
+                  <div key={id} className="relative">
+                    <ProductCard
+                      product={product}
+                      showPrice={!!orgId}
+                      density={density}
+                    />
+                    <Checkbox
+                      checked={isSelected}
+                      onCheckedChange={() => toggleSelect(id)}
+                      className="absolute top-2 left-2"
+                    />
+                  </div>
+                )
+              })}
+            </div>
           ) : (
             <CatalogTable
               products={products}

@@ -41,6 +41,7 @@ export function useCatalogProducts(filters: PublicCatalogFilters) {
     ...query,
     data: query.data?.items,
     nextCursor: query.data?.nextCursor,
+    total: query.data?.total,
   }
 }
 

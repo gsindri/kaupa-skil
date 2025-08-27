@@ -14,10 +14,12 @@
 html, body {
   margin: 0;
   padding: 0;
+  height: 100%;
 }
 
 body {
   @apply m-0 p-0;
+  overflow: hidden;
 }
 
 :root {
@@ -29,7 +31,6 @@ main > *:first-child {
 }
 
 html { scrollbar-gutter: stable both-edges; }
-html { overflow-y: scroll; } /* Safari/legacy fallback */
 
 .app-scroll {
   height: 100vh;
