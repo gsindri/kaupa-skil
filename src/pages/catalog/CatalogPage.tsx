@@ -151,6 +151,43 @@ export default function CatalogPage() {
 
       <ViewToggle value={view} onChange={setView} />
 
+      <div className="flex flex-wrap items-end gap-2">
+        <Input
+          placeholder="Search products..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          className="max-w-xs"
+        />
+        <Input
+          placeholder="Brand"
+          value={brand}
+          onChange={e => setBrand(e.target.value)}
+          className="max-w-xs"
+        />
+        {orgId && (
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="only-with-price"
+              checked={onlyWithPrice}
+              onCheckedChange={checked => setOnlyWithPrice(!!checked)}
+            />
+            <label htmlFor="only-with-price" className="text-sm">
+              Only with price
+            </label>
+          </div>
+        )}
+        <Button
+          variant="outline"
+          onClick={() => {
+            setSearch('')
+            setBrand('')
+            setOnlyWithPrice(false)
+          }}
+        >
+          Clear Filters
+        </Button>
+      </div>
+
       <div className="min-h-[200px]">
         {products.length === 0 && (publicQuery.isFetching || orgQuery.isFetching) && (
           <div className="flex h-[200px] items-center justify-center bg-muted/20">
