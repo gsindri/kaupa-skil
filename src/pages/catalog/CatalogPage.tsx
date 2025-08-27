@@ -149,8 +149,7 @@ export default function CatalogPage() {
         </Alert>
       )}
 
-        <ViewToggle value={view} onChange={setView} />
-      </div>
+      <ViewToggle value={view} onChange={setView} />
 
       <div className="min-h-[200px]">
         {products.length === 0 && (publicQuery.isFetching || orgQuery.isFetching) && (
