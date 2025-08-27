@@ -52,6 +52,12 @@ export function ProductCard({
       : 'secondary'
     : 'secondary'
 
+  const imageSrc = product.image_main
+    ? /^https?:\/\//i.test(product.image_main)
+      ? product.image_main
+      : getCachedImageUrl(product.image_main)
+    : '/placeholder.svg'
+
   return (
     <Card data-testid="product-card">
       <CardContent
@@ -59,17 +65,15 @@ export function ProductCard({
           density === 'compact' ? 'space-y-1 p-2' : 'space-y-2 p-4',
         )}
       >
-        {product.image_main && (
-          <LazyImage
-            src={getCachedImageUrl(product.image_main)}
-            alt={product.name}
-            loading="lazy"
-            width={200}
-            height={200}
-            className="aspect-square w-full"
-            imgClassName="rounded object-cover"
-          />
-        )}
+        <LazyImage
+          src={imageSrc}
+          alt={product.name}
+          loading="lazy"
+          width={200}
+          height={200}
+          className="aspect-square w-full"
+          imgClassName="rounded object-cover"
+        />
         <h3 className={cn('font-medium', density === 'compact' && 'text-sm')}>
           {product.name}
         </h3>

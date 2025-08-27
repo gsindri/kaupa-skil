@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { AlertCircle } from 'lucide-react'
+import { AlertCircle, Loader2 } from 'lucide-react'
 import { useAuth } from '@/contexts/useAuth'
 import { useCatalogProducts } from '@/hooks/useCatalogProducts'
 import { useOrgCatalog } from '@/hooks/useOrgCatalog'
@@ -150,18 +150,27 @@ export default function CatalogPage() {
     }
   }
 
+  const total =
+    orgQuery.isFetched && typeof orgTotal === 'number'
+      ? orgTotal
+      : publicQuery.isFetched && typeof publicTotal === 'number'
+        ? publicTotal
+        : null
+
+  const isLoading = publicQuery.isFetching || orgQuery.isFetching
+  const loadingMore = isLoading && cursor !== null
+
   return (
-    <div className="space-y-4 p-4">
+    <div className="w-full px-4">
       {(publicError || orgError) && (
-        <Alert variant="destructive">
+        <Alert variant="destructive" className="mb-4">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>{String(publicError || orgError)}</AlertDescription>
         </Alert>
       )}
 
-      <ViewToggle value={view} onChange={setView} />
-
-      <div className="flex flex-wrap items-end gap-2">
+      <div className="sticky top-0 z-10 bg-background flex flex-wrap items-end gap-2 py-4">
+        <ViewToggle value={view} onChange={setView} />
         <Input
           placeholder="Search products..."
           value={filters.search ?? ''}
@@ -174,88 +183,12 @@ export default function CatalogPage() {
           onChange={e => setFilters(prev => ({ ...prev, brand: e.target.value }))}
           className="max-w-xs"
         />
-      </div>
-
-      <div className="flex gap-6">
-        <div className="w-64 shrink-0 space-y-4">
-          <CatalogFiltersPanel
-            filters={filters}
-            onChange={f => setFilters(prev => ({ ...prev, ...f }))}
-          />
-          {orgId && (
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="only-with-price"
-                checked={onlyWithPrice}
-                onCheckedChange={checked => setOnlyWithPrice(!!checked)}
-              />
-              <label htmlFor="only-with-price" className="text-sm">
-                Only with price
-              </label>
-            </div>
-          )}
-          <Button
-            variant="outline"
-            onClick={() => {
-              setFilters({})
-              setOnlyWithPrice(false)
-            }}
-          >
-            Clear Filters
-          </Button>
-        </div>
-        <div className="flex-1 min-h-[200px]">
-          {products.length === 0 && (publicQuery.isFetching || orgQuery.isFetching) && (
-            <div className="flex h-[200px] items-center justify-center bg-muted/20">
-              Loading products...
-            </div>
-          )}
-          {products.length === 0 && !(publicQuery.isFetching || orgQuery.isFetching) && (
-            <div className="flex h-[200px] items-center justify-center bg-muted/20">
-              No products
-            </div>
-          )}
-          {products.length > 0 &&
-            (view === 'grid' ? (
-              <div
-                className="grid gap-4"
-                style={{ gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))' }}
-              >
-                {products.map(product => {
-                  const id = product.catalog_id
-                  const isSelected = selected.includes(id)
-                  return (
-                    <div key={id} className="relative">
-                      <ProductCard
-                        product={product}
-                        showPrice={!!orgId}
-                        density={density}
-                      />
-                      <Checkbox
-                        checked={isSelected}
-                        onCheckedChange={() => toggleSelect(id)}
-                        className="absolute top-2 left-2"
-                      />
-                    </div>
-                  )
-                })}
-              </div>
-            ) : (
               <CatalogTable
                 products={products}
                 selected={selected}
                 onSelect={toggleSelect}
                 onSelectAll={handleSelectAll}
               />
-            ))}
-        </div>
-      </div>
-
-      {nextCursor && (
-        <Button onClick={loadMore} disabled={publicQuery.isFetching || orgQuery.isFetching}>
-          Load more
-        </Button>
-      )}
     </div>
   )
 }
