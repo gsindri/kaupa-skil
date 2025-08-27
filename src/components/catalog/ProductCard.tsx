@@ -12,19 +12,6 @@ import {
 import { useSupplierConnections } from '@/hooks/useSupplierConnections'
 import { useAuth } from '@/contexts/useAuth'
 import { useQuery } from '@tanstack/react-query'
-import { fetchCatalogItemSuppliers, type CatalogSupplier } from '@/services/catalog'
-
-interface CatalogItem {
-  catalog_id: string
-  name: string
-  brand?: string | null
-  image_main?: string | null
-  pack_size?: string | null
-  availability?: string | null
-  supplier_count?: number
-  best_price?: number | null
-  currency?: string | null
-}
 
 export function ProductCard({ product }: { product: CatalogItem }) {
   const { suppliers: connectedSuppliers } = useSupplierConnections()

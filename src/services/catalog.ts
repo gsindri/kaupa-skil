@@ -18,19 +18,7 @@ export type OrgCatalogFilters = FacetFilters & {
   cursor?: string | null
 }
 
-export interface PublicCatalogItem {
-  catalog_id: string
-  name: string
-  brand: string | null
-  image_main: string | null
-  pack_size: string | null
-  availability: string | null
-  supplier_count: number
-  suppliers: string[]
-  best_price: number | null
-}
-
-export interface OrgCatalogItem {
+export interface CatalogItem {
   catalog_id: string
   name: string
   brand: string | null
@@ -45,7 +33,7 @@ export interface OrgCatalogItem {
 
 export async function fetchPublicCatalogItems(
   filters: PublicCatalogFilters,
-): Promise<{ items: PublicCatalogItem[]; nextCursor: string | null }> {
+): Promise<{ items: CatalogItem[]; nextCursor: string | null }> {
   let query: any = supabase
     .from('v_public_catalog')
     .select(
@@ -61,7 +49,7 @@ export async function fetchPublicCatalogItems(
   const { data, error } = await query
   if (error) throw error
 
-  const items: PublicCatalogItem[] = (data ?? []).map((item: any) => ({
+  const items: CatalogItem[] = (data ?? []).map((item: any) => ({
     catalog_id: item.catalog_id,
     name: item.name,
     brand: item.brand ?? null,
@@ -79,7 +67,7 @@ export async function fetchPublicCatalogItems(
 export async function fetchOrgCatalogItems(
   orgId: string,
   filters: OrgCatalogFilters,
-): Promise<{ items: OrgCatalogItem[]; nextCursor: string | null }> {
+): Promise<{ items: CatalogItem[]; nextCursor: string | null }> {
   let query: any = supabase
     .rpc('v_org_catalog', { _org: orgId })
     .select(
@@ -96,7 +84,7 @@ export async function fetchOrgCatalogItems(
   const { data, error } = await query
   if (error) throw error
 
-  const items: OrgCatalogItem[] = (data ?? []).map((item: any) => ({
+  const items: CatalogItem[] = (data ?? []).map((item: any) => ({
     catalog_id: item.catalog_id,
     name: item.name,
     brand: item.brand ?? null,
