@@ -1,6 +1,7 @@
 import React from "react";
 import { MemoryRouter } from "react-router-dom";
-import { render, screen, waitFor } from "@testing-library/react";
+import { render } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/dom";
 import { vi } from "vitest";
 import ResetPassword from "./ResetPassword";
 

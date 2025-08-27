@@ -37,7 +37,7 @@ export async function fetchPublicCatalogItems(
     let query: any = supabase
       .from('v_public_catalog')
       .select(
-        'catalog_id, name, brand, gtin, sample_image_url, canonical_pack, availability_text, suppliers_count, supplier_names'
+        'catalog_id, name, brand, sample_image_url, canonical_pack, suppliers_count'
       )
     .order('catalog_id', { ascending: true })
     .limit(50)
@@ -55,9 +55,9 @@ export async function fetchPublicCatalogItems(
       brand: item.brand ?? null,
       image_main: item.sample_image_url ?? null,
       pack_size: item.canonical_pack ?? null,
-      availability: item.availability_text ?? null,
+      availability: null,
       supplier_count: item.suppliers_count ?? 0,
-      suppliers: item.supplier_names ?? [],
+      suppliers: [],
       best_price: null,
     }))
   const nextCursor = items.length ? items[items.length - 1].catalog_id : null
