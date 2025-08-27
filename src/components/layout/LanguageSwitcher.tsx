@@ -25,7 +25,6 @@ export function LanguageSwitcher() {
         sideOffset={8}
         collisionPadding={8}
         sticky="partial"
-        strategy="fixed"
         className="min-w-[200px]"
       >
         <DropdownMenuRadioGroup value={language} onValueChange={(v) => setLanguage(v as any)}>

@@ -8,7 +8,7 @@ if (!shouldRun) {
   test.skip('RUN_SUPABASE_TESTS not set - skipping Supabase integration tests', () => {})
 } else {
   const url = process.env.VITE_SUPABASE_URL!
-  const anonKey = process.env.VITE_SUPABASE_PUBLISHABLE_KEY!
+  const anonKey = process.env.VITE_SUPABASE_ANON_KEY!
   const supabase = createClient(url, anonKey, {
     auth: { persistSession: false }
   })
