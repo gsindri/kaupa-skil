@@ -1,9 +1,4 @@
-import {
-  useEffect,
-  useRef,
-  useState,
-  type KeyboardEvent,
-} from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -12,11 +7,9 @@ import { useAuth } from '@/contexts/useAuth'
 import { useCatalogProducts } from '@/hooks/useCatalogProducts'
 import { useOrgCatalog } from '@/hooks/useOrgCatalog'
 import { useDebounce } from '@/hooks/useDebounce'
-import { useCatalogSearchSuggestions } from '@/hooks/useCatalogSearchSuggestions'
 import { CatalogTable } from '@/components/catalog/CatalogTable'
 import { ProductCard } from '@/components/catalog/ProductCard'
 import { Checkbox } from '@/components/ui/checkbox'
-import CatalogFiltersPanel from '@/components/catalog/CatalogFiltersPanel'
 import type { FacetFilters } from '@/services/catalog'
 import {
   logFilter,
@@ -41,20 +34,20 @@ export default function CatalogPage() {
   const lastCursor = useRef<string | null>(null)
   const [selected, setSelected] = useState<string[]>([])
   const [density, setDensity] = useState<'comfortable' | 'compact'>('comfortable')
+  const [search, setSearch] = useState('')
+  const brand = filters.brand
   const debouncedSearch = useDebounce(search, 300)
-  const publicQuery = useCatalogProducts({ search: debouncedSearch, brand, cursor })
+  const publicQuery = useCatalogProducts({
+    search: debouncedSearch,
+    brand,
+    cursor,
+  })
   const orgQuery = useOrgCatalog(orgId, {
     search: debouncedSearch,
     brand,
     onlyWithPrice,
     cursor,
   })
-  const { data: suggestions = [] } = useCatalogSearchSuggestions(
-    debouncedSearch,
-    orgId,
-  )
-  const [showSuggestions, setShowSuggestions] = useState(false)
-  const [activeSuggestion, setActiveSuggestion] = useState(0)
 
   const {
     data: publicData,
@@ -76,6 +69,8 @@ export default function CatalogPage() {
   }, [filters, onlyWithPrice])
 
   useEffect(() => {
+    if (debouncedSearch) logSearch(debouncedSearch)
+  }, [debouncedSearch])
 
   useEffect(() => {
     if (filters.brand) logFacetInteraction('brand', filters.brand)
@@ -137,12 +132,19 @@ export default function CatalogPage() {
   ])
 
   useEffect(() => {
-    if ((orgQuery.isFetched || publicQuery.isFetched) && products.length === 0) {
+    if (
+      (orgQuery.isFetched || publicQuery.isFetched) &&
+      products.length === 0 &&
+      debouncedSearch
+    ) {
+      logZeroResults(debouncedSearch, { ...filters, onlyWithPrice })
     }
   }, [
     orgQuery.isFetched,
     publicQuery.isFetched,
     products.length,
+    debouncedSearch,
+    filters,
     onlyWithPrice,
   ])
 
@@ -176,19 +178,74 @@ export default function CatalogPage() {
   const loadingMore = isLoading && cursor !== null
 
   return (
-    <div className="w-full px-4">
+    <div className="w-full px-4 space-y-4">
       {(publicError || orgError) && (
-        <Alert variant="destructive" className="mb-4">
+        <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>{String(publicError || orgError)}</AlertDescription>
         </Alert>
       )}
+
+      <div className="flex flex-wrap items-center gap-2">
+        <Input
+          placeholder="Search products"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          className="max-w-sm"
+        />
         <Input
           placeholder="Brand"
           value={filters.brand ?? ''}
           onChange={e => setFilters(prev => ({ ...prev, brand: e.target.value }))}
           className="max-w-xs"
         />
+        <div className="flex items-center space-x-2">
+          <Checkbox
+            id="price-toggle"
+            checked={onlyWithPrice}
+            onCheckedChange={checked => setOnlyWithPrice(Boolean(checked))}
+          />
+          <label htmlFor="price-toggle" className="text-sm">
+            Only with price
+          </label>
+        </div>
+        <ViewToggle value={view} onChange={setView} />
+      </div>
+
+      {view === 'list' ? (
+        <CatalogTable
+          products={products}
+          selected={selected}
+          onSelect={toggleSelect}
+          onSelectAll={handleSelectAll}
+        />
+      ) : (
+        <div
+          className={cn(
+            'grid gap-4',
+            density === 'compact'
+              ? 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4'
+              : 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4',
+          )}
+        >
+          {products.map(p => (
+            <ProductCard
+              key={p.catalog_id}
+              product={p}
+              density={density}
+            />
+          ))}
+        </div>
+      )}
+
+      {nextCursor && (
+        <div className="flex justify-center">
+          <Button onClick={loadMore} disabled={loadingMore} variant="outline">
+            {loadingMore && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Load more
+          </Button>
+        </div>
+      )}
     </div>
   )
 }
