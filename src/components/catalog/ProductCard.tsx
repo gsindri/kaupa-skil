@@ -23,6 +23,7 @@ interface CatalogItem {
   availability?: string | null
   supplier_count?: number
   best_price?: number | null
+  currency?: string | null
 }
 
 export function ProductCard({ product }: { product: CatalogItem }) {
@@ -90,11 +91,13 @@ export function ProductCard({ product }: { product: CatalogItem }) {
                   >
                     <div>
                       <p className="font-medium">{supplier.name}</p>
-                      {isConnected && supplier.price != null ? (
-                        <p className="text-sm">{supplier.price} ISK</p>
-                      ) : (
-                        <p className="text-sm text-muted-foreground">—</p>
-                      )}
+              {isConnected && supplier.price != null ? (
+                <p className="text-sm">
+                  {supplier.price} {supplier.currency ?? ''}
+                </p>
+              ) : (
+                <p className="text-sm text-muted-foreground">—</p>
+              )}
                     </div>
                     {!isConnected && <Button size="sm">Connect</Button>}
                   </div>
@@ -106,7 +109,7 @@ export function ProductCard({ product }: { product: CatalogItem }) {
         {hasConnection ? (
           product.best_price != null ? (
             <div data-testid="price-badge" className="text-sm font-medium">
-              from {product.best_price} ISK
+              from {product.best_price} {product.currency ?? ''}
             </div>
           ) : (
             <div className="text-sm text-muted-foreground">—</div>
