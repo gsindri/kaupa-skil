@@ -183,12 +183,6 @@ export default function CatalogPage() {
           onChange={e => setFilters(prev => ({ ...prev, brand: e.target.value }))}
           className="max-w-xs"
         />
-              <CatalogTable
-                products={products}
-                selected={selected}
-                onSelect={toggleSelect}
-                onSelectAll={handleSelectAll}
-              />
     </div>
   )
 }

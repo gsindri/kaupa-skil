@@ -41,7 +41,11 @@ export function CatalogTable({ products, selected, onSelect, onSelectAll }: Cata
       <TableHeader className="sticky top-0 z-10 bg-background">
         <TableRow>
           <TableHead className="w-8">
-            <Checkbox checked={isAllSelected} onCheckedChange={onSelectAll} />
+            <Checkbox
+              aria-label="Select all products"
+              checked={isAllSelected}
+              onCheckedChange={onSelectAll}
+            />
           </TableHead>
           <TableHead className="w-16">Image</TableHead>
           <TableHead className="min-w-[200px]">Name</TableHead>
@@ -66,7 +70,11 @@ export function CatalogTable({ products, selected, onSelect, onSelectAll }: Cata
               className="h-12 focus-visible:bg-muted/50"
             >
               <TableCell className="w-8 p-2">
-                <Checkbox checked={isSelected} onCheckedChange={() => onSelect(id)} />
+                <Checkbox
+                  aria-label={`Select ${p.name}`}
+                  checked={isSelected}
+                  onCheckedChange={() => onSelect(id)}
+                />
               </TableCell>
               <TableCell className="w-16 p-2">
                 {p.image_main && (
