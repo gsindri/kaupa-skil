@@ -151,9 +151,11 @@ export default function CatalogPage() {
             placeholder="Search products"
             className="max-w-xs"
             value={search}
-            onChange={e => {
+          onChange={e => setSearch(e.target.value)}
+        />
       </div>
-      {(publicError || orgError) && (
+    </div>
+    {(publicError || orgError) && (
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>{String(publicError || orgError)}</AlertDescription>
