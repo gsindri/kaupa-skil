@@ -33,12 +33,13 @@ export interface CatalogItem {
 
 export async function fetchPublicCatalogItems(
   filters: PublicCatalogFilters,
-): Promise<{ items: CatalogItem[]; nextCursor: string | null }> {
-    let query: any = supabase
-      .from('v_public_catalog')
-      .select(
-        'catalog_id, name, brand, sample_image_url, canonical_pack, suppliers_count'
-      )
+): Promise<{ items: CatalogItem[]; nextCursor: string | null; total: number }> {
+  let query: any = supabase
+    .from('v_public_catalog')
+    .select(
+      'catalog_id, name, brand, sample_image_url, canonical_pack, suppliers_count',
+      { count: 'exact' },
+    )
     .order('catalog_id', { ascending: true })
     .limit(50)
 
@@ -46,33 +47,34 @@ export async function fetchPublicCatalogItems(
   if (filters.brand) query = query.eq('brand', filters.brand)
   if (filters.cursor) query = query.gt('catalog_id', filters.cursor)
 
-  const { data, error } = await query
+  const { data, error, count } = await query
   if (error) throw error
 
-    const items: CatalogItem[] = (data ?? []).map((item: any) => ({
-      catalog_id: item.catalog_id,
-      name: item.name,
-      brand: item.brand ?? null,
-      image_main: item.sample_image_url ?? null,
-      pack_size: item.canonical_pack ?? null,
-      availability: null,
-      supplier_count: item.suppliers_count ?? 0,
-      suppliers: [],
-      best_price: null,
-    }))
+  const items: CatalogItem[] = (data ?? []).map((item: any) => ({
+    catalog_id: item.catalog_id,
+    name: item.name,
+    brand: item.brand ?? null,
+    image_main: item.sample_image_url ?? null,
+    pack_size: item.canonical_pack ?? null,
+    availability: null,
+    supplier_count: item.suppliers_count ?? 0,
+    suppliers: [],
+    best_price: null,
+  }))
   const nextCursor = items.length ? items[items.length - 1].catalog_id : null
-  return { items, nextCursor }
+  return { items, nextCursor, total: count ?? 0 }
 }
 
 export async function fetchOrgCatalogItems(
   orgId: string,
   filters: OrgCatalogFilters,
-): Promise<{ items: CatalogItem[]; nextCursor: string | null }> {
-    let query: any = supabase
-      .rpc('v_org_catalog', { _org: orgId })
-      .select(
-        'catalog_id, name, brand, gtin, sample_image_url, canonical_pack, suppliers_count, supplier_names, best_price, currency',
-      )
+): Promise<{ items: CatalogItem[]; nextCursor: string | null; total: number }> {
+  let query: any = supabase
+    .rpc('v_org_catalog', { _org: orgId })
+    .select(
+      'catalog_id, name, brand, gtin, sample_image_url, canonical_pack, suppliers_count, supplier_names, best_price, currency',
+      { count: 'exact' },
+    )
     .order('catalog_id', { ascending: true })
     .limit(50)
 
@@ -81,23 +83,23 @@ export async function fetchOrgCatalogItems(
   if (filters.onlyWithPrice) query = query.not('best_price', 'is', null)
   if (filters.cursor) query = query.gt('catalog_id', filters.cursor)
 
-  const { data, error } = await query
+  const { data, error, count } = await query
   if (error) throw error
 
-    const items: CatalogItem[] = (data ?? []).map((item: any) => ({
-      catalog_id: item.catalog_id,
-      name: item.name,
-      brand: item.brand ?? null,
-      image_main: item.sample_image_url ?? null,
-      pack_size: item.canonical_pack ?? null,
-      availability: null,
-      supplier_count: item.suppliers_count ?? 0,
-      suppliers: item.supplier_names ?? [],
-      best_price: item.best_price ?? null,
-      currency: item.currency ?? null,
-    }))
+  const items: CatalogItem[] = (data ?? []).map((item: any) => ({
+    catalog_id: item.catalog_id,
+    name: item.name,
+    brand: item.brand ?? null,
+    image_main: item.sample_image_url ?? null,
+    pack_size: item.canonical_pack ?? null,
+    availability: null,
+    supplier_count: item.suppliers_count ?? 0,
+    suppliers: item.supplier_names ?? [],
+    best_price: item.best_price ?? null,
+    currency: item.currency ?? null,
+  }))
   const nextCursor = items.length ? items[items.length - 1].catalog_id : null
-  return { items, nextCursor }
+  return { items, nextCursor, total: count ?? 0 }
 }
 
 export interface FacetCount {

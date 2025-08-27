@@ -43,12 +43,14 @@ export default function CatalogPage() {
     nextCursor: publicNext,
     isFetching: publicFetching,
     error: publicError,
+    total: publicTotal,
   } = publicQuery
   const {
     data: orgData,
     nextCursor: orgNext,
     isFetching: orgFetching,
     error: orgError,
+    total: orgTotal,
   } = orgQuery
 
   useEffect(() => {
@@ -132,64 +134,25 @@ export default function CatalogPage() {
     }
   }
 
+  const clearFilters = () => {
+    setSearch('')
+    setBrand('')
+    setOnlyWithPrice(false)
+    setCursor(null)
+  }
+
+  const totalCount = orgData && orgData.length ? orgTotal : publicTotal
+
   return (
     <div className="space-y-4 p-4">
-      <div className="flex flex-wrap items-end gap-4">
-        <Input
-          placeholder="Search products"
-          className="max-w-xs"
-          value={search}
-          onChange={e => {
-            setCursor(null)
-            setSearch(e.target.value)
-          }}
-        />
-        <Input
-          placeholder="Brand"
-          className="max-w-xs"
-          value={brand}
-          onChange={e => {
-            setCursor(null)
-            setBrand(e.target.value)
-          }}
-        />
-        {orgId && (
-          <div className="flex items-center space-x-2">
-            <Switch id="with-price" checked={onlyWithPrice} onCheckedChange={val => {
+      <div className="sticky top-0 z-10 -mx-4 -mt-4 space-y-2 bg-background p-4">
+        <div className="flex flex-wrap items-end gap-4">
+          <Input
+            placeholder="Search products"
+            className="max-w-xs"
+            value={search}
+            onChange={e => {
               setCursor(null)
-              setOnlyWithPrice(val)
-            }} />
-            <Label htmlFor="with-price">Has price</Label>
-          </div>
-        )}
-        <ToggleGroup
-          type="single"
-          value={view}
-          onValueChange={v => setView((v as 'grid' | 'table') || 'grid')}
-        >
-          <ToggleGroupItem value="grid" aria-label="Grid view">
-            <LayoutGrid className="h-4 w-4" />
-          </ToggleGroupItem>
-          <ToggleGroupItem value="table" aria-label="Table view">
-            <TableIcon className="h-4 w-4" />
-          </ToggleGroupItem>
-        </ToggleGroup>
-        {view === 'grid' && (
-          <ToggleGroup
-            type="single"
-            value={density}
-            onValueChange={v =>
-              setDensity((v as 'comfortable' | 'compact') || 'comfortable')
-            }
-          >
-            <ToggleGroupItem value="comfortable" aria-label="Comfortable density">
-              Comfort
-            </ToggleGroupItem>
-            <ToggleGroupItem value="compact" aria-label="Compact density">
-              Compact
-            </ToggleGroupItem>
-          </ToggleGroup>
-        )}
       </div>
       {(publicError || orgError) && (
         <Alert variant="destructive">

@@ -43,6 +43,7 @@ export function useOrgCatalog(orgId: string, filters: OrgCatalogFilters) {
     ...query,
     data: query.data?.items,
     nextCursor: query.data?.nextCursor,
+    total: query.data?.total,
   }
 }
 
