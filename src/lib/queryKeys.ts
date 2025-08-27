@@ -30,6 +30,7 @@ export const queryKeys = {
   // Catalog queries
   catalog: {
     list: (filters?: any) => ['catalog', 'list', filters] as const,
+    unmatched: () => ['catalog', 'unmatched'] as const,
   },
   
   // Supplier related queries

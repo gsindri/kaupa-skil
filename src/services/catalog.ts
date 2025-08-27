@@ -34,11 +34,11 @@ export interface CatalogItem {
 export async function fetchPublicCatalogItems(
   filters: PublicCatalogFilters,
 ): Promise<{ items: CatalogItem[]; nextCursor: string | null }> {
-  let query: any = supabase
-    .from('v_public_catalog')
-    .select(
-      'catalog_id, name, brand, gtin, image_main, pack_size, availability_text, supplier_count, supplier_names'
-    )
+    let query: any = supabase
+      .from('v_public_catalog')
+      .select(
+        'catalog_id, name, brand, gtin, sample_image_url, canonical_pack, availability_text, suppliers_count, supplier_names'
+      )
     .order('catalog_id', { ascending: true })
     .limit(50)
 
@@ -49,17 +49,17 @@ export async function fetchPublicCatalogItems(
   const { data, error } = await query
   if (error) throw error
 
-  const items: CatalogItem[] = (data ?? []).map((item: any) => ({
-    catalog_id: item.catalog_id,
-    name: item.name,
-    brand: item.brand ?? null,
-    image_main: item.image_main ?? null,
-    pack_size: item.pack_size ?? null,
-    availability: item.availability_text ?? null,
-    supplier_count: item.supplier_count ?? 0,
-    suppliers: item.supplier_names ?? [],
-    best_price: null,
-  }))
+    const items: CatalogItem[] = (data ?? []).map((item: any) => ({
+      catalog_id: item.catalog_id,
+      name: item.name,
+      brand: item.brand ?? null,
+      image_main: item.sample_image_url ?? null,
+      pack_size: item.canonical_pack ?? null,
+      availability: item.availability_text ?? null,
+      supplier_count: item.suppliers_count ?? 0,
+      suppliers: item.supplier_names ?? [],
+      best_price: null,
+    }))
   const nextCursor = items.length ? items[items.length - 1].catalog_id : null
   return { items, nextCursor }
 }
@@ -68,11 +68,11 @@ export async function fetchOrgCatalogItems(
   orgId: string,
   filters: OrgCatalogFilters,
 ): Promise<{ items: CatalogItem[]; nextCursor: string | null }> {
-  let query: any = supabase
-    .rpc('v_org_catalog', { _org: orgId })
-    .select(
-      'catalog_id, name, brand, gtin, image_main, supplier_count, supplier_names, best_price, currency',
-    )
+    let query: any = supabase
+      .rpc('v_org_catalog', { _org: orgId })
+      .select(
+        'catalog_id, name, brand, gtin, sample_image_url, canonical_pack, suppliers_count, supplier_names, best_price, currency',
+      )
     .order('catalog_id', { ascending: true })
     .limit(50)
 
@@ -84,18 +84,18 @@ export async function fetchOrgCatalogItems(
   const { data, error } = await query
   if (error) throw error
 
-  const items: CatalogItem[] = (data ?? []).map((item: any) => ({
-    catalog_id: item.catalog_id,
-    name: item.name,
-    brand: item.brand ?? null,
-    image_main: item.image_main ?? null,
-    pack_size: null,
-    availability: null,
-    supplier_count: item.supplier_count ?? 0,
-    suppliers: item.supplier_names ?? [],
-    best_price: item.best_price ?? null,
-    currency: item.currency ?? null,
-  }))
+    const items: CatalogItem[] = (data ?? []).map((item: any) => ({
+      catalog_id: item.catalog_id,
+      name: item.name,
+      brand: item.brand ?? null,
+      image_main: item.sample_image_url ?? null,
+      pack_size: item.canonical_pack ?? null,
+      availability: null,
+      supplier_count: item.suppliers_count ?? 0,
+      suppliers: item.supplier_names ?? [],
+      best_price: item.best_price ?? null,
+      currency: item.currency ?? null,
+    }))
   const nextCursor = items.length ? items[items.length - 1].catalog_id : null
   return { items, nextCursor }
 }
