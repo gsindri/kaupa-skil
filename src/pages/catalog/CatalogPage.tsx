@@ -149,13 +149,6 @@ export default function CatalogPage() {
         </Alert>
       )}
 
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <Input
-          placeholder="Search products"
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          className="max-w-xs"
-        />
         <ViewToggle value={view} onChange={setView} />
       </div>
 
