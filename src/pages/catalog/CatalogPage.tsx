@@ -9,8 +9,9 @@ import { LayoutGrid, Table as TableIcon, AlertCircle } from 'lucide-react'
 import { useAuth } from '@/contexts/useAuth'
 import { useCatalogProducts } from '@/hooks/useCatalogProducts'
 import { useOrgCatalog } from '@/hooks/useOrgCatalog'
-import { CatalogGrid } from '@/components/catalog/CatalogGrid'
 import { CatalogTable } from '@/components/catalog/CatalogTable'
+import { ProductCard } from '@/components/catalog/ProductCard'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   logSearch,
   logFilter,
@@ -32,6 +33,7 @@ export default function CatalogPage() {
   const [products, setProducts] = useState<any[]>([])
   const lastCursor = useRef<string | null>(null)
   const [selected, setSelected] = useState<string[]>([])
+  const [density, setDensity] = useState<'comfortable' | 'compact'>('comfortable')
 
   const publicQuery = useCatalogProducts({ search, brand, cursor })
   const orgQuery = useOrgCatalog(orgId, { search, brand, onlyWithPrice, cursor })
@@ -172,6 +174,22 @@ export default function CatalogPage() {
             <TableIcon className="h-4 w-4" />
           </ToggleGroupItem>
         </ToggleGroup>
+        {view === 'grid' && (
+          <ToggleGroup
+            type="single"
+            value={density}
+            onValueChange={v =>
+              setDensity((v as 'comfortable' | 'compact') || 'comfortable')
+            }
+          >
+            <ToggleGroupItem value="comfortable" aria-label="Comfortable density">
+              Comfort
+            </ToggleGroupItem>
+            <ToggleGroupItem value="compact" aria-label="Compact density">
+              Compact
+            </ToggleGroupItem>
+          </ToggleGroup>
+        )}
       </div>
       {(publicError || orgError) && (
         <Alert variant="destructive">
@@ -193,12 +211,29 @@ export default function CatalogPage() {
         )}
         {products.length > 0 &&
           (view === 'grid' ? (
-            <CatalogGrid
-              products={products}
-              selected={selected}
-              onSelect={toggleSelect}
-              showPrice={!!orgId}
-            />
+            <div
+              className="grid gap-4"
+              style={{ gridTemplateColumns: 'repeat(auto-fill,minmax(220px,1fr))' }}
+            >
+              {products.map(product => {
+                const id = product.catalog_id
+                const isSelected = selected.includes(id)
+                return (
+                  <div key={id} className="relative">
+                    <ProductCard
+                      product={product}
+                      showPrice={!!orgId}
+                      density={density}
+                    />
+                    <Checkbox
+                      checked={isSelected}
+                      onCheckedChange={() => toggleSelect(id)}
+                      className="absolute top-2 left-2"
+                    />
+                  </div>
+                )
+              })}
+            </div>
           ) : (
             <CatalogTable
               products={products}
