@@ -216,6 +216,7 @@ export default function CatalogPage() {
                       density={density}
                     />
                     <Checkbox
+                      aria-label={`Select ${product.name}`}
                       checked={isSelected}
                       onCheckedChange={() => toggleSelect(id)}
                       className="absolute top-2 left-2"
