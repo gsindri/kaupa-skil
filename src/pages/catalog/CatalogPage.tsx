@@ -10,6 +10,7 @@ import { ProductCard } from '@/components/catalog/ProductCard'
 import { Checkbox } from '@/components/ui/checkbox'
 import { logFilter, logFacetInteraction } from '@/lib/analytics'
 import { AnalyticsTracker } from '@/components/quick/AnalyticsTrackerUtils'
+import { ViewToggle } from '@/components/place-order/ViewToggle'
 
 export default function CatalogPage() {
   const { profile } = useAuth()
@@ -17,7 +18,7 @@ export default function CatalogPage() {
 
   const [brand, setBrand] = useState('')
   const [onlyWithPrice, setOnlyWithPrice] = useState(false)
-  const [view, setView] = useState<'grid' | 'table'>('grid')
+  const [view, setView] = useState<'grid' | 'list'>('grid')
   const [cursor, setCursor] = useState<string | null>(null)
   const [nextCursor, setNextCursor] = useState<string | null>(null)
   const [products, setProducts] = useState<any[]>([])
@@ -123,6 +124,10 @@ export default function CatalogPage() {
           <AlertDescription>{String(publicError || orgError)}</AlertDescription>
         </Alert>
       )}
+
+      <div className="flex justify-end">
+        <ViewToggle value={view} onChange={setView} />
+      </div>
 
       <div className="min-h-[200px]">
         {products.length === 0 && (publicQuery.isFetching || orgQuery.isFetching) && (
