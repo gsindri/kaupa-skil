@@ -153,67 +153,6 @@ export default function CatalogPage() {
             value={search}
             onChange={e => {
               setCursor(null)
-              setSearch(e.target.value)
-            }}
-          />
-          <Input
-            placeholder="Brand"
-            className="max-w-xs"
-            value={brand}
-            onChange={e => {
-              setCursor(null)
-              setBrand(e.target.value)
-            }}
-          />
-          {orgId && (
-            <div className="flex items-center space-x-2">
-              <Switch id="with-price" checked={onlyWithPrice} onCheckedChange={val => {
-                setCursor(null)
-                setOnlyWithPrice(val)
-              }} />
-              <Label htmlFor="with-price">Has price</Label>
-            </div>
-          )}
-          <ToggleGroup
-            type="single"
-            value={view}
-            onValueChange={v => setView((v as 'grid' | 'table') || 'grid')}
-          >
-            <ToggleGroupItem value="grid" aria-label="Grid view">
-              <LayoutGrid className="h-4 w-4" />
-            </ToggleGroupItem>
-            <ToggleGroupItem value="table" aria-label="Table view">
-              <TableIcon className="h-4 w-4" />
-            </ToggleGroupItem>
-          </ToggleGroup>
-          {view === 'grid' && (
-            <ToggleGroup
-              type="single"
-              value={density}
-              onValueChange={v =>
-                setDensity((v as 'comfortable' | 'compact') || 'comfortable')
-              }
-            >
-              <ToggleGroupItem value="comfortable" aria-label="Comfortable density">
-                Comfort
-              </ToggleGroupItem>
-              <ToggleGroupItem value="compact" aria-label="Compact density">
-                Compact
-              </ToggleGroupItem>
-            </ToggleGroup>
-          )}
-        </div>
-        <div className="flex items-center justify-between text-sm text-muted-foreground">
-          <span>
-            {products.length} loaded
-            {typeof totalCount === 'number' ? ` of ${totalCount}` : ''}
-          </span>
-          {(search || brand || onlyWithPrice) && (
-            <Button variant="link" onClick={clearFilters} className="px-0">
-              Clear filters
-            </Button>
-          )}
-        </div>
       </div>
       {(publicError || orgError) && (
         <Alert variant="destructive">
