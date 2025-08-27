@@ -17,7 +17,8 @@ import {
   type CatalogItem,
   type CatalogSupplier,
 } from '@/services/catalog'
-import { Skeleton } from '@/components/ui/skeleton'
+import { LazyImage } from '@/components/ui/LazyImage'
+import { getCachedImageUrl } from '@/services/ImageCache'
 import { cn } from '@/lib/utils'
 
 interface ProductCardProps {
@@ -51,8 +52,6 @@ export function ProductCard({
       : 'secondary'
     : 'secondary'
 
-  const [imgLoaded, setImgLoaded] = useState(false)
-
   return (
     <Card data-testid="product-card">
       <CardContent
@@ -60,25 +59,17 @@ export function ProductCard({
           density === 'compact' ? 'space-y-1 p-2' : 'space-y-2 p-4',
         )}
       >
-        <div className="relative w-full">
-          <Skeleton
-            className={cn('aspect-square w-full', imgLoaded && 'hidden')}
+        {product.image_main && (
+          <LazyImage
+            src={getCachedImageUrl(product.image_main)}
+            alt={product.name}
+            loading="lazy"
+            width={200}
+            height={200}
+            className="aspect-square w-full"
+            imgClassName="rounded object-cover"
           />
-          {product.image_main && (
-            <img
-              src={product.image_main}
-              alt={product.name}
-              loading="lazy"
-              width={200}
-              height={200}
-              onLoad={() => setImgLoaded(true)}
-              className={cn(
-                'aspect-square w-full rounded object-cover',
-                !imgLoaded && 'hidden',
-              )}
-            />
-          )}
-        </div>
+        )}
         <h3 className={cn('font-medium', density === 'compact' && 'text-sm')}>
           {product.name}
         </h3>
