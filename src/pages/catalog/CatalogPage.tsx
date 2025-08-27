@@ -9,6 +9,8 @@ import { useOrgCatalog } from '@/hooks/useOrgCatalog'
 import { CatalogTable } from '@/components/catalog/CatalogTable'
 import { ProductCard } from '@/components/catalog/ProductCard'
 import { Checkbox } from '@/components/ui/checkbox'
+import CatalogFiltersPanel from '@/components/catalog/CatalogFiltersPanel'
+import type { FacetFilters } from '@/services/catalog'
 import {
   logFilter,
   logFacetInteraction,
@@ -22,8 +24,7 @@ export default function CatalogPage() {
   const { profile } = useAuth()
   const orgId = profile?.tenant_id || ''
 
-  const [search, setSearch] = useState('')
-  const [brand, setBrand] = useState('')
+  const [filters, setFilters] = useState<FacetFilters>({})
   const [onlyWithPrice, setOnlyWithPrice] = useState(false)
   const [view, setView] = useState<'grid' | 'list'>('grid')
   const [cursor, setCursor] = useState<string | null>(null)
@@ -33,8 +34,8 @@ export default function CatalogPage() {
   const [selected, setSelected] = useState<string[]>([])
   const [density, setDensity] = useState<'comfortable' | 'compact'>('comfortable')
 
-  const publicQuery = useCatalogProducts({ search, brand, cursor })
-  const orgQuery = useOrgCatalog(orgId, { search, brand, onlyWithPrice, cursor })
+  const publicQuery = useCatalogProducts({ ...filters, cursor })
+  const orgQuery = useOrgCatalog(orgId, { ...filters, onlyWithPrice, cursor })
 
   const {
     data: publicData,
@@ -52,16 +53,26 @@ export default function CatalogPage() {
   } = orgQuery
 
   useEffect(() => {
-    logFilter({ brand, onlyWithPrice })
-  }, [brand, onlyWithPrice])
+    logFilter({ ...filters, onlyWithPrice })
+  }, [filters, onlyWithPrice])
 
   useEffect(() => {
-    if (search) logSearch(search)
-  }, [search])
+    if (filters.search) logSearch(filters.search)
+  }, [filters.search])
 
   useEffect(() => {
-    if (brand) logFacetInteraction('brand', brand)
-  }, [brand])
+    if (filters.brand) logFacetInteraction('brand', filters.brand)
+    if (filters.category) logFacetInteraction('category', filters.category)
+    if (filters.supplier) logFacetInteraction('supplier', filters.supplier)
+    if (filters.availability) logFacetInteraction('availability', filters.availability)
+    if (filters.packSizeRange) logFacetInteraction('packSizeRange', filters.packSizeRange)
+  }, [
+    filters.brand,
+    filters.category,
+    filters.supplier,
+    filters.availability,
+    filters.packSizeRange,
+  ])
 
   useEffect(() => {
     logFacetInteraction('onlyWithPrice', onlyWithPrice)
@@ -110,14 +121,13 @@ export default function CatalogPage() {
 
   useEffect(() => {
     if ((orgQuery.isFetched || publicQuery.isFetched) && products.length === 0) {
-      logZeroResults(search, { brand, onlyWithPrice })
+      logZeroResults(filters.search ?? '', { ...filters, onlyWithPrice })
     }
   }, [
     orgQuery.isFetched,
     publicQuery.isFetched,
     products.length,
-    search,
-    brand,
+    filters,
     onlyWithPrice,
   ])
 
@@ -154,84 +164,91 @@ export default function CatalogPage() {
       <div className="flex flex-wrap items-end gap-2">
         <Input
           placeholder="Search products..."
-          value={search}
-          onChange={e => setSearch(e.target.value)}
+          value={filters.search ?? ''}
+          onChange={e => setFilters(prev => ({ ...prev, search: e.target.value }))}
           className="max-w-xs"
         />
         <Input
           placeholder="Brand"
-          value={brand}
-          onChange={e => setBrand(e.target.value)}
+          value={filters.brand ?? ''}
+          onChange={e => setFilters(prev => ({ ...prev, brand: e.target.value }))}
           className="max-w-xs"
         />
-        {orgId && (
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="only-with-price"
-              checked={onlyWithPrice}
-              onCheckedChange={checked => setOnlyWithPrice(!!checked)}
-            />
-            <label htmlFor="only-with-price" className="text-sm">
-              Only with price
-            </label>
-          </div>
-        )}
-        <Button
-          variant="outline"
-          onClick={() => {
-            setSearch('')
-            setBrand('')
-            setOnlyWithPrice(false)
-          }}
-        >
-          Clear Filters
-        </Button>
       </div>
 
-      <div className="min-h-[200px]">
-        {products.length === 0 && (publicQuery.isFetching || orgQuery.isFetching) && (
-          <div className="flex h-[200px] items-center justify-center bg-muted/20">
-            Loading products...
-          </div>
-        )}
-        {products.length === 0 && !(publicQuery.isFetching || orgQuery.isFetching) && (
-          <div className="flex h-[200px] items-center justify-center bg-muted/20">
-            No products
-          </div>
-        )}
-        {products.length > 0 &&
-          (view === 'grid' ? (
-            <div
-              className="grid gap-4"
-              style={{ gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))' }}
-            >
-              {products.map(product => {
-                const id = product.catalog_id
-                const isSelected = selected.includes(id)
-                return (
-                  <div key={id} className="relative">
-                    <ProductCard
-                      product={product}
-                      showPrice={!!orgId}
-                      density={density}
-                    />
-                    <Checkbox
-                      checked={isSelected}
-                      onCheckedChange={() => toggleSelect(id)}
-                      className="absolute top-2 left-2"
-                    />
-                  </div>
-                )
-              })}
+      <div className="flex gap-6">
+        <div className="w-64 shrink-0 space-y-4">
+          <CatalogFiltersPanel
+            filters={filters}
+            onChange={f => setFilters(prev => ({ ...prev, ...f }))}
+          />
+          {orgId && (
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="only-with-price"
+                checked={onlyWithPrice}
+                onCheckedChange={checked => setOnlyWithPrice(!!checked)}
+              />
+              <label htmlFor="only-with-price" className="text-sm">
+                Only with price
+              </label>
             </div>
-          ) : (
-            <CatalogTable
-              products={products}
-              selected={selected}
-              onSelect={toggleSelect}
-              onSelectAll={handleSelectAll}
-            />
-          ))}
+          )}
+          <Button
+            variant="outline"
+            onClick={() => {
+              setFilters({})
+              setOnlyWithPrice(false)
+            }}
+          >
+            Clear Filters
+          </Button>
+        </div>
+        <div className="flex-1 min-h-[200px]">
+          {products.length === 0 && (publicQuery.isFetching || orgQuery.isFetching) && (
+            <div className="flex h-[200px] items-center justify-center bg-muted/20">
+              Loading products...
+            </div>
+          )}
+          {products.length === 0 && !(publicQuery.isFetching || orgQuery.isFetching) && (
+            <div className="flex h-[200px] items-center justify-center bg-muted/20">
+              No products
+            </div>
+          )}
+          {products.length > 0 &&
+            (view === 'grid' ? (
+              <div
+                className="grid gap-4"
+                style={{ gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))' }}
+              >
+                {products.map(product => {
+                  const id = product.catalog_id
+                  const isSelected = selected.includes(id)
+                  return (
+                    <div key={id} className="relative">
+                      <ProductCard
+                        product={product}
+                        showPrice={!!orgId}
+                        density={density}
+                      />
+                      <Checkbox
+                        checked={isSelected}
+                        onCheckedChange={() => toggleSelect(id)}
+                        className="absolute top-2 left-2"
+                      />
+                    </div>
+                  )
+                })}
+              </div>
+            ) : (
+              <CatalogTable
+                products={products}
+                selected={selected}
+                onSelect={toggleSelect}
+                onSelectAll={handleSelectAll}
+              />
+            ))}
+        </div>
       </div>
 
       {nextCursor && (
