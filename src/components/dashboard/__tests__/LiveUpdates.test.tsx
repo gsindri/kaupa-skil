@@ -1,4 +1,5 @@
-import { render, screen } from '@testing-library/react'
+import { render } from '@testing-library/react'
+import { screen } from '@testing-library/dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { vi, type Mock } from 'vitest'
 
