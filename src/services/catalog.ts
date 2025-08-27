@@ -28,6 +28,7 @@ export interface CatalogItem {
   supplier_count: number
   suppliers: string[]
   best_price: number | null
+  currency: string | null
 }
 
 export async function fetchPublicCatalogItems(
@@ -93,6 +94,7 @@ export async function fetchOrgCatalogItems(
     supplier_count: item.supplier_count ?? 0,
     suppliers: item.supplier_names ?? [],
     best_price: item.best_price ?? null,
+    currency: item.currency ?? null,
   }))
   const nextCursor = items.length ? items[items.length - 1].catalog_id : null
   return { items, nextCursor }
@@ -158,6 +160,7 @@ export interface CatalogSupplier {
   pack_size: string | null
   availability: string | null
   price: number | null
+  currency: string | null
 }
 
 export async function fetchCatalogItemSuppliers(
@@ -167,7 +170,7 @@ export async function fetchCatalogItemSuppliers(
   const { data, error } = await supabase
     .from('supplier_product')
     .select(
-      'supplier_id, pack_size, availability_text, suppliers(name), offer(price, org_id)'
+      'supplier_id, pack_size, availability_text, suppliers(name), offer(price, currency, org_id)'
     )
     .eq('catalog_id', catalogId)
 
@@ -188,6 +191,7 @@ export async function fetchCatalogItemSuppliers(
       pack_size: item.pack_size ?? null,
       availability: item.availability_text ?? null,
       price: offer?.price ?? null,
+      currency: offer?.currency ?? null,
     }
   })
 }
