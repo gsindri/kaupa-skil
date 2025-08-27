@@ -73,7 +73,6 @@ export async function fetchOrgCatalogItems(
     .rpc('v_org_catalog', { _org: orgId })
     .select(
       'catalog_id, name, brand, gtin, sample_image_url, canonical_pack, suppliers_count, supplier_names, best_price, currency',
-      { count: 'exact' },
     )
     .order('catalog_id', { ascending: true })
     .limit(50)
@@ -83,7 +82,7 @@ export async function fetchOrgCatalogItems(
   if (filters.onlyWithPrice) query = query.not('best_price', 'is', null)
   if (filters.cursor) query = query.gt('catalog_id', filters.cursor)
 
-  const { data, error, count } = await query
+  const { data, error } = await query
   if (error) throw error
 
   const items: CatalogItem[] = (data ?? []).map((item: any) => ({
@@ -99,7 +98,7 @@ export async function fetchOrgCatalogItems(
     currency: item.currency ?? null,
   }))
   const nextCursor = items.length ? items[items.length - 1].catalog_id : null
-  return { items, nextCursor, total: count ?? 0 }
+  return { items, nextCursor, total: items.length }
 }
 
 export interface FacetCount {
