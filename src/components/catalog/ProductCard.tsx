@@ -12,8 +12,18 @@ import {
 import { useSupplierConnections } from '@/hooks/useSupplierConnections'
 import { useAuth } from '@/contexts/useAuth'
 import { useQuery } from '@tanstack/react-query'
+import {
+  fetchCatalogItemSuppliers,
+  type CatalogItem,
+  type CatalogSupplier,
+} from '@/services/catalog'
 
-export function ProductCard({ product }: { product: CatalogItem }) {
+interface ProductCardProps {
+  product: CatalogItem
+  showPrice?: boolean
+}
+
+export function ProductCard({ product, showPrice = true }: ProductCardProps) {
   const { suppliers: connectedSuppliers } = useSupplierConnections()
   const { profile } = useAuth()
   const orgId = profile?.tenant_id || null
@@ -78,13 +88,13 @@ export function ProductCard({ product }: { product: CatalogItem }) {
                   >
                     <div>
                       <p className="font-medium">{supplier.name}</p>
-              {isConnected && supplier.price != null ? (
-                <p className="text-sm">
-                  {supplier.price} {supplier.currency ?? ''}
-                </p>
-              ) : (
-                <p className="text-sm text-muted-foreground">—</p>
-              )}
+                      {isConnected && supplier.price != null ? (
+                        <p className="text-sm">
+                          {supplier.price} {supplier.currency ?? ''}
+                        </p>
+                      ) : (
+                        <p className="text-sm text-muted-foreground">—</p>
+                      )}
                     </div>
                     {!isConnected && <Button size="sm">Connect</Button>}
                   </div>
@@ -93,18 +103,20 @@ export function ProductCard({ product }: { product: CatalogItem }) {
             </div>
           </SheetContent>
         </Sheet>
-        {hasConnection ? (
-          product.best_price != null ? (
-            <div data-testid="price-badge" className="text-sm font-medium">
-              from {product.best_price} {product.currency ?? ''}
-            </div>
+        {showPrice && (
+          hasConnection ? (
+            product.best_price != null ? (
+              <div data-testid="price-badge" className="text-sm font-medium">
+                from {product.best_price} {product.currency ?? ''}
+              </div>
+            ) : (
+              <div className="text-sm text-muted-foreground">—</div>
+            )
           ) : (
-            <div className="text-sm text-muted-foreground">—</div>
+            <div className="text-sm text-muted-foreground">
+              Connect supplier to see price
+            </div>
           )
-        ) : (
-          <div className="text-sm text-muted-foreground">
-            Connect supplier to see price
-          </div>
         )}
       </CardContent>
     </Card>

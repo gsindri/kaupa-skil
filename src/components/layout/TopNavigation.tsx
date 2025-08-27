@@ -139,7 +139,6 @@ export function TopNavigation() {
               sideOffset={8}
               collisionPadding={8}
               sticky="partial"
-              strategy="fixed"
               className="min-w-[200px]"
             >
               <DropdownMenuItem>Keyboard Shortcuts</DropdownMenuItem>
@@ -173,7 +172,6 @@ export function TopNavigation() {
               sideOffset={8}
               collisionPadding={8}
               sticky="partial"
-              strategy="fixed"
               className="min-w-[200px]"
             >
               <DropdownMenuItem>
