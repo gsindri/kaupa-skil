@@ -141,17 +141,16 @@ export default function CatalogPage() {
   }
 
   return (
-    <div className="space-y-4 p-4">
+    <div className="w-full px-4">
       {(publicError || orgError) && (
-        <Alert variant="destructive">
+        <Alert variant="destructive" className="mb-4">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>{String(publicError || orgError)}</AlertDescription>
         </Alert>
       )}
 
-      <ViewToggle value={view} onChange={setView} />
-
-      <div className="flex flex-wrap items-end gap-2">
+      <div className="sticky top-0 z-10 bg-background flex flex-wrap items-end gap-2 py-4">
+        <ViewToggle value={view} onChange={setView} />
         <Input
           placeholder="Search products..."
           value={search}
@@ -188,12 +187,13 @@ export default function CatalogPage() {
         </Button>
       </div>
 
-      <div className="min-h-[200px]">
-        {products.length === 0 && (publicQuery.isFetching || orgQuery.isFetching) && (
-          <div className="flex h-[200px] items-center justify-center bg-muted/20">
-            Loading products...
-          </div>
-        )}
+      <div className="space-y-4 mt-4">
+        <div className="min-h-[200px] w-full">
+          {products.length === 0 && (publicQuery.isFetching || orgQuery.isFetching) && (
+            <div className="flex h-[200px] items-center justify-center bg-muted/20">
+              Loading products...
+            </div>
+          )}
         {products.length === 0 && !(publicQuery.isFetching || orgQuery.isFetching) && (
           <div className="flex h-[200px] items-center justify-center bg-muted/20">
             No products
@@ -202,7 +202,7 @@ export default function CatalogPage() {
         {products.length > 0 &&
           (view === 'grid' ? (
             <div
-              className="grid gap-4"
+              className="grid w-full gap-4"
               style={{ gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))' }}
             >
               {products.map(product => {
@@ -225,20 +225,23 @@ export default function CatalogPage() {
               })}
             </div>
           ) : (
-            <CatalogTable
-              products={products}
-              selected={selected}
-              onSelect={toggleSelect}
-              onSelectAll={handleSelectAll}
-            />
+            <div className="w-full">
+              <CatalogTable
+                products={products}
+                selected={selected}
+                onSelect={toggleSelect}
+                onSelectAll={handleSelectAll}
+              />
+            </div>
           ))}
-      </div>
+        </div>
 
-      {nextCursor && (
-        <Button onClick={loadMore} disabled={publicQuery.isFetching || orgQuery.isFetching}>
-          Load more
-        </Button>
-      )}
+        {nextCursor && (
+          <Button onClick={loadMore} disabled={publicQuery.isFetching || orgQuery.isFetching}>
+            Load more
+          </Button>
+        )}
+      </div>
     </div>
   )
 }
