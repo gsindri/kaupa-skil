@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-react'
 import { useAuth } from '@/contexts/useAuth'
@@ -8,7 +9,12 @@ import { useOrgCatalog } from '@/hooks/useOrgCatalog'
 import { CatalogTable } from '@/components/catalog/CatalogTable'
 import { ProductCard } from '@/components/catalog/ProductCard'
 import { Checkbox } from '@/components/ui/checkbox'
-import { logFilter, logFacetInteraction } from '@/lib/analytics'
+import {
+  logFilter,
+  logFacetInteraction,
+  logSearch,
+  logZeroResults,
+} from '@/lib/analytics'
 import { AnalyticsTracker } from '@/components/quick/AnalyticsTrackerUtils'
 import { ViewToggle } from '@/components/place-order/ViewToggle'
 
@@ -16,6 +22,7 @@ export default function CatalogPage() {
   const { profile } = useAuth()
   const orgId = profile?.tenant_id || ''
 
+  const [search, setSearch] = useState('')
   const [brand, setBrand] = useState('')
   const [onlyWithPrice, setOnlyWithPrice] = useState(false)
   const [view, setView] = useState<'grid' | 'list'>('grid')
@@ -26,8 +33,8 @@ export default function CatalogPage() {
   const [selected, setSelected] = useState<string[]>([])
   const [density, setDensity] = useState<'comfortable' | 'compact'>('comfortable')
 
-  const publicQuery = useCatalogProducts({ brand, cursor })
-  const orgQuery = useOrgCatalog(orgId, { brand, onlyWithPrice, cursor })
+  const publicQuery = useCatalogProducts({ search, brand, cursor })
+  const orgQuery = useOrgCatalog(orgId, { search, brand, onlyWithPrice, cursor })
 
   const {
     data: publicData,
@@ -47,6 +54,10 @@ export default function CatalogPage() {
   useEffect(() => {
     logFilter({ brand, onlyWithPrice })
   }, [brand, onlyWithPrice])
+
+  useEffect(() => {
+    if (search) logSearch(search)
+  }, [search])
 
   useEffect(() => {
     if (brand) logFacetInteraction('brand', brand)
@@ -97,6 +108,19 @@ export default function CatalogPage() {
     cursor,
   ])
 
+  useEffect(() => {
+    if ((orgQuery.isFetched || publicQuery.isFetched) && products.length === 0) {
+      logZeroResults(search, { brand, onlyWithPrice })
+    }
+  }, [
+    orgQuery.isFetched,
+    publicQuery.isFetched,
+    products.length,
+    search,
+    brand,
+    onlyWithPrice,
+  ])
+
 
   const loadMore = () => {
     if (nextCursor) setCursor(nextCursor)
@@ -125,7 +149,6 @@ export default function CatalogPage() {
         </Alert>
       )}
 
-      <div className="flex justify-end">
         <ViewToggle value={view} onChange={setView} />
       </div>
 
