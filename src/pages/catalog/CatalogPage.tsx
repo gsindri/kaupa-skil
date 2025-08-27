@@ -151,17 +151,16 @@ export default function CatalogPage() {
   const loadingMore = isLoading && cursor !== null
 
   return (
-    <div className="space-y-4 p-4">
+    <div className="w-full px-4">
       {(publicError || orgError) && (
-        <Alert variant="destructive">
+        <Alert variant="destructive" className="mb-4">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>{String(publicError || orgError)}</AlertDescription>
         </Alert>
       )}
 
-      <ViewToggle value={view} onChange={setView} />
-
-      <div className="flex flex-wrap items-end gap-2">
+      <div className="sticky top-0 z-10 bg-background flex flex-wrap items-end gap-2 py-4">
+        <ViewToggle value={view} onChange={setView} />
         <Input
           placeholder="Search products..."
           value={search}
@@ -202,14 +201,6 @@ export default function CatalogPage() {
           </div>
         )}
       </div>
-
-      <div className="min-h-[200px]">
-        {products.length === 0 && isLoading && (
-          <div className="flex h-[200px] items-center justify-center bg-muted/20">
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-          </div>
-        )}
-        {products.length === 0 && !isLoading && (
           <div className="flex h-[200px] items-center justify-center bg-muted/20">
             No products
           </div>
@@ -217,7 +208,7 @@ export default function CatalogPage() {
         {products.length > 0 &&
           (view === 'grid' ? (
             <div
-              className="grid gap-4"
+              className="grid w-full gap-4"
               style={{ gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))' }}
             >
               {products.map(product => {
@@ -240,26 +231,16 @@ export default function CatalogPage() {
               })}
             </div>
           ) : (
-            <CatalogTable
-              products={products}
-              selected={selected}
-              onSelect={toggleSelect}
-              onSelectAll={handleSelectAll}
-            />
+            <div className="w-full">
+              <CatalogTable
+                products={products}
+                selected={selected}
+                onSelect={toggleSelect}
+                onSelectAll={handleSelectAll}
+              />
+            </div>
           ))}
-      </div>
-
-      {nextCursor && (
-        <Button onClick={loadMore} disabled={isLoading}>
-          {loadingMore ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Loading...
-            </>
-          ) : (
-            'Load more'
-          )}
-        </Button>
-      )}
+        </div>
     </div>
   )
 }
