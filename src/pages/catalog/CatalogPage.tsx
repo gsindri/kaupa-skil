@@ -1,4 +1,9 @@
-import { useEffect, useRef, useState } from 'react'
+import {
+  useEffect,
+  useRef,
+  useState,
+  type KeyboardEvent,
+} from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -6,6 +11,8 @@ import { AlertCircle, Loader2 } from 'lucide-react'
 import { useAuth } from '@/contexts/useAuth'
 import { useCatalogProducts } from '@/hooks/useCatalogProducts'
 import { useOrgCatalog } from '@/hooks/useOrgCatalog'
+import { useDebounce } from '@/hooks/useDebounce'
+import { useCatalogSearchSuggestions } from '@/hooks/useCatalogSearchSuggestions'
 import { CatalogTable } from '@/components/catalog/CatalogTable'
 import { ProductCard } from '@/components/catalog/ProductCard'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -19,6 +26,7 @@ import {
 } from '@/lib/analytics'
 import { AnalyticsTracker } from '@/components/quick/AnalyticsTrackerUtils'
 import { ViewToggle } from '@/components/place-order/ViewToggle'
+import { cn } from '@/lib/utils'
 
 export default function CatalogPage() {
   const { profile } = useAuth()
@@ -33,9 +41,20 @@ export default function CatalogPage() {
   const lastCursor = useRef<string | null>(null)
   const [selected, setSelected] = useState<string[]>([])
   const [density, setDensity] = useState<'comfortable' | 'compact'>('comfortable')
-
-  const publicQuery = useCatalogProducts({ ...filters, cursor })
-  const orgQuery = useOrgCatalog(orgId, { ...filters, onlyWithPrice, cursor })
+  const debouncedSearch = useDebounce(search, 300)
+  const publicQuery = useCatalogProducts({ search: debouncedSearch, brand, cursor })
+  const orgQuery = useOrgCatalog(orgId, {
+    search: debouncedSearch,
+    brand,
+    onlyWithPrice,
+    cursor,
+  })
+  const { data: suggestions = [] } = useCatalogSearchSuggestions(
+    debouncedSearch,
+    orgId,
+  )
+  const [showSuggestions, setShowSuggestions] = useState(false)
+  const [activeSuggestion, setActiveSuggestion] = useState(0)
 
   const {
     data: publicData,
@@ -57,8 +76,6 @@ export default function CatalogPage() {
   }, [filters, onlyWithPrice])
 
   useEffect(() => {
-    if (filters.search) logSearch(filters.search)
-  }, [filters.search])
 
   useEffect(() => {
     if (filters.brand) logFacetInteraction('brand', filters.brand)
@@ -121,13 +138,11 @@ export default function CatalogPage() {
 
   useEffect(() => {
     if ((orgQuery.isFetched || publicQuery.isFetched) && products.length === 0) {
-      logZeroResults(filters.search ?? '', { ...filters, onlyWithPrice })
     }
   }, [
     orgQuery.isFetched,
     publicQuery.isFetched,
     products.length,
-    filters,
     onlyWithPrice,
   ])
 
@@ -168,15 +183,6 @@ export default function CatalogPage() {
           <AlertDescription>{String(publicError || orgError)}</AlertDescription>
         </Alert>
       )}
-
-      <div className="sticky top-0 z-10 bg-background flex flex-wrap items-end gap-2 py-4">
-        <ViewToggle value={view} onChange={setView} />
-        <Input
-          placeholder="Search products..."
-          value={filters.search ?? ''}
-          onChange={e => setFilters(prev => ({ ...prev, search: e.target.value }))}
-          className="max-w-xs"
-        />
         <Input
           placeholder="Brand"
           value={filters.brand ?? ''}
