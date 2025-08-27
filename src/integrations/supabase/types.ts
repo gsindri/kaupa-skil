@@ -440,6 +440,54 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      },
+      supplier_connections: {
+        Row: {
+          id: string
+          tenant_id: string | null
+          supplier_id: string
+          status: string
+          last_sync: string | null
+          next_run: string | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          tenant_id?: string | null
+          supplier_id: string
+          status?: string
+          last_sync?: string | null
+          next_run?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          tenant_id?: string | null
+          supplier_id?: string
+          status?: string
+          last_sync?: string | null
+          next_run?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_connections_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supplier_connections_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
