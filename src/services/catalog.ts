@@ -70,10 +70,11 @@ export async function fetchOrgCatalogItems(
   filters: OrgCatalogFilters,
 ): Promise<{ items: CatalogItem[]; nextCursor: string | null; total: number }> {
   let query: any = supabase
-    .rpc('v_org_catalog', { _org: orgId })
+    .from('v_org_catalog')
     .select(
       'catalog_id, name, brand, gtin, sample_image_url, canonical_pack, suppliers_count, supplier_names, best_price, currency',
     )
+    .eq('_org', orgId)
     .order('catalog_id', { ascending: true })
     .limit(50)
 
@@ -109,8 +110,9 @@ export async function fetchCatalogSuggestions(
   let query: any
   if (orgId) {
     query = supabase
-      .rpc('v_org_catalog', { _org: orgId })
+      .from('v_org_catalog')
       .select('name')
+      .eq('_org', orgId)
       .ilike('name', `%${search}%`)
       .order('name', { ascending: true })
       .limit(5)
