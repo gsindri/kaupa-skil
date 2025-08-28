@@ -3,12 +3,14 @@ interface AnalyticsEvent {
   properties?: Record<string, any>
 }
 
+const ANALYTICS_DEBUG = (import.meta as any).env?.VITE_ANALYTICS_DEBUG === 'true'
+
 export class AnalyticsTracker {
   private static events: AnalyticsEvent[] = []
 
   static track(event: string, properties?: Record<string, any>) {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('Analytics:', event, properties)
+    if (ANALYTICS_DEBUG) {
+      console.debug('Analytics:', event, properties)
     }
 
     this.events.push({ event, properties })
