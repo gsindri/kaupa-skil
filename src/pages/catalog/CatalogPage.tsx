@@ -19,6 +19,7 @@ import {
 } from '@/lib/analytics'
 import { AnalyticsTracker } from '@/components/quick/AnalyticsTrackerUtils'
 import { ViewToggle } from '@/components/place-order/ViewToggle'
+import { LayoutDebugger } from '@/components/debug/LayoutDebugger'
 
 export default function CatalogPage() {
   const { profile } = useAuth()
@@ -177,9 +178,11 @@ export default function CatalogPage() {
   const loadingMore = isLoading && cursor !== null
 
   return (
-    <div className="w-full min-w-0 overflow-hidden">
+    <div className="w-full min-w-0 overflow-hidden bg-red-50">
+      <LayoutDebugger show={true} />
+      
       {/* Control bar */}
-      <div className="pb-4 space-y-4 px-4 lg:px-6">
+      <div className="pb-4 space-y-4 px-4 lg:px-6 bg-blue-50">
         {(publicError || orgError) && (
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
@@ -213,7 +216,7 @@ export default function CatalogPage() {
       </div>
 
       {/* Content area */}
-      <div className="w-full min-w-0">
+      <div className="w-full min-w-0 bg-green-50">
         {view === 'list' ? (
           <div className="px-4 lg:px-6">
             <CatalogTable

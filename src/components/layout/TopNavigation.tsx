@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { HelpCircle, ChevronDown } from 'lucide-react'
@@ -85,7 +86,7 @@ export function TopNavigation() {
         sidebarOpen ? 'ease-in-out' : 'ease-out'
       )}
     >
-      <div className="grid grid-cols-[auto,1fr,auto] items-center gap-3 max-w-[var(--page-max)] mx-auto px-4 h-full">
+      <div className="grid grid-cols-[auto,1fr,auto] items-center gap-3 w-full mx-auto px-4 h-full">
         <div className="flex items-center gap-2 min-w-0">
           <Button
             variant="ghost"
