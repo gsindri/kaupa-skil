@@ -104,7 +104,7 @@ export function TopNavigation() {
               'flex items-center transition-[opacity,transform] duration-150 will-change-[transform,opacity] motion-reduce:transition-none motion-reduce:transform-none',
               sidebarOpen
                 ? 'opacity-0 translate-y-1 scale-95 pointer-events-none ease-out'
-                : 'opacity-100 translate-y-0 scale-100 delay-[40ms] ease-in-out'
+                : 'opacity-100 translate-y-0 scale-100 transition-delay-[40ms] ease-in-out'
             )}
             aria-label="Deilda home"
             aria-hidden={sidebarOpen}

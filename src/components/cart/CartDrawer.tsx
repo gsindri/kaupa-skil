@@ -1,5 +1,6 @@
 
 import { Fragment } from 'react'
+import { Link } from 'react-router-dom'
 import { X, Minus, Plus, Trash2, ShoppingCart } from 'lucide-react'
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer'
 import { Button } from '@/components/ui/button'
@@ -53,6 +54,13 @@ export function CartDrawer() {
               <div className="flex flex-col items-center justify-center h-32 text-muted-foreground">
                 <ShoppingCart className="h-8 w-8 mb-2" />
                 <p>Your cart is empty</p>
+                <Link
+                  to="/"
+                  className="mt-2 text-sm text-primary hover:underline"
+                  onClick={() => setIsDrawerOpen(false)}
+                >
+                  Browse Catalog
+                </Link>
               </div>
             ) : (
               <div className="space-y-4">
