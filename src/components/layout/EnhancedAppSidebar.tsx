@@ -1,4 +1,3 @@
-
 import {
   Home,
   TrendingUp,
@@ -98,8 +97,7 @@ export function EnhancedAppSidebar() {
 
   return (
     <nav aria-label="Primary" id="app-sidebar" className="h-full">
-      {/* REMOVED hardcoded w-64 class that was overriding dynamic width */}
-      <Sidebar>
+      <Sidebar className="w-64">
         <SidebarHeader>
           <NavLink
             to="/"

@@ -86,40 +86,31 @@ const Sidebar = React.forwardRef<
         data-variant={variant}
         data-side={side}
       >
-        {/* This is what handles the sidebar gap on desktop - FIXED VERSION */}
+        {/* This is what handles the sidebar gap on desktop */}
         <div
           className={cn(
-            "duration-200 relative h-svh transition-[width] ease-linear bg-transparent",
-            // CRITICAL FIX: Ensure collapsed state actually sets width to 0
-            state === "collapsed" && collapsible === "offcanvas" ? "w-0" : "w-[--sidebar-width]",
+            "duration-200 relative h-svh w-[--sidebar-width] bg-transparent transition-[width] ease-linear",
+            "group-data-[collapsible=offcanvas]:w-0",
             "group-data-[side=right]:rotate-180",
             variant === "floating" || variant === "inset"
-              ? state === "collapsed" ? "w-[calc(var(--sidebar-width-icon)_+_theme(spacing.4))]" : ""
-              : state === "collapsed" ? "w-[--sidebar-width-icon]" : ""
+              ? "group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)_+_theme(spacing.4))]"
+              : "group-data-[collapsible=icon]:w-[--sidebar-width-icon]"
           )}
         />
         <div
           className={cn(
-            "fixed inset-y-0 z-10 hidden h-svh overflow-x-hidden md:flex will-change-[transform,opacity] transition-[left,right,width,opacity,transform] duration-200 motion-reduce:transition-none motion-reduce:transform-none",
+            "fixed inset-y-0 z-10 hidden h-svh w-[--sidebar-width] overflow-x-hidden md:flex will-change-[transform,opacity] transition-[left,right,width,opacity,transform] duration-200 motion-reduce:transition-none motion-reduce:transform-none",
             "group-data-[state=collapsed]:-translate-x-2 group-data-[state=collapsed]:opacity-0 group-data-[state=collapsed]:pointer-events-none group-data-[state=collapsed]:ease-out",
             "group-data-[state=expanded]:translate-x-0 group-data-[state=expanded]:opacity-100 group-data-[state=expanded]:ease-in-out",
             side === "left"
-              ? state === "collapsed" && collapsible === "offcanvas" 
-                ? "left-[calc(var(--sidebar-width)*-1)]" 
-                : "left-0"
-              : state === "collapsed" && collapsible === "offcanvas"
-                ? "right-[calc(var(--sidebar-width)*-1)]"
-                : "right-0",
+              ? "left-0 group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)]"
+              : "right-0 group-data-[collapsible=offcanvas]:right-[calc(var(--sidebar-width)*-1)]",
             // Adjust the padding for floating and inset variants.
             variant === "floating" || variant === "inset"
-              ? "p-2 w-[calc(var(--sidebar-width-icon)_+_theme(spacing.4)_+2px)]"
-              : state === "collapsed" ? "w-[--sidebar-width-icon]" : "w-[--sidebar-width]",
-            variant !== "floating" && variant !== "inset" && "group-data-[side=left]:border-r group-data-[side=right]:border-l border-sidebar-border",
+              ? "p-2 group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)_+_theme(spacing.4)_+2px)]"
+              : "group-data-[collapsible=icon]:w-[--sidebar-width-icon] group-data-[side=left]:border-r group-data-[side=right]:border-l border-sidebar-border",
             className
           )}
-          style={{
-            "--sidebar-width": state === "collapsed" && collapsible === "offcanvas" ? "0px" : SIDEBAR_WIDTH,
-          } as React.CSSProperties}
           {...props}
         >
           <div
