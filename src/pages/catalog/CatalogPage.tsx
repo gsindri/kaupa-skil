@@ -178,8 +178,8 @@ export default function CatalogPage() {
 
   return (
     <div className="w-full">
-      {/* Control bar with padding */}
-      <div className="px-4 sm:px-6 lg:px-8 pb-4 space-y-4">
+      {/* Control bar without horizontal padding */}
+      <div className="pb-4 space-y-4">
         {(publicError || orgError) && (
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
@@ -214,7 +214,7 @@ export default function CatalogPage() {
 
       {/* Content area - full width for grid, padded for table */}
       {view === 'list' ? (
-        <div className="px-4 sm:px-6 lg:px-8">
+        <div>
           <CatalogTable
             products={products}
             selected={selected}
@@ -223,16 +223,9 @@ export default function CatalogPage() {
           />
         </div>
       ) : (
-        <div className="px-2 sm:px-3 lg:px-4">
+        <div>
           <div
-            className="
-              grid gap-2 sm:gap-3 lg:gap-4
-              grid-cols-4
-              sm:grid-cols-5
-              lg:grid-cols-6
-              xl:grid-cols-7
-              2xl:grid-cols-8
-            "
+            className="grid gap-2 sm:gap-3 lg:gap-4 grid-cols-[repeat(auto-fit,minmax(160px,_1fr))]"
           >
             {products.map(p => (
               <ProductCard
@@ -247,7 +240,7 @@ export default function CatalogPage() {
 
       {/* Load more button with padding */}
       {nextCursor && (
-        <div className="flex justify-center px-4 sm:px-6 lg:px-8 pt-4">
+        <div className="flex justify-center pt-4">
           <Button onClick={loadMore} disabled={loadingMore} variant="outline">
             {loadingMore && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Load more
