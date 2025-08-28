@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type SyntheticEvent } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -52,11 +52,26 @@ export function ProductCard({
       : 'secondary'
     : 'secondary'
 
-  const imageSrc = product.image_main
+  const initialImageSrc = product.image_main
     ? /^https?:\/\//i.test(product.image_main)
       ? product.image_main
       : getCachedImageUrl(product.image_main)
     : '/placeholder.svg'
+  const [imageSrc, setImageSrc] = useState(initialImageSrc)
+
+  const handleImageError = (
+    e: SyntheticEvent<HTMLImageElement, Event>,
+  ) => {
+    const failedSrc = e.currentTarget.src
+    const cachedUrl = getCachedImageUrl(failedSrc)
+    if (cachedUrl !== failedSrc) {
+      console.warn('Retrying image with cached URL', failedSrc)
+      setImageSrc(cachedUrl)
+    } else {
+      console.error('Image failed to load', failedSrc)
+      setImageSrc('/placeholder.svg')
+    }
+  }
 
   return (
     <Card data-testid="product-card" className="h-full flex flex-col">
@@ -73,6 +88,7 @@ export function ProductCard({
           height={200}
           className="aspect-square w-full"
           imgClassName="rounded object-cover"
+          onError={handleImageError}
         />
         <h3 className={cn('font-medium', density === 'compact' && 'text-sm')}>
           {product.name}
