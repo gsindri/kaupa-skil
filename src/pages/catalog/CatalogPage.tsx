@@ -177,7 +177,7 @@ export default function CatalogPage() {
   const loadingMore = isLoading && cursor !== null
 
   return (
-    <div className="w-full px-4 space-y-4">
+    <div className="w-full space-y-4">
       {(publicError || orgError) && (
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
@@ -220,9 +220,9 @@ export default function CatalogPage() {
         <div
           className="
     grid gap-6 xl:gap-8
-    [grid-template-columns:repeat(auto-fill,minmax(220px,1fr))]
-    sm:[grid-template-columns:repeat(auto-fill,minmax(240px,1fr))]
-    lg:[grid-template-columns:repeat(auto-fill,minmax(260px,1fr))]
+    [grid-template-columns:repeat(auto-fit,minmax(220px,1fr))]
+    sm:[grid-template-columns:repeat(auto-fit,minmax(240px,1fr))]
+    lg:[grid-template-columns:repeat(auto-fit,minmax(260px,1fr))]
   "
         >
           {products.map(p => (
