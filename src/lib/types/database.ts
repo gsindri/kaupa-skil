@@ -1,3 +1,4 @@
+
 export type Json =
   | string
   | number
@@ -6,4 +7,307 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[]
 
-export type Database = any
+export type Database = {
+  public: {
+    Tables: {
+      suppliers: {
+        Row: {
+          id: string
+          name: string
+          connector_type: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          connector_type: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          connector_type?: string
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      supplier_items: {
+        Row: {
+          id: string
+          supplier_id: string
+          display_name: string
+          ext_sku: string
+          brand: string | null
+          pack_qty: number | null
+          pack_unit_id: string | null
+          vat_code: number | null
+          last_seen_at: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          supplier_id: string
+          display_name: string
+          ext_sku: string
+          brand?: string | null
+          pack_qty?: number | null
+          pack_unit_id?: string | null
+          vat_code?: number | null
+          last_seen_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          supplier_id?: string
+          display_name?: string
+          ext_sku?: string
+          brand?: string | null
+          pack_qty?: number | null
+          pack_unit_id?: string | null
+          vat_code?: number | null
+          last_seen_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      supplier_credentials: {
+        Row: {
+          id: string
+          supplier_id: string
+          tenant_id: string | null
+          test_status: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          supplier_id: string
+          tenant_id?: string | null
+          test_status?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          supplier_id?: string
+          tenant_id?: string | null
+          test_status?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      connector_runs: {
+        Row: {
+          id: string
+          supplier_id: string
+          tenant_id: string | null
+          status: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          supplier_id: string
+          tenant_id?: string | null
+          status?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          supplier_id?: string
+          tenant_id?: string | null
+          status?: string
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      price_quotes: {
+        Row: {
+          id: string
+          supplier_item_id: string
+          observed_at: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          supplier_item_id: string
+          observed_at?: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          supplier_item_id?: string
+          observed_at?: string
+          created_at?: string
+        }
+      }
+      orders: {
+        Row: {
+          id: string
+          tenant_id: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          tenant_id?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          tenant_id?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      order_lines: {
+        Row: {
+          id: string
+          order_id: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          order_id: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          order_id?: string
+          created_at?: string
+        }
+      }
+      profiles: {
+        Row: {
+          id: string
+          email: string | null
+          full_name: string | null
+          tenant_id: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id: string
+          email?: string | null
+          full_name?: string | null
+          tenant_id?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          email?: string | null
+          full_name?: string | null
+          tenant_id?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      tenants: {
+        Row: {
+          id: string
+          name: string
+          kind: string
+          created_by: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          kind?: string
+          created_by: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          kind?: string
+          created_by?: string
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      memberships: {
+        Row: {
+          id: string
+          tenant_id: string
+          user_id: string
+          base_role: string
+          attrs: Json
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          tenant_id: string
+          user_id: string
+          base_role: string
+          attrs?: Json
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          tenant_id?: string
+          user_id?: string
+          base_role?: string
+          attrs?: Json
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      grants: {
+        Row: {
+          id: string
+          membership_id: string
+          tenant_id: string
+          capability: string
+          scope: string
+          scope_id: string | null
+          constraints: Json
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          membership_id: string
+          tenant_id: string
+          capability: string
+          scope?: string
+          scope_id?: string | null
+          constraints?: Json
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          membership_id?: string
+          tenant_id?: string
+          capability?: string
+          scope?: string
+          scope_id?: string | null
+          constraints?: Json
+          created_at?: string
+        }
+      }
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      [_ in never]: never
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
+}

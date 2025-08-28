@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -53,7 +54,8 @@ export function SidebarProvider({
     return isMobile ? setOpenMobile((prev) => !prev) : setOpen((prev) => !prev)
   }, [isMobile, setOpen, setOpenMobile])
 
-  const state = open ? "expanded" : "collapsed"
+  // Fix: Ensure state is properly typed as "expanded" | "collapsed"
+  const state: "expanded" | "collapsed" = open ? "expanded" : "collapsed"
 
   const contextValue = React.useMemo(
     () => ({
@@ -73,7 +75,7 @@ export function SidebarProvider({
       <div
         style={
           {
-            "--sidebar-width": SIDEBAR_WIDTH,
+            "--sidebar-width": open ? SIDEBAR_WIDTH : SIDEBAR_WIDTH_ICON,
             "--sidebar-width-icon": SIDEBAR_WIDTH_ICON,
             ...style,
           } as React.CSSProperties
