@@ -10,14 +10,14 @@ export default {
 		"./src/**/*.{ts,tsx}",
 	],
 	prefix: "",
-	theme: {
-		container: {
-			center: true,
-			padding: '2rem',
-			screens: {
-				'2xl': '1400px'
-			}
-		},
+        theme: {
+                container: {
+                        center: false,
+                        padding: '0rem',
+                        screens: {
+                                '2xl': '100%'
+                        }
+                },
                extend: {
                         transitionDuration: {
                                 120: '120ms',
