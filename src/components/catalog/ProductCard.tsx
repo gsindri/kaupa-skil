@@ -59,7 +59,7 @@ export function ProductCard({
     : '/placeholder.svg'
 
   return (
-    <Card data-testid="product-card">
+    <Card data-testid="product-card" className="h-full flex flex-col">
       <CardContent
         className={cn(
           density === 'compact' ? 'space-y-1 p-2' : 'space-y-2 p-4',
