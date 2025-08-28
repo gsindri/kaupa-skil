@@ -80,6 +80,8 @@ export type Database = {
           supplier_id: string
           tenant_id: string | null
           test_status: string | null
+          encrypted_blob: string | null
+          last_tested_at: string | null
           created_at: string
           updated_at: string
         }
@@ -88,6 +90,8 @@ export type Database = {
           supplier_id: string
           tenant_id?: string | null
           test_status?: string | null
+          encrypted_blob?: string | null
+          last_tested_at?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -96,6 +100,8 @@ export type Database = {
           supplier_id?: string
           tenant_id?: string | null
           test_status?: string | null
+          encrypted_blob?: string | null
+          last_tested_at?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -106,6 +112,12 @@ export type Database = {
           supplier_id: string
           tenant_id: string | null
           status: string
+          connector_type: string | null
+          started_at: string | null
+          finished_at: string | null
+          items_found: number | null
+          prices_updated: number | null
+          errors_count: number | null
           created_at: string
           updated_at: string
         }
@@ -114,6 +126,12 @@ export type Database = {
           supplier_id: string
           tenant_id?: string | null
           status?: string
+          connector_type?: string | null
+          started_at?: string | null
+          finished_at?: string | null
+          items_found?: number | null
+          prices_updated?: number | null
+          errors_count?: number | null
           created_at?: string
           updated_at?: string
         }
@@ -122,6 +140,12 @@ export type Database = {
           supplier_id?: string
           tenant_id?: string | null
           status?: string
+          connector_type?: string | null
+          started_at?: string | null
+          finished_at?: string | null
+          items_found?: number | null
+          prices_updated?: number | null
+          errors_count?: number | null
           created_at?: string
           updated_at?: string
         }
