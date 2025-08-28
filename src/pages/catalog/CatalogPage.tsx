@@ -220,9 +220,9 @@ export default function CatalogPage() {
         <div
           className="
     grid gap-6 xl:gap-8
-    [grid-template-columns:repeat(auto-fit,minmax(220px,1fr))]
-    sm:[grid-template-columns:repeat(auto-fit,minmax(240px,1fr))]
-    lg:[grid-template-columns:repeat(auto-fit,minmax(260px,1fr))]
+    [grid-template-columns:repeat(auto-fit,minmax(180px,1fr))]
+    sm:[grid-template-columns:repeat(auto-fit,minmax(200px,1fr))]
+    lg:[grid-template-columns:repeat(auto-fit,minmax(220px,1fr))]
   "
         >
           {products.map(p => (
