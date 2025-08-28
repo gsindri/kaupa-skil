@@ -20,8 +20,8 @@ export function CartDrawer() {
     getTotalPrice
   } = useBasket()
   
-  const { includeVat } = useSettings()
-  const showVat = includeVat ?? true
+  const { settings } = useSettings()
+  const showVat = settings?.showPricesWithVat ?? true
   
   const totalItems = getTotalItems()
   const totalPrice = getTotalPrice(showVat)
