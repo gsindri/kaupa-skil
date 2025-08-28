@@ -21,9 +21,7 @@ export function FullWidthLayout({ children }: FullWidthLayoutProps) {
 
           <main className="app-scroll flex-1 pt-[var(--header-h)] w-full">
             <ElevationBanner />
-            <div className="px-4 sm:px-6 lg:px-8">
-              {children}
-            </div>
+            {children}
           </main>
         </div>
 

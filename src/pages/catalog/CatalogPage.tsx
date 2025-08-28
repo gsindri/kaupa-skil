@@ -177,68 +177,77 @@ export default function CatalogPage() {
   const loadingMore = isLoading && cursor !== null
 
   return (
-    <div className="w-full space-y-4">
-      {(publicError || orgError) && (
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>{String(publicError || orgError)}</AlertDescription>
-        </Alert>
-      )}
+    <div className="w-full">
+      {/* Control bar with padding */}
+      <div className="px-4 sm:px-6 lg:px-8 pb-4 space-y-4">
+        {(publicError || orgError) && (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{String(publicError || orgError)}</AlertDescription>
+          </Alert>
+        )}
 
-      <div className="mb-4 lg:mb-6 grid gap-3 md:grid-cols-[1fr,320px,auto] items-center">
-        <Input
-          placeholder="Search products"
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-        />
-        <Input
-          placeholder="Brand"
-          value={filters.brand ?? ''}
-          onChange={e => setFilters(prev => ({ ...prev, brand: e.target.value }))}
-        />
-        <div className="flex items-center space-x-2">
-          <Checkbox
-            id="price-toggle"
-            checked={onlyWithPrice}
-            onCheckedChange={checked => setOnlyWithPrice(Boolean(checked))}
+        <div className="mb-4 lg:mb-6 grid gap-3 md:grid-cols-[1fr,320px,auto] items-center">
+          <Input
+            placeholder="Search products"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
           />
-          <label htmlFor="price-toggle" className="text-sm">
-            Only with price
-          </label>
-        </div>
-      </div>
-      <ViewToggle value={view} onChange={setView} />
-
-      {view === 'list' ? (
-        <CatalogTable
-          products={products}
-          selected={selected}
-          onSelect={toggleSelect}
-          onSelectAll={handleSelectAll}
-        />
-      ) : (
-        <div
-          className="
-            grid gap-3 sm:gap-4
-            grid-cols-3
-            sm:grid-cols-4
-            lg:grid-cols-5
-            xl:grid-cols-6
-            2xl:grid-cols-7
-          "
-        >
-          {products.map(p => (
-            <ProductCard
-              key={p.catalog_id}
-              product={p}
-              density="compact"
+          <Input
+            placeholder="Brand"
+            value={filters.brand ?? ''}
+            onChange={e => setFilters(prev => ({ ...prev, brand: e.target.value }))}
+          />
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="price-toggle"
+              checked={onlyWithPrice}
+              onCheckedChange={checked => setOnlyWithPrice(Boolean(checked))}
             />
-          ))}
+            <label htmlFor="price-toggle" className="text-sm">
+              Only with price
+            </label>
+          </div>
+        </div>
+        <ViewToggle value={view} onChange={setView} />
+      </div>
+
+      {/* Content area - full width for grid, padded for table */}
+      {view === 'list' ? (
+        <div className="px-4 sm:px-6 lg:px-8">
+          <CatalogTable
+            products={products}
+            selected={selected}
+            onSelect={toggleSelect}
+            onSelectAll={handleSelectAll}
+          />
+        </div>
+      ) : (
+        <div className="px-2 sm:px-3 lg:px-4">
+          <div
+            className="
+              grid gap-2 sm:gap-3 lg:gap-4
+              grid-cols-4
+              sm:grid-cols-5
+              lg:grid-cols-6
+              xl:grid-cols-7
+              2xl:grid-cols-8
+            "
+          >
+            {products.map(p => (
+              <ProductCard
+                key={p.catalog_id}
+                product={p}
+                density="compact"
+              />
+            ))}
+          </div>
         </div>
       )}
 
+      {/* Load more button with padding */}
       {nextCursor && (
-        <div className="flex justify-center">
+        <div className="flex justify-center px-4 sm:px-6 lg:px-8 pt-4">
           <Button onClick={loadMore} disabled={loadingMore} variant="outline">
             {loadingMore && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Load more
