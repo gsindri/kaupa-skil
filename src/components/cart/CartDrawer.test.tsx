@@ -23,7 +23,7 @@ describe('CartDrawer', () => {
   it('closes drawer when Browse Catalog is clicked', async () => {
     const mockSetIsDrawerOpen = vi.fn()
     render(
-      <MemoryRouter>
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <SettingsContext.Provider
           value={{
             includeVat: false,

@@ -32,7 +32,7 @@ function App() {
                         <SettingsProvider>
                           <LanguageProvider>
                             <ComparisonProvider>
-                              <RouterProvider router={router} />
+                              <RouterProvider router={router} future={{ v7_startTransition: true }} />
                               <Toaster />
                             </ComparisonProvider>
                           </LanguageProvider>

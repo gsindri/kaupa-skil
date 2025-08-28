@@ -28,7 +28,7 @@ describe("ResetPassword", () => {
     (supabase.auth.exchangeCodeForSession as any).mockResolvedValue({ error: new Error("bad link") });
 
     render(
-      <MemoryRouter>
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <React.StrictMode>
           <ResetPassword />
         </React.StrictMode>
@@ -44,7 +44,7 @@ describe("ResetPassword", () => {
     (supabase.auth.exchangeCodeForSession as any).mockResolvedValue({ error: null });
 
     render(
-      <MemoryRouter>
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <React.StrictMode>
           <ResetPassword />
         </React.StrictMode>
