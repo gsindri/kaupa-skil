@@ -86,11 +86,14 @@ const Sidebar = React.forwardRef<
         data-variant={variant}
         data-side={side}
       >
-        {/* This is what handles the sidebar gap on desktop */}
+        {/* This is the spacing div that handles the sidebar gap on desktop */}
         <div
           className={cn(
-            "duration-200 relative h-svh w-[--sidebar-width] bg-transparent transition-[width] ease-linear",
-            "group-data-[collapsible=offcanvas]:w-0",
+            "duration-200 relative h-svh bg-transparent transition-[width] ease-linear",
+            // Critical fix: Ensure width collapses to 0 when sidebar is collapsed
+            state === "collapsed" && collapsible === "offcanvas" 
+              ? "w-0" 
+              : "w-[--sidebar-width]",
             "group-data-[side=right]:rotate-180",
             variant === "floating" || variant === "inset"
               ? "group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)_+_theme(spacing.4))]"
@@ -99,12 +102,14 @@ const Sidebar = React.forwardRef<
         />
         <div
           className={cn(
-            "fixed inset-y-0 z-10 hidden h-svh w-[--sidebar-width] overflow-x-hidden md:flex will-change-[transform,opacity] transition-[left,right,width,opacity,transform] duration-200 motion-reduce:transition-none motion-reduce:transform-none",
-            "group-data-[state=collapsed]:-translate-x-2 group-data-[state=collapsed]:opacity-0 group-data-[state=collapsed]:pointer-events-none group-data-[state=collapsed]:ease-out",
-            "group-data-[state=expanded]:translate-x-0 group-data-[state=expanded]:opacity-100 group-data-[state=expanded]:ease-in-out",
+            "fixed inset-y-0 z-10 hidden h-svh overflow-x-hidden md:flex will-change-[transform,opacity] transition-[left,right,width,opacity,transform] duration-200 motion-reduce:transition-none motion-reduce:transform-none",
+            // Ensure proper width management
+            state === "collapsed" && collapsible === "offcanvas"
+              ? "w-0 opacity-0 pointer-events-none -translate-x-full"
+              : "w-[--sidebar-width] opacity-100 translate-x-0",
             side === "left"
-              ? "left-0 group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)]"
-              : "right-0 group-data-[collapsible=offcanvas]:right-[calc(var(--sidebar-width)*-1)]",
+              ? "left-0"
+              : "right-0",
             // Adjust the padding for floating and inset variants.
             variant === "floating" || variant === "inset"
               ? "p-2 group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)_+_theme(spacing.4)_+2px)]"

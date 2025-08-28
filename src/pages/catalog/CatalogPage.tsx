@@ -212,7 +212,7 @@ export default function CatalogPage() {
         <ViewToggle value={view} onChange={setView} />
       </div>
 
-      {/* Content area - full width for grid, padded for table */}
+      {/* Content area - ensure full width usage */}
       {view === 'list' ? (
         <div>
           <CatalogTable
@@ -224,9 +224,8 @@ export default function CatalogPage() {
         </div>
       ) : (
         <div>
-          <div
-            className="grid gap-2 sm:gap-3 lg:gap-4 grid-cols-[repeat(auto-fit,minmax(160px,_1fr))]"
-          >
+          {/* Enhanced grid with better responsive behavior for full width */}
+          <div className="grid gap-2 sm:gap-3 lg:gap-4 grid-cols-[repeat(auto-fit,minmax(160px,_1fr))] xl:grid-cols-[repeat(auto-fit,minmax(180px,_1fr))] 2xl:grid-cols-[repeat(auto-fit,minmax(200px,_1fr))]">
             {products.map(p => (
               <ProductCard
                 key={p.catalog_id}
