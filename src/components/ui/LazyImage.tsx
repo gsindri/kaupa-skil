@@ -23,7 +23,7 @@ export function LazyImage({
       <Skeleton
         className={cn(
           'absolute inset-0 h-full w-full transition-opacity duration-300',
-          loaded && 'opacity-0'
+          loaded && 'opacity-0 animate-none'
         )}
       />
       {src && (
