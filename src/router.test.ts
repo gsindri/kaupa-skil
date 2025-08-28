@@ -10,7 +10,7 @@ const childPaths = new Set(
   (appRoute.children ?? []).map(r => (r.index ? '' : r.path))
 )
 
-const expectedPaths = ['', 'catalog', 'cart', 'compare', 'suppliers', 'pantry', 'price-history', 'discovery', 'admin']
+const expectedPaths = ['', 'cart', 'compare', 'suppliers', 'pantry', 'price-history', 'discovery', 'admin']
 
 describe('sidebar route definitions', () => {
   for (const p of expectedPaths) {
@@ -18,6 +18,9 @@ describe('sidebar route definitions', () => {
       expect(childPaths.has(p)).toBe(true)
     })
   }
+  it('defines catalog route separately', () => {
+    expect(routes.some(r => r.path === '/catalog')).toBe(true)
+  })
 })
 
 describe('public auth routes', () => {
