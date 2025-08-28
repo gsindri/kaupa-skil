@@ -19,7 +19,6 @@ import {
 } from '@/lib/analytics'
 import { AnalyticsTracker } from '@/components/quick/AnalyticsTrackerUtils'
 import { ViewToggle } from '@/components/place-order/ViewToggle'
-import { cn } from '@/lib/utils'
 
 export default function CatalogPage() {
   const { profile } = useAuth()
@@ -186,18 +185,16 @@ export default function CatalogPage() {
         </Alert>
       )}
 
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="mb-4 lg:mb-6 grid gap-3 md:grid-cols-[1fr,320px,auto] items-center">
         <Input
           placeholder="Search products"
           value={search}
           onChange={e => setSearch(e.target.value)}
-          className="max-w-sm"
         />
         <Input
           placeholder="Brand"
           value={filters.brand ?? ''}
           onChange={e => setFilters(prev => ({ ...prev, brand: e.target.value }))}
-          className="max-w-xs"
         />
         <div className="flex items-center space-x-2">
           <Checkbox
@@ -209,8 +206,8 @@ export default function CatalogPage() {
             Only with price
           </label>
         </div>
-        <ViewToggle value={view} onChange={setView} />
       </div>
+      <ViewToggle value={view} onChange={setView} />
 
       {view === 'list' ? (
         <CatalogTable
@@ -221,12 +218,12 @@ export default function CatalogPage() {
         />
       ) : (
         <div
-          className={cn(
-            'grid gap-4',
-            density === 'compact'
-              ? 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4'
-              : 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4',
-          )}
+          className="
+    grid gap-6 xl:gap-8
+    [grid-template-columns:repeat(auto-fill,minmax(220px,1fr))]
+    sm:[grid-template-columns:repeat(auto-fill,minmax(240px,1fr))]
+    lg:[grid-template-columns:repeat(auto-fill,minmax(260px,1fr))]
+  "
         >
           {products.map(p => (
             <ProductCard
