@@ -219,17 +219,19 @@ export default function CatalogPage() {
       ) : (
         <div
           className="
-    grid gap-6 xl:gap-8
-    [grid-template-columns:repeat(auto-fit,minmax(180px,1fr))]
-    sm:[grid-template-columns:repeat(auto-fit,minmax(200px,1fr))]
-    lg:[grid-template-columns:repeat(auto-fit,minmax(220px,1fr))]
-  "
+            grid gap-3 sm:gap-4
+            grid-cols-3
+            sm:grid-cols-4
+            lg:grid-cols-5
+            xl:grid-cols-6
+            2xl:grid-cols-7
+          "
         >
           {products.map(p => (
             <ProductCard
               key={p.catalog_id}
               product={p}
-              density={density}
+              density="compact"
             />
           ))}
         </div>
@@ -246,4 +248,3 @@ export default function CatalogPage() {
     </div>
   )
 }
-

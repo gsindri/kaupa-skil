@@ -1,3 +1,4 @@
+
 import React from 'react'
 import { SidebarProvider } from '@/components/ui/sidebar-provider'
 import { EnhancedAppSidebar } from './EnhancedAppSidebar'
@@ -18,9 +19,11 @@ export function FullWidthLayout({ children }: FullWidthLayoutProps) {
         <div className="flex-1 flex flex-col">
           <TopNavigation />
 
-          <main className="app-scroll flex-1 pt-[var(--header-h)] w-full px-4 sm:px-6 lg:px-8">
+          <main className="app-scroll flex-1 pt-[var(--header-h)] w-full">
             <ElevationBanner />
-            {children}
+            <div className="px-4 sm:px-6 lg:px-8">
+              {children}
+            </div>
           </main>
         </div>
 
@@ -29,4 +32,3 @@ export function FullWidthLayout({ children }: FullWidthLayoutProps) {
     </SidebarProvider>
   )
 }
-

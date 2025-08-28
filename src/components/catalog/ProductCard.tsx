@@ -86,34 +86,50 @@ export function ProductCard({
           loading="lazy"
           width={200}
           height={200}
-          className="aspect-square w-full"
+          className={cn(
+            "aspect-square w-full",
+            density === 'compact' ? 'mb-1' : 'mb-2'
+          )}
           imgClassName="rounded object-cover"
           onError={handleImageError}
         />
-        <h3 className={cn('font-medium', density === 'compact' && 'text-sm')}>
+        <h3 className={cn(
+          'font-medium line-clamp-2',
+          density === 'compact' ? 'text-xs leading-tight' : 'text-sm'
+        )}>
           {product.name}
         </h3>
         {product.pack_size && (
           <p
             className={cn(
-              'text-sm text-muted-foreground',
-              density === 'compact' && 'text-xs',
+              'text-muted-foreground line-clamp-1',
+              density === 'compact' ? 'text-xs' : 'text-sm',
             )}
           >
             {product.pack_size}
           </p>
         )}
         {product.availability && (
-          <Badge variant={availabilityVariant}>{product.availability}</Badge>
+          <Badge 
+            variant={availabilityVariant}
+            className={cn(
+              density === 'compact' && 'text-xs px-1 py-0'
+            )}
+          >
+            {product.availability}
+          </Badge>
         )}
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger asChild>
             <Badge
               variant="secondary"
               data-testid="supplier-count"
-              className="cursor-pointer"
+              className={cn(
+                "cursor-pointer",
+                density === 'compact' && 'text-xs px-1 py-0'
+              )}
             >
-              {product.supplier_count ?? 0} suppliers carry this
+              {product.supplier_count ?? 0} suppliers
             </Badge>
           </SheetTrigger>
           <SheetContent className="w-80 sm:w-96">
@@ -146,19 +162,24 @@ export function ProductCard({
           </SheetContent>
         </Sheet>
         {showPrice && (
-          hasConnection ? (
-            product.best_price != null ? (
-              <div data-testid="price-badge" className="text-sm font-medium">
-                from {product.best_price} {product.currency ?? ''}
-              </div>
+          <div className={cn(
+            "text-sm font-medium",
+            density === 'compact' && 'text-xs'
+          )}>
+            {hasConnection ? (
+              product.best_price != null ? (
+                <span data-testid="price-badge">
+                  from {product.best_price} {product.currency ?? ''}
+                </span>
+              ) : (
+                <span className="text-muted-foreground">—</span>
+              )
             ) : (
-              <div className="text-sm text-muted-foreground">—</div>
-            )
-          ) : (
-            <div className="text-sm text-muted-foreground">
-              Connect supplier to see price
-            </div>
-          )
+              <span className="text-muted-foreground">
+                Connect supplier
+              </span>
+            )}
+          </div>
         )}
       </CardContent>
     </Card>
