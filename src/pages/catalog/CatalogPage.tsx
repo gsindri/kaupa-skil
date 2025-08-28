@@ -36,6 +36,7 @@ export default function CatalogPage() {
   const [search, setSearch] = useState('')
   const brand = filters.brand
   const debouncedSearch = useDebounce(search, 300)
+
   const publicQuery = useCatalogProducts({
     search: debouncedSearch,
     brand,
@@ -147,7 +148,6 @@ export default function CatalogPage() {
     onlyWithPrice,
   ])
 
-
   const loadMore = () => {
     if (nextCursor) setCursor(nextCursor)
   }
@@ -177,9 +177,9 @@ export default function CatalogPage() {
   const loadingMore = isLoading && cursor !== null
 
   return (
-    <div className="w-full">
-      {/* Control bar without horizontal padding */}
-      <div className="pb-4 space-y-4">
+    <div className="w-full min-w-0 overflow-hidden">
+      {/* Control bar */}
+      <div className="pb-4 space-y-4 px-4 lg:px-6">
         {(publicError || orgError) && (
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
@@ -212,34 +212,35 @@ export default function CatalogPage() {
         <ViewToggle value={view} onChange={setView} />
       </div>
 
-      {/* Content area - ensure full width usage */}
-      {view === 'list' ? (
-        <div>
-          <CatalogTable
-            products={products}
-            selected={selected}
-            onSelect={toggleSelect}
-            onSelectAll={handleSelectAll}
-          />
-        </div>
-      ) : (
-        <div>
-          {/* Enhanced grid with better responsive behavior for full width */}
-          <div className="grid gap-2 sm:gap-3 lg:gap-4 grid-cols-[repeat(auto-fit,minmax(160px,_1fr))] xl:grid-cols-[repeat(auto-fit,minmax(180px,_1fr))] 2xl:grid-cols-[repeat(auto-fit,minmax(200px,_1fr))]">
-            {products.map(p => (
-              <ProductCard
-                key={p.catalog_id}
-                product={p}
-                density="compact"
-              />
-            ))}
+      {/* Content area */}
+      <div className="w-full min-w-0">
+        {view === 'list' ? (
+          <div className="px-4 lg:px-6">
+            <CatalogTable
+              products={products}
+              selected={selected}
+              onSelect={toggleSelect}
+              onSelectAll={handleSelectAll}
+            />
           </div>
-        </div>
-      )}
+        ) : (
+          <div className="px-4 lg:px-6">
+            <div className="grid gap-2 sm:gap-3 lg:gap-4 grid-cols-[repeat(auto-fill,minmax(180px,_1fr))] xl:grid-cols-[repeat(auto-fill,minmax(200px,_1fr))] 2xl:grid-cols-[repeat(auto-fill,minmax(220px,_1fr))]">
+              {products.map(p => (
+                <ProductCard
+                  key={p.catalog_id}
+                  product={p}
+                  density="compact"
+                />
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
 
-      {/* Load more button with padding */}
+      {/* Load more button */}
       {nextCursor && (
-        <div className="flex justify-center pt-4">
+        <div className="flex justify-center pt-4 px-4 lg:px-6">
           <Button onClick={loadMore} disabled={loadingMore} variant="outline">
             {loadingMore && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Load more

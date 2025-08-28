@@ -86,13 +86,13 @@ const Sidebar = React.forwardRef<
         data-variant={variant}
         data-side={side}
       >
-        {/* This is the spacing div that handles the sidebar gap on desktop */}
+        {/* CRITICAL FIX: This spacing div must be w-0 when collapsed */}
         <div
           className={cn(
             "duration-200 relative h-svh bg-transparent transition-[width] ease-linear",
-            // Critical fix: Ensure width collapses to 0 when sidebar is collapsed
+            // Ensure width is truly 0 when collapsed in offcanvas mode
             state === "collapsed" && collapsible === "offcanvas" 
-              ? "w-0" 
+              ? "w-0 min-w-0" 
               : "w-[--sidebar-width]",
             "group-data-[side=right]:rotate-180",
             variant === "floating" || variant === "inset"
@@ -103,9 +103,9 @@ const Sidebar = React.forwardRef<
         <div
           className={cn(
             "fixed inset-y-0 z-10 hidden h-svh overflow-x-hidden md:flex will-change-[transform,opacity] transition-[left,right,width,opacity,transform] duration-200 motion-reduce:transition-none motion-reduce:transform-none",
-            // Ensure proper width management
+            // CRITICAL FIX: Ensure complete hide when collapsed
             state === "collapsed" && collapsible === "offcanvas"
-              ? "w-0 opacity-0 pointer-events-none -translate-x-full"
+              ? "w-0 opacity-0 pointer-events-none -translate-x-full overflow-hidden"
               : "w-[--sidebar-width] opacity-100 translate-x-0",
             side === "left"
               ? "left-0"

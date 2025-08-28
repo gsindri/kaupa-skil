@@ -75,7 +75,12 @@ export function SidebarProvider({
       <div
         style={
           {
-            "--sidebar-width": open ? SIDEBAR_WIDTH : SIDEBAR_WIDTH_ICON,
+            // CRITICAL FIX: Set sidebar width to 0 when collapsed in desktop mode
+            "--sidebar-width": isMobile 
+              ? SIDEBAR_WIDTH_ICON 
+              : open 
+                ? SIDEBAR_WIDTH 
+                : "0rem",
             "--sidebar-width-icon": SIDEBAR_WIDTH_ICON,
             ...style,
           } as React.CSSProperties
