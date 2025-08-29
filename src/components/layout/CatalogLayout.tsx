@@ -2,23 +2,19 @@ import React from 'react'
 import { SidebarProvider } from '@/components/ui/sidebar-provider'
 import { EnhancedAppSidebar } from './EnhancedAppSidebar'
 import { TopNavigation } from './TopNavigation'
-import { ElevationBanner } from './ElevationBanner'
 import { CartDrawer } from '@/components/cart/CartDrawer'
+import { Outlet } from 'react-router-dom'
 
 /**
  * Layout for catalog pages.
  *
  * Content is rendered without width constraints.
  */
-interface CatalogLayoutProps {
-  children: React.ReactNode
-}
-
-export function CatalogLayout({ children }: CatalogLayoutProps) {
+export function CatalogLayout() {
   return (
     <SidebarProvider>
       <div
-        className="min-h-screen grid bg-background"
+        className="min-h-screen grid"
         style={{ gridTemplateColumns: 'var(--sidebar-width,16rem) minmax(0,1fr)' }}
       >
         <aside className="sticky top-0 h-screen w-[var(--sidebar-width,16rem)]">
@@ -27,10 +23,8 @@ export function CatalogLayout({ children }: CatalogLayoutProps) {
 
         <div className="min-w-0 overflow-y-auto">
           <TopNavigation />
-
           <div className="px-4 sm:px-6 lg:px-8">
-            <ElevationBanner />
-            {children}
+            <Outlet />
           </div>
         </div>
       </div>
