@@ -178,11 +178,11 @@ export default function CatalogPage() {
   const loadingMore = isLoading && cursor !== null
 
   return (
-    <div className="w-full min-w-0 overflow-hidden">
+    <div className="w-full min-w-0 overflow-visible">
       <LayoutDebugger show={true} />
-      
+
       {/* Control bar */}
-      <div className="pb-4 space-y-4 px-2">
+      <div className="pb-4 space-y-4">
         {(publicError || orgError) && (
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
@@ -227,23 +227,21 @@ export default function CatalogPage() {
             />
           </div>
         ) : (
-          <div className="px-2">
-            <div className="grid gap-2 grid-cols-[repeat(auto-fill,minmax(140px,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(160px,1fr))] lg:grid-cols-[repeat(auto-fill,minmax(180px,1fr))]">
-              {products.map(p => (
-                <ProductCard
-                  key={p.catalog_id}
-                  product={p}
-                  density="compact"
-                />
-              ))}
-            </div>
+          <div className="grid gap-6 xl:gap-8 [grid-template-columns:repeat(auto-fill,minmax(240px,1fr))]">
+            {products.map(p => (
+              <ProductCard
+                key={p.catalog_id}
+                product={p}
+                density="compact"
+              />
+            ))}
           </div>
         )}
       </div>
 
       {/* Load more button */}
       {nextCursor && (
-        <div className="flex justify-center pt-4 px-2">
+        <div className="flex justify-center pt-4">
           <Button onClick={loadMore} disabled={loadingMore} variant="outline">
             {loadingMore && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Load more
