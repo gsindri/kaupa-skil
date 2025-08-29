@@ -20,10 +20,13 @@ export function VirtualizedGrid<T>({
 }: VirtualizedGridProps<T>) {
   const parentRef = useRef<HTMLDivElement>(null)
   const [columns, setColumns] = useState(1)
+  const rowGap = 16 // Tailwind gap-4
 
   useLayoutEffect(() => {
     function measure() {
-      const width = parentRef.current?.clientWidth || 0
+      // Measure the width of the scroll container since this div no longer
+      // controls its own overflow or scrolling behaviour.
+      const width = parentRef.current?.parentElement?.clientWidth || 0
       const next = Math.max(1, Math.floor(width / 250))
       setColumns(next)
     }
@@ -39,7 +42,8 @@ export function VirtualizedGrid<T>({
     // Use the nearest scrollable ancestor so the layout's main
     // content column handles scrolling instead of this component.
     getScrollElement: () => parentRef.current?.parentElement ?? null,
-    estimateSize: () => itemHeight,
+    // Include vertical gap between rows for accurate height calculations
+    estimateSize: () => itemHeight + rowGap,
     overscan: 5,
   })
 
