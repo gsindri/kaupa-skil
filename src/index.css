@@ -22,6 +22,12 @@ body {
   overflow: hidden;
 }
 
+/* If no overlay is actively locking scroll, ensure no ghost gutter on body */
+body:not([data-scroll-locked]) {
+  padding-right: 0 !important;
+  margin-right: 0 !important;
+}
+
 :root {
   --header-h: 3.5rem;
 }
@@ -35,6 +41,6 @@ html { scrollbar-gutter: stable; }
 .app-scroll {
   height: 100vh;
   overflow-y: auto;
-  scrollbar-gutter: auto;
+  scrollbar-gutter: stable;
   overscroll-behavior: contain;
 }

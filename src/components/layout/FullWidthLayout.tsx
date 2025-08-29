@@ -12,10 +12,15 @@ interface FullWidthLayoutProps {
 
 function FullWidthLayoutContent({ children }: FullWidthLayoutProps) {
   return (
-    <div className="flex w-full h-screen overflow-hidden bg-background">
-      <EnhancedAppSidebar />
+    <div
+      className="min-h-screen grid bg-background"
+      style={{ gridTemplateColumns: 'var(--sidebar-width,16rem) minmax(0,1fr)' }}
+    >
+      <aside className="sticky top-0 h-screen w-[var(--sidebar-width,16rem)]">
+        <EnhancedAppSidebar />
+      </aside>
 
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="min-w-0 flex flex-col">
         <TopNavigation />
 
         <main className="app-scroll flex-1 pt-[var(--header-h)] transition-all duration-200 will-change-auto motion-reduce:transition-none">
@@ -23,8 +28,6 @@ function FullWidthLayoutContent({ children }: FullWidthLayoutProps) {
           {children}
         </main>
       </div>
-
-      <CartDrawer />
     </div>
   )
 }
@@ -33,6 +36,7 @@ export function FullWidthLayout({ children }: FullWidthLayoutProps) {
   return (
     <SidebarProvider>
       <FullWidthLayoutContent>{children}</FullWidthLayoutContent>
+      <CartDrawer />
     </SidebarProvider>
   )
 }
