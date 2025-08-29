@@ -72,18 +72,13 @@ export function TopNavigation() {
   const displayEmail = profile?.email || user?.email || ''
   const userInitial = displayName[0]?.toUpperCase() || 'U'
   const isBusy = loading || profileLoading
+  
   return (
     <header
       role="banner"
-      style={{
-        '--sidebar-w': sidebarOpen ? 'var(--sidebar-width)' : '0px',
-        marginLeft: 'var(--sidebar-w)',
-        width: 'calc(100% - var(--sidebar-w))',
-      } as React.CSSProperties}
       className={cn(
-        'fixed top-0 inset-x-0 z-50 w-full h-[var(--header-h)] border-b bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/75 transition-shadow transition-[margin-left,width] duration-200 will-change-[margin-left,width] motion-reduce:transition-none',
-        scrolled ? 'shadow-sm' : '',
-        sidebarOpen ? 'ease-in-out' : 'ease-out'
+        'fixed top-0 left-0 right-0 z-50 h-[var(--header-h)] border-b bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/75 transition-shadow',
+        scrolled ? 'shadow-sm' : ''
       )}
     >
       <div className="grid grid-cols-[auto,1fr,auto] items-center gap-3 w-full mx-auto px-4 h-full">
