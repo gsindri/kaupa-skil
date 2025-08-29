@@ -16,15 +16,15 @@ export function FullWidthLayout({ children }: FullWidthLayoutProps) {
         style={{ gridTemplateColumns: 'var(--sidebar-width,16rem) minmax(0,1fr)' }}
       >
         {/* Sidebar column */}
-        <aside className="sticky top-0 h-screen w-[var(--sidebar-width,16rem)]">
+        <aside className="sticky top-0 h-svh w-[var(--sidebar-width,16rem)]">
           <EnhancedAppSidebar />
         </aside>
 
         {/* Main column */}
-        <div className="min-w-0 h-screen flex flex-col overflow-hidden">
+        <div className="min-w-0 h-svh flex flex-col">
           <TopNavigation />
-          {/* This is the ONLY scroll container */}
-          <div className="app-scroll flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8">
+          {/* The ONLY scroll container */}
+          <div className="app-scroll flex-1 min-h-0 overflow-y-auto px-4 sm:px-6 lg:px-8 pt-[var(--header-h)]">
             {children}
           </div>
         </div>
