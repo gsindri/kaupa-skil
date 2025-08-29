@@ -179,7 +179,7 @@ export default function CatalogPage() {
 
   return (
     <div className="w-full min-w-0 overflow-visible">
-      <LayoutDebugger show={true} />
+      {/* <LayoutDebugger show={true} /> */}
 
       {/* Control bar */}
       <div className="pb-4 space-y-4">
