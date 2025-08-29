@@ -35,6 +35,6 @@ html { scrollbar-gutter: stable; }
 .app-scroll {
   height: 100vh;
   overflow-y: auto;
-  scrollbar-gutter: stable;
+  scrollbar-gutter: auto;
   overscroll-behavior: contain;
 }
