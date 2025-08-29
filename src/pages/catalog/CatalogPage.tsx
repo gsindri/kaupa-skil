@@ -182,7 +182,7 @@ export default function CatalogPage() {
       <LayoutDebugger show={true} />
       
       {/* Control bar */}
-      <div className="pb-4 space-y-4 px-3 lg:px-4">
+      <div className="pb-4 space-y-4 px-2">
         {(publicError || orgError) && (
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
@@ -218,7 +218,7 @@ export default function CatalogPage() {
       {/* Content area */}
       <div className="w-full min-w-0">
         {view === 'list' ? (
-          <div className="px-3 lg:px-4">
+          <div className="px-2">
             <CatalogTable
               products={products}
               selected={selected}
@@ -227,8 +227,8 @@ export default function CatalogPage() {
             />
           </div>
         ) : (
-          <div className="px-3 lg:px-4">
-            <div className="grid gap-2 sm:gap-3 lg:gap-4 grid-cols-[repeat(auto-fill,minmax(160px,_1fr))] sm:grid-cols-[repeat(auto-fill,minmax(180px,_1fr))] lg:grid-cols-[repeat(auto-fill,minmax(200px,_1fr))] xl:grid-cols-[repeat(auto-fill,minmax(210px,_1fr))] 2xl:grid-cols-[repeat(auto-fill,minmax(220px,_1fr))]">
+          <div className="px-2">
+            <div className="grid gap-2 grid-cols-[repeat(auto-fill,minmax(140px,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(160px,1fr))] lg:grid-cols-[repeat(auto-fill,minmax(180px,1fr))]">
               {products.map(p => (
                 <ProductCard
                   key={p.catalog_id}
@@ -243,7 +243,7 @@ export default function CatalogPage() {
 
       {/* Load more button */}
       {nextCursor && (
-        <div className="flex justify-center pt-4 px-3 lg:px-4">
+        <div className="flex justify-center pt-4 px-2">
           <Button onClick={loadMore} disabled={loadingMore} variant="outline">
             {loadingMore && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Load more
