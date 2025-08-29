@@ -15,7 +15,6 @@ import { RouterProvider } from 'react-router-dom'
 import { queryClient } from '@/lib/queryClient'
 import { ErrorBoundary } from '@/components/common/ErrorBoundary'
 import { GlobalErrorBoundary } from '@/components/common/GlobalErrorBoundary'
-import './App.css'
 
 function App() {
   return (
