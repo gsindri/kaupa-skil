@@ -27,10 +27,21 @@ export function TopNavigation() {
   const { open, openMobile, isMobile, toggleSidebar } = useSidebar()
   const sidebarOpen = isMobile ? openMobile : open
 
+  const headerRef = useRef<HTMLElement>(null)
   const searchRef = useRef<HTMLInputElement>(null)
   const [helpOpen, setHelpOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const lastKey = useRef<string>('')
+
+  useEffect(() => {
+    const update = () => {
+      const h = headerRef.current?.offsetHeight ?? 64
+      document.documentElement.style.setProperty('--header-h', `${h}px`)
+    }
+    update()
+    window.addEventListener('resize', update)
+    return () => window.removeEventListener('resize', update)
+  }, [])
 
   useEffect(() => {
     const scrollEl = document.querySelector('.app-scroll') as HTMLElement | null
@@ -75,6 +86,7 @@ export function TopNavigation() {
   
   return (
     <header
+      ref={headerRef}
       role="banner"
       className={cn(
         'fixed top-0 left-0 right-0 z-50 h-[var(--header-h)] border-b bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/75 transition-shadow',
