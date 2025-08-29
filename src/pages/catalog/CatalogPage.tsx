@@ -218,14 +218,12 @@ export default function CatalogPage() {
       {/* Content area */}
       <div className="w-full min-w-0">
         {view === 'list' ? (
-          <div className="px-2">
-            <CatalogTable
-              products={products}
-              selected={selected}
-              onSelect={toggleSelect}
-              onSelectAll={handleSelectAll}
-            />
-          </div>
+          <CatalogTable
+            products={products}
+            selected={selected}
+            onSelect={toggleSelect}
+            onSelectAll={handleSelectAll}
+          />
         ) : (
           <div className="grid gap-6 xl:gap-8 [grid-template-columns:repeat(auto-fill,minmax(240px,1fr))]">
             {products.map(p => (
