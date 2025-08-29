@@ -30,7 +30,7 @@ main > *:first-child {
   margin-top: 0;
 }
 
-html { scrollbar-gutter: stable both-edges; }
+html { scrollbar-gutter: stable; }
 
 .app-scroll {
   height: 100vh;
