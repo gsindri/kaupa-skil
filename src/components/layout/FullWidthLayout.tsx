@@ -43,9 +43,7 @@ function FullWidthLayoutContent({ children }: FullWidthLayoutProps) {
 export function FullWidthLayout({ children }: FullWidthLayoutProps) {
   return (
     <SidebarProvider>
-      <FullWidthLayoutContent>{children}>
-        {children}
-      </FullWidthLayoutContent>
+      <FullWidthLayoutContent>{children}</FullWidthLayoutContent>
     </SidebarProvider>
   )
 }
