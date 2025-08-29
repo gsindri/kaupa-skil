@@ -11,7 +11,7 @@
 /* Import our comprehensive design system */
 
 /* Ensure no default margins/padding for clean layout */
-html, body {
+html, body, #root {
   margin: 0;
   padding: 0;
   height: 100%;
@@ -20,6 +20,12 @@ html, body {
 body {
   @apply m-0 p-0;
   overflow: hidden;
+}
+
+#root {
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
 /* If no overlay is actively locking scroll, ensure no ghost gutter on body */
@@ -43,11 +49,4 @@ html { scrollbar-gutter: stable; }
   overflow-y: auto;
   scrollbar-gutter: stable;
   overscroll-behavior: contain;
-}
-
-.app-scroll {
-  max-width: none !important;
-  width: 100% !important;
-  margin-left: 0 !important;
-  margin-right: 0 !important;
 }
