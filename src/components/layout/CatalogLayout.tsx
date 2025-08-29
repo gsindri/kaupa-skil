@@ -8,8 +8,7 @@ import { CartDrawer } from '@/components/cart/CartDrawer'
 /**
  * Layout for catalog pages.
  *
- * This layout renders content full-width without `max-w[...]`, `mx-auto`,
- * or horizontal padding.
+ * Content is rendered without width constraints.
  */
 interface CatalogLayoutProps {
   children: React.ReactNode
@@ -18,20 +17,25 @@ interface CatalogLayoutProps {
 export function CatalogLayout({ children }: CatalogLayoutProps) {
   return (
     <SidebarProvider>
-      <div className="flex w-full h-screen overflow-hidden bg-background">
-        <EnhancedAppSidebar />
+      <div
+        className="min-h-screen grid bg-background"
+        style={{ gridTemplateColumns: 'var(--sidebar-width,16rem) minmax(0,1fr)' }}
+      >
+        <aside className="sticky top-0 h-screen w-[var(--sidebar-width,16rem)]">
+          <EnhancedAppSidebar />
+        </aside>
 
-        <div className="flex-1 flex flex-col">
+        <div className="min-w-0 overflow-y-auto">
           <TopNavigation />
 
-          <main className="app-scroll flex-1 pt-[var(--header-h)] w-full">
+          <div className="px-4 sm:px-6 lg:px-8">
             <ElevationBanner />
             {children}
-          </main>
+          </div>
         </div>
-
-        <CartDrawer />
       </div>
+
+      <CartDrawer />
     </SidebarProvider>
   )
 }

@@ -12,20 +12,27 @@ interface AppLayoutProps {
 export function AppLayout({ children }: AppLayoutProps) {
   return (
     <SidebarProvider>
-      <div className="flex w-full h-screen overflow-hidden bg-background">
-        <EnhancedAppSidebar />
+      <div
+        className="min-h-screen grid bg-background"
+        style={{ gridTemplateColumns: 'var(--sidebar-width,16rem) minmax(0,1fr)' }}
+      >
+        <aside className="sticky top-0 h-screen w-[var(--sidebar-width,16rem)]">
+          <EnhancedAppSidebar />
+        </aside>
 
-        <div className="flex-1 flex flex-col">
+        <div className="min-w-0 overflow-y-auto">
           <TopNavigation />
 
-          <main className="app-scroll flex-1 pt-[var(--header-h)] w-full max-w-[1600px] 2xl:max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8">
-            <ElevationBanner />
-            {children}
-          </main>
+          <div className="px-4 sm:px-6 lg:px-8">
+            <div className="max-w-[1600px] 2xl:max-w-[1800px] mx-auto">
+              <ElevationBanner />
+              {children}
+            </div>
+          </div>
         </div>
-
-        <CartDrawer />
       </div>
+
+      <CartDrawer />
     </SidebarProvider>
   )
 }
