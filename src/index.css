@@ -44,3 +44,10 @@ html { scrollbar-gutter: stable; }
   scrollbar-gutter: stable;
   overscroll-behavior: contain;
 }
+
+.app-scroll {
+  max-width: none !important;
+  width: 100% !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
