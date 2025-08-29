@@ -1,5 +1,5 @@
 
-import { createBrowserRouter, Outlet } from "react-router-dom";
+import { createBrowserRouter } from "react-router-dom";
 import { AuthGate } from "@/components/auth/AuthGate";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { FullWidthLayout } from "@/components/layout/FullWidthLayout";
@@ -28,9 +28,7 @@ export const routes = [
     path: "/",
     element: (
       <AuthGate>
-        <AppLayout>
-          <Outlet />
-        </AppLayout>
+        <AppLayout />
       </AuthGate>
     ),
     errorElement: <ErrorPage />,
