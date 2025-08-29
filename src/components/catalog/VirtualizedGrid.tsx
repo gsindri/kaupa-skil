@@ -36,7 +36,9 @@ export function VirtualizedGrid<T>({
 
   const rowVirtualizer = useVirtualizer({
     count: rowCount,
-    getScrollElement: () => parentRef.current,
+    // Use the nearest scrollable ancestor so the layout's main
+    // content column handles scrolling instead of this component.
+    getScrollElement: () => parentRef.current?.parentElement ?? null,
     estimateSize: () => itemHeight,
     overscan: 5,
   })
@@ -52,7 +54,7 @@ export function VirtualizedGrid<T>({
   }, [virtualRows, hasMore, isLoading, rowCount, loadMore])
 
   return (
-    <div ref={parentRef} className="h-[80vh] overflow-auto">
+    <div ref={parentRef} className="overflow-visible">
       <div
         style={{
           height: rowVirtualizer.getTotalSize(),
