@@ -51,7 +51,7 @@ export function CatalogGrid({ products, selected, onSelect, showPrice }: Catalog
                   <Checkbox
                     checked={isSelected}
                     onCheckedChange={() => onSelect(id)}
-                    className="absolute top-2 left-2"
+                    className="absolute top-2 right-2"
                   />
                 </div>
               </div>

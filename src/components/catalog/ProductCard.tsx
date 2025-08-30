@@ -19,17 +19,21 @@ import {
 import { LazyImage } from '@/components/ui/LazyImage'
 import { getCachedImageUrl } from '@/services/ImageCache'
 import { cn } from '@/lib/utils'
+import { Tag } from 'lucide-react'
 
 interface ProductCardProps {
   product: CatalogItem
   showPrice?: boolean
   density?: 'comfortable' | 'compact'
+  /** Whether a brand filter is active */
+  brandFilter?: string | null
 }
 
 export function ProductCard({
   product,
   showPrice = true,
   density = 'comfortable',
+  brandFilter,
 }: ProductCardProps) {
   const { suppliers: connectedSuppliers } = useSupplierConnections()
   const { profile } = useAuth()
@@ -66,13 +70,6 @@ export function ProductCard({
     }
   }
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    if (e.key === 'Enter') {
-      setOpen(true)
-    } else if (!hasConnection && e.key.toLowerCase() === 'c') {
-      setOpen(true)
-    }
-  }
 
   return (
     <Card
@@ -82,20 +79,6 @@ export function ProductCard({
         className={cn(
         )}
       >
-        <LazyImage
-          src={imageSrc}
-          alt={product.name}
-          loading="lazy"
-          width={200}
-          height={200}
-          className="w-full aspect-[4/3] rounded-t-lg bg-muted/20"
-          imgClassName="object-contain"
-          onError={handleImageError}
-        />
-        <h3
-          className={cn(
-            'font-medium line-clamp-1',
-            density === 'compact' ? 'text-xs leading-tight' : 'text-sm'
           )}
         >
           {product.name}
@@ -110,84 +93,6 @@ export function ProductCard({
             {product.pack_size}
           </p>
         )}
-        <Sheet open={open} onOpenChange={setOpen}>
-          <div className="flex flex-col gap-1">
-            <SheetTrigger asChild>
-              <Button
-                variant="link"
-                data-testid="supplier-count"
-                className={cn(
-                  'h-auto p-0 text-left font-normal',
-                  density === 'compact' ? 'text-xs' : 'text-sm'
-                )}
-              >
-                {product.supplier_count ?? 0} suppliers
-              </Button>
-            </SheetTrigger>
-            {showPrice && (
-              <div
-                className={cn(
-                  'flex items-center justify-between',
-                  density === 'compact' ? 'text-xs' : 'text-sm'
-                )}
-              >
-                <div className="font-medium">
-                  {hasConnection ? (
-                    product.best_price != null ? (
-                      <span data-testid="price-badge">
-                        from {product.best_price} {product.currency ?? ''}
-                      </span>
-                    ) : (
-                      <span className="text-muted-foreground">—</span>
-                    )
-                  ) : (
-                    <span className="text-muted-foreground">
-                      Connect supplier
-                    </span>
-                  )}
-                </div>
-                {!hasConnection && (
-                  <SheetTrigger asChild>
-                    <Button
-                      size="sm"
-                      className="opacity-0 transition-opacity group-hover:opacity-100"
-                    >
-                      Connect
-                    </Button>
-                  </SheetTrigger>
-                )}
-              </div>
-            )}
-          </div>
-          <SheetContent className="w-80 sm:w-96">
-            <SheetHeader>
-              <SheetTitle>Suppliers</SheetTitle>
-            </SheetHeader>
-            <div className="space-y-4 py-4">
-              {supplierList.map(supplier => {
-                const isConnected = connectedIds.has(supplier.supplier_id)
-                return (
-                  <div
-                    key={supplier.supplier_id}
-                    className="flex items-center justify-between"
-                  >
-                    <div>
-                      <p className="font-medium">{supplier.name}</p>
-                      {isConnected && supplier.price != null ? (
-                        <p className="text-sm">
-                          {supplier.price} {supplier.currency ?? ''}
-                        </p>
-                      ) : (
-                        <p className="text-sm text-muted-foreground">—</p>
-                      )}
-                    </div>
-                    {!isConnected && <Button size="sm">Connect</Button>}
-                  </div>
-                )
-              })}
-            </div>
-          </SheetContent>
-        </Sheet>
       </CardContent>
     </Card>
   )
