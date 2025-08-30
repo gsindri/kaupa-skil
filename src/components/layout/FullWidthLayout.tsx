@@ -24,7 +24,7 @@ export function FullWidthLayout({ children }: FullWidthLayoutProps) {
         <div className="min-w-0 h-svh flex flex-col">
           <TopNavigation />
           {/* The ONLY scroll container */}
-          <div className="app-scroll w-full max-w-none mx-0 flex-1 min-h-0 overflow-y-auto px-4 sm:px-6 lg:px-8 pt-[var(--header-h)]">
+          <div className="app-scroll w-full max-w-none mx-0 flex-1 min-h-0 overflow-y-auto px-4 sm:px-6 lg:px-8 xl:px-10 2xl:px-12 pt-[var(--header-h)]">
             {children}
           </div>
         </div>
