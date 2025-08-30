@@ -167,6 +167,8 @@ export default function CatalogPage() {
     if (nextCursor && !loadingMore) setCursor(nextCursor)
   }, [nextCursor, loadingMore])
 
+  const sortedProducts = products
+
   useEffect(() => {
     const sentinel = sentinelRef.current
     if (!sentinel || !nextCursor) return
@@ -216,29 +218,33 @@ export default function CatalogPage() {
           </Alert>
         )}
 
-            <Input
-              placeholder="Search products"
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-            />
-            <Input
-              placeholder="Brand"
-              value={filters.brand ?? ''}
+        <div className="grid gap-2 sm:grid-cols-2">
+          <Input
+            placeholder="Search products"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
+          <Input
+            placeholder="Brand"
+            value={filters.brand ?? ""}
+            onChange={e =>
+              setFilters(prev => ({ ...prev, brand: e.target.value }))
+            }
+          />
+        </div>
       </div>
 
       {/* Content area */}
-      <div className="w-full min-w-0">
-        {view === 'list' ? (
-          <CatalogTable
-            products={sortedProducts}
-            selected={selected}
-            onSelect={toggleSelect}
-            onSelectAll={handleSelectAll}
-          />
-        ) : (
-          </div>
-        )}
-      </div>
+        <div className="w-full min-w-0">
+          {view === 'list' ? (
+            <CatalogTable
+              products={sortedProducts}
+              selected={selected}
+              onSelect={toggleSelect}
+              onSelectAll={handleSelectAll}
+            />
+          ) : null}
+        </div>
 
       {/* Load more button */}
       {nextCursor && (
