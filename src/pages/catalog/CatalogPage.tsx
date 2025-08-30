@@ -226,7 +226,7 @@ export default function CatalogPage() {
         </div>
 
         <div className="flex justify-end mt-2">
-          <ViewToggle view={view} onViewChange={setView} />
+          <ViewToggle value={view} onChange={setView} />
         </div>
       </div>
 
