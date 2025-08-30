@@ -225,7 +225,9 @@ export default function CatalogPage() {
             onSelectAll={handleSelectAll}
           />
         ) : (
-          <div className="grid gap-6 xl:gap-8 [grid-template-columns:repeat(auto-fill,minmax(240px,1fr))]">
+          <div
+            className="grid [grid-template-columns:repeat(auto-fit,minmax(18rem,1fr))] gap-[clamp(16px,2.2vw,28px)]"
+          >
             {products.map(p => (
               <ProductCard
                 key={p.catalog_id}
