@@ -225,16 +225,18 @@ export default function CatalogPage() {
             onSelectAll={handleSelectAll}
           />
         ) : (
-          <div
-            className="grid [grid-template-columns:repeat(auto-fit,minmax(18rem,1fr))] gap-[clamp(16px,2.2vw,28px)]"
-          >
-            {products.map(p => (
-              <ProductCard
-                key={p.catalog_id}
-                product={p}
-                density="compact"
-              />
-            ))}
+          <div className="px-[clamp(16px,3vw,32px)]">
+            <div
+              className="grid [grid-template-columns:repeat(auto-fit,minmax(18.5rem,1fr))] gap-[clamp(16px,2vw,28px)]"
+            >
+              {products.map(p => (
+                <ProductCard
+                  key={p.catalog_id}
+                  product={p}
+                  density="compact"
+                />
+              ))}
+            </div>
           </div>
         )}
       </div>
