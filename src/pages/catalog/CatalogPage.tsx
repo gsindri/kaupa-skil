@@ -226,7 +226,7 @@ export default function CatalogPage() {
           />
         ) : (
           <div
-            className="grid [grid-template-columns:repeat(auto-fit,minmax(18rem,1fr))] gap-[clamp(16px,2.2vw,28px)]"
+            className="grid [grid-template-columns:repeat(auto-fit,minmax(18rem,1fr))] gap-[clamp(16px,2vw,28px)]"
           >
             {products.map(p => (
               <ProductCard

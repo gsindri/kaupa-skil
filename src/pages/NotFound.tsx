@@ -16,7 +16,7 @@ const NotFound = () => {
   }, [location.pathname])
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+    <div className="min-h-screen flex items-center justify-center bg-background p-[clamp(16px,2vw,28px)]">
       <Card className="mx-auto max-w-md w-full">
         <CardHeader className="text-center">
           <CardTitle className="text-4xl font-bold mb-2">404</CardTitle>

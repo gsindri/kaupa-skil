@@ -20,7 +20,8 @@ export function VirtualizedGrid<T>({
 }: VirtualizedGridProps<T>) {
   const parentRef = useRef<HTMLDivElement>(null)
   const [columns, setColumns] = useState(1)
-  const rowGap = 16 // Tailwind gap-4
+  const getGap = () => Math.max(16, Math.min(28, window.innerWidth * 0.02))
+  const [rowGap, setRowGap] = useState(getGap())
 
   useLayoutEffect(() => {
     function measure() {
@@ -29,6 +30,7 @@ export function VirtualizedGrid<T>({
       const width = parentRef.current?.parentElement?.clientWidth || 0
       const next = Math.max(1, Math.floor(width / 250))
       setColumns(next)
+      setRowGap(getGap())
     }
     measure()
     window.addEventListener('resize', measure)
@@ -76,7 +78,7 @@ export function VirtualizedGrid<T>({
               style={{ transform: `translateY(${row.start}px)`, height: row.size }}
             >
               <div
-                className="grid gap-4"
+                className="grid gap-[clamp(16px,2vw,28px)]"
                 style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}
               >
                 {rowItems.map((item, i) => (

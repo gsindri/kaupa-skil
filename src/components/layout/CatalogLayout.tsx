@@ -23,7 +23,7 @@ export function CatalogLayout() {
 
         <div className="min-w-0 overflow-y-auto">
           <TopNavigation />
-          <div className="px-4 sm:px-6 lg:px-8">
+          <div className="px-[clamp(16px,2vw,28px)]">
             <Outlet />
           </div>
         </div>

@@ -77,7 +77,8 @@ export function ProductCard({
     <Card data-testid="product-card" className="h-full flex flex-col">
       <CardContent
         className={cn(
-          density === 'compact' ? 'space-y-1 p-2' : 'space-y-2 p-4',
+          'p-4',
+          density === 'compact' ? 'space-y-1' : 'space-y-2',
         )}
       >
         <LazyImage
