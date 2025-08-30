@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { AlertCircle, Loader2, X } from 'lucide-react'
+import { AlertCircle, Loader2 } from 'lucide-react'
 import { useAuth } from '@/contexts/useAuth'
 import { useCatalogProducts } from '@/hooks/useCatalogProducts'
 import { useOrgCatalog } from '@/hooks/useOrgCatalog'
@@ -10,16 +10,6 @@ import { useDebounce } from '@/hooks/useDebounce'
 import { CatalogTable } from '@/components/catalog/CatalogTable'
 import { ProductCard } from '@/components/catalog/ProductCard'
 import { SkeletonCard } from '@/components/catalog/SkeletonCard'
-import { Checkbox } from '@/components/ui/checkbox'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { Badge } from '@/components/ui/badge'
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import type { FacetFilters } from '@/services/catalog'
 import {
   logFilter,
@@ -208,7 +198,8 @@ export default function CatalogPage() {
 
   return (
     <div className="w-full min-w-0 overflow-visible">
-      {/* <LayoutDebugger show={true} /> */}
+      {/* eslint-disable-next-line no-constant-binary-expression */}
+      {false && <LayoutDebugger show />}
 
       {/* Control bar */}
       <div className="pb-4">
@@ -233,19 +224,39 @@ export default function CatalogPage() {
             }
           />
         </div>
+
+        <div className="flex justify-end mt-2">
+          <ViewToggle view={view} onViewChange={setView} />
+        </div>
       </div>
 
       {/* Content area */}
-        <div className="w-full min-w-0">
-          {view === 'list' ? (
-            <CatalogTable
-              products={sortedProducts}
-              selected={selected}
-              onSelect={toggleSelect}
-              onSelectAll={handleSelectAll}
-            />
-          ) : null}
-        </div>
+      <div className="w-full min-w-0">
+        {view === 'list' ? (
+          <CatalogTable
+            products={sortedProducts}
+            selected={selected}
+            onSelect={toggleSelect}
+            onSelectAll={handleSelectAll}
+          />
+        ) : (
+          <div
+            className="
+              grid
+              [grid-template-columns:repeat(auto-fit,minmax(18.5rem,1fr))]
+              gap-[clamp(16px,2vw,28px)]
+            "
+          >
+            {sortedProducts.map(product => (
+              <ProductCard key={product.catalog_id} product={product} density={density} />
+            ))}
+            {loadingMore &&
+              Array.from({ length: 3 }).map((_, i) => (
+                <SkeletonCard key={`skeleton-${i}`} density={density} />
+              ))}
+          </div>
+        )}
+      </div>
 
       {/* Load more button */}
       {nextCursor && (
