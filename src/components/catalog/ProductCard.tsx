@@ -1,6 +1,5 @@
 import { useState, type SyntheticEvent } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
   Sheet,
@@ -46,12 +45,6 @@ export function ProductCard({
 
   const connectedIds = new Set(connectedSuppliers.map(s => s.id))
 
-  const availabilityVariant: 'secondary' | 'destructive' = product.availability
-    ? product.availability.toLowerCase().includes('out')
-      ? 'destructive'
-      : 'secondary'
-    : 'secondary'
-
   const initialImageSrc = product.image_main
     ? /^https?:\/\//i.test(product.image_main)
       ? product.image_main
@@ -84,14 +77,9 @@ export function ProductCard({
   return (
     <Card
       data-testid="product-card"
-      tabIndex={0}
-      role="button"
-      onKeyDown={handleKeyDown}
-      className="h-full flex flex-col cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
     >
       <CardContent
         className={cn(
-          density === 'compact' ? 'space-y-1 p-2' : 'space-y-2 p-4',
         )}
       >
         <LazyImage
@@ -100,17 +88,16 @@ export function ProductCard({
           loading="lazy"
           width={200}
           height={200}
-          className={cn(
-            "aspect-square w-full",
-            density === 'compact' ? 'mb-1' : 'mb-2'
-          )}
-          imgClassName="rounded object-cover"
+          className="w-full aspect-[4/3] rounded-t-lg bg-muted/20"
+          imgClassName="object-contain"
           onError={handleImageError}
         />
-        <h3 className={cn(
-          'font-medium line-clamp-2',
-          density === 'compact' ? 'text-xs leading-tight' : 'text-sm'
-        )}>
+        <h3
+          className={cn(
+            'font-medium line-clamp-1',
+            density === 'compact' ? 'text-xs leading-tight' : 'text-sm'
+          )}
+        >
           {product.name}
         </h3>
         {product.pack_size && (
@@ -123,29 +110,55 @@ export function ProductCard({
             {product.pack_size}
           </p>
         )}
-        {product.availability && (
-          <Badge 
-            variant={availabilityVariant}
-            className={cn(
-              density === 'compact' && 'text-xs px-1 py-0'
-            )}
-          >
-            {product.availability}
-          </Badge>
-        )}
         <Sheet open={open} onOpenChange={setOpen}>
-          <SheetTrigger asChild>
-            <Badge
-              variant="secondary"
-              data-testid="supplier-count"
-              className={cn(
-                "cursor-pointer",
-                density === 'compact' && 'text-xs px-1 py-0'
-              )}
-            >
-              {product.supplier_count ?? 0} suppliers
-            </Badge>
-          </SheetTrigger>
+          <div className="flex flex-col gap-1">
+            <SheetTrigger asChild>
+              <Button
+                variant="link"
+                data-testid="supplier-count"
+                className={cn(
+                  'h-auto p-0 text-left font-normal',
+                  density === 'compact' ? 'text-xs' : 'text-sm'
+                )}
+              >
+                {product.supplier_count ?? 0} suppliers
+              </Button>
+            </SheetTrigger>
+            {showPrice && (
+              <div
+                className={cn(
+                  'flex items-center justify-between',
+                  density === 'compact' ? 'text-xs' : 'text-sm'
+                )}
+              >
+                <div className="font-medium">
+                  {hasConnection ? (
+                    product.best_price != null ? (
+                      <span data-testid="price-badge">
+                        from {product.best_price} {product.currency ?? ''}
+                      </span>
+                    ) : (
+                      <span className="text-muted-foreground">—</span>
+                    )
+                  ) : (
+                    <span className="text-muted-foreground">
+                      Connect supplier
+                    </span>
+                  )}
+                </div>
+                {!hasConnection && (
+                  <SheetTrigger asChild>
+                    <Button
+                      size="sm"
+                      className="opacity-0 transition-opacity group-hover:opacity-100"
+                    >
+                      Connect
+                    </Button>
+                  </SheetTrigger>
+                )}
+              </div>
+            )}
+          </div>
           <SheetContent className="w-80 sm:w-96">
             <SheetHeader>
               <SheetTitle>Suppliers</SheetTitle>
@@ -175,26 +188,6 @@ export function ProductCard({
             </div>
           </SheetContent>
         </Sheet>
-        {showPrice && (
-          <div className={cn(
-            "text-sm font-medium",
-            density === 'compact' && 'text-xs'
-          )}>
-            {hasConnection ? (
-              product.best_price != null ? (
-                <span data-testid="price-badge">
-                  from {product.best_price} {product.currency ?? ''}
-                </span>
-              ) : (
-                <span className="text-muted-foreground">—</span>
-              )
-            ) : (
-              <span className="text-muted-foreground">
-                Connect supplier
-              </span>
-            )}
-          </div>
-        )}
       </CardContent>
     </Card>
   )
