@@ -1,8 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { AlertCircle, Loader2 } from 'lucide-react'
+import { AlertCircle, Loader2, X } from 'lucide-react'
 import { useAuth } from '@/contexts/useAuth'
 import { useCatalogProducts } from '@/hooks/useCatalogProducts'
 import { useOrgCatalog } from '@/hooks/useOrgCatalog'
@@ -11,6 +10,15 @@ import { CatalogTable } from '@/components/catalog/CatalogTable'
 import { ProductCard } from '@/components/catalog/ProductCard'
 import { SkeletonCard } from '@/components/catalog/SkeletonCard'
 import { Checkbox } from '@/components/ui/checkbox'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Badge } from '@/components/ui/badge'
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import type { FacetFilters } from '@/services/catalog'
 import {
   logFilter,
@@ -36,6 +44,7 @@ export default function CatalogPage() {
   const [selected, setSelected] = useState<string[]>([])
   const [density, setDensity] = useState<'comfortable' | 'compact'>('comfortable')
   const [search, setSearch] = useState('')
+  const [sort, setSort] = useState<'relevance' | 'name' | 'price'>('relevance')
   const brand = filters.brand
   const debouncedSearch = useDebounce(search, 300)
   const sentinelRef = useRef<HTMLDivElement | null>(null)
@@ -181,7 +190,7 @@ export default function CatalogPage() {
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelected(products.map(p => p.catalog_id))
+      setSelected(sortedProducts.map(p => p.catalog_id))
     } else {
       setSelected([])
     }
@@ -207,43 +216,21 @@ export default function CatalogPage() {
           </Alert>
         )}
 
-        <div className="sticky top-[calc(var(--header-h))] z-10 backdrop-blur-sm bg-background/80">
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
             <Input
               placeholder="Search products"
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="md:col-span-6"
             />
             <Input
               placeholder="Brand"
               value={filters.brand ?? ''}
-              onChange={e => setFilters(prev => ({ ...prev, brand: e.target.value }))}
-              className="md:col-span-4"
-            />
-            <div className="md:col-span-2 flex items-center space-x-2">
-              <Checkbox
-                id="price-toggle"
-                checked={onlyWithPrice}
-                onCheckedChange={checked => setOnlyWithPrice(Boolean(checked))}
-              />
-              <label htmlFor="price-toggle" className="text-sm">
-                Only with price
-              </label>
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-4 lg:mt-6">
-          <ViewToggle value={view} onChange={setView} />
-        </div>
       </div>
 
       {/* Content area */}
       <div className="w-full min-w-0">
         {view === 'list' ? (
           <CatalogTable
-            products={products}
+            products={sortedProducts}
             selected={selected}
             onSelect={toggleSelect}
             onSelectAll={handleSelectAll}
