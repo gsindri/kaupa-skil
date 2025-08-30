@@ -73,8 +73,22 @@ export function ProductCard({
     }
   }
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === 'Enter') {
+      setOpen(true)
+    } else if (!hasConnection && e.key.toLowerCase() === 'c') {
+      setOpen(true)
+    }
+  }
+
   return (
-    <Card data-testid="product-card" className="h-full flex flex-col">
+    <Card
+      data-testid="product-card"
+      tabIndex={0}
+      role="button"
+      onKeyDown={handleKeyDown}
+      className="h-full flex flex-col cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+    >
       <CardContent
         className={cn(
           density === 'compact' ? 'space-y-1 p-2' : 'space-y-2 p-4',
