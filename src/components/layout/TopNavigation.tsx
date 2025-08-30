@@ -93,7 +93,7 @@ export function TopNavigation() {
         scrolled ? 'shadow-sm' : ''
       )}
     >
-      <div className="grid grid-cols-[auto,1fr,auto] items-center gap-3 w-full px-4 h-full">
+      <div className="grid grid-cols-[auto,1fr,auto] items-center gap-3 w-full px-[clamp(16px,2vw,28px)] h-full">
         <div className="flex items-center gap-2 min-w-0">
           <Button
             variant="ghost"

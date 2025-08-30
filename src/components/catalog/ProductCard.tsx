@@ -73,8 +73,6 @@ export function ProductCard({
     >
       <CardContent
         className={cn(
-          'flex flex-col',
-          density === 'compact' ? 'gap-1 p-2' : 'gap-2 p-4',
         )}
       >
         <LazyImage
