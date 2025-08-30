@@ -1,6 +1,5 @@
 import { useState, type SyntheticEvent } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
   Sheet,
@@ -50,12 +49,6 @@ export function ProductCard({
 
   const connectedIds = new Set(connectedSuppliers.map(s => s.id))
 
-  const availabilityVariant: 'secondary' | 'destructive' = product.availability
-    ? product.availability.toLowerCase().includes('out')
-      ? 'destructive'
-      : 'secondary'
-    : 'secondary'
-
   const initialImageSrc = product.image_main
     ? /^https?:\/\//i.test(product.image_main)
       ? product.image_main
@@ -77,89 +70,15 @@ export function ProductCard({
     }
   }
 
-  const priceBadge =
-    showPrice && hasConnection && product.best_price != null
-      ? `from ${product.best_price} ${product.currency ?? ''}`
-      : null
 
   return (
-    <Card data-testid="product-card" className="h-full flex flex-col">
+    <Card
+      data-testid="product-card"
+    >
       <CardContent
         className={cn(
-          density === 'compact' ? 'space-y-1 p-2' : 'space-y-2 p-4',
         )}
       >
-        <div className={cn('relative', density === 'compact' ? 'mb-1' : 'mb-2')}>
-          <LazyImage
-            src={imageSrc}
-            alt={product.name}
-            loading="lazy"
-            width={200}
-            height={200}
-            className="aspect-square w-full"
-            imgClassName="rounded object-cover"
-            onError={handleImageError}
-          />
-          <div className="absolute top-2 left-2 flex flex-col gap-1 z-10">
-            {priceBadge && (
-              <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
-                {priceBadge}
-              </Badge>
-            )}
-            {product.availability && (
-              <Badge
-                variant={availabilityVariant}
-                className="text-[10px] px-1.5 py-0"
-              >
-                {product.availability}
-              </Badge>
-            )}
-          </div>
-          <Sheet open={open} onOpenChange={setOpen}>
-            <SheetTrigger asChild>
-              <Badge
-                variant="secondary"
-                data-testid="supplier-count"
-                className="absolute top-2 right-2 z-10 cursor-pointer flex items-center gap-1 text-[10px] px-1.5 py-0"
-              >
-                {brandFilter && <Tag className="h-3 w-3" />}
-                {product.supplier_count ?? 0}
-              </Badge>
-            </SheetTrigger>
-            <SheetContent className="w-80 sm:w-96">
-              <SheetHeader>
-                <SheetTitle>Suppliers</SheetTitle>
-              </SheetHeader>
-              <div className="space-y-4 py-4">
-                {supplierList.map(supplier => {
-                  const isConnected = connectedIds.has(supplier.supplier_id)
-                  return (
-                    <div
-                      key={supplier.supplier_id}
-                      className="flex items-center justify-between"
-                    >
-                      <div>
-                        <p className="font-medium">{supplier.name}</p>
-                        {isConnected && supplier.price != null ? (
-                          <p className="text-sm">
-                            {supplier.price} {supplier.currency ?? ''}
-                          </p>
-                        ) : (
-                          <p className="text-sm text-muted-foreground">—</p>
-                        )}
-                      </div>
-                      {!isConnected && <Button size="sm">Connect</Button>}
-                    </div>
-                  )
-                })}
-              </div>
-            </SheetContent>
-          </Sheet>
-        </div>
-        <h3
-          className={cn(
-            'font-medium line-clamp-2',
-            density === 'compact' ? 'text-xs leading-tight' : 'text-sm',
           )}
         >
           {product.name}
