@@ -1,24 +1,13 @@
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { AlertCircle, Loader2, X } from 'lucide-react'
+import { AlertCircle, Loader2 } from 'lucide-react'
 import { useAuth } from '@/contexts/useAuth'
 import { useCatalogProducts } from '@/hooks/useCatalogProducts'
 import { useOrgCatalog } from '@/hooks/useOrgCatalog'
 import { useDebounce } from '@/hooks/useDebounce'
 import { CatalogTable } from '@/components/catalog/CatalogTable'
-import { ProductCard } from '@/components/catalog/ProductCard'
-import { SkeletonCard } from '@/components/catalog/SkeletonCard'
-import { Checkbox } from '@/components/ui/checkbox'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { Badge } from '@/components/ui/badge'
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import type { FacetFilters } from '@/services/catalog'
 import {
   logFilter,
@@ -28,7 +17,6 @@ import {
 } from '@/lib/analytics'
 import { AnalyticsTracker } from '@/components/quick/AnalyticsTrackerUtils'
 import { ViewToggle } from '@/components/place-order/ViewToggle'
-import { LayoutDebugger } from '@/components/debug/LayoutDebugger'
 
 export default function CatalogPage() {
   const { profile } = useAuth()
@@ -42,9 +30,7 @@ export default function CatalogPage() {
   const [products, setProducts] = useState<any[]>([])
   const lastCursor = useRef<string | null>(null)
   const [selected, setSelected] = useState<string[]>([])
-  const [density, setDensity] = useState<'comfortable' | 'compact'>('comfortable')
   const [search, setSearch] = useState('')
-  const [sort, setSort] = useState<'relevance' | 'name' | 'price'>('relevance')
   const brand = filters.brand
   const debouncedSearch = useDebounce(search, 300)
   const sentinelRef = useRef<HTMLDivElement | null>(null)
@@ -120,28 +106,18 @@ export default function CatalogPage() {
     }
   }, [orgError])
 
+  // Merge products when either query updates
   useEffect(() => {
-    const hasOrgData = !!orgData?.length
-    const data = hasOrgData ? orgData : publicData
-    const next = hasOrgData ? orgNext : publicNext
-    const fetching = hasOrgData ? orgFetching : publicFetching
-    if (fetching) return
-
-    if (!data) return
-    if (cursor && cursor === lastCursor.current) return
-
-    setProducts(prev => (cursor ? [...prev, ...data] : data))
-    setNextCursor(next ?? null)
-    lastCursor.current = cursor
-  }, [
-    orgData,
-    publicData,
-    orgNext,
-    publicNext,
-    orgFetching,
-    publicFetching,
-    cursor,
-  ])
+    const newProducts = [...(orgData || []), ...(publicData || [])]
+    setProducts(prev => {
+      if (cursor && cursor === lastCursor.current) {
+        return [...prev, ...newProducts]
+      }
+      lastCursor.current = cursor
+      return newProducts
+    })
+    setNextCursor(orgNext || publicNext || null)
+  }, [publicData, orgData, orgNext, publicNext, cursor])
 
   useEffect(() => {
     if (
@@ -159,6 +135,8 @@ export default function CatalogPage() {
     filters,
     onlyWithPrice,
   ])
+
+  const sortedProducts = products
 
   const isLoading = publicQuery.isFetching || orgQuery.isFetching
   const loadingMore = isLoading && cursor !== null
@@ -196,19 +174,10 @@ export default function CatalogPage() {
     }
   }
 
-  const total =
-    orgQuery.isFetched && typeof orgTotal === 'number'
-      ? orgTotal
-      : publicQuery.isFetched && typeof publicTotal === 'number'
-        ? publicTotal
-        : null
-
   return (
     <div className="w-full min-w-0 overflow-visible">
-      {/* <LayoutDebugger show={true} /> */}
-
       {/* Control bar */}
-      <div className="pb-4">
+      <div className="pb-4 space-y-4">
         {(publicError || orgError) && (
           <Alert variant="destructive" className="mb-4">
             <AlertCircle className="h-4 w-4" />
@@ -216,14 +185,25 @@ export default function CatalogPage() {
           </Alert>
         )}
 
-            <Input
-              placeholder="Search products"
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-            />
-            <Input
-              placeholder="Brand"
-              value={filters.brand ?? ''}
+        <div className="flex flex-wrap items-center gap-2">
+          <Input
+            placeholder="Search products"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="h-10 w-48"
+          />
+          <Input
+            placeholder="Brand"
+            value={filters.brand ?? ''}
+            onChange={e =>
+              setFilters(f => ({ ...f, brand: e.target.value || undefined }))
+            }
+            className="h-10 w-36"
+          />
+          <div className="ml-auto">
+            <ViewToggle value={view} onChange={setView} />
+          </div>
+        </div>
       </div>
 
       {/* Content area */}
@@ -236,6 +216,12 @@ export default function CatalogPage() {
             onSelectAll={handleSelectAll}
           />
         ) : (
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+            {sortedProducts.map(p => (
+              <div key={p.catalog_id} className="rounded border p-2">
+                {p.name}
+              </div>
+            ))}
           </div>
         )}
       </div>
@@ -252,3 +238,4 @@ export default function CatalogPage() {
     </div>
   )
 }
+
