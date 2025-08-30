@@ -1,15 +1,24 @@
-import { useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { AlertCircle, Loader2 } from 'lucide-react'
+import { AlertCircle, Loader2, X } from 'lucide-react'
 import { useAuth } from '@/contexts/useAuth'
 import { useCatalogProducts } from '@/hooks/useCatalogProducts'
 import { useOrgCatalog } from '@/hooks/useOrgCatalog'
 import { useDebounce } from '@/hooks/useDebounce'
 import { CatalogTable } from '@/components/catalog/CatalogTable'
 import { ProductCard } from '@/components/catalog/ProductCard'
+import { SkeletonCard } from '@/components/catalog/SkeletonCard'
 import { Checkbox } from '@/components/ui/checkbox'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Badge } from '@/components/ui/badge'
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import type { FacetFilters } from '@/services/catalog'
 import {
   logFilter,
@@ -35,8 +44,10 @@ export default function CatalogPage() {
   const [selected, setSelected] = useState<string[]>([])
   const [density, setDensity] = useState<'comfortable' | 'compact'>('comfortable')
   const [search, setSearch] = useState('')
+  const [sort, setSort] = useState<'relevance' | 'name' | 'price'>('relevance')
   const brand = filters.brand
   const debouncedSearch = useDebounce(search, 300)
+  const sentinelRef = useRef<HTMLDivElement | null>(null)
 
   const publicQuery = useCatalogProducts({
     search: debouncedSearch,
@@ -149,9 +160,27 @@ export default function CatalogPage() {
     onlyWithPrice,
   ])
 
-  const loadMore = () => {
-    if (nextCursor) setCursor(nextCursor)
-  }
+  const isLoading = publicQuery.isFetching || orgQuery.isFetching
+  const loadingMore = isLoading && cursor !== null
+
+  const loadMore = useCallback(() => {
+    if (nextCursor && !loadingMore) setCursor(nextCursor)
+  }, [nextCursor, loadingMore])
+
+  useEffect(() => {
+    const sentinel = sentinelRef.current
+    if (!sentinel || !nextCursor) return
+    const observer = new IntersectionObserver(entries => {
+      const [entry] = entries
+      if (entry.isIntersecting) {
+        loadMore()
+      }
+    })
+    observer.observe(sentinel)
+    return () => {
+      observer.disconnect()
+    }
+  }, [nextCursor, loadMore])
 
   const toggleSelect = (id: string) => {
     setSelected(prev =>
@@ -161,7 +190,7 @@ export default function CatalogPage() {
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelected(products.map(p => p.catalog_id))
+      setSelected(sortedProducts.map(p => p.catalog_id))
     } else {
       setSelected([])
     }
@@ -174,74 +203,46 @@ export default function CatalogPage() {
         ? publicTotal
         : null
 
-  const isLoading = publicQuery.isFetching || orgQuery.isFetching
-  const loadingMore = isLoading && cursor !== null
-
   return (
     <div className="w-full min-w-0 overflow-visible">
       {/* <LayoutDebugger show={true} /> */}
 
       {/* Control bar */}
-      <div className="pb-4 space-y-4">
+      <div className="pb-4">
         {(publicError || orgError) && (
-          <Alert variant="destructive">
+          <Alert variant="destructive" className="mb-4">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>{String(publicError || orgError)}</AlertDescription>
           </Alert>
         )}
 
-        <div className="mb-4 lg:mb-6 grid gap-3 md:grid-cols-[1fr,320px,auto] items-center">
-          <Input
-            placeholder="Search products"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-          />
-          <Input
-            placeholder="Brand"
-            value={filters.brand ?? ''}
-            onChange={e => setFilters(prev => ({ ...prev, brand: e.target.value }))}
-          />
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="price-toggle"
-              checked={onlyWithPrice}
-              onCheckedChange={checked => setOnlyWithPrice(Boolean(checked))}
+            <Input
+              placeholder="Search products"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
             />
-            <label htmlFor="price-toggle" className="text-sm">
-              Only with price
-            </label>
-          </div>
-        </div>
-        <ViewToggle value={view} onChange={setView} />
+            <Input
+              placeholder="Brand"
+              value={filters.brand ?? ''}
       </div>
 
       {/* Content area */}
       <div className="w-full min-w-0">
         {view === 'list' ? (
           <CatalogTable
-            products={products}
+            products={sortedProducts}
             selected={selected}
             onSelect={toggleSelect}
             onSelectAll={handleSelectAll}
           />
         ) : (
-          <div
-            className="grid [grid-template-columns:repeat(auto-fit,minmax(18rem,1fr))] gap-[clamp(16px,2vw,28px)]"
-          >
-            {products.map(p => (
-              <ProductCard
-                key={p.catalog_id}
-                product={p}
-                density="compact"
-              />
-            ))}
           </div>
         )}
       </div>
 
       {/* Load more button */}
       {nextCursor && (
-        <div className="flex justify-center pt-4">
+        <div ref={sentinelRef} className="flex justify-center pt-4">
           <Button onClick={loadMore} disabled={loadingMore} variant="outline">
             {loadingMore && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Load more
