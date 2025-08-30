@@ -1,5 +1,5 @@
 
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { HelpCircle, ChevronDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -33,19 +33,21 @@ export function TopNavigation() {
   const [scrolled, setScrolled] = useState(false)
   const lastKey = useRef<string>('')
 
+  // Fallback so first paint isn’t overlapped
+  useLayoutEffect(() => {
+    document.documentElement.style.setProperty('--header-h', '56px')
+  }, [])
+
+  // Keep --header-h in sync with actual header height
   useEffect(() => {
-    const update = () => {
-      const h = headerRef.current?.offsetHeight ?? 64
+    const el = headerRef.current
+    if (!el) return
+    const ro = new ResizeObserver(() => {
+      const h = Math.round(el.getBoundingClientRect().height)
       document.documentElement.style.setProperty('--header-h', `${h}px`)
-    }
-    update()
-    const observer = new ResizeObserver(update)
-    if (headerRef.current) observer.observe(headerRef.current)
-    window.addEventListener('resize', update)
-    return () => {
-      window.removeEventListener('resize', update)
-      observer.disconnect()
-    }
+    })
+    ro.observe(el)
+    return () => ro.disconnect()
   }, [])
 
   useEffect(() => {
