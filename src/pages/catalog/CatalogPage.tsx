@@ -1,4 +1,3 @@
-import { useEffect, useRef, useState, useMemo } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -9,6 +8,7 @@ import { useOrgCatalog } from '@/hooks/useOrgCatalog'
 import { useDebounce } from '@/hooks/useDebounce'
 import { CatalogTable } from '@/components/catalog/CatalogTable'
 import { ProductCard } from '@/components/catalog/ProductCard'
+import { SkeletonCard } from '@/components/catalog/SkeletonCard'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
   Select,
@@ -47,6 +47,7 @@ export default function CatalogPage() {
   const [sort, setSort] = useState<'relevance' | 'name' | 'price'>('relevance')
   const brand = filters.brand
   const debouncedSearch = useDebounce(search, 300)
+  const sentinelRef = useRef<HTMLDivElement | null>(null)
 
   const publicQuery = useCatalogProducts({
     search: debouncedSearch,
@@ -159,9 +160,27 @@ export default function CatalogPage() {
     onlyWithPrice,
   ])
 
-  const loadMore = () => {
-    if (nextCursor) setCursor(nextCursor)
-  }
+  const isLoading = publicQuery.isFetching || orgQuery.isFetching
+  const loadingMore = isLoading && cursor !== null
+
+  const loadMore = useCallback(() => {
+    if (nextCursor && !loadingMore) setCursor(nextCursor)
+  }, [nextCursor, loadingMore])
+
+  useEffect(() => {
+    const sentinel = sentinelRef.current
+    if (!sentinel || !nextCursor) return
+    const observer = new IntersectionObserver(entries => {
+      const [entry] = entries
+      if (entry.isIntersecting) {
+        loadMore()
+      }
+    })
+    observer.observe(sentinel)
+    return () => {
+      observer.disconnect()
+    }
+  }, [nextCursor, loadMore])
 
   const toggleSelect = (id: string) => {
     setSelected(prev =>
@@ -183,22 +202,6 @@ export default function CatalogPage() {
       : publicQuery.isFetched && typeof publicTotal === 'number'
         ? publicTotal
         : null
-
-  const sortedProducts = useMemo(() => {
-    const items = [...products]
-    if (sort === 'name') items.sort((a, b) => a.name.localeCompare(b.name))
-    if (sort === 'price') {
-      items.sort((a, b) => {
-        const aPrice = a.best_price ?? Number.MAX_VALUE
-        const bPrice = b.best_price ?? Number.MAX_VALUE
-        return aPrice - bPrice
-      })
-    }
-    return items
-  }, [products, sort])
-
-  const isLoading = publicQuery.isFetching || orgQuery.isFetching
-  const loadingMore = isLoading && cursor !== null
 
   return (
     <div className="w-full min-w-0 overflow-visible">
@@ -239,7 +242,7 @@ export default function CatalogPage() {
 
       {/* Load more button */}
       {nextCursor && (
-        <div className="flex justify-center pt-4">
+        <div ref={sentinelRef} className="flex justify-center pt-4">
           <Button onClick={loadMore} disabled={loadingMore} variant="outline">
             {loadingMore && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Load more
