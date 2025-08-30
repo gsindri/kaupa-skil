@@ -1,8 +1,8 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useMemo } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { AlertCircle, Loader2 } from 'lucide-react'
+import { AlertCircle, Loader2, X } from 'lucide-react'
 import { useAuth } from '@/contexts/useAuth'
 import { useCatalogProducts } from '@/hooks/useCatalogProducts'
 import { useOrgCatalog } from '@/hooks/useOrgCatalog'
@@ -10,6 +10,15 @@ import { useDebounce } from '@/hooks/useDebounce'
 import { CatalogTable } from '@/components/catalog/CatalogTable'
 import { ProductCard } from '@/components/catalog/ProductCard'
 import { Checkbox } from '@/components/ui/checkbox'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Badge } from '@/components/ui/badge'
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import type { FacetFilters } from '@/services/catalog'
 import {
   logFilter,
@@ -35,6 +44,7 @@ export default function CatalogPage() {
   const [selected, setSelected] = useState<string[]>([])
   const [density, setDensity] = useState<'comfortable' | 'compact'>('comfortable')
   const [search, setSearch] = useState('')
+  const [sort, setSort] = useState<'relevance' | 'name' | 'price'>('relevance')
   const brand = filters.brand
   const debouncedSearch = useDebounce(search, 300)
 
@@ -161,7 +171,7 @@ export default function CatalogPage() {
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelected(products.map(p => p.catalog_id))
+      setSelected(sortedProducts.map(p => p.catalog_id))
     } else {
       setSelected([])
     }
@@ -173,6 +183,19 @@ export default function CatalogPage() {
       : publicQuery.isFetched && typeof publicTotal === 'number'
         ? publicTotal
         : null
+
+  const sortedProducts = useMemo(() => {
+    const items = [...products]
+    if (sort === 'name') items.sort((a, b) => a.name.localeCompare(b.name))
+    if (sort === 'price') {
+      items.sort((a, b) => {
+        const aPrice = a.best_price ?? Number.MAX_VALUE
+        const bPrice = b.best_price ?? Number.MAX_VALUE
+        return aPrice - bPrice
+      })
+    }
+    return items
+  }, [products, sort])
 
   const isLoading = publicQuery.isFetching || orgQuery.isFetching
   const loadingMore = isLoading && cursor !== null
@@ -190,36 +213,147 @@ export default function CatalogPage() {
           </Alert>
         )}
 
-        <div className="mb-4 lg:mb-6 grid gap-3 md:grid-cols-[1fr,320px,auto] items-center">
-          <Input
-            placeholder="Search products"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-          />
-          <Input
-            placeholder="Brand"
-            value={filters.brand ?? ''}
-            onChange={e => setFilters(prev => ({ ...prev, brand: e.target.value }))}
-          />
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="price-toggle"
-              checked={onlyWithPrice}
-              onCheckedChange={checked => setOnlyWithPrice(Boolean(checked))}
+        {/* Desktop filters */}
+        <div className="hidden md:block">
+          {total !== null && (
+            <p className="mb-2 text-sm text-muted-foreground">{total} results</p>
+          )}
+          <div className="grid grid-cols-12 gap-3 items-center">
+            <Input
+              placeholder="Search products"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="col-span-5"
             />
-            <label htmlFor="price-toggle" className="text-sm">
-              Only with price
-            </label>
+            <Input
+              placeholder="Brand"
+              value={filters.brand ?? ''}
+              onChange={e =>
+                setFilters(prev => ({ ...prev, brand: e.target.value }))
+              }
+              className="col-span-3"
+            />
+            <div className="col-span-2">
+              <Select
+                value={sort}
+                onValueChange={v =>
+                  setSort(v as 'relevance' | 'name' | 'price')
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Sort" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="relevance">Relevance</SelectItem>
+                  <SelectItem value="name">A–Z</SelectItem>
+                  <SelectItem value="price">Price</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="col-span-2 flex items-center justify-end gap-3">
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="price-toggle"
+                  checked={onlyWithPrice}
+                  onCheckedChange={checked =>
+                    setOnlyWithPrice(Boolean(checked))
+                  }
+                />
+                <label htmlFor="price-toggle" className="text-sm">
+                  Only with price
+                </label>
+              </div>
+              <ViewToggle value={view} onChange={setView} />
+            </div>
           </div>
         </div>
-        <ViewToggle value={view} onChange={setView} />
+
+        {/* Mobile filters */}
+        <div className="md:hidden space-y-2">
+          <div className="flex items-center justify-between">
+            {total !== null && (
+              <p className="text-sm text-muted-foreground">{total} results</p>
+            )}
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="outline">Filters</Button>
+              </SheetTrigger>
+              <SheetContent side="top" className="p-4 space-y-4">
+                <Input
+                  placeholder="Search products"
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                />
+                <Input
+                  placeholder="Brand"
+                  value={filters.brand ?? ''}
+                  onChange={e =>
+                    setFilters(prev => ({ ...prev, brand: e.target.value }))
+                  }
+                />
+                <Select
+                  value={sort}
+                  onValueChange={v =>
+                    setSort(v as 'relevance' | 'name' | 'price')
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Sort" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="relevance">Relevance</SelectItem>
+                    <SelectItem value="name">A–Z</SelectItem>
+                    <SelectItem value="price">Price</SelectItem>
+                  </SelectContent>
+                </Select>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="mobile-price-toggle"
+                      checked={onlyWithPrice}
+                      onCheckedChange={checked =>
+                        setOnlyWithPrice(Boolean(checked))
+                      }
+                    />
+                    <label htmlFor="mobile-price-toggle" className="text-sm">
+                      Only with price
+                    </label>
+                  </div>
+                  <ViewToggle value={view} onChange={setView} />
+                </div>
+              </SheetContent>
+            </Sheet>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {filters.brand && (
+              <Badge variant="secondary" className="gap-1">
+                Brand: {filters.brand}
+                <X
+                  className="h-3 w-3 cursor-pointer"
+                  onClick={() =>
+                    setFilters(prev => ({ ...prev, brand: undefined }))
+                  }
+                />
+              </Badge>
+            )}
+            {onlyWithPrice && (
+              <Badge variant="secondary" className="gap-1">
+                With price
+                <X
+                  className="h-3 w-3 cursor-pointer"
+                  onClick={() => setOnlyWithPrice(false)}
+                />
+              </Badge>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Content area */}
       <div className="w-full min-w-0">
         {view === 'list' ? (
           <CatalogTable
-            products={products}
+            products={sortedProducts}
             selected={selected}
             onSelect={toggleSelect}
             onSelectAll={handleSelectAll}
@@ -228,7 +362,7 @@ export default function CatalogPage() {
           <div
             className="grid [grid-template-columns:repeat(auto-fit,minmax(18rem,1fr))] gap-[clamp(16px,2.2vw,28px)]"
           >
-            {products.map(p => (
+            {sortedProducts.map(p => (
               <ProductCard
                 key={p.catalog_id}
                 product={p}
