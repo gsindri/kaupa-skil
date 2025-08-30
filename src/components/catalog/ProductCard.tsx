@@ -66,10 +66,17 @@ export function ProductCard({
     }
   }
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === 'Enter') {
+      setOpen(true)
+    } else if (!hasConnection && e.key.toLowerCase() === 'c') {
+      setOpen(true)
+    }
+  }
+
   return (
     <Card
       data-testid="product-card"
-      className="group h-full flex flex-col transition hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-md"
     >
       <CardContent
         className={cn(
