@@ -20,17 +20,21 @@ import {
 import { LazyImage } from '@/components/ui/LazyImage'
 import { getCachedImageUrl } from '@/services/ImageCache'
 import { cn } from '@/lib/utils'
+import { Tag } from 'lucide-react'
 
 interface ProductCardProps {
   product: CatalogItem
   showPrice?: boolean
   density?: 'comfortable' | 'compact'
+  /** Whether a brand filter is active */
+  brandFilter?: string | null
 }
 
 export function ProductCard({
   product,
   showPrice = true,
   density = 'comfortable',
+  brandFilter,
 }: ProductCardProps) {
   const { suppliers: connectedSuppliers } = useSupplierConnections()
   const { profile } = useAuth()
@@ -73,6 +77,11 @@ export function ProductCard({
     }
   }
 
+  const priceBadge =
+    showPrice && hasConnection && product.best_price != null
+      ? `from ${product.best_price} ${product.currency ?? ''}`
+      : null
+
   return (
     <Card data-testid="product-card" className="h-full flex flex-col">
       <CardContent
@@ -80,23 +89,79 @@ export function ProductCard({
           density === 'compact' ? 'space-y-1 p-2' : 'space-y-2 p-4',
         )}
       >
-        <LazyImage
-          src={imageSrc}
-          alt={product.name}
-          loading="lazy"
-          width={200}
-          height={200}
+        <div className={cn('relative', density === 'compact' ? 'mb-1' : 'mb-2')}>
+          <LazyImage
+            src={imageSrc}
+            alt={product.name}
+            loading="lazy"
+            width={200}
+            height={200}
+            className="aspect-square w-full"
+            imgClassName="rounded object-cover"
+            onError={handleImageError}
+          />
+          <div className="absolute top-2 left-2 flex flex-col gap-1 z-10">
+            {priceBadge && (
+              <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                {priceBadge}
+              </Badge>
+            )}
+            {product.availability && (
+              <Badge
+                variant={availabilityVariant}
+                className="text-[10px] px-1.5 py-0"
+              >
+                {product.availability}
+              </Badge>
+            )}
+          </div>
+          <Sheet open={open} onOpenChange={setOpen}>
+            <SheetTrigger asChild>
+              <Badge
+                variant="secondary"
+                data-testid="supplier-count"
+                className="absolute top-2 right-2 z-10 cursor-pointer flex items-center gap-1 text-[10px] px-1.5 py-0"
+              >
+                {brandFilter && <Tag className="h-3 w-3" />}
+                {product.supplier_count ?? 0}
+              </Badge>
+            </SheetTrigger>
+            <SheetContent className="w-80 sm:w-96">
+              <SheetHeader>
+                <SheetTitle>Suppliers</SheetTitle>
+              </SheetHeader>
+              <div className="space-y-4 py-4">
+                {supplierList.map(supplier => {
+                  const isConnected = connectedIds.has(supplier.supplier_id)
+                  return (
+                    <div
+                      key={supplier.supplier_id}
+                      className="flex items-center justify-between"
+                    >
+                      <div>
+                        <p className="font-medium">{supplier.name}</p>
+                        {isConnected && supplier.price != null ? (
+                          <p className="text-sm">
+                            {supplier.price} {supplier.currency ?? ''}
+                          </p>
+                        ) : (
+                          <p className="text-sm text-muted-foreground">—</p>
+                        )}
+                      </div>
+                      {!isConnected && <Button size="sm">Connect</Button>}
+                    </div>
+                  )
+                })}
+              </div>
+            </SheetContent>
+          </Sheet>
+        </div>
+        <h3
           className={cn(
-            "aspect-square w-full",
-            density === 'compact' ? 'mb-1' : 'mb-2'
+            'font-medium line-clamp-2',
+            density === 'compact' ? 'text-xs leading-tight' : 'text-sm',
           )}
-          imgClassName="rounded object-cover"
-          onError={handleImageError}
-        />
-        <h3 className={cn(
-          'font-medium line-clamp-2',
-          density === 'compact' ? 'text-xs leading-tight' : 'text-sm'
-        )}>
+        >
           {product.name}
         </h3>
         {product.pack_size && (
@@ -108,78 +173,6 @@ export function ProductCard({
           >
             {product.pack_size}
           </p>
-        )}
-        {product.availability && (
-          <Badge 
-            variant={availabilityVariant}
-            className={cn(
-              density === 'compact' && 'text-xs px-1 py-0'
-            )}
-          >
-            {product.availability}
-          </Badge>
-        )}
-        <Sheet open={open} onOpenChange={setOpen}>
-          <SheetTrigger asChild>
-            <Badge
-              variant="secondary"
-              data-testid="supplier-count"
-              className={cn(
-                "cursor-pointer",
-                density === 'compact' && 'text-xs px-1 py-0'
-              )}
-            >
-              {product.supplier_count ?? 0} suppliers
-            </Badge>
-          </SheetTrigger>
-          <SheetContent className="w-80 sm:w-96">
-            <SheetHeader>
-              <SheetTitle>Suppliers</SheetTitle>
-            </SheetHeader>
-            <div className="space-y-4 py-4">
-              {supplierList.map(supplier => {
-                const isConnected = connectedIds.has(supplier.supplier_id)
-                return (
-                  <div
-                    key={supplier.supplier_id}
-                    className="flex items-center justify-between"
-                  >
-                    <div>
-                      <p className="font-medium">{supplier.name}</p>
-                      {isConnected && supplier.price != null ? (
-                        <p className="text-sm">
-                          {supplier.price} {supplier.currency ?? ''}
-                        </p>
-                      ) : (
-                        <p className="text-sm text-muted-foreground">—</p>
-                      )}
-                    </div>
-                    {!isConnected && <Button size="sm">Connect</Button>}
-                  </div>
-                )
-              })}
-            </div>
-          </SheetContent>
-        </Sheet>
-        {showPrice && (
-          <div className={cn(
-            "text-sm font-medium",
-            density === 'compact' && 'text-xs'
-          )}>
-            {hasConnection ? (
-              product.best_price != null ? (
-                <span data-testid="price-badge">
-                  from {product.best_price} {product.currency ?? ''}
-                </span>
-              ) : (
-                <span className="text-muted-foreground">—</span>
-              )
-            ) : (
-              <span className="text-muted-foreground">
-                Connect supplier
-              </span>
-            )}
-          </div>
         )}
       </CardContent>
     </Card>

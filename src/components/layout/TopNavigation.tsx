@@ -39,8 +39,13 @@ export function TopNavigation() {
       document.documentElement.style.setProperty('--header-h', `${h}px`)
     }
     update()
+    const observer = new ResizeObserver(update)
+    if (headerRef.current) observer.observe(headerRef.current)
     window.addEventListener('resize', update)
-    return () => window.removeEventListener('resize', update)
+    return () => {
+      window.removeEventListener('resize', update)
+      observer.disconnect()
+    }
   }, [])
 
   useEffect(() => {

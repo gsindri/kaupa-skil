@@ -233,6 +233,7 @@ export default function CatalogPage() {
                 key={p.catalog_id}
                 product={p}
                 density="compact"
+                brandFilter={filters.brand}
               />
             ))}
           </div>
