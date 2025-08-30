@@ -243,7 +243,7 @@ export default function CatalogPage() {
           <div
             className="
               grid
-              [grid-template-columns:repeat(auto-fit,minmax(18.5rem,1fr))]
+              [grid-template-columns:repeat(auto-fit,minmax(17rem,1fr))]
               gap-[clamp(16px,2vw,28px)]
             "
           >
