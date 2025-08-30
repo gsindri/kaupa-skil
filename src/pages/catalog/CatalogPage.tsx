@@ -182,37 +182,44 @@ export default function CatalogPage() {
       {/* <LayoutDebugger show={true} /> */}
 
       {/* Control bar */}
-      <div className="pb-4 space-y-4">
+      <div className="pb-4">
         {(publicError || orgError) && (
-          <Alert variant="destructive">
+          <Alert variant="destructive" className="mb-4">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>{String(publicError || orgError)}</AlertDescription>
           </Alert>
         )}
 
-        <div className="mb-4 lg:mb-6 grid gap-3 md:grid-cols-[1fr,320px,auto] items-center">
-          <Input
-            placeholder="Search products"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-          />
-          <Input
-            placeholder="Brand"
-            value={filters.brand ?? ''}
-            onChange={e => setFilters(prev => ({ ...prev, brand: e.target.value }))}
-          />
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="price-toggle"
-              checked={onlyWithPrice}
-              onCheckedChange={checked => setOnlyWithPrice(Boolean(checked))}
+        <div className="sticky top-[calc(var(--header-h))] z-10 backdrop-blur-sm bg-background/80">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
+            <Input
+              placeholder="Search products"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="md:col-span-6"
             />
-            <label htmlFor="price-toggle" className="text-sm">
-              Only with price
-            </label>
+            <Input
+              placeholder="Brand"
+              value={filters.brand ?? ''}
+              onChange={e => setFilters(prev => ({ ...prev, brand: e.target.value }))}
+              className="md:col-span-4"
+            />
+            <div className="md:col-span-2 flex items-center space-x-2">
+              <Checkbox
+                id="price-toggle"
+                checked={onlyWithPrice}
+                onCheckedChange={checked => setOnlyWithPrice(Boolean(checked))}
+              />
+              <label htmlFor="price-toggle" className="text-sm">
+                Only with price
+              </label>
+            </div>
           </div>
         </div>
-        <ViewToggle value={view} onChange={setView} />
+
+        <div className="mt-4 lg:mt-6">
+          <ViewToggle value={view} onChange={setView} />
+        </div>
       </div>
 
       {/* Content area */}
