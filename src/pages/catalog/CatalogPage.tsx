@@ -205,148 +205,22 @@ export default function CatalogPage() {
       {/* <LayoutDebugger show={true} /> */}
 
       {/* Control bar */}
-      <div className="pb-4 space-y-4">
+      <div className="pb-4">
         {(publicError || orgError) && (
-          <Alert variant="destructive">
+          <Alert variant="destructive" className="mb-4">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>{String(publicError || orgError)}</AlertDescription>
           </Alert>
         )}
 
-        {/* Desktop filters */}
-        <div className="hidden md:block">
-          {total !== null && (
-            <p className="mb-2 text-sm text-muted-foreground">{total} results</p>
-          )}
-          <div className="grid grid-cols-12 gap-3 items-center">
             <Input
               placeholder="Search products"
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="col-span-5"
             />
             <Input
               placeholder="Brand"
               value={filters.brand ?? ''}
-              onChange={e =>
-                setFilters(prev => ({ ...prev, brand: e.target.value }))
-              }
-              className="col-span-3"
-            />
-            <div className="col-span-2">
-              <Select
-                value={sort}
-                onValueChange={v =>
-                  setSort(v as 'relevance' | 'name' | 'price')
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Sort" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="relevance">Relevance</SelectItem>
-                  <SelectItem value="name">A–Z</SelectItem>
-                  <SelectItem value="price">Price</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="col-span-2 flex items-center justify-end gap-3">
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="price-toggle"
-                  checked={onlyWithPrice}
-                  onCheckedChange={checked =>
-                    setOnlyWithPrice(Boolean(checked))
-                  }
-                />
-                <label htmlFor="price-toggle" className="text-sm">
-                  Only with price
-                </label>
-              </div>
-              <ViewToggle value={view} onChange={setView} />
-            </div>
-          </div>
-        </div>
-
-        {/* Mobile filters */}
-        <div className="md:hidden space-y-2">
-          <div className="flex items-center justify-between">
-            {total !== null && (
-              <p className="text-sm text-muted-foreground">{total} results</p>
-            )}
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button variant="outline">Filters</Button>
-              </SheetTrigger>
-              <SheetContent side="top" className="p-4 space-y-4">
-                <Input
-                  placeholder="Search products"
-                  value={search}
-                  onChange={e => setSearch(e.target.value)}
-                />
-                <Input
-                  placeholder="Brand"
-                  value={filters.brand ?? ''}
-                  onChange={e =>
-                    setFilters(prev => ({ ...prev, brand: e.target.value }))
-                  }
-                />
-                <Select
-                  value={sort}
-                  onValueChange={v =>
-                    setSort(v as 'relevance' | 'name' | 'price')
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Sort" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="relevance">Relevance</SelectItem>
-                    <SelectItem value="name">A–Z</SelectItem>
-                    <SelectItem value="price">Price</SelectItem>
-                  </SelectContent>
-                </Select>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="mobile-price-toggle"
-                      checked={onlyWithPrice}
-                      onCheckedChange={checked =>
-                        setOnlyWithPrice(Boolean(checked))
-                      }
-                    />
-                    <label htmlFor="mobile-price-toggle" className="text-sm">
-                      Only with price
-                    </label>
-                  </div>
-                  <ViewToggle value={view} onChange={setView} />
-                </div>
-              </SheetContent>
-            </Sheet>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {filters.brand && (
-              <Badge variant="secondary" className="gap-1">
-                Brand: {filters.brand}
-                <X
-                  className="h-3 w-3 cursor-pointer"
-                  onClick={() =>
-                    setFilters(prev => ({ ...prev, brand: undefined }))
-                  }
-                />
-              </Badge>
-            )}
-            {onlyWithPrice && (
-              <Badge variant="secondary" className="gap-1">
-                With price
-                <X
-                  className="h-3 w-3 cursor-pointer"
-                  onClick={() => setOnlyWithPrice(false)}
-                />
-              </Badge>
-            )}
-          </div>
-        </div>
       </div>
 
       {/* Content area */}
@@ -359,16 +233,6 @@ export default function CatalogPage() {
             onSelectAll={handleSelectAll}
           />
         ) : (
-          <div
-            className="grid [grid-template-columns:repeat(auto-fit,minmax(18rem,1fr))] gap-[clamp(16px,2.2vw,28px)]"
-          >
-            {sortedProducts.map(p => (
-              <ProductCard
-                key={p.catalog_id}
-                product={p}
-                density="compact"
-              />
-            ))}
           </div>
         )}
       </div>
