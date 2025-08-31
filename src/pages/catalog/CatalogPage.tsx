@@ -197,76 +197,51 @@ export default function CatalogPage() {
         : null
 
   return (
-    <div className="w-full min-w-0 overflow-visible">
+    <>
       {/* eslint-disable-next-line no-constant-binary-expression */}
       {false && <LayoutDebugger show />}
 
       {/* Control bar */}
-      <div className="pb-4">
-        {(publicError || orgError) && (
-          <Alert variant="destructive" className="mb-4">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>{String(publicError || orgError)}</AlertDescription>
-          </Alert>
-        )}
+      <div className="sticky top-[var(--header-h)] z-30 bg-background/80 backdrop-blur border-b">
+        <div className="pb-4">
+          {(publicError || orgError) && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{String(publicError || orgError)}</AlertDescription>
+            </Alert>
+          )}
 
-        <div className="grid gap-2 sm:grid-cols-2">
-          <Input
-            placeholder="Search products"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-          />
-          <Input
-            placeholder="Brand"
-            value={filters.brand ?? ""}
-            onChange={e =>
-              setFilters(prev => ({ ...prev, brand: e.target.value }))
-            }
-          />
-        </div>
+          <div className="grid gap-2 sm:grid-cols-2">
+            <Input
+              placeholder="Search products"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+            />
+            <Input
+              placeholder="Brand"
+              value={filters.brand ?? ""}
+              onChange={e =>
+                setFilters(prev => ({ ...prev, brand: e.target.value }))
+              }
+            />
+          </div>
 
-        <div className="flex justify-end mt-2">
-          <ViewToggle value={view} onChange={setView} />
+          <div className="flex justify-end mt-2">
+            <ViewToggle value={view} onChange={setView} />
+          </div>
         </div>
       </div>
 
       {/* Content area */}
-      <div className="w-full min-w-0">
-        {view === 'list' ? (
-          <CatalogTable
-            products={sortedProducts}
-            selected={selected}
-            onSelect={toggleSelect}
-            onSelectAll={handleSelectAll}
-          />
-        ) : (
-          <div
-            className="
-              grid
-              [grid-template-columns:repeat(auto-fit,minmax(17rem,1fr))]
-              gap-[clamp(16px,2vw,28px)]
-            "
-          >
-            {sortedProducts.map(product => (
-              <ProductCard key={product.catalog_id} product={product} density={density} />
-            ))}
-            {loadingMore &&
-              Array.from({ length: 3 }).map((_, i) => (
-                <SkeletonCard key={`skeleton-${i}`} density={density} />
               ))}
+              {loadingMore &&
+                Array.from({ length: 3 }).map((_, i) => (
+                  <SkeletonCard key={`skeleton-${i}`} density={density} />
+                ))}
+            </div>
           </div>
         )}
       </div>
-
-      {/* Load more button */}
-      {nextCursor && (
-        <div ref={sentinelRef} className="flex justify-center pt-4">
-          <Button onClick={loadMore} disabled={loadingMore} variant="outline">
-            {loadingMore && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Load more
-          </Button>
-        </div>
-      )}
-    </div>
+    </>
   )
 }
