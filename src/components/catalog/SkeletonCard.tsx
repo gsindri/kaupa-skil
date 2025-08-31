@@ -8,7 +8,7 @@ interface SkeletonCardProps {
 
 export function SkeletonCard({ density = 'comfortable' }: SkeletonCardProps) {
   return (
-    <Card className="h-full flex flex-col">
+    <Card className="h-full flex flex-col shadow-sm border border-border bg-card/50">
       <CardContent
         className={cn(
           density === 'compact' ? 'space-y-1 p-2' : 'space-y-2 p-4',
@@ -16,7 +16,7 @@ export function SkeletonCard({ density = 'comfortable' }: SkeletonCardProps) {
       >
         <Skeleton
           className={cn(
-            'w-full aspect-square',
+            'w-full aspect-[4/3] overflow-hidden rounded-md',
             density === 'compact' ? 'mb-1' : 'mb-2',
           )}
         />
