@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import React, { useRef, useEffect } from 'react'
 import {
   Drawer,
   DrawerContent,
@@ -27,6 +27,98 @@ import { ToastAction } from '@/components/ui/toast'
 import { useCart } from '@/contexts/useBasket'
 import { useSettings } from '@/contexts/useSettings'
 import { Link } from 'react-router-dom'
+import type { CartItem } from '@/lib/types'
+
+interface CartItemRowProps {
+  item: CartItem
+  includeVat: boolean
+  updateQuantity: (supplierItemId: string, quantity: number) => void
+  removeItem: (supplierItemId: string) => void
+  formatPrice: (price: number) => string
+}
+
+function CartItemRow({ item, includeVat, updateQuantity, removeItem, formatPrice }: CartItemRowProps) {
+  const cardRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const card = cardRef.current
+    if (!card) return
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Enter' || e.key === '+') {
+        updateQuantity(item.supplierItemId, item.quantity + 1)
+      } else if (e.key === '-') {
+        updateQuantity(item.supplierItemId, item.quantity - 1)
+      } else if (/^[1-9]$/.test(e.key)) {
+        updateQuantity(item.supplierItemId, Number(e.key))
+      }
+    }
+
+    const addListener = () => window.addEventListener('keydown', handleKeyDown)
+    const removeListener = () => window.removeEventListener('keydown', handleKeyDown)
+
+    card.addEventListener('mouseenter', addListener)
+    card.addEventListener('mouseleave', removeListener)
+    card.addEventListener('focus', addListener)
+    card.addEventListener('blur', removeListener)
+
+    return () => {
+      removeListener()
+      card.removeEventListener('mouseenter', addListener)
+      card.removeEventListener('mouseleave', removeListener)
+      card.removeEventListener('focus', addListener)
+      card.removeEventListener('blur', removeListener)
+    }
+  }, [item.supplierItemId, item.quantity, updateQuantity])
+
+  return (
+    <div ref={cardRef} tabIndex={0} className="flex items-center gap-4 group">
+      <div
+        className="h-12 w-12 rounded bg-muted flex-shrink-0"
+        aria-hidden="true"
+      />
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <p
+            className="truncate text-sm font-medium"
+            title={item.itemName}
+          >
+            {item.itemName}
+          </p>
+          <Badge variant="secondary" className="text-xs">
+            {item.supplierName}
+          </Badge>
+        </div>
+        <p className="text-xs text-muted-foreground">
+          {item.packSize}
+        </p>
+      </div>
+      <div className="flex items-center gap-2">
+        <QuantityControls
+          quantity={item.quantity}
+          onQuantityChange={qty => updateQuantity(item.supplierItemId, qty)}
+          onAdd={() => updateQuantity(item.supplierItemId, item.quantity + 1)}
+          onRemove={() => updateQuantity(item.supplierItemId, item.quantity - 1)}
+        />
+        <div className="w-20 text-right text-sm font-medium font-mono">
+          {formatPrice(
+            (includeVat ? item.unitPriceIncVat : item.unitPriceExVat) *
+              item.quantity,
+          )}
+        </div>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="opacity-0 group-hover:opacity-100 transition-opacity"
+          onClick={() => removeItem(item.supplierItemId)}
+          aria-label="Remove item"
+        >
+          <Trash2 className="h-4 w-4" />
+        </Button>
+      </div>
+    </div>
+  )
+}
 
 export function CartDrawer() {
   const {
@@ -162,67 +254,14 @@ export function CartDrawer() {
               </div>
             ) : (
               items.map(item => (
-                <div
+                <CartItemRow
                   key={item.supplierItemId}
-                  className="flex items-center gap-4 group"
-                >
-                  <div
-                    className="h-12 w-12 rounded bg-muted flex-shrink-0"
-                    aria-hidden="true"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <p
-                        className="truncate text-sm font-medium"
-                        title={item.itemName}
-                      >
-                        {item.itemName}
-                      </p>
-                      <Badge variant="secondary" className="text-xs">
-                        {item.supplierName}
-                      </Badge>
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      {item.packSize}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <QuantityControls
-                      quantity={item.quantity}
-                      onQuantityChange={qty =>
-                        updateQuantity(item.supplierItemId, qty)
-                      }
-                      onAdd={() =>
-                        updateQuantity(
-                          item.supplierItemId,
-                          item.quantity + 1,
-                        )
-                      }
-                      onRemove={() =>
-                        updateQuantity(
-                          item.supplierItemId,
-                          item.quantity - 1,
-                        )
-                      }
-                    />
-                    <div className="w-20 text-right text-sm font-medium font-mono">
-                      {formatPrice(
-                        (includeVat
-                          ? item.unitPriceIncVat
-                          : item.unitPriceExVat) * item.quantity,
-                      )}
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="opacity-0 group-hover:opacity-100 transition-opacity"
-                      onClick={() => removeItem(item.supplierItemId)}
-                      aria-label="Remove item"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
+                  item={item}
+                  includeVat={includeVat}
+                  updateQuantity={updateQuantity}
+                  removeItem={removeItem}
+                  formatPrice={formatPrice}
+                />
               ))
             )}
           </div>
