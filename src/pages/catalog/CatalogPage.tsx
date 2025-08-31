@@ -240,20 +240,22 @@ export default function CatalogPage() {
             onSelectAll={handleSelectAll}
           />
         ) : (
-          <div
-            className="
-              grid
-              [grid-template-columns:repeat(auto-fit,minmax(17rem,1fr))]
-              gap-[clamp(16px,2vw,28px)]
-            "
-          >
-            {sortedProducts.map(product => (
-              <ProductCard key={product.catalog_id} product={product} density={density} />
-            ))}
-            {loadingMore &&
-              Array.from({ length: 3 }).map((_, i) => (
-                <SkeletonCard key={`skeleton-${i}`} density={density} />
+          <div className="px-4 sm:px-6 lg:px-8 xl:px-10 2xl:px-12">
+            <div
+              className="grid gap-[clamp(16px,2vw,28px)] [grid-template-columns:repeat(auto-fit,minmax(18.5rem,1fr))]"
+            >
+              {sortedProducts.map(product => (
+                <ProductCard
+                  key={product.catalog_id}
+                  product={product}
+                  density={density}
+                />
               ))}
+              {loadingMore &&
+                Array.from({ length: 3 }).map((_, i) => (
+                  <SkeletonCard key={`skeleton-${i}`} density={density} />
+                ))}
+            </div>
           </div>
         )}
       </div>
