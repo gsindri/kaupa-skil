@@ -21,9 +21,15 @@ export function CatalogGrid({ products, selected, onSelect, showPrice }: Catalog
     return () => window.removeEventListener('resize', updateWidth)
   }, [])
 
-  const columnWidth = 300
-  const rowHeight = 340
-  const columnCount = Math.max(1, Math.floor(width / columnWidth))
+  const getGap = () => Math.max(16, Math.min(28, window.innerWidth * 0.02))
+  const gap = getGap()
+  const minColumnWidth = 250
+  const columnCount = Math.max(1, Math.floor(width / (minColumnWidth + gap)))
+  const cardWidth = columnCount
+    ? (width - gap * (columnCount - 1)) / columnCount
+    : width
+  const columnWidth = cardWidth + gap
+  const rowHeight = cardWidth + 40 + gap
   const rowCount = Math.ceil(products.length / columnCount)
 
   return (
@@ -35,8 +41,9 @@ export function CatalogGrid({ products, selected, onSelect, showPrice }: Catalog
           height={800}
           rowCount={rowCount}
           rowHeight={rowHeight}
-          width={width}
+          width={width + gap}
           className="scrollbar-thin"
+          style={{ margin: `-${gap / 2}px` }}
         >
           {({ columnIndex, rowIndex, style }) => {
             const index = rowIndex * columnCount + columnIndex
@@ -45,8 +52,11 @@ export function CatalogGrid({ products, selected, onSelect, showPrice }: Catalog
             const id = product.catalog_id
             const isSelected = selected.includes(id)
             return (
-              <div style={style} className="p-2">
-                <div className="relative">
+              <div
+                style={{ ...style, padding: gap / 2 }}
+                className="flex h-full"
+              >
+                <div className="relative flex h-full w-full">
                   <ProductCard product={product} showPrice={showPrice} />
                   <Checkbox
                     checked={isSelected}
