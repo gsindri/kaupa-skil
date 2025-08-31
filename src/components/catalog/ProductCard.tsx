@@ -21,8 +21,6 @@ import {
 import { LazyImage } from '@/components/ui/LazyImage'
 import { getCachedImageUrl } from '@/services/ImageCache'
 import { cn } from '@/lib/utils'
-import type { CartItem } from '@/lib/types'
-import { Tag, Plus, Minus } from 'lucide-react'
 
 interface ProductCardProps {
   product: CatalogItem
@@ -44,6 +42,7 @@ export function ProductCard({
   const orgId = profile?.tenant_id || null
   const hasConnection = connectedSuppliers.length > 0
   const [open, setOpen] = useState(false)
+  const { items, addItem, updateQuantity, removeItem } = useCart()
 
   const { data: supplierList = [] } = useQuery<CatalogSupplier[]>({
     queryKey: ['catalog-suppliers', product.catalog_id, orgId],
