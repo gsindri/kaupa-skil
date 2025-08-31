@@ -220,25 +220,13 @@ export function ProductCard({
             </SheetContent>
           </Sheet>
         </div>
-        <h3
-          className={cn(
-            'font-medium line-clamp-2',
-            density === 'compact' ? 'text-xs leading-tight' : 'text-sm',
-          )}
-        >
-          {product.name}
-        </h3>
-        {product.pack_size && (
-          <p
+        <div className="flex h-full flex-col">
+          <h3
             className={cn(
-              'text-muted-foreground line-clamp-1',
-              density === 'compact' ? 'text-xs' : 'text-sm',
+              'font-medium line-clamp-2',
+              density === 'compact' ? 'text-xs leading-tight' : 'text-sm',
             )}
           >
-            {product.pack_size}
-          </p>
-        )}
-        {quantityControl}
       </CardContent>
     </Card>
   )
