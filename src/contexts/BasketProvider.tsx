@@ -3,6 +3,8 @@ import React, { useEffect, useState } from 'react'
 import { useToast } from '@/hooks/use-toast'
 import type { CartItem } from '@/lib/types'
 import { BasketContext } from './BasketProviderUtils'
+import { ToastAction } from '@/components/ui/toast'
+import { flyToCart } from '@/lib/flyToCart'
 
 export default function BasketProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>(() => {
@@ -35,7 +37,15 @@ export default function BasketProvider({ children }: { children: React.ReactNode
     channel.close()
   }
 
-  const addItem = (item: Omit<CartItem, 'quantity'>, quantity = 1, options: { showToast?: boolean } = {}) => {
+  const addItem = (
+    item: Omit<CartItem, 'quantity'>,
+    quantity = 1,
+    options: { showToast?: boolean; animateElement?: HTMLElement } = {}
+  ) => {
+    const previousItems = items.map(i => ({ ...i }))
+    if (options.animateElement) {
+      flyToCart(options.animateElement)
+    }
     setItems(prev => {
       const existingIndex = prev.findIndex(i => i.supplierItemId === item.supplierItemId)
       
@@ -51,14 +61,18 @@ export default function BasketProvider({ children }: { children: React.ReactNode
       }
       
       syncBasket(newItems)
-      
+
       if (options.showToast !== false) {
         toast({
-          title: `Added to cart`,
-          description: `${item.itemName} (${quantity}x ${item.packSize})`
+          description: `Added ${item.itemName} × ${quantity}`,
+          action: (
+            <ToastAction altText="Undo" onClick={() => restoreItems(previousItems)}>
+              Undo
+            </ToastAction>
+          )
         })
       }
-      
+
       return newItems
     })
   }

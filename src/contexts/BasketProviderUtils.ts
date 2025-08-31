@@ -3,7 +3,11 @@ import type { CartItem } from '@/lib/types'
 
 export interface BasketContextType {
   items: CartItem[]
-  addItem: (item: Omit<CartItem, 'quantity'>, quantity?: number, options?: { showToast?: boolean }) => void
+  addItem: (
+    item: Omit<CartItem, 'quantity'>,
+    quantity?: number,
+    options?: { showToast?: boolean; animateElement?: HTMLElement }
+  ) => void
   updateQuantity: (supplierItemId: string, quantity: number) => void
   removeItem: (supplierItemId: string) => void
   clearBasket: () => void
