@@ -202,31 +202,6 @@ export default function CatalogPage() {
       {false && <LayoutDebugger show />}
 
       {/* Control bar */}
-      <div className="sticky top-[var(--header-h)] z-30 bg-background/80 backdrop-blur border-b">
-        <div className="pb-4">
-          {(publicError || orgError) && (
-            <Alert variant="destructive" className="mb-4">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>{String(publicError || orgError)}</AlertDescription>
-            </Alert>
-          )}
-
-          <div className="grid gap-2 sm:grid-cols-2">
-            <Input
-              placeholder="Search products"
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-            />
-            <Input
-              placeholder="Brand"
-              value={filters.brand ?? ""}
-              onChange={e =>
-                setFilters(prev => ({ ...prev, brand: e.target.value }))
-              }
-            />
-          </div>
-
-          <div className="flex justify-end mt-2">
             <ViewToggle value={view} onChange={setView} />
           </div>
         </div>
