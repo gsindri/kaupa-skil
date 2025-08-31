@@ -44,6 +44,7 @@ export function ProductCard({
   const orgId = profile?.tenant_id || null
   const hasConnection = connectedSuppliers.length > 0
   const [open, setOpen] = useState(false)
+  const [announcement, setAnnouncement] = useState('')
 
   const { data: supplierList = [] } = useQuery<CatalogSupplier[]>({
     queryKey: ['catalog-suppliers', product.catalog_id, orgId],
@@ -112,17 +113,21 @@ export function ProductCard({
       packQty: 1,
     }
     addItem(cartItem, 1)
+    setAnnouncement(`Added ${product.name}`)
   }
 
   const handleIncrease = () => {
     updateQuantity(product.catalog_id, quantity + 1)
+    setAnnouncement(`Quantity increased to ${quantity + 1}`)
   }
 
   const handleDecrease = () => {
     if (quantity - 1 <= 0) {
       removeItem(product.catalog_id)
+      setAnnouncement(`Removed ${product.name}`)
     } else {
       updateQuantity(product.catalog_id, quantity - 1)
+      setAnnouncement(`Quantity decreased to ${quantity - 1}`)
     }
   }
 
@@ -131,6 +136,7 @@ export function ProductCard({
       data-testid="product-card"
       className="h-full flex flex-col relative group"
     >
+      <div aria-live="polite" className="sr-only">{announcement}</div>
       <CardContent
         className={cn(
           density === 'compact' ? 'space-y-1 p-2' : 'space-y-2 p-4',
@@ -195,7 +201,11 @@ export function ProductCard({
                           <p className="text-sm text-muted-foreground">—</p>
                         )}
                       </div>
-                      {!isConnected && <Button size="sm">Connect</Button>}
+                      {!isConnected && (
+                        <Button size="sm" aria-label="Connect to supplier">
+                          Connect
+                        </Button>
+                      )}
                     </div>
                   )
                 })}
@@ -222,7 +232,7 @@ export function ProductCard({
           </p>
         )}
         {quantity === 0 ? (
-          <Button onClick={handleAdd} className="mt-2">
+          <Button onClick={handleAdd} className="mt-2" aria-label="Add item">
             Add
           </Button>
         ) : (
@@ -231,16 +241,18 @@ export function ProductCard({
               size="sm"
               variant="outline"
               onClick={handleDecrease}
+              aria-label="Decrease quantity"
             >
-              <Minus className="h-4 w-4" />
+              <Minus className="h-4 w-4" aria-hidden="true" />
             </Button>
             <span className="text-sm w-4 text-center">{quantity}</span>
             <Button
               size="sm"
               variant="outline"
               onClick={handleIncrease}
+              aria-label="Increase quantity"
             >
-              <Plus className="h-4 w-4" />
+              <Plus className="h-4 w-4" aria-hidden="true" />
             </Button>
           </div>
         )}
@@ -249,19 +261,34 @@ export function ProductCard({
         className="absolute inset-x-0 bottom-0 p-2 bg-background/80 backdrop-blur-sm flex justify-center opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity"
       >
         {quantity === 0 ? (
-          <Button size="sm" onClick={handleAdd} className="gap-1">
-            <Plus className="h-4 w-4" /> Add
+          <Button
+            size="sm"
+            onClick={handleAdd}
+            className="gap-1"
+            aria-label="Add item"
+          >
+            <Plus className="h-4 w-4" aria-hidden="true" /> Add
           </Button>
         ) : (
           <div className="flex items-center gap-2">
-            <Button size="sm" variant="outline" onClick={handleDecrease}>
-              <Minus className="h-4 w-4" />
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleDecrease}
+              aria-label="Decrease quantity"
+            >
+              <Minus className="h-4 w-4" aria-hidden="true" />
             </Button>
             <span className="text-sm font-medium min-w-[1ch] text-center">
               {quantity}
             </span>
-            <Button size="sm" variant="outline" onClick={handleIncrease}>
-              <Plus className="h-4 w-4" />
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleIncrease}
+              aria-label="Increase quantity"
+            >
+              <Plus className="h-4 w-4" aria-hidden="true" />
             </Button>
           </div>
         )}
