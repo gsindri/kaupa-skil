@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/sheet'
 import { useSupplierConnections } from '@/hooks/useSupplierConnections'
 import { useAuth } from '@/contexts/useAuth'
+import { useCart } from '@/contexts/useBasket'
 import { useQuery } from '@tanstack/react-query'
 import {
   fetchCatalogItemSuppliers,
@@ -20,6 +21,8 @@ import {
 import { LazyImage } from '@/components/ui/LazyImage'
 import { getCachedImageUrl } from '@/services/ImageCache'
 import { cn } from '@/lib/utils'
+import type { CartItem } from '@/lib/types'
+import { Tag, Plus, Minus } from 'lucide-react'
 
 interface ProductCardProps {
   product: CatalogItem
@@ -37,6 +40,7 @@ export function ProductCard({
 }: ProductCardProps) {
   const { suppliers: connectedSuppliers } = useSupplierConnections()
   const { profile } = useAuth()
+  const { items, addItem, updateQuantity, removeItem } = useCart()
   const orgId = profile?.tenant_id || null
   const hasConnection = connectedSuppliers.length > 0
   const [open, setOpen] = useState(false)
@@ -48,46 +52,6 @@ export function ProductCard({
   })
 
   const connectedIds = new Set(connectedSuppliers.map(s => s.id))
-
-  const cartItem = items.find(item => item.supplierItemId === product.catalog_id)
-  const quantity = cartItem?.quantity ?? 0
-
-  const baseCartItem = {
-    id: product.catalog_id,
-    supplierId: '',
-    supplierName: '',
-    itemName: product.name,
-    sku: product.catalog_id,
-    packSize: product.pack_size ?? '',
-    packPrice: product.best_price ?? 0,
-    unitPriceExVat: product.best_price ?? 0,
-    unitPriceIncVat: product.best_price ?? 0,
-    vatRate: 0,
-    unit: '',
-    supplierItemId: product.catalog_id,
-    displayName: product.name,
-    packQty: 1,
-  }
-
-  const handleAdd = () => {
-    addItem(baseCartItem)
-  }
-
-  const increment = () => {
-    if (quantity === 0) {
-      handleAdd()
-    } else {
-      updateQuantity(product.catalog_id, quantity + 1)
-    }
-  }
-
-  const decrement = () => {
-    if (quantity <= 1) {
-      updateQuantity(product.catalog_id, 0)
-    } else {
-      updateQuantity(product.catalog_id, quantity - 1)
-    }
-  }
 
   const availabilityVariant: 'secondary' | 'destructive' = product.availability
     ? product.availability.toLowerCase().includes('out')
@@ -285,18 +249,18 @@ export function ProductCard({
         className="absolute inset-x-0 bottom-0 p-2 bg-background/80 backdrop-blur-sm flex justify-center opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity"
       >
         {quantity === 0 ? (
-          <Button size="sm" onClick={increment} className="gap-1">
+          <Button size="sm" onClick={handleAdd} className="gap-1">
             <Plus className="h-4 w-4" /> Add
           </Button>
         ) : (
           <div className="flex items-center gap-2">
-            <Button size="sm" variant="outline" onClick={decrement}>
+            <Button size="sm" variant="outline" onClick={handleDecrease}>
               <Minus className="h-4 w-4" />
             </Button>
             <span className="text-sm font-medium min-w-[1ch] text-center">
               {quantity}
             </span>
-            <Button size="sm" variant="outline" onClick={increment}>
+            <Button size="sm" variant="outline" onClick={handleIncrease}>
               <Plus className="h-4 w-4" />
             </Button>
           </div>
