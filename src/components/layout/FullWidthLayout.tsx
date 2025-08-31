@@ -11,25 +11,26 @@ interface FullWidthLayoutProps {
 export function FullWidthLayout({ children }: FullWidthLayoutProps) {
   return (
     <SidebarProvider>
-      <div
-        className="min-h-screen grid"
-        style={{ gridTemplateColumns: 'var(--sidebar-width,16rem) minmax(0,1fr)' }}
-      >
-        {/* Sidebar column */}
-        <aside className="sticky top-0 h-svh w-[var(--sidebar-width,16rem)]">
-          <EnhancedAppSidebar />
-        </aside>
+      <>
+        <div
+          className="min-h-screen grid"
+          style={{ gridTemplateColumns: 'var(--sidebar-width,16rem) minmax(0,1fr)' }}
+        >
+          {/* Sidebar column */}
+          <aside className="sticky top-0 h-svh w-[var(--sidebar-width,16rem)]">
+            <EnhancedAppSidebar />
+          </aside>
 
-        {/* Main column */}
-        <div className="min-w-0 h-svh flex flex-col">
-          <TopNavigation />
-          {/* The ONLY scroll container */}
+          {/* Main column */}
+          <div className="min-w-0 h-svh flex flex-col">
+            <TopNavigation />
+            {/* The ONLY scroll container */}
             {children}
           </div>
         </div>
-      </div>
 
-      <CartDrawer />
+        <CartDrawer />
+      </>
     </SidebarProvider>
   )
 }
