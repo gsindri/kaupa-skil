@@ -233,41 +233,12 @@ export default function CatalogPage() {
       </div>
 
       {/* Content area */}
-      <div className="w-full min-w-0 overflow-visible">
-        <div className="w-full min-w-0">
-          {view === 'list' ? (
-            <CatalogTable
-              products={sortedProducts}
-              selected={selected}
-              onSelect={toggleSelect}
-              onSelectAll={handleSelectAll}
-            />
-          ) : (
-            <div
-              className="
-                grid
-                [grid-template-columns:repeat(auto-fit,minmax(17rem,1fr))]
-                gap-[clamp(16px,2vw,28px)]
-              "
-            >
-              {sortedProducts.map(product => (
-                <ProductCard key={product.catalog_id} product={product} density={density} />
               ))}
               {loadingMore &&
                 Array.from({ length: 3 }).map((_, i) => (
                   <SkeletonCard key={`skeleton-${i}`} density={density} />
                 ))}
             </div>
-          )}
-        </div>
-
-        {/* Load more button */}
-        {nextCursor && (
-          <div ref={sentinelRef} className="flex justify-center pt-4">
-            <Button onClick={loadMore} disabled={loadingMore} variant="outline">
-              {loadingMore && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Load more
-            </Button>
           </div>
         )}
       </div>
