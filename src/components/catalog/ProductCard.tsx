@@ -126,6 +126,23 @@ export function ProductCard({
     }
   }
 
+  const quantityControl =
+    quantity === 0 ? (
+      <Button onClick={handleAdd} className="mt-2">
+        Add
+      </Button>
+    ) : (
+      <div className="mt-2 flex items-center gap-2">
+        <Button size="sm" variant="outline" onClick={handleDecrease}>
+          <Minus className="h-4 w-4" />
+        </Button>
+        <span className="text-sm w-4 text-center">{quantity}</span>
+        <Button size="sm" variant="outline" onClick={handleIncrease}>
+          <Plus className="h-4 w-4" />
+        </Button>
+      </div>
+    )
+
   return (
     <Card
       data-testid="product-card"
@@ -221,51 +238,8 @@ export function ProductCard({
             {product.pack_size}
           </p>
         )}
-        {quantity === 0 ? (
-          <Button onClick={handleAdd} className="mt-2">
-            Add
-          </Button>
-        ) : (
-          <div className="mt-2 flex items-center gap-2">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={handleDecrease}
-            >
-              <Minus className="h-4 w-4" />
-            </Button>
-            <span className="text-sm w-4 text-center">{quantity}</span>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={handleIncrease}
-            >
-              <Plus className="h-4 w-4" />
-            </Button>
-          </div>
-        )}
+        {quantityControl}
       </CardContent>
-      <div
-        className="absolute inset-x-0 bottom-0 p-2 bg-background/80 backdrop-blur-sm flex justify-center opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity"
-      >
-        {quantity === 0 ? (
-          <Button size="sm" onClick={handleAdd} className="gap-1">
-            <Plus className="h-4 w-4" /> Add
-          </Button>
-        ) : (
-          <div className="flex items-center gap-2">
-            <Button size="sm" variant="outline" onClick={handleDecrease}>
-              <Minus className="h-4 w-4" />
-            </Button>
-            <span className="text-sm font-medium min-w-[1ch] text-center">
-              {quantity}
-            </span>
-            <Button size="sm" variant="outline" onClick={handleIncrease}>
-              <Plus className="h-4 w-4" />
-            </Button>
-          </div>
-        )}
-      </div>
     </Card>
   )
 }
