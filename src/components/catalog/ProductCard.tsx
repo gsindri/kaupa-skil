@@ -22,7 +22,6 @@ import {
 import { LazyImage } from '@/components/ui/LazyImage'
 import { getCachedImageUrl } from '@/services/ImageCache'
 import { cn } from '@/lib/utils'
-import { Minus, Plus } from 'lucide-react'
 import type { CartItem } from '@/lib/types'
 
 interface ProductCardProps {
@@ -232,7 +231,7 @@ export function ProductCard({
                 onClick={handleDecrease}
                 aria-label="Decrease"
               >
-                <Minus className="h-4 w-4" />
+                &minus;
               </Button>
               <span className="w-8 text-center text-sm">{quantity}</span>
               <Button
@@ -242,7 +241,7 @@ export function ProductCard({
                 onClick={handleIncrease}
                 aria-label="Increase"
               >
-                <Plus className="h-4 w-4" />
+                &#xFF0B;
               </Button>
             </div>
           )}

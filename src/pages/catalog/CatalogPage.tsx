@@ -194,18 +194,31 @@ export default function CatalogPage() {
         ? publicTotal
         : null
 
-  return (
-    <>
-      {/* eslint-disable-next-line no-constant-binary-expression */}
-      {false && <LayoutDebugger show />}
+  function FiltersBar() {
+    const ref = React.useRef<HTMLDivElement>(null)
+    React.useEffect(() => {
+      const el = ref.current
+      if (!el) return
+      const ro = new ResizeObserver(() => {
+        const h = Math.round(el.getBoundingClientRect().height)
+        document.documentElement.style.setProperty('--filters-h', `${h}px`)
+      })
+      ro.observe(el)
+      return () => ro.disconnect()
+    }, [])
 
-      {/* Control bar */}
-      <div className="sticky top-[var(--header-h)] z-30 bg-background/80 backdrop-blur border-b">
-        <div className="px-4 sm:px-6 lg:px-8 py-3 space-y-3">
+    return (
+      <div
+        ref={ref}
+        className="sticky top-[var(--header-h)] z-30 border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+      >
+        <div className="py-3 space-y-3">
           {(publicError || orgError) && (
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
-              <AlertDescription>{String(publicError || orgError)}</AlertDescription>
+              <AlertDescription>
+                {String(publicError || orgError)}
+              </AlertDescription>
             </Alert>
           )}
           <div className="grid grid-cols-[1fr,auto,auto] gap-3 items-center">
@@ -226,29 +239,39 @@ export default function CatalogPage() {
           </div>
         </div>
       </div>
+    )
+  }
 
-      {/* Content area */}
-      <div className="px-4 sm:px-6 lg:px-8 xl:px-10 2xl:px-12">
-        {view === 'list' ? (
-          <CatalogTable
-            products={sortedProducts}
-            selected={selected}
-            onSelect={toggleSelect}
-            onSelectAll={handleSelectAll}
-          />
-        ) : (
-          <div className="grid gap-[clamp(16px,2vw,28px)] [grid-template-columns:repeat(auto-fit,minmax(18.5rem,1fr))]">
-            {sortedProducts.map(product => (
-              <ProductCard key={product.catalog_id} product={product} density={density} />
+  return (
+    <>
+      {/* eslint-disable-next-line no-constant-binary-expression */}
+      {false && <LayoutDebugger show />}
+
+      <FiltersBar />
+
+      {view === 'list' ? (
+        <CatalogTable
+          products={sortedProducts}
+          selected={selected}
+          onSelect={toggleSelect}
+          onSelectAll={handleSelectAll}
+        />
+      ) : (
+        <div className="grid gap-[clamp(16px,2vw,28px)] [grid-template-columns:repeat(auto-fit,minmax(18.5rem,1fr))]">
+          {sortedProducts.map(product => (
+            <ProductCard
+              key={product.catalog_id}
+              product={product}
+              density={density}
+            />
+          ))}
+          {loadingMore &&
+            Array.from({ length: 3 }).map((_, i) => (
+              <SkeletonCard key={`skeleton-${i}`} density={density} />
             ))}
-            {loadingMore &&
-              Array.from({ length: 3 }).map((_, i) => (
-                <SkeletonCard key={`skeleton-${i}`} density={density} />
-              ))}
-          </div>
-        )}
-        <div ref={sentinelRef} />
-      </div>
+        </div>
+      )}
+      <div ref={sentinelRef} />
     </>
   )
 }
