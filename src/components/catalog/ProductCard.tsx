@@ -44,6 +44,7 @@ export function ProductCard({
   const orgId = profile?.tenant_id || null
   const hasConnection = connectedSuppliers.length > 0
   const [open, setOpen] = useState(false)
+  const [announcement, setAnnouncement] = useState('')
 
   const { data: supplierList = [] } = useQuery<CatalogSupplier[]>({
     queryKey: ['catalog-suppliers', product.catalog_id, orgId],
@@ -95,60 +96,6 @@ export function ProductCard({
 
   const quantity = getQtyForProduct()
 
-  const cartItem: Omit<CartItem, 'quantity'> = {
-    id: product.catalog_id,
-    supplierId: product.suppliers[0] ?? '',
-    supplierName: product.suppliers[0] ?? '',
-    itemName: product.name,
-    sku: product.catalog_id,
-    packSize: product.pack_size ?? '',
-    packPrice: product.best_price ?? 0,
-    unitPriceExVat: product.best_price ?? 0,
-    unitPriceIncVat: product.best_price ?? 0,
-    vatRate: 0,
-    unit: '',
-    supplierItemId: product.catalog_id,
-    displayName: product.name,
-    packQty: 1,
-  }
-
-  const setQuantity = (newQty: number) => {
-    if (newQty < 0) return
-    const prevItems = items.map(i => ({ ...i }))
-    const diff = newQty - quantity
-    if (diff > 0) {
-      addItem(cartItem, diff, { animateElement: imageRef.current || undefined })
-    } else if (diff < 0 && quantity > 0) {
-      if (newQty === 0) {
-        removeItem(product.catalog_id)
-      } else {
-        updateQuantity(product.catalog_id, newQty)
-      }
-      toast({
-        description: `Removed ${product.name} × ${Math.abs(diff)}`,
-        action: (
-          <ToastAction altText="Undo" onClick={() => restoreItems(prevItems)}>
-            Undo
-          </ToastAction>
-        ),
-      })
-    }
-  }
-
-  const handleAdd = () => setQuantity(quantity + 1)
-  const handleIncrease = () => setQuantity(quantity + 1)
-  const handleDecrease = () => setQuantity(quantity - 1)
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    if (e.key === 'Enter' || e.key === '+') {
-      e.preventDefault()
-      setQuantity(quantity + 1)
-    } else if (e.key === '-') {
-      e.preventDefault()
-      setQuantity(quantity - 1)
-    } else if (/^[0-9]$/.test(e.key)) {
-      e.preventDefault()
-      setQuantity(parseInt(e.key, 10))
     }
   }
 
@@ -173,6 +120,7 @@ export function ProductCard({
     <Card
       data-testid="product-card"
     >
+      <div aria-live="polite" className="sr-only">{announcement}</div>
       <CardContent
         className={cn(
           density === 'compact' ? 'space-y-1 p-2' : 'space-y-2 p-4',
@@ -237,7 +185,11 @@ export function ProductCard({
                           <p className="text-sm text-muted-foreground">—</p>
                         )}
                       </div>
-                      {!isConnected && <Button size="sm">Connect</Button>}
+                      {!isConnected && (
+                        <Button size="sm" aria-label="Connect to supplier">
+                          Connect
+                        </Button>
+                      )}
                     </div>
                   )
                 })}
@@ -245,7 +197,6 @@ export function ProductCard({
             </SheetContent>
           </Sheet>
         </div>
-      </CardContent>
     </Card>
   )
 }
