@@ -210,7 +210,7 @@ export default function CatalogPage() {
           </Alert>
         )}
 
-        <div className="grid gap-2 sm:grid-cols-2">
+        <div className="grid grid-cols-1 sm:grid-cols-[1fr,auto,auto] items-end gap-3">
           <Input
             placeholder="Search products"
             value={search}
@@ -222,11 +222,11 @@ export default function CatalogPage() {
             onChange={e =>
               setFilters(prev => ({ ...prev, brand: e.target.value }))
             }
+            className="w-full sm:w-40 md:w-48"
           />
-        </div>
-
-        <div className="flex justify-end mt-2">
-          <ViewToggle value={view} onChange={setView} />
+          <div className="justify-self-end">
+            <ViewToggle value={view} onChange={setView} />
+          </div>
         </div>
       </div>
 
