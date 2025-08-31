@@ -129,7 +129,7 @@ export function ProductCard({
   return (
     <Card
       data-testid="product-card"
-      className="h-full flex flex-col relative group"
+      className="h-full flex flex-col relative group shadow-sm border border-border bg-card/50 transition hover:shadow-md hover:-translate-y-0.5"
     >
       <CardContent
         className={cn(
@@ -141,10 +141,10 @@ export function ProductCard({
             src={imageSrc}
             alt={product.name}
             loading="lazy"
-            width={200}
-            height={200}
-            className="aspect-square w-full"
-            imgClassName="rounded object-cover"
+            width={400}
+            height={300}
+            className="aspect-[4/3] w-full overflow-hidden rounded-md"
+            imgClassName="object-contain"
             onError={handleImageError}
           />
           <div className="absolute top-2 left-2 flex flex-col gap-1 z-10">
@@ -203,21 +203,9 @@ export function ProductCard({
             </SheetContent>
           </Sheet>
         </div>
-        <h3
-          className={cn(
-            'font-medium line-clamp-2',
-            density === 'compact' ? 'text-xs leading-tight' : 'text-sm',
-          )}
-        >
-          {product.name}
-        </h3>
+        <h3 className="text-sm font-medium line-clamp-2">{product.name}</h3>
         {product.pack_size && (
-          <p
-            className={cn(
-              'text-muted-foreground line-clamp-1',
-              density === 'compact' ? 'text-xs' : 'text-sm',
-            )}
-          >
+          <p className="text-xs text-muted-foreground line-clamp-1">
             {product.pack_size}
           </p>
         )}
