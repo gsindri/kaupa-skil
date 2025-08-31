@@ -14,7 +14,7 @@ export function flyToCart(source: HTMLElement, target?: HTMLElement) {
     clone.style.height = `${start.height}px`;
     clone.style.pointerEvents = 'none';
     clone.style.zIndex = '1000';
-    clone.style.transition = 'transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.6s';
+    clone.style.transition = 'transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s';
     document.body.appendChild(clone);
 
     const translateX = end.left - start.left;
