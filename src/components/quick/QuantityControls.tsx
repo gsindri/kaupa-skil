@@ -10,6 +10,7 @@ interface QuantityControlsProps {
   showFlyout?: boolean;
   onAdd: () => void;
   onRemove: () => void;
+  addButtonRef?: React.RefObject<HTMLButtonElement>;
 }
 
 export function QuantityControls({ 
@@ -18,7 +19,8 @@ export function QuantityControls({
   disabled, 
   showFlyout,
   onAdd,
-  onRemove 
+  onRemove,
+  addButtonRef
 }: QuantityControlsProps) {
   const [localQuantity, setLocalQuantity] = useState(quantity.toString());
 
@@ -80,6 +82,7 @@ export function QuantityControls({
         disabled={disabled}
         className="h-9 w-9 p-0 rounded-full bg-brand-600 hover:bg-brand-700 focus:ring-2 focus:ring-brand-400/60 transition-all duration-200"
         aria-label="Increase quantity"
+        ref={addButtonRef}
       >
         <Plus className="h-4 w-4" />
       </Button>

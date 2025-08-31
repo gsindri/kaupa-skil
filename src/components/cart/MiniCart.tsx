@@ -24,6 +24,7 @@ export function MiniCart() {
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild onMouseEnter={() => setOpen(true)}>
         <Button
+          id="mini-cart-button"
           variant="outline"
           size="sm"
           className="relative flex-shrink-0 border-border focus-visible:ring-brand/50"

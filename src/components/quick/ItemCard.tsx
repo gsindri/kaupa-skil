@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { ItemBadges, PriceDisplay } from './ItemCardEnhancements';
 import { QuantityControls } from './QuantityControls';
@@ -35,7 +35,15 @@ export function ItemCard({ item, onCompareItem, userMode, compact = false }: Ite
   const [quantity, setQuantity] = useState(0);
   const [showFlyout, setShowFlyout] = useState(false);
   const { includeVat } = useSettings();
-  const { addItem } = useCart();
+  const { addItem, items: cartItems } = useCart();
+  const addButtonRef = useRef<HTMLButtonElement>(null);
+
+  const cartItem = cartItems.find(i => i.supplierItemId === item.id);
+  const cartQuantity = cartItem?.quantity ?? 0;
+
+  useEffect(() => {
+    setQuantity(cartQuantity);
+  }, [cartQuantity]);
 
   const unitPrice = includeVat ? item.unitPriceIncVat : item.unitPriceExVat;
   const packPrice = includeVat ? item.packPriceIncVat : item.packPriceExVat;
@@ -43,11 +51,11 @@ export function ItemCard({ item, onCompareItem, userMode, compact = false }: Ite
   const handleAdd = () => {
     const newQty = quantity + 1;
     setQuantity(newQty);
-    
+
     // Show flyout animation
     setShowFlyout(true);
     setTimeout(() => setShowFlyout(false), 1200);
-    
+
     addItem({
       id: item.id,
       supplierId: item.suppliers[0],
@@ -63,7 +71,7 @@ export function ItemCard({ item, onCompareItem, userMode, compact = false }: Ite
       supplierItemId: item.id,
       displayName: item.name,
       packQty: 1
-    }, 1);
+    }, 1, { animateElement: addButtonRef.current || undefined });
   };
 
   const handleRemove = () => {
@@ -102,6 +110,11 @@ export function ItemCard({ item, onCompareItem, userMode, compact = false }: Ite
       role="article"
       aria-label={`${item.name}, ${new Intl.NumberFormat('is-IS', { style: 'currency', currency: 'ISK' }).format(unitPrice)} per ${item.unit}, ${includeVat ? 'including' : 'excluding'} VAT`}
     >
+      {cartQuantity > 0 && (
+        <span className="absolute top-2 right-2 z-20 flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-600 px-1 text-xs text-white">
+          {cartQuantity}
+        </span>
+      )}
       {/* Stock overlay */}
       {!item.stock && (
         <div className="absolute inset-0 bg-background/85 rounded-xl flex items-center justify-center z-10 backdrop-blur-sm">
@@ -163,6 +176,7 @@ export function ItemCard({ item, onCompareItem, userMode, compact = false }: Ite
             showFlyout={showFlyout}
             onAdd={handleAdd}
             onRemove={handleRemove}
+            addButtonRef={addButtonRef}
           />
         </div>
       </div>
