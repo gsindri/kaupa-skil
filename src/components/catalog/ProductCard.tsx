@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/sheet'
 import { useSupplierConnections } from '@/hooks/useSupplierConnections'
 import { useAuth } from '@/contexts/useAuth'
+import { useCart } from '@/contexts/useBasket'
 import { useQuery } from '@tanstack/react-query'
 import {
   fetchCatalogItemSuppliers,
@@ -20,9 +21,6 @@ import {
 import { LazyImage } from '@/components/ui/LazyImage'
 import { getCachedImageUrl } from '@/services/ImageCache'
 import { cn } from '@/lib/utils'
-import { useCart } from '@/contexts/useBasket'
-import type { CartItem } from '@/lib/types'
-import { Minus, Plus, Tag } from 'lucide-react'
 
 interface ProductCardProps {
   product: CatalogItem
@@ -40,6 +38,7 @@ export function ProductCard({
 }: ProductCardProps) {
   const { suppliers: connectedSuppliers } = useSupplierConnections()
   const { profile } = useAuth()
+  const { items, addItem, updateQuantity, removeItem } = useCart()
   const orgId = profile?.tenant_id || null
   const hasConnection = connectedSuppliers.length > 0
   const [open, setOpen] = useState(false)
