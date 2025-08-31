@@ -21,22 +21,19 @@ import {
 import { LazyImage } from '@/components/ui/LazyImage'
 import { getCachedImageUrl } from '@/services/ImageCache'
 import { cn } from '@/lib/utils'
-import { Minus, Plus, Tag } from 'lucide-react'
+import { Minus, Plus } from 'lucide-react'
 import type { CartItem } from '@/lib/types'
 
 interface ProductCardProps {
   product: CatalogItem
   showPrice?: boolean
   density?: 'comfortable' | 'compact'
-  /** Whether a brand filter is active */
-  brandFilter?: string | null
 }
 
 export function ProductCard({
   product,
   showPrice = true,
   density = 'comfortable',
-  brandFilter,
 }: ProductCardProps) {
   const { suppliers: connectedSuppliers } = useSupplierConnections()
   const { profile } = useAuth()
@@ -126,6 +123,23 @@ export function ProductCard({
     }
   }
 
+  const quantityControl =
+    quantity === 0 ? (
+      <Button onClick={handleAdd} className="mt-2">
+        Add
+      </Button>
+    ) : (
+      <div className="mt-2 flex items-center gap-2">
+        <Button size="sm" variant="outline" onClick={handleDecrease}>
+          <Minus className="h-4 w-4" />
+        </Button>
+        <span className="text-sm w-4 text-center">{quantity}</span>
+        <Button size="sm" variant="outline" onClick={handleIncrease}>
+          <Plus className="h-4 w-4" />
+        </Button>
+      </div>
+    )
+
   return (
     <Card
       data-testid="product-card"
@@ -164,14 +178,13 @@ export function ProductCard({
           </div>
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
-              <Badge
-                variant="secondary"
+              <div
                 data-testid="supplier-count"
-                className="absolute top-2 right-2 z-10 cursor-pointer flex items-center gap-1 text-[10px] px-1.5 py-0"
+                className="absolute left-3 top-3 rounded-full bg-background/90 px-2 py-0.5 text-[11px] shadow ring-1 ring-border"
               >
-                {brandFilter && <Tag className="h-3 w-3" />}
-                {product.supplier_count ?? 0}
-              </Badge>
+                {product.supplier_count ?? 0} supplier
+                {product.supplier_count !== 1 && 's'}
+              </div>
             </SheetTrigger>
             <SheetContent className="w-80 sm:w-96">
               <SheetHeader>
@@ -203,69 +216,14 @@ export function ProductCard({
             </SheetContent>
           </Sheet>
         </div>
-        <h3
-          className={cn(
-            'font-medium line-clamp-2',
-            density === 'compact' ? 'text-xs leading-tight' : 'text-sm',
-          )}
-        >
-          {product.name}
-        </h3>
-        {product.pack_size && (
-          <p
+        <div className="flex h-full flex-col">
+          <h3
             className={cn(
-              'text-muted-foreground line-clamp-1',
-              density === 'compact' ? 'text-xs' : 'text-sm',
+              'font-medium line-clamp-2',
+              density === 'compact' ? 'text-xs leading-tight' : 'text-sm',
             )}
           >
-            {product.pack_size}
-          </p>
-        )}
-        {quantity === 0 ? (
-          <Button onClick={handleAdd} className="mt-2">
-            Add
-          </Button>
-        ) : (
-          <div className="mt-2 flex items-center gap-2">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={handleDecrease}
-            >
-              <Minus className="h-4 w-4" />
-            </Button>
-            <span className="text-sm w-4 text-center">{quantity}</span>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={handleIncrease}
-            >
-              <Plus className="h-4 w-4" />
-            </Button>
-          </div>
-        )}
       </CardContent>
-      <div
-        className="absolute inset-x-0 bottom-0 p-2 bg-background/80 backdrop-blur-sm flex justify-center opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity"
-      >
-        {quantity === 0 ? (
-          <Button size="sm" onClick={handleAdd} className="gap-1">
-            <Plus className="h-4 w-4" /> Add
-          </Button>
-        ) : (
-          <div className="flex items-center gap-2">
-            <Button size="sm" variant="outline" onClick={handleDecrease}>
-              <Minus className="h-4 w-4" />
-            </Button>
-            <span className="text-sm font-medium min-w-[1ch] text-center">
-              {quantity}
-            </span>
-            <Button size="sm" variant="outline" onClick={handleIncrease}>
-              <Plus className="h-4 w-4" />
-            </Button>
-          </div>
-        )}
-      </div>
     </Card>
   )
 }
