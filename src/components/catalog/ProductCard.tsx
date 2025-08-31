@@ -1,6 +1,5 @@
 import { useRef, useState, type SyntheticEvent } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
   Sheet,
@@ -42,9 +41,9 @@ export function ProductCard({
   const { items, addItem, updateQuantity, removeItem, restoreItems } = useCart()
   const { toast } = useToast()
   const orgId = profile?.tenant_id || null
-  const hasConnection = connectedSuppliers.length > 0
   const [open, setOpen] = useState(false)
   const [announcement, setAnnouncement] = useState('')
+  const imageRef = useRef<HTMLImageElement | null>(null)
 
   const { data: supplierList = [] } = useQuery<CatalogSupplier[]>({
     queryKey: ['catalog-suppliers', product.catalog_id, orgId],
@@ -52,21 +51,12 @@ export function ProductCard({
     enabled: open,
   })
 
-  const connectedIds = new Set(connectedSuppliers.map(s => s.id))
-
-  const availabilityVariant: 'secondary' | 'destructive' = product.availability
-    ? product.availability.toLowerCase().includes('out')
-      ? 'destructive'
-      : 'secondary'
-    : 'secondary'
-
   const initialImageSrc = product.image_main
     ? /^https?:\/\//i.test(product.image_main)
       ? product.image_main
       : getCachedImageUrl(product.image_main)
     : '/placeholder.svg'
   const [imageSrc, setImageSrc] = useState(initialImageSrc)
-  const imageRef = useRef<HTMLImageElement | null>(null)
 
   const handleImageError = (
     e: SyntheticEvent<HTMLImageElement, Event>,
@@ -74,18 +64,11 @@ export function ProductCard({
     const failedSrc = e.currentTarget.src
     const cachedUrl = getCachedImageUrl(failedSrc)
     if (cachedUrl !== failedSrc) {
-      console.warn('Retrying image with cached URL', failedSrc)
       setImageSrc(cachedUrl)
     } else {
-      console.error('Image failed to load', failedSrc)
       setImageSrc('/placeholder.svg')
     }
   }
-
-  const priceBadge =
-    showPrice && hasConnection && product.best_price != null
-      ? `from ${product.best_price} ${product.currency ?? ''}`
-      : null
 
   const getQtyForProduct = () => {
     const cartItem = items.find(
@@ -96,69 +79,97 @@ export function ProductCard({
 
   const quantity = getQtyForProduct()
 
+  const cartItem: Omit<CartItem, 'quantity'> = {
+    id: product.catalog_id,
+    supplierId: product.suppliers[0] ?? '',
+    supplierName: product.suppliers[0] ?? '',
+    itemName: product.name,
+    sku: product.catalog_id,
+    packSize: product.pack_size ?? '',
+    packPrice: product.best_price ?? 0,
+    unitPriceExVat: product.best_price ?? 0,
+    unitPriceIncVat: product.best_price ?? 0,
+    vatRate: 0,
+    unit: '',
+    supplierItemId: product.catalog_id,
+    displayName: product.name,
+    packQty: 1,
+  }
+
+  const setQuantity = (newQty: number) => {
+    if (newQty < 0) return
+    const prevItems = items.map(i => ({ ...i }))
+    const diff = newQty - quantity
+    if (diff > 0) {
+      addItem(cartItem, diff, { animateElement: imageRef.current || undefined })
+    } else if (diff < 0) {
+      if (newQty === 0) {
+        removeItem(product.catalog_id)
+      } else {
+        updateQuantity(product.catalog_id, newQty)
+      }
+    }
+    setAnnouncement(`Quantity set to ${newQty}`)
+    toast({
+      description: `Added ${product.name} ×${newQty}`,
+      action: (
+        <ToastAction altText="Undo" onClick={() => restoreItems(prevItems)}>
+          Undo
+        </ToastAction>
+      ),
+    })
+  }
+
+  const handleAdd = () => setQuantity(quantity + 1)
+  const handleIncrease = () => setQuantity(quantity + 1)
+  const handleDecrease = () => setQuantity(quantity - 1)
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === 'Enter' || e.key === '+') {
+      e.preventDefault()
+      setQuantity(quantity + 1)
+    } else if (e.key === '-') {
+      e.preventDefault()
+      setQuantity(quantity - 1)
+    } else if (/^[0-9]$/.test(e.key)) {
+      e.preventDefault()
+      setQuantity(parseInt(e.key, 10))
     }
   }
 
-  const quantityControl =
-    quantity === 0 ? (
-      <Button onClick={handleAdd} className="mt-2">
-        Add
-      </Button>
-    ) : (
-      <div className="mt-2 flex items-center gap-2">
-        <Button size="sm" variant="outline" onClick={handleDecrease}>
-          <Minus className="h-4 w-4" />
-        </Button>
-        <span className="text-sm w-4 text-center">{quantity}</span>
-        <Button size="sm" variant="outline" onClick={handleIncrease}>
-          <Plus className="h-4 w-4" />
-        </Button>
-      </div>
-    )
+  const priceText =
+    showPrice && product.best_price != null
+      ? `${product.best_price} ${product.currency ?? ''}`
+      : null
 
   return (
     <Card
       data-testid="product-card"
+      tabIndex={0}
+      onKeyDown={handleKeyDown}
+      className="group relative rounded-xl border border-border bg-card/50 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-ring"
     >
-      <div aria-live="polite" className="sr-only">{announcement}</div>
+      <div aria-live="polite" className="sr-only">
+        {announcement}
+      </div>
       <CardContent
         className={cn(
-          density === 'compact' ? 'space-y-1 p-2' : 'space-y-2 p-4',
+          density === 'compact' ? 'p-2 space-y-1' : 'p-4 space-y-2',
+          'flex h-full flex-col',
         )}
       >
-        <div className={cn('relative', density === 'compact' ? 'mb-1' : 'mb-2')}>
+        <div className="relative aspect-[4/3] overflow-hidden rounded-md bg-muted/20">
           <LazyImage
             ref={imageRef}
             src={imageSrc}
             alt={product.name}
             loading="lazy"
-            width={400}
-            height={300}
-            className="aspect-[4/3] w-full overflow-hidden rounded-md"
-            imgClassName="object-contain"
+            className="h-full w-full object-contain"
             onError={handleImageError}
           />
-          <div className="absolute top-2 left-2 flex flex-col gap-1 z-10">
-            {priceBadge && (
-              <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
-                {priceBadge}
-              </Badge>
-            )}
-            {product.availability && (
-              <Badge
-                variant={availabilityVariant}
-                className="text-[10px] px-1.5 py-0"
-              >
-                {product.availability}
-              </Badge>
-            )}
-          </div>
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
-              <div
-                data-testid="supplier-count"
-                className="absolute left-3 top-3 rounded-full bg-background/90 px-2 py-0.5 text-[11px] shadow ring-1 ring-border"
-              >
+              <div className="absolute left-3 top-3 rounded-full bg-background/90 px-2 py-0.5 text-[11px] shadow ring-1 ring-border cursor-pointer">
                 {product.supplier_count ?? 0} supplier
                 {product.supplier_count !== 1 && 's'}
               </div>
@@ -169,7 +180,9 @@ export function ProductCard({
               </SheetHeader>
               <div className="space-y-4 py-4">
                 {supplierList.map(supplier => {
-                  const isConnected = connectedIds.has(supplier.supplier_id)
+                  const isConnected = connectedSuppliers.some(
+                    s => s.id === supplier.supplier_id,
+                  )
                   return (
                     <div
                       key={supplier.supplier_id}
@@ -197,6 +210,47 @@ export function ProductCard({
             </SheetContent>
           </Sheet>
         </div>
+
+        <h3 className="mt-3 line-clamp-1 text-sm font-medium">
+          {product.name}
+        </h3>
+        {product.pack_size && (
+          <p className="text-xs text-muted-foreground">{product.pack_size}</p>
+        )}
+
+        <div className="mt-auto pt-3 flex items-center justify-between">
+          {quantity === 0 ? (
+            <Button size="sm" onClick={handleAdd}>
+              Add
+            </Button>
+          ) : (
+            <div className="inline-flex items-center rounded-full border bg-background">
+              <Button
+                size="icon"
+                variant="ghost"
+                className="h-8 w-8"
+                onClick={handleDecrease}
+                aria-label="Decrease"
+              >
+                <Minus className="h-4 w-4" />
+              </Button>
+              <span className="w-8 text-center text-sm">{quantity}</span>
+              <Button
+                size="icon"
+                variant="ghost"
+                className="h-8 w-8"
+                onClick={handleIncrease}
+                aria-label="Increase"
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
+          {priceText && (
+            <span className="text-xs text-muted-foreground">{priceText}</span>
+          )}
+        </div>
+      </CardContent>
     </Card>
   )
 }
