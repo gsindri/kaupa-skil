@@ -126,6 +126,23 @@ export function ProductCard({
     }
   }
 
+  const quantityControl =
+    quantity === 0 ? (
+      <Button onClick={handleAdd} className="mt-2">
+        Add
+      </Button>
+    ) : (
+      <div className="mt-2 flex items-center gap-2">
+        <Button size="sm" variant="outline" onClick={handleDecrease}>
+          <Minus className="h-4 w-4" />
+        </Button>
+        <span className="text-sm w-4 text-center">{quantity}</span>
+        <Button size="sm" variant="outline" onClick={handleIncrease}>
+          <Plus className="h-4 w-4" />
+        </Button>
+      </div>
+    )
+
   return (
     <Card
       data-testid="product-card"
@@ -210,38 +227,6 @@ export function ProductCard({
               density === 'compact' ? 'text-xs leading-tight' : 'text-sm',
             )}
           >
-            {product.name}
-          </h3>
-          {product.pack_size && (
-            <p
-              className={cn(
-                'text-muted-foreground line-clamp-1',
-                density === 'compact' ? 'text-xs' : 'text-sm',
-              )}
-            >
-              {product.pack_size}
-            </p>
-          )}
-          <div className="mt-auto pt-3 flex items-center justify-between">
-            {quantity === 0 ? (
-              <Button size="sm" onClick={handleAdd} className="gap-1">
-                <Plus className="h-4 w-4" /> Add
-              </Button>
-            ) : (
-              <div className="flex items-center gap-2">
-                <Button size="sm" variant="outline" onClick={handleDecrease}>
-                  <Minus className="h-4 w-4" />
-                </Button>
-                <span className="text-sm font-medium min-w-[1ch] text-center">
-                  {quantity}
-                </span>
-                <Button size="sm" variant="outline" onClick={handleIncrease}>
-                  <Plus className="h-4 w-4" />
-                </Button>
-              </div>
-            )}
-          </div>
-        </div>
       </CardContent>
     </Card>
   )
