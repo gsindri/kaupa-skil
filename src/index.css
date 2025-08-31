@@ -18,13 +18,15 @@ html, body, #root {
 }
 
 /* Set a fallback header height so content can offset correctly */
+/* Set default header and filters height variables */
 :root {
   --header-h: 56px;
+  --filters-h: 0px;
 }
 
 body {
   @apply m-0 p-0;
-  scroll-padding-top: var(--header-h);
+  scroll-padding-top: calc(var(--header-h) + var(--filters-h));
 }
 
 #root {
@@ -48,4 +50,5 @@ html { scrollbar-gutter: stable; }
 .app-scroll {
   scrollbar-gutter: stable;
   overscroll-behavior: contain;
+  scroll-padding-top: calc(var(--header-h) + var(--filters-h));
 }
