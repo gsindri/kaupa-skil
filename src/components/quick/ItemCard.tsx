@@ -1,10 +1,10 @@
 
-import React, { useState, useEffect, useRef } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { ItemBadges, PriceDisplay } from './ItemCardEnhancements';
 import { QuantityControls } from './QuantityControls';
 import { useSettings } from '@/contexts/useSettings';
 import { useCart } from '@/contexts/useBasket';
+import { MiniCompareDrawer } from './MiniCompareDrawer';
 
 interface ItemCardProps {
   item: {
@@ -34,6 +34,8 @@ interface ItemCardProps {
 export function ItemCard({ item, onCompareItem, userMode, compact = false }: ItemCardProps) {
   const [quantity, setQuantity] = useState(0);
   const [showFlyout, setShowFlyout] = useState(false);
+  const [isCompareOpen, setIsCompareOpen] = useState(false);
+  const pressTimer = useRef<number>();
   const { includeVat } = useSettings();
   const { addItem, items: cartItems } = useCart();
   const addButtonRef = useRef<HTMLButtonElement>(null);
@@ -47,6 +49,19 @@ export function ItemCard({ item, onCompareItem, userMode, compact = false }: Ite
 
   const unitPrice = includeVat ? item.unitPriceIncVat : item.unitPriceExVat;
   const packPrice = includeVat ? item.packPriceIncVat : item.packPriceExVat;
+
+  const startPress = () => {
+    pressTimer.current = window.setTimeout(() => {
+      setIsCompareOpen(true);
+    }, 600);
+  };
+
+  const endPress = () => {
+    if (pressTimer.current) {
+      clearTimeout(pressTimer.current);
+      pressTimer.current = undefined;
+    }
+  };
 
   const handleAdd = () => {
     const newQty = quantity + 1;
@@ -101,6 +116,7 @@ export function ItemCard({ item, onCompareItem, userMode, compact = false }: Ite
   const hasDeliveryInfo = Boolean(item.cutoffTime && item.deliveryDay);
 
   return (
+    <>
     <div
       className={`group relative rounded-xl border border-border/60 bg-card hover:bg-accent/30 hover:shadow-md hover:border-border transition-all duration-200 focus-within:ring-2 focus-within:ring-brand-500/50 focus-within:border-brand-500 ${
         compact ? 'p-3 min-h-[100px]' : 'p-4 min-h-[120px]'
@@ -124,32 +140,46 @@ export function ItemCard({ item, onCompareItem, userMode, compact = false }: Ite
         </div>
       )}
 
-      {/* Top section: Product info and price */}
-      <div className="flex items-start justify-between gap-4 mb-3">
-        <div className="flex-1 min-w-0">
-          <h3 className={`font-semibold ${compact ? 'text-sm' : 'text-base'} leading-tight text-foreground group-hover:text-brand-700 transition-colors duration-200 mb-1`}>
-            {item.name}
-          </h3>
-          <div className="flex items-center gap-2">
-            <span className={`${compact ? 'text-xs' : 'text-sm'} text-muted-foreground font-medium`}>
-              {item.brand}
-            </span>
-            <span className="text-muted-foreground/60">•</span>
-            <span className={`${compact ? 'text-xs' : 'text-sm'} text-muted-foreground`}>
-              {item.packSize}
-            </span>
-          </div>
-        </div>
-        
-        <PriceDisplay
-          unitPrice={unitPrice}
-          packPrice={packPrice}
-          unit={item.unit}
-          includeVat={includeVat}
-          isDiscounted={item.isDiscounted}
-          originalPrice={item.originalPrice}
-          compact={compact}
+      {/* Top section: Image, Product info and price */}
+      <div className="flex items-start gap-4 mb-3">
+        <img
+          src="/placeholder.svg"
+          alt={item.name}
+          className={`${compact ? 'w-16 h-16' : 'w-20 h-20'} rounded-md object-cover select-none`}
+          onDoubleClick={handleAdd}
+          onMouseDown={startPress}
+          onMouseUp={endPress}
+          onMouseLeave={endPress}
+          onTouchStart={startPress}
+          onTouchEnd={endPress}
+          onTouchMove={endPress}
         />
+        <div className="flex-1 min-w-0 flex items-start justify-between gap-4">
+          <div className="flex-1 min-w-0">
+            <h3 className={`font-semibold ${compact ? 'text-sm' : 'text-base'} leading-tight text-foreground group-hover:text-brand-700 transition-colors duration-200 mb-1`}>
+              {item.name}
+            </h3>
+            <div className="flex items-center gap-2">
+              <span className={`${compact ? 'text-xs' : 'text-sm'} text-muted-foreground font-medium`}>
+                {item.brand}
+              </span>
+              <span className="text-muted-foreground/60">•</span>
+              <span className={`${compact ? 'text-xs' : 'text-sm'} text-muted-foreground`}>
+                {item.packSize}
+              </span>
+            </div>
+          </div>
+
+          <PriceDisplay
+            unitPrice={unitPrice}
+            packPrice={packPrice}
+            unit={item.unit}
+            includeVat={includeVat}
+            isDiscounted={item.isDiscounted}
+            originalPrice={item.originalPrice}
+            compact={compact}
+          />
+        </div>
       </div>
 
       {/* Bottom section: Badges and Controls */}
@@ -181,5 +211,7 @@ export function ItemCard({ item, onCompareItem, userMode, compact = false }: Ite
         </div>
       </div>
     </div>
+    <MiniCompareDrawer itemId={item.id} isOpen={isCompareOpen} onClose={() => setIsCompareOpen(false)} />
+    </>
   );
 }
