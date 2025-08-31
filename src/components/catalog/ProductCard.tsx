@@ -21,22 +21,19 @@ import {
 import { LazyImage } from '@/components/ui/LazyImage'
 import { getCachedImageUrl } from '@/services/ImageCache'
 import { cn } from '@/lib/utils'
-import { Minus, Plus, Tag } from 'lucide-react'
+import { Minus, Plus } from 'lucide-react'
 import type { CartItem } from '@/lib/types'
 
 interface ProductCardProps {
   product: CatalogItem
   showPrice?: boolean
   density?: 'comfortable' | 'compact'
-  /** Whether a brand filter is active */
-  brandFilter?: string | null
 }
 
 export function ProductCard({
   product,
   showPrice = true,
   density = 'comfortable',
-  brandFilter,
 }: ProductCardProps) {
   const { suppliers: connectedSuppliers } = useSupplierConnections()
   const { profile } = useAuth()
@@ -181,14 +178,13 @@ export function ProductCard({
           </div>
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
-              <Badge
-                variant="secondary"
+              <div
                 data-testid="supplier-count"
-                className="absolute top-2 right-2 z-10 cursor-pointer flex items-center gap-1 text-[10px] px-1.5 py-0"
+                className="absolute left-3 top-3 rounded-full bg-background/90 px-2 py-0.5 text-[11px] shadow ring-1 ring-border"
               >
-                {brandFilter && <Tag className="h-3 w-3" />}
-                {product.supplier_count ?? 0}
-              </Badge>
+                {product.supplier_count ?? 0} supplier
+                {product.supplier_count !== 1 && 's'}
+              </div>
             </SheetTrigger>
             <SheetContent className="w-80 sm:w-96">
               <SheetHeader>
