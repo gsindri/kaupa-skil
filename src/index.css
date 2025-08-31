@@ -17,9 +17,13 @@ html, body, #root {
   height: 100%;
 }
 
+/* Set a fallback header height so content can offset correctly */
+:root {
+  --header-h: 56px;
+}
+
 body {
   @apply m-0 p-0;
-  overflow: hidden;
   scroll-padding-top: var(--header-h);
 }
 
@@ -33,10 +37,6 @@ body {
 body:not([data-scroll-locked]) {
   padding-right: 0 !important;
   margin-right: 0 !important;
-}
-
-:root {
-  --header-h: 56px;
 }
 
 main > *:first-child {
