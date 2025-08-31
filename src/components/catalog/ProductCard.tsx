@@ -20,8 +20,6 @@ import {
 import { LazyImage } from '@/components/ui/LazyImage'
 import { getCachedImageUrl } from '@/services/ImageCache'
 import { cn } from '@/lib/utils'
-import { Tag, Plus, Minus } from 'lucide-react'
-import { useCart } from '@/contexts/useBasket'
 
 interface ProductCardProps {
   product: CatalogItem
@@ -42,7 +40,6 @@ export function ProductCard({
   const orgId = profile?.tenant_id || null
   const hasConnection = connectedSuppliers.length > 0
   const [open, setOpen] = useState(false)
-  const { items, addItem, updateQuantity } = useCart()
 
   const { data: supplierList = [] } = useQuery<CatalogSupplier[]>({
     queryKey: ['catalog-suppliers', product.catalog_id, orgId],
@@ -123,6 +120,47 @@ export function ProductCard({
     showPrice && hasConnection && product.best_price != null
       ? `from ${product.best_price} ${product.currency ?? ''}`
       : null
+
+  const getQtyForProduct = () => {
+    const cartItem = items.find(
+      item => item.supplierItemId === product.catalog_id,
+    )
+    return cartItem?.quantity ?? 0
+  }
+
+  const quantity = getQtyForProduct()
+
+  const handleAdd = () => {
+    const cartItem: Omit<CartItem, 'quantity'> = {
+      id: product.catalog_id,
+      supplierId: product.suppliers[0] ?? '',
+      supplierName: product.suppliers[0] ?? '',
+      itemName: product.name,
+      sku: product.catalog_id,
+      packSize: product.pack_size ?? '',
+      packPrice: product.best_price ?? 0,
+      unitPriceExVat: product.best_price ?? 0,
+      unitPriceIncVat: product.best_price ?? 0,
+      vatRate: 0,
+      unit: '',
+      supplierItemId: product.catalog_id,
+      displayName: product.name,
+      packQty: 1,
+    }
+    addItem(cartItem, 1)
+  }
+
+  const handleIncrease = () => {
+    updateQuantity(product.catalog_id, quantity + 1)
+  }
+
+  const handleDecrease = () => {
+    if (quantity - 1 <= 0) {
+      removeItem(product.catalog_id)
+    } else {
+      updateQuantity(product.catalog_id, quantity - 1)
+    }
+  }
 
   return (
     <Card
@@ -218,6 +256,29 @@ export function ProductCard({
           >
             {product.pack_size}
           </p>
+        )}
+        {quantity === 0 ? (
+          <Button onClick={handleAdd} className="mt-2">
+            Add
+          </Button>
+        ) : (
+          <div className="mt-2 flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleDecrease}
+            >
+              <Minus className="h-4 w-4" />
+            </Button>
+            <span className="text-sm w-4 text-center">{quantity}</span>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleIncrease}
+            >
+              <Plus className="h-4 w-4" />
+            </Button>
+          </div>
         )}
       </CardContent>
       <div

@@ -96,7 +96,7 @@ export function TopNavigation() {
       ref={headerRef}
       role="banner"
       className={cn(
-        'fixed top-0 left-0 right-0 z-50 h-[var(--header-h)] border-b bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/75 transition-shadow',
+        'fixed inset-x-0 top-0 z-50 border-b bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/75 transition-shadow',
         scrolled ? 'shadow-sm' : ''
       )}
     >
