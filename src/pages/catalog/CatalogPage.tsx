@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
-import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { AlertCircle, Loader2 } from 'lucide-react'
+import { AlertCircle } from 'lucide-react'
 import { useAuth } from '@/contexts/useAuth'
 import { useCatalogProducts } from '@/hooks/useCatalogProducts'
 import { useOrgCatalog } from '@/hooks/useOrgCatalog'
@@ -35,7 +34,6 @@ export default function CatalogPage() {
   const [selected, setSelected] = useState<string[]>([])
   const [density, setDensity] = useState<'comfortable' | 'compact'>('comfortable')
   const [search, setSearch] = useState('')
-  const [sort, setSort] = useState<'relevance' | 'name' | 'price'>('relevance')
   const brand = filters.brand
   const debouncedSearch = useDebounce(search, 300)
   const sentinelRef = useRef<HTMLDivElement | null>(null)
@@ -202,20 +200,54 @@ export default function CatalogPage() {
       {false && <LayoutDebugger show />}
 
       {/* Control bar */}
+      <div className="sticky top-[var(--header-h)] z-30 bg-background/80 backdrop-blur border-b">
+        <div className="px-4 sm:px-6 lg:px-8 py-3 space-y-3">
+          {(publicError || orgError) && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{String(publicError || orgError)}</AlertDescription>
+            </Alert>
+          )}
+          <div className="grid grid-cols-[1fr,auto,auto] gap-3 items-center">
+            <Input
+              placeholder="Search products"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+            />
+            <Input
+              placeholder="Brand"
+              value={filters.brand ?? ''}
+              onChange={e =>
+                setFilters(prev => ({ ...prev, brand: e.target.value }))
+              }
+              className="w-full sm:w-40 md:w-48"
+            />
             <ViewToggle value={view} onChange={setView} />
           </div>
         </div>
       </div>
 
       {/* Content area */}
+      <div className="px-4 sm:px-6 lg:px-8 xl:px-10 2xl:px-12">
+        {view === 'list' ? (
+          <CatalogTable
+            products={sortedProducts}
+            selected={selected}
+            onSelect={toggleSelect}
+            onSelectAll={handleSelectAll}
+          />
+        ) : (
+          <div className="grid gap-[clamp(16px,2vw,28px)] [grid-template-columns:repeat(auto-fit,minmax(18.5rem,1fr))]">
+            {sortedProducts.map(product => (
+              <ProductCard key={product.catalog_id} product={product} density={density} />
+            ))}
+            {loadingMore &&
+              Array.from({ length: 3 }).map((_, i) => (
+                <SkeletonCard key={`skeleton-${i}`} density={density} />
               ))}
-              {loadingMore &&
-                Array.from({ length: 3 }).map((_, i) => (
-                  <SkeletonCard key={`skeleton-${i}`} density={density} />
-                ))}
-            </div>
           </div>
         )}
+        <div ref={sentinelRef} />
       </div>
     </>
   )

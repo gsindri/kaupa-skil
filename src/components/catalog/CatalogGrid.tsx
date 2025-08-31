@@ -23,13 +23,13 @@ export function CatalogGrid({ products, selected, onSelect, showPrice }: Catalog
 
   const getGap = () => Math.max(16, Math.min(28, window.innerWidth * 0.02))
   const gap = getGap()
-  const minColumnWidth = 250
+  const minColumnWidth = 296
   const columnCount = Math.max(1, Math.floor(width / (minColumnWidth + gap)))
   const cardWidth = columnCount
     ? (width - gap * (columnCount - 1)) / columnCount
     : width
   const columnWidth = cardWidth + gap
-  const rowHeight = cardWidth + 40 + gap
+  const rowHeight = cardWidth * 0.75 + 120 + gap
   const rowCount = Math.ceil(products.length / columnCount)
 
   return (
