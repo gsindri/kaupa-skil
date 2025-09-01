@@ -312,7 +312,7 @@ export default function CatalogPage() {
         : null
 
   return (
-    <FullWidthLayout offsetContent={false}>
+    <FullWidthLayout>
       {/* eslint-disable-next-line no-constant-binary-expression */}
       {false && <LayoutDebugger show />}
 
