@@ -5,6 +5,12 @@ interface HeroSearchInputProps extends React.InputHTMLAttributes<HTMLInputElemen
   rightSlot?: React.ReactNode
 }
 
+/**
+ * A large search input used on pages that require prominent product searching.
+ * The component forwards refs to the underlying input element and supports an
+ * optional slot on the right side for icons or buttons (e.g. voice search).
+ */
+const HeroSearchInput = React.forwardRef<HTMLInputElement, HeroSearchInputProps>(
   ({ className, rightSlot, ...props }, ref) => {
     return (
       <div className="relative flex items-center">
@@ -13,6 +19,7 @@ interface HeroSearchInputProps extends React.InputHTMLAttributes<HTMLInputElemen
           {...props}
           className={cn(
             'h-12 w-full rounded-md border-2 border-input bg-muted/30 px-4 pr-12 text-base shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+            className
           )}
         />
         {rightSlot && (
@@ -22,6 +29,7 @@ interface HeroSearchInputProps extends React.InputHTMLAttributes<HTMLInputElemen
         )}
       </div>
     )
+  }
 )
 
 HeroSearchInput.displayName = 'HeroSearchInput'
