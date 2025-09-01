@@ -66,7 +66,8 @@ export function SmartCartSidebar({ className = "" }: SmartCartSidebarProps) {
       unit: 'pc',
       supplierItemId: `suggested-${Date.now()}`,
       displayName: itemName,
-      packQty: 1
+      packQty: 1,
+      image: '/placeholder.svg'
     });
   };
 

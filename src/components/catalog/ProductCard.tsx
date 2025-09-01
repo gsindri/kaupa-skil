@@ -104,6 +104,7 @@ export function ProductCard({
     supplierItemId: product.catalog_id,
     displayName: product.name,
     packQty: 1,
+    image: imageSrc,
   }
 
   const setQuantity = (newQty: number, supplier?: CatalogSupplier) => {

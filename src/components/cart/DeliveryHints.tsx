@@ -79,7 +79,8 @@ export function DeliveryHints({ hints }: DeliveryHintsProps) {
                         vatRate: 0.24,
                         unit: 'pc',
                         displayName: item.name,
-                        packQty: 1
+                        packQty: 1,
+                        image: '/placeholder.svg'
                       })}
                     >
                       <Plus className="h-3 w-3 mr-1" />
