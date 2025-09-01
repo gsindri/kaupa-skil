@@ -77,7 +77,18 @@ export default function CatalogPage() {
     setProducts([])
     lastCursor.current = null
     window.scrollTo({ top: 0, behavior: 'instant' })
-  }, [filters, sortOrder, onlyWithPrice, mySuppliers])
+  }, [
+    debouncedSearch,
+    filters.brand,
+    filters.category,
+    filters.supplier,
+    filters.availability,
+    filters.packSizeRange,
+    sortOrder,
+    onlyWithPrice,
+    mySuppliers,
+    onSpecial,
+  ])
 
   useEffect(() => {
     if (sortOrder === 'az') {
@@ -238,8 +249,8 @@ export default function CatalogPage() {
   const loadingMore = isLoading && cursor !== null
 
   const loadMore = useCallback(() => {
-    if (nextCursor && !loadingMore) setCursor(nextCursor)
-  }, [nextCursor, loadingMore])
+    if (nextCursor && nextCursor !== cursor && !loadingMore) setCursor(nextCursor)
+  }, [nextCursor, cursor, loadingMore])
 
   const sortedProducts = useMemo(() => {
     if (!tableSort) return products
