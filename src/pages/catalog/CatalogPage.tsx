@@ -18,7 +18,7 @@ import { useDebounce } from '@/hooks/useDebounce'
 import { CatalogTable } from '@/components/catalog/CatalogTable'
 import { ProductCard } from '@/components/catalog/ProductCard'
 import { SkeletonCard } from '@/components/catalog/SkeletonCard'
-import type { FacetFilters } from '@/services/catalog'
+import type { FacetFilters, PublicCatalogFilters, OrgCatalogFilters } from '@/services/catalog'
 import {
   logFilter,
   logFacetInteraction,
@@ -29,17 +29,34 @@ import { AnalyticsTracker } from '@/components/quick/AnalyticsTrackerUtils'
 import { ViewToggle } from '@/components/place-order/ViewToggle'
 import { LayoutDebugger } from '@/components/debug/LayoutDebugger'
 import { FullWidthLayout } from '@/components/layout/FullWidthLayout'
+import { useCatalogFilters, shallow } from '@/state/catalogFilters'
 
 export default function CatalogPage() {
   const { profile } = useAuth()
   const orgId = profile?.tenant_id || ''
 
-  const [filters, setFilters] = useState<FacetFilters>({})
-  const [onlyWithPrice, setOnlyWithPrice] = useState(false)
+  const {
+    filters,
+    setFilters,
+    onlyWithPrice,
+    setOnlyWithPrice,
+    sort: sortOrder,
+    setSort: setSortOrder,
+  } = useCatalogFilters(
+    s => ({
+      filters: s.filters,
+      setFilters: s.setFilters,
+      onlyWithPrice: s.onlyWithPrice,
+      setOnlyWithPrice: s.setOnlyWithPrice,
+      sort: s.sort,
+      setSort: s.setSort,
+    }),
+    shallow,
+  )
+
   const [inStock, setInStock] = useState(false)
   const [mySuppliers, setMySuppliers] = useState(false)
   const [onSpecial, setOnSpecial] = useState(false)
-  const [sortBy, setSortBy] = useState<'relevance' | 'az' | 'recent'>('relevance')
   const [view, setView] = useState<'grid' | 'list'>('grid')
   const [cursor, setCursor] = useState<string | null>(null)
   const [nextCursor, setNextCursor] = useState<string | null>(null)
@@ -47,36 +64,37 @@ export default function CatalogPage() {
   const lastCursor = useRef<string | null>(null)
   const [selected, setSelected] = useState<string[]>([])
   const [density, setDensity] = useState<'comfortable' | 'compact'>('comfortable')
-  const [search, setSearch] = useState('')
-  const brand = filters.brand
-  const supplier = filters.supplier
-  const [sort, setSort] = useState<{ key: 'name' | 'brand' | 'supplier'; direction: 'asc' | 'desc' } | null>(null)
-  const debouncedSearch = useDebounce(search, 300)
+  const [tableSort, setTableSort] = useState<{
+    key: 'name' | 'brand' | 'supplier'
+    direction: 'asc' | 'desc'
+  } | null>(null)
+  const debouncedSearch = useDebounce(filters.search ?? '', 300)
   const sentinelRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
-    if (sortBy === 'az') {
-      setSort({ key: 'name', direction: 'asc' })
+    if (sortOrder === 'az') {
+      setTableSort({ key: 'name', direction: 'asc' })
     } else {
-      setSort(null)
+      setTableSort(null)
     }
-  }, [sortBy])
+  }, [sortOrder])
 
-  const publicQuery = useCatalogProducts({
-    search: debouncedSearch,
-    brand,
-    supplier,
-    availability: filters.availability,
-    cursor,
-  })
-  const orgQuery = useOrgCatalog(orgId, {
-    search: debouncedSearch,
-    brand,
-    supplier,
-    availability: filters.availability,
-    onlyWithPrice,
-    cursor,
-  })
+  const publicFilters: PublicCatalogFilters = useMemo(
+    () => ({ ...filters, search: debouncedSearch || undefined, cursor }),
+    [filters, debouncedSearch, cursor],
+  )
+  const orgFilters: OrgCatalogFilters = useMemo(
+    () => ({
+      ...filters,
+      search: debouncedSearch || undefined,
+      onlyWithPrice,
+      cursor,
+    }),
+    [filters, debouncedSearch, onlyWithPrice, cursor],
+  )
+
+  const publicQuery = useCatalogProducts(publicFilters, sortOrder)
+  const orgQuery = useOrgCatalog(orgId, orgFilters, sortOrder)
 
   const {
     data: publicData,
@@ -94,8 +112,15 @@ export default function CatalogPage() {
   } = orgQuery
 
   useEffect(() => {
-    logFilter({ ...filters, onlyWithPrice, inStock, mySuppliers, onSpecial, sortBy })
-  }, [filters, onlyWithPrice, inStock, mySuppliers, onSpecial, sortBy])
+    logFilter({
+      ...filters,
+      onlyWithPrice,
+      inStock,
+      mySuppliers,
+      onSpecial,
+      sort: sortOrder,
+    })
+  }, [filters, onlyWithPrice, inStock, mySuppliers, onSpecial, sortOrder])
 
   useEffect(() => {
     if (debouncedSearch) logSearch(debouncedSearch)
@@ -128,8 +153,8 @@ export default function CatalogPage() {
   }, [onSpecial])
 
   useEffect(() => {
-    logFacetInteraction('sort', sortBy)
-  }, [sortBy])
+    logFacetInteraction('sort', sortOrder)
+  }, [sortOrder])
 
   useEffect(() => {
     if (publicError) {
@@ -185,7 +210,7 @@ export default function CatalogPage() {
         inStock,
         mySuppliers,
         onSpecial,
-        sortBy,
+        sort: sortOrder,
       })
     }
   }, [
@@ -198,7 +223,7 @@ export default function CatalogPage() {
     inStock,
     mySuppliers,
     onSpecial,
-    sortBy,
+    sortOrder,
   ])
 
   const isLoading = mySuppliers ? orgQuery.isFetching : publicQuery.isFetching
@@ -220,21 +245,22 @@ export default function CatalogPage() {
         p.suppliers?.some((sup: string) => sup.toLowerCase().includes(s)),
       )
     }
-    if (!sort) return result
+    if (!tableSort) return result
     const sorted = [...result]
     sorted.sort((a, b) => {
       const getVal = (p: any) => {
-        if (sort.key === 'supplier') return (p.suppliers?.[0] || '').toLowerCase()
-        return (p[sort.key] || '').toLowerCase()
+        if (tableSort.key === 'supplier')
+          return (p.suppliers?.[0] || '').toLowerCase()
+        return (p[tableSort.key] || '').toLowerCase()
       }
       const av = getVal(a)
       const bv = getVal(b)
-      if (av < bv) return sort.direction === 'asc' ? -1 : 1
-      if (av > bv) return sort.direction === 'asc' ? 1 : -1
+      if (av < bv) return tableSort.direction === 'asc' ? -1 : 1
+      if (av > bv) return tableSort.direction === 'asc' ? 1 : -1
       return 0
     })
     return sorted
-  }, [products, sort, filters])
+  }, [products, tableSort, filters])
 
   useEffect(() => {
     const sentinel = sentinelRef.current
@@ -266,7 +292,7 @@ export default function CatalogPage() {
   }
 
   const handleSort = (key: 'name' | 'brand' | 'supplier') => {
-    setSort(prev => {
+    setTableSort(prev => {
       if (prev?.key === key) {
         return { key, direction: prev.direction === 'asc' ? 'desc' : 'asc' }
       }
@@ -275,7 +301,7 @@ export default function CatalogPage() {
   }
 
   const handleFilterChange = (f: Partial<FacetFilters>) => {
-    setFilters(prev => ({ ...prev, ...f }))
+    setFilters(f)
   }
 
   const total =
@@ -315,8 +341,8 @@ export default function CatalogPage() {
           <div className="grid grid-cols-[1fr,auto] gap-3 items-center">
             <Input
               placeholder="Search products"
-              value={search}
-              onChange={e => setSearch(e.target.value)}
+              value={filters.search ?? ''}
+              onChange={e => setFilters({ search: e.target.value })}
             />
             <ViewToggle value={view} onChange={setView} />
           </div>
@@ -333,10 +359,7 @@ export default function CatalogPage() {
                 checked={inStock}
                 onCheckedChange={checked => {
                   setInStock(checked)
-                  setFilters(prev => ({
-                    ...prev,
-                    availability: checked ? 'in_stock' : undefined,
-                  }))
+                  setFilters({ availability: checked ? 'in_stock' : undefined })
                 }}
               />
               In stock
@@ -349,7 +372,7 @@ export default function CatalogPage() {
               <Switch checked={onSpecial} onCheckedChange={setOnSpecial} />
               On special / promo
             </Label>
-            <Select value={sortBy} onValueChange={v => setSortBy(v as any)}>
+            <Select value={sortOrder} onValueChange={v => setSortOrder(v as any)}>
               <SelectTrigger className="w-40">
                 <SelectValue placeholder="Sort" />
               </SelectTrigger>
@@ -378,7 +401,7 @@ export default function CatalogPage() {
           selected={selected}
           onSelect={toggleSelect}
           onSelectAll={handleSelectAll}
-          sort={sort}
+          sort={tableSort}
           onSort={handleSort}
           filters={filters}
           onFilterChange={handleFilterChange}

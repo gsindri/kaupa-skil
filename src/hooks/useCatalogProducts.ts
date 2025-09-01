@@ -1,18 +1,11 @@
 import { useEffect } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
-import { fetchPublicCatalogItems } from '@/services/catalog'
-import { useCatalogFilters, shallow } from '@/state/catalogFilters'
-import { useDebounce } from './useDebounce'
+import { fetchPublicCatalogItems, PublicCatalogFilters } from '@/services/catalog'
+import type { SortOrder } from '@/state/catalogFilters'
 
-export function useCatalogProducts(cursor?: string | null) {
+export function useCatalogProducts(filters: PublicCatalogFilters, sort: SortOrder) {
   const queryClient = useQueryClient()
-  const { filters, sort } = useCatalogFilters(
-    s => ({ filters: s.filters, sort: s.sort }),
-    shallow,
-  )
-  const debouncedSearch = useDebounce(filters.search ?? '', 300)
-  const appliedFilters = { ...filters, search: debouncedSearch || undefined, cursor }
 
   useEffect(() => {
     const channel: any = (supabase as any)?.channel?.('catalog-products')
@@ -38,8 +31,8 @@ export function useCatalogProducts(cursor?: string | null) {
   }, [queryClient])
 
   const query = useQuery({
-    queryKey: ['catalog', appliedFilters, sort],
-    queryFn: () => fetchPublicCatalogItems(appliedFilters),
+    queryKey: ['catalog', filters, sort],
+    queryFn: () => fetchPublicCatalogItems(filters),
   })
 
   return {
