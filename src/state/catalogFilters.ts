@@ -1,6 +1,6 @@
 // src/state/catalogFilters.ts
 import { createStore } from 'zustand/vanilla'
-import { useSyncExternalStoreWithSelector } from 'use-sync-external-store/shim/with-selector'
+import { useSyncExternalStoreWithSelector } from 'use-sync-external-store/shim/with-selector.js'
 import type { FacetFilters } from '@/services/catalog'
 
 export type SortOrder = 'relevance' | string
