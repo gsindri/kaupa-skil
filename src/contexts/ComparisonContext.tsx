@@ -1,6 +1,6 @@
 
 import React, { useState, ReactNode } from 'react'
-import { Database } from '@/lib/types/database'
+import type { Database } from '@/lib/types'
 import { ComparisonContext } from './ComparisonContextUtils'
 
 type SupplierItem = Database['public']['Tables']['supplier_items']['Row']

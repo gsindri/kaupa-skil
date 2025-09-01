@@ -1,7 +1,7 @@
 
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
-import { Database } from '@/lib/types/database'
+import type { Database } from '@/lib/types'
 
 type PriceQuote = Database['public']['Tables']['price_quotes']['Row']
 

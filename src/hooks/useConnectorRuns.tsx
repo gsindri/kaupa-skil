@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/contexts/useAuth'
 import { useToast } from './use-toast'
-import { Database } from '@/lib/types/database'
+import type { Database } from '@/lib/types'
 
 type ConnectorRun = Database['public']['Tables']['connector_runs']['Row'] & {
   supplier?: Database['public']['Tables']['suppliers']['Row']

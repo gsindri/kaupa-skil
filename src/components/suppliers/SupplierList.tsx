@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Play, Upload } from 'lucide-react'
-import { Database } from '@/lib/types/database'
+import type { Database } from '@/lib/types'
 
 type Supplier = Database['public']['Tables']['suppliers']['Row']
 type SupplierCredential = Database['public']['Tables']['supplier_credentials']['Row'] & {
