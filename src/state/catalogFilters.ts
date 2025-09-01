@@ -1,7 +1,5 @@
 // src/state/catalogFilters.ts
-import React from 'react'
-import { createStore } from 'zustand/vanilla'
-import { useSyncExternalStoreWithSelector } from 'use-sync-external-store/shim/with-selector'
+import { useState, useCallback } from 'react'
 import type { FacetFilters } from '@/services/catalog'
 
 export type SortOrder = 'relevance' | string
@@ -14,16 +12,6 @@ export interface CatalogFiltersState {
   setOnlyWithPrice: (v: boolean) => void
   setSort: (s: SortOrder) => void
 }
-
-// ------------- Store (framework-agnostic) -------------
-export const catalogFiltersStore = createStore<CatalogFiltersState>()((set, get) => ({
-  filters: {},
-  onlyWithPrice: false,
-  sort: 'relevance',
-  setFilters: (patch) => set((s) => ({ filters: { ...s.filters, ...patch } })),
-  setOnlyWithPrice: (v) => set({ onlyWithPrice: v }),
-  setSort: (s) => set({ sort: s }),
-}))
 
 // ------------- Utilities -------------
 function shallowEqual<T extends Record<string, any>>(a: T, b: T) {
@@ -41,22 +29,39 @@ function shallowEqual<T extends Record<string, any>>(a: T, b: T) {
   return true
 }
 
-// ------------- Hook (stable snapshots) -------------
+// ------------- Hook -------------
 export function useCatalogFilters<T = CatalogFiltersState>(
   selector: (s: CatalogFiltersState) => T = (s) => s as unknown as T,
   equals?: (a: T, b: T) => boolean,
 ): T {
-  return useSyncExternalStoreWithSelector(
-    // subscribe
-    (cb) => catalogFiltersStore.subscribe(cb),
-    // getSnapshot (current state)
-    () => catalogFiltersStore.getState(),
-    // getServerSnapshot (use same as client snapshot)
-    () => catalogFiltersStore.getState(),
-    // selector and equality comparator
-    selector,
-    equals ?? Object.is,
-  )
+  const [filters, setFiltersState] = useState<FacetFilters>({})
+  const [onlyWithPrice, setOnlyWithPriceState] = useState(false)
+  const [sort, setSortState] = useState<SortOrder>('relevance')
+
+  const setFilters = useCallback((patch: Partial<FacetFilters>) => {
+    setFiltersState(prev => ({ ...prev, ...patch }))
+  }, [])
+
+  const setOnlyWithPrice = useCallback((v: boolean) => {
+    setOnlyWithPriceState(v)
+  }, [])
+
+  const setSort = useCallback((s: SortOrder) => {
+    setSortState(s)
+  }, [])
+
+  const state: CatalogFiltersState = {
+    filters,
+    onlyWithPrice,
+    sort,
+    setFilters,
+    setOnlyWithPrice,
+    setSort,
+  }
+
+  // Apply selector if provided
+  const selected = selector(state)
+  return selected
 }
 
 // Convenience helpers for common patterns
