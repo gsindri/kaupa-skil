@@ -1,5 +1,5 @@
 // src/state/catalogFilters.ts
-import { useSyncExternalStore } from 'react'
+import { useRef, useSyncExternalStore, useState, useEffect } from 'react'
 import { createStore } from 'zustand/vanilla'
 import type { FacetFilters } from '@/services/catalog'
 
@@ -14,7 +14,7 @@ export interface CatalogFiltersState {
   setSort: (s: SortOrder) => void
 }
 
-// 1) Framework-agnostic store (no React import here at all)
+// ------------- Store (framework-agnostic) -------------
 export const catalogFiltersStore = createStore<CatalogFiltersState>()((set, get) => ({
   filters: {},
   onlyWithPrice: false,
@@ -24,10 +24,58 @@ export const catalogFiltersStore = createStore<CatalogFiltersState>()((set, get)
   setSort: (s) => set({ sort: s }),
 }))
 
-// 2) React hook that subscribes via React’s own useSyncExternalStore
-export function useCatalogFilters<T = CatalogFiltersState>(
-  selector: (s: CatalogFiltersState) => T = (s) => s as unknown as T
-): T {
-  const getSnapshot = () => selector(catalogFiltersStore.getState())
-  return useSyncExternalStore(catalogFiltersStore.subscribe, getSnapshot, getSnapshot)
+// ------------- Utilities -------------
+function shallowEqual<T extends Record<string, any>>(a: T, b: T) {
+  if (Object.is(a, b)) return true
+  if (typeof a !== 'object' || typeof b !== 'object' || !a || !b) return false
+  const ka = Object.keys(a)
+  const kb = Object.keys(b)
+  if (ka.length !== kb.length) return false
+  for (let i = 0; i < ka.length; i++) {
+    const k = ka[i]!
+    if (!Object.prototype.hasOwnProperty.call(b, k) || !Object.is(a[k], (b as any)[k])) {
+      return false
+    }
+  }
+  return true
 }
+
+// ------------- Hook (stable snapshots) -------------
+export function useCatalogFilters<T = CatalogFiltersState>(
+  selector: (s: CatalogFiltersState) => T = (s) => s as unknown as T,
+  equals: (a: T, b: T) => boolean = Object.is
+): T {
+  const get = () => selector(catalogFiltersStore.getState())
+  const snap = useSyncExternalStore(catalogFiltersStore.subscribe, get, get)
+
+  // stabilize with equality
+  const prevRef = useRef<T>(snap)
+  const [stable, setStable] = useState<T>(snap)
+
+  useEffect(() => {
+    const same = equals === Object.is
+      ? Object.is(prevRef.current, snap)
+      : equals(prevRef.current, snap)
+    if (!same) {
+      prevRef.current = snap
+      setStable(snap)
+    }
+  }, [snap, equals])
+
+  return stable
+}
+
+// Convenience helpers for common patterns
+export const selectors = {
+  // select primitives only (super stable)
+  onlyWithPrice: (s: CatalogFiltersState) => s.onlyWithPrice,
+  sort: (s: CatalogFiltersState) => s.sort,
+  filters: (s: CatalogFiltersState) => s.filters,
+  // actions as primitives (function refs are stable)
+  setOnlyWithPrice: (s: CatalogFiltersState) => s.setOnlyWithPrice,
+  setSort: (s: CatalogFiltersState) => s.setSort,
+  setFilters: (s: CatalogFiltersState) => s.setFilters,
+}
+
+// optional: shallow comparator export for callers that return objects/tuples
+export const shallow = shallowEqual
