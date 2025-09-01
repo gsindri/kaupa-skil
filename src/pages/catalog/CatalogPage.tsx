@@ -9,6 +9,9 @@ import { useDebounce } from '@/hooks/useDebounce'
 import { CatalogTable } from '@/components/catalog/CatalogTable'
 import { ProductCard } from '@/components/catalog/ProductCard'
 import { SkeletonCard } from '@/components/catalog/SkeletonCard'
+import FacetPanel from '@/components/catalog/FacetPanel'
+import { Button } from '@/components/ui/button'
+import { Sheet, SheetTrigger, SheetContent } from '@/components/ui/sheet'
 import type { FacetFilters } from '@/services/catalog'
 import {
   logFilter,
@@ -34,18 +37,34 @@ export default function CatalogPage() {
   const [selected, setSelected] = useState<string[]>([])
   const [density, setDensity] = useState<'comfortable' | 'compact'>('comfortable')
   const [search, setSearch] = useState('')
+  const [facetOpen, setFacetOpen] = useState(false)
   const brand = filters.brand
   const debouncedSearch = useDebounce(search, 300)
   const sentinelRef = useRef<HTMLDivElement | null>(null)
 
+  const updateFilters = (f: Partial<FacetFilters>) => {
+    setFilters(prev => ({ ...prev, ...f }))
+    setCursor(null)
+    lastCursor.current = null
+    setProducts([])
+  }
+
   const publicQuery = useCatalogProducts({
     search: debouncedSearch,
     brand,
+    category: filters.category,
+    supplier: filters.supplier,
+    availability: filters.availability,
+    packSizeRange: filters.packSizeRange,
     cursor,
   })
   const orgQuery = useOrgCatalog(orgId, {
     search: debouncedSearch,
     brand,
+    category: filters.category,
+    supplier: filters.supplier,
+    availability: filters.availability,
+    packSizeRange: filters.packSizeRange,
     onlyWithPrice,
     cursor,
   })
@@ -221,20 +240,31 @@ export default function CatalogPage() {
               </AlertDescription>
             </Alert>
           )}
-          <div className="grid grid-cols-[1fr,auto,auto] gap-3 items-center">
+          <div className="flex flex-wrap items-center gap-3">
             <Input
               placeholder="Search products"
               value={search}
               onChange={e => setSearch(e.target.value)}
+              className="flex-1 min-w-[150px]"
             />
             <Input
               placeholder="Brand"
               value={filters.brand ?? ''}
               onChange={e =>
-                setFilters(prev => ({ ...prev, brand: e.target.value }))
+                updateFilters({ brand: e.target.value || undefined })
               }
               className="w-full sm:w-40 md:w-48"
             />
+            <Sheet open={facetOpen} onOpenChange={setFacetOpen}>
+              <SheetTrigger asChild>
+                <Button variant="outline" className="md:hidden">
+                  Filters
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-80 sm:w-96">
+                <FacetPanel filters={filters} onChange={updateFilters} />
+              </SheetContent>
+            </Sheet>
             <ViewToggle value={view} onChange={setView} />
           </div>
         </div>
@@ -249,29 +279,36 @@ export default function CatalogPage() {
 
       <FiltersBar />
 
-      {view === 'list' ? (
-        <CatalogTable
-          products={sortedProducts}
-          selected={selected}
-          onSelect={toggleSelect}
-          onSelectAll={handleSelectAll}
-        />
-      ) : (
-        <div className="grid gap-[clamp(16px,2vw,28px)] [grid-template-columns:repeat(auto-fit,minmax(18.5rem,1fr))]">
-          {sortedProducts.map(product => (
-            <ProductCard
-              key={product.catalog_id}
-              product={product}
-              density={density}
+      <div className="flex gap-6">
+        <aside className="hidden md:block w-64 flex-shrink-0">
+          <FacetPanel filters={filters} onChange={updateFilters} />
+        </aside>
+        <div className="flex-1">
+          {view === 'list' ? (
+            <CatalogTable
+              products={sortedProducts}
+              selected={selected}
+              onSelect={toggleSelect}
+              onSelectAll={handleSelectAll}
             />
-          ))}
-          {loadingMore &&
-            Array.from({ length: 3 }).map((_, i) => (
-              <SkeletonCard key={`skeleton-${i}`} density={density} />
-            ))}
+          ) : (
+            <div className="grid gap-[clamp(16px,2vw,28px)] [grid-template-columns:repeat(auto-fit,minmax(18.5rem,1fr))]">
+              {sortedProducts.map(product => (
+                <ProductCard
+                  key={product.catalog_id}
+                  product={product}
+                  density={density}
+                />
+              ))}
+              {loadingMore &&
+                Array.from({ length: 3 }).map((_, i) => (
+                  <SkeletonCard key={`skeleton-${i}`} density={density} />
+                ))}
+            </div>
+          )}
+          <div ref={sentinelRef} />
         </div>
-      )}
-      <div ref={sentinelRef} />
+      </div>
     </>
   )
 }
