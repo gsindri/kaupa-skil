@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
-import { Input } from '@/components/ui/input'
+import HeroSearchInput from '@/components/search/HeroSearchInput'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import {
@@ -10,7 +10,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { AlertCircle } from 'lucide-react'
+import { AlertCircle, Mic } from 'lucide-react'
 import { useAuth } from '@/contexts/useAuth'
 import { useCatalogProducts } from '@/hooks/useCatalogProducts'
 import { useOrgCatalog } from '@/hooks/useOrgCatalog'
@@ -438,10 +438,20 @@ function FiltersBar({
           </Alert>
         )}
         <div className="grid grid-cols-[1fr,auto] gap-3 items-center">
-          <Input
+          <HeroSearchInput
             placeholder="Search products"
             value={filters.search ?? ''}
             onChange={e => setFilters({ search: e.target.value })}
+            rightSlot={
+              <button
+                type="button"
+                aria-label="Voice search"
+                onClick={() => console.log('voice search')}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                <Mic className="h-5 w-5" />
+              </button>
+            }
           />
           <ViewToggle value={view} onChange={setView} />
         </div>
