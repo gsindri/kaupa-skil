@@ -166,26 +166,38 @@ export default {
 						transform: 'scale(0.8) translateY(-20px)'
 					}
 				},
-				'search-result-enter': {
-					from: {
-						opacity: '0',
-						transform: 'scale(0.98) translateY(-4px)'
-					},
-					to: {
-						opacity: '1',
-						transform: 'scale(1) translateY(0)'
-					}
-				}
-			},
-			animation: {
+                                'search-result-enter': {
+                                        from: {
+                                                opacity: '0',
+                                                transform: 'scale(0.98) translateY(-4px)'
+                                        },
+                                        to: {
+                                                opacity: '1',
+                                                transform: 'scale(1) translateY(0)'
+                                        }
+                                },
+                                'chip-bounce': {
+                                        '0%': {
+                                                transform: 'scale(0.95)'
+                                        },
+                                        '50%': {
+                                                transform: 'scale(1.05)'
+                                        },
+                                        '100%': {
+                                                transform: 'scale(1)'
+                                        }
+                                }
+                        },
+                        animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out',
 				'slide-up': 'slide-up 0.2s ease-out',
 				'fade-in': 'fade-in 0.3s ease-out',
-				'scale-in': 'scale-in 0.12s ease-out',
-				'flyout': 'flyout 0.15s ease-out',
-				'search-result-enter': 'search-result-enter 0.12s ease-out',
-			},
+                                'scale-in': 'scale-in 0.12s ease-out',
+                                'flyout': 'flyout 0.15s ease-out',
+                                'search-result-enter': 'search-result-enter 0.12s ease-out',
+                                'chip-bounce': 'chip-bounce 0.25s ease-out',
+                        },
 			fontFamily: {
 				sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
 				mono: ['JetBrains Mono', 'Fira Code', 'Consolas', 'monospace'],
