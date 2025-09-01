@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { Input } from '@/components/ui/input'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-react'
@@ -9,6 +10,7 @@ import { useDebounce } from '@/hooks/useDebounce'
 import { CatalogTable } from '@/components/catalog/CatalogTable'
 import { ProductCard } from '@/components/catalog/ProductCard'
 import { SkeletonCard } from '@/components/catalog/SkeletonCard'
+import ActiveFilterChips from '@/components/catalog/ActiveFilterChips'
 import type { FacetFilters } from '@/services/catalog'
 import {
   logFilter,
@@ -37,6 +39,35 @@ export default function CatalogPage() {
   const brand = filters.brand
   const debouncedSearch = useDebounce(search, 300)
   const sentinelRef = useRef<HTMLDivElement | null>(null)
+  const [searchParams, setSearchParams] = useSearchParams()
+
+  useEffect(() => {
+    const initial: FacetFilters = {}
+    ;(
+      ['brand', 'category', 'supplier', 'availability', 'packSizeRange'] as (
+        keyof FacetFilters
+      )[]
+    ).forEach(key => {
+      const value = searchParams.get(key)
+      if (value) initial[key] = value
+    })
+    if (Object.keys(initial).length) {
+      setFilters(prev => ({ ...prev, ...initial }))
+    }
+  }, [searchParams])
+
+  const updateFilter = (
+    key: keyof FacetFilters,
+    value: string | undefined,
+  ) => {
+    setFilters(prev => ({ ...prev, [key]: value }))
+    setSearchParams(prev => {
+      const params = new URLSearchParams(prev)
+      if (value) params.set(key, value)
+      else params.delete(key)
+      return params
+    })
+  }
 
   const publicQuery = useCatalogProducts({
     search: debouncedSearch,
@@ -231,12 +262,16 @@ export default function CatalogPage() {
               placeholder="Brand"
               value={filters.brand ?? ''}
               onChange={e =>
-                setFilters(prev => ({ ...prev, brand: e.target.value }))
+                updateFilter('brand', e.target.value || undefined)
               }
               className="w-full sm:w-40 md:w-48"
             />
             <ViewToggle value={view} onChange={setView} />
           </div>
+          <ActiveFilterChips
+            filters={filters}
+            onClear={key => updateFilter(key, undefined)}
+          />
         </div>
       </div>
     )
