@@ -49,40 +49,11 @@ export default function CatalogPage() {
   const [density, setDensity] = useState<'comfortable' | 'compact'>('comfortable')
   const search = filters.search ?? ''
   const brand = filters.brand
+  const supplier = filters.supplier
+  const [sort, setSort] = useState<{ key: 'name' | 'brand' | 'supplier'; direction: 'asc' | 'desc' } | null>(null)
   const debouncedSearch = useDebounce(search, 300)
   const sentinelRef = useRef<HTMLDivElement | null>(null)
   const [searchParams, setSearchParams] = useSearchParams()
-
-  useEffect(() => {
-    const initial: FacetFilters = {}
-    ;(
-      ['brand', 'category', 'supplier', 'availability', 'packSizeRange'] as (
-        keyof FacetFilters
-      )[]
-    ).forEach(key => {
-      const value = searchParams.get(key)
-      if (value) initial[key] = value
-    })
-    if (Object.keys(initial).length) {
-      setFilters(prev => ({ ...prev, ...initial }))
-    }
-  }, [searchParams])
-
-  const updateFilter = (
-    key: keyof FacetFilters,
-    value: string | undefined,
-  ) => {
-    setFilters(prev => ({ ...prev, [key]: value }))
-    setSearchParams(prev => {
-      const params = new URLSearchParams(prev)
-      if (value) params.set(key, value)
-      else params.delete(key)
-      return params
-    })
-  }
-
-  const publicQuery = useCatalogProducts(cursor)
-  const orgQuery = useOrgCatalog(orgId, cursor)
 
   const {
     data: publicData,
@@ -211,14 +182,6 @@ export default function CatalogPage() {
   }, [nextCursor, loadingMore])
 
   const sortedProducts = useMemo(() => {
-    if (sortBy === 'az') {
-      return [...products].sort((a, b) => a.name.localeCompare(b.name))
-    }
-    if (sortBy === 'recent') {
-      return products
-    }
-    return products
-  }, [products, sortBy])
 
   useEffect(() => {
     const sentinel = sentinelRef.current
@@ -247,6 +210,19 @@ export default function CatalogPage() {
     } else {
       setSelected([])
     }
+  }
+
+  const handleSort = (key: 'name' | 'brand' | 'supplier') => {
+    setSort(prev => {
+      if (prev?.key === key) {
+        return { key, direction: prev.direction === 'asc' ? 'desc' : 'asc' }
+      }
+      return { key, direction: 'asc' }
+    })
+  }
+
+  const handleFilterChange = (f: Partial<FacetFilters>) => {
+    setFilters(prev => ({ ...prev, ...f }))
   }
 
   const total =
@@ -326,14 +302,18 @@ export default function CatalogPage() {
 
       <FiltersBar />
 
-      {view === 'list' ? (
-        <CatalogTable
-          products={sortedProducts}
-          selected={selected}
-          onSelect={toggleSelect}
-          onSelectAll={handleSelectAll}
-        />
-      ) : (
+        {view === 'list' ? (
+          <CatalogTable
+            products={sortedProducts}
+            selected={selected}
+            onSelect={toggleSelect}
+            onSelectAll={handleSelectAll}
+            sort={sort}
+            onSort={handleSort}
+            filters={filters}
+            onFilterChange={handleFilterChange}
+          />
+        ) : (
         <div className="grid gap-[clamp(16px,2vw,28px)] [grid-template-columns:repeat(auto-fit,minmax(18.5rem,1fr))]">
           {sortedProducts.map(product => (
             <ProductCard

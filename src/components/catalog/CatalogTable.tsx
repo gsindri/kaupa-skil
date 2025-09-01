@@ -9,15 +9,30 @@ import {
 } from '@/components/ui/table'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
+import type { FacetFilters } from '@/services/catalog'
 
 interface CatalogTableProps {
   products: any[]
   selected: string[]
   onSelect: (id: string) => void
   onSelectAll: (checked: boolean) => void
+  sort: { key: 'name' | 'brand' | 'supplier'; direction: 'asc' | 'desc' } | null
+  onSort: (key: 'name' | 'brand' | 'supplier') => void
+  filters: FacetFilters
+  onFilterChange: (f: Partial<FacetFilters>) => void
 }
 
-export function CatalogTable({ products, selected, onSelect, onSelectAll }: CatalogTableProps) {
+export function CatalogTable({
+  products,
+  selected,
+  onSelect,
+  onSelectAll,
+  sort,
+  onSort,
+  filters,
+  onFilterChange,
+}: CatalogTableProps) {
   const rowRefs = useRef<Array<HTMLTableRowElement | null>>([])
 
   const allIds = products.map(p => p.catalog_id)
@@ -48,12 +63,51 @@ export function CatalogTable({ products, selected, onSelect, onSelectAll }: Cata
             />
           </TableHead>
           <TableHead className="w-16">Image</TableHead>
-          <TableHead className="min-w-[200px]">Name</TableHead>
-          <TableHead className="w-32">Brand</TableHead>
+          <TableHead
+            className="min-w-[200px] cursor-pointer select-none"
+            onClick={() => onSort('name')}
+          >
+            Name {sort?.key === 'name' && (sort.direction === 'asc' ? '▲' : '▼')}
+          </TableHead>
+          <TableHead
+            className="w-32 cursor-pointer select-none"
+            onClick={() => onSort('brand')}
+          >
+            Brand {sort?.key === 'brand' && (sort.direction === 'asc' ? '▲' : '▼')}
+          </TableHead>
           <TableHead className="w-24">Pack</TableHead>
           <TableHead className="w-28">Availability</TableHead>
-          <TableHead className="w-32">Suppliers</TableHead>
+          <TableHead
+            className="w-32 cursor-pointer select-none"
+            onClick={() => onSort('supplier')}
+          >
+            Suppliers {sort?.key === 'supplier' && (sort.direction === 'asc' ? '▲' : '▼')}
+          </TableHead>
           <TableHead className="w-24">Price</TableHead>
+        </TableRow>
+        <TableRow>
+          <TableHead />
+          <TableHead />
+          <TableHead />
+          <TableHead>
+            <Input
+              value={filters.brand ?? ''}
+              onChange={e => onFilterChange({ brand: e.target.value })}
+              placeholder="Brand"
+              className="h-8"
+            />
+          </TableHead>
+          <TableHead />
+          <TableHead />
+          <TableHead>
+            <Input
+              value={filters.supplier ?? ''}
+              onChange={e => onFilterChange({ supplier: e.target.value })}
+              placeholder="Supplier"
+              className="h-8"
+            />
+          </TableHead>
+          <TableHead />
         </TableRow>
       </TableHeader>
       <TableBody>
