@@ -26,7 +26,6 @@ import {
 import { AnalyticsTracker } from '@/components/quick/AnalyticsTrackerUtils'
 import { ViewToggle } from '@/components/place-order/ViewToggle'
 import { LayoutDebugger } from '@/components/debug/LayoutDebugger'
-import { FullWidthLayout } from '@/components/layout/FullWidthLayout'
 
 export default function CatalogPage() {
   const { profile } = useAuth()
@@ -259,6 +258,33 @@ export default function CatalogPage() {
 
   function FiltersBar() {
     const ref = React.useRef<HTMLDivElement>(null)
+    const { savedViews, saveView, deleteView } = useFilterStore()
+    const [selectedView, setSelectedView] = React.useState('')
+
+    const applyView = (name: string) => {
+      setSelectedView(name)
+      const view = savedViews[name]
+      if (view) {
+        setFilters(view.filters)
+        setOnlyWithPrice(view.onlyWithPrice)
+        setSearch(view.search)
+      }
+    }
+
+    const handleSave = () => {
+      const name = prompt('Name this view')
+      if (name) {
+        saveView(name, { filters, onlyWithPrice, search })
+        setSelectedView(name)
+      }
+    }
+
+    const handleDelete = () => {
+      if (!selectedView) return
+      deleteView(selectedView)
+      setSelectedView('')
+    }
+
     React.useEffect(() => {
       const el = ref.current
       if (!el) return
