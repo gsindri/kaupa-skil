@@ -1,5 +1,14 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react'
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { Input } from '@/components/ui/input'
+import { Switch } from '@/components/ui/switch'
+import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValue,
+} from '@/components/ui/select'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-react'
 import { useAuth } from '@/contexts/useAuth'
@@ -20,6 +29,7 @@ import {
 import { AnalyticsTracker } from '@/components/quick/AnalyticsTrackerUtils'
 import { ViewToggle } from '@/components/place-order/ViewToggle'
 import { LayoutDebugger } from '@/components/debug/LayoutDebugger'
+import { FullWidthLayout } from '@/components/layout/FullWidthLayout'
 
 export default function CatalogPage() {
   const { profile } = useAuth()
@@ -65,36 +75,6 @@ export default function CatalogPage() {
   } = orgQuery
 
   useEffect(() => {
-    const params = Object.fromEntries(searchParams.entries())
-    const initial: any = {}
-    if (params.search) initial.search = params.search
-    if (params.brand) initial.brand = params.brand
-    if (params.category) initial.category = params.category
-    if (params.supplier) initial.supplier = params.supplier
-    if (params.availability) initial.availability = params.availability
-    if (params.packSizeRange) initial.packSizeRange = params.packSizeRange
-    if (Object.keys(initial).length) setFilters(initial)
-    if (params.onlyWithPrice) setOnlyWithPrice(params.onlyWithPrice === '1')
-    if (params.sort) setSort(params.sort as any)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  useEffect(() => {
-    const params: Record<string, string> = {}
-    if (filters.search) params.search = filters.search
-    if (filters.brand) params.brand = filters.brand
-    if (filters.category) params.category = filters.category
-    if (filters.supplier) params.supplier = filters.supplier
-    if (filters.availability) params.availability = filters.availability
-    if (filters.packSizeRange) params.packSizeRange = filters.packSizeRange
-    if (onlyWithPrice) params.onlyWithPrice = '1'
-    if (sort && sort !== 'relevance') params.sort = String(sort)
-    setSearchParams(params, { replace: true })
-  }, [filters, onlyWithPrice, sort, setSearchParams])
-
-  useEffect(() => {
-    logFilter({ ...filters, onlyWithPrice })
-  }, [filters, onlyWithPrice])
 
   useEffect(() => {
     if (debouncedSearch) logSearch(debouncedSearch)
@@ -119,6 +99,18 @@ export default function CatalogPage() {
   }, [onlyWithPrice])
 
   useEffect(() => {
+    logFacetInteraction('mySuppliers', mySuppliers)
+  }, [mySuppliers])
+
+  useEffect(() => {
+    logFacetInteraction('onSpecial', onSpecial)
+  }, [onSpecial])
+
+  useEffect(() => {
+    logFacetInteraction('sort', sortBy)
+  }, [sortBy])
+
+  useEffect(() => {
     if (publicError) {
       console.error(publicError)
       AnalyticsTracker.track('catalog_public_error', {
@@ -137,10 +129,10 @@ export default function CatalogPage() {
   }, [orgError])
 
   useEffect(() => {
-    const hasOrgData = !!orgData?.length
-    const data = hasOrgData ? orgData : publicData
-    const next = hasOrgData ? orgNext : publicNext
-    const fetching = hasOrgData ? orgFetching : publicFetching
+    const useOrg = mySuppliers
+    const data = useOrg ? orgData : publicData
+    const next = useOrg ? orgNext : publicNext
+    const fetching = useOrg ? orgFetching : publicFetching
     if (fetching) return
 
     if (!data) return
@@ -157,6 +149,7 @@ export default function CatalogPage() {
     orgFetching,
     publicFetching,
     cursor,
+    mySuppliers,
   ])
 
   useEffect(() => {
@@ -165,7 +158,13 @@ export default function CatalogPage() {
       products.length === 0 &&
       debouncedSearch
     ) {
-      logZeroResults(debouncedSearch, { ...filters, onlyWithPrice })
+      logZeroResults(debouncedSearch, {
+        ...filters,
+        onlyWithPrice,
+        mySuppliers,
+        onSpecial,
+        sortBy,
+      })
     }
   }, [
     orgQuery.isFetched,
@@ -174,16 +173,27 @@ export default function CatalogPage() {
     debouncedSearch,
     filters,
     onlyWithPrice,
+    mySuppliers,
+    onSpecial,
+    sortBy,
   ])
 
-  const isLoading = publicQuery.isFetching || orgQuery.isFetching
+  const isLoading = mySuppliers ? orgQuery.isFetching : publicQuery.isFetching
   const loadingMore = isLoading && cursor !== null
 
   const loadMore = useCallback(() => {
     if (nextCursor && !loadingMore) setCursor(nextCursor)
   }, [nextCursor, loadingMore])
 
-  const sortedProducts = products
+  const sortedProducts = useMemo(() => {
+    if (sortBy === 'az') {
+      return [...products].sort((a, b) => a.name.localeCompare(b.name))
+    }
+    if (sortBy === 'recent') {
+      return products
+    }
+    return products
+  }, [products, sortBy])
 
   useEffect(() => {
     const sentinel = sentinelRef.current
@@ -248,19 +258,62 @@ export default function CatalogPage() {
               </AlertDescription>
             </Alert>
           )}
-          <div className="grid grid-cols-[1fr,auto,auto] gap-3 items-center">
+          <div className="grid grid-cols-[1fr,auto] gap-3 items-center">
             <Input
               placeholder="Search products"
               value={search}
               onChange={e => setFilters({ search: e.target.value })}
             />
-            <Input
-              placeholder="Brand"
-              value={filters.brand ?? ''}
-              onChange={e => setFilters({ brand: e.target.value })}
-              className="w-full sm:w-40 md:w-48"
-            />
             <ViewToggle value={view} onChange={setView} />
+          </div>
+          <div className="flex flex-wrap gap-4 items-center">
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="onlyWithPrice"
+                checked={onlyWithPrice}
+                onCheckedChange={setOnlyWithPrice}
+              />
+              <Label htmlFor="onlyWithPrice">Only with price</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="inStock"
+                checked={filters.availability === 'in-stock'}
+                onCheckedChange={checked =>
+                  setFilters(prev => ({
+                    ...prev,
+                    availability: checked ? 'in-stock' : undefined,
+                  }))
+                }
+              />
+              <Label htmlFor="inStock">In stock</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="mySuppliers"
+                checked={mySuppliers}
+                onCheckedChange={setMySuppliers}
+              />
+              <Label htmlFor="mySuppliers">My suppliers</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="onSpecial"
+                checked={onSpecial}
+                onCheckedChange={setOnSpecial}
+              />
+              <Label htmlFor="onSpecial">On special / promo</Label>
+            </div>
+            <Select value={sortBy} onValueChange={setSortBy}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Sort" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="relevance">Relevance</SelectItem>
+                <SelectItem value="az">A–Z</SelectItem>
+                <SelectItem value="recent">Recently ordered</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
       </div>
@@ -268,7 +321,7 @@ export default function CatalogPage() {
   }
 
   return (
-    <>
+    <FullWidthLayout offsetContent={false}>
       {/* eslint-disable-next-line no-constant-binary-expression */}
       {false && <LayoutDebugger show />}
 
@@ -297,6 +350,6 @@ export default function CatalogPage() {
         </div>
       )}
       <div ref={sentinelRef} />
-    </>
+    </FullWidthLayout>
   )
 }
