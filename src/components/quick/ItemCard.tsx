@@ -86,7 +86,8 @@ export function ItemCard({ item, onCompareItem, userMode, compact = false }: Ite
       unit: item.unit,
       supplierItemId: item.id,
       displayName: item.name,
-      packQty: 1
+      packQty: 1,
+      image: '/placeholder.svg'
     }, 1, { animateElement: addButtonRef.current || undefined });
   };
 

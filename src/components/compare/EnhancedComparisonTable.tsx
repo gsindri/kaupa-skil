@@ -113,7 +113,8 @@ export function EnhancedComparisonTable({ data, isLoading }: EnhancedComparisonT
           vatRate: 0.24,
           unit: supplierQuote.unit,
           displayName: supplierQuote.itemName,
-          packQty: 1
+          packQty: 1,
+          image: (supplierQuote as any).image
         }
         
         addItem(cartItem, newQuantity - currentCartQuantity)
