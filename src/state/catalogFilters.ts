@@ -1,6 +1,5 @@
 // src/state/catalogFilters.ts
 import { createStore } from 'zustand/vanilla'
-import { useStore } from 'zustand'
 import type { FacetFilters } from '@/services/catalog'
 
 export type SortOrder = 'relevance' | string
@@ -45,7 +44,6 @@ export function useCatalogFilters<T = CatalogFiltersState>(
   selector: (s: CatalogFiltersState) => T = (s) => s as unknown as T,
   equals?: (a: T, b: T) => boolean,
 ): T {
-  return useStore(catalogFiltersStore, selector, equals)
 }
 
 // Convenience helpers for common patterns
