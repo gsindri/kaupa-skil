@@ -1,11 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
-import {
-  Select,
-  SelectTrigger,
-  SelectContent,
-  SelectItem,
-  SelectValue,
-} from '@/components/ui/select'
+import { AnimatedSortDropdown } from '@/components/catalog/AnimatedSortDropdown'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { AlertCircle, Mic } from 'lucide-react'
 import { useAuth } from '@/contexts/useAuth'
@@ -466,65 +460,6 @@ function FiltersBar({
           />
           <ViewToggle value={view} onChange={setView} />
         </div>
-        <Collapsible
-          open={showMoreFilters}
-          onOpenChange={setShowMoreFilters}
-        >
-          <div className="flex flex-wrap gap-4 items-center">
-            <FilterChip
-              selected={onlyWithPrice}
-              onSelectedChange={setOnlyWithPrice}
-            >
-              Only with price
-            </FilterChip>
-            <FilterChip
-              selected={inStock}
-              onSelectedChange={checked => {
-                setInStock(checked)
-                setFilters({ availability: checked ? 'in_stock' : undefined })
-              }}
-              color="green"
-            >
-              In stock
-            </FilterChip>
-            <CollapsibleContent className="flex flex-wrap gap-4 items-center">
-              <FilterChip
-                selected={mySuppliers}
-                onSelectedChange={setMySuppliers}
-              >
-                My suppliers
-              </FilterChip>
-              <FilterChip
-                selected={onSpecial}
-                onSelectedChange={setOnSpecial}
-                color="orange"
-              >
-                On special / promo
-              </FilterChip>
-            </CollapsibleContent>
-            <CollapsibleTrigger asChild>
-              <button
-                type="button"
-                className="text-sm text-muted-foreground"
-              >
-                {showMoreFilters ? '- Fewer filters' : '+ More filters'}
-              </button>
-            </CollapsibleTrigger>
-            <Select
-              value={sortOrder}
-              onValueChange={v => setSortOrder(v as SortOrder)}
-            >
-              <SelectTrigger className="w-40">
-                <SelectValue placeholder="Sort" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="relevance">Relevance</SelectItem>
-                <SelectItem value="az">A–Z</SelectItem>
-                <SelectItem value="recent">Recently ordered</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </Collapsible>
       </div>
     </div>
   )
