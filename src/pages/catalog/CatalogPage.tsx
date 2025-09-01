@@ -18,7 +18,8 @@ import { useDebounce } from '@/hooks/useDebounce'
 import { CatalogTable } from '@/components/catalog/CatalogTable'
 import { ProductCard } from '@/components/catalog/ProductCard'
 import { SkeletonCard } from '@/components/catalog/SkeletonCard'
-import type { FacetFilters } from '@/services/catalog'
+import { useCatalogFilters } from '@/state/catalogFilters'
+import { useSearchParams } from 'react-router-dom'
 import {
   logFilter,
   logFacetInteraction,
@@ -33,12 +34,16 @@ import { FullWidthLayout } from '@/components/layout/FullWidthLayout'
 export default function CatalogPage() {
   const { profile } = useAuth()
   const orgId = profile?.tenant_id || ''
+  const {
+    filters,
+    setFilters,
+    onlyWithPrice,
+    setOnlyWithPrice,
+    sort,
+    setSort,
+  } = useCatalogFilters()
+  const [searchParams, setSearchParams] = useSearchParams()
 
-  const [filters, setFilters] = useState<FacetFilters>({})
-  const [onlyWithPrice, setOnlyWithPrice] = useState(false)
-  const [mySuppliers, setMySuppliers] = useState(false)
-  const [onSpecial, setOnSpecial] = useState(false)
-  const [sortBy, setSortBy] = useState<'relevance' | 'az' | 'recent'>('relevance')
   const [view, setView] = useState<'grid' | 'list'>('grid')
   const [cursor, setCursor] = useState<string | null>(null)
   const [nextCursor, setNextCursor] = useState<string | null>(null)
@@ -46,22 +51,13 @@ export default function CatalogPage() {
   const lastCursor = useRef<string | null>(null)
   const [selected, setSelected] = useState<string[]>([])
   const [density, setDensity] = useState<'comfortable' | 'compact'>('comfortable')
-  const [search, setSearch] = useState('')
+  const search = filters.search ?? ''
   const brand = filters.brand
   const debouncedSearch = useDebounce(search, 300)
   const sentinelRef = useRef<HTMLDivElement | null>(null)
 
-  const publicQuery = useCatalogProducts({
-    search: debouncedSearch,
-    brand,
-    cursor,
-  })
-  const orgQuery = useOrgCatalog(orgId, {
-    search: debouncedSearch,
-    brand,
-    onlyWithPrice,
-    cursor,
-  })
+  const publicQuery = useCatalogProducts(cursor)
+  const orgQuery = useOrgCatalog(orgId, cursor)
 
   const {
     data: publicData,
@@ -79,8 +75,6 @@ export default function CatalogPage() {
   } = orgQuery
 
   useEffect(() => {
-    logFilter({ ...filters, onlyWithPrice, mySuppliers, onSpecial, sortBy })
-  }, [filters, onlyWithPrice, mySuppliers, onSpecial, sortBy])
 
   useEffect(() => {
     if (debouncedSearch) logSearch(debouncedSearch)
@@ -268,7 +262,7 @@ export default function CatalogPage() {
             <Input
               placeholder="Search products"
               value={search}
-              onChange={e => setSearch(e.target.value)}
+              onChange={e => setFilters({ search: e.target.value })}
             />
             <ViewToggle value={view} onChange={setView} />
           </div>
