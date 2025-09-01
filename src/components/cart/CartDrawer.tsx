@@ -290,9 +290,6 @@ export function CartDrawer() {
                 </div>
               </div>
               <Button className="w-full">Checkout</Button>
-              <Button variant="link" className="w-full justify-center" asChild>
-                <Link to="/cart">View cart</Link>
-              </Button>
             </div>
           )}
         </div>
