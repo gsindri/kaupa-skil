@@ -45,6 +45,17 @@ export function useCatalogFilters<T = CatalogFiltersState>(
   selector: (s: CatalogFiltersState) => T = (s) => s as unknown as T,
   equals?: (a: T, b: T) => boolean,
 ): T {
+  return useSyncExternalStoreWithSelector(
+    // subscribe
+    (cb) => catalogFiltersStore.subscribe(cb),
+    // getSnapshot (current state)
+    () => catalogFiltersStore.getState(),
+    // getServerSnapshot (use same as client snapshot)
+    () => catalogFiltersStore.getState(),
+    // selector and equality comparator
+    selector,
+    equals ?? Object.is,
+  )
 }
 
 // Convenience helpers for common patterns
