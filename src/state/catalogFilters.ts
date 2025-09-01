@@ -1,4 +1,4 @@
-import { create } from 'zustand'
+import { create } from 'zustand/react'
 import type { FacetFilters } from '@/services/catalog'
 
 export type SortOrder = 'relevance' | string
