@@ -160,7 +160,8 @@ export function MiniCompareDrawer({ itemId, isOpen, onClose }: MiniCompareDrawer
       unit: 'L',
       supplierItemId: `${itemId}-${option.id}`,
       displayName: `Premium Item from ${option.name}`,
-      packQty: 1
+      packQty: 1,
+      image: '/placeholder.svg'
     });
     
     onClose();

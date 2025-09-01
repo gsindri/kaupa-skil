@@ -363,6 +363,7 @@ export interface CartItem {
   supplierItemId: string // Maps to supplier_items.id for database
   displayName: string
   packQty: number
+  image?: string
 }
 
 // Price comparison types

@@ -73,9 +73,10 @@ function CartItemRow({ item, includeVat, updateQuantity, removeItem, formatPrice
 
   return (
     <div ref={cardRef} tabIndex={0} className="flex items-center gap-4 group">
-      <div
-        className="h-12 w-12 rounded bg-muted flex-shrink-0"
-        aria-hidden="true"
+      <img
+        src={item.image || '/placeholder.svg'}
+        alt={item.itemName}
+        className="h-12 w-12 rounded object-cover flex-shrink-0"
       />
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
