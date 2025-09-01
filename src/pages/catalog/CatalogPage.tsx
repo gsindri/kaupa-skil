@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react'
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { Input } from '@/components/ui/input'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-react'
@@ -35,17 +35,21 @@ export default function CatalogPage() {
   const [density, setDensity] = useState<'comfortable' | 'compact'>('comfortable')
   const [search, setSearch] = useState('')
   const brand = filters.brand
+  const supplier = filters.supplier
+  const [sort, setSort] = useState<{ key: 'name' | 'brand' | 'supplier'; direction: 'asc' | 'desc' } | null>(null)
   const debouncedSearch = useDebounce(search, 300)
   const sentinelRef = useRef<HTMLDivElement | null>(null)
 
   const publicQuery = useCatalogProducts({
     search: debouncedSearch,
     brand,
+    supplier,
     cursor,
   })
   const orgQuery = useOrgCatalog(orgId, {
     search: debouncedSearch,
     brand,
+    supplier,
     onlyWithPrice,
     cursor,
   })
@@ -156,7 +160,33 @@ export default function CatalogPage() {
     if (nextCursor && !loadingMore) setCursor(nextCursor)
   }, [nextCursor, loadingMore])
 
-  const sortedProducts = products
+  const sortedProducts = useMemo(() => {
+    let result = products
+    if (filters.brand) {
+      const b = filters.brand.toLowerCase()
+      result = result.filter(p => (p.brand || '').toLowerCase().includes(b))
+    }
+    if (filters.supplier) {
+      const s = filters.supplier.toLowerCase()
+      result = result.filter(p =>
+        p.suppliers?.some((sup: string) => sup.toLowerCase().includes(s)),
+      )
+    }
+    if (!sort) return result
+    const sorted = [...result]
+    sorted.sort((a, b) => {
+      const getVal = (p: any) => {
+        if (sort.key === 'supplier') return (p.suppliers?.[0] || '').toLowerCase()
+        return (p[sort.key] || '').toLowerCase()
+      }
+      const av = getVal(a)
+      const bv = getVal(b)
+      if (av < bv) return sort.direction === 'asc' ? -1 : 1
+      if (av > bv) return sort.direction === 'asc' ? 1 : -1
+      return 0
+    })
+    return sorted
+  }, [products, sort, filters])
 
   useEffect(() => {
     const sentinel = sentinelRef.current
@@ -185,6 +215,19 @@ export default function CatalogPage() {
     } else {
       setSelected([])
     }
+  }
+
+  const handleSort = (key: 'name' | 'brand' | 'supplier') => {
+    setSort(prev => {
+      if (prev?.key === key) {
+        return { key, direction: prev.direction === 'asc' ? 'desc' : 'asc' }
+      }
+      return { key, direction: 'asc' }
+    })
+  }
+
+  const handleFilterChange = (f: Partial<FacetFilters>) => {
+    setFilters(prev => ({ ...prev, ...f }))
   }
 
   const total =
@@ -249,14 +292,18 @@ export default function CatalogPage() {
 
       <FiltersBar />
 
-      {view === 'list' ? (
-        <CatalogTable
-          products={sortedProducts}
-          selected={selected}
-          onSelect={toggleSelect}
-          onSelectAll={handleSelectAll}
-        />
-      ) : (
+        {view === 'list' ? (
+          <CatalogTable
+            products={sortedProducts}
+            selected={selected}
+            onSelect={toggleSelect}
+            onSelectAll={handleSelectAll}
+            sort={sort}
+            onSort={handleSort}
+            filters={filters}
+            onFilterChange={handleFilterChange}
+          />
+        ) : (
         <div className="grid gap-[clamp(16px,2vw,28px)] [grid-template-columns:repeat(auto-fit,minmax(18.5rem,1fr))]">
           {sortedProducts.map(product => (
             <ProductCard
