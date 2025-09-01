@@ -1,4 +1,5 @@
 // src/state/catalogFilters.ts
+import React from 'react'
 import { createStore } from 'zustand/vanilla'
 import { useSyncExternalStoreWithSelector } from 'use-sync-external-store/shim/with-selector'
 import type { FacetFilters } from '@/services/catalog'
