@@ -15,6 +15,7 @@ import { useDebounce } from '@/hooks/useDebounce'
 import { CatalogTable } from '@/components/catalog/CatalogTable'
 import { ProductCard } from '@/components/catalog/ProductCard'
 import { SkeletonCard } from '@/components/catalog/SkeletonCard'
+import { HeroSearchInput } from '@/components/search/HeroSearchInput'
 import type { FacetFilters, PublicCatalogFilters, OrgCatalogFilters } from '@/services/catalog'
 import {
   logFilter,
