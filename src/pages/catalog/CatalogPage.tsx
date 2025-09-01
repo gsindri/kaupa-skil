@@ -11,6 +11,11 @@ import { ProductCard } from '@/components/catalog/ProductCard'
 import { SkeletonCard } from '@/components/catalog/SkeletonCard'
 import { HeroSearchInput } from '@/components/search/HeroSearchInput'
 import { FilterChip } from '@/components/ui/filter-chip'
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible'
 import type { FacetFilters, PublicCatalogFilters, OrgCatalogFilters } from '@/services/catalog'
 import {
   logFilter,
@@ -63,6 +68,7 @@ export default function CatalogPage() {
   } | null>(null)
   const debouncedSearch = useDebounce(filters.search ?? '', 300)
   const sentinelRef = useRef<HTMLDivElement | null>(null)
+  const [showMoreFilters, setShowMoreFilters] = useState(false)
 
   useEffect(() => {
     setCursor(null)
@@ -334,6 +340,8 @@ export default function CatalogPage() {
         setView={setView}
         publicError={publicError}
         orgError={orgError}
+        showMoreFilters={showMoreFilters}
+        setShowMoreFilters={setShowMoreFilters}
       />
 
       {view === 'list' ? (
@@ -384,6 +392,8 @@ interface FiltersBarProps {
   setView: (v: 'grid' | 'list') => void
   publicError: unknown
   orgError: unknown
+  showMoreFilters: boolean
+  setShowMoreFilters: (v: boolean) => void
 }
 
 function FiltersBar({
@@ -403,6 +413,8 @@ function FiltersBar({
   setView,
   publicError,
   orgError,
+  showMoreFilters,
+  setShowMoreFilters,
 }: FiltersBarProps) {
   const ref = React.useRef<HTMLDivElement>(null)
   React.useEffect(() => {
@@ -447,41 +459,6 @@ function FiltersBar({
             }
           />
           <ViewToggle value={view} onChange={setView} />
-        </div>
-        <div className="flex flex-wrap gap-4 items-center">
-          <FilterChip
-            selected={onlyWithPrice}
-            onSelectedChange={setOnlyWithPrice}
-          >
-            Only with price
-          </FilterChip>
-          <FilterChip
-            selected={inStock}
-            onSelectedChange={checked => {
-              setInStock(checked)
-              setFilters({ availability: checked ? 'in_stock' : undefined })
-            }}
-            className="border-green-600 text-green-600 data-[selected=true]:bg-green-500 data-[selected=true]:text-white data-[selected=true]:border-green-500"
-          >
-            In stock
-          </FilterChip>
-          <FilterChip
-            selected={mySuppliers}
-            onSelectedChange={setMySuppliers}
-          >
-            My suppliers
-          </FilterChip>
-          <FilterChip
-            selected={onSpecial}
-            onSelectedChange={setOnSpecial}
-            className="border-orange-600 text-orange-600 data-[selected=true]:bg-orange-500 data-[selected=true]:text-white data-[selected=true]:border-orange-500"
-          >
-            On special / promo
-          </FilterChip>
-          <AnimatedSortDropdown
-            value={sortOrder}
-            onValueChange={v => setSortOrder(v as SortOrder)}
-          />
         </div>
       </div>
     </div>
