@@ -3,12 +3,14 @@ import { SidebarProvider } from '@/components/ui/sidebar-provider'
 import { EnhancedAppSidebar } from './EnhancedAppSidebar'
 import { TopNavigation } from './TopNavigation'
 import { CartDrawer } from '@/components/cart/CartDrawer'
+import { cn } from '@/lib/utils'
 
 interface FullWidthLayoutProps {
   children: React.ReactNode
+  offsetContent?: boolean
 }
 
-export function FullWidthLayout({ children }: FullWidthLayoutProps) {
+export function FullWidthLayout({ children, offsetContent = true }: FullWidthLayoutProps) {
   return (
     <SidebarProvider>
       <div
@@ -24,7 +26,12 @@ export function FullWidthLayout({ children }: FullWidthLayoutProps) {
         <div className="min-w-0 h-svh flex flex-col">
           <TopNavigation />
           {/* The ONLY scroll container */}
-          <div className="app-scroll flex-1 min-h-0 overflow-y-auto pt-[var(--header-h)] px-4 sm:px-6 lg:px-8 xl:px-10 2xl:px-12">
+          <div
+            className={cn(
+              'app-scroll flex-1 min-h-0 overflow-y-auto px-4 sm:px-6 lg:px-8 xl:px-10 2xl:px-12',
+              offsetContent && 'pt-[var(--header-h)]',
+            )}
+          >
             {children}
           </div>
         </div>
