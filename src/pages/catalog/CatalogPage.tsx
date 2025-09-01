@@ -49,6 +49,8 @@ export default function CatalogPage() {
   const [density, setDensity] = useState<'comfortable' | 'compact'>('comfortable')
   const search = filters.search ?? ''
   const brand = filters.brand
+  const supplier = filters.supplier
+  const [sort, setSort] = useState<{ key: 'name' | 'brand' | 'supplier'; direction: 'asc' | 'desc' } | null>(null)
   const debouncedSearch = useDebounce(search, 300)
   const sentinelRef = useRef<HTMLDivElement | null>(null)
   const [searchParams, setSearchParams] = useSearchParams()
@@ -180,14 +182,6 @@ export default function CatalogPage() {
   }, [nextCursor, loadingMore])
 
   const sortedProducts = useMemo(() => {
-    if (sortBy === 'az') {
-      return [...products].sort((a, b) => a.name.localeCompare(b.name))
-    }
-    if (sortBy === 'recent') {
-      return products
-    }
-    return products
-  }, [products, sortBy])
 
   useEffect(() => {
     const sentinel = sentinelRef.current
@@ -218,6 +212,19 @@ export default function CatalogPage() {
     }
   }
 
+  const handleSort = (key: 'name' | 'brand' | 'supplier') => {
+    setSort(prev => {
+      if (prev?.key === key) {
+        return { key, direction: prev.direction === 'asc' ? 'desc' : 'asc' }
+      }
+      return { key, direction: 'asc' }
+    })
+  }
+
+  const handleFilterChange = (f: Partial<FacetFilters>) => {
+    setFilters(prev => ({ ...prev, ...f }))
+  }
+
   const total =
     orgQuery.isFetched && typeof orgTotal === 'number'
       ? orgTotal
@@ -227,6 +234,33 @@ export default function CatalogPage() {
 
   function FiltersBar() {
     const ref = React.useRef<HTMLDivElement>(null)
+    const { savedViews, saveView, deleteView } = useFilterStore()
+    const [selectedView, setSelectedView] = React.useState('')
+
+    const applyView = (name: string) => {
+      setSelectedView(name)
+      const view = savedViews[name]
+      if (view) {
+        setFilters(view.filters)
+        setOnlyWithPrice(view.onlyWithPrice)
+        setSearch(view.search)
+      }
+    }
+
+    const handleSave = () => {
+      const name = prompt('Name this view')
+      if (name) {
+        saveView(name, { filters, onlyWithPrice, search })
+        setSelectedView(name)
+      }
+    }
+
+    const handleDelete = () => {
+      if (!selectedView) return
+      deleteView(selectedView)
+      setSelectedView('')
+    }
+
     React.useEffect(() => {
       const el = ref.current
       if (!el) return
@@ -262,21 +296,24 @@ export default function CatalogPage() {
   }
 
   return (
-    <FullWidthLayout offsetContent={false}>
       {/* eslint-disable-next-line no-constant-binary-expression */}
       {false && <LayoutDebugger show />}
       <CatalogCommandPalette onApply={handleCommand} />
 
       <FiltersBar />
 
-      {view === 'list' ? (
-        <CatalogTable
-          products={sortedProducts}
-          selected={selected}
-          onSelect={toggleSelect}
-          onSelectAll={handleSelectAll}
-        />
-      ) : (
+        {view === 'list' ? (
+          <CatalogTable
+            products={sortedProducts}
+            selected={selected}
+            onSelect={toggleSelect}
+            onSelectAll={handleSelectAll}
+            sort={sort}
+            onSort={handleSort}
+            filters={filters}
+            onFilterChange={handleFilterChange}
+          />
+        ) : (
         <div className="grid gap-[clamp(16px,2vw,28px)] [grid-template-columns:repeat(auto-fit,minmax(18.5rem,1fr))]">
           {sortedProducts.map(product => (
             <ProductCard
@@ -292,6 +329,5 @@ export default function CatalogPage() {
         </div>
       )}
       <div ref={sentinelRef} />
-    </FullWidthLayout>
   )
 }
