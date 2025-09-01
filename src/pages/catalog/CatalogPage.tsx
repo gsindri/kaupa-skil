@@ -347,7 +347,7 @@ export default function CatalogPage() {
           onFilterChange={handleFilterChange}
         />
       ) : (
-        <div className="grid gap-[clamp(16px,2vw,28px)] [grid-template-columns:repeat(auto-fit,minmax(18.5rem,1fr))]">
+        <div className="grid justify-center gap-[clamp(16px,2vw,28px)] [grid-template-columns:repeat(auto-fit,minmax(0,18.5rem))]">
           {sortedProducts.map(product => (
             <ProductCard
               key={product.catalog_id}
@@ -418,7 +418,7 @@ function FiltersBar({
   return (
     <div
       ref={ref}
-      className="sticky top-[var(--header-h)] z-30 border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+      className="sticky top-0 z-30 border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60"
     >
       <div className="py-3 space-y-3">
         {(publicError || orgError) && (
