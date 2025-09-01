@@ -2,7 +2,6 @@
 import { createBrowserRouter } from "react-router-dom";
 import { AuthGate } from "@/components/auth/AuthGate";
 import { AppLayout } from "@/components/layout/AppLayout";
-import { FullWidthLayout } from "@/components/layout/FullWidthLayout";
 import Dashboard from "@/pages/Dashboard";
 import Compare from "@/pages/Compare";
 import Orders from "@/pages/Orders";
@@ -79,9 +78,7 @@ export const routes = [
     path: "/catalog",
     element: (
       <AuthGate>
-        <FullWidthLayout>
-          <CatalogPage />
-        </FullWidthLayout>
+        <CatalogPage />
       </AuthGate>
     ),
     errorElement: <ErrorPage />,
