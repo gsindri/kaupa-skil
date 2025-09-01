@@ -467,7 +467,7 @@ function FiltersBar({
               setInStock(checked)
               setFilters({ availability: checked ? 'in_stock' : undefined })
             }}
-            color="green"
+            className="border-green-600 text-green-600 data-[selected=true]:bg-green-500 data-[selected=true]:text-white data-[selected=true]:border-green-500"
           >
             In stock
           </FilterChip>
@@ -480,7 +480,7 @@ function FiltersBar({
           <FilterChip
             selected={onSpecial}
             onSelectedChange={setOnSpecial}
-            color="orange"
+            className="border-orange-600 text-orange-600 data-[selected=true]:bg-orange-500 data-[selected=true]:text-white data-[selected=true]:border-orange-500"
           >
             On special / promo
           </FilterChip>
