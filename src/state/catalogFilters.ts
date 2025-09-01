@@ -1,6 +1,6 @@
 // src/state/catalogFilters.ts
-import { useRef, useSyncExternalStore, useState, useEffect } from 'react'
 import { createStore } from 'zustand/vanilla'
+import { useSyncExternalStoreWithSelector } from 'use-sync-external-store/shim/with-selector'
 import type { FacetFilters } from '@/services/catalog'
 
 export type SortOrder = 'relevance' | string
@@ -43,26 +43,15 @@ function shallowEqual<T extends Record<string, any>>(a: T, b: T) {
 // ------------- Hook (stable snapshots) -------------
 export function useCatalogFilters<T = CatalogFiltersState>(
   selector: (s: CatalogFiltersState) => T = (s) => s as unknown as T,
-  equals: (a: T, b: T) => boolean = Object.is
+  equals?: (a: T, b: T) => boolean,
 ): T {
-  const get = () => selector(catalogFiltersStore.getState())
-  const snap = useSyncExternalStore(catalogFiltersStore.subscribe, get, get)
-
-  // stabilize with equality
-  const prevRef = useRef<T>(snap)
-  const [stable, setStable] = useState<T>(snap)
-
-  useEffect(() => {
-    const same = equals === Object.is
-      ? Object.is(prevRef.current, snap)
-      : equals(prevRef.current, snap)
-    if (!same) {
-      prevRef.current = snap
-      setStable(snap)
-    }
-  }, [snap, equals])
-
-  return stable
+  return useSyncExternalStoreWithSelector(
+    catalogFiltersStore.subscribe,
+    catalogFiltersStore.getState,
+    catalogFiltersStore.getState,
+    selector,
+    equals,
+  )
 }
 
 // Convenience helpers for common patterns
