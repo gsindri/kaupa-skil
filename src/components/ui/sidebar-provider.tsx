@@ -73,18 +73,17 @@ export function SidebarProvider({
   return (
     <SidebarContext.Provider value={contextValue}>
       <div
-        style={
-          {
-            // CRITICAL FIX: Set sidebar width to 0 when collapsed in desktop mode
-            "--sidebar-width": isMobile 
-              ? SIDEBAR_WIDTH_ICON 
-              : open 
-                ? SIDEBAR_WIDTH 
-                : "0rem",
-            "--sidebar-width-icon": SIDEBAR_WIDTH_ICON,
-            ...style,
-          } as React.CSSProperties
-        }
+          style={
+            {
+              "--sidebar-width": isMobile
+                ? SIDEBAR_WIDTH_ICON
+                : open
+                  ? SIDEBAR_WIDTH
+                  : SIDEBAR_WIDTH_ICON,
+              "--sidebar-width-icon": SIDEBAR_WIDTH_ICON,
+              ...style,
+            } as React.CSSProperties
+          }
         className={className}
         {...props}
       >
