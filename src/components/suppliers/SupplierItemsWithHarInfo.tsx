@@ -3,7 +3,7 @@ import React from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { FileText, Clock, AlertCircle } from 'lucide-react'
-import { Database } from '@/lib/types/database'
+import type { Database } from '@/lib/types'
 import { formatDistanceToNow } from 'date-fns'
 
 type SupplierItem = Database['public']['Tables']['supplier_items']['Row']

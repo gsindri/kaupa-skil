@@ -1,5 +1,5 @@
 import { createContext } from 'react'
-import { Database } from '@/lib/types/database'
+import type { Database } from '@/lib/types'
 
 type SupplierItem = Database['public']['Tables']['supplier_items']['Row']
 
