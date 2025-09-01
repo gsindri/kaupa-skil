@@ -75,22 +75,22 @@ function CartItemRow({ item, includeVat, updateQuantity, removeItem, formatPrice
   return (
     <div
       ref={cardRef}
-      className="flex items-center justify-between gap-4"
+      className="grid grid-cols-[auto,1fr,auto] items-center gap-3"
     >
       <img
         src={getCachedImageUrl(item.image) || '/placeholder.svg'}
         alt={item.itemName}
         className="h-10 w-10 rounded object-cover"
       />
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
+      <div className="min-w-0">
+        <div className="flex items-center gap-2 min-w-0">
           <p
-            className="truncate text-sm font-medium"
+            className="flex-1 truncate text-sm font-medium"
             title={item.itemName}
           >
             {item.itemName}
           </p>
-          <Badge variant="secondary" className="text-xs">
+          <Badge variant="secondary" className="text-xs flex-shrink-0">
             {item.supplierName}
           </Badge>
         </div>
