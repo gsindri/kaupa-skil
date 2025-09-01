@@ -5,7 +5,6 @@ interface HeroSearchInputProps extends React.InputHTMLAttributes<HTMLInputElemen
   rightSlot?: React.ReactNode
 }
 
-export const HeroSearchInput = React.forwardRef<HTMLInputElement, HeroSearchInputProps>(
   ({ className, rightSlot, ...props }, ref) => {
     return (
       <div className="relative flex items-center">
@@ -14,7 +13,6 @@ export const HeroSearchInput = React.forwardRef<HTMLInputElement, HeroSearchInpu
           {...props}
           className={cn(
             'h-12 w-full rounded-md border-2 border-input bg-muted/30 px-4 pr-12 text-base shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
-            className
           )}
         />
         {rightSlot && (
@@ -24,7 +22,6 @@ export const HeroSearchInput = React.forwardRef<HTMLInputElement, HeroSearchInpu
         )}
       </div>
     )
-  }
 )
 
 HeroSearchInput.displayName = 'HeroSearchInput'
