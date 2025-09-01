@@ -9,6 +9,14 @@ import { useDebounce } from '@/hooks/useDebounce'
 import { CatalogTable } from '@/components/catalog/CatalogTable'
 import { ProductCard } from '@/components/catalog/ProductCard'
 import { SkeletonCard } from '@/components/catalog/SkeletonCard'
+import { Button } from '@/components/ui/button'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import type { FacetFilters } from '@/services/catalog'
 import {
   logFilter,
@@ -19,6 +27,7 @@ import {
 import { AnalyticsTracker } from '@/components/quick/AnalyticsTrackerUtils'
 import { ViewToggle } from '@/components/place-order/ViewToggle'
 import { LayoutDebugger } from '@/components/debug/LayoutDebugger'
+import { useFilterStore } from '@/state/filterStore'
 
 export default function CatalogPage() {
   const { profile } = useAuth()
@@ -196,6 +205,33 @@ export default function CatalogPage() {
 
   function FiltersBar() {
     const ref = React.useRef<HTMLDivElement>(null)
+    const { savedViews, saveView, deleteView } = useFilterStore()
+    const [selectedView, setSelectedView] = React.useState('')
+
+    const applyView = (name: string) => {
+      setSelectedView(name)
+      const view = savedViews[name]
+      if (view) {
+        setFilters(view.filters)
+        setOnlyWithPrice(view.onlyWithPrice)
+        setSearch(view.search)
+      }
+    }
+
+    const handleSave = () => {
+      const name = prompt('Name this view')
+      if (name) {
+        saveView(name, { filters, onlyWithPrice, search })
+        setSelectedView(name)
+      }
+    }
+
+    const handleDelete = () => {
+      if (!selectedView) return
+      deleteView(selectedView)
+      setSelectedView('')
+    }
+
     React.useEffect(() => {
       const el = ref.current
       if (!el) return
@@ -236,6 +272,29 @@ export default function CatalogPage() {
               className="w-full sm:w-40 md:w-48"
             />
             <ViewToggle value={view} onChange={setView} />
+          </div>
+          <div className="flex items-center gap-2">
+            <Select value={selectedView} onValueChange={applyView}>
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder="Saved views" />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.keys(savedViews).length === 0 && (
+                  <SelectItem value="" disabled>
+                    No saved views
+                  </SelectItem>
+                )}
+                {Object.keys(savedViews).map(name => (
+                  <SelectItem key={name} value={name}>
+                    {name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button variant="outline" onClick={handleSave}>Save</Button>
+            <Button variant="ghost" onClick={handleDelete} disabled={!selectedView}>
+              Delete
+            </Button>
           </div>
         </div>
       </div>
