@@ -47,13 +47,11 @@ export default function CatalogPage() {
   const lastCursor = useRef<string | null>(null)
   const [selected, setSelected] = useState<string[]>([])
   const [density, setDensity] = useState<'comfortable' | 'compact'>('comfortable')
-  const search = filters.search ?? ''
   const brand = filters.brand
   const supplier = filters.supplier
   const [sort, setSort] = useState<{ key: 'name' | 'brand' | 'supplier'; direction: 'asc' | 'desc' } | null>(null)
   const debouncedSearch = useDebounce(search, 300)
   const sentinelRef = useRef<HTMLDivElement | null>(null)
-  const [searchParams, setSearchParams] = useSearchParams()
 
   const {
     data: publicData,
@@ -286,10 +284,6 @@ export default function CatalogPage() {
               </AlertDescription>
             </Alert>
           )}
-          <div className="grid grid-cols-[1fr,auto] gap-3 items-center">
-            <Input
-              placeholder="Search products"
-              value={search}
         </div>
       </div>
     )
@@ -302,32 +296,23 @@ export default function CatalogPage() {
 
       <FiltersBar />
 
-        {view === 'list' ? (
-          <CatalogTable
-            products={sortedProducts}
-            selected={selected}
-            onSelect={toggleSelect}
-            onSelectAll={handleSelectAll}
-            sort={sort}
-            onSort={handleSort}
-            filters={filters}
-            onFilterChange={handleFilterChange}
-          />
-        ) : (
-        <div className="grid gap-[clamp(16px,2vw,28px)] [grid-template-columns:repeat(auto-fit,minmax(18.5rem,1fr))]">
-          {sortedProducts.map(product => (
-            <ProductCard
-              key={product.catalog_id}
-              product={product}
-              density={density}
             />
-          ))}
-          {loadingMore &&
-            Array.from({ length: 3 }).map((_, i) => (
-              <SkeletonCard key={`skeleton-${i}`} density={density} />
-            ))}
+          ) : (
+            <div className="grid gap-[clamp(16px,2vw,28px)] [grid-template-columns:repeat(auto-fit,minmax(18.5rem,1fr))]">
+              {sortedProducts.map(product => (
+                <ProductCard
+                  key={product.catalog_id}
+                  product={product}
+                  density={density}
+                />
+              ))}
+              {loadingMore &&
+                Array.from({ length: 3 }).map((_, i) => (
+                  <SkeletonCard key={`skeleton-${i}`} density={density} />
+                ))}
+            </div>
+          )}
+          <div ref={sentinelRef} />
         </div>
-      )}
-      <div ref={sentinelRef} />
   )
 }
