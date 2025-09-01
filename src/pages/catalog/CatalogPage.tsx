@@ -19,6 +19,7 @@ import {
 import { AnalyticsTracker } from '@/components/quick/AnalyticsTrackerUtils'
 import { ViewToggle } from '@/components/place-order/ViewToggle'
 import { LayoutDebugger } from '@/components/debug/LayoutDebugger'
+import { CatalogFiltersProvider } from '@/contexts/CatalogFiltersContext'
 
 export default function CatalogPage() {
   const { profile } = useAuth()
@@ -243,7 +244,7 @@ export default function CatalogPage() {
   }
 
   return (
-    <>
+    <CatalogFiltersProvider value={{ filters, setFilters }}>
       {/* eslint-disable-next-line no-constant-binary-expression */}
       {false && <LayoutDebugger show />}
 
@@ -272,6 +273,6 @@ export default function CatalogPage() {
         </div>
       )}
       <div ref={sentinelRef} />
-    </>
+    </CatalogFiltersProvider>
   )
 }
