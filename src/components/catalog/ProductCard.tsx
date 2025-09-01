@@ -29,6 +29,7 @@ import { LazyImage } from '@/components/ui/LazyImage'
 import { getCachedImageUrl } from '@/services/ImageCache'
 import { cn } from '@/lib/utils'
 import type { CartItem } from '@/lib/types'
+import { useCatalogFilters } from '@/contexts/CatalogFiltersContext'
 
 interface ProductCardProps {
   product: CatalogItem
@@ -46,6 +47,7 @@ export function ProductCard({
   const { items, addItem, updateQuantity, removeItem, restoreItems } = useCart()
   const { toast } = useToast()
   const orgId = profile?.tenant_id || null
+  const { setFilters } = useCatalogFilters()
   const [open, setOpen] = useState(false)
   const [pickerOpen, setPickerOpen] = useState(false)
   const [selectedSupplier, setSelectedSupplier] =
@@ -176,6 +178,11 @@ export function ProductCard({
       ? `${product.best_price} ${product.currency ?? ''}`
       : null
 
+  const handleFilterClick = (type: 'brand' | 'supplier', value: string) => {
+    setFilters(prev => ({ ...prev, [type]: value }))
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
   return (
     <>
       <Card
@@ -249,8 +256,33 @@ export function ProductCard({
           <h3 className="mt-3 line-clamp-1 text-sm font-medium">
             {product.name}
           </h3>
+          {product.brand && (
+            <button
+              type="button"
+              onClick={() => handleFilterClick('brand', product.brand)}
+              aria-label={`Filter by Brand ${product.brand}`}
+              className="text-xs text-muted-foreground hover:underline"
+            >
+              {product.brand}
+            </button>
+          )}
           {product.pack_size && (
             <p className="text-xs text-muted-foreground">{product.pack_size}</p>
+          )}
+          {product.suppliers.length > 0 && (
+            <div className="flex flex-wrap gap-1">
+              {product.suppliers.map(supplier => (
+                <button
+                  key={supplier}
+                  type="button"
+                  onClick={() => handleFilterClick('supplier', supplier)}
+                  aria-label={`Filter by Supplier ${supplier}`}
+                  className="text-[10px] text-muted-foreground hover:underline"
+                >
+                  {supplier}
+                </button>
+              ))}
+            </div>
           )}
 
           <div className="mt-auto pt-3 flex items-center justify-between">
