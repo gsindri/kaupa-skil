@@ -29,6 +29,7 @@ export function PantryLanes({ onLaneSelect, selectedLane, onAddToCart }: PantryL
             brand,
             pack_qty,
             supplier_id,
+            sample_image_url,
             price_quotes(pack_price, unit_price_ex_vat, unit_price_inc_vat)
           )
         `)
@@ -48,7 +49,8 @@ export function PantryLanes({ onLaneSelect, selectedLane, onAddToCart }: PantryL
           packPriceIncVat: price?.pack_price ? price.pack_price * 1.24 : 0,
           unit: 'unit',
           suppliers: item ? [item.supplier_id] : [],
-          stock: true
+          stock: true,
+          image: item?.sample_image_url || undefined
         }
       })
     },
@@ -69,6 +71,7 @@ export function PantryLanes({ onLaneSelect, selectedLane, onAddToCart }: PantryL
             brand,
             pack_qty,
             supplier_id,
+            sample_image_url,
             price_quotes(pack_price, unit_price_ex_vat, unit_price_inc_vat)
           )
         `)
@@ -91,6 +94,7 @@ export function PantryLanes({ onLaneSelect, selectedLane, onAddToCart }: PantryL
           unit: 'unit',
           suppliers: item ? [item.supplier_id] : [],
           stock: true,
+          image: item?.sample_image_url || undefined,
           lastQuantity: line.quantity
         }
       })
