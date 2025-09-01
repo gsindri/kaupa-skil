@@ -330,6 +330,7 @@ export default function CatalogPage() {
       supplierItemId: product.catalog_id,
       displayName: product.name,
       packQty: 1,
+      image: product.image_main || '/placeholder.svg',
     }
     setAddingId(product.catalog_id)
     addItem(item, 1)

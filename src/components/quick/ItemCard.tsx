@@ -26,6 +26,7 @@ interface ItemCardProps {
     isPremiumBrand?: boolean;
     isDiscounted?: boolean;
     originalPrice?: number;
+    image?: string;
   };
   onCompareItem: (itemId: string) => void;
   userMode: 'just-order' | 'balanced' | 'analytical';
@@ -87,7 +88,7 @@ export function ItemCard({ item, onCompareItem, userMode, compact = false }: Ite
       supplierItemId: item.id,
       displayName: item.name,
       packQty: 1,
-      image: '/placeholder.svg'
+      image: item.image || '/placeholder.svg'
     }, 1, { animateElement: addButtonRef.current || undefined });
   };
 
@@ -145,7 +146,7 @@ export function ItemCard({ item, onCompareItem, userMode, compact = false }: Ite
       {/* Top section: Image, Product info and price */}
       <div className="flex items-start gap-4 mb-3">
         <img
-          src="/placeholder.svg"
+          src={item.image || '/placeholder.svg'}
           alt={item.name}
           className={`${compact ? 'w-16 h-16' : 'w-20 h-20'} rounded-md object-cover select-none`}
           onDoubleClick={handleAdd}

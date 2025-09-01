@@ -28,6 +28,7 @@ import { useCart } from '@/contexts/useBasket'
 import { useSettings } from '@/contexts/useSettings'
 import { Link } from 'react-router-dom'
 import type { CartItem } from '@/lib/types'
+import { getCachedImageUrl } from '@/services/ImageCache'
 
 interface CartItemRowProps {
   item: CartItem
@@ -77,7 +78,7 @@ function CartItemRow({ item, includeVat, updateQuantity, removeItem, formatPrice
       className="flex items-center justify-between gap-4"
     >
       <img
-        src={item.image || '/placeholder.svg'}
+        src={getCachedImageUrl(item.image) || '/placeholder.svg'}
         alt={item.itemName}
         className="h-10 w-10 rounded object-cover"
       />
