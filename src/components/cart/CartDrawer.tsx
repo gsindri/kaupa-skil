@@ -72,7 +72,10 @@ function CartItemRow({ item, includeVat, updateQuantity, removeItem, formatPrice
   }, [item.supplierItemId, item.quantity, updateQuantity])
 
   return (
-      />
+    <div
+      ref={cardRef}
+      className="group flex items-center justify-between gap-4"
+    >
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <p
