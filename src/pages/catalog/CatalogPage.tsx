@@ -1,5 +1,13 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { Input } from '@/components/ui/input'
+import { Switch } from '@/components/ui/switch'
+import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValue,
+} from '@/components/ui/select'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-react'
 import { useAuth } from '@/contexts/useAuth'
@@ -9,7 +17,6 @@ import { useDebounce } from '@/hooks/useDebounce'
 import { CatalogTable } from '@/components/catalog/CatalogTable'
 import { ProductCard } from '@/components/catalog/ProductCard'
 import { SkeletonCard } from '@/components/catalog/SkeletonCard'
-import type { FacetFilters } from '@/services/catalog'
 import {
   logFilter,
   logFacetInteraction,
@@ -24,9 +31,16 @@ import { CatalogFiltersProvider } from '@/contexts/CatalogFiltersContext'
 export default function CatalogPage() {
   const { profile } = useAuth()
   const orgId = profile?.tenant_id || ''
+  const {
+    filters,
+    setFilters,
+    onlyWithPrice,
+    setOnlyWithPrice,
+    sort,
+    setSort,
+  } = useCatalogFilters()
+  const [searchParams, setSearchParams] = useSearchParams()
 
-  const [filters, setFilters] = useState<FacetFilters>({})
-  const [onlyWithPrice, setOnlyWithPrice] = useState(false)
   const [view, setView] = useState<'grid' | 'list'>('grid')
   const [cursor, setCursor] = useState<string | null>(null)
   const [nextCursor, setNextCursor] = useState<string | null>(null)
@@ -34,22 +48,13 @@ export default function CatalogPage() {
   const lastCursor = useRef<string | null>(null)
   const [selected, setSelected] = useState<string[]>([])
   const [density, setDensity] = useState<'comfortable' | 'compact'>('comfortable')
-  const [search, setSearch] = useState('')
+  const search = filters.search ?? ''
   const brand = filters.brand
+  const supplier = filters.supplier
+  const [sort, setSort] = useState<{ key: 'name' | 'brand' | 'supplier'; direction: 'asc' | 'desc' } | null>(null)
   const debouncedSearch = useDebounce(search, 300)
   const sentinelRef = useRef<HTMLDivElement | null>(null)
-
-  const publicQuery = useCatalogProducts({
-    search: debouncedSearch,
-    brand,
-    cursor,
-  })
-  const orgQuery = useOrgCatalog(orgId, {
-    search: debouncedSearch,
-    brand,
-    onlyWithPrice,
-    cursor,
-  })
+  const [searchParams, setSearchParams] = useSearchParams()
 
   const {
     data: publicData,
@@ -67,8 +72,6 @@ export default function CatalogPage() {
   } = orgQuery
 
   useEffect(() => {
-    logFilter({ ...filters, onlyWithPrice })
-  }, [filters, onlyWithPrice])
 
   useEffect(() => {
     if (debouncedSearch) logSearch(debouncedSearch)
@@ -93,6 +96,18 @@ export default function CatalogPage() {
   }, [onlyWithPrice])
 
   useEffect(() => {
+    logFacetInteraction('mySuppliers', mySuppliers)
+  }, [mySuppliers])
+
+  useEffect(() => {
+    logFacetInteraction('onSpecial', onSpecial)
+  }, [onSpecial])
+
+  useEffect(() => {
+    logFacetInteraction('sort', sortBy)
+  }, [sortBy])
+
+  useEffect(() => {
     if (publicError) {
       console.error(publicError)
       AnalyticsTracker.track('catalog_public_error', {
@@ -111,10 +126,10 @@ export default function CatalogPage() {
   }, [orgError])
 
   useEffect(() => {
-    const hasOrgData = !!orgData?.length
-    const data = hasOrgData ? orgData : publicData
-    const next = hasOrgData ? orgNext : publicNext
-    const fetching = hasOrgData ? orgFetching : publicFetching
+    const useOrg = mySuppliers
+    const data = useOrg ? orgData : publicData
+    const next = useOrg ? orgNext : publicNext
+    const fetching = useOrg ? orgFetching : publicFetching
     if (fetching) return
 
     if (!data) return
@@ -131,6 +146,7 @@ export default function CatalogPage() {
     orgFetching,
     publicFetching,
     cursor,
+    mySuppliers,
   ])
 
   useEffect(() => {
@@ -139,7 +155,13 @@ export default function CatalogPage() {
       products.length === 0 &&
       debouncedSearch
     ) {
-      logZeroResults(debouncedSearch, { ...filters, onlyWithPrice })
+      logZeroResults(debouncedSearch, {
+        ...filters,
+        onlyWithPrice,
+        mySuppliers,
+        onSpecial,
+        sortBy,
+      })
     }
   }, [
     orgQuery.isFetched,
@@ -148,16 +170,19 @@ export default function CatalogPage() {
     debouncedSearch,
     filters,
     onlyWithPrice,
+    mySuppliers,
+    onSpecial,
+    sortBy,
   ])
 
-  const isLoading = publicQuery.isFetching || orgQuery.isFetching
+  const isLoading = mySuppliers ? orgQuery.isFetching : publicQuery.isFetching
   const loadingMore = isLoading && cursor !== null
 
   const loadMore = useCallback(() => {
     if (nextCursor && !loadingMore) setCursor(nextCursor)
   }, [nextCursor, loadingMore])
 
-  const sortedProducts = products
+  const sortedProducts = useMemo(() => {
 
   useEffect(() => {
     const sentinel = sentinelRef.current
@@ -188,6 +213,19 @@ export default function CatalogPage() {
     }
   }
 
+  const handleSort = (key: 'name' | 'brand' | 'supplier') => {
+    setSort(prev => {
+      if (prev?.key === key) {
+        return { key, direction: prev.direction === 'asc' ? 'desc' : 'asc' }
+      }
+      return { key, direction: 'asc' }
+    })
+  }
+
+  const handleFilterChange = (f: Partial<FacetFilters>) => {
+    setFilters(prev => ({ ...prev, ...f }))
+  }
+
   const total =
     orgQuery.isFetched && typeof orgTotal === 'number'
       ? orgTotal
@@ -197,6 +235,33 @@ export default function CatalogPage() {
 
   function FiltersBar() {
     const ref = React.useRef<HTMLDivElement>(null)
+    const { savedViews, saveView, deleteView } = useFilterStore()
+    const [selectedView, setSelectedView] = React.useState('')
+
+    const applyView = (name: string) => {
+      setSelectedView(name)
+      const view = savedViews[name]
+      if (view) {
+        setFilters(view.filters)
+        setOnlyWithPrice(view.onlyWithPrice)
+        setSearch(view.search)
+      }
+    }
+
+    const handleSave = () => {
+      const name = prompt('Name this view')
+      if (name) {
+        saveView(name, { filters, onlyWithPrice, search })
+        setSelectedView(name)
+      }
+    }
+
+    const handleDelete = () => {
+      if (!selectedView) return
+      deleteView(selectedView)
+      setSelectedView('')
+    }
+
     React.useEffect(() => {
       const el = ref.current
       if (!el) return
@@ -222,42 +287,33 @@ export default function CatalogPage() {
               </AlertDescription>
             </Alert>
           )}
-          <div className="grid grid-cols-[1fr,auto,auto] gap-3 items-center">
+          <div className="grid grid-cols-[1fr,auto] gap-3 items-center">
             <Input
               placeholder="Search products"
               value={search}
-              onChange={e => setSearch(e.target.value)}
-            />
-            <Input
-              placeholder="Brand"
-              value={filters.brand ?? ''}
-              onChange={e =>
-                setFilters(prev => ({ ...prev, brand: e.target.value }))
-              }
-              className="w-full sm:w-40 md:w-48"
-            />
-            <ViewToggle value={view} onChange={setView} />
-          </div>
         </div>
       </div>
     )
   }
 
   return (
-    <CatalogFiltersProvider value={{ filters, setFilters }}>
       {/* eslint-disable-next-line no-constant-binary-expression */}
       {false && <LayoutDebugger show />}
 
       <FiltersBar />
 
-      {view === 'list' ? (
-        <CatalogTable
-          products={sortedProducts}
-          selected={selected}
-          onSelect={toggleSelect}
-          onSelectAll={handleSelectAll}
-        />
-      ) : (
+        {view === 'list' ? (
+          <CatalogTable
+            products={sortedProducts}
+            selected={selected}
+            onSelect={toggleSelect}
+            onSelectAll={handleSelectAll}
+            sort={sort}
+            onSort={handleSort}
+            filters={filters}
+            onFilterChange={handleFilterChange}
+          />
+        ) : (
         <div className="grid gap-[clamp(16px,2vw,28px)] [grid-template-columns:repeat(auto-fit,minmax(18.5rem,1fr))]">
           {sortedProducts.map(product => (
             <ProductCard
@@ -273,6 +329,5 @@ export default function CatalogPage() {
         </div>
       )}
       <div ref={sentinelRef} />
-    </CatalogFiltersProvider>
   )
 }
