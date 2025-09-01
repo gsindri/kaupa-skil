@@ -26,9 +26,8 @@ export const catalogFiltersStore = createStore<CatalogFiltersState>()(
 )
 
 export function useCatalogFilters<T>(
-  selector: (s: CatalogFiltersState) => T,
-  equals?: (a: T, b: T) => boolean
+  selector: (s: CatalogFiltersState) => T
 ) {
-  return useStore(catalogFiltersStore, selector, equals)
+  return useStore(catalogFiltersStore, selector)
 }
 
