@@ -17,6 +17,11 @@ import { ProductCard } from '@/components/catalog/ProductCard'
 import { SkeletonCard } from '@/components/catalog/SkeletonCard'
 import { HeroSearchInput } from '@/components/search/HeroSearchInput'
 import { FilterChip } from '@/components/ui/filter-chip'
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible'
 import type { FacetFilters, PublicCatalogFilters, OrgCatalogFilters } from '@/services/catalog'
 import {
   logFilter,
@@ -69,6 +74,7 @@ export default function CatalogPage() {
   } | null>(null)
   const debouncedSearch = useDebounce(filters.search ?? '', 300)
   const sentinelRef = useRef<HTMLDivElement | null>(null)
+  const [showMoreFilters, setShowMoreFilters] = useState(false)
 
   useEffect(() => {
     setCursor(null)
@@ -340,6 +346,8 @@ export default function CatalogPage() {
         setView={setView}
         publicError={publicError}
         orgError={orgError}
+        showMoreFilters={showMoreFilters}
+        setShowMoreFilters={setShowMoreFilters}
       />
 
       {view === 'list' ? (
@@ -390,6 +398,8 @@ interface FiltersBarProps {
   setView: (v: 'grid' | 'list') => void
   publicError: unknown
   orgError: unknown
+  showMoreFilters: boolean
+  setShowMoreFilters: (v: boolean) => void
 }
 
 function FiltersBar({
@@ -409,6 +419,8 @@ function FiltersBar({
   setView,
   publicError,
   orgError,
+  showMoreFilters,
+  setShowMoreFilters,
 }: FiltersBarProps) {
   const ref = React.useRef<HTMLDivElement>(null)
   React.useEffect(() => {
@@ -454,47 +466,65 @@ function FiltersBar({
           />
           <ViewToggle value={view} onChange={setView} />
         </div>
-        <div className="flex flex-wrap gap-4 items-center">
-          <FilterChip
-            selected={onlyWithPrice}
-            onSelectedChange={setOnlyWithPrice}
-          >
-            Only with price
-          </FilterChip>
-          <FilterChip
-            selected={inStock}
-            onSelectedChange={checked => {
-              setInStock(checked)
-              setFilters({ availability: checked ? 'in_stock' : undefined })
-            }}
-            color="green"
-          >
-            In stock
-          </FilterChip>
-          <FilterChip
-            selected={mySuppliers}
-            onSelectedChange={setMySuppliers}
-          >
-            My suppliers
-          </FilterChip>
-          <FilterChip
-            selected={onSpecial}
-            onSelectedChange={setOnSpecial}
-            color="orange"
-          >
-            On special / promo
-          </FilterChip>
-          <Select value={sortOrder} onValueChange={v => setSortOrder(v as SortOrder)}>
-            <SelectTrigger className="w-40">
-              <SelectValue placeholder="Sort" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="relevance">Relevance</SelectItem>
-              <SelectItem value="az">A–Z</SelectItem>
-              <SelectItem value="recent">Recently ordered</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        <Collapsible
+          open={showMoreFilters}
+          onOpenChange={setShowMoreFilters}
+        >
+          <div className="flex flex-wrap gap-4 items-center">
+            <FilterChip
+              selected={onlyWithPrice}
+              onSelectedChange={setOnlyWithPrice}
+            >
+              Only with price
+            </FilterChip>
+            <FilterChip
+              selected={inStock}
+              onSelectedChange={checked => {
+                setInStock(checked)
+                setFilters({ availability: checked ? 'in_stock' : undefined })
+              }}
+              color="green"
+            >
+              In stock
+            </FilterChip>
+            <CollapsibleContent className="flex flex-wrap gap-4 items-center">
+              <FilterChip
+                selected={mySuppliers}
+                onSelectedChange={setMySuppliers}
+              >
+                My suppliers
+              </FilterChip>
+              <FilterChip
+                selected={onSpecial}
+                onSelectedChange={setOnSpecial}
+                color="orange"
+              >
+                On special / promo
+              </FilterChip>
+            </CollapsibleContent>
+            <CollapsibleTrigger asChild>
+              <button
+                type="button"
+                className="text-sm text-muted-foreground"
+              >
+                {showMoreFilters ? '- Fewer filters' : '+ More filters'}
+              </button>
+            </CollapsibleTrigger>
+            <Select
+              value={sortOrder}
+              onValueChange={v => setSortOrder(v as SortOrder)}
+            >
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder="Sort" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="relevance">Relevance</SelectItem>
+                <SelectItem value="az">A–Z</SelectItem>
+                <SelectItem value="recent">Recently ordered</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </Collapsible>
       </div>
     </div>
   )
