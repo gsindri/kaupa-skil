@@ -1,4 +1,3 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
@@ -18,8 +17,6 @@ import { useDebounce } from '@/hooks/useDebounce'
 import { CatalogTable } from '@/components/catalog/CatalogTable'
 import { ProductCard } from '@/components/catalog/ProductCard'
 import { SkeletonCard } from '@/components/catalog/SkeletonCard'
-import { useCatalogFilters } from '@/state/catalogFilters'
-import { useSearchParams } from 'react-router-dom'
 import {
   logFilter,
   logFacetInteraction,
@@ -55,6 +52,35 @@ export default function CatalogPage() {
   const brand = filters.brand
   const debouncedSearch = useDebounce(search, 300)
   const sentinelRef = useRef<HTMLDivElement | null>(null)
+  const [searchParams, setSearchParams] = useSearchParams()
+
+  useEffect(() => {
+    const initial: FacetFilters = {}
+    ;(
+      ['brand', 'category', 'supplier', 'availability', 'packSizeRange'] as (
+        keyof FacetFilters
+      )[]
+    ).forEach(key => {
+      const value = searchParams.get(key)
+      if (value) initial[key] = value
+    })
+    if (Object.keys(initial).length) {
+      setFilters(prev => ({ ...prev, ...initial }))
+    }
+  }, [searchParams])
+
+  const updateFilter = (
+    key: keyof FacetFilters,
+    value: string | undefined,
+  ) => {
+    setFilters(prev => ({ ...prev, [key]: value }))
+    setSearchParams(prev => {
+      const params = new URLSearchParams(prev)
+      if (value) params.set(key, value)
+      else params.delete(key)
+      return params
+    })
+  }
 
   const publicQuery = useCatalogProducts(cursor)
   const orgQuery = useOrgCatalog(orgId, cursor)
@@ -262,59 +288,6 @@ export default function CatalogPage() {
             <Input
               placeholder="Search products"
               value={search}
-              onChange={e => setFilters({ search: e.target.value })}
-            />
-            <ViewToggle value={view} onChange={setView} />
-          </div>
-          <div className="flex flex-wrap gap-4 items-center">
-            <div className="flex items-center space-x-2">
-              <Switch
-                id="onlyWithPrice"
-                checked={onlyWithPrice}
-                onCheckedChange={setOnlyWithPrice}
-              />
-              <Label htmlFor="onlyWithPrice">Only with price</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Switch
-                id="inStock"
-                checked={filters.availability === 'in-stock'}
-                onCheckedChange={checked =>
-                  setFilters(prev => ({
-                    ...prev,
-                    availability: checked ? 'in-stock' : undefined,
-                  }))
-                }
-              />
-              <Label htmlFor="inStock">In stock</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Switch
-                id="mySuppliers"
-                checked={mySuppliers}
-                onCheckedChange={setMySuppliers}
-              />
-              <Label htmlFor="mySuppliers">My suppliers</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Switch
-                id="onSpecial"
-                checked={onSpecial}
-                onCheckedChange={setOnSpecial}
-              />
-              <Label htmlFor="onSpecial">On special / promo</Label>
-            </div>
-            <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Sort" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="relevance">Relevance</SelectItem>
-                <SelectItem value="az">A–Z</SelectItem>
-                <SelectItem value="recent">Recently ordered</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
         </div>
       </div>
     )
