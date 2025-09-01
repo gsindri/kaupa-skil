@@ -1,5 +1,5 @@
 // src/state/catalogFilters.ts
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import type { FacetFilters } from '@/services/catalog'
 
 export type SortOrder = 'relevance' | string
@@ -34,9 +34,26 @@ export function useCatalogFilters<T = CatalogFiltersState>(
   selector: (s: CatalogFiltersState) => T = (s) => s as unknown as T,
   equals?: (a: T, b: T) => boolean,
 ): T {
+  const STORAGE_KEY = 'catalogFilters'
+
   const [filters, setFiltersState] = useState<FacetFilters>({})
   const [onlyWithPrice, setOnlyWithPriceState] = useState(false)
   const [sort, setSortState] = useState<SortOrder>('relevance')
+
+  // Load saved filters on mount
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY)
+      if (raw) {
+        const parsed = JSON.parse(raw)
+        setFiltersState(parsed.filters ?? {})
+        setOnlyWithPriceState(parsed.onlyWithPrice ?? false)
+        setSortState(parsed.sort ?? 'relevance')
+      }
+    } catch {
+      // ignore invalid data
+    }
+  }, [])
 
   const setFilters = useCallback((patch: Partial<FacetFilters>) => {
     setFiltersState(prev => ({ ...prev, ...patch }))
@@ -49,6 +66,16 @@ export function useCatalogFilters<T = CatalogFiltersState>(
   const setSort = useCallback((s: SortOrder) => {
     setSortState(s)
   }, [])
+
+  // Persist changes to localStorage whenever relevant state changes
+  useEffect(() => {
+    try {
+      const data = { filters, onlyWithPrice, sort }
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+    } catch {
+      // ignore write errors
+    }
+  }, [filters, onlyWithPrice, sort])
 
   const state: CatalogFiltersState = {
     filters,
