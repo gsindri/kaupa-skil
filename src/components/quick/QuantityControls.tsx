@@ -31,15 +31,22 @@ export function QuantityControls({
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setLocalQuantity(value);
-    
-    const numValue = parseInt(value) || 0;
-    if (numValue >= 0) {
+
+    if (value === '') return;
+
+    const numValue = parseInt(value, 10);
+    if (!Number.isNaN(numValue) && numValue >= 0) {
       onQuantityChange(numValue);
     }
   };
 
   const handleInputBlur = () => {
-    const numValue = parseInt(localQuantity) || 0;
+    if (localQuantity === '') {
+      setLocalQuantity(quantity.toString());
+      return;
+    }
+
+    const numValue = parseInt(localQuantity, 10) || 0;
     setLocalQuantity(Math.max(0, numValue).toString());
   };
 
