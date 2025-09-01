@@ -74,8 +74,13 @@ function CartItemRow({ item, includeVat, updateQuantity, removeItem, formatPrice
   return (
     <div
       ref={cardRef}
-      className="group flex items-center justify-between gap-4"
+      className="flex items-center justify-between gap-4"
     >
+      <img
+        src={item.image || '/placeholder.svg'}
+        alt={item.itemName}
+        className="h-10 w-10 rounded object-cover"
+      />
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <p
@@ -108,7 +113,7 @@ function CartItemRow({ item, includeVat, updateQuantity, removeItem, formatPrice
         <Button
           variant="ghost"
           size="icon"
-          className="opacity-0 group-hover:opacity-100 transition-opacity"
+          className="transition-opacity"
           onClick={() => removeItem(item.supplierItemId)}
           aria-label="Remove item"
         >
