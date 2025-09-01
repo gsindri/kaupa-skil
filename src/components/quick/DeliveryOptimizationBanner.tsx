@@ -89,7 +89,8 @@ export function DeliveryOptimizationBanner({
       unit: 'pc',
       supplierItemId: `opt-${Date.now()}`,
       displayName: itemName,
-      packQty: 1
+      packQty: 1,
+      image: '/placeholder.svg'
     });
   };
 
