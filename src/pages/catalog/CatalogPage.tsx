@@ -1,11 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
-import {
-  Select,
-  SelectTrigger,
-  SelectContent,
-  SelectItem,
-  SelectValue,
-} from '@/components/ui/select'
+import { AnimatedSortDropdown } from '@/components/catalog/AnimatedSortDropdown'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { AlertCircle, Mic } from 'lucide-react'
 import { useAuth } from '@/contexts/useAuth'
@@ -484,16 +478,10 @@ function FiltersBar({
           >
             On special / promo
           </FilterChip>
-          <Select value={sortOrder} onValueChange={v => setSortOrder(v as SortOrder)}>
-            <SelectTrigger className="w-40">
-              <SelectValue placeholder="Sort" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="relevance">Relevance</SelectItem>
-              <SelectItem value="az">A–Z</SelectItem>
-              <SelectItem value="recent">Recently ordered</SelectItem>
-            </SelectContent>
-          </Select>
+          <AnimatedSortDropdown
+            value={sortOrder}
+            onValueChange={v => setSortOrder(v as SortOrder)}
+          />
         </div>
       </div>
     </div>
