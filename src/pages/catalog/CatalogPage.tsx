@@ -29,7 +29,7 @@ import { AnalyticsTracker } from '@/components/quick/AnalyticsTrackerUtils'
 import { ViewToggle } from '@/components/place-order/ViewToggle'
 import { LayoutDebugger } from '@/components/debug/LayoutDebugger'
 import { FullWidthLayout } from '@/components/layout/FullWidthLayout'
-import { useCatalogFilters, shallow } from '@/state/catalogFilters'
+import { useCatalogFilters, shallow, SortOrder } from '@/state/catalogFilters'
 
 export default function CatalogPage() {
   const { profile } = useAuth()
@@ -311,89 +311,29 @@ export default function CatalogPage() {
         ? publicTotal
         : null
 
-  function FiltersBar() {
-    const ref = React.useRef<HTMLDivElement>(null)
-    React.useEffect(() => {
-      const el = ref.current
-      if (!el) return
-      const ro = new ResizeObserver(() => {
-        const h = Math.round(el.getBoundingClientRect().height)
-        document.documentElement.style.setProperty('--filters-h', `${h}px`)
-      })
-      ro.observe(el)
-      return () => ro.disconnect()
-    }, [])
-
-    return (
-      <div
-        ref={ref}
-        className="sticky top-[var(--header-h)] z-30 border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60"
-      >
-        <div className="py-3 space-y-3">
-          {(publicError || orgError) && (
-            <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>
-                {String(publicError || orgError)}
-              </AlertDescription>
-            </Alert>
-          )}
-          <div className="grid grid-cols-[1fr,auto] gap-3 items-center">
-            <Input
-              placeholder="Search products"
-              value={filters.search ?? ''}
-              onChange={e => setFilters({ search: e.target.value })}
-            />
-            <ViewToggle value={view} onChange={setView} />
-          </div>
-          <div className="flex flex-wrap gap-4 items-center">
-            <Label className="flex items-center gap-2">
-              <Switch
-                checked={onlyWithPrice}
-                onCheckedChange={setOnlyWithPrice}
-              />
-              Only with price
-            </Label>
-            <Label className="flex items-center gap-2">
-              <Switch
-                checked={inStock}
-                onCheckedChange={checked => {
-                  setInStock(checked)
-                  setFilters({ availability: checked ? 'in_stock' : undefined })
-                }}
-              />
-              In stock
-            </Label>
-            <Label className="flex items-center gap-2">
-              <Switch checked={mySuppliers} onCheckedChange={setMySuppliers} />
-              My suppliers
-            </Label>
-            <Label className="flex items-center gap-2">
-              <Switch checked={onSpecial} onCheckedChange={setOnSpecial} />
-              On special / promo
-            </Label>
-            <Select value={sortOrder} onValueChange={v => setSortOrder(v as any)}>
-              <SelectTrigger className="w-40">
-                <SelectValue placeholder="Sort" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="relevance">Relevance</SelectItem>
-                <SelectItem value="az">A–Z</SelectItem>
-                <SelectItem value="recent">Recently ordered</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
   return (
     <FullWidthLayout offsetContent={false}>
       {/* eslint-disable-next-line no-constant-binary-expression */}
       {false && <LayoutDebugger show />}
 
-      <FiltersBar />
+      <FiltersBar
+        filters={filters}
+        setFilters={setFilters}
+        onlyWithPrice={onlyWithPrice}
+        setOnlyWithPrice={setOnlyWithPrice}
+        inStock={inStock}
+        setInStock={setInStock}
+        mySuppliers={mySuppliers}
+        setMySuppliers={setMySuppliers}
+        onSpecial={onSpecial}
+        setOnSpecial={setOnSpecial}
+        sortOrder={sortOrder}
+        setSortOrder={setSortOrder}
+        view={view}
+        setView={setView}
+        publicError={publicError}
+        orgError={orgError}
+      />
 
       {view === 'list' ? (
         <CatalogTable
@@ -423,5 +363,118 @@ export default function CatalogPage() {
       )}
       <div ref={sentinelRef} />
     </FullWidthLayout>
+  )
+}
+
+interface FiltersBarProps {
+  filters: FacetFilters
+  setFilters: (f: Partial<FacetFilters>) => void
+  onlyWithPrice: boolean
+  setOnlyWithPrice: (v: boolean) => void
+  inStock: boolean
+  setInStock: (v: boolean) => void
+  mySuppliers: boolean
+  setMySuppliers: (v: boolean) => void
+  onSpecial: boolean
+  setOnSpecial: (v: boolean) => void
+  sortOrder: SortOrder
+  setSortOrder: (v: SortOrder) => void
+  view: 'grid' | 'list'
+  setView: (v: 'grid' | 'list') => void
+  publicError: unknown
+  orgError: unknown
+}
+
+function FiltersBar({
+  filters,
+  setFilters,
+  onlyWithPrice,
+  setOnlyWithPrice,
+  inStock,
+  setInStock,
+  mySuppliers,
+  setMySuppliers,
+  onSpecial,
+  setOnSpecial,
+  sortOrder,
+  setSortOrder,
+  view,
+  setView,
+  publicError,
+  orgError,
+}: FiltersBarProps) {
+  const ref = React.useRef<HTMLDivElement>(null)
+  React.useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const ro = new ResizeObserver(() => {
+      const h = Math.round(el.getBoundingClientRect().height)
+      document.documentElement.style.setProperty('--filters-h', `${h}px`)
+    })
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
+
+  return (
+    <div
+      ref={ref}
+      className="sticky top-[var(--header-h)] z-30 border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+    >
+      <div className="py-3 space-y-3">
+        {(publicError || orgError) && (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              {String(publicError || orgError)}
+            </AlertDescription>
+          </Alert>
+        )}
+        <div className="grid grid-cols-[1fr,auto] gap-3 items-center">
+          <Input
+            placeholder="Search products"
+            value={filters.search ?? ''}
+            onChange={e => setFilters({ search: e.target.value })}
+          />
+          <ViewToggle value={view} onChange={setView} />
+        </div>
+        <div className="flex flex-wrap gap-4 items-center">
+          <Label className="flex items-center gap-2">
+            <Switch
+              checked={onlyWithPrice}
+              onCheckedChange={setOnlyWithPrice}
+            />
+            Only with price
+          </Label>
+          <Label className="flex items-center gap-2">
+            <Switch
+              checked={inStock}
+              onCheckedChange={checked => {
+                setInStock(checked)
+                setFilters({ availability: checked ? 'in_stock' : undefined })
+              }}
+            />
+            In stock
+          </Label>
+          <Label className="flex items-center gap-2">
+            <Switch checked={mySuppliers} onCheckedChange={setMySuppliers} />
+            My suppliers
+          </Label>
+          <Label className="flex items-center gap-2">
+            <Switch checked={onSpecial} onCheckedChange={setOnSpecial} />
+            On special / promo
+          </Label>
+          <Select value={sortOrder} onValueChange={v => setSortOrder(v as SortOrder)}>
+            <SelectTrigger className="w-40">
+              <SelectValue placeholder="Sort" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="relevance">Relevance</SelectItem>
+              <SelectItem value="az">A–Z</SelectItem>
+              <SelectItem value="recent">Recently ordered</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+    </div>
   )
 }
