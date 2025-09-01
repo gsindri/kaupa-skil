@@ -1,7 +1,4 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
-import { HeroSearchInput } from '@/components/search/HeroSearchInput'
-import { Switch } from '@/components/ui/switch'
-import { Label } from '@/components/ui/label'
 import {
   Select,
   SelectTrigger,
@@ -456,31 +453,35 @@ function FiltersBar({
           <ViewToggle value={view} onChange={setView} />
         </div>
         <div className="flex flex-wrap gap-4 items-center">
-          <Label className="flex items-center gap-2">
-            <Switch
-              checked={onlyWithPrice}
-              onCheckedChange={setOnlyWithPrice}
-            />
+          <FilterChip
+            selected={onlyWithPrice}
+            onSelectedChange={setOnlyWithPrice}
+          >
             Only with price
-          </Label>
-          <Label className="flex items-center gap-2">
-            <Switch
-              checked={inStock}
-              onCheckedChange={checked => {
-                setInStock(checked)
-                setFilters({ availability: checked ? 'in_stock' : undefined })
-              }}
-            />
+          </FilterChip>
+          <FilterChip
+            selected={inStock}
+            onSelectedChange={checked => {
+              setInStock(checked)
+              setFilters({ availability: checked ? 'in_stock' : undefined })
+            }}
+            color="green"
+          >
             In stock
-          </Label>
-          <Label className="flex items-center gap-2">
-            <Switch checked={mySuppliers} onCheckedChange={setMySuppliers} />
+          </FilterChip>
+          <FilterChip
+            selected={mySuppliers}
+            onSelectedChange={setMySuppliers}
+          >
             My suppliers
-          </Label>
-          <Label className="flex items-center gap-2">
-            <Switch checked={onSpecial} onCheckedChange={setOnSpecial} />
+          </FilterChip>
+          <FilterChip
+            selected={onSpecial}
+            onSelectedChange={setOnSpecial}
+            color="orange"
+          >
             On special / promo
-          </Label>
+          </FilterChip>
           <Select value={sortOrder} onValueChange={v => setSortOrder(v as SortOrder)}>
             <SelectTrigger className="w-40">
               <SelectValue placeholder="Sort" />
