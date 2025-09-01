@@ -13,23 +13,21 @@ import { Outlet } from 'react-router-dom'
 export function CatalogLayout() {
   return (
     <SidebarProvider>
-      <div
-        className="min-h-screen grid"
-        style={{ gridTemplateColumns: 'var(--sidebar-width,16rem) minmax(0,1fr)' }}
-      >
-        <aside className="sticky top-0 h-screen w-[var(--sidebar-width,16rem)]">
-          <EnhancedAppSidebar />
-        </aside>
+      <div className="flex flex-col min-h-screen">
+        <TopNavigation />
 
-        <div className="min-w-0 overflow-y-auto">
-          <TopNavigation />
-          <div className="px-[clamp(16px,2vw,28px)]">
+        <div className="flex flex-1 min-h-0">
+          <aside className="w-[var(--sidebar-width,16rem)]">
+            <EnhancedAppSidebar />
+          </aside>
+
+          <main className="flex-1 min-w-0 app-scroll pt-[var(--header-h)] overflow-y-auto px-[clamp(16px,2vw,28px)]">
             <Outlet />
-          </div>
+          </main>
         </div>
-      </div>
 
-      <CartDrawer />
+        <CartDrawer />
+      </div>
     </SidebarProvider>
   )
 }
