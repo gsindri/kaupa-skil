@@ -344,32 +344,34 @@ export default function CatalogPage() {
         setShowMoreFilters={setShowMoreFilters}
       />
 
-      {view === 'list' ? (
-        <CatalogTable
-          products={sortedProducts}
-          selected={selected}
-          onSelect={toggleSelect}
-          onSelectAll={handleSelectAll}
-          sort={tableSort}
-          onSort={handleSort}
-          filters={filters}
-          onFilterChange={handleFilterChange}
-        />
-      ) : (
-        <div className="grid justify-center gap-[clamp(16px,2vw,28px)] [grid-template-columns:repeat(auto-fit,minmax(0,18.5rem))]">
-          {sortedProducts.map(product => (
-            <ProductCard
-              key={product.catalog_id}
-              product={product}
-              density={density}
-            />
-          ))}
-          {loadingMore &&
-            Array.from({ length: 3 }).map((_, i) => (
-              <SkeletonCard key={`skeleton-${i}`} density={density} />
+      <div className="mt-6">
+        {view === 'list' ? (
+          <CatalogTable
+            products={sortedProducts}
+            selected={selected}
+            onSelect={toggleSelect}
+            onSelectAll={handleSelectAll}
+            sort={tableSort}
+            onSort={handleSort}
+            filters={filters}
+            onFilterChange={handleFilterChange}
+          />
+        ) : (
+          <div className="grid justify-center gap-[clamp(16px,2vw,28px)] [grid-template-columns:repeat(auto-fit,minmax(0,18.5rem))]">
+            {sortedProducts.map(product => (
+              <ProductCard
+                key={product.catalog_id}
+                product={product}
+                density={density}
+              />
             ))}
-        </div>
-      )}
+            {loadingMore &&
+              Array.from({ length: 3 }).map((_, i) => (
+                <SkeletonCard key={`skeleton-${i}`} density={density} />
+              ))}
+          </div>
+        )}
+      </div>
       <div ref={sentinelRef} />
     </FullWidthLayout>
   )
