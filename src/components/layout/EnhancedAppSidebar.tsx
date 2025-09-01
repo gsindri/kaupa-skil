@@ -98,8 +98,8 @@ export function EnhancedAppSidebar() {
 
   return (
     <nav aria-label="Primary" id="app-sidebar" className="h-full">
-      {/* Remove hardcoded w-64 class to allow dynamic width management */}
-      <Sidebar>
+        {/* Remove hardcoded w-64 class to allow dynamic width management */}
+        <Sidebar collapsible="icon">
         <SidebarHeader>
           <NavLink
             to="/"
