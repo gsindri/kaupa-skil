@@ -16,6 +16,7 @@ import { CatalogTable } from '@/components/catalog/CatalogTable'
 import { ProductCard } from '@/components/catalog/ProductCard'
 import { SkeletonCard } from '@/components/catalog/SkeletonCard'
 import { HeroSearchInput } from '@/components/search/HeroSearchInput'
+import { FilterChip } from '@/components/ui/filter-chip'
 import type { FacetFilters, PublicCatalogFilters, OrgCatalogFilters } from '@/services/catalog'
 import {
   logFilter,
