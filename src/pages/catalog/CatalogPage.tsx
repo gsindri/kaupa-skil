@@ -8,7 +8,7 @@ import { useOrgCatalog } from '@/hooks/useOrgCatalog'
 import { useDebounce } from '@/hooks/useDebounce'
 import { CatalogTable } from '@/components/catalog/CatalogTable'
 import { ProductCard } from '@/components/catalog/ProductCard'
-import { SkeletonCard } from '@/components/catalog/SkeletonCard'
+import { ProductCardSkeleton } from '@/components/catalog/ProductCardSkeleton'
 import { HeroSearchInput } from '@/components/search/HeroSearchInput'
 import { FilterChip } from '@/components/ui/filter-chip'
 import {
@@ -28,6 +28,8 @@ import { ViewToggle } from '@/components/place-order/ViewToggle'
 import { LayoutDebugger } from '@/components/debug/LayoutDebugger'
 import { FullWidthLayout } from '@/components/layout/FullWidthLayout'
 import { useCatalogFilters, shallow, SortOrder } from '@/state/catalogFilters'
+import { useCart } from '@/contexts/useBasket'
+import type { CartItem } from '@/lib/types'
 
 export default function CatalogPage() {
   const { profile } = useAuth()
@@ -61,7 +63,8 @@ export default function CatalogPage() {
   const [products, setProducts] = useState<any[]>([])
   const lastCursor = useRef<string | null>(null)
   const [selected, setSelected] = useState<string[]>([])
-  const [density, setDensity] = useState<'comfortable' | 'compact'>('comfortable')
+  const { addItem } = useCart()
+  const [addingId, setAddingId] = useState<string | null>(null)
   const [tableSort, setTableSort] = useState<{
     key: 'name' | 'brand' | 'supplier'
     direction: 'asc' | 'desc'
@@ -311,6 +314,28 @@ export default function CatalogPage() {
     setFilters(f)
   }
 
+  const handleAdd = (product: any) => {
+    const item: Omit<CartItem, 'quantity'> = {
+      id: product.catalog_id,
+      supplierId: product.suppliers?.[0] || '',
+      supplierName: product.suppliers?.[0] || '',
+      itemName: product.name,
+      sku: product.catalog_id,
+      packSize: product.pack_size || '',
+      packPrice: product.best_price ?? 0,
+      unitPriceExVat: product.best_price ?? 0,
+      unitPriceIncVat: product.best_price ?? 0,
+      vatRate: 0,
+      unit: '',
+      supplierItemId: product.catalog_id,
+      displayName: product.name,
+      packQty: 1,
+    }
+    setAddingId(product.catalog_id)
+    addItem(item, 1)
+    setTimeout(() => setAddingId(null), 500)
+  }
+
   const total =
     orgQuery.isFetched && typeof orgTotal === 'number'
       ? orgTotal
@@ -357,17 +382,21 @@ export default function CatalogPage() {
             onFilterChange={handleFilterChange}
           />
         ) : (
-          <div className="grid justify-center gap-[clamp(16px,2vw,28px)] [grid-template-columns:repeat(auto-fit,minmax(0,18.5rem))]">
+          <div className="grid justify-center justify-items-center gap-6 [grid-template-columns:repeat(auto-fill,minmax(260px,1fr))]">
             {sortedProducts.map(product => (
               <ProductCard
                 key={product.catalog_id}
-                product={product}
-                density={density}
+                title={product.name}
+                imageUrl={product.image_main ?? '/placeholder.svg'}
+                packSize={product.pack_size || undefined}
+                suppliersCount={product.supplier_count}
+                onAdd={() => handleAdd(product)}
+                isAdding={addingId === product.catalog_id}
               />
             ))}
             {loadingMore &&
               Array.from({ length: 3 }).map((_, i) => (
-                <SkeletonCard key={`skeleton-${i}`} density={density} />
+                <ProductCardSkeleton key={`skeleton-${i}`} />
               ))}
           </div>
         )}
