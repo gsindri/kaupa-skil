@@ -32,7 +32,7 @@ export function useCatalogProducts(filters: PublicCatalogFilters, sort: SortOrde
 
   const query = useQuery({
     queryKey: ['catalog', filters, sort],
-    queryFn: () => fetchPublicCatalogItems(filters),
+    queryFn: () => fetchPublicCatalogItems(filters, sort),
   })
 
   return {

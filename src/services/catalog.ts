@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client'
+import type { SortOrder } from '@/state/catalogFilters'
 
 export type FacetFilters = {
   search?: string
@@ -33,6 +34,7 @@ export interface CatalogItem {
 
 export async function fetchPublicCatalogItems(
   filters: PublicCatalogFilters,
+  sort: SortOrder,
 ): Promise<{ items: CatalogItem[]; nextCursor: string | null; total: number }> {
   let query: any = supabase
     .from('v_public_catalog')
@@ -40,8 +42,14 @@ export async function fetchPublicCatalogItems(
       'catalog_id, name, brand, sample_image_url, canonical_pack, suppliers_count',
       { count: 'exact' },
     )
-    .order('catalog_id', { ascending: true })
-    .limit(50)
+
+  if (sort === 'az') {
+    query = query.order('name', { ascending: true }).order('catalog_id', { ascending: true })
+  } else {
+    query = query.order('catalog_id', { ascending: true })
+  }
+
+  query = query.limit(50)
 
   if (filters.search) query = query.ilike('name', `%${filters.search}%`)
   if (filters.brand) query = query.eq('brand', filters.brand)
@@ -73,6 +81,7 @@ export async function fetchPublicCatalogItems(
 export async function fetchOrgCatalogItems(
   orgId: string,
   filters: OrgCatalogFilters,
+  sort: SortOrder,
 ): Promise<{ items: CatalogItem[]; nextCursor: string | null; total: number }> {
   let query: any = supabase
     .from('v_org_catalog')
@@ -80,8 +89,14 @@ export async function fetchOrgCatalogItems(
       'catalog_id, name, brand, gtin, sample_image_url, canonical_pack, suppliers_count, supplier_names, best_price, currency',
     )
     .eq('_org', orgId)
-    .order('catalog_id', { ascending: true })
-    .limit(50)
+
+  if (sort === 'az') {
+    query = query.order('name', { ascending: true }).order('catalog_id', { ascending: true })
+  } else {
+    query = query.order('catalog_id', { ascending: true })
+  }
+
+  query = query.limit(50)
 
   if (filters.search) query = query.ilike('name', `%${filters.search}%`)
   if (filters.brand) query = query.eq('brand', filters.brand)

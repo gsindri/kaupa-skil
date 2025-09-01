@@ -72,6 +72,14 @@ export default function CatalogPage() {
   const sentinelRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
+    setCursor(null)
+    setNextCursor(null)
+    setProducts([])
+    lastCursor.current = null
+    window.scrollTo({ top: 0, behavior: 'instant' })
+  }, [filters, sortOrder, onlyWithPrice, mySuppliers])
+
+  useEffect(() => {
     if (sortOrder === 'az') {
       setTableSort({ key: 'name', direction: 'asc' })
     } else {
@@ -234,19 +242,8 @@ export default function CatalogPage() {
   }, [nextCursor, loadingMore])
 
   const sortedProducts = useMemo(() => {
-    let result = products
-    if (filters.brand) {
-      const b = filters.brand.toLowerCase()
-      result = result.filter(p => (p.brand || '').toLowerCase().includes(b))
-    }
-    if (filters.supplier) {
-      const s = filters.supplier.toLowerCase()
-      result = result.filter(p =>
-        p.suppliers?.some((sup: string) => sup.toLowerCase().includes(s)),
-      )
-    }
-    if (!tableSort) return result
-    const sorted = [...result]
+    if (!tableSort) return products
+    const sorted = [...products]
     sorted.sort((a, b) => {
       const getVal = (p: any) => {
         if (tableSort.key === 'supplier')
@@ -260,7 +257,7 @@ export default function CatalogPage() {
       return 0
     })
     return sorted
-  }, [products, tableSort, filters])
+  }, [products, tableSort])
 
   useEffect(() => {
     const sentinel = sentinelRef.current
