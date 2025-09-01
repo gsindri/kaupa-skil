@@ -182,8 +182,8 @@ export function CartDrawer() {
         showBar={false}
         role="dialog"
         aria-modal="true"
-        className="max-w-[400px] md:max-w-[35vw] rounded-none z-[60]"
-        style={{ width: 'min(35vw, 380px)' }}
+        className="max-w-[480px] md:max-w-[45vw] rounded-none z-[60]"
+        style={{ width: 'min(90vw, 480px)' }}
       >
         <div className="flex h-full flex-col">
           <DrawerHeader className="grid grid-cols-[1fr_auto] gap-y-2 px-5 py-5 md:px-6 md:py-6 relative">
