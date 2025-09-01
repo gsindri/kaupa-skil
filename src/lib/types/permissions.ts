@@ -1,5 +1,4 @@
-
-import { Database } from './database'
+import { Database } from '@/lib/types'
 
 export type Membership = Database['public']['Tables']['memberships']['Row']
 export type Grant = Database['public']['Tables']['grants']['Row']

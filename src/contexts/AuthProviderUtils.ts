@@ -5,9 +5,7 @@ import type {
   AuthTokenResponse,
   AuthResponse,
 } from '@supabase/supabase-js'
-import type { Database } from '@/lib/types/database'
-
-export type Profile = Database['public']['Tables']['profiles']['Row']
+import type { Profile } from '@/lib/types'
 
 export interface AuthContextType {
   user: User | null
