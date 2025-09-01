@@ -40,7 +40,7 @@ export function useOrgCatalog(
 
   const query = useQuery({
     queryKey: ['orgCatalog', orgId, filters, sort],
-    queryFn: () => fetchOrgCatalogItems(orgId, filters),
+    queryFn: () => fetchOrgCatalogItems(orgId, filters, sort),
     enabled: !!orgId,
   })
 
