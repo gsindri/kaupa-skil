@@ -45,14 +45,6 @@ export function useCatalogFilters<T = CatalogFiltersState>(
   selector: (s: CatalogFiltersState) => T = (s) => s as unknown as T,
   equals?: (a: T, b: T) => boolean,
 ): T {
-  const slice = useSyncExternalStoreWithSelector(
-    catalogFiltersStore.subscribe,
-    catalogFiltersStore.getState,
-    catalogFiltersStore.getState,
-    selector,
-    equals,
-  )
-  return slice ?? selector(catalogFiltersStore.getState())
 }
 
 // Convenience helpers for common patterns
