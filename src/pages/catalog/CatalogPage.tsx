@@ -72,6 +72,19 @@ export default function CatalogPage() {
   const debouncedSearch = useDebounce(filters.search ?? '', 300)
   const sentinelRef = useRef<HTMLDivElement | null>(null)
   const [showMoreFilters, setShowMoreFilters] = useState(false)
+  const [cols, setCols] = useState(1)
+
+  useEffect(() => {
+    const updateCols = () => {
+      const width = window.innerWidth
+      let c = Math.min(4, Math.floor(width / 320))
+      if (width > 1800) c = 6
+      setCols(c)
+    }
+    updateCols()
+    window.addEventListener('resize', updateCols)
+    return () => window.removeEventListener('resize', updateCols)
+  }, [])
 
   useEffect(() => {
     setCursor(null)
@@ -383,7 +396,10 @@ export default function CatalogPage() {
             onFilterChange={handleFilterChange}
           />
         ) : (
-          <div className="grid justify-center justify-items-center gap-6 [grid-template-columns:repeat(auto-fill,minmax(260px,1fr))]">
+          <div
+            className="grid justify-center justify-items-center gap-6"
+            style={{ gridTemplateColumns: `repeat(${cols}, minmax(260px,1fr))` }}
+          >
             {sortedProducts.map(product => (
               <ProductCard
                 key={product.catalog_id}
