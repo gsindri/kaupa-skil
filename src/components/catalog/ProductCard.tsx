@@ -179,7 +179,7 @@ export function ProductCard({
       : null
 
   const handleFilterClick = (type: 'brand' | 'supplier', value: string) => {
-    setFilters(prev => ({ ...prev, [type]: value }))
+    setFilters({ [type]: value })
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
