@@ -1,3 +1,4 @@
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
@@ -17,6 +18,7 @@ import { useDebounce } from '@/hooks/useDebounce'
 import { CatalogTable } from '@/components/catalog/CatalogTable'
 import { ProductCard } from '@/components/catalog/ProductCard'
 import { SkeletonCard } from '@/components/catalog/SkeletonCard'
+import type { FacetFilters } from '@/services/catalog'
 import {
   logFilter,
   logFacetInteraction,
@@ -26,20 +28,18 @@ import {
 import { AnalyticsTracker } from '@/components/quick/AnalyticsTrackerUtils'
 import { ViewToggle } from '@/components/place-order/ViewToggle'
 import { LayoutDebugger } from '@/components/debug/LayoutDebugger'
+import { FullWidthLayout } from '@/components/layout/FullWidthLayout'
 
 export default function CatalogPage() {
   const { profile } = useAuth()
   const orgId = profile?.tenant_id || ''
-  const {
-    filters,
-    setFilters,
-    onlyWithPrice,
-    setOnlyWithPrice,
-    sort,
-    setSort,
-  } = useCatalogFilters()
-  const [searchParams, setSearchParams] = useSearchParams()
 
+  const [filters, setFilters] = useState<FacetFilters>({})
+  const [onlyWithPrice, setOnlyWithPrice] = useState(false)
+  const [inStock, setInStock] = useState(false)
+  const [mySuppliers, setMySuppliers] = useState(false)
+  const [onSpecial, setOnSpecial] = useState(false)
+  const [sortBy, setSortBy] = useState<'relevance' | 'az' | 'recent'>('relevance')
   const [view, setView] = useState<'grid' | 'list'>('grid')
   const [cursor, setCursor] = useState<string | null>(null)
   const [nextCursor, setNextCursor] = useState<string | null>(null)
@@ -47,11 +47,36 @@ export default function CatalogPage() {
   const lastCursor = useRef<string | null>(null)
   const [selected, setSelected] = useState<string[]>([])
   const [density, setDensity] = useState<'comfortable' | 'compact'>('comfortable')
+  const [search, setSearch] = useState('')
   const brand = filters.brand
   const supplier = filters.supplier
   const [sort, setSort] = useState<{ key: 'name' | 'brand' | 'supplier'; direction: 'asc' | 'desc' } | null>(null)
   const debouncedSearch = useDebounce(search, 300)
   const sentinelRef = useRef<HTMLDivElement | null>(null)
+
+  useEffect(() => {
+    if (sortBy === 'az') {
+      setSort({ key: 'name', direction: 'asc' })
+    } else {
+      setSort(null)
+    }
+  }, [sortBy])
+
+  const publicQuery = useCatalogProducts({
+    search: debouncedSearch,
+    brand,
+    supplier,
+    availability: filters.availability,
+    cursor,
+  })
+  const orgQuery = useOrgCatalog(orgId, {
+    search: debouncedSearch,
+    brand,
+    supplier,
+    availability: filters.availability,
+    onlyWithPrice,
+    cursor,
+  })
 
   const {
     data: publicData,
@@ -69,6 +94,8 @@ export default function CatalogPage() {
   } = orgQuery
 
   useEffect(() => {
+    logFilter({ ...filters, onlyWithPrice, inStock, mySuppliers, onSpecial, sortBy })
+  }, [filters, onlyWithPrice, inStock, mySuppliers, onSpecial, sortBy])
 
   useEffect(() => {
     if (debouncedSearch) logSearch(debouncedSearch)
@@ -155,6 +182,7 @@ export default function CatalogPage() {
       logZeroResults(debouncedSearch, {
         ...filters,
         onlyWithPrice,
+        inStock,
         mySuppliers,
         onSpecial,
         sortBy,
@@ -167,6 +195,7 @@ export default function CatalogPage() {
     debouncedSearch,
     filters,
     onlyWithPrice,
+    inStock,
     mySuppliers,
     onSpecial,
     sortBy,
@@ -180,6 +209,32 @@ export default function CatalogPage() {
   }, [nextCursor, loadingMore])
 
   const sortedProducts = useMemo(() => {
+    let result = products
+    if (filters.brand) {
+      const b = filters.brand.toLowerCase()
+      result = result.filter(p => (p.brand || '').toLowerCase().includes(b))
+    }
+    if (filters.supplier) {
+      const s = filters.supplier.toLowerCase()
+      result = result.filter(p =>
+        p.suppliers?.some((sup: string) => sup.toLowerCase().includes(s)),
+      )
+    }
+    if (!sort) return result
+    const sorted = [...result]
+    sorted.sort((a, b) => {
+      const getVal = (p: any) => {
+        if (sort.key === 'supplier') return (p.suppliers?.[0] || '').toLowerCase()
+        return (p[sort.key] || '').toLowerCase()
+      }
+      const av = getVal(a)
+      const bv = getVal(b)
+      if (av < bv) return sort.direction === 'asc' ? -1 : 1
+      if (av > bv) return sort.direction === 'asc' ? 1 : -1
+      return 0
+    })
+    return sorted
+  }, [products, sort, filters])
 
   useEffect(() => {
     const sentinel = sentinelRef.current
@@ -232,33 +287,6 @@ export default function CatalogPage() {
 
   function FiltersBar() {
     const ref = React.useRef<HTMLDivElement>(null)
-    const { savedViews, saveView, deleteView } = useFilterStore()
-    const [selectedView, setSelectedView] = React.useState('')
-
-    const applyView = (name: string) => {
-      setSelectedView(name)
-      const view = savedViews[name]
-      if (view) {
-        setFilters(view.filters)
-        setOnlyWithPrice(view.onlyWithPrice)
-        setSearch(view.search)
-      }
-    }
-
-    const handleSave = () => {
-      const name = prompt('Name this view')
-      if (name) {
-        saveView(name, { filters, onlyWithPrice, search })
-        setSelectedView(name)
-      }
-    }
-
-    const handleDelete = () => {
-      if (!selectedView) return
-      deleteView(selectedView)
-      setSelectedView('')
-    }
-
     React.useEffect(() => {
       const el = ref.current
       if (!el) return
@@ -284,35 +312,93 @@ export default function CatalogPage() {
               </AlertDescription>
             </Alert>
           )}
+          <div className="grid grid-cols-[1fr,auto] gap-3 items-center">
+            <Input
+              placeholder="Search products"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+            />
+            <ViewToggle value={view} onChange={setView} />
+          </div>
+          <div className="flex flex-wrap gap-4 items-center">
+            <Label className="flex items-center gap-2">
+              <Switch
+                checked={onlyWithPrice}
+                onCheckedChange={setOnlyWithPrice}
+              />
+              Only with price
+            </Label>
+            <Label className="flex items-center gap-2">
+              <Switch
+                checked={inStock}
+                onCheckedChange={checked => {
+                  setInStock(checked)
+                  setFilters(prev => ({
+                    ...prev,
+                    availability: checked ? 'in_stock' : undefined,
+                  }))
+                }}
+              />
+              In stock
+            </Label>
+            <Label className="flex items-center gap-2">
+              <Switch checked={mySuppliers} onCheckedChange={setMySuppliers} />
+              My suppliers
+            </Label>
+            <Label className="flex items-center gap-2">
+              <Switch checked={onSpecial} onCheckedChange={setOnSpecial} />
+              On special / promo
+            </Label>
+            <Select value={sortBy} onValueChange={v => setSortBy(v as any)}>
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder="Sort" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="relevance">Relevance</SelectItem>
+                <SelectItem value="az">A–Z</SelectItem>
+                <SelectItem value="recent">Recently ordered</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </div>
     )
   }
 
   return (
+    <FullWidthLayout offsetContent={false}>
       {/* eslint-disable-next-line no-constant-binary-expression */}
       {false && <LayoutDebugger show />}
-      <CatalogCommandPalette onApply={handleCommand} />
 
       <FiltersBar />
 
+      {view === 'list' ? (
+        <CatalogTable
+          products={sortedProducts}
+          selected={selected}
+          onSelect={toggleSelect}
+          onSelectAll={handleSelectAll}
+          sort={sort}
+          onSort={handleSort}
+          filters={filters}
+          onFilterChange={handleFilterChange}
+        />
+      ) : (
+        <div className="grid gap-[clamp(16px,2vw,28px)] [grid-template-columns:repeat(auto-fit,minmax(18.5rem,1fr))]">
+          {sortedProducts.map(product => (
+            <ProductCard
+              key={product.catalog_id}
+              product={product}
+              density={density}
             />
-          ) : (
-            <div className="grid gap-[clamp(16px,2vw,28px)] [grid-template-columns:repeat(auto-fit,minmax(18.5rem,1fr))]">
-              {sortedProducts.map(product => (
-                <ProductCard
-                  key={product.catalog_id}
-                  product={product}
-                  density={density}
-                />
-              ))}
-              {loadingMore &&
-                Array.from({ length: 3 }).map((_, i) => (
-                  <SkeletonCard key={`skeleton-${i}`} density={density} />
-                ))}
-            </div>
-          )}
-          <div ref={sentinelRef} />
+          ))}
+          {loadingMore &&
+            Array.from({ length: 3 }).map((_, i) => (
+              <SkeletonCard key={`skeleton-${i}`} density={density} />
+            ))}
         </div>
+      )}
+      <div ref={sentinelRef} />
+    </FullWidthLayout>
   )
 }
