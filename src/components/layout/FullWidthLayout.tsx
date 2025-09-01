@@ -3,36 +3,31 @@ import { SidebarProvider } from '@/components/ui/sidebar-provider'
 import { EnhancedAppSidebar } from './EnhancedAppSidebar'
 import { TopNavigation } from './TopNavigation'
 import { CartDrawer } from '@/components/cart/CartDrawer'
-import { cn } from '@/lib/utils'
 
 interface FullWidthLayoutProps {
   children: React.ReactNode
-  offsetContent?: boolean
 }
 
-export function FullWidthLayout({ children, offsetContent = true }: FullWidthLayoutProps) {
+export function FullWidthLayout({ children }: FullWidthLayoutProps) {
   return (
     <SidebarProvider>
-      <div className="flex flex-col min-h-screen">
-        <TopNavigation />
+      <div
+        className="min-h-screen grid"
+        style={{ gridTemplateColumns: 'var(--sidebar-width,16rem) minmax(0,1fr)' }}
+      >
+        <aside className="sticky top-0 h-svh w-[var(--sidebar-width,16rem)]">
+          <EnhancedAppSidebar />
+        </aside>
 
-        <div className="flex flex-1 min-h-0">
-          <aside className="w-[var(--sidebar-width,16rem)]">
-            <EnhancedAppSidebar />
-          </aside>
-
-          <div
-            className={cn(
-              'flex-1 min-w-0 app-scroll overflow-y-auto px-4 sm:px-6 lg:px-8 xl:px-10 2xl:px-12',
-              offsetContent && 'pt-[var(--header-h)]',
-            )}
-          >
+        <div className="min-w-0 h-svh flex flex-col">
+          <TopNavigation />
+          <div className="app-scroll flex-1 min-h-0 overflow-y-auto px-4 sm:px-6 lg:px-8 xl:px-10 2xl:px-12">
             {children}
           </div>
         </div>
-
-        <CartDrawer />
       </div>
+
+      <CartDrawer />
     </SidebarProvider>
   )
 }
