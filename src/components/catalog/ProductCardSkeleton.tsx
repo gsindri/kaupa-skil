@@ -8,21 +8,21 @@ type ProductCardSkeletonProps = {
 
 export function ProductCardSkeleton({ className }: ProductCardSkeletonProps) {
   return (
-    <Card
-      className={cn(
-        "overflow-hidden rounded-2xl border shadow-sm w-full max-w-[340px]",
-        className,
-      )}
-    >
-      <Skeleton className="aspect-[4/3] w-full bg-muted/40" />
-      <CardContent className="space-y-2 p-4">
-        <Skeleton className="h-4 w-3/4" />
-        <Skeleton className="h-4 w-1/2" />
-      </CardContent>
-      <CardFooter className="p-4 pt-0">
-        <Skeleton className="h-10 w-full rounded-xl" />
-      </CardFooter>
-    </Card>
+      <Card
+        className={cn(
+          "flex h-full w-full max-w-[340px] flex-col overflow-hidden rounded-2xl border shadow-sm",
+          className,
+        )}
+      >
+        <Skeleton className="aspect-[4/3] w-full bg-muted/40" />
+        <CardContent className="flex-1 space-y-2 p-4">
+          <Skeleton className="h-4 w-3/4" />
+          <Skeleton className="h-4 w-1/2" />
+        </CardContent>
+        <CardFooter className="mt-auto p-4 pt-0">
+          <Skeleton className="h-10 w-full rounded-xl" />
+        </CardFooter>
+      </Card>
   )
 }
 

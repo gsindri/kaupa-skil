@@ -25,10 +25,8 @@ export function ProductCard({
   return (
     <Card
       className={cn(
-        "group relative overflow-hidden rounded-2xl border shadow-sm transition",
+        "group relative flex h-full w-full max-w-[340px] flex-col overflow-hidden rounded-2xl border shadow-sm transition",
         "hover:shadow-md hover:border-primary/30",
-        // keep cards visually uniform in all grids:
-        "w-full max-w-[340px]",
         className,
       )}
     >
@@ -50,7 +48,7 @@ export function ProductCard({
         </Badge>
       </div>
 
-      <CardContent className="space-y-1.5 p-4">
+      <CardContent className="flex-1 space-y-1.5 p-4">
         <h3 className="line-clamp-2 text-[15px] font-medium leading-snug">
           {title}
         </h3>
@@ -59,7 +57,7 @@ export function ProductCard({
         ) : null}
       </CardContent>
 
-      <CardFooter className="p-4 pt-0">
+      <CardFooter className="mt-auto p-4 pt-0">
         <Button
           onClick={onAdd}
           disabled={isAdding}
