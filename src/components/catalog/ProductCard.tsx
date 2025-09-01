@@ -29,7 +29,7 @@ import { LazyImage } from '@/components/ui/LazyImage'
 import { getCachedImageUrl } from '@/services/ImageCache'
 import { cn } from '@/lib/utils'
 import type { CartItem } from '@/lib/types'
-import { useCatalogFilters } from '@/contexts/CatalogFiltersContext'
+import { useCatalogFilters } from '@/state/catalogFilters'
 
 interface ProductCardProps {
   product: CatalogItem
