@@ -9,7 +9,8 @@ import { useDebounce } from '@/hooks/useDebounce'
 import { CatalogTable } from '@/components/catalog/CatalogTable'
 import { ProductCard } from '@/components/catalog/ProductCard'
 import { SkeletonCard } from '@/components/catalog/SkeletonCard'
-import type { FacetFilters } from '@/services/catalog'
+import { useCatalogFilters } from '@/state/catalogFilters'
+import { useSearchParams } from 'react-router-dom'
 import {
   logFilter,
   logFacetInteraction,
@@ -23,9 +24,16 @@ import { LayoutDebugger } from '@/components/debug/LayoutDebugger'
 export default function CatalogPage() {
   const { profile } = useAuth()
   const orgId = profile?.tenant_id || ''
+  const {
+    filters,
+    setFilters,
+    onlyWithPrice,
+    setOnlyWithPrice,
+    sort,
+    setSort,
+  } = useCatalogFilters()
+  const [searchParams, setSearchParams] = useSearchParams()
 
-  const [filters, setFilters] = useState<FacetFilters>({})
-  const [onlyWithPrice, setOnlyWithPrice] = useState(false)
   const [view, setView] = useState<'grid' | 'list'>('grid')
   const [cursor, setCursor] = useState<string | null>(null)
   const [nextCursor, setNextCursor] = useState<string | null>(null)
@@ -33,22 +41,13 @@ export default function CatalogPage() {
   const lastCursor = useRef<string | null>(null)
   const [selected, setSelected] = useState<string[]>([])
   const [density, setDensity] = useState<'comfortable' | 'compact'>('comfortable')
-  const [search, setSearch] = useState('')
+  const search = filters.search ?? ''
   const brand = filters.brand
   const debouncedSearch = useDebounce(search, 300)
   const sentinelRef = useRef<HTMLDivElement | null>(null)
 
-  const publicQuery = useCatalogProducts({
-    search: debouncedSearch,
-    brand,
-    cursor,
-  })
-  const orgQuery = useOrgCatalog(orgId, {
-    search: debouncedSearch,
-    brand,
-    onlyWithPrice,
-    cursor,
-  })
+  const publicQuery = useCatalogProducts(cursor)
+  const orgQuery = useOrgCatalog(orgId, cursor)
 
   const {
     data: publicData,
@@ -64,6 +63,34 @@ export default function CatalogPage() {
     error: orgError,
     total: orgTotal,
   } = orgQuery
+
+  useEffect(() => {
+    const params = Object.fromEntries(searchParams.entries())
+    const initial: any = {}
+    if (params.search) initial.search = params.search
+    if (params.brand) initial.brand = params.brand
+    if (params.category) initial.category = params.category
+    if (params.supplier) initial.supplier = params.supplier
+    if (params.availability) initial.availability = params.availability
+    if (params.packSizeRange) initial.packSizeRange = params.packSizeRange
+    if (Object.keys(initial).length) setFilters(initial)
+    if (params.onlyWithPrice) setOnlyWithPrice(params.onlyWithPrice === '1')
+    if (params.sort) setSort(params.sort as any)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  useEffect(() => {
+    const params: Record<string, string> = {}
+    if (filters.search) params.search = filters.search
+    if (filters.brand) params.brand = filters.brand
+    if (filters.category) params.category = filters.category
+    if (filters.supplier) params.supplier = filters.supplier
+    if (filters.availability) params.availability = filters.availability
+    if (filters.packSizeRange) params.packSizeRange = filters.packSizeRange
+    if (onlyWithPrice) params.onlyWithPrice = '1'
+    if (sort && sort !== 'relevance') params.sort = String(sort)
+    setSearchParams(params, { replace: true })
+  }, [filters, onlyWithPrice, sort, setSearchParams])
 
   useEffect(() => {
     logFilter({ ...filters, onlyWithPrice })
@@ -225,14 +252,12 @@ export default function CatalogPage() {
             <Input
               placeholder="Search products"
               value={search}
-              onChange={e => setSearch(e.target.value)}
+              onChange={e => setFilters({ search: e.target.value })}
             />
             <Input
               placeholder="Brand"
               value={filters.brand ?? ''}
-              onChange={e =>
-                setFilters(prev => ({ ...prev, brand: e.target.value }))
-              }
+              onChange={e => setFilters({ brand: e.target.value })}
               className="w-full sm:w-40 md:w-48"
             />
             <ViewToggle value={view} onChange={setView} />
