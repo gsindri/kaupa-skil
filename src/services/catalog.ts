@@ -45,7 +45,7 @@ export async function fetchPublicCatalogItems(
   let query: any = supabase
     .from('v_public_catalog')
     .select(
-      'catalog_id, name, brand, sample_image_url, canonical_pack, availability, suppliers_count',
+      'catalog_id, name, brand, image_main, pack_size, availability_text, availability, supplier_count, supplier_names',
       { count: 'exact' },
     )
 
@@ -73,11 +73,11 @@ export async function fetchPublicCatalogItems(
     catalog_id: item.catalog_id,
     name: item.name,
     brand: item.brand ?? null,
-    image_main: item.sample_image_url ?? null,
-    pack_size: item.canonical_pack ?? null,
+    image_main: item.image_main ?? null,
+    pack_size: item.pack_size ?? null,
     availability: item.availability ?? item.availability_text ?? null,
-    supplier_count: item.suppliers_count ?? 0,
-    suppliers: [],
+    supplier_count: item.supplier_count ?? 0,
+    suppliers: item.supplier_names ?? [],
     best_price: null,
   }))
   const nextCursor = items.length ? items[items.length - 1].catalog_id : null
