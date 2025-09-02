@@ -119,29 +119,33 @@ export function MiniCart() {
                   ref={el => (rowRefs.current[index] = el)}
                   tabIndex={0}
                   onKeyDown={e => handleKeyDown(e, index)}
-                  className="group grid grid-cols-[40px,1fr,auto] items-center gap-3 rounded-lg px-2 py-2 hover:bg-muted/60 transition focus-within:ring-2 focus-within:ring-primary/30"
+                  className="grid grid-cols-[44px,1fr,auto,auto] items-center gap-3 rounded-lg px-2 py-2 hover:bg-muted/60 transition focus-within:ring-2 focus-within:ring-primary/30"
                 >
                   <img
                     src={it.image ?? fallbackImage}
                     alt=""
-                    className="h-10 w-10 rounded object-cover bg-muted/50"
+                    className="h-10 w-10 rounded object-cover bg-muted/40 sm:h-12 sm:w-12"
                   />
                   <div className="min-w-0">
                     <p
-                      className="truncate text-sm font-medium"
+                      className="text-sm font-medium leading-tight line-clamp-1"
                       title={it.itemName}
                     >
                       {it.itemName}
                     </p>
-                    {it.packSize && (
-                      <p className="truncate text-xs text-muted-foreground">
-                        {it.packSize}
-                      </p>
+                    <p className="text-xs text-muted-foreground line-clamp-1">
+                      {it.packSize}
+                      {it.supplierName && ` • ${it.supplierName}`}
+                    </p>
+                  </div>
+                  <div className="min-w-[9ch] sm:min-w-[11ch] text-right tabular-nums whitespace-nowrap text-sm">
+                    {formatPrice(
+                      (includeVat ? it.unitPriceIncVat : it.unitPriceExVat) * it.quantity
                     )}
                   </div>
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1 sm:gap-2">
                     <button
-                      className="h-7 w-7 rounded border text-xs"
+                      className="h-7 w-7 sm:h-8 sm:w-8 rounded border"
                       aria-label="Decrease quantity"
                       onClick={() =>
                         updateQuantity(it.supplierItemId, it.quantity - 1)
@@ -149,11 +153,11 @@ export function MiniCart() {
                     >
                       -
                     </button>
-                    <span className="w-6 text-right tabular-nums text-sm">
-                      {it.quantity}×
+                    <span className="w-8 text-center tabular-nums text-sm">
+                      {it.quantity}
                     </span>
                     <button
-                      className="h-7 w-7 rounded border text-xs"
+                      className="h-7 w-7 sm:h-8 sm:w-8 rounded border"
                       aria-label="Increase quantity"
                       onClick={() =>
                         updateQuantity(it.supplierItemId, it.quantity + 1)
@@ -166,9 +170,9 @@ export function MiniCart() {
                         <button
                           aria-label="Remove item"
                           onClick={() => handleRemove(index)}
-                          className="ml-1 h-7 w-7 rounded hover:bg-destructive/10"
+                          className="ml-1 h-7 w-7 rounded text-muted-foreground hover:bg-destructive/10 hover:text-destructive focus-visible:bg-destructive/10 focus-visible:text-destructive"
                         >
-                          <Trash2 className="h-4 w-4 text-muted-foreground group-hover:text-foreground" />
+                          <Trash2 className="h-4 w-4" />
                         </button>
                       </TooltipTrigger>
                       <TooltipContent>Remove</TooltipContent>
