@@ -21,9 +21,9 @@ import type { SortOrder } from '@/state/catalogFilters'
 
 const labels: Record<SortOrder, string> = {
   relevance: 'Relevance',
-  price_asc: 'Price: Low \u2192 High',
-  price_desc: 'Price: High \u2192 Low',
-  az: 'A\u2013Z',
+  price_asc: 'Price: Low → High',
+  price_desc: 'Price: High → Low',
+  az: 'A–Z',
   recent: 'Recently ordered',
 }
 
@@ -72,11 +72,11 @@ export function SortDropdown({ value, onChange, className }: SortDropdownProps) 
 
           <DropdownMenuRadioItem value="price_asc" className="rounded-lg py-2 pl-8 pr-2 flex items-center">
             <ArrowDown01 className="mr-2 h-4 w-4" />
-            <div className="text-sm">Price: Low \u2192 High</div>
+            <div className="text-sm">Price: Low → High</div>
           </DropdownMenuRadioItem>
           <DropdownMenuRadioItem value="price_desc" className="rounded-lg py-2 pl-8 pr-2 flex items-center">
             <ArrowUp01 className="mr-2 h-4 w-4" />
-            <div className="text-sm">Price: High \u2192 Low</div>
+            <div className="text-sm">Price: High → Low</div>
           </DropdownMenuRadioItem>
 
           <DropdownMenuSeparator className="my-2" />
@@ -86,7 +86,7 @@ export function SortDropdown({ value, onChange, className }: SortDropdownProps) 
 
           <DropdownMenuRadioItem value="az" className="rounded-lg py-2 pl-8 pr-2 flex items-center">
             <ArrowDownAZ className="mr-2 h-4 w-4" />
-            <div className="text-sm">A\u2013Z</div>
+            <div className="text-sm">A–Z</div>
           </DropdownMenuRadioItem>
           <DropdownMenuRadioItem value="recent" className="rounded-lg py-2 pl-8 pr-2 flex items-center">
             <History className="mr-2 h-4 w-4" />
@@ -95,7 +95,7 @@ export function SortDropdown({ value, onChange, className }: SortDropdownProps) 
         </DropdownMenuRadioGroup>
 
         <div className="mt-2 px-2 pt-1 text-[10px] text-muted-foreground">
-          Tip: use \u2191 \u2193 and Enter
+          Tip: use ↑ ↓ and Enter
         </div>
       </DropdownMenuContent>
     </DropdownMenu>
