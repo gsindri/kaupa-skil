@@ -124,25 +124,34 @@ export async function fetchCatalogSuggestions(
   orgId?: string,
 ): Promise<string[]> {
   if (!search) return []
-  let query: any
-  if (orgId) {
-    query = supabase
-      .rpc('v_org_catalog', { _org: orgId })
-      .ilike('name', `%${search}%`)
-      .select('name')
-      .order('name', { ascending: true })
-      .limit(5)
-  } else {
-    query = supabase
-      .from('v_public_catalog')
-      .select('name')
-      .ilike('name', `%${search}%`)
-      .order('name', { ascending: true })
-      .limit(5)
+  try {
+    let query: any
+    if (orgId) {
+      query = supabase
+        .from('v_org_catalog')
+        .select('name')
+        .eq('org_id', orgId)
+        .ilike('name', `%${search}%`)
+        .order('name', { ascending: true })
+        .limit(5)
+    } else {
+      query = supabase
+        .from('v_public_catalog')
+        .select('name')
+        .ilike('name', `%${search}%`)
+        .order('name', { ascending: true })
+        .limit(5)
+    }
+    const { data, error } = await query
+    if (error) {
+      console.error('Error fetching catalog suggestions:', error)
+      return []
+    }
+    return (data ?? []).map((item: any) => item.name as string)
+  } catch (err) {
+    console.error('Error fetching catalog suggestions:', err)
+    return []
   }
-  const { data, error } = await query
-  if (error) throw error
-  return (data ?? []).map((item: any) => item.name as string)
 }
 
 export interface FacetCount {
