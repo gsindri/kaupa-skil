@@ -79,21 +79,24 @@ export default function CatalogPage() {
 
   useEffect(() => {
     const updateCols = () => {
-      const width = gridRef.current?.getBoundingClientRect().width || window.innerWidth
+      if (!gridRef.current) return
+      const width = gridRef.current.getBoundingClientRect().width
       let max = 4
       if (width >= 1800) max = 6
       const cols = Math.min(max, Math.floor(width / 320))
       setCols(cols)
     }
-    updateCols()
-    const observer = new ResizeObserver(updateCols)
-    if (gridRef.current) observer.observe(gridRef.current)
-    window.addEventListener('resize', updateCols)
-    return () => {
-      observer.disconnect()
-      window.removeEventListener('resize', updateCols)
+
+    if (view === 'grid') {
+      const observer = new ResizeObserver(updateCols)
+      const el = gridRef.current
+      if (el) observer.observe(el)
+      updateCols()
+      return () => {
+        if (el) observer.unobserve(el)
+      }
     }
-  }, [])
+  }, [view])
 
   useEffect(() => {
     setCursor(null)
