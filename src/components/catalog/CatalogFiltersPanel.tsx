@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { fetchCatalogFacets, FacetFilters } from '@/services/catalog'
+import { cn } from '@/lib/utils'
 
 interface CatalogFiltersPanelProps {
   filters: FacetFilters
@@ -25,8 +26,13 @@ export function CatalogFiltersPanel({ filters, onChange }: CatalogFiltersPanelPr
         <button
           key={item.id}
           type="button"
-          onClick={() => onChange({ [key]: item.id })}
-          className="flex w-full justify-between text-sm text-left hover:underline"
+          onClick={() =>
+            onChange({ [key]: filters[key] === item.id ? undefined : item.id })
+          }
+          className={cn(
+            'flex w-full justify-between text-sm text-left',
+            filters[key] === item.id ? 'underline font-semibold' : 'hover:underline',
+          )}
         >
           <span>{item.name || 'Unknown'}</span>
           <span className="text-muted-foreground">{item.count}</span>

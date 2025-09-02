@@ -56,7 +56,13 @@ export function useCatalogFilters<T = CatalogFiltersState>(
   }, [])
 
   const setFilters = useCallback((patch: Partial<FacetFilters>) => {
-    setFiltersState(prev => ({ ...prev, ...patch }))
+    setFiltersState(prev => {
+      const next = { ...prev, ...patch }
+      for (const key of Object.keys(next) as (keyof FacetFilters)[]) {
+        if (next[key] === undefined) delete next[key]
+      }
+      return next
+    })
   }, [])
 
   const setOnlyWithPrice = useCallback((v: boolean) => {
