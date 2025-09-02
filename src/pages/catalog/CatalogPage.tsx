@@ -79,6 +79,7 @@ export default function CatalogPage() {
   const gridRef = useRef<HTMLDivElement>(null)
   const [showMoreFilters, setShowMoreFilters] = useState(false)
   const [cols, setCols] = useState(1)
+  const stringifiedFilters = useMemo(() => JSON.stringify(filters), [filters])
 
   // Read initial sort from URL on mount
   useEffect(() => {
@@ -137,7 +138,7 @@ export default function CatalogPage() {
     mySuppliers,
     onSpecial,
     sortOrder,
-    JSON.stringify(filters),
+    stringifiedFilters,
   ])
 
   useEffect(() => {
