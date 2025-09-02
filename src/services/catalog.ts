@@ -45,7 +45,7 @@ export async function fetchPublicCatalogItems(
   let query: any = supabase
     .from('v_public_catalog')
     .select(
-      'catalog_id, name, brand, sample_image_url, canonical_pack, suppliers_count',
+      'catalog_id, name, brand, sample_image_url, canonical_pack, availability, suppliers_count',
       { count: 'exact' },
     )
 
@@ -75,7 +75,7 @@ export async function fetchPublicCatalogItems(
     brand: item.brand ?? null,
     image_main: item.sample_image_url ?? null,
     pack_size: item.canonical_pack ?? null,
-    availability: null,
+    availability: item.availability ?? item.availability_text ?? null,
     supplier_count: item.suppliers_count ?? 0,
     suppliers: [],
     best_price: null,
@@ -92,7 +92,7 @@ export async function fetchOrgCatalogItems(
   let query: any = supabase
     .from('v_org_catalog')
     .select(
-      'catalog_id, name, brand, gtin, sample_image_url, canonical_pack, suppliers_count, supplier_names, best_price, currency',
+      'catalog_id, name, brand, gtin, sample_image_url, canonical_pack, availability, suppliers_count, supplier_names, best_price, currency',
     )
     .eq('_org', orgId)
 
@@ -123,7 +123,7 @@ export async function fetchOrgCatalogItems(
     brand: item.brand ?? null,
     image_main: item.sample_image_url ?? null,
     pack_size: item.canonical_pack ?? null,
-    availability: null,
+    availability: item.availability ?? item.availability_text ?? null,
     supplier_count: item.suppliers_count ?? 0,
     suppliers: item.supplier_names ?? [],
     best_price: item.best_price ?? null,
