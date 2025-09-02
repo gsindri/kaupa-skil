@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
-import { AnimatedSortDropdown } from '@/components/catalog/AnimatedSortDropdown'
+import { SortDropdown } from '@/components/catalog/SortDropdown'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { AlertCircle, Mic } from 'lucide-react'
 import { useAuth } from '@/contexts/useAuth'
@@ -32,6 +32,7 @@ import { FullWidthLayout } from '@/components/layout/FullWidthLayout'
 import { useCatalogFilters, shallow, SortOrder } from '@/state/catalogFilters'
 import { useCart } from '@/contexts/useBasket'
 import type { CartItem } from '@/lib/types'
+import { useSearchParams } from 'react-router-dom'
 
 export default function CatalogPage() {
   const { profile } = useAuth()
@@ -56,6 +57,8 @@ export default function CatalogPage() {
     shallow,
   )
 
+  const [searchParams, setSearchParams] = useSearchParams()
+
   const [inStock, setInStock] = useState(false)
   const [mySuppliers, setMySuppliers] = useState(false)
   const [onSpecial, setOnSpecial] = useState(false)
@@ -76,6 +79,28 @@ export default function CatalogPage() {
   const gridRef = useRef<HTMLDivElement>(null)
   const [showMoreFilters, setShowMoreFilters] = useState(false)
   const [cols, setCols] = useState(1)
+
+  // Read initial sort from URL on mount
+  useEffect(() => {
+    const param = searchParams.get('sort')
+    if (param) setSortOrder(param as SortOrder)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Persist sort selection to URL
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams)
+    const current = params.get('sort')
+    if (sortOrder === 'relevance') {
+      if (current) {
+        params.delete('sort')
+        setSearchParams(params, { replace: true })
+      }
+    } else if (current !== sortOrder) {
+      params.set('sort', sortOrder)
+      setSearchParams(params, { replace: true })
+    }
+  }, [sortOrder, searchParams, setSearchParams])
 
   useEffect(() => {
     const updateCols = () => {
@@ -520,7 +545,7 @@ function FiltersBar({
                 </button>
               }
             />
-            <AnimatedSortDropdown value={sortOrder} onValueChange={setSortOrder} />
+            <SortDropdown value={sortOrder} onChange={setSortOrder} />
             <ViewToggle value={view} onChange={setView} />
           </div>
           <div className="mt-3 flex flex-wrap gap-2">
