@@ -35,7 +35,7 @@ export interface CatalogItem {
   supplier_count: number
   suppliers: string[]
   best_price: number | null
-  currency: string | null
+  currency?: string | null
 }
 
 export async function fetchPublicCatalogItems(
@@ -79,6 +79,7 @@ export async function fetchPublicCatalogItems(
     supplier_count: item.supplier_count ?? 0,
     suppliers: item.supplier_names ?? [],
     best_price: null,
+    currency: item.currency ?? null,
   }))
   const nextCursor = items.length ? items[items.length - 1].catalog_id : null
   return { items, nextCursor, total: count ?? 0 }
