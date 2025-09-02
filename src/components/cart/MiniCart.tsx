@@ -111,7 +111,7 @@ export function MiniCart() {
             </Button>
           </div>
         ) : (
-          <>
+          <React.Fragment>
             <div
               className="max-h-[360px] overflow-y-auto overflow-x-hidden pt-1 pb-2 px-2 pr-3"
               style={{ scrollbarGutter: 'stable' }}
@@ -200,7 +200,7 @@ export function MiniCart() {
                 View cart
               </Button>
             </div>
-          </>
+          </React.Fragment>
         )}
       </PopoverContent>
     </Popover>
