@@ -416,10 +416,7 @@ export default function CatalogPage() {
             {sortedProducts.map(product => (
               <ProductCard
                 key={product.catalog_id}
-                title={product.name}
-                imageUrl={product.image_main ?? '/placeholder.svg'}
-                packSize={product.pack_size || undefined}
-                suppliersCount={product.supplier_count}
+                product={product}
                 onAdd={() => handleAdd(product)}
                 isAdding={addingId === product.catalog_id}
               />
