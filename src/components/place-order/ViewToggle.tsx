@@ -9,7 +9,11 @@ interface ViewToggleProps {
 
 export const ViewToggle = memo(function ViewToggle({ value, onChange }: ViewToggleProps) {
   return (
-    <ToggleGroup type="single" value={value} onValueChange={(v) => onChange(v as 'grid' | 'list')}>
+    <ToggleGroup
+      type="single"
+      value={value}
+      onValueChange={v => v && onChange(v as 'grid' | 'list')}
+    >
       <Tooltip>
         <TooltipTrigger asChild>
           <ToggleGroupItem
