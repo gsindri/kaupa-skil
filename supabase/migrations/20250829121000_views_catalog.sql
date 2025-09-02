@@ -24,6 +24,10 @@ returns table (
   brand text,
   gtin text,
   image_main text,
+  size text,
+  pack_size text,
+  availability_text text,
+  availability text,
   supplier_count bigint,
   supplier_names text[],
   best_price numeric,
@@ -36,6 +40,10 @@ language sql stable as $$
     c.brand,
     c.gtin,
     c.image_main,
+    c.size,
+    max(sp.pack_size) as pack_size,
+    max(sp.availability_text) as availability_text,
+    bo.availability,
     count(distinct sp.supplier_id) as supplier_count,
     array_remove(array_agg(distinct s.name), null) as supplier_names,
     bo.best_price,
@@ -48,7 +56,8 @@ language sql stable as $$
   left join lateral (
     select
       min(o.price) as best_price,
-      max(o.currency) as currency
+      max(o.currency) as currency,
+      max(o.availability) as availability
     from public.offer o
     join public.supplier_product sp2
       on sp2.supplier_product_id = o.supplier_product_id
@@ -61,6 +70,10 @@ language sql stable as $$
     c.brand,
     c.gtin,
     c.image_main,
+    c.size,
+    bo.availability,
     bo.best_price,
     bo.currency;
 $$;
+
+grant execute on function public.v_org_catalog(uuid) to anon, authenticated;

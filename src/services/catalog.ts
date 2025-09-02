@@ -83,24 +83,14 @@ export async function fetchPublicCatalogItems(
 
 export async function fetchOrgCatalogItems(
   orgId: string,
-  filters: OrgCatalogFilters,
+  _filters: OrgCatalogFilters,
   sort: SortOrder,
 ): Promise<{ items: CatalogItem[]; nextCursor: string | null; total: number }> {
-  let query: any = supabase.rpc('v_org_catalog', { _org: orgId })
-
-  if (filters.search) query = query.ilike('name', `%${filters.search}%`)
-  if (filters.brand) query = query.eq('brand', filters.brand)
-  if (filters.category) query = query.eq('category_id', filters.category)
-  if (filters.supplier) query = query.eq('supplier_id', filters.supplier)
-  if (filters.availability) query = query.eq('availability', filters.availability)
-  if (filters.packSizeRange)
-    query = query.eq('pack_size_range', filters.packSizeRange)
-  if (filters.onlyWithPrice) query = query.not('best_price', 'is', null)
-  if (filters.cursor) query = query.gt('catalog_id', filters.cursor)
-
-  query = query.select(
-    'catalog_id, name, brand, image_main, size, availability, supplier_count, supplier_names, best_price, currency',
-  )
+  let query: any = supabase
+    .rpc('v_org_catalog', { _org: orgId })
+    .select(
+      'catalog_id, name, brand, gtin, image_main, size, pack_size, availability_text, availability, supplier_count, supplier_names, best_price, currency',
+    )
 
   if (sort === 'az') {
     query = query.order('name', { ascending: true }).order('catalog_id', { ascending: true })
@@ -118,7 +108,7 @@ export async function fetchOrgCatalogItems(
     name: item.name,
     brand: item.brand ?? null,
     image_main: item.image_main ?? null,
-    pack_size: item.size ?? null,
+    pack_size: item.pack_size ?? item.size ?? null,
     availability: item.availability ?? item.availability_text ?? null,
     supplier_count: item.supplier_count ?? 0,
     suppliers: item.supplier_names ?? [],
