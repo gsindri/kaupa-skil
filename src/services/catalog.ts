@@ -12,10 +12,16 @@ export type FacetFilters = {
 
 export type PublicCatalogFilters = FacetFilters & {
   cursor?: string | null
+  onlyWithPrice?: boolean
+  inStock?: boolean
+  onSpecial?: boolean
 }
 
 export type OrgCatalogFilters = FacetFilters & {
   onlyWithPrice?: boolean
+  mySuppliers?: boolean
+  inStock?: boolean
+  onSpecial?: boolean
   cursor?: string | null
 }
 

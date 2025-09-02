@@ -124,22 +124,20 @@ export default function CatalogPage() {
   }, [view])
 
   useEffect(() => {
+    setProducts([])
     setCursor(null)
     setNextCursor(null)
-    setProducts([])
     lastCursor.current = null
     window.scrollTo({ top: 0, behavior: 'instant' })
   }, [
     debouncedSearch,
-    filters.brand,
-    filters.category,
-    filters.supplier,
-    filters.availability,
-    filters.packSizeRange,
-    sortOrder,
     onlyWithPrice,
+    orgId,
+    inStock,
     mySuppliers,
     onSpecial,
+    sortOrder,
+    JSON.stringify(filters),
   ])
 
   useEffect(() => {
@@ -151,17 +149,35 @@ export default function CatalogPage() {
   }, [sortOrder])
 
   const publicFilters: PublicCatalogFilters = useMemo(
-    () => ({ ...filters, search: debouncedSearch || undefined, cursor }),
-    [filters, debouncedSearch, cursor],
+    () => ({
+      ...filters,
+      search: debouncedSearch || undefined,
+      ...(onlyWithPrice ? { onlyWithPrice: true } : {}),
+      ...(inStock ? { inStock: true } : {}),
+      ...(onSpecial ? { onSpecial: true } : {}),
+      cursor,
+    }),
+    [filters, debouncedSearch, onlyWithPrice, inStock, onSpecial, cursor],
   )
   const orgFilters: OrgCatalogFilters = useMemo(
     () => ({
       ...filters,
       search: debouncedSearch || undefined,
       onlyWithPrice,
+      ...(mySuppliers ? { mySuppliers: true } : {}),
+      ...(inStock ? { inStock: true } : {}),
+      ...(onSpecial ? { onSpecial: true } : {}),
       cursor,
     }),
-    [filters, debouncedSearch, onlyWithPrice, cursor],
+    [
+      filters,
+      debouncedSearch,
+      onlyWithPrice,
+      mySuppliers,
+      inStock,
+      onSpecial,
+      cursor,
+    ],
   )
 
   const publicQuery = useCatalogProducts(publicFilters, sortOrder)
@@ -246,10 +262,10 @@ export default function CatalogPage() {
   }, [orgError])
 
   useEffect(() => {
-    const useOrg = mySuppliers
-    const data = useOrg ? orgData : publicData
-    const next = useOrg ? orgNext : publicNext
-    const fetching = useOrg ? orgFetching : publicFetching
+    const gotOrg = Array.isArray(orgData) && orgData.length > 0
+    const data = gotOrg ? orgData : publicData
+    const next = gotOrg ? orgNext : publicNext
+    const fetching = gotOrg ? orgFetching : publicFetching
     if (fetching) return
 
     if (!data) return
@@ -266,7 +282,6 @@ export default function CatalogPage() {
     orgFetching,
     publicFetching,
     cursor,
-    mySuppliers,
   ])
 
   useEffect(() => {
@@ -297,7 +312,10 @@ export default function CatalogPage() {
     sortOrder,
   ])
 
-  const isLoading = mySuppliers ? orgQuery.isFetching : publicQuery.isFetching
+  const gotOrg = Array.isArray(orgData) && orgData.length > 0
+  const gotPublic = Array.isArray(publicData) && publicData.length > 0
+
+  const isLoading = gotOrg ? orgQuery.isFetching : publicQuery.isFetching
   const loadingMore = isLoading && cursor !== null
 
   const loadMore = useCallback(() => {
@@ -388,9 +406,9 @@ export default function CatalogPage() {
   }
 
   const total =
-    orgQuery.isFetched && typeof orgTotal === 'number'
+    gotOrg && typeof orgTotal === 'number'
       ? orgTotal
-      : publicQuery.isFetched && typeof publicTotal === 'number'
+      : gotPublic && typeof publicTotal === 'number'
         ? publicTotal
         : null
 
