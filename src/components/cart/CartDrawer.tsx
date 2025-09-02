@@ -8,7 +8,6 @@ import {
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import VatToggle from '@/components/ui/VatToggle'
-import { QuantityControls } from '@/components/quick/QuantityControls'
 import {
   AlertDialog,
   AlertDialogTrigger,
@@ -20,8 +19,7 @@ import {
   AlertDialogCancel,
   AlertDialogAction,
 } from '@/components/ui/alert-dialog'
-import { Badge } from '@/components/ui/badge'
-import { ShoppingCart, Trash2 } from 'lucide-react'
+import { ShoppingCart, Trash2, Minus, Plus } from 'lucide-react'
 import { toast } from '@/hooks/use-toast'
 import { ToastAction } from '@/components/ui/toast'
 import { useCart } from '@/contexts/useBasket'
@@ -29,16 +27,16 @@ import { useSettings } from '@/contexts/useSettings'
 import { Link } from 'react-router-dom'
 import type { CartItem } from '@/lib/types'
 import { getCachedImageUrl } from '@/services/ImageCache'
+import { formatCurrency } from '@/lib/format'
 
 interface CartItemRowProps {
   item: CartItem
   includeVat: boolean
   updateQuantity: (supplierItemId: string, quantity: number) => void
   removeItem: (supplierItemId: string) => void
-  formatPrice: (price: number) => string
 }
 
-function CartItemRow({ item, includeVat, updateQuantity, removeItem, formatPrice }: CartItemRowProps) {
+function CartItemRow({ item, includeVat, updateQuantity, removeItem }: CartItemRowProps) {
   const cardRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -72,54 +70,59 @@ function CartItemRow({ item, includeVat, updateQuantity, removeItem, formatPrice
     }
   }, [item.supplierItemId, item.quantity, updateQuantity])
 
+  const lineTotal =
+    (includeVat ? item.unitPriceIncVat : item.unitPriceExVat) * item.quantity
+
   return (
     <div
       ref={cardRef}
-      className="grid grid-cols-[auto,1fr,auto] items-center gap-3"
+      className="grid items-center gap-3 grid-cols-[48px,1fr,auto,auto] sm:grid-cols-[56px,1fr,auto,auto] px-2 py-2 rounded-lg hover:bg-muted/50 focus-within:ring-2 focus-within:ring-primary/30"
     >
       <img
         src={getCachedImageUrl(item.image) || '/placeholder.svg'}
-        alt={item.itemName}
-        className="h-10 w-10 rounded object-cover"
+        alt=""
+        className="h-10 w-10 sm:h-12 sm:w-12 rounded object-cover bg-muted/40"
       />
       <div className="min-w-0">
-        <div className="flex items-center gap-2 min-w-0">
-          <p
-            className="flex-1 truncate text-sm font-medium"
-            title={item.itemName}
-          >
-            {item.itemName}
-          </p>
-          <Badge variant="secondary" className="text-xs flex-shrink-0">
-            {item.supplierName}
-          </Badge>
-        </div>
-        <p className="text-xs text-muted-foreground">
-          {item.packSize}
+        <p className="text-sm font-medium leading-tight line-clamp-1">
+          {item.itemName}
         </p>
-      </div>
-      <div className="flex items-center gap-2">
-        <QuantityControls
-          quantity={item.quantity}
-          onQuantityChange={qty => updateQuantity(item.supplierItemId, qty)}
-          onAdd={() => updateQuantity(item.supplierItemId, item.quantity + 1)}
-          onRemove={() => updateQuantity(item.supplierItemId, item.quantity - 1)}
-        />
-        <div className="w-20 text-right text-sm font-medium font-mono">
-          {formatPrice(
-            (includeVat ? item.unitPriceIncVat : item.unitPriceExVat) *
-              item.quantity,
+        <div className="flex items-center gap-2">
+          {item.packSize && (
+            <span className="text-xs text-muted-foreground">{item.packSize}</span>
+          )}
+          {item.supplierName && (
+            <span className="text-xs text-muted-foreground">• from {item.supplierName}</span>
           )}
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="transition-opacity"
-          onClick={() => removeItem(item.supplierItemId)}
+      </div>
+      <div className="min-w-[9ch] sm:min-w-[11ch] text-right tabular-nums whitespace-nowrap text-sm">
+        {formatCurrency(lineTotal)}
+      </div>
+      <div className="flex items-center gap-1 sm:gap-2">
+        <button
+          className="h-7 w-7 sm:h-8 sm:w-8 rounded border flex items-center justify-center"
+          aria-label="Decrease quantity"
+          onClick={() => updateQuantity(item.supplierItemId, item.quantity - 1)}
+        >
+          <Minus className="h-4 w-4" />
+        </button>
+        <span className="w-8 text-center tabular-nums text-sm">{item.quantity}</span>
+        <button
+          className="h-7 w-7 sm:h-8 sm:w-8 rounded border flex items-center justify-center"
+          aria-label="Increase quantity"
+          onClick={() => updateQuantity(item.supplierItemId, item.quantity + 1)}
+        >
+          <Plus className="h-4 w-4" />
+        </button>
+        <button
           aria-label="Remove item"
+          className="ml-1 h-7 w-7 rounded hover:bg-destructive/10 flex items-center justify-center"
+          onClick={() => removeItem(item.supplierItemId)}
+          title="Remove"
         >
           <Trash2 className="h-4 w-4" />
-        </Button>
+        </button>
       </div>
     </div>
   )
@@ -139,14 +142,7 @@ export function CartDrawer() {
   const { includeVat, setIncludeVat } = useSettings()
   const lastItems = useRef(items)
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('is-IS', {
-      style: 'currency',
-      currency: 'ISK',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(price)
-  }
+  const formatPrice = (price: number) => formatCurrency(price)
 
   const totalExVat = items.reduce(
     (sum, item) => sum + item.unitPriceExVat * item.quantity,
@@ -176,6 +172,14 @@ export function CartDrawer() {
     })
   }
 
+  const groups = items.reduce(
+    (acc, it) => {
+      ;(acc[it.supplierId] ||= { supplierName: it.supplierName, items: [] }).items.push(it)
+      return acc
+    },
+    {} as Record<string, { supplierName: string; items: CartItem[] }>,
+  )
+
   return (
     <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
       <DrawerContent
@@ -186,7 +190,7 @@ export function CartDrawer() {
         className="max-w-[480px] md:max-w-[45vw] rounded-none z-[60]"
         style={{ width: 'min(90vw, 480px)' }}
       >
-        <div className="flex h-full flex-col">
+        <div className="flex h-full flex-col rounded-xl border shadow-md overflow-hidden bg-background">
           <DrawerHeader className="grid grid-cols-[1fr_auto] gap-y-2 px-5 py-5 md:px-6 md:py-6 relative">
             <div className="flex items-center gap-2">
               <ShoppingCart className="h-5 w-5" />
@@ -238,7 +242,7 @@ export function CartDrawer() {
           </DrawerHeader>
           <Separator className="opacity-10" />
 
-          <div className="flex-1 overflow-y-auto px-5 md:px-6 py-5 md:py-6 space-y-6">
+          <div className="flex-1 max-h-[60vh] overflow-auto px-2 py-2 pr-3 space-y-4">
             {items.length === 0 ? (
               <div className="flex flex-col items-center justify-center text-center py-16 space-y-4">
                 <ShoppingCart
@@ -258,21 +262,29 @@ export function CartDrawer() {
                 </Button>
               </div>
             ) : (
-              items.map(item => (
-                <CartItemRow
-                  key={item.supplierItemId}
-                  item={item}
-                  includeVat={includeVat}
-                  updateQuantity={updateQuantity}
-                  removeItem={removeItem}
-                  formatPrice={formatPrice}
-                />
+              Object.values(groups).map(group => (
+                <section key={group.supplierName} className="mb-4">
+                  <header className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 px-2 py-1.5 border-b">
+                    <span className="text-sm font-medium">{group.supplierName}</span>
+                  </header>
+                  <div className="divide-y">
+                    {group.items.map(item => (
+                      <CartItemRow
+                        key={item.supplierItemId}
+                        item={item}
+                        includeVat={includeVat}
+                        updateQuantity={updateQuantity}
+                        removeItem={removeItem}
+                      />
+                    ))}
+                  </div>
+                </section>
               ))
             )}
           </div>
 
           {items.length > 0 && (
-            <div className="border-t px-5 md:px-6 py-5 md:py-6 space-y-4 sticky bottom-0 bg-background">
+            <div className="sticky bottom-0 border-t bg-background px-3 py-3 space-y-4">
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span>Subtotal</span>
@@ -289,7 +301,7 @@ export function CartDrawer() {
                   </span>
                 </div>
               </div>
-              <Button className="w-full">Checkout</Button>
+              <Button className="w-full h-11 rounded-xl text-base">Checkout</Button>
             </div>
           )}
         </div>
