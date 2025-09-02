@@ -31,11 +31,11 @@ export function ProductCard({
       )}
     >
       <div className="relative">
-        <div className="aspect-[4/3] w-full overflow-hidden bg-muted/40">
+        <div className="aspect-square w-full overflow-hidden bg-muted/40 flex items-center justify-center">
           <img
             src={imageUrl}
             alt={title}
-            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+            className="h-full w-full object-contain p-2 transition-transform duration-300 group-hover:scale-[1.03]"
             loading="lazy"
           />
         </div>
