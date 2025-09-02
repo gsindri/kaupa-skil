@@ -112,10 +112,6 @@ export function MiniCart() {
           </div>
         ) : (
           <>
-            <div
-              className="max-h-[360px] overflow-y-auto overflow-x-hidden pt-1 pb-2 px-2 pr-3"
-              style={{ scrollbarGutter: 'stable' }}
-            >
               {items.map((it, index) => (
                 <div
                   key={it.supplierItemId}
