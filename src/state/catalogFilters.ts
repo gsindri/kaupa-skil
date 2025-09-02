@@ -2,7 +2,7 @@
 import { useState, useCallback, useEffect } from 'react'
 import type { FacetFilters } from '@/services/catalog'
 
-export type SortOrder = 'relevance' | string
+export type SortOrder = 'relevance' | 'price_asc' | 'price_desc' | 'az' | 'recent'
 
 export interface CatalogFiltersState {
   filters: FacetFilters
