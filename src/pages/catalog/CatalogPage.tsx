@@ -11,6 +11,8 @@ import { ProductCard } from '@/components/catalog/ProductCard'
 import { ProductCardSkeleton } from '@/components/catalog/ProductCardSkeleton'
 import { HeroSearchInput } from '@/components/search/HeroSearchInput'
 import { FilterChip } from '@/components/ui/filter-chip'
+import { CatalogFiltersPanel } from '@/components/catalog/CatalogFiltersPanel'
+import { ActiveFilterChips } from '@/components/catalog/ActiveFilterChips'
 import {
   Collapsible,
   CollapsibleContent,
@@ -484,6 +486,9 @@ function FiltersBar({
     return () => ro.disconnect()
   }, [])
 
+  const { search: _search, ...facetFilters } = filters
+  const hasFacetFilters = Object.values(facetFilters).some(Boolean)
+
   return (
     <div
       ref={ref}
@@ -498,24 +503,55 @@ function FiltersBar({
             </AlertDescription>
           </Alert>
         )}
-        <div className="grid grid-cols-[1fr,auto] gap-3 items-center">
-          <HeroSearchInput
-            placeholder="Search products"
-            value={filters.search ?? ''}
-            onChange={e => setFilters({ search: e.target.value })}
-            rightSlot={
-              <button
-                type="button"
-                aria-label="Voice search"
-                onClick={() => console.log('voice search')}
-                className="text-muted-foreground hover:text-foreground"
-              >
-                <Mic className="h-5 w-5" />
-              </button>
-            }
-          />
-          <ViewToggle value={view} onChange={setView} />
-        </div>
+        <Collapsible open={showMoreFilters} onOpenChange={setShowMoreFilters}>
+          <div className="grid grid-cols-[1fr,auto,auto] gap-3 items-center">
+            <HeroSearchInput
+              placeholder="Search products"
+              value={filters.search ?? ''}
+              onChange={e => setFilters({ search: e.target.value })}
+              rightSlot={
+                <button
+                  type="button"
+                  aria-label="Voice search"
+                  onClick={() => console.log('voice search')}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  <Mic className="h-5 w-5" />
+                </button>
+              }
+            />
+            <AnimatedSortDropdown value={sortOrder} onValueChange={setSortOrder} />
+            <ViewToggle value={view} onChange={setView} />
+          </div>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <FilterChip selected={onlyWithPrice} onSelectedChange={setOnlyWithPrice}>
+              Only with price
+            </FilterChip>
+            <FilterChip selected={inStock} onSelectedChange={setInStock}>
+              In stock
+            </FilterChip>
+            <FilterChip selected={mySuppliers} onSelectedChange={setMySuppliers}>
+              My suppliers
+            </FilterChip>
+            <FilterChip selected={onSpecial} onSelectedChange={setOnSpecial}>
+              On special
+            </FilterChip>
+            <CollapsibleTrigger asChild>
+              <FilterChip selected={showMoreFilters}>More filters</FilterChip>
+            </CollapsibleTrigger>
+          </div>
+          {hasFacetFilters && (
+            <div className="mt-3">
+              <ActiveFilterChips
+                filters={facetFilters}
+                onClear={key => setFilters({ [key]: undefined })}
+              />
+            </div>
+          )}
+          <CollapsibleContent className="mt-3">
+            <CatalogFiltersPanel filters={filters} onChange={setFilters} />
+          </CollapsibleContent>
+        </Collapsible>
       </div>
     </div>
   )
