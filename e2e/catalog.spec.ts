@@ -26,8 +26,8 @@ test('catalog search shows products and prices', async ({ page }) => {
   }
 })
 
-test('catalog grid caps columns at four on typical screens', async ({ page }) => {
-  await page.setViewportSize({ width: 1600, height: 900 })
+test('catalog grid shows no more than four cards at 1440px width', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 })
   await page.goto('/catalog')
   const cards = page.locator('[data-testid="product-card"]')
   await expect(cards.first()).toBeVisible()
