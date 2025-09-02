@@ -71,19 +71,26 @@ export default function CatalogPage() {
   } | null>(null)
   const debouncedSearch = useDebounce(filters.search ?? '', 300)
   const sentinelRef = useRef<HTMLDivElement | null>(null)
+  const gridRef = useRef<HTMLDivElement>(null)
   const [showMoreFilters, setShowMoreFilters] = useState(false)
   const [cols, setCols] = useState(1)
 
   useEffect(() => {
     const updateCols = () => {
-      const width = window.innerWidth
-      let c = Math.min(4, Math.floor(width / 320))
-      if (width > 1800) c = 6
-      setCols(c)
+      const width = gridRef.current?.getBoundingClientRect().width || window.innerWidth
+      let max = 4
+      if (width >= 1800) max = 6
+      const cols = Math.min(max, Math.floor(width / 320))
+      setCols(cols)
     }
     updateCols()
+    const observer = new ResizeObserver(updateCols)
+    if (gridRef.current) observer.observe(gridRef.current)
     window.addEventListener('resize', updateCols)
-    return () => window.removeEventListener('resize', updateCols)
+    return () => {
+      observer.disconnect()
+      window.removeEventListener('resize', updateCols)
+    }
   }, [])
 
   useEffect(() => {
@@ -397,6 +404,7 @@ export default function CatalogPage() {
           />
         ) : (
           <div
+            ref={gridRef}
             className="grid justify-center justify-items-center gap-6"
             style={{ gridTemplateColumns: `repeat(${cols}, minmax(260px,1fr))` }}
           >
