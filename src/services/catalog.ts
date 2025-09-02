@@ -45,7 +45,7 @@ export async function fetchPublicCatalogItems(
   let query: any = supabase
     .from('v_public_catalog')
     .select(
-      'catalog_id, name, brand, image_main, pack_size, availability_text, availability, supplier_count, supplier_names',
+      'catalog_id, name, brand, image_main, size, pack_size, availability_text, availability, supplier_count, supplier_names',
       { count: 'exact' },
     )
 
@@ -59,11 +59,7 @@ export async function fetchPublicCatalogItems(
 
   if (filters.search) query = query.ilike('name', `%${filters.search}%`)
   if (filters.brand) query = query.eq('brand', filters.brand)
-  if (filters.category) query = query.eq('category_id', filters.category)
-  if (filters.supplier) query = query.eq('supplier_id', filters.supplier)
   if (filters.availability) query = query.eq('availability', filters.availability)
-  if (filters.packSizeRange)
-    query = query.eq('pack_size_range', filters.packSizeRange)
   if (filters.cursor) query = query.gt('catalog_id', filters.cursor)
 
   const { data, error, count } = await query
@@ -74,12 +70,12 @@ export async function fetchPublicCatalogItems(
     name: item.name,
     brand: item.brand ?? null,
     image_main: item.image_main ?? null,
-    pack_size: item.pack_size ?? null,
+    pack_size: item.pack_size ?? item.size ?? null,
     availability: item.availability ?? item.availability_text ?? null,
     supplier_count: item.supplier_count ?? 0,
     suppliers: item.supplier_names ?? [],
     best_price: null,
-    currency: item.currency ?? null,
+    currency: null,
   }))
   const nextCursor = items.length ? items[items.length - 1].catalog_id : null
   return { items, nextCursor, total: count ?? 0 }
