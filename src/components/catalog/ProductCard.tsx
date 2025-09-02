@@ -2,6 +2,7 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
+import { formatCurrency } from "@/lib/format"
 import type { CatalogItem } from "@/services/catalog"
 
 type ProductCardProps = {
@@ -28,7 +29,6 @@ export function ProductCard({
     suppliers,
     availability,
     best_price,
-    currency,
   } = product
 
   return (
@@ -81,9 +81,7 @@ export function ProductCard({
         )}
         {showPrice && (
           <p className="text-sm font-medium">
-            {best_price != null && currency
-              ? `${best_price.toFixed(2)} ${currency}`
-              : "No price"}
+            {best_price != null ? formatCurrency(best_price) : "No price"}
           </p>
         )}
       </CardContent>
