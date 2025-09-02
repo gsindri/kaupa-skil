@@ -90,11 +90,10 @@ export async function fetchOrgCatalogItems(
   sort: SortOrder,
 ): Promise<{ items: CatalogItem[]; nextCursor: string | null; total: number }> {
   let query: any = supabase
-    .from('v_org_catalog')
+    .rpc('v_org_catalog', { _org: orgId })
     .select(
-      'catalog_id, name, brand, gtin, sample_image_url, canonical_pack, availability, suppliers_count, supplier_names, best_price, currency',
+      'catalog_id, name, brand, image_main, size, availability, supplier_count, supplier_names, best_price, currency',
     )
-    .eq('_org', orgId)
 
   if (sort === 'az') {
     query = query.order('name', { ascending: true }).order('catalog_id', { ascending: true })
@@ -121,10 +120,10 @@ export async function fetchOrgCatalogItems(
     catalog_id: item.catalog_id,
     name: item.name,
     brand: item.brand ?? null,
-    image_main: item.sample_image_url ?? null,
-    pack_size: item.canonical_pack ?? null,
+    image_main: item.image_main ?? null,
+    pack_size: item.size ?? null,
     availability: item.availability ?? item.availability_text ?? null,
-    supplier_count: item.suppliers_count ?? 0,
+    supplier_count: item.supplier_count ?? 0,
     suppliers: item.supplier_names ?? [],
     best_price: item.best_price ?? null,
     currency: item.currency ?? null,
@@ -141,9 +140,8 @@ export async function fetchCatalogSuggestions(
   let query: any
   if (orgId) {
     query = supabase
-      .from('v_org_catalog')
+      .rpc('v_org_catalog', { _org: orgId })
       .select('name')
-      .eq('_org', orgId)
       .ilike('name', `%${search}%`)
       .order('name', { ascending: true })
       .limit(5)
