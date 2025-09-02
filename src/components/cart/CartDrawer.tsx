@@ -76,32 +76,31 @@ function CartItemRow({ item, includeVat, updateQuantity, removeItem }: CartItemR
   return (
     <div
       ref={cardRef}
-      className="grid items-center gap-3 grid-cols-[48px,1fr,auto,auto] sm:grid-cols-[56px,1fr,auto,auto] px-2 py-2 rounded-lg hover:bg-muted/50 focus-within:ring-2 focus-within:ring-primary/30"
+      className="grid items-center gap-3 grid-cols-[44px,1fr,auto,auto] md:grid-cols-[56px,1fr,auto,auto] px-2 py-2 rounded-lg hover:bg-muted/50 focus-within:ring-2 focus-within:ring-primary/30"
     >
       <img
         src={getCachedImageUrl(item.image) || '/placeholder.svg'}
         alt=""
-        className="h-10 w-10 sm:h-12 sm:w-12 rounded object-cover bg-muted/40"
+        className="h-10 w-10 md:h-12 md:w-12 rounded object-cover bg-muted/40"
       />
       <div className="min-w-0">
-        <p className="text-sm font-medium leading-tight line-clamp-1">
+        <p
+          className="text-sm md:text-[15px] font-medium leading-snug line-clamp-2 md:line-clamp-1"
+          title={item.itemName}
+        >
           {item.itemName}
         </p>
-        <div className="flex items-center gap-2">
-          {item.packSize && (
-            <span className="text-xs text-muted-foreground">{item.packSize}</span>
-          )}
-          {item.supplierName && (
-            <span className="text-xs text-muted-foreground">• from {item.supplierName}</span>
-          )}
+        <div className="text-xs text-muted-foreground truncate">
+          {item.packSize}
+          {item.supplierName && ` • ${item.supplierName}`}
         </div>
       </div>
-      <div className="min-w-[9ch] sm:min-w-[11ch] text-right tabular-nums whitespace-nowrap text-sm">
+      <div className="min-w-[9ch] md:min-w-[11ch] text-right tabular-nums whitespace-nowrap text-sm">
         {formatCurrency(lineTotal)}
       </div>
-      <div className="flex items-center gap-1 sm:gap-2">
+      <div className="flex items-center gap-1 md:gap-2">
         <button
-          className="h-7 w-7 sm:h-8 sm:w-8 rounded border flex items-center justify-center"
+          className="h-7 w-7 md:h-8 md:w-8 rounded border flex items-center justify-center"
           aria-label="Decrease quantity"
           onClick={() => updateQuantity(item.supplierItemId, item.quantity - 1)}
         >
@@ -109,7 +108,7 @@ function CartItemRow({ item, includeVat, updateQuantity, removeItem }: CartItemR
         </button>
         <span className="w-8 text-center tabular-nums text-sm">{item.quantity}</span>
         <button
-          className="h-7 w-7 sm:h-8 sm:w-8 rounded border flex items-center justify-center"
+          className="h-7 w-7 md:h-8 md:w-8 rounded border flex items-center justify-center"
           aria-label="Increase quantity"
           onClick={() => updateQuantity(item.supplierItemId, item.quantity + 1)}
         >
@@ -121,7 +120,7 @@ function CartItemRow({ item, includeVat, updateQuantity, removeItem }: CartItemR
           onClick={() => removeItem(item.supplierItemId)}
           title="Remove"
         >
-          <Trash2 className="h-4 w-4" />
+          <Trash2 className="h-4 w-4 text-muted-foreground" />
         </button>
       </div>
     </div>
