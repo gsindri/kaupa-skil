@@ -86,9 +86,9 @@ function CartItemRow({ item, includeVat, updateQuantity, removeItem }: CartItemR
       <div className="min-w-0">
         <p
           className="text-sm md:text-[15px] font-medium leading-snug line-clamp-2 md:line-clamp-1"
-          title={item.itemName}
+          title={item.itemName || item.displayName}
         >
-          {item.itemName}
+          {item.itemName || item.displayName}
         </p>
         <div className="text-xs text-muted-foreground truncate">
           {item.packSize}
