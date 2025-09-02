@@ -95,7 +95,7 @@ export function MiniCart() {
         </Button>
       </PopoverTrigger>
       <PopoverContent
-        className="w-[320px] sm:w-[360px]"
+        className="w-[340px] sm:w-[360px] rounded-xl border bg-background shadow-md overflow-hidden"
         side="bottom"
         sideOffset={8}
         collisionPadding={8}
@@ -111,15 +111,15 @@ export function MiniCart() {
             </Button>
           </div>
         ) : (
-          <div className="w-[320px] sm:w-[360px]">
-            <div className="divide-y max-h-[360px] overflow-auto pr-1">
+          <>
+            <div className="max-h-[360px] overflow-auto pt-1 pb-2 px-2 pr-3">
               {items.map((it, index) => (
                 <div
                   key={it.supplierItemId}
                   ref={el => (rowRefs.current[index] = el)}
                   tabIndex={0}
                   onKeyDown={e => handleKeyDown(e, index)}
-                  className="grid grid-cols-[40px,1fr,auto] items-center gap-3 p-2 group focus:bg-accent/40 focus:outline-none"
+                  className="group grid grid-cols-[40px,1fr,auto] items-center gap-3 rounded-lg px-2 py-2 hover:bg-muted/60 transition focus-within:ring-2 focus-within:ring-primary/30"
                 >
                   <img
                     src={it.image ?? fallbackImage}
@@ -128,7 +128,7 @@ export function MiniCart() {
                   />
                   <div className="min-w-0">
                     <p
-                      className="truncate text-sm font-medium leading-tight"
+                      className="truncate text-sm font-medium"
                       title={it.itemName}
                     >
                       {it.itemName}
@@ -141,7 +141,7 @@ export function MiniCart() {
                   </div>
                   <div className="flex items-center gap-1">
                     <button
-                      className="h-7 w-7 rounded border text-sm hover:bg-accent"
+                      className="h-7 w-7 rounded border text-xs"
                       aria-label="Decrease quantity"
                       onClick={() =>
                         updateQuantity(it.supplierItemId, it.quantity - 1)
@@ -149,11 +149,11 @@ export function MiniCart() {
                     >
                       -
                     </button>
-                    <span className="w-6 text-right text-sm tabular-nums">
+                    <span className="w-6 text-right tabular-nums text-sm">
                       {it.quantity}×
                     </span>
                     <button
-                      className="h-7 w-7 rounded border text-sm hover:bg-accent"
+                      className="h-7 w-7 rounded border text-xs"
                       aria-label="Increase quantity"
                       onClick={() =>
                         updateQuantity(it.supplierItemId, it.quantity + 1)
@@ -166,9 +166,9 @@ export function MiniCart() {
                         <button
                           aria-label="Remove item"
                           onClick={() => handleRemove(index)}
-                          className="ml-1 opacity-0 transition group-hover:opacity-100 group-focus-within:opacity-100 focus:opacity-100"
+                          className="ml-1 h-7 w-7 rounded hover:bg-destructive/10"
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 className="h-4 w-4 text-muted-foreground group-hover:text-foreground" />
                         </button>
                       </TooltipTrigger>
                       <TooltipContent>Remove</TooltipContent>
@@ -177,14 +177,14 @@ export function MiniCart() {
                 </div>
               ))}
             </div>
-            <div className="sticky bottom-0 mt-2 space-y-2 border-t bg-background p-3">
-              <div className="flex items-center justify-between text-sm">
+            <div className="sticky bottom-0 border-t bg-background px-3 py-2">
+              <div className="mb-2 flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">Subtotal</span>
                 <span className="font-medium tabular-nums">{subtotal}</span>
               </div>
               <Button
                 size="lg"
-                className="h-11 w-full rounded-xl"
+                className="w-full h-11 rounded-xl"
                 onClick={() => {
                   setOpen(false)
                   setIsDrawerOpen(true)
@@ -193,7 +193,7 @@ export function MiniCart() {
                 View cart
               </Button>
             </div>
-          </div>
+          </>
         )}
       </PopoverContent>
     </Popover>
