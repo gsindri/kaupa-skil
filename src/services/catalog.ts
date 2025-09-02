@@ -90,19 +90,7 @@ export async function fetchOrgCatalogItems(
   filters: OrgCatalogFilters,
   sort: SortOrder,
 ): Promise<{ items: CatalogItem[]; nextCursor: string | null; total: number }> {
-  let query: any = supabase
-    .rpc('v_org_catalog', { _org: orgId })
-    .select(
-      'catalog_id, name, brand, image_main, size, availability, supplier_count, supplier_names, best_price, currency',
-    )
-
-  if (sort === 'az') {
-    query = query.order('name', { ascending: true }).order('catalog_id', { ascending: true })
-  } else {
-    query = query.order('catalog_id', { ascending: true })
-  }
-
-  query = query.limit(50)
+  let query: any = supabase.rpc('v_org_catalog', { _org: orgId })
 
   if (filters.search) query = query.ilike('name', `%${filters.search}%`)
   if (filters.brand) query = query.eq('brand', filters.brand)
@@ -113,6 +101,18 @@ export async function fetchOrgCatalogItems(
     query = query.eq('pack_size_range', filters.packSizeRange)
   if (filters.onlyWithPrice) query = query.not('best_price', 'is', null)
   if (filters.cursor) query = query.gt('catalog_id', filters.cursor)
+
+  query = query.select(
+    'catalog_id, name, brand, image_main, size, availability, supplier_count, supplier_names, best_price, currency',
+  )
+
+  if (sort === 'az') {
+    query = query.order('name', { ascending: true }).order('catalog_id', { ascending: true })
+  } else {
+    query = query.order('catalog_id', { ascending: true })
+  }
+
+  query = query.limit(50)
 
   const { data, error } = await query
   if (error) throw error
@@ -142,8 +142,8 @@ export async function fetchCatalogSuggestions(
   if (orgId) {
     query = supabase
       .rpc('v_org_catalog', { _org: orgId })
-      .select('name')
       .ilike('name', `%${search}%`)
+      .select('name')
       .order('name', { ascending: true })
       .limit(5)
   } else {
