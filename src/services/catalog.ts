@@ -35,7 +35,6 @@ export interface CatalogItem {
   supplier_count: number
   suppliers: string[]
   best_price: number | null
-  currency?: string | null
 }
 
 export async function fetchPublicCatalogItems(
@@ -75,7 +74,6 @@ export async function fetchPublicCatalogItems(
     supplier_count: item.supplier_count ?? 0,
     suppliers: item.supplier_names ?? [],
     best_price: null,
-    currency: null,
   }))
   const nextCursor = items.length ? items[items.length - 1].catalog_id : null
   return { items, nextCursor, total: count ?? 0 }
@@ -89,7 +87,7 @@ export async function fetchOrgCatalogItems(
   let query: any = supabase
     .rpc('v_org_catalog', { _org: orgId })
     .select(
-      'catalog_id, name, brand, gtin, image_main, size, pack_size, availability_text, availability, supplier_count, supplier_names, best_price, currency',
+      'catalog_id, name, brand, gtin, image_main, size, pack_size, availability_text, availability, supplier_count, supplier_names, best_price',
     )
 
   if (sort === 'az') {
@@ -113,7 +111,6 @@ export async function fetchOrgCatalogItems(
     supplier_count: item.supplier_count ?? 0,
     suppliers: item.supplier_names ?? [],
     best_price: item.best_price ?? null,
-    currency: item.currency ?? null,
   }))
   const nextCursor = items.length ? items[items.length - 1].catalog_id : null
   return { items, nextCursor, total: items.length }
