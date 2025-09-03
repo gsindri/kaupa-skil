@@ -37,6 +37,7 @@ export interface PublicCatalogItem {
   pack_size?: string | null
   suppliers_count: number
   sample_image_url?: string | null
+  availability_text?: string | null
   availability_status?: AvailabilityStatus | null
   availability_updated_at?: string | null
   sample_source_url?: string | null
@@ -51,7 +52,7 @@ export async function fetchPublicCatalogItems(
   let query: any = supabase
     .from('v_public_catalog')
     .select(
-      'catalog_id, name, brand, size, pack_size, suppliers_count, sample_image_url, availability_status, availability_updated_at, sample_source_url',
+      'catalog_id, name, brand, size, pack_size, suppliers_count, sample_image_url, availability_text, availability_status, availability_updated_at, sample_source_url',
       { count: 'exact' },
     )
 
@@ -65,7 +66,7 @@ export async function fetchPublicCatalogItems(
 
   if (filters.search) query = query.ilike('name', `%${filters.search}%`)
   if (filters.brand) query = query.eq('brand', filters.brand)
-  if (filters.availability) query = query.eq('availability', filters.availability)
+  if (filters.availability) query = query.eq('availability_status', filters.availability)
   if (filters.cursor) query = query.gt('catalog_id', filters.cursor)
 
   const { data, error, count } = await query
@@ -79,6 +80,7 @@ export async function fetchPublicCatalogItems(
     pack_size: item.pack_size ?? null,
     suppliers_count: item.suppliers_count ?? item.supplier_count ?? 0,
     sample_image_url: item.sample_image_url ?? item.image_url ?? null,
+    availability_text: item.availability_text ?? null,
     availability_status: (item.availability_status ?? item.availability ?? null) as AvailabilityStatus | null,
     availability_updated_at: item.availability_updated_at ?? null,
     sample_source_url: item.sample_source_url ?? null,
@@ -96,7 +98,7 @@ export async function fetchOrgCatalogItems(
   let query: any = supabase
     .rpc('v_org_catalog', { _org: orgId })
     .select(
-      'catalog_id, name, brand, size, pack_size, suppliers_count, sample_image_url, availability_status, availability_updated_at, sample_source_url',
+      'catalog_id, name, brand, size, pack_size, suppliers_count, sample_image_url, availability_text, availability_status, availability_updated_at, sample_source_url',
     )
 
   if (sort === 'az') {
@@ -118,6 +120,7 @@ export async function fetchOrgCatalogItems(
     pack_size: item.pack_size ?? null,
     suppliers_count: item.suppliers_count ?? item.supplier_count ?? 0,
     sample_image_url: item.sample_image_url ?? item.image_url ?? null,
+    availability_text: item.availability_text ?? null,
     availability_status: (item.availability_status ?? item.availability ?? null) as AvailabilityStatus | null,
     availability_updated_at: item.availability_updated_at ?? null,
     sample_source_url: item.sample_source_url ?? null,
