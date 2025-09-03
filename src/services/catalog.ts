@@ -66,7 +66,11 @@ export async function fetchPublicCatalogItems(
 
   if (filters.search) query = query.ilike('name', `%${filters.search}%`)
   if (filters.brand) query = query.eq('brand', filters.brand)
-  if (filters.availability) query = query.eq('availability_status', filters.availability)
+  if (filters.inStock) {
+    query = query.eq('availability_status', 'in_stock')
+  } else if (filters.availability) {
+    query = query.eq('availability_status', filters.availability)
+  }
   if (filters.cursor) query = query.gt('catalog_id', filters.cursor)
 
   const { data, error, count } = await query
@@ -104,6 +108,10 @@ export async function fetchOrgCatalogItems(
     query = query.order('name', { ascending: true }).order('catalog_id', { ascending: true })
   } else {
     query = query.order('catalog_id', { ascending: true })
+  }
+
+  if (_filters.inStock) {
+    query = query.eq('availability_status', 'in_stock')
   }
 
   query = query.limit(50)
