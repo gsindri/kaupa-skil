@@ -94,6 +94,36 @@ export type Database = {
           },
         ]
       }
+      catalog_product: {
+        Row: {
+          brand: string | null
+          created_at: string
+          gtin: string | null
+          id: string
+          name: string
+          size: string | null
+          updated_at: string
+        }
+        Insert: {
+          brand?: string | null
+          created_at?: string
+          gtin?: string | null
+          id?: string
+          name: string
+          size?: string | null
+          updated_at?: string
+        }
+        Update: {
+          brand?: string | null
+          created_at?: string
+          gtin?: string | null
+          id?: string
+          name?: string
+          size?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       grants: {
         Row: {
           capability: string
@@ -370,6 +400,75 @@ export type Database = {
         }
         Relationships: []
       }
+      supplier_product: {
+        Row: {
+          availability_text: string | null
+          catalog_product_id: string | null
+          created_at: string
+          data_provenance: string | null
+          first_seen_at: string
+          id: string
+          image_url: string | null
+          last_seen_at: string
+          pack_size: string | null
+          provenance_confidence: number | null
+          raw_hash: string | null
+          source_url: string | null
+          supplier_id: string
+          supplier_sku: string
+          updated_at: string
+        }
+        Insert: {
+          availability_text?: string | null
+          catalog_product_id?: string | null
+          created_at?: string
+          data_provenance?: string | null
+          first_seen_at?: string
+          id?: string
+          image_url?: string | null
+          last_seen_at?: string
+          pack_size?: string | null
+          provenance_confidence?: number | null
+          raw_hash?: string | null
+          source_url?: string | null
+          supplier_id: string
+          supplier_sku: string
+          updated_at?: string
+        }
+        Update: {
+          availability_text?: string | null
+          catalog_product_id?: string | null
+          created_at?: string
+          data_provenance?: string | null
+          first_seen_at?: string
+          id?: string
+          image_url?: string | null
+          last_seen_at?: string
+          pack_size?: string | null
+          provenance_confidence?: number | null
+          raw_hash?: string | null
+          source_url?: string | null
+          supplier_id?: string
+          supplier_sku?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_product_catalog_product_id_fkey"
+            columns: ["catalog_product_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_product"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supplier_product_catalog_product_id_fkey"
+            columns: ["catalog_product_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_catalog"
+            referencedColumns: ["catalog_id"]
+          },
+        ]
+      }
       support_sessions: {
         Row: {
           actor_id: string
@@ -380,7 +479,7 @@ export type Database = {
           revoked_at: string | null
           revoked_by: string | null
           starts_at: string | null
-          tenant_id: string | null
+          tenant_id: string
         }
         Insert: {
           actor_id: string
@@ -391,7 +490,7 @@ export type Database = {
           revoked_at?: string | null
           revoked_by?: string | null
           starts_at?: string | null
-          tenant_id?: string | null
+          tenant_id: string
         }
         Update: {
           actor_id?: string
@@ -402,7 +501,7 @@ export type Database = {
           revoked_at?: string | null
           revoked_by?: string | null
           starts_at?: string | null
-          tenant_id?: string | null
+          tenant_id?: string
         }
         Relationships: [
           {
@@ -440,58 +539,22 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
-      },
-      supplier_connections: {
-        Row: {
-          id: string
-          tenant_id: string | null
-          supplier_id: string
-          status: string
-          last_sync: string | null
-          next_run: string | null
-          created_at: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          id?: string
-          tenant_id?: string | null
-          supplier_id: string
-          status?: string
-          last_sync?: string | null
-          next_run?: string | null
-          created_at?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          id?: string
-          tenant_id?: string | null
-          supplier_id?: string
-          status?: string
-          last_sync?: string | null
-          next_run?: string | null
-          created_at?: string | null
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "supplier_connections_tenant_id_fkey"
-            columns: ["tenant_id"]
-            isOneToOne: false
-            referencedRelation: "tenants"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "supplier_connections_supplier_id_fkey"
-            columns: ["supplier_id"]
-            isOneToOne: false
-            referencedRelation: "suppliers"
-            referencedColumns: ["id"]
-          },
-        ]
       }
     }
     Views: {
-      [_ in never]: never
+      v_public_catalog: {
+        Row: {
+          brand: string | null
+          canonical_pack: string | null
+          catalog_id: string | null
+          name: string | null
+          pack_sizes: string[] | null
+          sample_image_url: string | null
+          sample_source_url: string | null
+          suppliers_count: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       create_elevation: {
@@ -506,6 +569,22 @@ export type Database = {
         }
         Returns: string
       }
+      fetch_catalog_facets: {
+        Args: {
+          _availability?: string[]
+          _brands?: string[]
+          _category_ids?: string[]
+          _pack_size_ranges?: string[]
+          _search?: string
+          _supplier_ids?: string[]
+        }
+        Returns: {
+          count: number
+          facet: string
+          id: string
+          name: string
+        }[]
+      }
       get_user_memberships: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -515,6 +594,26 @@ export type Database = {
           tenant_id: string
           tenant_name: string
         }[]
+      }
+      gtrgm_compress: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      gtrgm_decompress: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      gtrgm_in: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      gtrgm_options: {
+        Args: { "": unknown }
+        Returns: undefined
+      }
+      gtrgm_out: {
+        Args: { "": unknown }
+        Returns: unknown
       }
       has_active_elevation: {
         Args: Record<PropertyKey, never>
@@ -556,9 +655,34 @@ export type Database = {
         Args: { elevation_id: string }
         Returns: boolean
       }
+      set_limit: {
+        Args: { "": number }
+        Returns: number
+      }
       setup_owner_grants: {
         Args: { _membership_id: string }
         Returns: undefined
+      }
+      show_limit: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
+      show_trgm: {
+        Args: { "": string }
+        Returns: string[]
+      }
+      v_org_catalog: {
+        Args: Record<PropertyKey, never> | { _org: string }
+        Returns: {
+          brand: string | null
+          canonical_pack: string | null
+          catalog_id: string | null
+          name: string | null
+          pack_sizes: string[] | null
+          sample_image_url: string | null
+          sample_source_url: string | null
+          suppliers_count: number | null
+        }[]
       }
     }
     Enums: {

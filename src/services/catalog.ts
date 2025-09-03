@@ -29,10 +29,10 @@ export interface CatalogItem {
   catalog_id: string
   name: string
   brand: string | null
-  image_main: string | null
-  pack_size: string | null
+  sample_image_url: string | null
+  canonical_pack: string | null
   availability: string | null
-  supplier_count: number
+  suppliers_count: number
   suppliers: string[]
   best_price: number | null
 }
@@ -44,7 +44,7 @@ export async function fetchPublicCatalogItems(
   let query: any = supabase
     .from('v_public_catalog')
     .select(
-      'catalog_id, name, brand, image_main, size, pack_size, availability_text, availability, supplier_count, supplier_names',
+      'catalog_id, name, brand, sample_image_url, canonical_pack, suppliers_count',
       { count: 'exact' },
     )
 
@@ -68,11 +68,11 @@ export async function fetchPublicCatalogItems(
     catalog_id: item.catalog_id,
     name: item.name,
     brand: item.brand ?? null,
-    image_main: item.image_main ?? null,
-    pack_size: item.pack_size ?? item.size ?? null,
-    availability: item.availability ?? item.availability_text ?? null,
-    supplier_count: item.supplier_count ?? 0,
-    suppliers: item.supplier_names ?? [],
+    sample_image_url: item.sample_image_url ?? null,
+    canonical_pack: item.canonical_pack ?? null,
+    availability: null, // Not available in public view for now
+    suppliers_count: item.suppliers_count ?? 0,
+    suppliers: [], // Not available in public view for now
     best_price: null,
   }))
   const nextCursor = items.length ? items[items.length - 1].catalog_id : null
@@ -87,7 +87,7 @@ export async function fetchOrgCatalogItems(
   let query: any = supabase
     .rpc('v_org_catalog', { _org: orgId })
     .select(
-      'catalog_id, name, brand, gtin, image_main, size, pack_size, availability_text, availability, supplier_count, supplier_names, best_price',
+      'catalog_id, name, brand, sample_image_url, canonical_pack, suppliers_count',
     )
 
   if (sort === 'az') {
@@ -105,12 +105,12 @@ export async function fetchOrgCatalogItems(
     catalog_id: item.catalog_id,
     name: item.name,
     brand: item.brand ?? null,
-    image_main: item.image_main ?? null,
-    pack_size: item.pack_size ?? item.size ?? null,
-    availability: item.availability ?? item.availability_text ?? null,
-    supplier_count: item.supplier_count ?? 0,
-    suppliers: item.supplier_names ?? [],
-    best_price: item.best_price ?? null,
+    sample_image_url: item.sample_image_url ?? null,
+    canonical_pack: item.canonical_pack ?? null,
+    availability: null, // Not available in org view for now
+    suppliers_count: item.suppliers_count ?? 0,
+    suppliers: [], // Not available in org view for now
+    best_price: null, // Not available in org view for now
   }))
   const nextCursor = items.length ? items[items.length - 1].catalog_id : null
   return { items, nextCursor, total: items.length }
