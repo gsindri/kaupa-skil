@@ -76,7 +76,7 @@ function CartItemRow({ item, includeVat, updateQuantity, removeItem }: CartItemR
   return (
     <div
       ref={cardRef}
-      className="grid items-center gap-3 grid-cols-[44px,1fr,auto,auto] md:grid-cols-[56px,1fr,auto,auto] px-2 py-2 rounded-lg hover:bg-muted/50 focus-within:ring-2 focus-within:ring-primary/30"
+      className="grid items-center gap-3 grid-cols-[44px,1fr,auto,auto] md:grid-cols-[56px,1fr,auto,auto] px-3 py-2.5 rounded-lg hover:bg-muted/50 focus-within:ring-2 focus-within:ring-primary/30"
     >
       <img
         src={getCachedImageUrl(item.image) || '/placeholder.svg'}
@@ -85,22 +85,19 @@ function CartItemRow({ item, includeVat, updateQuantity, removeItem }: CartItemR
       />
       <div className="min-w-0">
         <p
-          className="text-sm md:text-[15px] font-medium leading-snug line-clamp-2 md:line-clamp-1"
+          className="text-sm md:text-base font-medium leading-snug line-clamp-2"
           title={item.itemName || item.displayName}
         >
           {item.itemName || item.displayName}
         </p>
-        <div className="text-xs text-muted-foreground truncate">
-          {item.packSize}
-          {item.supplierName && ` • ${item.supplierName}`}
-        </div>
+        <div className="text-xs text-muted-foreground">{item.packSize}</div>
       </div>
       <div className="min-w-[9ch] md:min-w-[11ch] text-right tabular-nums whitespace-nowrap text-sm">
         {formatCurrency(lineTotal)}
       </div>
       <div className="flex items-center gap-1 md:gap-2">
         <button
-          className="h-7 w-7 md:h-8 md:w-8 rounded border flex items-center justify-center"
+          className="h-6 w-6 md:h-7 md:w-7 rounded border flex items-center justify-center"
           aria-label="Decrease quantity"
           onClick={() => updateQuantity(item.supplierItemId, item.quantity - 1)}
         >
@@ -108,7 +105,7 @@ function CartItemRow({ item, includeVat, updateQuantity, removeItem }: CartItemR
         </button>
         <span className="w-8 text-center tabular-nums text-sm">{item.quantity}</span>
         <button
-          className="h-7 w-7 md:h-8 md:w-8 rounded border flex items-center justify-center"
+          className="h-6 w-6 md:h-7 md:w-7 rounded border flex items-center justify-center"
           aria-label="Increase quantity"
           onClick={() => updateQuantity(item.supplierItemId, item.quantity + 1)}
         >
@@ -116,7 +113,7 @@ function CartItemRow({ item, includeVat, updateQuantity, removeItem }: CartItemR
         </button>
         <button
           aria-label="Remove item"
-          className="ml-1 h-7 w-7 rounded hover:bg-destructive/10 flex items-center justify-center"
+          className="ml-1 h-6 w-6 md:h-7 md:w-7 rounded hover:bg-destructive/10 flex items-center justify-center"
           onClick={() => removeItem(item.supplierItemId)}
           title="Remove"
         >
@@ -263,8 +260,8 @@ export function CartDrawer() {
             ) : (
               Object.values(groups).map(group => (
                 <section key={group.supplierName} className="mb-4">
-                  <header className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 px-2 py-1.5 border-b">
-                    <span className="text-sm font-medium">{group.supplierName}</span>
+                  <header className="sticky top-0 z-10 bg-muted/40 px-3 py-1.5 border-b">
+                    <span className="text-sm font-semibold">{group.supplierName}</span>
                   </header>
                   <div className="divide-y">
                     {group.items.map(item => (
