@@ -28,16 +28,19 @@ export function ProductCard({
   const canonicalPack = product.canonical_pack ?? "";
   const packSizes = product.pack_sizes?.join(", ") ?? "";
 
-  const availability = (product.availability_status ?? "UNKNOWN") as
-    | "IN_STOCK"
-    | "OUT_OF_STOCK"
-    | "UNKNOWN";
+  const availability = (product.availability_status ?? "unknown") as
+    | "in_stock"
+    | "low"
+    | "out"
+    | "unknown";
   const availabilityClass =
-    availability === "IN_STOCK"
+    availability === "in_stock"
       ? "bg-emerald-100 text-emerald-700"
-      : availability === "OUT_OF_STOCK"
+      : availability === "out"
         ? "bg-rose-100 text-rose-700"
-        : "bg-muted text-muted-foreground";
+        : availability === "low"
+          ? "bg-amber-100 text-amber-700"
+          : "bg-muted text-muted-foreground";
 
   const handleAdd = () => {
     if (onAdd) return onAdd();
@@ -98,12 +101,14 @@ export function ProductCard({
                   : undefined
               }
             >
-              {product.availability_text
-                ? product.availability_text
-                : availability === "IN_STOCK"
-                  ? "In stock"
-                  : availability === "OUT_OF_STOCK"
-                    ? "Out of stock"
+            {product.availability_text
+              ? product.availability_text
+              : availability === "in_stock"
+                ? "In stock"
+                : availability === "out"
+                  ? "Out of stock"
+                  : availability === "low"
+                    ? "Low stock"
                     : "Availability unknown"}
             </span>
           </div>
@@ -125,7 +130,7 @@ export function ProductCard({
             size="sm"
             className="w-full"
             onClick={handleAdd}
-            disabled={isAdding || (product.availability_status && availability === "OUT_OF_STOCK")}
+            disabled={isAdding || (product.availability_status && availability === "out")}
             aria-label={`Add ${product.name}`}
           >
             {isAdding ? "Adding…" : "Add"}

@@ -25,7 +25,7 @@ export type OrgCatalogFilters = FacetFilters & {
   cursor?: string | null
 }
 
-export type AvailabilityStatus = 'IN_STOCK' | 'OUT_OF_STOCK' | 'UNKNOWN'
+export type AvailabilityStatus = 'in_stock' | 'low' | 'out' | 'unknown'
 
 export interface PublicCatalogItem {
   catalog_id: string
@@ -52,7 +52,7 @@ export async function fetchPublicCatalogItems(
   let query: any = supabase
     .from('v_public_catalog')
     .select(
-      'catalog_id, name, brand, canonical_pack, pack_sizes, suppliers_count, sample_image_url, sample_source_url',
+      'catalog_id, name, brand, canonical_pack, pack_sizes, suppliers_count, sample_image_url, sample_source_url, availability_status, availability_text, availability_updated_at',
       { count: 'exact' },
     )
 
@@ -80,9 +80,9 @@ export async function fetchPublicCatalogItems(
     pack_sizes: item.pack_sizes ?? null,
     suppliers_count: item.suppliers_count ?? item.supplier_count ?? 0,
     sample_image_url: item.sample_image_url ?? item.image_url ?? null,
-    availability_text: null, // Hotfix: set to null until DB has these fields
-    availability_status: null, // Hotfix: set to null until DB has these fields
-    availability_updated_at: null, // Hotfix: set to null until DB has these fields
+    availability_text: item.availability_text ?? null,
+    availability_status: (item.availability_status ?? null) as AvailabilityStatus | null,
+    availability_updated_at: item.availability_updated_at ?? null,
     sample_source_url: item.sample_source_url ?? null,
     best_price: item.best_price ?? null,
   }))
@@ -119,9 +119,9 @@ export async function fetchOrgCatalogItems(
     pack_sizes: item.pack_sizes ?? null,
     suppliers_count: item.suppliers_count ?? item.supplier_count ?? 0,
     sample_image_url: item.sample_image_url ?? item.image_url ?? null,
-    availability_text: null, // Hotfix: set to null until DB has these fields
-    availability_status: null, // Hotfix: set to null until DB has these fields
-    availability_updated_at: null, // Hotfix: set to null until DB has these fields
+    availability_text: item.availability_text ?? null,
+    availability_status: (item.availability_status ?? null) as AvailabilityStatus | null,
+    availability_updated_at: item.availability_updated_at ?? null,
     sample_source_url: item.sample_source_url ?? null,
     best_price: item.best_price ?? null,
   }))
