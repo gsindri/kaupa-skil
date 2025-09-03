@@ -769,6 +769,10 @@ export type Database = {
         Args: { "": number }
         Returns: number
       }
+      setup_initial_platform_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       setup_owner_grants: {
         Args: { _membership_id: string }
         Returns: undefined

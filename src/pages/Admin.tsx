@@ -16,6 +16,7 @@ import { SecurityTesting } from '@/components/admin/SecurityTesting'
 import { SecurityDocumentation } from '@/components/admin/SecurityDocumentation'
 import { Button } from '@/components/ui/button'
 import { UnmatchedProductsTable } from '@/components/admin/UnmatchedProductsTable'
+import { PlatformAdminSetup } from '@/components/admin/PlatformAdminSetup'
 
 export default function Admin() {
   const [elevationDialogOpen, setElevationDialogOpen] = useState(false)
@@ -43,7 +44,11 @@ export default function Admin() {
       </div>
 
       <Tabs defaultValue="monitoring" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-7">
+        <TabsList className="grid w-full grid-cols-8">
+          <TabsTrigger value="setup" className="flex items-center gap-2">
+            <Shield className="h-4 w-4" />
+            Setup
+          </TabsTrigger>
           <TabsTrigger value="monitoring" className="flex items-center gap-2">
             <Activity className="h-4 w-4" />
             Monitoring
@@ -73,6 +78,18 @@ export default function Admin() {
             Docs
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="setup" className="space-y-6">
+          <div className="max-w-2xl mx-auto space-y-6">
+            <div className="text-center space-y-2">
+              <h2 className="text-2xl font-bold">Security Setup</h2>
+              <p className="text-muted-foreground">
+                Complete the initial security configuration for your platform.
+              </p>
+            </div>
+            <PlatformAdminSetup />
+          </div>
+        </TabsContent>
 
         <TabsContent value="monitoring" className="space-y-6">
           <SecurityMonitoring />
