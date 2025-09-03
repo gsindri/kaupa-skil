@@ -67,7 +67,7 @@ export function useSupplierCredentials() {
       queryClient.invalidateQueries({ queryKey: ['supplier-credentials'] })
       toast({
         title: 'Credentials saved',
-        description: 'Supplier credentials have been securely encrypted and stored'
+        description: 'Supplier credentials have been encrypted and stored securely using AES encryption'
       })
     },
     onError: (error: any) => {

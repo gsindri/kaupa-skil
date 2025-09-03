@@ -740,6 +740,10 @@ export type Database = {
         }
         Returns: string
       }
+      log_security_event: {
+        Args: { details?: Json; event_type: string }
+        Returns: undefined
+      }
       revoke_elevation: {
         Args: { elevation_id: string }
         Returns: boolean
