@@ -461,6 +461,7 @@ export default function CatalogPage() {
               <ProductCard
                 key={product.catalog_id}
                 product={product}
+                showPrice
                 onAdd={() => handleAdd(product)}
                 isAdding={addingId === product.catalog_id}
               />

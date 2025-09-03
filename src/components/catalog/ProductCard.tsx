@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { timeAgo } from "@/lib/timeAgo";
+import { formatCurrency } from "@/lib/format";
 import type { PublicCatalogItem } from "@/services/catalog";
 
 interface ProductCardProps {
@@ -10,9 +11,16 @@ interface ProductCardProps {
   onAdd?: () => void;
   isAdding?: boolean;
   className?: string;
+  showPrice?: boolean;
 }
 
-export function ProductCard({ product, onAdd, isAdding, className }: ProductCardProps) {
+export function ProductCard({
+  product,
+  onAdd,
+  isAdding,
+  className,
+  showPrice,
+}: ProductCardProps) {
   const img = product.sample_image_url ?? "/placeholder.svg";
   const supplierLabel = `${product.suppliers_count} supplier${
     product.suppliers_count === 1 ? "" : "s"
@@ -96,9 +104,15 @@ export function ProductCard({ product, onAdd, isAdding, className }: ProductCard
         <div className="flex-1" />
 
         <div className="mt-3">
-          <div className="text-xs text-muted-foreground mb-2">
-            Connect supplier to see price
-          </div>
+          {showPrice && product.best_price != null ? (
+            <div className="text-sm font-medium mb-2">
+              {formatCurrency(product.best_price)}
+            </div>
+          ) : (
+            <div className="text-xs text-muted-foreground mb-2">
+              Connect supplier to see price
+            </div>
+          )}
           <Button
             size="sm"
             className="w-full"
