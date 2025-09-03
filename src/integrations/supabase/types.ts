@@ -505,7 +505,7 @@ export type Database = {
             foreignKeyName: "supplier_product_catalog_product_id_fkey"
             columns: ["catalog_product_id"]
             isOneToOne: false
-            referencedRelation: "v_public_catalog"
+            referencedRelation: "v_public_catalog_secure"
             referencedColumns: ["catalog_id"]
           },
         ]
@@ -615,7 +615,7 @@ export type Database = {
       }
     }
     Views: {
-      v_public_catalog: {
+      v_public_catalog_secure: {
         Row: {
           availability_status: string | null
           availability_text: string | null
@@ -672,6 +672,23 @@ export type Database = {
           facet: string
           id: string
           name: string
+        }[]
+      }
+      get_public_catalog_secure: {
+        Args: { _limit?: number; _offset?: number; _search?: string }
+        Returns: {
+          availability_status: string
+          availability_text: string
+          availability_updated_at: string
+          best_price: number
+          brand: string
+          canonical_pack: string
+          catalog_id: string
+          name: string
+          pack_sizes: string[]
+          sample_image_url: string
+          sample_source_url: string
+          suppliers_count: number
         }[]
       }
       get_user_memberships: {

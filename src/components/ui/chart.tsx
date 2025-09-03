@@ -89,10 +89,29 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
             
             if (!color) return null
             
-            // Validate color value to prevent CSS injection
-            const colorStr = String(color)
-            if (!/^(#[0-9a-f]{3,8}|rgb\([\d\s,]+\)|rgba\([\d\s,.]+\)|hsl\([\d\s,%]+\)|hsla\([\d\s,%,.]+\)|var\(--[\w-]+\))$/i.test(colorStr.trim())) {
-              console.warn(`Invalid color value rejected: ${colorStr}`)
+            // Enhanced validation to prevent CSS injection attacks
+            const colorStr = String(color).trim()
+            
+            // Strict whitelist of safe color patterns
+            const safeColorPatterns = [
+              /^#[0-9a-f]{3,8}$/i,                                    // Hex colors
+              /^rgb\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*\)$/,  // RGB
+              /^rgba\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*[0-1]?(\.\d+)?\s*\)$/, // RGBA
+              /^hsl\(\s*\d{1,3}\s*,\s*\d{1,3}%\s*,\s*\d{1,3}%\s*\)$/, // HSL
+              /^hsla\(\s*\d{1,3}\s*,\s*\d{1,3}%\s*,\s*\d{1,3}%\s*,\s*[0-1]?(\.\d+)?\s*\)$/, // HSLA
+              /^var\(--[a-zA-Z][\w-]*\)$/,                           // CSS custom properties
+              /^(transparent|inherit|initial|unset|currentColor)$/i   // Named safe values
+            ]
+            
+            const isValidColor = safeColorPatterns.some(pattern => pattern.test(colorStr))
+            if (!isValidColor) {
+              console.warn(`Potentially unsafe color value rejected: ${colorStr}`)
+              return null
+            }
+            
+            // Additional length check to prevent overflow attacks
+            if (colorStr.length > 100) {
+              console.warn(`Color value too long, rejected: ${colorStr.substring(0, 50)}...`)
               return null
             }
             

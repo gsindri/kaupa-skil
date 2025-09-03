@@ -55,8 +55,9 @@ export async function fetchPublicCatalogItems(
   filters: PublicCatalogFilters,
   sort: SortOrder,
 ): Promise<{ items: PublicCatalogItem[]; nextCursor: string | null; total: number }> {
+  // Use secure function that requires authentication instead of public view
   let query: any = supabase
-    .from('v_public_catalog')
+    .from('v_public_catalog_secure')
     .select(
       'catalog_id, name, brand, canonical_pack, pack_sizes, suppliers_count, sample_image_url, sample_source_url, availability_status, availability_text, availability_updated_at, best_price',
       { count: 'exact' },
@@ -166,7 +167,7 @@ export async function fetchCatalogSuggestions(
         .limit(5)
     } else {
       query = supabase
-        .from('v_public_catalog')
+        .from('v_public_catalog_secure')
         .select('name')
         .ilike('name', `%${search}%`)
         .order('name', { ascending: true })
