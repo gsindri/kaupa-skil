@@ -8,14 +8,22 @@ import * as cheerio from "cheerio";
 import { createHash } from "node:crypto";
 
 const BASE = "https://innnes.is";
+
+/**
+ * Add any category landing pages you want to scrape here.
+ * Example new category from your screenshot: "Brauð, eftirréttir og ís"
+ * (Update the URL to match the site’s actual slug.)
+ */
 const CATEGORY_URLS = [
   `${BASE}/avextir-og-graenmeti/`,
-  // add more Innnes categories here as needed
+  // `${BASE}/braud-eftirrettir-og-is/`,    // <- uncomment when ready
+  // `${BASE}/drykkir/`,
+  // ...
 ];
 
 const SUPABASE_URL = process.env.SUPABASE_URL!;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-const SUPPLIER_ID = process.env.SUPPLIER_ID || "INNNES"; // simple text id is fine with our schema
+const SUPPLIER_ID = process.env.SUPPLIER_ID || "INNNES";
 
 const sb = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
   auth: { persistSession: false },
@@ -28,6 +36,8 @@ const CARD_SEL = [
 ].join(",");
 
 const norm = (s?: string) => (s ?? "").replace(/\s+/g, " ").trim();
+const sha256 = (s: string) => createHash("sha256").update(s).digest("hex");
+
 const absUrl = (href?: string) => {
   try {
     return new URL(href!, BASE).href;
@@ -35,7 +45,6 @@ const absUrl = (href?: string) => {
     return href || "";
   }
 };
-const sha256 = (s: string) => createHash("sha256").update(s).digest("hex");
 
 type ScrapedItem = {
   name: string;
@@ -44,25 +53,93 @@ type ScrapedItem = {
   packSize?: string;
   availabilityText?: string;
   imageUrl?: string;
+  categoryPath?: string[];      // NEW: will be stored in supplier_product.category_path
   rawHash: string;
 };
 
+/** Try to read a breadcrumb trail; if missing, fall back to a path-derived label */
+function deriveCategoryPath($: cheerio.CheerioAPI, pageUrl: string): string[] | undefined {
+  const crumbs = $('nav.breadcrumb, .breadcrumb, .breadcrumbs, .c-breadcrumbs')
+    .find('li, a, span')
+    .map((_, el) => norm($(el).text()))
+    .get()
+    .filter(Boolean);
+
+  // Drop very generic starts like "Heim" / "Home"
+  const cleaned = crumbs.filter(t => !/^heim$|^home$/i.test(t));
+
+  if (cleaned.length) return cleaned;
+
+  // Fallback: last path segment prettified
+  const u = new URL(pageUrl);
+  const segs = u.pathname.split("/").filter(Boolean);
+  const last = segs.pop();
+  if (last) {
+    const pretty = last.replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+    return [pretty];
+  }
+  return undefined;
+}
+
+async function fetchPage(url: string) {
+  const res = await fetch(url, {
+    headers: {
+      "accept-language": "is-IS,is;q=0.9,en;q=0.8",
+      "user-agent": "KaupaCrawler/1.0 (+contact: you@example.is)",
+    },
+  });
+  if (!res.ok) throw new Error(`Fetch failed ${res.status} for ${url}`);
+  const html = await res.text();
+  return cheerio.load(html);
+}
+
+function buildPaginator(categoryUrl: string, $first: cheerio.CheerioAPI) {
+  // Try to detect a template like ?page={n}&filter=&orderby=  (or p=)
+  let template = "";
+  const cand = $first(".pagination a[href], .pagination__item a[href], .page-numbers a[href]")
+    .map((_, a) => absUrl($first(a).attr("href")))
+    .get()
+    .find(Boolean);
+
+  if (cand) {
+    try {
+      const u = new URL(cand);
+      const pageKey = [...u.searchParams.keys()].find(k => /^(page|p)$/i.test(k));
+      if (pageKey) {
+        u.searchParams.set(pageKey, "{n}");
+        template = "?" + u.searchParams.toString().replace("%7Bn%7D", "{n}");
+      }
+    } catch {}
+  }
+
+  return (n: number) => {
+    const base = new URL(categoryUrl);
+    base.search = "";
+    if (template) {
+      return base.origin + base.pathname + template.replace("{n}", String(n));
+    }
+    // fallback #1: ?page=N
+    const u = new URL(categoryUrl);
+    u.searchParams.set("page", String(n));
+    // fallback #2 (WooCommerce style): /page/N/
+    const alt = new URL(categoryUrl);
+    const parts = alt.pathname.replace(/\/+$/, "").split("/");
+    alt.pathname = n === 1
+      ? parts.join("/") + "/"
+      : parts.concat(["page", String(n)]).join("/") + "/";
+    return n === 1 ? categoryUrl : u.toString(); // swap to alt if needed
+  };
+}
+
 async function scrapeCategory(categoryUrl: string): Promise<ScrapedItem[]> {
   const out: ScrapedItem[] = [];
-  const seenItem = new Set<string>();
+  const seen = new Set<string>();
 
-  const fetchPage = async (url: string) => {
-    const res = await fetch(url, {
-      headers: {
-        "accept-language": "is-IS,is;q=0.9,en;q=0.8",
-        "user-agent": "KaupaCrawler/1.0 (+contact: you@example.is)",
-      },
-    });
-    const html = await res.text();
-    return cheerio.load(html);
-  };
+  // First page (also used to derive categoryPath + pagination)
+  const $first = await fetchPage(categoryUrl);
+  const categoryPath = deriveCategoryPath($first, categoryUrl);
 
-  const scrapeOne = ($: cheerio.CheerioAPI, pageUrl: string) => {
+  const pushOne = ($: cheerio.CheerioAPI, pageUrl: string) => {
     $(CARD_SEL).each((_, el) => {
       const $el = $(el);
       const name =
@@ -81,9 +158,9 @@ async function scrapeCategory(categoryUrl: string): Promise<ScrapedItem[]> {
         absUrl(href);
 
       const packText = norm($el.find(".productcard__size, .productcard__unit").first().text());
-      const packSize =
-        (packText.match(/(\d+\s*[x×]\s*\d+\s*(?:ml|l|g|kg)|\d+\s*(?:kg|g|ml|l)|\d+\s*stk)/i)?.[0] || "")
-          .replace(/\s+/g, "") || undefined;
+      const packSize = (
+        packText.match(/(\d+\s*[x×]\s*\d+\s*(?:ml|l|g|kg)|\d+\s*(?:kg|g|ml|l)|\d+\s*stk)/i)?.[0] || ""
+      ).replace(/\s+/g, "") || undefined;
 
       const availabilityText = norm($el.find(".productcard__availability").first().text()) || undefined;
       const img = $el.find(".productcard__image img, img").first();
@@ -91,8 +168,8 @@ async function scrapeCategory(categoryUrl: string): Promise<ScrapedItem[]> {
       const urlAbs = absUrl(href);
 
       const key = `${supplierSku}::${urlAbs}`;
-      if (seenItem.has(key)) return;
-      seenItem.add(key);
+      if (seen.has(key)) return;
+      seen.add(key);
 
       out.push({
         name,
@@ -101,130 +178,78 @@ async function scrapeCategory(categoryUrl: string): Promise<ScrapedItem[]> {
         packSize,
         availabilityText,
         imageUrl,
+        categoryPath, // same for all items on this category page
         rawHash: sha256(JSON.stringify({ name, url: urlAbs, supplierSku })),
       });
     });
-
     console.log(`Scraped page ${pageUrl} → ${out.length} total`);
   };
 
-  // 1) Load first page to discover numbers and a query template
-  const $first = await fetchPage(categoryUrl);
+  // Scrape first page
+  pushOne($first, categoryUrl);
 
-  // read numeric buttons (max page)
-  const nums = $first(".pagination a, .pagination__item, .page-numbers a")
-    .map((_, el) => parseInt(norm($first(el).text()), 10))
-    .get()
-    .filter((n) => Number.isFinite(n));
-  const maxPage = Math.max(...nums, 1);
+  // Discover and iterate subsequent pages with a safety stop
+  const pageUrlFor = buildPaginator(categoryUrl, $first);
+  let p = 2;
+  let emptyStreak = 0;
+  const HARD_CAP = 100;
 
-  // find a link that contains the page param (e.g., ?page=2&filter=&orderby=)
-  let queryTemplate = "";
-  $first(".pagination a[href], .pagination__item a[href], .page-numbers a[href]").each((_, a) => {
-    const href = absUrl($first(a).attr("href"));
-    const u = new URL(href);
-    const hasPageParam = [...u.searchParams.keys()].some((k) => /^(page|p)$/i.test(k));
-    if (hasPageParam && !queryTemplate) {
-      // keep everything but the page number so we can re-use it with our category base
-      // e.g. "?page={n}&filter=&orderby="
-      const pageKey = [...u.searchParams.keys()].find((k) => /^(page|p)$/i.test(k))!;
-      u.searchParams.set(pageKey, "{n}");
-      queryTemplate = "?" + u.searchParams.toString().replace("%7Bn%7D", "{n}");
+  while (p <= HARD_CAP && emptyStreak < 2) {
+    const pageUrl = pageUrlFor(p);
+    try {
+      const $ = await fetchPage(pageUrl);
+      const before = out.length;
+      pushOne($, pageUrl);
+      const added = out.length - before;
+      if (added === 0) emptyStreak += 1; else emptyStreak = 0;
+      console.log(`page=${p} added=${added} total=${out.length}`);
+      p += 1;
+      await new Promise(r => setTimeout(r, 350)); // politeness
+    } catch (e) {
+      console.warn(`Failed ${pageUrl}: ${(e as Error).message}`);
+      break;
     }
-  });
-    console.log("pagination template:", queryTemplate || "(none)");
-
-
-  // helper to build a page URL from template
-const buildUrl = (n: number) => {
-  const base = new URL(categoryUrl);
-  base.search = "";
-
-  if (queryTemplate) {
-    return base.origin + base.pathname + queryTemplate.replace("{n}", String(n));
   }
-
-  // fallback #1: ?page=N
-  const u = new URL(categoryUrl);
-  u.searchParams.set("page", String(n));
-
-  // fallback #2: /page/N/ (WooCommerce style)
-  const alt = new URL(categoryUrl);
-  const parts = alt.pathname.replace(/\/+$/, "").split("/");
-  alt.pathname = n === 1
-    ? parts.join("/") + "/"
-    : parts.concat(["page", String(n)]).join("/") + "/";
-
-  return n === 1 ? categoryUrl : u.toString(); // if needed, swap to alt.toString()
-};
-
-  // 2) Scrape page 1
-  scrapeOne($first, categoryUrl);
-
-// 3) Scrape remaining pages: keep going until a page adds 0 new items
-let p = 2;
-let emptyStreak = 0;            // stop after two empty pages in a row (safety)
-const HARD_CAP = 100;           // absolute max
-
-while (p <= HARD_CAP && emptyStreak < 2) {
-  const pageUrl = buildUrl(p);
-  const $ = await fetchPage(pageUrl);
-  const before = out.length;
-  scrapeOne($, pageUrl);
-  const added = out.length - before;
-
-  if (added === 0) {
-    emptyStreak += 1;
-  } else {
-    emptyStreak = 0;
-  }
-
-  console.log(`page=${p} added=${added} total=${out.length}`);
-  p += 1;
-
-  await new Promise(r => setTimeout(r, 350)); // polite delay
-}
 
   return out;
 }
 
-
-/** Find an existing catalog_product by name/size, or create one. Returns its catalog_id. */
+/** Find or create a catalog_product and return its id (UUID). */
 async function matchOrCreateCatalog(name: string, packSize?: string): Promise<string> {
   const { data: candidates, error } = await sb
     .from("catalog_product")
-    .select("catalog_id,name,size")
+    .select("id,name,size")
     .ilike("name", `%${name.slice(0, 48)}%`)
     .limit(20);
 
   if (error) throw error;
 
   const pick = candidates?.find(
-    (c) =>
-      !packSize ||
-      (c.size || "").replace(/\s/g, "").toLowerCase() === packSize.toLowerCase()
+    (c) => !packSize || (c.size || "").replace(/\s/g, "").toLowerCase() === packSize.toLowerCase()
   );
-  if (pick?.catalog_id) return pick.catalog_id;
+  if (pick?.id) return pick.id;
 
   const { data: created, error: insErr } = await sb
     .from("catalog_product")
     .insert({ name, size: packSize ?? null })
-    .select("catalog_id")
+    .select("id")
     .single();
 
   if (insErr) throw insErr;
-  return created!.catalog_id;
+  return created!.id;
 }
 
+/** Upsert supplier_product (FK: catalog_product_id). */
 async function upsertSupplierProduct(catalogId: string, i: ScrapedItem) {
-  const payload = {
+  const payload: any = {
     supplier_id: SUPPLIER_ID,
-    catalog_id: catalogId,
+    catalog_product_id: catalogId,           // ✅ correct FK
     supplier_sku: i.supplierSku,
     pack_size: i.packSize ?? null,
     source_url: i.url,
     availability_text: i.availabilityText ?? null,
     image_url: i.imageUrl ?? null,
+    category_path: i.categoryPath ?? null,   // ✅ new column if present
     data_provenance: "site",
     provenance_confidence: 0.7,
     raw_hash: i.rawHash,
@@ -240,22 +265,22 @@ async function upsertSupplierProduct(catalogId: string, i: ScrapedItem) {
 
 async function run() {
   let total = 0;
-
   for (const url of CATEGORY_URLS) {
     const items = await scrapeCategory(url);
-    console.log(`Category ${url} → ${items.length} deduped items`);
-    total += items.length;
+    // de-dupe across pages by (supplierSku,url)
+    const uniq = new Map<string, ScrapedItem>();
+    for (const it of items) uniq.set(`${it.supplierSku}::${it.url}`, it);
+    const deduped = [...uniq.values()];
 
-    for (const it of items) {
+    console.log(`Category ${url} → ${deduped.length} deduped items`);
+    total += deduped.length;
+
+    for (const it of deduped) {
       const catalogId = await matchOrCreateCatalog(it.name, it.packSize);
       await upsertSupplierProduct(catalogId, it);
     }
   }
-
   console.log(`Upserted ${total} items for supplier ${SUPPLIER_ID}`);
 }
 
-run().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+run().catch(err => { console.error(err); process.exit(1); });
