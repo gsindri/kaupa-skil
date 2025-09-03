@@ -723,9 +723,9 @@ export type Database = {
         }[]
       }
     }
-      Enums: {
-        availability_status: "IN_STOCK" | "OUT_OF_STOCK" | "UNKNOWN" | "LOW_STOCK"
-      }
+    Enums: {
+      availability_status: "in_stock" | "low" | "out" | "unknown"
+    }
     CompositeTypes: {
       [_ in never]: never
     }
@@ -851,8 +851,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-      Enums: {
-        availability_status: ["IN_STOCK", "OUT_OF_STOCK", "UNKNOWN", "LOW_STOCK"],
-      },
+    Enums: {
+      availability_status: ["in_stock", "low", "out", "unknown"],
+    },
   },
 } as const
