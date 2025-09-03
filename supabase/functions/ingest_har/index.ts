@@ -1,7 +1,13 @@
-import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.55.0";
-import { createHash } from "https://deno.land/std@0.224.0/hash/mod.ts";
 import { parsePack } from "./parsePack.ts";
+
+// Helper function to create SHA-256 hash using Web Crypto API
+async function createSHA256Hash(data: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const hashBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(data));
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE_KEY = Deno.env.get("SERVICE_ROLE_KEY")!;
@@ -27,7 +33,7 @@ type CapturedRecord = {
   ts?: number;
 };
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   const origin = req.headers.get("origin") ?? "";
   const cors = {
     "access-control-allow-origin": ALLOW_ORIGINS.has(origin) ? origin : "null",
@@ -136,8 +142,7 @@ serve(async (req) => {
 
       if (!name || !price) continue;
 
-      const rawHash = createHash("sha256").
-        update(JSON.stringify(it)).toString();
+      const rawHash = await createSHA256Hash(JSON.stringify(it));
 
       processedItems.push({
         supplier_id,
