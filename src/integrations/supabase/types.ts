@@ -443,11 +443,13 @@ export type Database = {
       }
       supplier_product: {
         Row: {
+          active_status: string | null
           availability_text: string | null
           catalog_product_id: string | null
           category_path: string[] | null
           created_at: string
           data_provenance: string | null
+          delisted_reason: string | null
           first_seen_at: string
           id: string
           image_url: string | null
@@ -456,16 +458,19 @@ export type Database = {
           provenance_confidence: number | null
           raw_hash: string | null
           source_url: string | null
+          stale_since: string | null
           supplier_id: string
           supplier_sku: string
           updated_at: string
         }
         Insert: {
+          active_status?: string | null
           availability_text?: string | null
           catalog_product_id?: string | null
           category_path?: string[] | null
           created_at?: string
           data_provenance?: string | null
+          delisted_reason?: string | null
           first_seen_at?: string
           id?: string
           image_url?: string | null
@@ -474,16 +479,19 @@ export type Database = {
           provenance_confidence?: number | null
           raw_hash?: string | null
           source_url?: string | null
+          stale_since?: string | null
           supplier_id: string
           supplier_sku: string
           updated_at?: string
         }
         Update: {
+          active_status?: string | null
           availability_text?: string | null
           catalog_product_id?: string | null
           category_path?: string[] | null
           created_at?: string
           data_provenance?: string | null
+          delisted_reason?: string | null
           first_seen_at?: string
           id?: string
           image_url?: string | null
@@ -492,6 +500,7 @@ export type Database = {
           provenance_confidence?: number | null
           raw_hash?: string | null
           source_url?: string | null
+          stale_since?: string | null
           supplier_id?: string
           supplier_sku?: string
           updated_at?: string
@@ -620,6 +629,7 @@ export type Database = {
     Views: {
       v_public_catalog: {
         Row: {
+          active_supplier_count: number | null
           availability_status: string | null
           availability_text: string | null
           availability_updated_at: string | null
@@ -746,6 +756,10 @@ export type Database = {
       }
       log_security_event: {
         Args: { details?: Json; event_type: string }
+        Returns: undefined
+      }
+      mark_stale_supplier_products: {
+        Args: { _days?: number }
         Returns: undefined
       }
       revoke_elevation: {
