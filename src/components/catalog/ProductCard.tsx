@@ -57,6 +57,10 @@ export function ProductCard({
     console.log("Add to basket", product.catalog_id);
   };
 
+  const isUnavailable =
+    availability === "OUT_OF_STOCK" ||
+    (availability === "UNKNOWN" && product.active_supplier_count === 0);
+
   const linkProps = product.sample_source_url
     ? {
         href: product.sample_source_url,
@@ -132,7 +136,7 @@ export function ProductCard({
           size="lg"
           className="w-full rounded-xl"
           onClick={handleAdd}
-          disabled={isAdding || availability === "OUT_OF_STOCK"}
+          disabled={isAdding || isUnavailable}
           aria-label={`Add ${product.name}`}
         >
           {isAdding ? "Adding…" : "Add to cart"}
