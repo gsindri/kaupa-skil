@@ -630,38 +630,14 @@ export type Database = {
           sample_source_url: string | null
           suppliers_count: number | null
         }
-        Insert: {
-          availability_status?: never
-          availability_text?: never
-          availability_updated_at?: never
-          best_price?: never
-          brand?: string | null
-          canonical_pack?: string | null
-          catalog_id?: string | null
-          name?: string | null
-          pack_sizes?: never
-          sample_image_url?: never
-          sample_source_url?: never
-          suppliers_count?: never
-        }
-        Update: {
-          availability_status?: never
-          availability_text?: never
-          availability_updated_at?: never
-          best_price?: never
-          brand?: string | null
-          canonical_pack?: string | null
-          catalog_id?: string | null
-          name?: string | null
-          pack_sizes?: never
-          sample_image_url?: never
-          sample_source_url?: never
-          suppliers_count?: never
-        }
         Relationships: []
       }
     }
     Functions: {
+      check_password_strength: {
+        Args: { password_text: string }
+        Returns: boolean
+      }
       create_elevation: {
         Args: { duration_minutes?: number; reason_text: string }
         Returns: string
@@ -783,23 +759,6 @@ export type Database = {
       show_trgm: {
         Args: { "": string }
         Returns: string[]
-      }
-      v_org_catalog: {
-        Args: { _org?: string }
-        Returns: {
-          availability_status: string | null
-          availability_text: string | null
-          availability_updated_at: string | null
-          best_price: number | null
-          brand: string | null
-          canonical_pack: string | null
-          catalog_id: string | null
-          name: string | null
-          pack_sizes: string[] | null
-          sample_image_url: string | null
-          sample_source_url: string | null
-          suppliers_count: number | null
-        }[]
       }
     }
     Enums: {
