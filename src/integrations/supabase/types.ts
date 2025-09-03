@@ -674,6 +674,14 @@ export type Database = {
         }
         Returns: string
       }
+      decrypt_credential_data: {
+        Args: { encrypted_data: string }
+        Returns: Json
+      }
+      encrypt_credential_data: {
+        Args: { credential_data: Json }
+        Returns: string
+      }
       fetch_catalog_facets: {
         Args: {
           _availability?: string[]

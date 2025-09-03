@@ -39,14 +39,17 @@ export function useSupplierCredentials() {
     }) => {
       const { supplier_id, ...credentials } = credentialData
       
-      // Simple encryption: Base64 encode the credentials (replace with proper encryption in production)
-      const credentialsJson = JSON.stringify(credentials)
-      const encryptedCredentials = btoa(credentialsJson)
+      // Use proper encryption via database function
+      const { data: encryptedData, error: encryptError } = await supabase
+        .rpc('encrypt_credential_data', {
+          credential_data: credentials
+        })
+
+      if (encryptError) throw encryptError
       
-      // Use the actual database fields - bypass TypeScript type checking temporarily
-      const payload: any = { 
+      const payload = { 
         supplier_id,
-        encrypted_credentials: encryptedCredentials,
+        encrypted_credentials: encryptedData,
         tenant_id: profile?.tenant_id ?? null,
         test_status: 'pending'
       }
