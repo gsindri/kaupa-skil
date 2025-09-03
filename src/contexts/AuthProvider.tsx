@@ -65,11 +65,21 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
       setLoading(true)
       setError(null)
       try {
-        // Check rate limiting for failed login attempts
-        const clientIP = 'client_' + (remember ? 'remember' : 'normal') // Simple client-side rate limiting key
-        const { authRateLimiter } = await import('@/lib/security')
+        // Simple rate limiting implementation
+        const rateLimitKey = 'client_' + (remember ? 'remember' : 'normal')
+        const attempts = JSON.parse(localStorage.getItem('auth_attempts') || '{}')
+        const now = Date.now()
+        const windowMs = 15 * 60 * 1000 // 15 minutes
         
-        if (!authRateLimiter.isAllowed(clientIP)) {
+        // Clean old attempts
+        if (attempts[rateLimitKey]) {
+          attempts[rateLimitKey] = attempts[rateLimitKey].filter((time: number) => now - time < windowMs)
+        } else {
+          attempts[rateLimitKey] = []
+        }
+        
+        // Check rate limit
+        if (attempts[rateLimitKey].length >= 5) {
           const error = new Error('Too many login attempts. Please try again in 15 minutes.')
           setError(error.message)
           throw error
@@ -80,13 +90,18 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
           password,
         })
         if (result.error) {
-          // Don't reset rate limiter on error to prevent brute force
+          // Record failed attempt
+          attempts[rateLimitKey].push(now)
+          localStorage.setItem('auth_attempts', JSON.stringify(attempts))
           setError(result.error.message)
           throw result.error
         }
         
-        // Reset rate limiter on successful login
-        authRateLimiter.reset(clientIP)
+        // Clear attempts on success
+        if (attempts[rateLimitKey]) {
+          delete attempts[rateLimitKey]
+          localStorage.setItem('auth_attempts', JSON.stringify(attempts))
+        }
         
         if (!remember) {
           localStorage.setItem(TEMP_SESSION_KEY, 'true')

@@ -10,7 +10,6 @@ import BasketProvider from '@/contexts/BasketProvider'
 import SettingsProvider from '@/contexts/SettingsProvider'
 import ComparisonProvider from '@/contexts/ComparisonContext'
 import { LanguageProvider } from '@/contexts/LanguageProvider'
-import { CSRFProvider } from '@/components/security/CSRFProvider'
 import { router } from '@/router'
 import { RouterProvider } from 'react-router-dom'
 import { queryClient } from '@/lib/queryClient'
@@ -25,24 +24,22 @@ function App() {
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <TooltipProvider>
               <ErrorBoundary>
-                <CSRFProvider>
-                  <AuthProvider>
-                    <ErrorBoundary>
-                      <BasketProvider>
-                        <ErrorBoundary>
-                          <SettingsProvider>
-                            <LanguageProvider>
-                              <ComparisonProvider>
-                                <RouterProvider router={router} future={{ v7_startTransition: true }} />
-                                <Toaster />
-                              </ComparisonProvider>
-                            </LanguageProvider>
-                          </SettingsProvider>
-                        </ErrorBoundary>
-                      </BasketProvider>
-                    </ErrorBoundary>
-                  </AuthProvider>
-                </CSRFProvider>
+                <AuthProvider>
+                  <ErrorBoundary>
+                    <BasketProvider>
+                      <ErrorBoundary>
+                        <SettingsProvider>
+                          <LanguageProvider>
+                            <ComparisonProvider>
+                              <RouterProvider router={router} future={{ v7_startTransition: true }} />
+                              <Toaster />
+                            </ComparisonProvider>
+                          </LanguageProvider>
+                        </SettingsProvider>
+                      </ErrorBoundary>
+                    </BasketProvider>
+                  </ErrorBoundary>
+                </AuthProvider>
               </ErrorBoundary>
             </TooltipProvider>
           </ThemeProvider>
