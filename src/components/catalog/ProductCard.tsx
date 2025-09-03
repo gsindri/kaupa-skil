@@ -28,26 +28,26 @@ export function ProductCard({
   const packInfo =
     product.canonical_pack ?? product.pack_sizes?.join(", ") ?? "";
 
-  const availability = (product.availability_status ?? "unknown") as
-    | "in_stock"
-    | "low"
-    | "out"
-    | "unknown";
+  const availability = (product.availability_status ?? "UNKNOWN") as
+    | "IN_STOCK"
+    | "LOW_STOCK"
+    | "OUT_OF_STOCK"
+    | "UNKNOWN";
   const availabilityClass =
-    availability === "in_stock"
+    availability === "IN_STOCK"
       ? "bg-emerald-100 text-emerald-700"
-      : availability === "out"
+      : availability === "OUT_OF_STOCK"
         ? "bg-rose-100 text-rose-700"
-        : availability === "low"
+        : availability === "LOW_STOCK"
           ? "bg-amber-100 text-amber-700"
           : "bg-muted text-muted-foreground";
   const availabilityLabel =
     product.availability_text ??
-    (availability === "in_stock"
+    (availability === "IN_STOCK"
       ? "In stock"
-      : availability === "out"
+      : availability === "OUT_OF_STOCK"
         ? "Out of stock"
-        : availability === "low"
+        : availability === "LOW_STOCK"
           ? "Low stock"
           : "Availability unknown");
 
@@ -123,7 +123,7 @@ export function ProductCard({
           size="lg"
           className="w-full rounded-xl"
           onClick={handleAdd}
-          disabled={isAdding || availability === "out"}
+          disabled={isAdding || availability === "OUT_OF_STOCK"}
           aria-label={`Add ${product.name}`}
         >
           {isAdding ? "Adding…" : "Add to cart"}
