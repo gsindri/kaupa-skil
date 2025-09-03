@@ -27,8 +27,13 @@ class Boundary extends React.Component<{ children: React.ReactNode }, { err: Err
   }
 }
 
-// Helpful: log env *presence* (not values)
-console.info("[env] has URL:", !!import.meta.env.VITE_SUPABASE_URL, "has KEY:", !!import.meta.env.VITE_SUPABASE_ANON_KEY)
+// Helpful: log which env source is present (not values)
+const hasImportMeta = !!import.meta.env.VITE_SUPABASE_URL && !!import.meta.env.VITE_SUPABASE_ANON_KEY
+const hasWindowEnv =
+  typeof window !== 'undefined' &&
+  !!(window as any).__ENV__?.VITE_SUPABASE_URL &&
+  !!(window as any).__ENV__?.VITE_SUPABASE_ANON_KEY
+console.info('[env] import.meta.env:', hasImportMeta, 'window.__ENV__:', hasWindowEnv)
 
 const rootEl = document.getElementById("root")
 if (!rootEl) {
