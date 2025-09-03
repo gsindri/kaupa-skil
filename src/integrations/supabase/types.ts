@@ -469,6 +469,38 @@ export type Database = {
           },
         ]
       }
+      supplier_product_availability: {
+        Row: {
+          note: string | null
+          qty: number | null
+          status: Database["public"]["Enums"]["availability_status"]
+          supplier_product_id: string
+          updated_at: string
+        }
+        Insert: {
+          note?: string | null
+          qty?: number | null
+          status?: Database["public"]["Enums"]["availability_status"]
+          supplier_product_id: string
+          updated_at?: string
+        }
+        Update: {
+          note?: string | null
+          qty?: number | null
+          status?: Database["public"]["Enums"]["availability_status"]
+          supplier_product_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_product_availability_supplier_product_id_fkey"
+            columns: ["supplier_product_id"]
+            isOneToOne: true
+            referencedRelation: "supplier_product"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       support_sessions: {
         Row: {
           actor_id: string
@@ -544,6 +576,9 @@ export type Database = {
     Views: {
       v_public_catalog: {
         Row: {
+          availability_status: string | null
+          availability_text: string | null
+          availability_updated_at: string | null
           brand: string | null
           canonical_pack: string | null
           catalog_id: string | null
@@ -674,6 +709,9 @@ export type Database = {
       v_org_catalog: {
         Args: Record<PropertyKey, never> | { _org: string }
         Returns: {
+          availability_status: string | null
+          availability_text: string | null
+          availability_updated_at: string | null
           brand: string | null
           canonical_pack: string | null
           catalog_id: string | null
@@ -686,7 +724,7 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      availability_status: "in_stock" | "low" | "out" | "unknown"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -813,6 +851,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      availability_status: ["in_stock", "low", "out", "unknown"],
+    },
   },
 } as const
