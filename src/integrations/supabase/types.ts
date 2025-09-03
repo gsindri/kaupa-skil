@@ -579,11 +579,12 @@ export type Database = {
           availability_status: string | null
           availability_text: string | null
           availability_updated_at: string | null
+          best_price: number | null
           brand: string | null
           canonical_pack: string | null
           catalog_id: string | null
           name: string | null
-          pack_sizes: string | null
+          pack_sizes: string[] | null
           sample_image_url: string | null
           sample_source_url: string | null
           suppliers_count: number | null
@@ -712,11 +713,12 @@ export type Database = {
           availability_status: string | null
           availability_text: string | null
           availability_updated_at: string | null
+          best_price: number | null
           brand: string | null
           canonical_pack: string | null
           catalog_id: string | null
           name: string | null
-          pack_sizes: string | null
+          pack_sizes: string[] | null
           sample_image_url: string | null
           sample_source_url: string | null
           suppliers_count: number | null
