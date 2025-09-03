@@ -544,14 +544,17 @@ export type Database = {
     Views: {
       v_public_catalog: {
         Row: {
-          brand: string | null
-          canonical_pack: string | null
           catalog_id: string | null
           name: string | null
+          brand: string | null
+          canonical_pack: string | null
           pack_sizes: string[] | null
-          sample_image_url: string | null
-          sample_source_url: string | null
           suppliers_count: number | null
+          sample_image_url: string | null
+          availability_text: string | null
+          availability_status: string | null
+          availability_updated_at: string | null
+          sample_source_url: string | null
         }
         Relationships: []
       }

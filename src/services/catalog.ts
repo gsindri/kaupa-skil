@@ -52,6 +52,7 @@ export async function fetchPublicCatalogItems(
   let query: any = supabase
     .from('v_public_catalog')
     .select(
+      'catalog_id, name, brand, canonical_pack, pack_sizes, suppliers_count, sample_image_url, availability_text, availability_status, availability_updated_at, sample_source_url',
       { count: 'exact' },
     )
 
