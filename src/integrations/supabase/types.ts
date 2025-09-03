@@ -589,6 +589,34 @@ export type Database = {
           sample_source_url: string | null
           suppliers_count: number | null
         }
+        Insert: {
+          availability_status?: never
+          availability_text?: never
+          availability_updated_at?: never
+          best_price?: never
+          brand?: string | null
+          canonical_pack?: never
+          catalog_id?: string | null
+          name?: string | null
+          pack_sizes?: never
+          sample_image_url?: never
+          sample_source_url?: never
+          suppliers_count?: never
+        }
+        Update: {
+          availability_status?: never
+          availability_text?: never
+          availability_updated_at?: never
+          best_price?: never
+          brand?: string | null
+          canonical_pack?: never
+          catalog_id?: string | null
+          name?: string | null
+          pack_sizes?: never
+          sample_image_url?: never
+          sample_source_url?: never
+          suppliers_count?: never
+        }
         Relationships: []
       }
     }
@@ -708,7 +736,7 @@ export type Database = {
         Returns: string[]
       }
       v_org_catalog: {
-        Args: Record<PropertyKey, never> | { _org: string }
+        Args: { _org?: string }
         Returns: {
           availability_status: string | null
           availability_text: string | null
