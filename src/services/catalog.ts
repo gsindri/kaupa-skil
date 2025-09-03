@@ -25,7 +25,13 @@ export type OrgCatalogFilters = FacetFilters & {
   cursor?: string | null
 }
 
-export type AvailabilityStatus = 'in_stock' | 'low' | 'out' | 'unknown'
+// Availability statuses returned from the catalog views.
+// Keep in sync with the values generated in the Supabase views.
+export type AvailabilityStatus =
+  | 'IN_STOCK'
+  | 'LOW_STOCK'
+  | 'OUT_OF_STOCK'
+  | 'UNKNOWN'
 
 export interface PublicCatalogItem {
   catalog_id: string
@@ -67,7 +73,8 @@ export async function fetchPublicCatalogItems(
   if (filters.search) query = query.ilike('name', `%${filters.search}%`)
   if (filters.brand) query = query.eq('brand', filters.brand)
   if (filters.inStock) {
-    query = query.eq('availability_status', 'in_stock')
+    // New views expose availability statuses in upper-case with underscores
+    query = query.eq('availability_status', 'IN_STOCK')
   } else if (filters.availability) {
     query = query.eq('availability_status', filters.availability)
   }
@@ -111,7 +118,7 @@ export async function fetchOrgCatalogItems(
   }
 
   if (_filters.inStock) {
-    query = query.eq('availability_status', 'in_stock')
+    query = query.eq('availability_status', 'IN_STOCK')
   }
 
   query = query.limit(50)
