@@ -44,6 +44,7 @@ export interface PublicCatalogItem {
   /** Category tags from all suppliers */
   category_tags?: string[][] | null
   suppliers_count: number
+  active_supplier_count?: number
   sample_image_url?: string | null
   availability_text?: string | null
   availability_status?: AvailabilityStatus | null
@@ -61,7 +62,7 @@ export async function fetchPublicCatalogItems(
   let query: any = supabase
     .from('v_public_catalog')
     .select(
-      'catalog_id, name, brand, canonical_pack, pack_sizes, suppliers_count, sample_image_url, sample_source_url, availability_status, availability_text, availability_updated_at, best_price, category_tags',
+      'catalog_id, name, brand, canonical_pack, pack_sizes, suppliers_count, active_supplier_count, sample_image_url, sample_source_url, availability_status, availability_text, availability_updated_at, best_price, category_tags',
       { count: 'exact' },
     )
 
@@ -100,6 +101,7 @@ export async function fetchPublicCatalogItems(
     pack_sizes: item.pack_sizes ?? null,
     category_tags: item.category_tags ?? null,
     suppliers_count: item.suppliers_count ?? item.supplier_count ?? 0,
+    active_supplier_count: item.active_supplier_count ?? 0,
     sample_image_url: item.sample_image_url ?? item.image_url ?? null,
     availability_text: item.availability_text ?? null,
     availability_status: (item.availability_status ?? null) as AvailabilityStatus | null,

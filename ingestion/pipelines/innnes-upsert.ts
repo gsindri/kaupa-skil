@@ -254,6 +254,7 @@ async function upsertSupplierProduct(catalogId: string, i: ScrapedItem) {
     provenance_confidence: 0.7,
     raw_hash: i.rawHash,
     last_seen_at: new Date().toISOString(),
+    active_status: 'ACTIVE',                 // Re-activate when seen
   };
 
   const { error } = await sb
@@ -264,20 +265,50 @@ async function upsertSupplierProduct(catalogId: string, i: ScrapedItem) {
 }
 
 async function run() {
+  // Track run start time for staleness management
+  const RUN_STARTED_AT = new Date().toISOString();
+  console.log(`Starting Innnes ingestion run at ${RUN_STARTED_AT}`);
+
   let total = 0;
-  for (const url of CATEGORY_URLS) {
-    const items = await scrapeCategory(url);
+  for (const categoryUrl of CATEGORY_URLS) {
+    console.log(`Starting category: ${categoryUrl}`);
+    const items = await scrapeCategory(categoryUrl);
+    const seenSkus = new Set<string>();
+    
     // de-dupe across pages by (supplierSku,url)
     const uniq = new Map<string, ScrapedItem>();
-    for (const it of items) uniq.set(`${it.supplierSku}::${it.url}`, it);
+    for (const it of items) {
+      uniq.set(`${it.supplierSku}::${it.url}`, it);
+      seenSkus.add(it.supplierSku);
+    }
     const deduped = [...uniq.values()];
 
-    console.log(`Category ${url} → ${deduped.length} deduped items`);
+    console.log(`Category ${categoryUrl} → ${deduped.length} deduped items`);
     total += deduped.length;
 
     for (const it of deduped) {
       const catalogId = await matchOrCreateCatalog(it.name, it.packSize);
       await upsertSupplierProduct(catalogId, it);
+    }
+
+    // Category-scoped "mark stale" - mark items in this category that weren't seen this run
+    console.log(`Marking stale products for category: ${categoryUrl}`);
+    const { error: staleError } = await sb
+      .from('supplier_product')
+      .update({
+        active_status: 'STALE',
+        stale_since: new Date().toISOString(),
+        delisted_reason: 'not_seen_in_category_crawl'
+      })
+      .eq('supplier_id', SUPPLIER_ID)
+      .like('source_url', `${categoryUrl}%`)
+      .or(`last_seen_at.is.null,last_seen_at.lt.${RUN_STARTED_AT}`)
+      .eq('active_status', 'ACTIVE');
+
+    if (staleError) {
+      console.error(`Error marking stale products for ${categoryUrl}:`, staleError);
+    } else {
+      console.log(`Staleness marking completed for ${categoryUrl}`);
     }
   }
   console.log(`Upserted ${total} items for supplier ${SUPPLIER_ID}`);

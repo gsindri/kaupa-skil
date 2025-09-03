@@ -40,6 +40,9 @@ image_transformation = { enabled = true }
 [functions.ingest_har]
 verify_jwt = false
 
+[functions.stale-sweep]
+verify_jwt = false
+
 [auth]
 enabled = true
 site_url = "http://localhost:3000"

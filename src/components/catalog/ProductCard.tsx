@@ -106,6 +106,14 @@ export function ProductCard({
           >
             {supplierLabel}
           </Badge>
+          {product.active_supplier_count === 0 && (
+            <Badge
+              variant="outline"
+              className="rounded-full px-2 py-0.5 text-[11px] font-medium text-muted-foreground border-muted-foreground/30"
+            >
+              Not seen recently
+            </Badge>
+          )}
         </div>
         <div className="mt-auto" />
       </CardContent>
