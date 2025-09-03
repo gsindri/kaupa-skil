@@ -569,9 +569,10 @@ function FiltersBar({
             <ViewToggle value={view} onChange={setView} />
           </div>
           <div className="mt-3 flex flex-wrap gap-2">
-            <FilterChip selected={onlyWithPrice} onSelectedChange={setOnlyWithPrice}>
-              Only with price
-            </FilterChip>
+            {/* Disable pricing filter until pricing data is available */}
+            {/* <FilterChip selected={onlyWithPrice} onSelectedChange={setOnlyWithPrice}>
+               Only with price
+             </FilterChip> */}
             <FilterChip selected={inStock} onSelectedChange={setInStock}>
               In stock
             </FilterChip>

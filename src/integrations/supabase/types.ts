@@ -595,7 +595,7 @@ export type Database = {
           availability_updated_at?: never
           best_price?: never
           brand?: string | null
-          canonical_pack?: never
+          canonical_pack?: string | null
           catalog_id?: string | null
           name?: string | null
           pack_sizes?: never
@@ -609,7 +609,7 @@ export type Database = {
           availability_updated_at?: never
           best_price?: never
           brand?: string | null
-          canonical_pack?: never
+          canonical_pack?: string | null
           catalog_id?: string | null
           name?: string | null
           pack_sizes?: never

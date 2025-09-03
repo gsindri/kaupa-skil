@@ -72,7 +72,8 @@ export async function fetchPublicCatalogItems(
 
   if (filters.search) query = query.ilike('name', `%${filters.search}%`)
   if (filters.brand) query = query.eq('brand', filters.brand)
-  if (filters.onlyWithPrice) query = query.not('best_price', 'is', null)
+  // Skip pricing filter when no pricing data is available
+  // if (filters.onlyWithPrice) query = query.not('best_price', 'is', null)
   if (filters.inStock) {
     // New views expose availability statuses in upper-case with underscores
     query = query.eq('availability_status', 'IN_STOCK')
@@ -119,7 +120,8 @@ export async function fetchOrgCatalogItems(
     query = query.order('catalog_id', { ascending: true })
   }
 
-  if (_filters.onlyWithPrice) query = query.not('best_price', 'is', null)
+  // Skip pricing filter when no pricing data is available
+  // if (_filters.onlyWithPrice) query = query.not('best_price', 'is', null)
   if (_filters.inStock) {
     query = query.eq('availability_status', 'IN_STOCK')
   }
