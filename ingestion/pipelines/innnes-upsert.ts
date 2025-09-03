@@ -16,7 +16,7 @@ const BASE = "https://innnes.is";
  */
 const CATEGORY_URLS = [
   `${BASE}/avextir-og-graenmeti/`,
-  // `${BASE}/braud-eftirrettir-og-is/`,    // <- uncomment when ready
+  `${BASE}/braud-eftirrettir-og-is/`,    // <- uncomment when ready
   // `${BASE}/drykkir/`,
   // ...
 ];
