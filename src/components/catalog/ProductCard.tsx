@@ -21,18 +21,19 @@ export function ProductCard({
   className,
   showPrice,
 }: ProductCardProps) {
-  const img = product.sample_image_url ?? "/placeholder.svg";
-  const supplierLabel = `${product.suppliers_count} supplier${
-    product.suppliers_count === 1 ? "" : "s"
-  }`;
-  const packInfo =
-    product.canonical_pack ?? product.pack_sizes?.join(", ") ?? "";
-
   const availability = (product.availability_status ?? "UNKNOWN") as
     | "IN_STOCK"
     | "LOW_STOCK"
     | "OUT_OF_STOCK"
     | "UNKNOWN";
+  const img =
+    product.sample_image_url ??
+    (availability === "UNKNOWN" ? "/unavailable.svg" : "/placeholder.svg");
+  const supplierLabel = `${product.suppliers_count} supplier${
+    product.suppliers_count === 1 ? "" : "s"
+  }`;
+  const packInfo =
+    product.canonical_pack ?? product.pack_sizes?.join(", ") ?? "";
   const availabilityClass =
     availability === "IN_STOCK"
       ? "bg-emerald-100 text-emerald-700"
