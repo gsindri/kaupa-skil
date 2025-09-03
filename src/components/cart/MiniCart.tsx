@@ -95,7 +95,7 @@ export function MiniCart() {
         </Button>
       </PopoverTrigger>
       <PopoverContent
-        className="w-[340px] sm:w-[360px] rounded-xl border bg-background shadow-md overflow-hidden"
+        className="w-[320px] sm:w-[340px] rounded-xl border bg-background shadow-md overflow-hidden"
         side="bottom"
         sideOffset={8}
         collisionPadding={8}
@@ -113,7 +113,7 @@ export function MiniCart() {
         ) : (
           <React.Fragment>
             <div
-              className="max-h-[360px] overflow-y-auto overflow-x-hidden pt-1 pb-2 px-2 pr-3"
+              className="max-h-[320px] overflow-y-auto overflow-x-hidden py-1 px-1.5"
               style={{ scrollbarGutter: 'stable' }}
             >
               {items.map((it, index) => (
@@ -122,12 +122,12 @@ export function MiniCart() {
                   ref={el => (rowRefs.current[index] = el)}
                   tabIndex={0}
                   onKeyDown={e => handleKeyDown(e, index)}
-                  className="grid grid-cols-[44px,1fr,auto,auto] md:grid-cols-[56px,1fr,auto,auto] items-center gap-3 rounded-lg px-2 py-2 hover:bg-muted/60 transition focus-within:ring-2 focus-within:ring-primary/30"
+                  className="grid grid-cols-[36px,1fr,auto,auto] md:grid-cols-[40px,1fr,auto,auto] items-center gap-2 rounded-md px-1.5 py-1.5 hover:bg-muted/60 transition focus-within:ring-2 focus-within:ring-primary/30"
                 >
                   <img
                     src={it.image ?? fallbackImage}
                     alt=""
-                    className="h-10 w-10 md:h-12 md:w-12 rounded object-cover bg-muted/40"
+                    className="h-9 w-9 md:h-10 md:w-10 rounded object-cover bg-muted/40"
                   />
                   <div className="min-w-0">
                       <p
@@ -141,12 +141,12 @@ export function MiniCart() {
                         {it.supplierName && ` • ${it.supplierName}`}
                       </div>
                     </div>
-                  <div className="min-w-[9ch] md:min-w-[11ch] text-right tabular-nums whitespace-nowrap text-sm">
+                  <div className="min-w-[8ch] md:min-w-[9ch] text-right tabular-nums whitespace-nowrap text-sm">
                     {formatPrice(
                       (includeVat ? it.unitPriceIncVat : it.unitPriceExVat) * it.quantity
                     )}
                   </div>
-                  <div className="flex items-center gap-1 md:gap-2">
+                  <div className="flex items-center gap-1">
                     <button
                       className="h-7 w-7 md:h-8 md:w-8 rounded border"
                       aria-label="Decrease quantity"
