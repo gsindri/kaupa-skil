@@ -31,10 +31,10 @@ export interface PublicCatalogItem {
   catalog_id: string
   name: string
   brand?: string | null
-  /** Canonical size of the product (e.g. 1kg) */
-  size?: string | null
-  /** Supplier provided pack size (e.g. box of 10) */
-  pack_size?: string | null
+  /** Canonical pack size of the product (e.g. 1kg) */
+  canonical_pack?: string | null
+  /** Available supplier pack sizes */
+  pack_sizes?: string[] | null
   suppliers_count: number
   sample_image_url?: string | null
   availability_text?: string | null
@@ -52,7 +52,6 @@ export async function fetchPublicCatalogItems(
   let query: any = supabase
     .from('v_public_catalog')
     .select(
-      'catalog_id, name, brand, size, pack_size, suppliers_count, sample_image_url, availability_text, availability_status, availability_updated_at, sample_source_url',
       { count: 'exact' },
     )
 
@@ -76,8 +75,8 @@ export async function fetchPublicCatalogItems(
     catalog_id: item.catalog_id,
     name: item.name,
     brand: item.brand ?? null,
-    size: item.size ?? null,
-    pack_size: item.pack_size ?? null,
+    canonical_pack: item.canonical_pack ?? null,
+    pack_sizes: item.pack_sizes ?? null,
     suppliers_count: item.suppliers_count ?? item.supplier_count ?? 0,
     sample_image_url: item.sample_image_url ?? item.image_url ?? null,
     availability_text: item.availability_text ?? null,
@@ -98,7 +97,6 @@ export async function fetchOrgCatalogItems(
   let query: any = supabase
     .rpc('v_org_catalog', { _org: orgId })
     .select(
-      'catalog_id, name, brand, size, pack_size, suppliers_count, sample_image_url, availability_text, availability_status, availability_updated_at, sample_source_url',
     )
 
   if (sort === 'az') {
@@ -116,8 +114,8 @@ export async function fetchOrgCatalogItems(
     catalog_id: item.catalog_id,
     name: item.name,
     brand: item.brand ?? null,
-    size: item.size ?? null,
-    pack_size: item.pack_size ?? null,
+    canonical_pack: item.canonical_pack ?? null,
+    pack_sizes: item.pack_sizes ?? null,
     suppliers_count: item.suppliers_count ?? item.supplier_count ?? 0,
     sample_image_url: item.sample_image_url ?? item.image_url ?? null,
     availability_text: item.availability_text ?? null,
