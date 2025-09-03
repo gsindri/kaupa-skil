@@ -83,9 +83,9 @@ export function ProductCard({
         <a {...linkProps} className="text-sm font-medium line-clamp-2 hover:underline">
           {product.name}
         </a>
-        {packInfo ? (
-          <div className="mt-1 text-xs text-muted-foreground">{packInfo}</div>
-        ) : null}
+        <div className="mt-1 min-h-[1rem] text-xs text-muted-foreground">
+          {packInfo}
+        </div>
         <div className="mt-2 flex flex-wrap gap-1 min-h-[24px]">
           <Badge
             className={cn(
