@@ -400,6 +400,47 @@ export type Database = {
         }
         Relationships: []
       }
+      supplier_credentials: {
+        Row: {
+          created_at: string | null
+          encrypted_credentials: string
+          id: string
+          last_tested_at: string | null
+          supplier_id: string
+          tenant_id: string | null
+          test_status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          encrypted_credentials: string
+          id?: string
+          last_tested_at?: string | null
+          supplier_id: string
+          tenant_id?: string | null
+          test_status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          encrypted_credentials?: string
+          id?: string
+          last_tested_at?: string | null
+          supplier_id?: string
+          tenant_id?: string | null
+          test_status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_credentials_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       supplier_product: {
         Row: {
           availability_text: string | null

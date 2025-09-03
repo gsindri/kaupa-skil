@@ -6,12 +6,14 @@ import { Progress } from '@/components/ui/progress'
 import { Play, RefreshCw, CheckCircle, XCircle, Clock } from 'lucide-react'
 import { useConnectorRuns } from '@/hooks/useConnectorRuns'
 import { useSupplierCredentials } from '@/hooks/useSupplierCredentials'
+import { useSuppliers } from '@/hooks/useSuppliers'
 import { useAuth } from '@/contexts/useAuth'
 
 export function IngestionRunsList() {
   const { profile } = useAuth()
   const { runs, createRun } = useConnectorRuns()
   const { credentials } = useSupplierCredentials()
+  const { suppliers } = useSuppliers()
 
   const handleStartIngestion = async (supplierId: string, connectorType: string) => {
     await createRun.mutateAsync({
@@ -78,9 +80,9 @@ export function IngestionRunsList() {
                 className="flex items-center justify-between p-3 border rounded-md"
               >
                 <div>
-                  <div className="font-medium">{credential.supplier?.name}</div>
+                  <div className="font-medium">{suppliers?.find(s => s.id === credential.supplier_id)?.name || 'Unknown Supplier'}</div>
                   <div className="text-sm text-muted-foreground">
-                    Type: {credential.supplier?.connector_type || 'Generic'}
+                    Type: {suppliers?.find(s => s.id === credential.supplier_id)?.connector_type || 'Generic'}
                   </div>
                 </div>
                 <Button
@@ -88,7 +90,7 @@ export function IngestionRunsList() {
                   size="sm"
                   onClick={() => handleStartIngestion(
                     credential.supplier_id, 
-                    credential.supplier?.connector_type || 'generic'
+                    suppliers?.find(s => s.id === credential.supplier_id)?.connector_type || 'generic'
                   )}
                   disabled={createRun.isPending}
                 >
@@ -122,7 +124,7 @@ export function IngestionRunsList() {
                     {getStatusIcon(run.status)}
                     <div>
                       <div className="font-medium">
-                        {run.supplier?.name || 'Unknown Supplier'}
+                        {suppliers?.find(s => s.id === run.supplier_id)?.name || 'Unknown Supplier'}
                       </div>
                       <div className="text-sm text-muted-foreground">
                         {run.connector_type} connector • Started {new Date(run.started_at).toLocaleString()}

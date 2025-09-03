@@ -22,20 +22,13 @@ export function SupplierCredentialsForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!selectedSupplierId || !profile?.tenant_id) return
-
-    // In a real implementation, this would be encrypted client-side
-    const encryptedBlob = JSON.stringify({
-      username,
-      password,
-      apiKey
-    })
+    if (!selectedSupplierId) return
 
     await createCredential.mutateAsync({
-      tenant_id: profile.tenant_id,
       supplier_id: selectedSupplierId,
-      encrypted_blob: encryptedBlob,
-      test_status: 'pending'
+      username,
+      password,
+      api_key: apiKey
     })
 
     // Reset form
@@ -158,7 +151,7 @@ export function SupplierCredentialsForm() {
                   {getStatusIcon(credential.test_status)}
                   <div>
                     <div className="font-medium">
-                      {credential.supplier?.name || 'Unknown Supplier'}
+                      {suppliers?.find(s => s.id === credential.supplier_id)?.name || 'Unknown Supplier'}
                     </div>
                     <div className="text-sm text-muted-foreground">
                       Last tested: {credential.last_tested_at ? 
