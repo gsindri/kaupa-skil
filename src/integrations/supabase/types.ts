@@ -583,7 +583,7 @@ export type Database = {
           canonical_pack: string | null
           catalog_id: string | null
           name: string | null
-          pack_sizes: string[] | null
+          pack_sizes: string | null
           sample_image_url: string | null
           sample_source_url: string | null
           suppliers_count: number | null
@@ -716,7 +716,7 @@ export type Database = {
           canonical_pack: string | null
           catalog_id: string | null
           name: string | null
-          pack_sizes: string[] | null
+          pack_sizes: string | null
           sample_image_url: string | null
           sample_source_url: string | null
           suppliers_count: number | null
@@ -724,7 +724,7 @@ export type Database = {
       }
     }
     Enums: {
-      availability_status: "in_stock" | "low" | "out" | "unknown"
+      availability_status: "IN_STOCK" | "LOW_STOCK" | "OUT_OF_STOCK" | "UNKNOWN"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -852,7 +852,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      availability_status: ["in_stock", "low", "out", "unknown"],
+      availability_status: ["IN_STOCK", "LOW_STOCK", "OUT_OF_STOCK", "UNKNOWN"],
     },
   },
 } as const
