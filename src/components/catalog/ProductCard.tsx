@@ -1,4 +1,4 @@
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -25,8 +25,8 @@ export function ProductCard({
   const supplierLabel = `${product.suppliers_count} supplier${
     product.suppliers_count === 1 ? "" : "s"
   }`;
-  const canonicalPack = product.canonical_pack ?? "";
-  const packSizes = product.pack_sizes?.join(", ") ?? "";
+  const packInfo =
+    product.canonical_pack ?? product.pack_sizes?.join(", ") ?? "";
 
   const availability = (product.availability_status ?? "unknown") as
     | "in_stock"
@@ -41,6 +41,15 @@ export function ProductCard({
         : availability === "low"
           ? "bg-amber-100 text-amber-700"
           : "bg-muted text-muted-foreground";
+  const availabilityLabel =
+    product.availability_text ??
+    (availability === "in_stock"
+      ? "In stock"
+      : availability === "out"
+        ? "Out of stock"
+        : availability === "low"
+          ? "Low stock"
+          : "Availability unknown");
 
   const handleAdd = () => {
     if (onAdd) return onAdd();
@@ -56,87 +65,70 @@ export function ProductCard({
     : { href: "#" };
 
   return (
-    <Card className={cn("h-full flex flex-col", className)}>
-      <CardContent className="p-3 flex-1 flex flex-col">
-        <a {...linkProps} className="relative block aspect-[4/3] w-full overflow-hidden rounded-md bg-muted">
-          <img
-            src={img}
-            alt={product.name}
-            className="h-full w-full object-contain"
-            loading="lazy"
-          />
-          <Badge className="absolute left-2 top-2 text-[11px]" variant="secondary">
-            {supplierLabel}
-          </Badge>
-        </a>
-
-        <a
-          {...linkProps}
-          className="mt-3 text-sm font-medium line-clamp-2 hover:underline"
+    <Card
+      className={cn(
+        "flex h-full w-full max-w-[340px] flex-col overflow-hidden rounded-2xl border shadow-sm transition-shadow hover:shadow-md",
+        className,
+      )}
+    >
+      <div className="relative aspect-square w-full overflow-hidden bg-muted">
+        <img
+          src={img}
+          alt={product.name}
+          className="h-full w-full object-cover"
+          loading="lazy"
+        />
+        <Badge
+          className="absolute left-2 top-2 rounded-full bg-white/90 px-2 py-0.5 text-[11px] font-medium text-muted-foreground shadow"
+          variant="secondary"
         >
+          {supplierLabel}
+        </Badge>
+      </div>
+      <CardContent className="flex flex-1 flex-col p-4">
+        <a {...linkProps} className="text-sm font-medium line-clamp-2 hover:underline">
           {product.name}
         </a>
-
-        {product.brand ? (
-          <div className="text-xs text-muted-foreground mt-0.5">{product.brand}</div>
+        {packInfo ? (
+          <div className="mt-1 text-xs text-muted-foreground">{packInfo}</div>
         ) : null}
-
-        {canonicalPack ? (
-          <div className="text-xs text-muted-foreground mt-0.5">{canonicalPack}</div>
-        ) : null}
-        {packSizes ? (
-          <div className="text-xs text-muted-foreground mt-0.5">{packSizes}</div>
-        ) : null}
-
-        {product.availability_status && (
-          <div className="mt-2">
-            <span
-              className={cn(
-                "inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium",
-                availabilityClass,
-              )}
-              title={
-                product.availability_updated_at
-                  ? `Updated ${timeAgo(product.availability_updated_at)}`
-                  : undefined
-              }
-            >
-            {product.availability_text
-              ? product.availability_text
-              : availability === "in_stock"
-                ? "In stock"
-                : availability === "out"
-                  ? "Out of stock"
-                  : availability === "low"
-                    ? "Low stock"
-                    : "Availability unknown"}
-            </span>
+        <div className="mt-2">
+          <span
+            className={cn(
+              "inline-block rounded-full px-2 py-0.5 text-[11px] font-medium",
+              availabilityClass,
+            )}
+            title={
+              product.availability_updated_at
+                ? `Updated ${timeAgo(product.availability_updated_at)}`
+                : undefined
+            }
+          >
+            {availabilityLabel}
+          </span>
+        </div>
+        <div className="mt-auto" />
+      </CardContent>
+      <CardFooter className="flex flex-col p-4 pt-0">
+        {showPrice && product.best_price != null ? (
+          <div className="mb-2 text-sm font-medium">
+            {formatCurrency(product.best_price)}
+          </div>
+        ) : (
+          <div className="mb-2 text-xs text-muted-foreground">
+            Connect supplier to see price
           </div>
         )}
-
-        <div className="flex-1" />
-
-        <div className="mt-3">
-          {showPrice && product.best_price != null ? (
-            <div className="text-sm font-medium mb-2">
-              {formatCurrency(product.best_price)}
-            </div>
-          ) : (
-            <div className="text-xs text-muted-foreground mb-2">
-              Connect supplier to see price
-            </div>
-          )}
-          <Button
-            size="sm"
-            className="w-full"
-            onClick={handleAdd}
-            disabled={isAdding || (product.availability_status && availability === "out")}
-            aria-label={`Add ${product.name}`}
-          >
-            {isAdding ? "Adding…" : "Add"}
-          </Button>
-        </div>
-      </CardContent>
+        <Button
+          size="lg"
+          className="w-full rounded-xl"
+          onClick={handleAdd}
+          disabled={isAdding || availability === "out"}
+          aria-label={`Add ${product.name}`}
+        >
+          {isAdding ? "Adding…" : "Add to cart"}
+        </Button>
+      </CardFooter>
     </Card>
   );
 }
