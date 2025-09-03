@@ -132,9 +132,9 @@ export function MiniCart() {
                   <div className="min-w-0">
                       <p
                         className="text-sm md:text-[15px] font-medium leading-snug line-clamp-2 md:line-clamp-1"
-                        title={it.itemName || it.displayName}
+                        title={it.itemName || it.displayName || it.name}
                       >
-                        {it.itemName || it.displayName}
+                        {it.itemName || it.displayName || it.name}
                       </p>
                       <div className="text-xs text-muted-foreground truncate">
                         {it.packSize}

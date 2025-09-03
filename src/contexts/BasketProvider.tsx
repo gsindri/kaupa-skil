@@ -9,7 +9,18 @@ import { flyToCart } from '@/lib/flyToCart'
 export default function BasketProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>(() => {
     const saved = localStorage.getItem('procurewise-basket')
-    return saved ? JSON.parse(saved) : []
+    if (!saved) return []
+
+    try {
+      const parsed: any[] = JSON.parse(saved)
+      return parsed.map(it => ({
+        ...it,
+        itemName: it.itemName || it.name,
+        displayName: it.displayName || it.name
+      }))
+    } catch {
+      return []
+    }
   })
   
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
