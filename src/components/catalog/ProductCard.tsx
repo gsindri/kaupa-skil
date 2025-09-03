@@ -17,7 +17,8 @@ export function ProductCard({ product, onAdd, isAdding, className }: ProductCard
   const supplierLabel = `${product.suppliers_count} supplier${
     product.suppliers_count === 1 ? "" : "s"
   }`;
-  const size = product.pack_size ?? product.size ?? "";
+  const canonicalPack = product.canonical_pack ?? "";
+  const packSizes = product.pack_sizes?.join(", ") ?? "";
 
   const availability = (product.availability_status ?? "UNKNOWN") as
     | "IN_STOCK"
@@ -69,8 +70,11 @@ export function ProductCard({ product, onAdd, isAdding, className }: ProductCard
           <div className="text-xs text-muted-foreground mt-0.5">{product.brand}</div>
         ) : null}
 
-        {size ? (
-          <div className="text-xs text-muted-foreground mt-0.5">{size}</div>
+        {canonicalPack ? (
+          <div className="text-xs text-muted-foreground mt-0.5">{canonicalPack}</div>
+        ) : null}
+        {packSizes ? (
+          <div className="text-xs text-muted-foreground mt-0.5">{packSizes}</div>
         ) : null}
 
         <div className="mt-2">
