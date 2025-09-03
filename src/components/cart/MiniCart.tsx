@@ -21,10 +21,15 @@ export function MiniCart() {
   } = useCart()
   const { includeVat } = useSettings()
   const [open, setOpen] = useState(false)
+  const [keyboardNavigationActive, setKeyboardNavigationActive] = useState(false)
   const { toast } = useToast()
   const rowRefs = useRef<(HTMLDivElement | null)[]>([])
 
   const cartCount = getTotalItems()
+
+  const getItemDisplayName = (item: any) => {
+    return item.itemName || item.displayName || item.name || 'Unknown item'
+  }
 
   const formatPrice = (price: number) =>
     new Intl.NumberFormat('is-IS', {
@@ -40,7 +45,7 @@ export function MiniCart() {
     const previous = [...items]
     removeItem(item.supplierItemId)
     toast({
-      description: `Removed ${item.itemName}`,
+      description: `Removed ${getItemDisplayName(item)}`,
       action: (
         <ToastAction altText="Undo" onClick={() => restoreItems(previous)}>
           Undo
@@ -53,6 +58,7 @@ export function MiniCart() {
     e: React.KeyboardEvent<HTMLDivElement>,
     index: number
   ) => {
+    setKeyboardNavigationActive(true)
     if (e.key === 'ArrowDown') {
       e.preventDefault()
       rowRefs.current[index + 1]?.focus()
@@ -116,73 +122,76 @@ export function MiniCart() {
               className="max-h-[320px] overflow-y-auto overflow-x-hidden py-1 px-1.5"
               style={{ scrollbarGutter: 'stable' }}
             >
-              {items.map((it, index) => (
-                <div
-                  key={it.supplierItemId}
-                  ref={el => (rowRefs.current[index] = el)}
-                  tabIndex={0}
-                  onKeyDown={e => handleKeyDown(e, index)}
-                  className="grid grid-cols-[36px,1fr,auto,auto] md:grid-cols-[40px,1fr,auto,auto] items-center gap-2 rounded-md px-1.5 py-1.5 hover:bg-muted/60 transition focus-within:ring-2 focus-within:ring-primary/30"
-                >
-                  <img
-                    src={it.image ?? fallbackImage}
-                    alt=""
-                    className="h-9 w-9 md:h-10 md:w-10 rounded object-cover bg-muted/40"
-                  />
-                  <div className="min-w-0">
+              {items.map((it, index) => {
+                const displayName = getItemDisplayName(it)
+                return (
+                  <div
+                    key={it.supplierItemId}
+                    ref={el => (rowRefs.current[index] = el)}
+                    tabIndex={keyboardNavigationActive ? 0 : -1}
+                    onKeyDown={e => handleKeyDown(e, index)}
+                    className="grid grid-cols-[36px,1fr,auto,auto] md:grid-cols-[40px,1fr,auto,auto] items-center gap-2 rounded-md px-1.5 py-1.5 hover:bg-muted/60 transition focus-visible:ring-2 focus-visible:ring-primary/30"
+                  >
+                    <img
+                      src={it.image ?? fallbackImage}
+                      alt=""
+                      className="h-9 w-9 md:h-10 md:w-10 rounded object-cover bg-muted/40"
+                    />
+                    <div className="min-w-0">
                       <p
                         className="text-sm md:text-[15px] font-medium leading-snug line-clamp-2 md:line-clamp-1"
-                        title={it.itemName || it.displayName}
+                        title={displayName}
                       >
-                        {it.itemName || it.displayName}
+                        {displayName}
                       </p>
                       <div className="text-xs text-muted-foreground truncate">
                         {it.packSize}
                         {it.supplierName && ` • ${it.supplierName}`}
                       </div>
                     </div>
-                  <div className="min-w-[8ch] md:min-w-[9ch] text-right tabular-nums whitespace-nowrap text-sm">
-                    {formatPrice(
-                      (includeVat ? it.unitPriceIncVat : it.unitPriceExVat) * it.quantity
-                    )}
+                    <div className="min-w-[8ch] md:min-w-[9ch] text-right tabular-nums whitespace-nowrap text-sm">
+                      {formatPrice(
+                        (includeVat ? it.unitPriceIncVat : it.unitPriceExVat) * it.quantity
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <button
+                        className="h-7 w-7 md:h-8 md:w-8 rounded border"
+                        aria-label="Decrease quantity"
+                        onClick={() =>
+                          updateQuantity(it.supplierItemId, it.quantity - 1)
+                        }
+                      >
+                        -
+                      </button>
+                      <span className="w-8 text-center tabular-nums text-sm">
+                        {it.quantity}
+                      </span>
+                      <button
+                        className="h-7 w-7 md:h-8 md:w-8 rounded border"
+                        aria-label="Increase quantity"
+                        onClick={() =>
+                          updateQuantity(it.supplierItemId, it.quantity + 1)
+                        }
+                      >
+                        +
+                      </button>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button
+                            aria-label="Remove item"
+                            onClick={() => handleRemove(index)}
+                            className="ml-1 h-7 w-7 rounded hover:bg-destructive/10"
+                          >
+                            <Trash2 className="h-4 w-4 text-muted-foreground" />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent>Remove</TooltipContent>
+                      </Tooltip>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <button
-                      className="h-7 w-7 md:h-8 md:w-8 rounded border"
-                      aria-label="Decrease quantity"
-                      onClick={() =>
-                        updateQuantity(it.supplierItemId, it.quantity - 1)
-                      }
-                    >
-                      -
-                    </button>
-                    <span className="w-8 text-center tabular-nums text-sm">
-                      {it.quantity}
-                    </span>
-                    <button
-                      className="h-7 w-7 md:h-8 md:w-8 rounded border"
-                      aria-label="Increase quantity"
-                      onClick={() =>
-                        updateQuantity(it.supplierItemId, it.quantity + 1)
-                      }
-                    >
-                      +
-                    </button>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <button
-                          aria-label="Remove item"
-                          onClick={() => handleRemove(index)}
-                          className="ml-1 h-7 w-7 rounded hover:bg-destructive/10"
-                        >
-                          <Trash2 className="h-4 w-4 text-muted-foreground" />
-                        </button>
-                      </TooltipTrigger>
-                      <TooltipContent>Remove</TooltipContent>
-                    </Tooltip>
-                  </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
             <div className="sticky bottom-0 border-t bg-background px-3 py-2">
               <div className="mb-2 flex items-center justify-between text-sm">
