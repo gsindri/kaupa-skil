@@ -65,14 +65,29 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
       setLoading(true)
       setError(null)
       try {
+        // Check rate limiting for failed login attempts
+        const clientIP = 'client_' + (remember ? 'remember' : 'normal') // Simple client-side rate limiting key
+        const { authRateLimiter } = await import('@/lib/security')
+        
+        if (!authRateLimiter.isAllowed(clientIP)) {
+          const error = new Error('Too many login attempts. Please try again in 15 minutes.')
+          setError(error.message)
+          throw error
+        }
+        
         const result = await supabase.auth.signInWithPassword({
           email,
           password,
         })
         if (result.error) {
+          // Don't reset rate limiter on error to prevent brute force
           setError(result.error.message)
           throw result.error
         }
+        
+        // Reset rate limiter on successful login
+        authRateLimiter.reset(clientIP)
+        
         if (!remember) {
           localStorage.setItem(TEMP_SESSION_KEY, 'true')
         } else {

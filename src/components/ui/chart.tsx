@@ -74,25 +74,43 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
     return null
   }
 
+  // Secure CSS generation with validation
+  const generateSecureCSS = () => {
+    return Object.entries(THEMES)
+      .map(([theme, prefix]) => {
+        const sanitizedPrefix = prefix.replace(/[^a-zA-Z0-9._-]/g, '')
+        const sanitizedId = id.replace(/[^a-zA-Z0-9-_]/g, '')
+        
+        const colorDeclarations = colorConfig
+          .map(([key, itemConfig]) => {
+            const color =
+              itemConfig.theme?.[theme as keyof typeof itemConfig.theme] ||
+              itemConfig.color
+            
+            if (!color) return null
+            
+            // Validate color value to prevent CSS injection
+            const colorStr = String(color)
+            if (!/^(#[0-9a-f]{3,8}|rgb\([\d\s,]+\)|rgba\([\d\s,.]+\)|hsl\([\d\s,%]+\)|hsla\([\d\s,%,.]+\)|var\(--[\w-]+\))$/i.test(colorStr.trim())) {
+              console.warn(`Invalid color value rejected: ${colorStr}`)
+              return null
+            }
+            
+            const sanitizedKey = key.replace(/[^a-zA-Z0-9-_]/g, '')
+            return `  --color-${sanitizedKey}: ${colorStr};`
+          })
+          .filter(Boolean)
+          .join('\n')
+
+        return `${sanitizedPrefix} [data-chart="${sanitizedId}"] {\n${colorDeclarations}\n}`
+      })
+      .join('\n')
+  }
+
   return (
     <style
       dangerouslySetInnerHTML={{
-        __html: Object.entries(THEMES)
-          .map(
-            ([theme, prefix]) => `
-${prefix} [data-chart=${id}] {
-${colorConfig
-  .map(([key, itemConfig]) => {
-    const color =
-      itemConfig.theme?.[theme as keyof typeof itemConfig.theme] ||
-      itemConfig.color
-    return color ? `  --color-${key}: ${color};` : null
-  })
-  .join("\n")}
-}
-`
-          )
-          .join("\n"),
+        __html: generateSecureCSS(),
       }}
     />
   )
