@@ -158,7 +158,29 @@ function normalizeRecord(rec: any, headerMap?: Record<string, string>) {
   const name = rec.name || rec.description
   const unit = rec.unit || rec.UOM
   const packQty = Number(rec.pack_qty || rec.packQty || 1)
-  return { supplier_sku: sku, name, unit, pack_qty: packQty, raw: rec }
+  
+  // Extract category path from various fields
+  let categoryPath: string[] | null = null
+  if (rec.categoryPath && Array.isArray(rec.categoryPath)) {
+    categoryPath = rec.categoryPath
+  } else if (rec.category_path && Array.isArray(rec.category_path)) {
+    categoryPath = rec.category_path
+  } else if (rec.category) {
+    // Single category string - convert to array
+    categoryPath = [rec.category]
+  } else if (rec.categories) {
+    // String of categories separated by commas or > 
+    categoryPath = rec.categories.split(/[,>]/).map((c: string) => c.trim()).filter(Boolean)
+  }
+  
+  return { 
+    supplier_sku: sku, 
+    name, 
+    unit, 
+    pack_qty: packQty, 
+    category_path: categoryPath,
+    raw: rec 
+  }
 }
 
 async function upsertSupplierProduct(supabase: any, supplierId: string, supplierSku: string, normalized: any, raw: any) {
@@ -174,21 +196,21 @@ async function upsertSupplierProduct(supabase: any, supplierId: string, supplier
   })
 
   const { data: existing } = await supabase
-    .from('supplier_products')
+    .from('supplier_product')
     .select('first_seen_at')
     .eq('supplier_id', supplierId)
     .eq('supplier_sku', supplierSku)
     .maybeSingle()
 
-  await supabase.from('supplier_products').upsert(
+  await supabase.from('supplier_product').upsert(
     {
       supplier_id: supplierId,
       supplier_sku: supplierSku,
       name: normalized.name,
-      unit: normalized.unit,
-      pack_qty: normalized.pack_qty,
+      pack_size: normalized.unit,
+      category_path: normalized.category_path,
       raw_hash,
-      data_provenance: { source: 'ingest-supplier-products' },
+      data_provenance: 'ingest-supplier-products',
       first_seen_at: existing?.first_seen_at ?? now,
       last_seen_at: now,
     },

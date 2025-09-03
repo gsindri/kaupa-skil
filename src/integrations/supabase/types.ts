@@ -445,6 +445,7 @@ export type Database = {
         Row: {
           availability_text: string | null
           catalog_product_id: string | null
+          category_path: string[] | null
           created_at: string
           data_provenance: string | null
           first_seen_at: string
@@ -462,6 +463,7 @@ export type Database = {
         Insert: {
           availability_text?: string | null
           catalog_product_id?: string | null
+          category_path?: string[] | null
           created_at?: string
           data_provenance?: string | null
           first_seen_at?: string
@@ -479,6 +481,7 @@ export type Database = {
         Update: {
           availability_text?: string | null
           catalog_product_id?: string | null
+          category_path?: string[] | null
           created_at?: string
           data_provenance?: string | null
           first_seen_at?: string
@@ -624,6 +627,7 @@ export type Database = {
           brand: string | null
           canonical_pack: string | null
           catalog_id: string | null
+          category_tags: string[] | null
           name: string | null
           pack_sizes: string[] | null
           sample_image_url: string | null

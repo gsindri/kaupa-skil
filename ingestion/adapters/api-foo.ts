@@ -20,7 +20,7 @@ export const apiFooAdapter = (cfg: { supplierId: string; apiUrl: string; apiKey:
         brand: base.brand,
         packSize: base.packSize,
         gtin: p.gtin ?? undefined,
-        categoryPath: p.categoryPath ?? undefined,
+        categoryPath: p.categoryPath ?? p.category_path ?? (p.category ? [p.category] : undefined),
         imageUrl: p.image ?? undefined,
         sourceUrl,
         dataProvenance: 'api',

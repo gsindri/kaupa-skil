@@ -41,6 +41,8 @@ export interface PublicCatalogItem {
   canonical_pack?: string | null
   /** Available supplier pack sizes */
   pack_sizes?: string[] | null
+  /** Category tags from all suppliers */
+  category_tags?: string[][] | null
   suppliers_count: number
   sample_image_url?: string | null
   availability_text?: string | null
@@ -59,7 +61,7 @@ export async function fetchPublicCatalogItems(
   let query: any = supabase
     .from('v_public_catalog')
     .select(
-      'catalog_id, name, brand, canonical_pack, pack_sizes, suppliers_count, sample_image_url, sample_source_url, availability_status, availability_text, availability_updated_at, best_price',
+      'catalog_id, name, brand, canonical_pack, pack_sizes, suppliers_count, sample_image_url, sample_source_url, availability_status, availability_text, availability_updated_at, best_price, category_tags',
       { count: 'exact' },
     )
 
@@ -73,6 +75,10 @@ export async function fetchPublicCatalogItems(
 
   if (filters.search) query = query.ilike('name', `%${filters.search}%`)
   if (filters.brand) query = query.eq('brand', filters.brand)
+  if (filters.category) {
+    // Filter by category using the category_tags array
+    query = query.contains('category_tags', [filters.category])
+  }
   // Skip pricing filter when no pricing data is available
   // if (filters.onlyWithPrice) query = query.not('best_price', 'is', null)
   if (filters.inStock) {
@@ -92,6 +98,7 @@ export async function fetchPublicCatalogItems(
     brand: item.brand ?? null,
     canonical_pack: item.canonical_pack ?? null,
     pack_sizes: item.pack_sizes ?? null,
+    category_tags: item.category_tags ?? null,
     suppliers_count: item.suppliers_count ?? item.supplier_count ?? 0,
     sample_image_url: item.sample_image_url ?? item.image_url ?? null,
     availability_text: item.availability_text ?? null,
