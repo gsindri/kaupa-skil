@@ -13,10 +13,14 @@ export default function BasketProvider({ children }: { children: React.ReactNode
 
     try {
       const parsed: any[] = JSON.parse(saved)
+
+      // Migration: legacy basket entries only stored the product `name` field.
+      // Ensure newer schema fields `itemName` and `displayName` are populated
+      // when loading from localStorage for backward compatibility.
       return parsed.map(it => ({
         ...it,
-        itemName: it.itemName || it.name,
-        displayName: it.displayName || it.name
+        itemName: it.itemName ?? it.name,
+        displayName: it.displayName ?? it.name
       }))
     } catch {
       return []
