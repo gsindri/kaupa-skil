@@ -78,12 +78,6 @@ export function ProductCard({
           className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
           loading="lazy"
         />
-        <Badge
-          className="absolute left-2 top-2 rounded-full bg-white/90 px-2 py-0.5 text-[11px] font-medium text-muted-foreground shadow"
-          variant="secondary"
-        >
-          {supplierLabel}
-        </Badge>
       </div>
       <CardContent className="flex flex-1 flex-col p-4">
         <a {...linkProps} className="text-sm font-medium line-clamp-2 hover:underline">
@@ -92,10 +86,10 @@ export function ProductCard({
         {packInfo ? (
           <div className="mt-1 text-xs text-muted-foreground">{packInfo}</div>
         ) : null}
-        <div className="mt-2">
-          <span
+        <div className="mt-2 flex flex-wrap gap-1 min-h-[24px]">
+          <Badge
             className={cn(
-              "inline-block rounded-full px-2 py-0.5 text-[11px] font-medium",
+              "rounded-full px-2 py-0.5 text-[11px] font-medium",
               availabilityClass,
             )}
             title={
@@ -105,7 +99,13 @@ export function ProductCard({
             }
           >
             {availabilityLabel}
-          </span>
+          </Badge>
+          <Badge
+            variant="secondary"
+            className="rounded-full px-2 py-0.5 text-[11px] font-medium"
+          >
+            {supplierLabel}
+          </Badge>
         </div>
         <div className="mt-auto" />
       </CardContent>

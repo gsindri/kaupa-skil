@@ -15,10 +15,13 @@ export function ProductCardSkeleton({ className }: ProductCardSkeletonProps) {
       )}
     >
       <Skeleton className="aspect-square w-full bg-muted/40" />
-      <CardContent className="flex flex-1 flex-col gap-2 p-4">
+      <CardContent className="flex flex-1 flex-col p-4">
         <Skeleton className="h-4 w-3/4" />
-        <Skeleton className="h-4 w-1/2" />
-        <Skeleton className="h-5 w-24 rounded-full" />
+        <Skeleton className="mt-1 h-4 w-1/2" />
+        <div className="mt-2 flex flex-wrap gap-1 min-h-[24px]">
+          <Skeleton className="h-5 w-24 rounded-full" />
+          <Skeleton className="h-5 w-20 rounded-full" />
+        </div>
         <div className="mt-auto" />
       </CardContent>
       <CardFooter className="flex flex-col p-4 pt-0">
