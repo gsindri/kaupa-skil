@@ -67,7 +67,7 @@ export function ProductCard({
   return (
     <Card
       className={cn(
-        "flex h-full w-full max-w-[340px] flex-col overflow-hidden rounded-2xl border shadow-sm transition-shadow hover:shadow-md",
+        "group flex h-full w-full max-w-[340px] flex-col overflow-hidden rounded-2xl border shadow-md transition-shadow duration-300 hover:shadow-lg",
         className,
       )}
     >
@@ -75,7 +75,7 @@ export function ProductCard({
         <img
           src={img}
           alt={product.name}
-          className="h-full w-full object-cover"
+          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
           loading="lazy"
         />
         <Badge
