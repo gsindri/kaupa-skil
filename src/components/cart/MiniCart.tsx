@@ -73,25 +73,25 @@ export function MiniCart() {
       <PopoverTrigger asChild onMouseEnter={() => setOpen(true)}>
         <Button
           id="mini-cart-button"
-          variant="outline"
+          variant="default"
           size="sm"
-          className="relative flex-shrink-0 border-border focus-visible:ring-brand/50"
+          className="relative flex-shrink-0 h-10 px-4 rounded-lg focus-visible:ring-brand/50 hover:shadow-sm transition-shadow"
           onClick={e => {
             e.preventDefault()
             setOpen(false)
             setIsDrawerOpen(true)
           }}
         >
-          <ShoppingCart className="h-5 w-5" />
-          {cartCount > 0 && (
+          <div className="relative">
+            <ShoppingCart className="h-5 w-5 sm:h-6 sm:w-6" />
             <span
               aria-live="polite"
-              className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand-600 px-1 text-[10px] text-white"
+              className={`absolute top-0 right-0 flex h-4 min-w-4 translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-brand-600 px-1 text-[10px] text-white transition-all ${cartCount > 0 ? 'opacity-100 scale-100' : 'opacity-0 scale-0'}`}
             >
               {cartCount}
             </span>
-          )}
-          <span className="ml-2 hidden sm:inline">Cart</span>
+          </div>
+          <span className="ml-2 hidden sm:inline font-semibold">Cart</span>
         </Button>
       </PopoverTrigger>
       <PopoverContent
