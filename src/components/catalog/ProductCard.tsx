@@ -1,102 +1,116 @@
-import { Card, CardContent, CardFooter } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { cn } from "@/lib/utils"
-import { formatCurrency } from "@/lib/format"
-import type { CatalogItem } from "@/services/catalog"
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { timeAgo } from "@/lib/timeAgo";
+import type { PublicCatalogItem } from "@/services/catalog";
 
-type ProductCardProps = {
-  product: CatalogItem
-  onAdd?: () => void
-  isAdding?: boolean
-  className?: string
-  showPrice?: boolean
+interface ProductCardProps {
+  product: PublicCatalogItem;
+  onAdd?: () => void;
+  isAdding?: boolean;
+  className?: string;
 }
 
-export function ProductCard({
-  product,
-  onAdd,
-  isAdding,
-  className,
-  showPrice = false,
-}: ProductCardProps) {
-  const {
-    name,
-    sample_image_url,
-    canonical_pack,
-    brand,
-    suppliers_count,
-    suppliers,
-    availability,
-    best_price,
-  } = product
+export function ProductCard({ product, onAdd, isAdding, className }: ProductCardProps) {
+  const img = product.sample_image_url ?? "/placeholder.svg";
+  const supplierLabel = `${product.suppliers_count} supplier${
+    product.suppliers_count === 1 ? "" : "s"
+  }`;
+  const size = product.pack_size ?? product.size ?? "";
+
+  const availability = (product.availability_status ?? "UNKNOWN") as
+    | "IN_STOCK"
+    | "OUT_OF_STOCK"
+    | "UNKNOWN";
+  const availabilityClass =
+    availability === "IN_STOCK"
+      ? "bg-emerald-100 text-emerald-700"
+      : availability === "OUT_OF_STOCK"
+        ? "bg-rose-100 text-rose-700"
+        : "bg-muted text-muted-foreground";
+
+  const handleAdd = () => {
+    if (onAdd) return onAdd();
+    console.log("Add to basket", product.catalog_id);
+  };
+
+  const linkProps = product.sample_source_url
+    ? {
+        href: product.sample_source_url,
+        target: "_blank" as const,
+        rel: "noreferrer" as const,
+      }
+    : { href: "#" };
 
   return (
-    <Card
-      className={cn(
-        "group relative flex h-full w-full max-w-[340px] flex-col overflow-hidden rounded-2xl border shadow-sm transition",
-        "hover:shadow-md hover:border-primary/30",
-        className,
-      )}
-    >
-      <div className="relative">
-        <div className="aspect-square w-full overflow-hidden bg-muted/40 flex items-center justify-center">
+    <Card className={cn("h-full flex flex-col", className)}>
+      <CardContent className="p-3 flex-1 flex flex-col">
+        <a {...linkProps} className="relative block aspect-[4/3] w-full overflow-hidden rounded-md bg-muted">
           <img
-            src={sample_image_url ?? "/placeholder.svg"}
-            alt={name}
-            className="h-full w-full object-contain p-2 transition-transform duration-300 group-hover:scale-[1.03]"
+            src={img}
+            alt={product.name}
+            className="h-full w-full object-contain"
             loading="lazy"
           />
+          <Badge className="absolute left-2 top-2 text-[11px]" variant="secondary">
+            {supplierLabel}
+          </Badge>
+        </a>
+
+        <a
+          {...linkProps}
+          className="mt-3 text-sm font-medium line-clamp-2 hover:underline"
+        >
+          {product.name}
+        </a>
+
+        {product.brand ? (
+          <div className="text-xs text-muted-foreground mt-0.5">{product.brand}</div>
+        ) : null}
+
+        {size ? (
+          <div className="text-xs text-muted-foreground mt-0.5">{size}</div>
+        ) : null}
+
+        <div className="mt-2">
+          <span
+            className={cn(
+              "inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium",
+              availabilityClass,
+            )}
+            title={
+              product.availability_updated_at
+                ? `Updated ${timeAgo(product.availability_updated_at)}`
+                : undefined
+            }
+          >
+            {availability === "IN_STOCK"
+              ? "In stock"
+              : availability === "OUT_OF_STOCK"
+                ? "Out of stock"
+                : "Availability unknown"}
+          </span>
         </div>
 
-        <Badge
-          variant="secondary"
-          className="absolute left-2 top-2 rounded-full bg-background/80 px-2 text-[11px] backdrop-blur dark:bg-background/70"
-        >
-          {suppliers_count} {suppliers_count === 1 ? "supplier" : "suppliers"}
-        </Badge>
-      </div>
+        <div className="flex-1" />
 
-      <CardContent className="flex-1 space-y-1.5 p-4">
-        <h3 className="line-clamp-2 text-[15px] font-medium leading-snug">
-          {name}
-        </h3>
-        {brand && (
-          <p className="text-sm text-muted-foreground">{brand}</p>
-        )}
-        {canonical_pack && (
-          <p className="text-sm text-muted-foreground">{canonical_pack}</p>
-        )}
-        {suppliers && suppliers.length > 0 ? (
-          <div className="flex flex-wrap gap-1 pt-1">
-            {suppliers.map(s => (
-              <Badge key={s} variant="secondary">
-                {s}
-              </Badge>
-            ))}
+        <div className="mt-3">
+          <div className="text-xs text-muted-foreground mb-2">
+            Connect supplier to see price
           </div>
-        ) : null}
-        {availability && (
-          <p className="text-xs text-muted-foreground">{availability}</p>
-        )}
-        {showPrice && (
-          <p className="text-sm font-medium">
-            {best_price != null ? formatCurrency(best_price) : "No price"}
-          </p>
-        )}
+          <Button
+            size="sm"
+            className="w-full"
+            onClick={handleAdd}
+            disabled={isAdding || availability === "OUT_OF_STOCK"}
+            aria-label={`Add ${product.name}`}
+          >
+            {isAdding ? "Adding…" : "Add"}
+          </Button>
+        </div>
       </CardContent>
-
-      <CardFooter className="mt-auto p-4 pt-0">
-        <Button
-          onClick={onAdd}
-          disabled={isAdding}
-          size="lg"
-          className="h-10 w-full rounded-xl font-medium"
-        >
-          {isAdding ? "Adding…" : "Add"}
-        </Button>
-      </CardFooter>
     </Card>
-  )
+  );
 }
 

@@ -25,26 +25,33 @@ export type OrgCatalogFilters = FacetFilters & {
   cursor?: string | null
 }
 
-export interface CatalogItem {
+export type AvailabilityStatus = 'IN_STOCK' | 'OUT_OF_STOCK' | 'UNKNOWN'
+
+export interface PublicCatalogItem {
   catalog_id: string
   name: string
-  brand: string | null
-  sample_image_url: string | null
-  canonical_pack: string | null
-  availability: string | null
+  brand?: string | null
+  /** Canonical size of the product (e.g. 1kg) */
+  size?: string | null
+  /** Supplier provided pack size (e.g. box of 10) */
+  pack_size?: string | null
   suppliers_count: number
-  suppliers: string[]
-  best_price: number | null
+  sample_image_url?: string | null
+  availability_status?: AvailabilityStatus | null
+  availability_updated_at?: string | null
+  sample_source_url?: string | null
+  /** Optional price information when available */
+  best_price?: number | null
 }
 
 export async function fetchPublicCatalogItems(
   filters: PublicCatalogFilters,
   sort: SortOrder,
-): Promise<{ items: CatalogItem[]; nextCursor: string | null; total: number }> {
+): Promise<{ items: PublicCatalogItem[]; nextCursor: string | null; total: number }> {
   let query: any = supabase
     .from('v_public_catalog')
     .select(
-      'catalog_id, name, brand, sample_image_url, canonical_pack, suppliers_count',
+      'catalog_id, name, brand, size, pack_size, suppliers_count, sample_image_url, availability_status, availability_updated_at, sample_source_url',
       { count: 'exact' },
     )
 
@@ -64,16 +71,18 @@ export async function fetchPublicCatalogItems(
   const { data, error, count } = await query
   if (error) throw error
 
-  const items: CatalogItem[] = (data ?? []).map((item: any) => ({
+  const items: PublicCatalogItem[] = (data ?? []).map((item: any) => ({
     catalog_id: item.catalog_id,
     name: item.name,
     brand: item.brand ?? null,
-    sample_image_url: item.sample_image_url ?? null,
-    canonical_pack: item.canonical_pack ?? null,
-    availability: null, // Not available in public view for now
-    suppliers_count: item.suppliers_count ?? 0,
-    suppliers: [], // Not available in public view for now
-    best_price: null,
+    size: item.size ?? null,
+    pack_size: item.pack_size ?? null,
+    suppliers_count: item.suppliers_count ?? item.supplier_count ?? 0,
+    sample_image_url: item.sample_image_url ?? item.image_url ?? null,
+    availability_status: (item.availability_status ?? item.availability ?? null) as AvailabilityStatus | null,
+    availability_updated_at: item.availability_updated_at ?? null,
+    sample_source_url: item.sample_source_url ?? null,
+    best_price: item.best_price ?? null,
   }))
   const nextCursor = items.length ? items[items.length - 1].catalog_id : null
   return { items, nextCursor, total: count ?? 0 }
@@ -83,11 +92,11 @@ export async function fetchOrgCatalogItems(
   orgId: string,
   _filters: OrgCatalogFilters,
   sort: SortOrder,
-): Promise<{ items: CatalogItem[]; nextCursor: string | null; total: number }> {
+): Promise<{ items: PublicCatalogItem[]; nextCursor: string | null; total: number }> {
   let query: any = supabase
     .rpc('v_org_catalog', { _org: orgId })
     .select(
-      'catalog_id, name, brand, sample_image_url, canonical_pack, suppliers_count',
+      'catalog_id, name, brand, size, pack_size, suppliers_count, sample_image_url, availability_status, availability_updated_at, sample_source_url',
     )
 
   if (sort === 'az') {
@@ -101,16 +110,18 @@ export async function fetchOrgCatalogItems(
   const { data, error } = await query
   if (error) throw error
 
-  const items: CatalogItem[] = (data ?? []).map((item: any) => ({
+  const items: PublicCatalogItem[] = (data ?? []).map((item: any) => ({
     catalog_id: item.catalog_id,
     name: item.name,
     brand: item.brand ?? null,
-    sample_image_url: item.sample_image_url ?? null,
-    canonical_pack: item.canonical_pack ?? null,
-    availability: null, // Not available in org view for now
-    suppliers_count: item.suppliers_count ?? 0,
-    suppliers: [], // Not available in org view for now
-    best_price: null, // Not available in org view for now
+    size: item.size ?? null,
+    pack_size: item.pack_size ?? null,
+    suppliers_count: item.suppliers_count ?? item.supplier_count ?? 0,
+    sample_image_url: item.sample_image_url ?? item.image_url ?? null,
+    availability_status: (item.availability_status ?? item.availability ?? null) as AvailabilityStatus | null,
+    availability_updated_at: item.availability_updated_at ?? null,
+    sample_source_url: item.sample_source_url ?? null,
+    best_price: item.best_price ?? null,
   }))
   const nextCursor = items.length ? items[items.length - 1].catalog_id : null
   return { items, nextCursor, total: items.length }
