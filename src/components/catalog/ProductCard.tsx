@@ -97,11 +97,13 @@ export function ProductCard({
                 : undefined
             }
           >
-            {availability === "IN_STOCK"
-              ? "In stock"
-              : availability === "OUT_OF_STOCK"
-                ? "Out of stock"
-                : "Availability unknown"}
+            {product.availability_text
+              ? product.availability_text
+              : availability === "IN_STOCK"
+                ? "In stock"
+                : availability === "OUT_OF_STOCK"
+                  ? "Out of stock"
+                  : "Availability unknown"}
           </span>
         </div>
 
