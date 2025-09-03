@@ -85,27 +85,29 @@ export function ProductCard({
           <div className="text-xs text-muted-foreground mt-0.5">{packSizes}</div>
         ) : null}
 
-        <div className="mt-2">
-          <span
-            className={cn(
-              "inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium",
-              availabilityClass,
-            )}
-            title={
-              product.availability_updated_at
-                ? `Updated ${timeAgo(product.availability_updated_at)}`
-                : undefined
-            }
-          >
-            {product.availability_text
-              ? product.availability_text
-              : availability === "IN_STOCK"
-                ? "In stock"
-                : availability === "OUT_OF_STOCK"
-                  ? "Out of stock"
-                  : "Availability unknown"}
-          </span>
-        </div>
+        {product.availability_status && (
+          <div className="mt-2">
+            <span
+              className={cn(
+                "inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium",
+                availabilityClass,
+              )}
+              title={
+                product.availability_updated_at
+                  ? `Updated ${timeAgo(product.availability_updated_at)}`
+                  : undefined
+              }
+            >
+              {product.availability_text
+                ? product.availability_text
+                : availability === "IN_STOCK"
+                  ? "In stock"
+                  : availability === "OUT_OF_STOCK"
+                    ? "Out of stock"
+                    : "Availability unknown"}
+            </span>
+          </div>
+        )}
 
         <div className="flex-1" />
 
@@ -123,7 +125,7 @@ export function ProductCard({
             size="sm"
             className="w-full"
             onClick={handleAdd}
-            disabled={isAdding || availability === "OUT_OF_STOCK"}
+            disabled={isAdding || (product.availability_status && availability === "OUT_OF_STOCK")}
             aria-label={`Add ${product.name}`}
           >
             {isAdding ? "Adding…" : "Add"}
