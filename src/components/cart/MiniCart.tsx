@@ -167,8 +167,8 @@ export function MiniCart() {
                     <div className="flex items-center gap-2">
                       <div className="flex items-center w-[96px] gap-1">
                         <button
-                          className="h-6 w-6 p-0 rounded-md border flex items-center justify-center"
-                          aria-label="Decrease quantity"
+                          className="h-6 w-6 p-0 rounded-md border flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50 focus-visible:ring-offset-1"
+                          aria-label={`Decrease quantity of ${displayName}`}
                           onClick={() =>
                             updateQuantity(it.supplierItemId, it.quantity - 1)
                           }
@@ -179,8 +179,8 @@ export function MiniCart() {
                           {it.quantity}
                         </span>
                         <button
-                          className="h-6 w-6 p-0 rounded-md border flex items-center justify-center"
-                          aria-label="Increase quantity"
+                          className="h-6 w-6 p-0 rounded-md border flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50 focus-visible:ring-offset-1"
+                          aria-label={`Increase quantity of ${displayName}`}
                           onClick={() =>
                             updateQuantity(it.supplierItemId, it.quantity + 1)
                           }
@@ -191,9 +191,9 @@ export function MiniCart() {
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <button
-                            aria-label="Remove item"
+                            aria-label={`Remove ${displayName} from cart`}
                             onClick={() => handleRemove(index)}
-                            className="h-6 w-6 p-0 rounded-md hover:bg-destructive/10 flex items-center justify-center"
+                            className="h-6 w-6 p-0 rounded-md hover:bg-destructive/10 flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50 focus-visible:ring-offset-1"
                           >
                             <Trash2 className="h-4 w-4 text-muted-foreground" />
                           </button>
