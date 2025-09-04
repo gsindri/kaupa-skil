@@ -179,7 +179,13 @@ function useToast() {
         listeners.splice(index, 1)
       }
     }
-  }, [state])
+    // We intentionally run this effect only once on mount
+    // to register the state listener and clean it up on unmount.
+    // Including `state` in the dependency array causes the effect
+    // to re-register on every state change, which can trigger
+    // unnecessary updates and, in some cases, render loops.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return {
     ...state,
