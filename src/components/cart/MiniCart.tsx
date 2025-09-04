@@ -28,7 +28,14 @@ export function MiniCart() {
   const cartCount = getTotalItems()
 
   const getItemDisplayName = (item: any) => {
-    return item.itemName || item.displayName || item.name || 'Unknown item'
+    return (
+      item.itemName ||
+      item.displayName ||
+      item.name ||
+      item.title ||
+      item.productName ||
+      'Unknown item'
+    )
   }
 
   const formatPrice = (price: number) =>

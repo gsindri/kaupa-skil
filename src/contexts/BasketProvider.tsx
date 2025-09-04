@@ -19,8 +19,17 @@ export default function BasketProvider({ children }: { children: React.ReactNode
       // when loading from localStorage for backward compatibility.
       return parsed.map(it => ({
         ...it,
-        itemName: it.itemName ?? it.name,
-        displayName: it.displayName ?? it.name
+        itemName:
+          it.itemName ??
+          it.name ??
+          it.title ??
+          it.productName,
+        displayName:
+          it.displayName ??
+          it.itemName ??
+          it.name ??
+          it.title ??
+          it.productName
       }))
     } catch {
       return []
