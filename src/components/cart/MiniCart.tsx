@@ -138,7 +138,7 @@ export function MiniCart() {
                     ref={el => (rowRefs.current[index] = el)}
                     tabIndex={keyboardNavigationActive ? 0 : -1}
                     onKeyDown={e => handleKeyDown(e, index)}
-                    className="grid grid-cols-[36px,minmax(0,2fr),auto,auto] md:grid-cols-[40px,minmax(0,2fr),auto,auto] items-center gap-2 rounded-md px-1.5 py-1.5 hover:bg-muted/60 transition focus-visible:ring-2 focus-visible:ring-primary/30"
+                    className="grid grid-cols-[44px,minmax(0,1fr),120px] md:grid-cols-[48px,minmax(0,1fr),136px] items-center gap-2 rounded-md px-1.5 py-1.5 hover:bg-muted/60 transition focus-visible:ring-2 focus-visible:ring-primary/30"
                   >
                     <img
                       src={getCachedImageUrl(it.image) || fallbackImage}
@@ -147,20 +147,22 @@ export function MiniCart() {
                     />
                     <div className="min-w-0">
                       <p
-                        className="text-sm md:text-[15px] font-medium leading-snug line-clamp-2 md:line-clamp-1"
+                        className="text-sm md:text-[15px] font-medium leading-snug truncate line-clamp-1"
                         title={displayName}
                       >
                         {displayName}
                       </p>
-                      <div className="text-xs text-muted-foreground truncate">
-                        {it.packSize}
-                        {it.supplierName && ` • ${it.supplierName}`}
+                      <div className="flex items-baseline justify-between text-xs text-muted-foreground">
+                        <span className="flex-1 truncate">
+                          {it.packSize}
+                          {it.supplierName && ` • ${it.supplierName}`}
+                        </span>
+                        <span className="ml-2 tabular-nums whitespace-nowrap">
+                          {formatPrice(
+                            (includeVat ? it.unitPriceIncVat : it.unitPriceExVat) * it.quantity
+                          )}
+                        </span>
                       </div>
-                    </div>
-                    <div className="min-w-[8ch] md:min-w-[9ch] text-right tabular-nums whitespace-nowrap text-sm">
-                      {formatPrice(
-                        (includeVat ? it.unitPriceIncVat : it.unitPriceExVat) * it.quantity
-                      )}
                     </div>
                     <div className="flex items-center gap-1">
                       <button
