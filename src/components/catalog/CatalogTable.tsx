@@ -236,18 +236,6 @@ export function CatalogTable({
                   brand={p.brand}
                 />
               </TableCell>
-              <TableCell className="[width:minmax(0,1fr)] p-2">
-                <div className="flex items-center gap-2">
-                  <a
-                    href={`#${id}`}
-                    aria-label={`View details for ${p.name}`}
-                    className="line-clamp-1"
-                  >
-                    {p.name}
-                  </a>
-                  <AddToCartButton product={p} vendors={vendors} />
-                </div>
-              </TableCell>
               <TableCell className="w-28 p-2 whitespace-nowrap">
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -294,15 +282,6 @@ function AddToCartButton({
   vendors: { id: string; name: string; availability_status?: string }[]
 }) {
   const { items, addItem, updateQuantity } = useCart()
-
-  const handleAdd = (supplier: {
-    id: string
-    name: string
-    availability_status?: string
-  }) => {
-    const supplierItemId = `${product.catalog_id}-${supplier.id}`
-    const existingItem = items[supplierItemId]
-
     if (existingItem) {
       updateQuantity(supplierItemId, existingItem.quantity + 1)
     } else {
@@ -328,26 +307,12 @@ function AddToCartButton({
         { showToast: false },
       )
     }
-
     if (supplier.availability_status === 'OUT_OF_STOCK') {
       toast({ description: 'Out of stock at selected supplier.' })
     }
+    setOpen(false)
   }
 
-  const supplierEntries = vendors
-  if (!supplierEntries.length) return null
-  const supplier = supplierEntries[0]
-  const disabled = supplier.availability_status === 'OUT_OF_STOCK'
-
-  return (
-    <Button
-      size="sm"
-      onClick={() => handleAdd(supplier)}
-      disabled={disabled}
-      aria-label={`Add ${product.name} to cart`}
-    >
-      Add
-    </Button>
   )
 }
 
