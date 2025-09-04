@@ -47,7 +47,6 @@ export function ProductCard({ product }: { product: Product }) {
         supplierItemId: product.id,
         displayName: product.name,
         packQty: 1,
-        image: resolveImage(product.image),
       },
       1,
     )

@@ -61,7 +61,8 @@ export function EnhancedComparisonTable({ data, isLoading }: EnhancedComparisonT
       unit: supplier.unit,
       displayName: supplier.name,
       packQty: 1,
-      quantity
+      quantity,
+      image: null
     }
 
     try {
@@ -114,7 +115,7 @@ export function EnhancedComparisonTable({ data, isLoading }: EnhancedComparisonT
           unit: supplierQuote.unit,
           displayName: supplierQuote.itemName,
           packQty: 1,
-          image: (supplierQuote as any).image
+          image: (supplierQuote as any).image ?? null
         }
         
         addItem(cartItem, newQuantity - currentCartQuantity)

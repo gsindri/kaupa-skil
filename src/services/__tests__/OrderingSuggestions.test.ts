@@ -34,7 +34,8 @@ const baseItem = {
   unit: 'pcs',
   supplierItemId: 'item',
   displayName: 'Item',
-  packQty: 1
+  packQty: 1,
+  image: null
 }
 
 describe('OrderingSuggestionsService', () => {
