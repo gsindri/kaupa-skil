@@ -8,6 +8,7 @@ import { useToast } from '@/hooks/use-toast'
 import { ToastAction } from '@/components/ui/toast'
 import { Link } from 'react-router-dom'
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
+import { getCachedImageUrl } from '@/services/ImageCache'
 
 export function MiniCart() {
   const {
@@ -140,7 +141,7 @@ export function MiniCart() {
                     className="grid grid-cols-[36px,1fr,auto,auto] md:grid-cols-[40px,1fr,auto,auto] items-center gap-2 rounded-md px-1.5 py-1.5 hover:bg-muted/60 transition focus-visible:ring-2 focus-visible:ring-primary/30"
                   >
                     <img
-                      src={it.image ?? fallbackImage}
+                      src={getCachedImageUrl(it.image) || fallbackImage}
                       alt=""
                       className="h-9 w-9 md:h-10 md:w-10 rounded object-cover bg-muted/40"
                     />
