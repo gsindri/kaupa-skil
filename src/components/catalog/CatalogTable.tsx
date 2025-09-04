@@ -17,8 +17,8 @@ interface CatalogTableProps {
   selected: string[]
   onSelect: (id: string) => void
   onSelectAll: (checked: boolean) => void
-  sort: { key: 'name' | 'brand' | 'supplier'; direction: 'asc' | 'desc' } | null
-  onSort: (key: 'name' | 'brand' | 'supplier') => void
+  sort: { key: 'name' | 'supplier'; direction: 'asc' | 'desc' } | null
+  onSort: (key: 'name' | 'supplier') => void
   filters: FacetFilters
   onFilterChange: (f: Partial<FacetFilters>) => void
 }
@@ -64,18 +64,11 @@ export function CatalogTable({
           </TableHead>
           <TableHead className="w-16">Image</TableHead>
           <TableHead
-            className="min-w-[200px] cursor-pointer select-none"
+            className="[width:minmax(0,1fr)] cursor-pointer select-none"
             onClick={() => onSort('name')}
           >
             Name {sort?.key === 'name' && (sort.direction === 'asc' ? '▲' : '▼')}
           </TableHead>
-          <TableHead
-            className="w-32 cursor-pointer select-none"
-            onClick={() => onSort('brand')}
-          >
-            Brand {sort?.key === 'brand' && (sort.direction === 'asc' ? '▲' : '▼')}
-          </TableHead>
-          <TableHead className="w-24">Pack</TableHead>
           <TableHead className="w-28">Availability</TableHead>
           <TableHead
             className="w-32 cursor-pointer select-none"
@@ -88,15 +81,6 @@ export function CatalogTable({
         <TableRow>
           <TableHead />
           <TableHead />
-          <TableHead />
-          <TableHead>
-            <Input
-              value={filters.brand ?? ''}
-              onChange={e => onFilterChange({ brand: e.target.value })}
-              placeholder="Brand"
-              className="h-8"
-            />
-          </TableHead>
           <TableHead />
           <TableHead />
           <TableHead>
@@ -140,16 +124,15 @@ export function CatalogTable({
                 )}
               </TableCell>
               <TableCell
-                className="min-w-[200px] max-w-[300px] p-2 font-medium truncate"
+                className="[width:minmax(0,1fr)] p-2"
                 title={p.name}
               >
-                {p.name}
-              </TableCell>
-              <TableCell className="w-32 p-2 whitespace-nowrap">
-                {p.brand || '-'}
-              </TableCell>
-              <TableCell className="w-24 p-2 whitespace-nowrap">
-                {p.pack_size || '-'}
+                <div className="truncate font-medium">{p.name}</div>
+                {(p.brand || p.pack_size) && (
+                  <div className="truncate text-xs text-muted-foreground">
+                    {[p.brand, p.pack_size].filter(Boolean).join(' • ')}
+                  </div>
+                )}
               </TableCell>
               <TableCell className="w-28 p-2 whitespace-nowrap">
                 {p.availability || 'Unknown'}
