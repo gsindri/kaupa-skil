@@ -23,7 +23,6 @@ export function FacetPanel({ filters, onChange }: FacetPanelProps) {
       brand: undefined,
       category: undefined,
       supplier: undefined,
-      availability: undefined,
       packSizeRange: undefined,
     })
 
@@ -93,7 +92,6 @@ export function FacetPanel({ filters, onChange }: FacetPanelProps) {
         <div className="space-y-4">
           {renderFacet('Categories', data.categories, 'category')}
           {renderFacet('Suppliers', data.suppliers, 'supplier')}
-          {renderFacet('Availability', data.availability, 'availability')}
           {renderFacet('Pack size', data.packSizeRanges, 'packSizeRange')}
           {renderFacet('Brands', data.brands, 'brand')}
         </div>

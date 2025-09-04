@@ -99,9 +99,12 @@ vi.mock('@/state/catalogFilters', () => ({
       setOnlyWithPrice: vi.fn(),
       sort: 'relevance',
       setSort: vi.fn(),
+      triStock: 'off',
+      setTriStock: vi.fn(),
     }),
   shallow: (fn: any) => fn,
   SortOrder: {},
+  triStockToAvailability: vi.fn(() => undefined),
 }))
 vi.mock('@/contexts/useBasket', () => ({ useCart: () => ({ addItem: vi.fn() }) }))
 vi.mock('@/lib/images', () => ({ resolveImage: () => '' }))
