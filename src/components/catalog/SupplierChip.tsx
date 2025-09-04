@@ -1,4 +1,3 @@
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 
 interface AvailabilityInfo {
   status?: AvailabilityStatus | null
@@ -10,11 +9,6 @@ interface SupplierChipProps extends React.HTMLAttributes<HTMLDivElement> {
   logoUrl?: string | null
 }
 
-export default function SupplierChip({
-  name,
-  logoUrl,
-  connected = true,
-}: SupplierChipProps) {
   const initials = name
     .split(' ')
     .map(s => s[0])
@@ -22,12 +16,6 @@ export default function SupplierChip({
     .slice(0, 2)
     .toUpperCase()
 
-        ) : (
-          <AvatarFallback>{initials}</AvatarFallback>
-        )}
-      </Avatar>
-      {!connected && (
-    </div>
   )
 
   if (availability) {
@@ -42,4 +30,3 @@ export default function SupplierChip({
 
   return avatar
 }
-
