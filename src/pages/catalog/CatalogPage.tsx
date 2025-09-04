@@ -74,7 +74,7 @@ export default function CatalogPage() {
   const [tableSort, setTableSort] = useState<{
     key: 'name' | 'supplier' | 'price' | 'availability'
     direction: 'asc' | 'desc'
-  }>({ key: 'name', direction: 'asc' })
+  } | null>({ key: 'name', direction: 'asc' })
   const debouncedSearch = useDebounce(filters.search ?? '', 300)
   const sentinelRef = useRef<HTMLDivElement | null>(null)
   const gridRef = useRef<HTMLDivElement>(null)
@@ -326,6 +326,7 @@ export default function CatalogPage() {
   }, [nextCursor, cursor, loadingMore])
 
   const sortedProducts = useMemo(() => {
+    if (!tableSort) return products
     const sorted = [...products]
     const availabilityOrder: Record<string, number> = {
       IN_STOCK: 0,
@@ -393,7 +394,7 @@ export default function CatalogPage() {
     key: 'name' | 'supplier' | 'price' | 'availability',
   ) => {
     setTableSort(prev => {
-      if (prev.key === key) {
+      if (prev && prev.key === key) {
         return { key, direction: prev.direction === 'asc' ? 'desc' : 'asc' }
       }
       return { key, direction: 'asc' }
