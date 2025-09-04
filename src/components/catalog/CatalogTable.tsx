@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from 'react'
+import { useRef } from 'react'
 import {
   Table,
   TableBody,
@@ -24,15 +24,13 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Button } from '@/components/ui/button'
 import { useVendors } from '@/hooks/useVendors'
-import AvailabilityBadge from '@/components/catalog/AvailabilityBadge'
+import AvailabilityBadge, { type AvailabilityStatus } from '@/components/catalog/AvailabilityBadge'
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
 import { timeAgo } from '@/lib/timeAgo'
 import { formatCurrency } from '@/lib/format'
 import type { FacetFilters } from '@/services/catalog'
-import SupplierChip from '@/components/catalog/SupplierChip'
 import ProductThumb from '@/components/catalog/ProductThumb'
 import { resolveImage } from '@/lib/images'
-import { QuantityStepper } from '@/components/cart/QuantityStepper'
 import {
   Drawer,
   DrawerTrigger,
@@ -42,6 +40,7 @@ import {
   DrawerDescription,
 } from '@/components/ui/drawer'
 import { Lock } from 'lucide-react'
+import { toast } from '@/hooks/use-toast'
 
 interface CatalogTableProps {
   products: any[]
@@ -214,7 +213,7 @@ export function CatalogTable({
               tabIndex={0}
               data-state={isSelected ? 'selected' : undefined}
               onKeyDown={e => handleKeyDown(e, i, id)}
-              className="h-[52px] border-b hover:bg-muted/50 focus-visible:bg-muted/50"
+              className="group h-[52px] border-b hover:bg-muted/50 focus-visible:bg-muted/50"
             >
               <TableCell className="w-8 p-2">
                 <Checkbox
@@ -238,20 +237,12 @@ export function CatalogTable({
                 className="[width:minmax(0,1fr)] p-2"
                 title={p.name}
               >
-                <a
-                  href={`#${id}`}
-                  className="block focus-visible:underline"
-                  aria-label={`View details for ${p.name}`}
-                >
-                  <div className="line-clamp-2">
-                    <div className="text-[15px] font-medium leading-snug">{p.name}</div>
                     {(p.brand || p.pack_size) && (
                       <div className="text-[13px] text-muted-foreground">
                         {[p.brand, p.pack_size].filter(Boolean).join(' • ')}
                       </div>
                     )}
                   </div>
-                </a>
               </TableCell>
               <TableCell className="w-28 p-2 whitespace-nowrap">
                 <Tooltip>
@@ -290,6 +281,96 @@ export function CatalogTable({
   )
 }
 
+function AddToCartButton({
+  product,
+  vendors,
+}: {
+  product: any
+  vendors: { id: string; name: string }[]
+}) {
+  const { items, addItem, updateQuantity } = useCart()
+  const [open, setOpen] = useState(false)
+
+  const existing = items.find(it => it.id === product.catalog_id)
+  const quantity = existing?.quantity ?? 0
+
+  const handleAdd = (supplier: string) => {
+    const supplierItemId = `${product.catalog_id}:${supplier}`
+    addItem(
+      {
+        id: product.catalog_id,
+        supplierId: supplier,
+        supplierName: supplier,
+        itemName: product.name,
+        sku: product.catalog_id,
+        packSize: product.pack_size ?? '',
+        packPrice: 0,
+        unitPriceExVat: 0,
+        unitPriceIncVat: 0,
+        vatRate: 0,
+        unit: '',
+        supplierItemId,
+        displayName: product.name,
+        packQty: 1,
+        image: product.sample_image_url ?? null,
+      },
+      1,
+      { showToast: false },
+    )
+    setOpen(false)
+  }
+
+  const suppliers: string[] = product.suppliers || []
+
+  return (
+    <div className="ml-2 flex-shrink-0 opacity-100 md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100 transition-opacity">
+      {quantity > 0 && existing ? (
+        <QuantityStepper
+          quantity={quantity}
+          onChange={q => updateQuantity(existing.supplierItemId, q)}
+          label={product.name}
+        />
+      ) : suppliers.length > 1 ? (
+        <Popover open={open} onOpenChange={setOpen}>
+          <PopoverTrigger asChild>
+            <Button size="sm" className="h-7 px-2">
+              Add
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-56 p-2 flex flex-col gap-1">
+            {suppliers.map(s => {
+              const connected = vendors.some(v => v.name === s)
+              return (
+                <Button
+                  key={s}
+                  variant="ghost"
+                  className="justify-start gap-2 px-2 h-8"
+                  onClick={() => handleAdd(s)}
+                  disabled={!connected}
+                >
+                  <SupplierChip name={s} />
+                  <span className="flex-1 text-left">{s}</span>
+                  <AvailabilityBadge status={product.availability_status} />
+                  {!connected && <Lock className="h-4 w-4" />}
+                </Button>
+              )
+            })}
+          </PopoverContent>
+        </Popover>
+      ) : (
+        <Button
+          size="sm"
+          className="h-7 px-2"
+          onClick={() => handleAdd(suppliers[0])}
+          disabled={suppliers.length === 0}
+        >
+          Add
+        </Button>
+      )}
+    </div>
+  )
+}
+
 function PriceCell({ product }: { product: any }) {
   const sources: string[] = product.price_sources || product.suppliers || []
   const priceValues: number[] = Array.isArray(product.prices)
@@ -299,10 +380,6 @@ function PriceCell({ product }: { product: any }) {
     : []
   const isLocked = product.prices_locked ?? product.price_locked ?? false
 
-  const supplierName = product.suppliers?.[0] ?? 'supplier'
-  const label = `${product.name} from ${supplierName}`
-
-  let priceNode: React.ReactNode
 
   if (isLocked) {
     priceNode = (
@@ -312,6 +389,15 @@ function PriceCell({ product }: { product: any }) {
         <span className="sr-only">Price locked</span>
       </div>
     )
+    if (sources.length) {
+      tooltip = (
+        <>
+          {sources.map((s: string) => (
+            <div key={s}>{`Connect ${s} to see price.`}</div>
+          ))}
+        </>
+      )
+    }
   } else if (priceValues.length) {
     priceValues.sort((a, b) => a - b)
     const min = priceValues[0]
@@ -322,7 +408,6 @@ function PriceCell({ product }: { product: any }) {
       min === max
         ? formatCurrency(min, currency)
         : `${formatCurrency(min, currency)}–${formatCurrency(max, currency)}`
-    priceNode = <span className="tabular-nums">{text}</span>
   } else {
     priceNode = (
       <span className="tabular-nums">
@@ -332,22 +417,6 @@ function PriceCell({ product }: { product: any }) {
     )
   }
 
-  const [qty, setQty] = useState(0)
-
-  const priceContent = (isLocked || priceValues.length) && sources.length ? (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <div>{priceNode}</div>
-      </TooltipTrigger>
-      <TooltipContent className="space-y-0.5">
-        {sources.map((s: string) => (
-          <div key={s}>{s}</div>
-        ))}
-      </TooltipContent>
-    </Tooltip>
-  ) : (
-    priceNode
-  )
 
   return (
     <div className="flex items-center justify-end gap-2">
@@ -371,41 +440,29 @@ function PriceCell({ product }: { product: any }) {
   )
 }
 
-function SupplierList({ suppliers, locked }: { suppliers: string[]; locked?: boolean }) {
-  const ref = useRef<HTMLDivElement>(null)
-  const [visible, setVisible] = useState(suppliers.length)
 
-  useEffect(() => {
-    const el = ref.current
-    if (!el || typeof ResizeObserver === 'undefined') return
+function SupplierList({ suppliers }: { suppliers: SupplierEntry[] }) {
+  const items = suppliers.map(s =>
+    typeof s === 'string'
+      ? { name: s, availability_status: undefined }
+      : {
+          name: s.name,
+          availability_status:
+            s.availability_status ?? s.status ?? s.availability ?? undefined,
+        },
+  )
 
-    const CHIP = 24
-    const GAP = 6
-
-    const observer = new ResizeObserver(entries => {
-      const width = entries[0].contentRect.width
-      let count = Math.floor((width + GAP) / (CHIP + GAP))
-      if (count < suppliers.length) {
-        count = Math.max(0, count - 1)
-      }
-      setVisible(count)
-    })
-
-    observer.observe(el)
-    return () => observer.disconnect()
-  }, [suppliers.length])
-
-  const shown = suppliers.slice(0, visible)
-  const remaining = suppliers.length - shown.length
+  const handleClick = (s: {
+    name: string
+    availability_status?: AvailabilityStatus | null
+  }) => {
+    if (s.availability_status === 'OUT_OF_STOCK') {
+      toast({ description: 'Out of stock at selected supplier.' })
+    }
+  }
 
   return (
-    <div ref={ref} className="flex items-center gap-2 overflow-hidden">
-      {shown.map(name => (
-        <SupplierChip key={name} name={name} locked={locked} />
       ))}
-      {remaining > 0 && (
-        <span className="text-xs text-muted-foreground">+{remaining}</span>
-      )}
     </div>
   )
 }

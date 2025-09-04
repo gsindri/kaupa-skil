@@ -222,6 +222,55 @@ describe('MiniCart', () => {
     expect(screen.getByTitle('Legacy Product')).toBeInTheDocument()
   })
 
+  it('shows placeholder when price is null', () => {
+    const items = [
+      {
+        supplierItemId: '5',
+        displayName: 'No Price',
+        packSize: '1kg',
+        supplierName: 'Supp',
+        quantity: 1,
+        unitPriceIncVat: null,
+        unitPriceExVat: null,
+      },
+    ] as any
+
+    render(
+      <MemoryRouter>
+        <SettingsContext.Provider
+          value={{
+            includeVat: false,
+            setIncludeVat: vi.fn(),
+            preferredUnit: 'auto',
+            setPreferredUnit: vi.fn(),
+            userMode: 'balanced',
+            setUserMode: vi.fn(),
+          }}
+        >
+          <BasketContext.Provider
+            value={{
+              items,
+              addItem: vi.fn(),
+              updateQuantity: vi.fn(),
+              removeItem: vi.fn(),
+              clearBasket: vi.fn(),
+              clearCart: vi.fn(),
+              restoreItems: vi.fn(),
+              getTotalItems: () => items.length,
+              getTotalPrice: () => 0,
+              isDrawerOpen: false,
+              setIsDrawerOpen: vi.fn(),
+            }}
+          >
+            <MiniCart />
+          </BasketContext.Provider>
+        </SettingsContext.Provider>
+      </MemoryRouter>
+    )
+
+    expect(screen.getByText('kr —')).toBeInTheDocument()
+  })
+
   it('renders item-specific aria labels for controls', () => {
     const items = [
       {

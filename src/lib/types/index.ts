@@ -353,9 +353,9 @@ export interface CartItem {
   itemName: string
   sku: string
   packSize: string
-  packPrice: number
-  unitPriceExVat: number
-  unitPriceIncVat: number
+  packPrice: number | null
+  unitPriceExVat: number | null
+  unitPriceIncVat: number | null
   quantity: number
   vatRate: number
   unit: string
@@ -383,9 +383,9 @@ export interface SupplierQuote {
   name: string
   sku: string
   packSize: string
-  packPrice: number
-  unitPriceExVat: number
-  unitPriceIncVat: number
+  packPrice: number | null
+  unitPriceExVat: number | null
+  unitPriceIncVat: number | null
   unit: string
   inStock: boolean
   lastUpdated: string
