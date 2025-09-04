@@ -6,6 +6,8 @@ const CDN_BASE =
     ? `${env.VITE_SUPABASE_URL}/storage/v1/object/public`
     : '')
 
+let warnedMissingCdnBase = false
+
 /**
  * Build a full CDN URL for a cached image path.
  * Always uses our cached copy to avoid hotlinking external sources.
@@ -13,7 +15,13 @@ const CDN_BASE =
 export function getCachedImageUrl(path?: string): string {
   if (!path) return ''
   if (/^https?:\/\//i.test(path)) return path
-  if (!CDN_BASE) return path
+  if (!CDN_BASE) {
+    if (!warnedMissingCdnBase) {
+      console.warn('getCachedImageUrl: no CDN base configured')
+      warnedMissingCdnBase = true
+    }
+    return path.startsWith('/') ? path : `/${path}`
+  }
   return `${CDN_BASE}/${path}`
 }
 
