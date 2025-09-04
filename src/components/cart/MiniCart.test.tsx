@@ -221,4 +221,61 @@ describe('MiniCart', () => {
     expect(screen.getByText('Legacy Product')).toBeInTheDocument()
     expect(screen.getByTitle('Legacy Product')).toBeInTheDocument()
   })
+
+  it('renders item-specific aria labels for controls', () => {
+    const items = [
+      {
+        supplierItemId: '5',
+        displayName: 'Aria Item',
+        packSize: '1kg',
+        supplierName: 'Supp',
+        quantity: 2,
+        unitPriceIncVat: 0,
+        unitPriceExVat: 0,
+      },
+    ] as any
+
+    render(
+      <MemoryRouter>
+        <SettingsContext.Provider
+          value={{
+            includeVat: false,
+            setIncludeVat: vi.fn(),
+            preferredUnit: 'auto',
+            setPreferredUnit: vi.fn(),
+            userMode: 'balanced',
+            setUserMode: vi.fn(),
+          }}
+        >
+          <BasketContext.Provider
+            value={{
+              items,
+              addItem: vi.fn(),
+              updateQuantity: vi.fn(),
+              removeItem: vi.fn(),
+              clearBasket: vi.fn(),
+              clearCart: vi.fn(),
+              restoreItems: vi.fn(),
+              getTotalItems: () => items.length,
+              getTotalPrice: () => 0,
+              isDrawerOpen: false,
+              setIsDrawerOpen: vi.fn(),
+            }}
+          >
+            <MiniCart />
+          </BasketContext.Provider>
+        </SettingsContext.Provider>
+      </MemoryRouter>
+    )
+
+    expect(
+      screen.getByLabelText('Increase quantity of Aria Item')
+    ).toBeInTheDocument()
+    expect(
+      screen.getByLabelText('Decrease quantity of Aria Item')
+    ).toBeInTheDocument()
+    expect(
+      screen.getByLabelText('Remove Aria Item from cart')
+    ).toBeInTheDocument()
+  })
 })
