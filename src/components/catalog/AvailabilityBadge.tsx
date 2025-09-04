@@ -1,7 +1,7 @@
 import { Badge } from '@/components/ui/badge'
 import { timeAgo } from '@/lib/timeAgo'
 import { Clock, Loader2 } from 'lucide-react'
-import type { ReactNode } from 'react'
+import { type ReactNode, forwardRef } from 'react'
 
 export type AvailabilityStatus = 'IN_STOCK' | 'LOW_STOCK' | 'OUT_OF_STOCK' | 'UNKNOWN'
 
@@ -40,11 +40,8 @@ const MAP: Record<
   },
 }
 
-export default function AvailabilityBadge({
-  status = 'UNKNOWN',
-  updatedAt,
-  tabIndex = 0,
-}: AvailabilityBadgeProps) {
+const AvailabilityBadge = forwardRef<HTMLDivElement, AvailabilityBadgeProps>(
+  ({ status = 'UNKNOWN', updatedAt, tabIndex = 0 }, ref) => {
   const isChecking = status === null
   const isStale =
     !isChecking && updatedAt
@@ -77,6 +74,7 @@ export default function AvailabilityBadge({
 
   return (
     <Badge
+      ref={ref}
       className={`gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${className}`}
       aria-label={ariaLabel}
       tabIndex={tabIndex}
@@ -92,5 +90,9 @@ export default function AvailabilityBadge({
       )}
     </Badge>
   )
-}
+})
+
+AvailabilityBadge.displayName = 'AvailabilityBadge'
+
+export default AvailabilityBadge
 
