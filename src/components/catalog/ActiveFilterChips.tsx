@@ -7,7 +7,9 @@ interface ActiveFilterChipsProps {
 }
 
 export function ActiveFilterChips({ filters, onClear }: ActiveFilterChipsProps) {
-  const active = Object.entries(filters).filter(([, v]) => Boolean(v))
+  const active = Object.entries(filters).filter(([, v]) =>
+    Array.isArray(v) ? v.length > 0 : Boolean(v),
+  )
   if (active.length === 0) return null
   return (
     <div className="flex flex-wrap gap-2">
@@ -18,7 +20,7 @@ export function ActiveFilterChips({ filters, onClear }: ActiveFilterChipsProps) 
           onClick={() => onClear(k as keyof FacetFilters)}
           className="flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs"
         >
-          {String(v)}
+          {Array.isArray(v) ? v.join(', ') : String(v)}
           <span className="text-muted-foreground">×</span>
         </button>
       ))}
