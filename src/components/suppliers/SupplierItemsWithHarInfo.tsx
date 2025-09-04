@@ -27,9 +27,8 @@ export function SupplierItemsWithHarInfo({ items, supplierId }: SupplierItemsWit
       return <Badge variant="secondary">Recent Data</Badge>
     } else if (daysSinceLastSeen <= 30) {
       return <Badge variant="outline">Aging Data</Badge>
-    } else {
-      return <Badge variant="destructive">Stale Data</Badge>
     }
+    return null
   }
 
   const getLastSeenText = (lastSeenAt: string | null) => {

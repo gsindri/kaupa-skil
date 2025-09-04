@@ -239,7 +239,6 @@ export function CatalogTable({
                   )}
                   name={p.name}
                   brand={p.brand}
-                  updatedAt={p.availability_updated_at}
                 />
               </TableCell>
               <TableCell className="px-2">
