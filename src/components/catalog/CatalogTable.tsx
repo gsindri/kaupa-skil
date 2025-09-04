@@ -25,7 +25,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Button } from '@/components/ui/button'
 import { useVendors } from '@/hooks/useVendors'
-import AvailabilityBadge, { type AvailabilityStatus } from '@/components/catalog/AvailabilityBadge'
+import AvailabilityBadge from '@/components/catalog/AvailabilityBadge'
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
 import { timeAgo } from '@/lib/timeAgo'
 import { formatCurrency } from '@/lib/format'
@@ -42,7 +42,8 @@ import {
 } from '@/components/ui/drawer'
 import { Lock } from 'lucide-react'
 import { toast } from '@/hooks/use-toast'
-import SupplierChip from '@/components/catalog/SupplierChip'
+import SupplierList from '@/components/catalog/SupplierList'
+import { useCart } from '@/contexts/useBasket'
 
 interface CatalogTableProps {
   products: any[]
@@ -212,7 +213,7 @@ export function CatalogTable({
             <TableRow
               key={id}
               ref={el => (rowRefs.current[i] = el)}
-              tabIndex={0}
+              tabIndex={-1}
               data-state={isSelected ? 'selected' : undefined}
               onKeyDown={e => handleKeyDown(e, i, id)}
               className="group h-[52px] border-b hover:bg-muted/50 focus-visible:bg-muted/50"
@@ -235,9 +236,14 @@ export function CatalogTable({
                   brand={p.brand}
                 />
               </TableCell>
-              <TableCell className="[width:minmax(0,1fr)] p-2" title={p.name}>
+              <TableCell className="[width:minmax(0,1fr)] p-2">
                 <div>
-                  {p.name}
+                  <a
+                    href={p.sample_source_url ?? '#'}
+                    className="hover:underline focus:underline"
+                  >
+                    {p.name}
+                  </a>
                   {(p.brand || p.pack_size) && (
                     <div className="text-[13px] text-muted-foreground">
                       {[p.brand, p.pack_size].filter(Boolean).join(' • ')}
@@ -295,8 +301,11 @@ function AddToCartButton({
 
   const existing = items.find(it => it.id === product.catalog_id)
   const quantity = existing?.quantity ?? 0
+  const supplierEntries = product.suppliers ?? []
 
-    )
+  const handleAdd = (supplier: any) => {
+    const connected = vendors.some(v => v.name === supplier.name)
+    const supplierItemId = `${product.catalog_id}:${supplier.name}`
     const existingItem = items.find(it => it.supplierItemId === supplierItemId)
     if (existingItem) {
       updateQuantity(supplierItemId, existingItem.quantity + 1)
@@ -348,7 +357,7 @@ function AddToCartButton({
         size="sm"
         onClick={() => handleAdd(supplier)}
         disabled={disabled}
-        aria-label={`Add ${product.name} to cart`}
+        aria-label={`Add ${product.name} from ${supplier.name} to cart`}
       >
         Add
       </Button>
@@ -379,31 +388,6 @@ function AddToCartButton({
     </DropdownMenu>
   )
 }
-
-// Display supplier badges and availability
-function SupplierList({
-  suppliers,
-  locked,
-}: {
-  suppliers: SupplierEntry[]
-  locked?: boolean
-}) {
-  const entries = suppliers.map((s: SupplierEntry) =>
-    typeof s === 'string'
-      ? { name: s, availability_status: undefined }
-      : {
-          name: s.name,
-          availability_status:
-            s.availability_status ??
-            s.status ??
-            (typeof s.availability === 'string'
-              ? s.availability
-              : s.availability?.status) ??
-            undefined,
-        },
-  )
-
-  return (
 
 // Price display cell including add-to-cart controls
 function PriceCell({
@@ -475,6 +459,10 @@ function PriceCell({
   return (
     <div className="flex items-center justify-end gap-2">
       {priceContent}
+      <AddToCartButton product={product} vendors={vendors} />
+    </div>
+  )
+}
 
 function ConnectPill() {
   return (
