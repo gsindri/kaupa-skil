@@ -18,4 +18,18 @@ describe('getCachedImageUrl', () => {
   it('returns absolute URLs unchanged', () => {
     expect(getCachedImageUrl('http://example.com/img.png')).toBe('http://example.com/img.png')
   })
+
+  it('warns and returns empty string when no path provided', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    expect(getCachedImageUrl()).toBe('')
+    expect(warn).toHaveBeenCalled()
+    warn.mockRestore()
+  })
+
+  it('uses fallback when path is missing', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    expect(getCachedImageUrl(undefined, 'placeholder.png')).toBe('/placeholder.png')
+    expect(warn).toHaveBeenCalled()
+    warn.mockRestore()
+  })
 })
