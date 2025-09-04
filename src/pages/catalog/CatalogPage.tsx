@@ -102,7 +102,7 @@ export default function CatalogPage() {
 
   // Persist sort selection to URL
   useEffect(() => {
-    const params = new URLSearchParams(searchParams)
+    const params = new URLSearchParams(searchParams.toString())
     const current = params.get('sort')
     if (sortOrder === 'relevance') {
       if (current) {
@@ -113,7 +113,7 @@ export default function CatalogPage() {
       params.set('sort', sortOrder)
       setSearchParams(params, { replace: true })
     }
-  }, [sortOrder, searchParams, setSearchParams])
+  }, [sortOrder, setSearchParams])
 
   useEffect(() => {
     const updateCols = () => {
