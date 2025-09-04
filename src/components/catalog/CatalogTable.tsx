@@ -321,11 +321,15 @@ function AddToCartButton({ product }: { product: any }) {
   })
 
   if (existingItem) {
+    const supplierName =
+      existingItem.supplierName ||
+      supplierEntries.find(s => s.id === existingItem.supplierId)?.name
     return (
       <QuantityStepper
         quantity={existingItem.quantity}
         onChange={qty => updateQuantity(existingItem.supplierItemId, qty)}
         label={product.name}
+        supplier={supplierName}
       />
     )
   }
@@ -348,7 +352,7 @@ function AddToCartButton({ product }: { product: any }) {
             toast({ description: 'Out of stock at selected supplier.' })
           }
         }}
-        aria-label={`Add ${product.name}`}
+        aria-label={`Add ${product.name} to cart`}
       >
         Add
       </Button>
@@ -357,7 +361,7 @@ function AddToCartButton({ product }: { product: any }) {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button size="sm" aria-label={`Choose supplier for ${product.name}`}>
+        <Button size="sm" aria-label={`Add ${product.name} to cart`}>
           Add
         </Button>
       </PopoverTrigger>
