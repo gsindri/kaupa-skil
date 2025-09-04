@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import {
   Table,
   TableBody,
@@ -41,6 +41,19 @@ import {
 } from '@/components/ui/drawer'
 import { Lock } from 'lucide-react'
 import { toast } from '@/hooks/use-toast'
+import SupplierChip from '@/components/catalog/SupplierChip'
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover'
+import { QuantityStepper } from '@/components/cart/QuantityStepper'
+import { useCart } from '@/contexts/useBasket'
+
+type SupplierEntry =
+  | string
+  | {
+      name: string
+      availability_status?: AvailabilityStatus | null
+      status?: AvailabilityStatus | null
+      availability?: AvailabilityStatus | null
+    }
 
 interface CatalogTableProps {
   products: any[]
@@ -233,16 +246,15 @@ export function CatalogTable({
                   brand={p.brand}
                 />
               </TableCell>
-              <TableCell
-                className="[width:minmax(0,1fr)] p-2"
-                title={p.name}
-              >
-                    {(p.brand || p.pack_size) && (
-                      <div className="text-[13px] text-muted-foreground">
-                        {[p.brand, p.pack_size].filter(Boolean).join(' • ')}
-                      </div>
-                    )}
-                  </div>
+              <TableCell className="[width:minmax(0,1fr)] p-2" title={p.name}>
+                <div>
+                  {p.name}
+                  {(p.brand || p.pack_size) && (
+                    <div className="text-[13px] text-muted-foreground">
+                      {[p.brand, p.pack_size].filter(Boolean).join(' • ')}
+                    </div>
+                  )}
+                </div>
               </TableCell>
               <TableCell className="w-28 p-2 whitespace-nowrap">
                 <Tooltip>
@@ -294,13 +306,16 @@ function AddToCartButton({
   const existing = items.find(it => it.id === product.catalog_id)
   const quantity = existing?.quantity ?? 0
 
-  const handleAdd = (supplier: string) => {
-    const supplierItemId = `${product.catalog_id}:${supplier}`
+  const handleAdd = (supplier: {
+    name: string
+    availability_status?: AvailabilityStatus | null
+  }) => {
+    const supplierItemId = `${product.catalog_id}:${supplier.name}`
     addItem(
       {
         id: product.catalog_id,
-        supplierId: supplier,
-        supplierName: supplier,
+        supplierId: supplier.name,
+        supplierName: supplier.name,
         itemName: product.name,
         sku: product.catalog_id,
         packSize: product.pack_size ?? '',
@@ -317,10 +332,21 @@ function AddToCartButton({
       1,
       { showToast: false },
     )
+    if (supplier.availability_status === 'OUT_OF_STOCK') {
+      toast({ description: 'Out of stock at selected supplier.' })
+    }
     setOpen(false)
   }
 
-  const suppliers: string[] = product.suppliers || []
+  const supplierEntries = (product.suppliers || []).map((s: SupplierEntry) =>
+    typeof s === 'string'
+      ? { name: s, availability_status: undefined }
+      : {
+          name: s.name,
+          availability_status:
+            s.availability_status ?? s.status ?? s.availability ?? undefined,
+        },
+  )
 
   return (
     <div className="ml-2 flex-shrink-0 opacity-100 md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100 transition-opacity">
@@ -330,46 +356,46 @@ function AddToCartButton({
           onChange={q => updateQuantity(existing.supplierItemId, q)}
           label={product.name}
         />
-      ) : suppliers.length > 1 ? (
-        <Popover open={open} onOpenChange={setOpen}>
-          <PopoverTrigger asChild>
-            <Button size="sm" className="h-7 px-2">
-              Add
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-56 p-2 flex flex-col gap-1">
-            {suppliers.map(s => {
-              const connected = vendors.some(v => v.name === s)
-              return (
-                <Button
-                  key={s}
-                  variant="ghost"
-                  className="justify-start gap-2 px-2 h-8"
-                  onClick={() => handleAdd(s)}
-                  disabled={!connected}
-                >
-                  <SupplierChip name={s} />
-                  <span className="flex-1 text-left">{s}</span>
-                  <AvailabilityBadge status={product.availability_status} />
-                  {!connected && <Lock className="h-4 w-4" />}
-                </Button>
-              )
-            })}
-          </PopoverContent>
-        </Popover>
-      ) : (
-        <Button
-          size="sm"
-          className="h-7 px-2"
-          onClick={() => handleAdd(suppliers[0])}
-          disabled={suppliers.length === 0}
-        >
-          Add
-        </Button>
-      )}
-    </div>
-  )
-}
+        ) : supplierEntries.length > 1 ? (
+          <Popover open={open} onOpenChange={setOpen}>
+            <PopoverTrigger asChild>
+              <Button size="sm" className="h-7 px-2">
+                Add
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-56 p-2 flex flex-col gap-1">
+              {supplierEntries.map(s => {
+                const connected = vendors.some(v => v.name === s.name)
+                return (
+                  <Button
+                    key={s.name}
+                    variant="ghost"
+                    className="justify-start gap-2 px-2 h-8"
+                    onClick={() => handleAdd(s)}
+                    disabled={!connected}
+                  >
+                    <SupplierChip name={s.name} />
+                    <span className="flex-1 text-left">{s.name}</span>
+                    <AvailabilityBadge status={s.availability_status} />
+                    {!connected && <Lock className="h-4 w-4" />}
+                  </Button>
+                )
+              })}
+            </PopoverContent>
+          </Popover>
+        ) : (
+          <Button
+            size="sm"
+            className="h-7 px-2"
+            onClick={() => handleAdd(supplierEntries[0])}
+            disabled={supplierEntries.length === 0}
+          >
+            Add
+          </Button>
+        )}
+      </div>
+    )
+  }
 
 function PriceCell({ product }: { product: any }) {
   const sources: string[] = product.price_sources || product.suppliers || []
@@ -441,7 +467,7 @@ function PriceCell({ product }: { product: any }) {
 }
 
 
-function SupplierList({ suppliers }: { suppliers: SupplierEntry[] }) {
+function SupplierList({ suppliers }: { suppliers: SupplierEntry[]; locked?: boolean }) {
   const items = suppliers.map(s =>
     typeof s === 'string'
       ? { name: s, availability_status: undefined }
@@ -462,6 +488,17 @@ function SupplierList({ suppliers }: { suppliers: SupplierEntry[] }) {
   }
 
   return (
+    <div className="flex flex-wrap gap-1">
+      {items.map(s => (
+        <Badge
+          key={s.name}
+          variant="outline"
+          className="px-2 py-0.5 text-xs flex items-center gap-1"
+          onClick={() => handleClick(s)}
+        >
+          <SupplierChip name={s.name} />
+          <AvailabilityBadge status={s.availability_status} />
+        </Badge>
       ))}
     </div>
   )
