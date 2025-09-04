@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from 'react'
+import { useRef } from 'react'
 import {
   Table,
   TableBody,
@@ -42,8 +42,6 @@ import {
   DrawerDescription,
 } from '@/components/ui/drawer'
 import { Lock } from 'lucide-react'
-import { toast } from '@/hooks/use-toast'
-import { useCart } from '@/contexts/useBasket'
 
 interface CatalogTableProps {
   products: any[]
@@ -270,64 +268,6 @@ export function CatalogTable({
     </Table>
   )
 }
-
-    }
-    setOpen(false)
-  }
-
-  )
-}
-
-    return (
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <Button size="sm" aria-label={`Add ${product.name} to cart`}>
-            Add
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-56 p-1">
-          {supplierEntries.map((s: any) => {
-            const disabled =
-              s.availability_status === 'OUT_OF_STOCK' || s.connected === false
-            const initials = (s.name || '')
-              .split(' ')
-              .filter(Boolean)
-              .map((part: string) => part[0])
-              .join('')
-              .slice(0, 2)
-              .toUpperCase()
-            return (
-              <button
-                key={s.supplier_item_id}
-                className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-left text-sm hover:bg-muted disabled:opacity-50"
-                onClick={() => handleAdd(s)}
-                disabled={disabled}
-              >
-                {s.logo_url ? (
-                  <img
-                    src={s.logo_url}
-                    alt=""
-                    className="h-5 w-5 rounded-full object-cover"
-                  />
-                ) : (
-                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-muted text-[10px] font-medium">
-                    {initials}
-                  </span>
-                )}
-                <span className="flex-1 truncate">{s.name}</span>
-                {s.availability_status && (
-                  <AvailabilityBadge status={s.availability_status} />
-                )}
-                {s.connected === false && (
-                  <Lock className="h-3 w-3 text-muted-foreground" />
-                )}
-              </button>
-            )
-          })}
-        </PopoverContent>
-      </Popover>
-    )
-  }
 
 function PriceCell({
   product,
