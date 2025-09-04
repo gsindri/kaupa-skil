@@ -1,20 +1,19 @@
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
-
-interface AvailabilityInfo {
-  status?: AvailabilityStatus | null
-  updatedAt?: string | Date | null
-}
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 
 interface SupplierChipProps extends React.HTMLAttributes<HTMLDivElement> {
   name: string
   logoUrl?: string | null
   connected?: boolean
-  availability?: AvailabilityInfo
+  availability?: {
+    status?: string | null
+    updatedAt?: string | Date | null
+  }
 }
 
 export default function SupplierChip({
   name,
   logoUrl,
+  className,
   ...props
 }: SupplierChipProps) {
   const initials = name
@@ -25,25 +24,16 @@ export default function SupplierChip({
     .slice(0, 2)
     .toUpperCase()
 
-  const avatar = (
+  return (
+    <div className={className} {...props}>
+      <Avatar className="h-5 w-5">
+        {logoUrl ? (
+          <AvatarImage src={logoUrl} alt={name} />
+        ) : (
+          <AvatarFallback className="text-[10px]">{initials}</AvatarFallback>
+        )}
+      </Avatar>
+    </div>
   )
-
-  if (availability) {
-    const time = availability.updatedAt
-      ? timeAgo(
-          typeof availability.updatedAt === 'string'
-            ? availability.updatedAt
-            : availability.updatedAt.toISOString()
-        )
-      : 'unknown'
-    return (
-      <Tooltip>
-        <TooltipTrigger asChild>{avatar}</TooltipTrigger>
-        <TooltipContent>{`Last updated ${time}`}</TooltipContent>
-      </Tooltip>
-    )
-  }
-
-  return avatar
 }
 

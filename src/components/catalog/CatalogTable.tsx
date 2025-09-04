@@ -42,7 +42,12 @@ import {
 } from '@/components/ui/drawer'
 import { Lock } from 'lucide-react'
 import { toast } from '@/hooks/use-toast'
-import SupplierChip from '@/components/catalog/SupplierChip'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { QuantityStepper } from '@/components/cart/QuantityStepper'
+import { useCart } from '@/contexts/useBasket'
+import SupplierList, {
+  type SupplierEntry,
+} from '@/components/catalog/SupplierList'
 
 interface CatalogTableProps {
   products: any[]
@@ -296,7 +301,42 @@ function AddToCartButton({
   const existing = items.find(it => it.id === product.catalog_id)
   const quantity = existing?.quantity ?? 0
 
-    )
+  const supplierEntries = (product.suppliers as SupplierEntry[] | undefined)?.map(s => {
+    if (typeof s === 'string') {
+      return {
+        name: s,
+        connected: vendors.some(v => v.name === s),
+        logoUrl: null,
+        availability_status: undefined,
+      }
+    }
+    return {
+      name: s.name,
+      connected: s.connected ?? vendors.some(v => v.name === s.name),
+      logoUrl: (s as any).logoUrl ?? (s as any).logo_url ?? null,
+      availability_status:
+        s.availability_status ??
+        s.status ??
+        (typeof s.availability === 'string'
+          ? s.availability
+          : s.availability?.status) ??
+        undefined,
+    }
+  }) ?? []
+
+  const handleAdd = (supplier: {
+    name: string
+    connected?: boolean
+    availability_status?: AvailabilityStatus | null
+    logoUrl?: string | null
+  }) => {
+    const supplierItemId = `${product.catalog_id}:${supplier.name}`
+    const connected = supplier.connected ?? vendors.some(v => v.name === supplier.name)
+    if (supplier.availability_status === 'OUT_OF_STOCK') {
+      toast({ description: 'Out of stock at selected supplier.' })
+      setOpen(false)
+      return
+    }
     const existingItem = items.find(it => it.supplierItemId === supplierItemId)
     if (existingItem) {
       updateQuantity(supplierItemId, existingItem.quantity + 1)
@@ -323,9 +363,6 @@ function AddToCartButton({
         { showToast: false },
       )
     }
-    if (supplier.availability_status === 'OUT_OF_STOCK') {
-      toast({ description: 'Out of stock at selected supplier.' })
-    }
     setOpen(false)
   }
 
@@ -341,13 +378,18 @@ function AddToCartButton({
 
   if (supplierEntries.length <= 1) {
     const supplier = supplierEntries[0]
-    const disabled =
-      supplier?.availability_status === 'OUT_OF_STOCK' || false
+    const disabled = supplier?.availability_status === 'OUT_OF_STOCK' || false
     return (
       <Button
         size="sm"
         onClick={() => handleAdd(supplier)}
         disabled={disabled}
+        onPointerDown={e => {
+          if (disabled) {
+            e.preventDefault()
+            toast({ description: 'Out of stock at selected supplier.' })
+          }
+        }}
         aria-label={`Add ${product.name} to cart`}
       >
         Add
@@ -365,13 +407,42 @@ function AddToCartButton({
       <DropdownMenuContent>
         {supplierEntries.map(s => {
           const disabled = s.availability_status === 'OUT_OF_STOCK'
+          const initials = s.name
+            .split(' ')
+            .filter(Boolean)
+            .map(n => n[0]!)
+            .join('')
+            .slice(0, 2)
+            .toUpperCase()
           return (
             <DropdownMenuItem
               key={s.name}
               disabled={disabled}
               onSelect={() => handleAdd(s)}
+              onPointerDown={e => {
+                if (disabled) {
+                  e.preventDefault()
+                  toast({ description: 'Out of stock at selected supplier.' })
+                  setOpen(false)
+                }
+              }}
             >
-              {s.name}
+              <div className="flex w-full items-center gap-2">
+                <Avatar className="h-5 w-5">
+                  {s.logoUrl ? (
+                    <AvatarImage src={s.logoUrl} alt={s.name} />
+                  ) : (
+                    <AvatarFallback className="text-[10px]">
+                      {initials}
+                    </AvatarFallback>
+                  )}
+                </Avatar>
+                <span className="flex-1 truncate">{s.name}</span>
+                <AvailabilityBadge status={s.availability_status} />
+                {s.connected === false && (
+                  <Lock className="ml-1 h-3 w-3" aria-label="Not connected" />
+                )}
+              </div>
             </DropdownMenuItem>
           )
         })}
@@ -379,31 +450,6 @@ function AddToCartButton({
     </DropdownMenu>
   )
 }
-
-// Display supplier badges and availability
-function SupplierList({
-  suppliers,
-  locked,
-}: {
-  suppliers: SupplierEntry[]
-  locked?: boolean
-}) {
-  const entries = suppliers.map((s: SupplierEntry) =>
-    typeof s === 'string'
-      ? { name: s, availability_status: undefined }
-      : {
-          name: s.name,
-          availability_status:
-            s.availability_status ??
-            s.status ??
-            (typeof s.availability === 'string'
-              ? s.availability
-              : s.availability?.status) ??
-            undefined,
-        },
-  )
-
-  return (
 
 // Price display cell including add-to-cart controls
 function PriceCell({
@@ -475,6 +521,10 @@ function PriceCell({
   return (
     <div className="flex items-center justify-end gap-2">
       {priceContent}
+      <AddToCartButton product={product} vendors={vendors} />
+    </div>
+  )
+}
 
 function ConnectPill() {
   return (
