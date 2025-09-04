@@ -400,7 +400,7 @@ export default function CatalogPage() {
       displayName: product.name,
       packQty: 1,
       image:
-        product.image_main ||
+        product.sample_image_url ||
         (product.availability_status === 'UNKNOWN'
           ? '/unavailable.svg'
           : '/placeholder.svg'),
