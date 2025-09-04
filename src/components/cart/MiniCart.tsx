@@ -138,7 +138,7 @@ export function MiniCart() {
                     ref={el => (rowRefs.current[index] = el)}
                     tabIndex={keyboardNavigationActive ? 0 : -1}
                     onKeyDown={e => handleKeyDown(e, index)}
-                    className="grid grid-cols-[44px,minmax(0,1fr),120px] md:grid-cols-[48px,minmax(0,1fr),136px] items-center gap-2 rounded-md px-1.5 py-1.5 hover:bg-muted/60 transition focus-visible:ring-2 focus-visible:ring-primary/30"
+                    className="grid grid-cols-[44px,minmax(0,1fr),112px] md:grid-cols-[48px,minmax(0,1fr),128px] items-center gap-2 rounded-md px-2 py-2 hover:bg-muted/60 transition focus-visible:ring-2 focus-visible:ring-primary/30"
                   >
                     <img
                       src={getCachedImageUrl(it.image) || PLACEHOLDER_IMAGE}
@@ -165,7 +165,7 @@ export function MiniCart() {
                       </div>
                     </div>
                     <div className="flex items-center">
-                      <div className="inline-flex h-7 w-[92px] items-center divide-x rounded-md border">
+                      <div className="inline-flex h-7 w-[88px] md:w-[96px] items-center divide-x rounded-md border">
                         <button
                           className="flex h-full w-7 items-center justify-center p-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50"
                           aria-label={`Decrease quantity of ${displayName}`}
