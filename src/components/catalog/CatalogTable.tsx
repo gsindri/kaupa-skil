@@ -41,6 +41,7 @@ import {
 } from '@/components/ui/drawer'
 import { Lock } from 'lucide-react'
 import { toast } from '@/hooks/use-toast'
+import SupplierChip from '@/components/catalog/SupplierChip'
 
 interface CatalogTableProps {
   products: any[]
@@ -53,6 +54,18 @@ interface CatalogTableProps {
   onFilterChange: (f: Partial<FacetFilters>) => void
   showConnectPill?: boolean
 }
+
+type SupplierEntry =
+  | string
+  | {
+      name: string
+      connected?: boolean
+      logoUrl?: string | null
+      availability_status?: AvailabilityStatus | null
+      status?: AvailabilityStatus | null
+      availability?: { status?: AvailabilityStatus | null; updatedAt?: string | Date | null }
+      availability_updated_at?: string | Date | null
+    }
 
 export function CatalogTable({
   products,
@@ -237,12 +250,12 @@ export function CatalogTable({
                 className="[width:minmax(0,1fr)] p-2"
                 title={p.name}
               >
-                    {(p.brand || p.pack_size) && (
-                      <div className="text-[13px] text-muted-foreground">
-                        {[p.brand, p.pack_size].filter(Boolean).join(' • ')}
-                      </div>
-                    )}
+                <div className="truncate">{p.name}</div>
+                {(p.brand || p.pack_size) && (
+                  <div className="text-[13px] text-muted-foreground">
+                    {[p.brand, p.pack_size].filter(Boolean).join(' • ')}
                   </div>
+                )}
               </TableCell>
               <TableCell className="w-28 p-2 whitespace-nowrap">
                 <Tooltip>
@@ -442,26 +455,54 @@ function PriceCell({ product }: { product: any }) {
 
 
 function SupplierList({ suppliers }: { suppliers: SupplierEntry[] }) {
-  const items = suppliers.map(s =>
-    typeof s === 'string'
-      ? { name: s, availability_status: undefined }
-      : {
-          name: s.name,
-          availability_status:
-            s.availability_status ?? s.status ?? s.availability ?? undefined,
-        },
-  )
+  const { vendors } = useVendors()
+
+  const items = suppliers.map(s => {
+    if (typeof s === 'string') {
+      return {
+        name: s,
+        connected: vendors.some(v => v.name === s),
+      }
+    }
+    const status =
+      s.availability?.status ??
+      s.availability_status ??
+      s.status ??
+      null
+    const updated =
+      s.availability?.updatedAt ??
+      (s as any).availability_updated_at ??
+      null
+    return {
+      name: s.name,
+      connected: s.connected ?? vendors.some(v => v.name === s.name),
+      availability: status ? { status, updatedAt: updated } : undefined,
+    }
+  })
 
   const handleClick = (s: {
     name: string
-    availability_status?: AvailabilityStatus | null
+    availability?: { status?: AvailabilityStatus | null }
   }) => {
-    if (s.availability_status === 'OUT_OF_STOCK') {
+    if (s.availability?.status === 'OUT_OF_STOCK') {
       toast({ description: 'Out of stock at selected supplier.' })
     }
   }
 
   return (
+    <div className="flex flex-wrap items-center gap-1.5">
+      {items.map(it => (
+        <SupplierChip
+          key={it.name}
+          name={it.name}
+          connected={it.connected}
+          availability={it.availability}
+          className="h-5 w-5"
+          tabIndex={0}
+          aria-label={it.name}
+          onClick={() => handleClick(it)}
+          onKeyDown={e => e.key === 'Enter' && handleClick(it)}
+        />
       ))}
     </div>
   )
