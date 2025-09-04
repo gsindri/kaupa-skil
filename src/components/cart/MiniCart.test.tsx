@@ -275,7 +275,7 @@ describe('MiniCart', () => {
       screen.getByLabelText('Decrease quantity of Aria Item')
     ).toBeInTheDocument()
     expect(
-      screen.getByLabelText('Remove Aria Item from cart')
+      screen.getByLabelText('Remove Aria Item')
     ).toBeInTheDocument()
   })
 })
