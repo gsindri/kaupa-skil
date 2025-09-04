@@ -134,8 +134,8 @@ export function MiniCart() {
                       tabIndex={keyboardNavigationActive ? 0 : -1}
                       onKeyDown={e => handleKeyDown(e, index)}
                       className={cn(
-                        "grid items-center gap-2 grid-cols-[40px,minmax(0,1fr),128px] md:grid-cols-[40px,minmax(0,1fr),144px] px-2 py-2 hover:bg-muted/50 focus-within:ring-2 focus-within:ring-brand/50",
-                        it.quantity === 0 && "bg-destructive/10"
+                        "grid items-center gap-2 grid-cols-[40px,minmax(0,1fr),128px] md:grid-cols-[40px,minmax(0,1fr),144px] px-2 py-2 hover:bg-muted/50 focus-within:bg-muted/50",
+                        it.quantity === 0 && "bg-red-50 text-red-700"
                       )}
                     >
                     <img
