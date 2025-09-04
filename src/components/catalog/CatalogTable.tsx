@@ -43,6 +43,7 @@ import {
 } from '@/components/ui/drawer'
 import { Lock } from 'lucide-react'
 import { toast } from '@/hooks/use-toast'
+import { useCart } from '@/contexts/useBasket'
 
 interface CatalogTableProps {
   products: any[]
@@ -235,6 +236,16 @@ export function CatalogTable({
                   brand={p.brand}
                 />
               </TableCell>
+              <TableCell className="[width:minmax(0,1fr)] p-2">
+                <div className="flex items-center gap-2">
+                  <a
+                    href={`#${id}`}
+                    aria-label={`View details for ${p.name}`}
+                    className="line-clamp-1"
+                  >
+                    {p.name}
+                  </a>
+                  <AddToCartButton product={p} vendors={vendors} />
                 </div>
               </TableCell>
               <TableCell className="w-28 p-2 whitespace-nowrap">
@@ -275,64 +286,70 @@ export function CatalogTable({
 }
 
 // Button and quantity control for adding catalog items to the cart
-  function AddToCartButton({
-    product,
-    vendors,
-  }: {
-    product: any
-    vendors: { id: string; name: string; availability_status?: string }[]
-  }) {
-    const { items, addItem, updateQuantity } = useCart()
-    const [open, setOpen] = useState(false)
+function AddToCartButton({
+  product,
+  vendors,
+}: {
+  product: any
+  vendors: { id: string; name: string; availability_status?: string }[]
+}) {
+  const { items, addItem, updateQuantity } = useCart()
 
-      )
+  const handleAdd = (supplier: {
+    id: string
+    name: string
+    availability_status?: string
+  }) => {
+    const supplierItemId = `${product.catalog_id}-${supplier.id}`
+    const existingItem = items[supplierItemId]
 
-      if (existingItem) {
-        updateQuantity(supplierItemId, existingItem.quantity + 1)
-      } else {
-        addItem(
-          {
-            id: product.catalog_id,
-            supplierId: supplier.id,
-            supplierName: supplier.name,
-            itemName: product.name,
-            sku: product.catalog_id,
-            packSize: product.pack_size ?? '',
-            packPrice: null,
-            unitPriceExVat: null,
-            unitPriceIncVat: null,
-            vatRate: 0,
-            unit: '',
-            supplierItemId,
-            displayName: product.name,
-            packQty: 1,
-            image: product.sample_image_url ?? null,
-          },
-          1,
-          { showToast: false },
-        )
-      }
-      if (supplier.availability_status === 'OUT_OF_STOCK') {
-        toast({ description: 'Out of stock at selected supplier.' })
-      }
-      setOpen(false)
-    }
-
-    if (supplierEntries.length <= 1) {
-      const supplier = supplierEntries[0]
-      const disabled =
-        supplier?.availability_status === 'OUT_OF_STOCK' || false
-      return (
-        <Button
-          size="sm"
-          onClick={() => handleAdd(supplier)}
-          disabled={disabled}
-          aria-label={`Add ${product.name} to cart`}
-        >
-          Add
-        </Button>
+    if (existingItem) {
+      updateQuantity(supplierItemId, existingItem.quantity + 1)
+    } else {
+      addItem(
+        {
+          id: product.catalog_id,
+          supplierId: supplier.id,
+          supplierName: supplier.name,
+          itemName: product.name,
+          sku: product.catalog_id,
+          packSize: product.pack_size ?? '',
+          packPrice: null,
+          unitPriceExVat: null,
+          unitPriceIncVat: null,
+          vatRate: 0,
+          unit: '',
+          supplierItemId,
+          displayName: product.name,
+          packQty: 1,
+          image: product.sample_image_url ?? null,
+        },
+        1,
+        { showToast: false },
       )
     }
+
+    if (supplier.availability_status === 'OUT_OF_STOCK') {
+      toast({ description: 'Out of stock at selected supplier.' })
+    }
+  }
+
+  const supplierEntries = vendors
+  if (!supplierEntries.length) return null
+  const supplier = supplierEntries[0]
+  const disabled = supplier.availability_status === 'OUT_OF_STOCK'
+
+  return (
+    <Button
+      size="sm"
+      onClick={() => handleAdd(supplier)}
+      disabled={disabled}
+      aria-label={`Add ${product.name} to cart`}
+    >
+      Add
+    </Button>
+  )
+}
 
 function PriceCell({
   product,
