@@ -250,12 +250,6 @@ export function CatalogTable({
                 className="[width:minmax(0,1fr)] p-2"
                 title={p.name}
               >
-                <div className="truncate">{p.name}</div>
-                {(p.brand || p.pack_size) && (
-                  <div className="text-[13px] text-muted-foreground">
-                    {[p.brand, p.pack_size].filter(Boolean).join(' • ')}
-                  </div>
-                )}
               </TableCell>
               <TableCell className="w-28 p-2 whitespace-nowrap">
                 <Tooltip>
@@ -307,7 +301,7 @@ function AddToCartButton({
   const existing = items.find(it => it.id === product.catalog_id)
   const quantity = existing?.quantity ?? 0
 
-  const handleAdd = (supplier: string) => {
+  const handleAdd = (supplier: string, connected: boolean) => {
     const supplierItemId = `${product.catalog_id}:${supplier}`
     addItem(
       {
@@ -317,9 +311,9 @@ function AddToCartButton({
         itemName: product.name,
         sku: product.catalog_id,
         packSize: product.pack_size ?? '',
-        packPrice: 0,
-        unitPriceExVat: 0,
-        unitPriceIncVat: 0,
+        packPrice: connected ? 0 : null,
+        unitPriceExVat: connected ? 0 : null,
+        unitPriceIncVat: connected ? 0 : null,
         vatRate: 0,
         unit: '',
         supplierItemId,
@@ -358,13 +352,11 @@ function AddToCartButton({
                   key={s}
                   variant="ghost"
                   className="justify-start gap-2 px-2 h-8"
-                  onClick={() => handleAdd(s)}
-                  disabled={!connected}
+                  onClick={() => handleAdd(s, connected)}
                 >
-                  <SupplierChip name={s} />
+                  <SupplierChip name={s} connected={connected} />
                   <span className="flex-1 text-left">{s}</span>
                   <AvailabilityBadge status={product.availability_status} />
-                  {!connected && <Lock className="h-4 w-4" />}
                 </Button>
               )
             })}
@@ -374,7 +366,7 @@ function AddToCartButton({
         <Button
           size="sm"
           className="h-7 px-2"
-          onClick={() => handleAdd(suppliers[0])}
+          onClick={() => handleAdd(suppliers[0], vendors.some(v => v.name === suppliers[0]))}
           disabled={suppliers.length === 0}
         >
           Add
@@ -453,33 +445,6 @@ function PriceCell({ product }: { product: any }) {
   )
 }
 
-
-function SupplierList({ suppliers }: { suppliers: SupplierEntry[] }) {
-  const { vendors } = useVendors()
-
-  const items = suppliers.map(s => {
-    if (typeof s === 'string') {
-      return {
-        name: s,
-        connected: vendors.some(v => v.name === s),
-      }
-    }
-    const status =
-      s.availability?.status ??
-      s.availability_status ??
-      s.status ??
-      null
-    const updated =
-      s.availability?.updatedAt ??
-      (s as any).availability_updated_at ??
-      null
-    return {
-      name: s.name,
-      connected: s.connected ?? vendors.some(v => v.name === s.name),
-      availability: status ? { status, updatedAt: updated } : undefined,
-    }
-  })
-
   const handleClick = (s: {
     name: string
     availability?: { status?: AvailabilityStatus | null }
@@ -490,19 +455,6 @@ function SupplierList({ suppliers }: { suppliers: SupplierEntry[] }) {
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-1.5">
-      {items.map(it => (
-        <SupplierChip
-          key={it.name}
-          name={it.name}
-          connected={it.connected}
-          availability={it.availability}
-          className="h-5 w-5"
-          tabIndex={0}
-          aria-label={it.name}
-          onClick={() => handleClick(it)}
-          onKeyDown={e => e.key === 'Enter' && handleClick(it)}
-        />
       ))}
     </div>
   )
