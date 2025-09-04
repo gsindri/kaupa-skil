@@ -1,6 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
 import { fetchCatalogFacets, FacetFilters } from '@/services/catalog'
 import { cn } from '@/lib/utils'
+import { TriStateFilterChip } from '@/components/ui/tri-state-chip'
+import { useCatalogFilters, triStockToAvailability } from '@/state/catalogFilters'
 
 interface CatalogFiltersPanelProps {
   filters: FacetFilters
@@ -8,9 +10,17 @@ interface CatalogFiltersPanelProps {
 }
 
 export function CatalogFiltersPanel({ filters, onChange }: CatalogFiltersPanelProps) {
+  const triStock = useCatalogFilters(s => s.triStock)
+  const setTriStock = useCatalogFilters(s => s.setTriStock)
+  const availability = triStockToAvailability(triStock)
+
   const { data } = useQuery({
-    queryKey: ['catalogFacets', filters],
-    queryFn: () => fetchCatalogFacets(filters),
+    queryKey: ['catalogFacets', filters, triStock],
+    queryFn: () =>
+      fetchCatalogFacets({
+        ...filters,
+        ...(availability ? { availability } : {}),
+      }),
   })
 
   const active = Object.entries(filters).filter(([, v]) =>
@@ -59,6 +69,7 @@ export function CatalogFiltersPanel({ filters, onChange }: CatalogFiltersPanelPr
 
   return (
     <div className="space-y-4">
+      <TriStateFilterChip state={triStock} onStateChange={setTriStock} />
       {active.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {active.map(([k, v]) => (
@@ -78,7 +89,6 @@ export function CatalogFiltersPanel({ filters, onChange }: CatalogFiltersPanelPr
         <div className="space-y-4">
           {renderFacet('Categories', data.categories, 'category')}
           {renderFacet('Suppliers', data.suppliers, 'supplier')}
-          {renderFacet('Availability', data.availability, 'availability')}
           {renderFacet('Pack size', data.packSizeRanges, 'packSizeRange')}
           {renderFacet('Brands', data.brands, 'brand')}
         </div>

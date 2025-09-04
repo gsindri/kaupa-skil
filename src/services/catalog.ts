@@ -6,21 +6,19 @@ export type FacetFilters = {
   brand?: string
   category?: string
   supplier?: string[]
-  availability?: string
+  availability?: string[]
   packSizeRange?: string
 }
 
 export type PublicCatalogFilters = FacetFilters & {
   cursor?: string | null
   onlyWithPrice?: boolean
-  inStock?: boolean
   onSpecial?: boolean
 }
 
 export type OrgCatalogFilters = FacetFilters & {
   onlyWithPrice?: boolean
   mySuppliers?: boolean
-  inStock?: boolean
   onSpecial?: boolean
   cursor?: string | null
 }
@@ -82,11 +80,8 @@ export async function fetchPublicCatalogItems(
   }
   // Skip pricing filter when no pricing data is available
   // if (filters.onlyWithPrice) query = query.not('best_price', 'is', null)
-  if (filters.inStock) {
-    // New views expose availability statuses in upper-case with underscores
-    query = query.eq('availability_status', 'IN_STOCK')
-  } else if (filters.availability) {
-    query = query.eq('availability_status', filters.availability)
+  if (filters.availability && filters.availability.length) {
+    query = query.in('availability_status', filters.availability)
   }
   if (filters.cursor) query = query.gt('catalog_id', filters.cursor)
 
@@ -115,7 +110,7 @@ export async function fetchPublicCatalogItems(
 
 export async function fetchOrgCatalogItems(
   orgId: string,
-  _filters: OrgCatalogFilters,
+  filters: OrgCatalogFilters,
   sort: SortOrder,
 ): Promise<{ items: PublicCatalogItem[]; nextCursor: string | null; total: number }> {
   let query: any = supabase
@@ -131,9 +126,9 @@ export async function fetchOrgCatalogItems(
   }
 
   // Skip pricing filter when no pricing data is available
-  // if (_filters.onlyWithPrice) query = query.not('best_price', 'is', null)
-  if (_filters.inStock) {
-    query = query.eq('availability_status', 'IN_STOCK')
+  // if (filters.onlyWithPrice) query = query.not('best_price', 'is', null)
+  if (filters.availability && filters.availability.length) {
+    query = query.in('availability_status', filters.availability)
   }
 
   query = query.limit(50)
@@ -213,7 +208,10 @@ export async function fetchCatalogFacets(filters: FacetFilters): Promise<Catalog
     _search: filters.search ?? null,
     _category_ids: filters.category ? [filters.category] : null,
     _supplier_ids: filters.supplier && filters.supplier.length ? filters.supplier : null,
-    _availability: filters.availability ? [filters.availability] : null,
+    _availability:
+      filters.availability && filters.availability.length
+        ? filters.availability
+        : null,
     _pack_size_ranges: filters.packSizeRange ? [filters.packSizeRange] : null,
     _brands: filters.brand ? [filters.brand] : null,
   })

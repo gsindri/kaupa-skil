@@ -20,15 +20,20 @@ export type SortOrder =
   | 'az'
   | 'recent'
 
+export type TriStock = 'off' | 'include' | 'exclude'
+
 interface CatalogFiltersState {
   /** Current facet filters applied to the catalog */
   filters: FacetFilters
   /** Whether to show only items with price information */
   onlyWithPrice: boolean
+  /** Tri-state stock filter */
+  triStock: TriStock
   /** Selected sort order */
   sort: SortOrder
   setFilters: (f: Partial<FacetFilters>) => void
   setOnlyWithPrice: (v: boolean) => void
+  setTriStock: (v: TriStock) => void
   setSort: (v: SortOrder) => void
   clear: () => void
 }
@@ -39,6 +44,7 @@ const defaultState: Omit<
 > = {
   filters: {},
   onlyWithPrice: false,
+  triStock: 'off',
   sort: 'relevance',
 }
 
@@ -57,11 +63,24 @@ export const useCatalogFilters = create<CatalogFiltersState>()(
         }),
       setOnlyWithPrice: v => set({ onlyWithPrice: v }),
       setSort: v => set({ sort: v }),
+      setTriStock: v =>
+        set(state => (state.triStock === v ? state : { triStock: v })),
       clear: () => set({ ...defaultState }),
     }),
     { name: 'catalogFilters' },
   ),
 )
+
+export function triStockToAvailability(tri: TriStock): string[] | undefined {
+  switch (tri) {
+    case 'include':
+      return ['IN_STOCK']
+    case 'exclude':
+      return ['LOW_STOCK', 'OUT_OF_STOCK', 'UNKNOWN']
+    default:
+      return undefined
+  }
+}
 
 export { shallow }
 

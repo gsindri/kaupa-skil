@@ -153,24 +153,7 @@ export function CatalogTable({
             )}
           </TableHead>
           <TableHead className="px-2">
-            <Select
-              value={filters.availability ?? 'all'}
-              onValueChange={v =>
-                onFilterChange({
-                  availability: v === 'all' ? undefined : v,
-                })
-              }
-            >
-              <SelectTrigger className="h-8">
-                <SelectValue placeholder="Avail." />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="IN_STOCK">In</SelectItem>
-                <SelectItem value="LOW_STOCK">Low</SelectItem>
-                <SelectItem value="OUT_OF_STOCK">Out</SelectItem>
-                <SelectItem value="UNKNOWN">Unknown</SelectItem>
-              </SelectContent>
-            </Select>
+            {/* Availability filter removed */}
           </TableHead>
           <TableHead className="w-[120px] px-2" />
           <TableHead className="w-40 min-w-[140px] max-w-[180px] px-2">
