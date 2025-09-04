@@ -102,7 +102,7 @@ export function CatalogTable({
               onCheckedChange={onSelectAll}
             />
           </TableHead>
-          <TableHead className="w-14 px-2">Image</TableHead>
+          <TableHead className="w-10 px-2">Image</TableHead>
           <TableHead
             className="[width:minmax(0,1fr)] cursor-pointer select-none px-2"
             onClick={() => onSort('name')}
@@ -221,8 +221,13 @@ export function CatalogTable({
                   onCheckedChange={() => onSelect(id)}
                 />
               </TableCell>
-              <TableCell className="w-14 p-2">
-                <ProductThumb src={p.image_main} name={p.name} brand={p.brand} />
+              <TableCell className="w-10 p-2">
+                <ProductThumb
+                  className="h-10 w-10"
+                  src={p.image_main}
+                  name={p.name}
+                  brand={p.brand}
+                />
               </TableCell>
               <TableCell
                 className="[width:minmax(0,1fr)] p-2"

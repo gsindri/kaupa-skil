@@ -7,9 +7,15 @@ interface ProductThumbProps {
   src?: string | null
   name: string
   brand?: string | null
+  className?: string
 }
 
-export default function ProductThumb({ src, name, brand }: ProductThumbProps) {
+export default function ProductThumb({
+  src,
+  name,
+  brand,
+  className,
+}: ProductThumbProps) {
   const [loaded, setLoaded] = useState(false)
   const [error, setError] = useState(false)
 
@@ -25,7 +31,12 @@ export default function ProductThumb({ src, name, brand }: ProductThumbProps) {
   const showFallback = !src || error
 
   return (
-    <div className="relative flex h-10 w-10 items-center justify-center overflow-hidden rounded bg-muted">
+    <div
+      className={cn(
+        'relative flex h-10 w-10 items-center justify-center overflow-hidden rounded bg-muted',
+        className,
+      )}
+    >
       {showFallback ? (
         initials ? (
           <span className="text-sm font-medium text-muted-foreground">{initials}</span>
