@@ -30,6 +30,7 @@ import { timeAgo } from '@/lib/timeAgo'
 import { formatCurrency } from '@/lib/format'
 import type { FacetFilters } from '@/services/catalog'
 import SupplierChip from '@/components/catalog/SupplierChip'
+import ProductThumb from '@/components/catalog/ProductThumb'
 import {
   Drawer,
   DrawerTrigger,
@@ -221,13 +222,7 @@ export function CatalogTable({
                 />
               </TableCell>
               <TableCell className="w-14 p-2">
-                {p.image_main && (
-                  <img
-                    src={p.image_main}
-                    alt={p.name}
-                    className="h-10 w-10 rounded object-cover"
-                  />
-                )}
+                <ProductThumb src={p.image_main} name={p.name} brand={p.brand} />
               </TableCell>
               <TableCell
                 className="[width:minmax(0,1fr)] p-2"
@@ -291,14 +286,6 @@ function PriceCell({ product, showConnectPill }: { product: any; showConnectPill
     content = (
       <div className="flex items-center justify-end gap-1 text-muted-foreground">
         <Lock className="h-4 w-4" />
-        {sources.length ? (
-          <span>
-            <span aria-hidden="true">—</span>
-            <span className="sr-only">No data yet</span>
-          </span>
-        ) : (
-          showConnectPill ? <ConnectPill /> : null
-        )}
       </div>
     )
   } else if (priceValues.length) {
@@ -313,7 +300,6 @@ function PriceCell({ product, showConnectPill }: { product: any; showConnectPill
         : `${formatCurrency(min, currency)}–${formatCurrency(max, currency)}`
     content = <span className="tabular-nums">{text}</span>
   } else {
-    content = showConnectPill ? <ConnectPill /> : null
   }
 
   if ((isLocked || priceValues.length) && sources.length) {
