@@ -95,25 +95,29 @@ function CartItemRow({ item, includeVat, updateQuantity, removeItem }: CartItemR
       <div className="min-w-[9ch] md:min-w-[11ch] text-right tabular-nums whitespace-nowrap text-sm">
         {formatCurrency(lineTotal)}
       </div>
-      <div className="flex items-center gap-1 md:gap-2">
-        <button
-          className="h-6 w-6 md:h-7 md:w-7 rounded border flex items-center justify-center"
-          aria-label="Decrease quantity"
-          onClick={() => updateQuantity(item.supplierItemId, item.quantity - 1)}
-        >
-          <Minus className="h-4 w-4" />
-        </button>
-        <span className="w-8 text-center tabular-nums text-sm">{item.quantity}</span>
-        <button
-          className="h-6 w-6 md:h-7 md:w-7 rounded border flex items-center justify-center"
-          aria-label="Increase quantity"
-          onClick={() => updateQuantity(item.supplierItemId, item.quantity + 1)}
-        >
-          <Plus className="h-4 w-4" />
-        </button>
+      <div className="flex items-center gap-2">
+        <div className="flex items-center w-[96px] gap-1">
+          <button
+            className="h-6 w-6 p-0 rounded-md border flex items-center justify-center"
+            aria-label="Decrease quantity"
+            onClick={() => updateQuantity(item.supplierItemId, item.quantity - 1)}
+          >
+            <Minus className="h-4 w-4" />
+          </button>
+          <span className="w-10 text-center tabular-nums text-sm">
+            {item.quantity}
+          </span>
+          <button
+            className="h-6 w-6 p-0 rounded-md border flex items-center justify-center"
+            aria-label="Increase quantity"
+            onClick={() => updateQuantity(item.supplierItemId, item.quantity + 1)}
+          >
+            <Plus className="h-4 w-4" />
+          </button>
+        </div>
         <button
           aria-label="Remove item"
-          className="ml-1 h-6 w-6 md:h-7 md:w-7 rounded hover:bg-destructive/10 flex items-center justify-center"
+          className="h-6 w-6 p-0 rounded-md hover:bg-destructive/10 flex items-center justify-center"
           onClick={() => removeItem(item.supplierItemId)}
           title="Remove"
         >

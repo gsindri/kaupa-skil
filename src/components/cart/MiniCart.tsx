@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Button } from '@/components/ui/button'
-import { ShoppingCart, Trash2 } from 'lucide-react'
+import { ShoppingCart, Trash2, Plus, Minus } from 'lucide-react'
 import { useCart } from '@/contexts/useBasket'
 import { useSettings } from '@/contexts/useSettings'
 import { useToast } from '@/hooks/use-toast'
@@ -164,34 +164,36 @@ export function MiniCart() {
                         </span>
                       </div>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <button
-                        className="h-7 w-7 md:h-8 md:w-8 rounded border"
-                        aria-label="Decrease quantity"
-                        onClick={() =>
-                          updateQuantity(it.supplierItemId, it.quantity - 1)
-                        }
-                      >
-                        -
-                      </button>
-                      <span className="w-8 text-center tabular-nums text-sm">
-                        {it.quantity}
-                      </span>
-                      <button
-                        className="h-7 w-7 md:h-8 md:w-8 rounded border"
-                        aria-label="Increase quantity"
-                        onClick={() =>
-                          updateQuantity(it.supplierItemId, it.quantity + 1)
-                        }
-                      >
-                        +
-                      </button>
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center w-[96px] gap-1">
+                        <button
+                          className="h-6 w-6 p-0 rounded-md border flex items-center justify-center"
+                          aria-label="Decrease quantity"
+                          onClick={() =>
+                            updateQuantity(it.supplierItemId, it.quantity - 1)
+                          }
+                        >
+                          <Minus className="h-4 w-4" />
+                        </button>
+                        <span className="w-10 text-center tabular-nums text-sm">
+                          {it.quantity}
+                        </span>
+                        <button
+                          className="h-6 w-6 p-0 rounded-md border flex items-center justify-center"
+                          aria-label="Increase quantity"
+                          onClick={() =>
+                            updateQuantity(it.supplierItemId, it.quantity + 1)
+                          }
+                        >
+                          <Plus className="h-4 w-4" />
+                        </button>
+                      </div>
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <button
                             aria-label="Remove item"
                             onClick={() => handleRemove(index)}
-                            className="ml-1 h-7 w-7 rounded hover:bg-destructive/10"
+                            className="h-6 w-6 p-0 rounded-md hover:bg-destructive/10 flex items-center justify-center"
                           >
                             <Trash2 className="h-4 w-4 text-muted-foreground" />
                           </button>

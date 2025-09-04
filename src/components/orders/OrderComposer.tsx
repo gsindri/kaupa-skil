@@ -161,44 +161,49 @@ export function OrderComposer() {
                     </div>
 
                     <div className="flex items-center gap-3">
-                      <div className="flex items-center gap-1">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => updateQuantity(item.supplierItemId, Math.max(1, item.quantity - 1))}
-                          className="h-7 w-7 p-0"
-                        >
-                          <Minus className="h-3 w-3" />
-                        </Button>
-                        
-                        <span className="w-8 text-center text-sm font-medium">
-                          {item.quantity}
-                        </span>
-                        
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => updateQuantity(item.supplierItemId, item.quantity + 1)}
-                          className="h-7 w-7 p-0"
-                        >
-                          <Plus className="h-3 w-3" />
-                        </Button>
-                      </div>
-
                       <div className="text-right min-w-[80px]">
                         <div className="font-medium text-sm">
                           {formatPrice(lineTotal)}
                         </div>
                       </div>
-
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => removeItem(item.supplierItemId)}
-                        className="h-7 w-7 p-0 text-destructive hover:text-destructive"
-                      >
-                        <Trash2 className="h-3 w-3" />
-                      </Button>
+                      <div className="flex items-center gap-2">
+                        <div className="flex items-center w-[96px] gap-1">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() =>
+                              updateQuantity(
+                                item.supplierItemId,
+                                Math.max(1, item.quantity - 1),
+                              )
+                            }
+                            className="h-6 w-6 p-0 rounded-md"
+                          >
+                            <Minus className="h-4 w-4" />
+                          </Button>
+                          <span className="w-10 text-center tabular-nums text-sm font-medium">
+                            {item.quantity}
+                          </span>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() =>
+                              updateQuantity(item.supplierItemId, item.quantity + 1)
+                            }
+                            className="h-6 w-6 p-0 rounded-md"
+                          >
+                            <Plus className="h-4 w-4" />
+                          </Button>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => removeItem(item.supplierItemId)}
+                          className="h-6 w-6 p-0 rounded-md text-destructive hover:text-destructive flex items-center justify-center"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 )

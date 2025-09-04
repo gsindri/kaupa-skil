@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
-import { Trash2 } from 'lucide-react'
+import { Trash2, Minus, Plus } from 'lucide-react'
 import type { CartItem } from '@/lib/types'
 
 interface SupplierOrderCardProps {
@@ -55,44 +55,57 @@ export function SupplierOrderCard({
                 </div>
               </div>
               
-              <div className="flex items-center space-x-3">
-                <div className="flex items-center space-x-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => onUpdateQuantity(item.supplierItemId, item.quantity - 1)}
-                  >
-                    -
-                  </Button>
-                  <Input
-                    type="number"
-                    value={item.quantity}
-                    onChange={(e) => onUpdateQuantity(item.supplierItemId, parseInt(e.target.value) || 0)}
-                    className="w-16 text-center"
-                    min="0"
-                  />
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => onUpdateQuantity(item.supplierItemId, item.quantity + 1)}
-                  >
-                    +
-                  </Button>
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center w-[96px] gap-1">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() =>
+                          onUpdateQuantity(item.supplierItemId, item.quantity - 1)
+                        }
+                        className="h-6 w-6 p-0 rounded-md"
+                      >
+                        <Minus className="h-4 w-4" />
+                      </Button>
+                      <Input
+                        type="number"
+                        value={item.quantity}
+                        onChange={e =>
+                          onUpdateQuantity(
+                            item.supplierItemId,
+                            parseInt(e.target.value) || 0,
+                          )
+                        }
+                        className="h-6 w-10 p-0 text-center tabular-nums rounded-md"
+                        min="0"
+                      />
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() =>
+                          onUpdateQuantity(item.supplierItemId, item.quantity + 1)
+                        }
+                        className="h-6 w-6 p-0 rounded-md"
+                      >
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => onRemoveItem(item.supplierItemId)}
+                      className="h-6 w-6 p-0 rounded-md text-destructive hover:text-destructive flex items-center justify-center"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                 </div>
-                
+
                 <div className="text-right">
                   <div className="font-medium font-mono tabular-nums">
                     {formatPrice(item.packPrice * item.quantity)}
                   </div>
                 </div>
-                
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => onRemoveItem(item.supplierItemId)}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
               </div>
             </div>
           ))}
