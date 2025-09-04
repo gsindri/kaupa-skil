@@ -284,14 +284,10 @@ function PriceCell({ product }: { product: any }) {
     content = (
       <div className="flex items-center justify-end gap-1 text-muted-foreground">
         <Lock className="h-4 w-4" />
-        {sources.length ? (
-          <span>
-            <span aria-hidden="true">—</span>
-            <span className="sr-only">No data yet</span>
-          </span>
-        ) : (
-          <ConnectPill />
-        )}
+        <span className="tabular-nums">
+          <span aria-hidden="true">—</span>
+          <span className="sr-only">No data yet</span>
+        </span>
       </div>
     )
   } else if (priceValues.length) {
@@ -306,7 +302,12 @@ function PriceCell({ product }: { product: any }) {
         : `${formatCurrency(min, currency)}–${formatCurrency(max, currency)}`
     content = <span className="tabular-nums">{text}</span>
   } else {
-    content = <ConnectPill />
+    content = (
+      <span className="tabular-nums text-muted-foreground">
+        <span aria-hidden="true">—</span>
+        <span className="sr-only">No data yet</span>
+      </span>
+    )
   }
 
   if ((isLocked || priceValues.length) && sources.length) {
