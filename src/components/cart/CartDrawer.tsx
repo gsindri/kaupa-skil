@@ -98,8 +98,8 @@ function CartItemRow({ item, includeVat, updateQuantity, removeItem }: CartItemR
     <div
       ref={cardRef}
       className={cn(
-        "grid items-center gap-3 grid-cols-[44px,minmax(0,1fr),112px] md:grid-cols-[56px,minmax(0,1fr),128px] px-2 py-2 rounded-lg focus-within:ring-2 focus-within:ring-primary/30",
-        item.quantity === 0 ? "bg-red-50 text-red-700" : "hover:bg-muted/50"
+        "grid items-center gap-3 grid-cols-[44px,minmax(0,1fr),112px] md:grid-cols-[56px,minmax(0,1fr),128px] px-2 py-2 rounded-lg hover:bg-muted/50 focus-within:ring-2 focus-within:ring-primary/30",
+        item.quantity === 0 && "bg-red-50 text-red-700"
       )}
     >
       <img
