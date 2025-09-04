@@ -44,8 +44,6 @@ import {
 import { Lock } from 'lucide-react'
 import { toast } from '@/hooks/use-toast'
 import { useCart } from '@/contexts/useBasket'
-import { QuantityStepper } from '@/components/cart/QuantityStepper'
-import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover'
 
 interface CatalogTableProps {
   products: any[]
@@ -237,14 +235,6 @@ export function CatalogTable({
                   name={p.name}
                   brand={p.brand}
                 />
-                </TableCell>
-                <TableCell className="[width:minmax(0,1fr)] p-2">
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="truncate">{p.name}</div>
-                    <AddToCartButton product={p} vendors={vendors} />
-                  </div>
-                </TableCell>
-                <TableCell className="w-28 p-2 whitespace-nowrap">
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <AvailabilityBadge
@@ -281,153 +271,12 @@ export function CatalogTable({
   )
 }
 
-  // Button and quantity control for adding catalog items to the cart
-  function AddToCartButton({
-    product,
-    vendors,
-  }: {
-    product: any
-    vendors: { id: string; name: string; availability_status?: string }[]
-  }) {
-    const { items, addItem, updateQuantity } = useCart()
-    const [open, setOpen] = useState(false)
-
-    const supplierEntries = product.supplier_products?.length
-      ? product.supplier_products.map((sp: any) => ({
-          id: sp.supplier_id ?? sp.id,
-          name: sp.name ?? sp.supplier_name ?? sp.supplier?.name,
-          connected:
-            sp.connected ??
-            sp.supplier?.connected ??
-            vendors.some(
-              v =>
-                v.id === (sp.supplier_id ?? sp.id) ||
-                v.name === (sp.name ?? sp.supplier?.name),
-            ),
-          logo_url: sp.logo_url ?? sp.supplier?.logo_url ?? null,
-          availability_status:
-            sp.availability_status ??
-            sp.availability?.status ??
-            sp.status ??
-            null,
-          supplier_item_id:
-            sp.supplier_item_id ??
-            sp.supplierItemId ??
-            sp.id ??
-            `${product.catalog_id}:${sp.supplier_id ?? sp.id}`,
-        }))
-      : (product.suppliers ?? []).map((s: any) => {
-          if (typeof s === 'string') {
-            const vendor = vendors.find(v => v.name === s)
-            return {
-              id: vendor?.id ?? s,
-              name: s,
-              connected: vendor != null,
-              logo_url: vendor?.logo_url ?? null,
-              availability_status: null,
-              supplier_item_id: `${product.catalog_id}:${vendor?.id ?? s}`,
-            }
-          }
-          return {
-            id: s.id ?? s.supplier_id,
-            name: s.name,
-            connected:
-              s.connected ??
-              vendors.some(
-                v => v.id === (s.id ?? s.supplier_id) || v.name === s.name,
-              ),
-            logo_url: s.logo_url ?? s.logoUrl ?? null,
-            availability_status:
-              s.availability_status ??
-              s.availability?.status ??
-              s.status ??
-              null,
-            supplier_item_id:
-              s.supplier_item_id ??
-              s.supplierItemId ??
-              s.id ??
-              `${product.catalog_id}:${s.name}`,
-          }
-        })
-
-    const existingItem = supplierEntries
-      .map((s: any) => items.find(i => i.supplierItemId === s.supplier_item_id))
-      .find(Boolean)
-
-    const [qty, setQty] = useState(existingItem?.quantity ?? 1)
-
-    useEffect(() => {
-      setQty(existingItem?.quantity ?? 1)
-    }, [existingItem])
-
-    const handleAdd = (supplier: any) => {
-      const supplierItemId = supplier.supplier_item_id
-      const existing = items.find(i => i.supplierItemId === supplierItemId)
-
-      if (existing) {
-        const newQty = existing.quantity + 1
-        updateQuantity(supplierItemId, newQty)
-        setQty(newQty)
-      } else {
-        addItem(
-          {
-            id: product.catalog_id,
-            supplierId: supplier.id,
-            supplierName: supplier.name,
-            itemName: product.name,
-            sku: product.catalog_id,
-            packSize: product.pack_size ?? '',
-            packPrice: null,
-            unitPriceExVat: null,
-            unitPriceIncVat: null,
-            vatRate: 0,
-            unit: '',
-            supplierItemId,
-            displayName: product.name,
-            packQty: 1,
-            image: product.sample_image_url ?? null,
-          },
-          1,
-          { showToast: false },
-        )
-        setQty(1)
-      }
-      if (supplier.availability_status === 'OUT_OF_STOCK') {
-        toast({ description: 'Out of stock at selected supplier.' })
-      }
-      setOpen(false)
     }
+    setOpen(false)
+  }
 
-    if (existingItem) {
-      return (
-        <QuantityStepper
-          quantity={qty}
-          onChange={q => {
-            setQty(q)
-            updateQuantity(existingItem.supplierItemId, q)
-          }}
-          label={product.name}
-          className="h-7 w-[92px]"
-        />
-      )
-    }
-
-    if (supplierEntries.length <= 1) {
-      const supplier = supplierEntries[0]
-      const disabled =
-        supplier?.availability_status === 'OUT_OF_STOCK' ||
-        supplier?.connected === false
-      return (
-        <Button
-          size="sm"
-          onClick={() => handleAdd(supplier)}
-          disabled={disabled}
-          aria-label={`Add ${product.name} to cart`}
-        >
-          Add
-        </Button>
-      )
-    }
+  )
+}
 
     return (
       <Popover open={open} onOpenChange={setOpen}>
