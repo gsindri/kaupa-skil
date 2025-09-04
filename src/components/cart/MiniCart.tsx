@@ -155,11 +155,27 @@ export function MiniCart() {
                           {it.packSize}
                           {it.supplierName && ` • ${it.supplierName}`}
                         </span>
-                        <span className="ml-2 tabular-nums whitespace-nowrap">
-                          {formatPrice(
-                            (includeVat ? it.unitPriceIncVat : it.unitPriceExVat) * it.quantity
-                          )}
-                        </span>
+                        {(() => {
+                          const unitPrice = includeVat ? it.unitPriceIncVat : it.unitPriceExVat
+                          const lineTotal = unitPrice != null ? unitPrice * it.quantity : null
+                          if (lineTotal == null) {
+                            return (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <span className="ml-2 tabular-nums whitespace-nowrap">kr —</span>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  {`Connect ${it.supplierName} to see price.`}
+                                </TooltipContent>
+                              </Tooltip>
+                            )
+                          }
+                          return (
+                            <span className="ml-2 tabular-nums whitespace-nowrap">
+                              {formatPrice(lineTotal)}
+                            </span>
+                          )
+                        })()}
                       </div>
                     </div>
                     <div className="flex items-center">

@@ -17,6 +17,11 @@ vi.mock('@/components/ui/drawer', () => {
   }
 })
 
+vi.mock('@/components/ui/tooltip', () => {
+  const Mock = ({ children }: any) => <>{children}</>
+  return { Tooltip: Mock, TooltipTrigger: Mock, TooltipContent: Mock }
+})
+
 import { CartDrawer } from './CartDrawer'
 
 describe('CartDrawer', () => {
@@ -165,5 +170,55 @@ describe('CartDrawer', () => {
     await userEvent.type(input, '5{Enter}')
 
     expect(updateQuantity).toHaveBeenCalledWith('1', 5)
+  })
+
+  it('shows placeholder when price is null', () => {
+    const items = [
+      {
+        supplierItemId: '1',
+        itemName: 'Sample',
+        packSize: '1kg',
+        supplierName: 'Supp',
+        quantity: 1,
+        unitPriceIncVat: null,
+        unitPriceExVat: null,
+        image: '',
+      },
+    ] as any
+
+    render(
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <SettingsContext.Provider
+          value={{
+            includeVat: false,
+            setIncludeVat: vi.fn(),
+            preferredUnit: 'auto',
+            setPreferredUnit: vi.fn(),
+            userMode: 'balanced',
+            setUserMode: vi.fn(),
+          }}
+        >
+          <BasketContext.Provider
+            value={{
+              items,
+              addItem: vi.fn(),
+              updateQuantity: vi.fn(),
+              removeItem: vi.fn(),
+              clearBasket: vi.fn(),
+              clearCart: vi.fn(),
+              restoreItems: vi.fn(),
+              getTotalItems: () => items.length,
+              getTotalPrice: () => 0,
+              isDrawerOpen: true,
+              setIsDrawerOpen: vi.fn(),
+            }}
+          >
+            <CartDrawer />
+          </BasketContext.Provider>
+        </SettingsContext.Provider>
+      </MemoryRouter>
+    )
+
+    expect(screen.getByText('kr —')).toBeInTheDocument()
   })
 })

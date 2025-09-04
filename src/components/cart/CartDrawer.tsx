@@ -31,6 +31,7 @@ import { PLACEHOLDER_IMAGE } from '@/lib/images'
 import { cn } from '@/lib/utils'
 import { QuantityStepper } from './QuantityStepper'
 import { formatPrice } from '@/lib/formatPrice'
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
 
 interface CartItemRowProps {
   item: CartItem
@@ -74,8 +75,8 @@ function CartItemRow({ item, includeVat, updateQuantity, removeItem }: CartItemR
   }, [item.supplierItemId, item.quantity, updateQuantity])
 
   const displayName = item.itemName || item.displayName
-  const lineTotal =
-    (includeVat ? item.unitPriceIncVat : item.unitPriceExVat) * item.quantity
+  const unitPrice = includeVat ? item.unitPriceIncVat : item.unitPriceExVat
+  const lineTotal = unitPrice != null ? unitPrice * item.quantity : null
 
   return (
     <div
@@ -99,9 +100,20 @@ function CartItemRow({ item, includeVat, updateQuantity, removeItem }: CartItemR
         </p>
         <div className="mt-[-2px] flex items-baseline justify-between text-xs text-muted-foreground">
           <span className="flex-1 truncate">{item.packSize}</span>
-          <span className="ml-2 tabular-nums whitespace-nowrap">
-            {formatPrice(lineTotal)}
-          </span>
+          {lineTotal == null ? (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="ml-2 tabular-nums whitespace-nowrap">kr —</span>
+              </TooltipTrigger>
+              <TooltipContent>
+                {`Connect ${item.supplierName} to see price.`}
+              </TooltipContent>
+            </Tooltip>
+          ) : (
+            <span className="ml-2 tabular-nums whitespace-nowrap">
+              {formatPrice(lineTotal)}
+            </span>
+          )}
         </div>
       </div>
       <div className="flex items-center">

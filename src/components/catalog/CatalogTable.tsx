@@ -394,6 +394,7 @@ function PriceCell({ product }: { product: any }) {
   const isLocked = product.prices_locked ?? product.price_locked ?? false
 
   let content: React.ReactNode
+  let tooltip: React.ReactNode | null = null
 
   if (isLocked) {
     content = (
@@ -405,6 +406,15 @@ function PriceCell({ product }: { product: any }) {
         <span className="sr-only">Price locked</span>
       </div>
     )
+    if (sources.length) {
+      tooltip = (
+        <>
+          {sources.map((s: string) => (
+            <div key={s}>{`Connect ${s} to see price.`}</div>
+          ))}
+        </>
+      )
+    }
   } else if (priceValues.length) {
     priceValues.sort((a, b) => a - b)
     const min = priceValues[0]
@@ -416,6 +426,15 @@ function PriceCell({ product }: { product: any }) {
         ? formatCurrency(min, currency)
         : `${formatCurrency(min, currency)}–${formatCurrency(max, currency)}`
     content = <span className="tabular-nums">{text}</span>
+    if (sources.length) {
+      tooltip = (
+        <>
+          {sources.map((s: string) => (
+            <div key={s}>{s}</div>
+          ))}
+        </>
+      )
+    }
   } else {
     content = (
       <span className="tabular-nums">
@@ -425,17 +444,13 @@ function PriceCell({ product }: { product: any }) {
     )
   }
 
-  if ((isLocked || priceValues.length) && sources.length) {
+  if (tooltip) {
     return (
       <Tooltip>
         <TooltipTrigger asChild>
           <div>{content}</div>
         </TooltipTrigger>
-        <TooltipContent className="space-y-0.5">
-          {sources.map((s: string) => (
-            <div key={s}>{s}</div>
-          ))}
-        </TooltipContent>
+        <TooltipContent className="space-y-0.5">{tooltip}</TooltipContent>
       </Tooltip>
     )
   }
