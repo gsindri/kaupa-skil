@@ -261,7 +261,7 @@ export function CatalogTable({
                 )}
               </TableCell>
               <TableCell className="min-w-[112px] max-w-[136px] w-[112px] sm:w-[136px] p-2 text-right whitespace-nowrap">
-                <PriceCell product={p} showConnectPill={showConnectPill} />
+                <PriceCell product={p} />
               </TableCell>
             </TableRow>
           )
@@ -271,7 +271,7 @@ export function CatalogTable({
   )
 }
 
-function PriceCell({ product, showConnectPill }: { product: any; showConnectPill: boolean }) {
+function PriceCell({ product }: { product: any }) {
   const sources: string[] = product.price_sources || product.suppliers || []
   const priceValues: number[] = Array.isArray(product.prices)
     ? product.prices
@@ -286,6 +286,10 @@ function PriceCell({ product, showConnectPill }: { product: any; showConnectPill
     content = (
       <div className="flex items-center justify-end gap-2 text-muted-foreground">
         <Lock className="h-4 w-4" />
+        <span aria-hidden="true" className="tabular-nums">
+          —
+        </span>
+        <span className="sr-only">Price locked</span>
       </div>
     )
   } else if (priceValues.length) {
@@ -300,6 +304,12 @@ function PriceCell({ product, showConnectPill }: { product: any; showConnectPill
         : `${formatCurrency(min, currency)}–${formatCurrency(max, currency)}`
     content = <span className="tabular-nums">{text}</span>
   } else {
+    content = (
+      <span className="tabular-nums">
+        <span aria-hidden="true">—</span>
+        <span className="sr-only">No data yet</span>
+      </span>
+    )
   }
 
   if ((isLocked || priceValues.length) && sources.length) {
