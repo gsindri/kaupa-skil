@@ -318,16 +318,6 @@ export function CatalogTable({
       setOpen(false)
     }
 
-    if (quantity > 0 && existing) {
-      return (
-        <QuantityStepper
-          quantity={quantity}
-          onChange={q => updateQuantity(existing.supplierItemId, q)}
-          label={`${product.name} from ${existing.supplierName}`}
-        />
-      )
-    }
-
     if (supplierEntries.length <= 1) {
       const supplier = supplierEntries[0]
       const disabled =
@@ -343,10 +333,6 @@ export function CatalogTable({
         </Button>
       )
     }
-
-    return (
-    )
-  }
 
 function PriceCell({
   product,
