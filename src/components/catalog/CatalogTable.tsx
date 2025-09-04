@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from 'react'
+import { useRef } from 'react'
 import {
   Table,
   TableBody,
@@ -24,12 +24,11 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Button } from '@/components/ui/button'
 import { useVendors } from '@/hooks/useVendors'
-import AvailabilityBadge from '@/components/catalog/AvailabilityBadge'
+import AvailabilityBadge, { type AvailabilityStatus } from '@/components/catalog/AvailabilityBadge'
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
 import { timeAgo } from '@/lib/timeAgo'
 import { formatCurrency } from '@/lib/format'
 import type { FacetFilters } from '@/services/catalog'
-import SupplierChip from '@/components/catalog/SupplierChip'
 import ProductThumb from '@/components/catalog/ProductThumb'
 import { resolveImage } from '@/lib/images'
 import { useCart } from '@/contexts/useBasket'
@@ -48,6 +47,7 @@ import {
   DrawerDescription,
 } from '@/components/ui/drawer'
 import { Lock } from 'lucide-react'
+import { toast } from '@/hooks/use-toast'
 
 interface CatalogTableProps {
   products: any[]
@@ -458,41 +458,47 @@ function PriceCell({ product }: { product: any }) {
   return content
 }
 
-function SupplierList({ suppliers }: { suppliers: string[] }) {
-  const ref = useRef<HTMLDivElement>(null)
-  const [visible, setVisible] = useState(suppliers.length)
+type SupplierEntry =
+  | string
+  | {
+      name: string
+      availability_status?: AvailabilityStatus | null
+      status?: AvailabilityStatus | null
+      availability?: AvailabilityStatus | null
+    }
 
-  useEffect(() => {
-    const el = ref.current
-    if (!el || typeof ResizeObserver === 'undefined') return
+function SupplierList({ suppliers }: { suppliers: SupplierEntry[] }) {
+  const items = suppliers.map(s =>
+    typeof s === 'string'
+      ? { name: s, availability_status: undefined }
+      : {
+          name: s.name,
+          availability_status:
+            s.availability_status ?? s.status ?? s.availability ?? undefined,
+        },
+  )
 
-    const CHIP = 24
-    const GAP = 6
-
-    const observer = new ResizeObserver(entries => {
-      const width = entries[0].contentRect.width
-      let count = Math.floor((width + GAP) / (CHIP + GAP))
-      if (count < suppliers.length) {
-        count = Math.max(0, count - 1)
-      }
-      setVisible(count)
-    })
-
-    observer.observe(el)
-    return () => observer.disconnect()
-  }, [suppliers.length])
-
-  const shown = suppliers.slice(0, visible)
-  const remaining = suppliers.length - shown.length
+  const handleClick = (s: {
+    name: string
+    availability_status?: AvailabilityStatus | null
+  }) => {
+    if (s.availability_status === 'OUT_OF_STOCK') {
+      toast({ description: 'Out of stock at selected supplier.' })
+    }
+  }
 
   return (
-    <div ref={ref} className="flex items-center gap-2 overflow-hidden">
-      {shown.map(name => (
-        <SupplierChip key={name} name={name} />
+    <div className="flex flex-col gap-1">
+      {items.map(s => (
+        <div
+          key={s.name}
+          className="flex items-center gap-2 cursor-pointer"
+          onClick={() => handleClick(s)}
+        >
+          <span className="truncate text-sm">{s.name}</span>
+          <AvailabilityBadge status={s.availability_status ?? 'UNKNOWN'} />
+        </div>
       ))}
-      {remaining > 0 && (
-        <span className="text-xs text-muted-foreground">+{remaining}</span>
-      )}
     </div>
   )
 }
