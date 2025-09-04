@@ -256,8 +256,10 @@ export function CatalogTable({
               <TableCell className="min-w-[140px] max-w-[180px] w-40 p-2 whitespace-nowrap">
                 {p.suppliers?.length ? (
                   <SupplierList suppliers={p.suppliers} />
+                ) : showConnectPill ? (
+                  <ConnectPill />
                 ) : (
-                  showConnectPill && <ConnectPill />
+                  <span className="text-muted-foreground">—</span>
                 )}
               </TableCell>
               <TableCell className="min-w-[112px] max-w-[136px] w-[112px] sm:w-[136px] p-2 text-right whitespace-nowrap">
