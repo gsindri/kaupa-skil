@@ -40,13 +40,25 @@ export function MiniCart() {
     )
   }
 
-  const formatPrice = (price: number) =>
-    new Intl.NumberFormat('is-IS', {
+  const formatPrice = (price: number) => {
+    const narrow = new Intl.NumberFormat('is-IS', {
       style: 'currency',
       currency: 'ISK',
+      currencyDisplay: 'narrowSymbol',
       minimumFractionDigits: 0,
-      maximumFractionDigits: 0
+      maximumFractionDigits: 0,
     }).format(price)
+    if (narrow.includes('kr')) {
+      return narrow.replace('kr.', 'kr')
+    }
+    return new Intl.NumberFormat('is-IS', {
+      style: 'currency',
+      currency: 'ISK',
+      currencyDisplay: 'code',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(price)
+  }
 
   const handleRemove = (index: number) => {
     const item = items[index]
@@ -147,12 +159,12 @@ export function MiniCart() {
                     />
                     <div className="min-w-0">
                       <p
-                        className="text-sm md:text-[15px] font-medium leading-snug truncate line-clamp-1"
+                        className="text-sm md:text-[15px] font-medium leading-tight line-clamp-2"
                         title={displayName}
                       >
                         {displayName}
                       </p>
-                      <div className="flex items-baseline justify-between text-xs text-muted-foreground">
+                      <div className="mt-[-2px] flex items-baseline justify-between text-xs text-muted-foreground">
                         <span className="flex-1 truncate">
                           {it.packSize}
                           {it.supplierName && ` • ${it.supplierName}`}
@@ -173,7 +185,7 @@ export function MiniCart() {
                             updateQuantity(it.supplierItemId, it.quantity - 1)
                           }
                         >
-                          <Minus className="h-4 w-4" strokeWidth={2} />
+                          <Minus className="h-4 w-4 stroke-[1.5]" />
                         </button>
                         <span className="flex h-full flex-1 items-center justify-center tabular-nums text-sm">
                           {it.quantity}
@@ -185,7 +197,7 @@ export function MiniCart() {
                             updateQuantity(it.supplierItemId, it.quantity + 1)
                           }
                         >
-                          <Plus className="h-4 w-4" strokeWidth={2} />
+                          <Plus className="h-4 w-4 stroke-[1.5]" />
                         </button>
                       </div>
                       <Tooltip>
@@ -195,7 +207,7 @@ export function MiniCart() {
                             onClick={() => handleRemove(index)}
                             className="ml-2 flex h-7 w-7 items-center justify-center p-0 text-muted-foreground hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50"
                           >
-                            <Trash2 className="h-4 w-4" strokeWidth={2} />
+                            <Trash2 className="h-4 w-4 stroke-[1.5]" />
                           </button>
                         </TooltipTrigger>
                         <TooltipContent>Remove</TooltipContent>

@@ -27,8 +27,27 @@ import { useSettings } from '@/contexts/useSettings'
 import { Link } from 'react-router-dom'
 import type { CartItem } from '@/lib/types'
 import { getCachedImageUrl } from '@/services/ImageCache'
-import { formatCurrency } from '@/lib/format'
 import { PLACEHOLDER_IMAGE } from '@/lib/images'
+
+const formatPrice = (price: number) => {
+  const narrow = new Intl.NumberFormat('is-IS', {
+    style: 'currency',
+    currency: 'ISK',
+    currencyDisplay: 'narrowSymbol',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(price)
+  if (narrow.includes('kr')) {
+    return narrow.replace('kr.', 'kr')
+  }
+  return new Intl.NumberFormat('is-IS', {
+    style: 'currency',
+    currency: 'ISK',
+    currencyDisplay: 'code',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(price)
+}
 
 interface CartItemRowProps {
   item: CartItem
@@ -86,15 +105,15 @@ function CartItemRow({ item, includeVat, updateQuantity, removeItem }: CartItemR
       />
       <div className="min-w-0">
         <p
-          className="text-sm md:text-base font-medium leading-snug line-clamp-2"
+          className="text-sm md:text-base font-medium leading-tight line-clamp-2"
           title={item.itemName || item.displayName}
         >
           {item.itemName || item.displayName}
         </p>
-        <div className="flex items-baseline justify-between text-xs text-muted-foreground">
+        <div className="mt-[-2px] flex items-baseline justify-between text-xs text-muted-foreground">
           <span className="flex-1 truncate">{item.packSize}</span>
           <span className="ml-2 tabular-nums whitespace-nowrap">
-            {formatCurrency(lineTotal)}
+            {formatPrice(lineTotal)}
           </span>
         </div>
       </div>
@@ -105,7 +124,7 @@ function CartItemRow({ item, includeVat, updateQuantity, removeItem }: CartItemR
             aria-label="Decrease quantity"
             onClick={() => updateQuantity(item.supplierItemId, item.quantity - 1)}
           >
-            <Minus className="h-4 w-4" strokeWidth={2} />
+            <Minus className="h-4 w-4 stroke-[1.5]" />
           </button>
           <span className="flex h-full flex-1 items-center justify-center tabular-nums text-sm">
             {item.quantity}
@@ -115,7 +134,7 @@ function CartItemRow({ item, includeVat, updateQuantity, removeItem }: CartItemR
             aria-label="Increase quantity"
             onClick={() => updateQuantity(item.supplierItemId, item.quantity + 1)}
           >
-            <Plus className="h-4 w-4" strokeWidth={2} />
+            <Plus className="h-4 w-4 stroke-[1.5]" />
           </button>
         </div>
         <button
@@ -124,7 +143,7 @@ function CartItemRow({ item, includeVat, updateQuantity, removeItem }: CartItemR
           onClick={() => removeItem(item.supplierItemId)}
           title="Remove"
         >
-          <Trash2 className="h-4 w-4" strokeWidth={2} />
+          <Trash2 className="h-4 w-4 stroke-[1.5]" />
         </button>
       </div>
     </div>
@@ -144,8 +163,6 @@ export function CartDrawer() {
   } = useCart()
   const { includeVat, setIncludeVat } = useSettings()
   const lastItems = useRef(items)
-
-  const formatPrice = (price: number) => formatCurrency(price)
 
   const totalExVat = items.reduce(
     (sum, item) => sum + item.unitPriceExVat * item.quantity,
@@ -219,9 +236,9 @@ export function CartDrawer() {
                 <Button
                   variant="link"
                   size="sm"
-                  className="justify-self-end text-sm text-muted-foreground"
+                  className="justify-self-end text-sm text-muted-foreground items-center"
                 >
-                  <Trash2 className="h-4 w-4 mr-1" />
+                  <Trash2 className="h-4 w-4 mr-1 stroke-[1.5]" />
                   Clear Cart
                 </Button>
               </AlertDialogTrigger>
