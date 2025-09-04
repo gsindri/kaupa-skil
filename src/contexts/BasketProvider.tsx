@@ -29,7 +29,8 @@ export default function BasketProvider({ children }: { children: React.ReactNode
           it.itemName ??
           it.name ??
           it.title ??
-          it.productName
+          it.productName,
+        image: it.image ?? null
       }))
     } catch {
       return []

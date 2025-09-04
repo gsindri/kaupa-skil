@@ -12,7 +12,7 @@ let warnedMissingCdnBase = false
  * Build a full CDN URL for a cached image path.
  * Always uses our cached copy to avoid hotlinking external sources.
  */
-export function getCachedImageUrl(path?: string): string {
+export function getCachedImageUrl(path?: string | null): string {
   if (!path) return ''
   if (/^https?:\/\//i.test(path)) return path
   if (!CDN_BASE) {
