@@ -177,7 +177,7 @@ export function MiniCart() {
                       </div>
                     </div>
                     <div className="flex items-center">
-                      <div className="inline-flex h-7 w-[88px] md:w-[96px] items-center divide-x rounded-md border">
+                      <div className="inline-flex h-7 w-[88px] md:w-[96px] items-center divide-x rounded-md border ring-offset-1 focus-within:ring-2 focus-within:ring-brand/50">
                         <button
                           className="flex h-full w-7 items-center justify-center p-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50"
                           aria-label={`Decrease quantity of ${displayName}`}
@@ -205,7 +205,7 @@ export function MiniCart() {
                           <button
                             aria-label={`Remove ${displayName} from cart`}
                             onClick={() => handleRemove(index)}
-                            className="ml-2 flex h-7 w-7 items-center justify-center p-0 text-muted-foreground hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50"
+                            className="ml-2 flex h-7 w-7 items-center justify-center p-0 text-muted-foreground hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50 focus-visible:ring-offset-1"
                           >
                             <Trash2 className="h-4 w-4 stroke-[1.5]" />
                           </button>

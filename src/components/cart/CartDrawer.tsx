@@ -118,7 +118,7 @@ function CartItemRow({ item, includeVat, updateQuantity, removeItem }: CartItemR
         </div>
       </div>
       <div className="flex items-center">
-        <div className="inline-flex h-7 w-[88px] md:w-[96px] items-center divide-x rounded-md border">
+        <div className="inline-flex h-7 w-[88px] md:w-[96px] items-center divide-x rounded-md border ring-offset-1 focus-within:ring-2 focus-within:ring-brand/50">
           <button
             className="flex h-full w-7 items-center justify-center p-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50"
             aria-label="Decrease quantity"
@@ -139,7 +139,7 @@ function CartItemRow({ item, includeVat, updateQuantity, removeItem }: CartItemR
         </div>
         <button
           aria-label="Remove item"
-          className="ml-2 flex h-7 w-7 items-center justify-center p-0 text-muted-foreground hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50"
+          className="ml-2 flex h-7 w-7 items-center justify-center p-0 text-muted-foreground hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50 focus-visible:ring-offset-1"
           onClick={() => removeItem(item.supplierItemId)}
           title="Remove"
         >
