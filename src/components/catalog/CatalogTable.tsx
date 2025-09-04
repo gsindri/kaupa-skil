@@ -44,7 +44,6 @@ import { Lock } from 'lucide-react'
 import { toast } from '@/hooks/use-toast'
 import { useCart } from '@/contexts/useBasket'
 import { QuantityStepper } from '@/components/cart/QuantityStepper'
-import SupplierList from '@/components/catalog/SupplierList'
 
 interface CatalogTableProps {
   products: any[]
@@ -237,14 +236,20 @@ export function CatalogTable({
                   brand={p.brand}
                 />
               </TableCell>
-              <TableCell className="[width:minmax(0,1fr)] p-2" title={p.name}>
-                <div>
-                  {p.name}
-                  {(p.brand || p.pack_size) && (
-                    <div className="text-[13px] text-muted-foreground">
-                      {[p.brand, p.pack_size].filter(Boolean).join(' • ')}
-                    </div>
-                  )}
+              <TableCell
+                className="[width:minmax(0,1fr)] p-2"
+                title={p.name}
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <div>
+                    {p.name}
+                    {(p.brand || p.pack_size) && (
+                      <div className="text-[13px] text-muted-foreground">
+                        {[p.brand, p.pack_size].filter(Boolean).join(' • ')}
+                      </div>
+                    )}
+                  </div>
+                  <AddToCartButton product={p} vendors={vendors} />
                 </div>
               </TableCell>
               <TableCell className="w-28 p-2 whitespace-nowrap">
@@ -285,76 +290,56 @@ export function CatalogTable({
 }
 
 // Button and quantity control for adding catalog items to the cart
-function AddToCartButton({
-  product,
-  vendors,
-}: {
-  product: any
-  vendors: { id: string; name: string }[]
-}) {
-  const { items, addItem, updateQuantity } = useCart()
-  const [open, setOpen] = useState(false)
+  function AddToCartButton({
+    product,
+    vendors,
+  }: {
+    product: any
+    vendors: { id: string; name: string }[]
+  }) {
+    const { items, addItem, updateQuantity } = useCart()
+    const [open, setOpen] = useState(false)
 
-  const existing = items.find(it => it.id === product.catalog_id)
-  const quantity = existing?.quantity ?? 0
+    const existing = items.find(it => it.id === product.catalog_id)
+    const quantity = existing?.quantity ?? 0
 
-  const supplierEntries =
-    Array.isArray(product.suppliers) && product.suppliers.length
-      ? product.suppliers.map((s: any) =>
-          typeof s === 'string'
-            ? { name: s, availability_status: undefined }
-            : {
-                name: s.name,
-                availability_status:
-                  s.availability_status ??
-                  s.status ??
-                  (typeof s.availability === 'string'
-                    ? s.availability
-                    : s.availability?.status),
-              },
-        )
-      : []
-
-  const handleAdd = (supplier: any) => {
-    const connected = vendors.some(v => v.name === supplier.name)
-    const supplierItemId = `${product.catalog_id}:${supplier.name}`
-    const existingItem = items.find(it => it.supplierItemId === supplierItemId)
-    if (existingItem) {
-      updateQuantity(supplierItemId, existingItem.quantity + 1)
-    } else {
-      addItem(
-        {
-          id: product.catalog_id,
-          supplierId: supplier.name,
-          supplierName: supplier.name,
-          itemName: product.name,
-          sku: product.catalog_id,
-          packSize: product.pack_size ?? '',
-          packPrice: connected ? 0 : null,
-          unitPriceExVat: connected ? 0 : null,
-          unitPriceIncVat: connected ? 0 : null,
-          vatRate: 0,
-          unit: '',
-          supplierItemId,
-          displayName: product.name,
-          packQty: 1,
-          image: product.sample_image_url ?? null,
-        },
-        1,
-        { showToast: false },
       )
+      if (existingItem) {
+        updateQuantity(supplierItemId, existingItem.quantity + 1)
+      } else {
+        addItem(
+          {
+            id: product.catalog_id,
+            supplierId: supplier.name,
+            supplierName: supplier.name,
+            itemName: product.name,
+            sku: product.catalog_id,
+            packSize: product.pack_size ?? '',
+            packPrice: connected ? 0 : null,
+            unitPriceExVat: connected ? 0 : null,
+            unitPriceIncVat: connected ? 0 : null,
+            vatRate: 0,
+            unit: '',
+            supplierItemId,
+            displayName: product.name,
+            packQty: 1,
+            image: product.sample_image_url ?? null,
+          },
+          1,
+          { showToast: false },
+        )
+      }
+      if (supplier.availability_status === 'OUT_OF_STOCK') {
+        toast({ description: 'Out of stock at selected supplier.' })
+      }
+      setOpen(false)
     }
-    if (supplier.availability_status === 'OUT_OF_STOCK') {
-      toast({ description: 'Out of stock at selected supplier.' })
-    }
-    setOpen(false)
-  }
 
-  if (quantity > 0 && existing) {
-    return (
-      <QuantityStepper
-        quantity={quantity}
-        onChange={q => updateQuantity(existing.supplierItemId, q)}
+    if (quantity > 0 && existing) {
+      return (
+        <QuantityStepper
+          quantity={quantity}
+          onChange={q => updateQuantity(existing.supplierItemId, q)}
         label={`${product.name} from ${existing.supplierName}`}
       />
     )
@@ -401,7 +386,6 @@ function AddToCartButton({
   )
 }
 
-// Price display cell including add-to-cart controls
 function PriceCell({
   product,
   vendors,
@@ -471,7 +455,6 @@ function PriceCell({
   return (
     <div className="flex items-center justify-end gap-2">
       {priceContent}
-      <AddToCartButton product={product} vendors={vendors} />
     </div>
   )
 }
