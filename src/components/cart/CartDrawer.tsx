@@ -96,33 +96,33 @@ function CartItemRow({ item, includeVat, updateQuantity, removeItem }: CartItemR
       <div className="min-w-[9ch] md:min-w-[11ch] text-right tabular-nums whitespace-nowrap text-sm">
         {formatCurrency(lineTotal)}
       </div>
-      <div className="flex items-center gap-2">
-        <div className="flex items-center w-[96px] gap-1">
+      <div className="flex items-center">
+        <div className="inline-flex h-7 w-[92px] items-center divide-x rounded-md border">
           <button
-            className="h-6 w-6 p-0 rounded-md border flex items-center justify-center"
+            className="flex h-full w-7 items-center justify-center p-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50"
             aria-label="Decrease quantity"
             onClick={() => updateQuantity(item.supplierItemId, item.quantity - 1)}
           >
-            <Minus className="h-4 w-4" />
+            <Minus className="h-4 w-4" strokeWidth={2} />
           </button>
-          <span className="w-10 text-center tabular-nums text-sm">
+          <span className="flex h-full flex-1 items-center justify-center tabular-nums text-sm">
             {item.quantity}
           </span>
           <button
-            className="h-6 w-6 p-0 rounded-md border flex items-center justify-center"
+            className="flex h-full w-7 items-center justify-center p-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50"
             aria-label="Increase quantity"
             onClick={() => updateQuantity(item.supplierItemId, item.quantity + 1)}
           >
-            <Plus className="h-4 w-4" />
+            <Plus className="h-4 w-4" strokeWidth={2} />
           </button>
         </div>
         <button
           aria-label="Remove item"
-          className="h-6 w-6 p-0 rounded-md hover:bg-destructive/10 flex items-center justify-center"
+          className="ml-2 flex h-7 w-7 items-center justify-center p-0 text-muted-foreground hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50"
           onClick={() => removeItem(item.supplierItemId)}
           title="Remove"
         >
-          <Trash2 className="h-4 w-4 text-muted-foreground" />
+          <Trash2 className="h-4 w-4" strokeWidth={2} />
         </button>
       </div>
     </div>
