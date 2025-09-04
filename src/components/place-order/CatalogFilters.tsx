@@ -24,12 +24,15 @@ export const CatalogFilters = memo(function CatalogFilters({
 }: CatalogFiltersProps) {
   return (
     <div className="flex items-center gap-4">
-      <Select value={category} onValueChange={onCategoryChange}>
+      <Select
+        value={category || 'all'}
+        onValueChange={v => onCategoryChange(v === 'all' ? '' : v)}
+      >
         <SelectTrigger className="w-[150px]">
           <SelectValue placeholder="Category" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="">All</SelectItem>
+          <SelectItem value="all">All</SelectItem>
           {categories.map(c => (
             <SelectItem key={c} value={c}>{c}</SelectItem>
           ))}

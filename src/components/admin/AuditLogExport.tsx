@@ -87,12 +87,17 @@ export function AuditLogExport() {
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="action">Action</Label>
-            <Select value={filters.action} onValueChange={(value) => setFilters(prev => ({ ...prev, action: value }))}>
+            <Select
+              value={filters.action || 'all'}
+              onValueChange={value =>
+                setFilters(prev => ({ ...prev, action: value === 'all' ? '' : value }))
+              }
+            >
               <SelectTrigger>
                 <SelectValue placeholder="All actions" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All actions</SelectItem>
+                <SelectItem value="all">All actions</SelectItem>
                 <SelectItem value="elevation_created">Elevation Created</SelectItem>
                 <SelectItem value="elevation_revoked">Elevation Revoked</SelectItem>
                 <SelectItem value="support_session_created">Support Session Created</SelectItem>
@@ -104,12 +109,20 @@ export function AuditLogExport() {
 
           <div className="space-y-2">
             <Label htmlFor="entityType">Entity Type</Label>
-            <Select value={filters.entityType} onValueChange={(value) => setFilters(prev => ({ ...prev, entityType: value }))}>
+            <Select
+              value={filters.entityType || 'all'}
+              onValueChange={value =>
+                setFilters(prev => ({
+                  ...prev,
+                  entityType: value === 'all' ? '' : value,
+                }))
+              }
+            >
               <SelectTrigger>
                 <SelectValue placeholder="All entities" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All entities</SelectItem>
+                <SelectItem value="all">All entities</SelectItem>
                 <SelectItem value="admin_elevation">Admin Elevation</SelectItem>
                 <SelectItem value="support_session">Support Session</SelectItem>
                 <SelectItem value="user">User</SelectItem>
