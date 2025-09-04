@@ -43,8 +43,6 @@ import {
 } from '@/components/ui/drawer'
 import { Lock } from 'lucide-react'
 import { toast } from '@/hooks/use-toast'
-import { useCart } from '@/contexts/useBasket'
-import { QuantityStepper } from '@/components/cart/QuantityStepper'
 
 interface CatalogTableProps {
   products: any[]
@@ -214,7 +212,7 @@ export function CatalogTable({
             <TableRow
               key={id}
               ref={el => (rowRefs.current[i] = el)}
-              tabIndex={0}
+              tabIndex={-1}
               data-state={isSelected ? 'selected' : undefined}
               onKeyDown={e => handleKeyDown(e, i, id)}
               className="group h-[52px] border-b hover:bg-muted/50 focus-visible:bg-muted/50"
@@ -237,20 +235,6 @@ export function CatalogTable({
                   brand={p.brand}
                 />
               </TableCell>
-              <TableCell
-                className="[width:minmax(0,1fr)] p-2"
-                title={p.name}
-              >
-                <div className="flex items-center justify-between gap-2">
-                  <div>
-                    {p.name}
-                    {(p.brand || p.pack_size) && (
-                      <div className="text-[13px] text-muted-foreground">
-                        {[p.brand, p.pack_size].filter(Boolean).join(' • ')}
-                      </div>
-                    )}
-                  </div>
-                  <AddToCartButton product={p} vendors={vendors} />
                 </div>
               </TableCell>
               <TableCell className="w-28 p-2 whitespace-nowrap">
@@ -301,19 +285,6 @@ export function CatalogTable({
     const { items, addItem, updateQuantity } = useCart()
     const [open, setOpen] = useState(false)
 
-    const existing = items.find(it => it.id === product.catalog_id)
-    const quantity = existing?.quantity ?? 0
-
-    const supplierEntries = vendors
-
-    function handleAdd(supplier: {
-      id: string
-      name: string
-      availability_status?: string
-    }) {
-      const supplierItemId = `${product.catalog_id}:${supplier.id}`
-      const existingItem = items.find(
-        it => it.supplierItemId === supplierItemId,
       )
 
       if (existingItem) {
@@ -374,27 +345,6 @@ export function CatalogTable({
     }
 
     return (
-      <DropdownMenu open={open} onOpenChange={setOpen}>
-        <DropdownMenuTrigger asChild>
-          <Button size="sm" variant="outline">
-            Add
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent>
-          {supplierEntries.map(s => {
-            const disabled = s.availability_status === 'OUT_OF_STOCK'
-            return (
-              <DropdownMenuItem
-                key={s.id ?? s.name}
-                disabled={disabled}
-                onSelect={() => handleAdd(s)}
-              >
-                {s.name}
-              </DropdownMenuItem>
-            )
-          })}
-        </DropdownMenuContent>
-      </DropdownMenu>
     )
   }
 
