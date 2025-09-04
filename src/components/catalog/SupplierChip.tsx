@@ -1,24 +1,38 @@
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
-import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip"
-import { Lock } from "lucide-react"
-import { timeAgo } from "@/lib/timeAgo"
-import type { AvailabilityStatus } from "@/components/catalog/AvailabilityBadge"
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Lock } from 'lucide-react'
 
 interface SupplierChipProps {
   name: string
   logoUrl?: string | null
+  /** Whether the supplier is connected */
+  connected?: boolean
+}
+
+export default function SupplierChip({
+  name,
+  logoUrl,
+  connected = true,
+}: SupplierChipProps) {
   const initials = name
-    .split(" ")
+    .split(' ')
     .map(s => s[0])
-    .join("")
+    .join('')
     .slice(0, 2)
     .toUpperCase()
 
-  const state = availability?.status ?? "UNKNOWN"
-  const info = AVAILABILITY_STYLES[state]
-  const time = availability?.updatedAt ? timeAgo(availability.updatedAt) : "unknown"
-
   return (
+    <div className="relative">
+      <Avatar className="h-5 w-5">
+        {logoUrl ? (
+          <AvatarImage src={logoUrl} alt={name} />
+        ) : (
+          <AvatarFallback>{initials}</AvatarFallback>
+        )}
+      </Avatar>
+      {!connected && (
+        <Lock className="absolute right-0 bottom-0 h-3 w-3 text-muted-foreground" />
+      )}
+    </div>
   )
 }
 
