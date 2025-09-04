@@ -1,98 +1,60 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { shallow } from 'zustand/vanilla/shallow'
+import type { FacetFilters } from '@/services/catalog'
 
+// Legacy types kept for backward compatibility with code that may import them
 export type AvailabilityFilter = 'in' | 'low' | 'out' | 'unknown'
 export type SortKey = 'name' | 'price' | 'availability'
 export type SortDir = 'asc' | 'desc'
-
 export interface Sort {
   key: SortKey
   dir: SortDir
 }
 
-// Backward compatible alias
-export type SortOrder = Sort
+// Catalog sorting options used across the app
+export type SortOrder =
+  | 'relevance'
+  | 'price_asc'
+  | 'price_desc'
+  | 'az'
+  | 'recent'
 
-export interface CatalogFiltersState {
-  search: string
-  availability: AvailabilityFilter[]
-  suppliers: string[]
-  specials: boolean
-  mySuppliersOnly: boolean
-  priceMin?: number
-  priceMax?: number
-  sort: Sort
-  setSearch: (v: string) => void
-  toggleAvailability: (v: AvailabilityFilter) => void
-  setSuppliers: (ids: string[]) => void
-  setSpecials: (v: boolean) => void
-  setMySuppliersOnly: (v: boolean) => void
-  setPriceRange: (min?: number, max?: number) => void
-  setSort: (s: Sort) => void
+interface CatalogFiltersState {
+  /** Current facet filters applied to the catalog */
+  filters: FacetFilters
+  /** Whether to show only items with price information */
+  onlyWithPrice: boolean
+  /** Selected sort order */
+  sort: SortOrder
+  setFilters: (f: Partial<FacetFilters>) => void
+  setOnlyWithPrice: (v: boolean) => void
+  setSort: (v: SortOrder) => void
   clear: () => void
 }
 
-const defaultState: Omit<CatalogFiltersState,
-  | 'setSearch'
-  | 'toggleAvailability'
-  | 'setSuppliers'
-  | 'setSpecials'
-  | 'setMySuppliersOnly'
-  | 'setPriceRange'
-  | 'setSort'
-  | 'clear'
+const defaultState: Omit<
+  CatalogFiltersState,
+  'setFilters' | 'setOnlyWithPrice' | 'setSort' | 'clear'
 > = {
-  search: '',
-  availability: [],
-  suppliers: [],
-  specials: false,
-  mySuppliersOnly: false,
-  priceMin: undefined,
-  priceMax: undefined,
-  sort: { key: 'name', dir: 'asc' },
+  filters: {},
+  onlyWithPrice: false,
+  sort: 'relevance',
 }
 
 export const useCatalogFilters = create<CatalogFiltersState>()(
   persist(
-    (set, get) => ({
+    set => ({
       ...defaultState,
-      setSearch: (v) => set({ search: v }),
-      toggleAvailability: (v) =>
-        set((s) => ({
-          availability: s.availability.includes(v)
-            ? s.availability.filter((a) => a !== v)
-            : [...s.availability, v],
-        })),
-      setSuppliers: (ids) => set({ suppliers: ids }),
-      setSpecials: (v) => set({ specials: v }),
-      setMySuppliersOnly: (v) => set({ mySuppliersOnly: v }),
-      setPriceRange: (min, max) => set({ priceMin: min, priceMax: max }),
-      setSort: (sort) => set({ sort }),
+      setFilters: f =>
+        set(state => ({ filters: { ...state.filters, ...f } })),
+      setOnlyWithPrice: v => set({ onlyWithPrice: v }),
+      setSort: v => set({ sort: v }),
       clear: () => set({ ...defaultState }),
     }),
     { name: 'catalogFilters' },
   ),
 )
-
-export const selectors = {
-  search: (s: CatalogFiltersState) => s.search,
-  availability: (s: CatalogFiltersState) => s.availability,
-  suppliers: (s: CatalogFiltersState) => s.suppliers,
-  specials: (s: CatalogFiltersState) => s.specials,
-  mySuppliersOnly: (s: CatalogFiltersState) => s.mySuppliersOnly,
-  priceMin: (s: CatalogFiltersState) => s.priceMin,
-  priceMax: (s: CatalogFiltersState) => s.priceMax,
-  sort: (s: CatalogFiltersState) => s.sort,
-  setSearch: (s: CatalogFiltersState) => s.setSearch,
-  toggleAvailability: (s: CatalogFiltersState) => s.toggleAvailability,
-  setSuppliers: (s: CatalogFiltersState) => s.setSuppliers,
-  setSpecials: (s: CatalogFiltersState) => s.setSpecials,
-  setMySuppliersOnly: (s: CatalogFiltersState) => s.setMySuppliersOnly,
-  setPriceRange: (s: CatalogFiltersState) => s.setPriceRange,
-  setSort: (s: CatalogFiltersState) => s.setSort,
-  clear: (s: CatalogFiltersState) => s.clear,
-}
 
 export { shallow }
 
