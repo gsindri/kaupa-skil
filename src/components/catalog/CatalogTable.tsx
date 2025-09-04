@@ -55,6 +55,18 @@ interface CatalogTableProps {
   showConnectPill?: boolean
 }
 
+type SupplierEntry =
+  | string
+  | {
+      name: string
+      connected?: boolean
+      logoUrl?: string | null
+      availability_status?: AvailabilityStatus | null
+      status?: AvailabilityStatus | null
+      availability?: { status?: AvailabilityStatus | null; updatedAt?: string | Date | null }
+      availability_updated_at?: string | Date | null
+    }
+
 export function CatalogTable({
   products,
   selected,
@@ -238,14 +250,6 @@ export function CatalogTable({
                 className="[width:minmax(0,1fr)] p-2"
                 title={p.name}
               >
-                <div>
-                  <div className="truncate">{p.name}</div>
-                  {(p.brand || p.pack_size) && (
-                    <div className="text-[13px] text-muted-foreground">
-                      {[p.brand, p.pack_size].filter(Boolean).join(' • ')}
-                    </div>
-                  )}
-                </div>
               </TableCell>
               <TableCell className="w-28 p-2 whitespace-nowrap">
                 <Tooltip>
@@ -441,38 +445,16 @@ function PriceCell({ product }: { product: any }) {
   )
 }
 
-
-function SupplierList({ suppliers }: { suppliers: any[] }) {
-  const items = suppliers.map(s =>
-    typeof s === 'string'
-      ? { name: s, availability_status: undefined }
-      : {
-          name: s.name,
-          availability_status:
-            s.availability_status ?? s.status ?? s.availability ?? undefined,
-        },
-  )
-
   const handleClick = (s: {
     name: string
-    availability_status?: AvailabilityStatus | null
+    availability?: { status?: AvailabilityStatus | null }
   }) => {
-    if (s.availability_status === 'OUT_OF_STOCK') {
+    if (s.availability?.status === 'OUT_OF_STOCK') {
       toast({ description: 'Out of stock at selected supplier.' })
     }
   }
 
   return (
-    <div className="flex flex-wrap gap-1">
-      {items.map(s => (
-        <Badge
-          key={s.name}
-          variant="secondary"
-          onClick={() => handleClick(s)}
-          className="cursor-pointer"
-        >
-          <SupplierChip name={s.name} connected />
-        </Badge>
       ))}
     </div>
   )

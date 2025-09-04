@@ -1,11 +1,13 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Lock } from 'lucide-react'
 
-interface SupplierChipProps {
+interface AvailabilityInfo {
+  status?: AvailabilityStatus | null
+  updatedAt?: string | Date | null
+}
+
+interface SupplierChipProps extends React.HTMLAttributes<HTMLDivElement> {
   name: string
   logoUrl?: string | null
-  /** Whether the supplier is connected */
-  connected?: boolean
 }
 
 export default function SupplierChip({
@@ -20,19 +22,24 @@ export default function SupplierChip({
     .slice(0, 2)
     .toUpperCase()
 
-  return (
-    <div className="relative">
-      <Avatar className="h-5 w-5">
-        {logoUrl ? (
-          <AvatarImage src={logoUrl} alt={name} />
         ) : (
           <AvatarFallback>{initials}</AvatarFallback>
         )}
       </Avatar>
       {!connected && (
-        <Lock className="absolute right-0 bottom-0 h-3 w-3 text-muted-foreground" />
-      )}
     </div>
   )
+
+  if (availability) {
+    const time = availability.updatedAt ? timeAgo(availability.updatedAt) : 'unknown'
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>{avatar}</TooltipTrigger>
+        <TooltipContent>{`Last updated ${time}`}</TooltipContent>
+      </Tooltip>
+    )
+  }
+
+  return avatar
 }
 
