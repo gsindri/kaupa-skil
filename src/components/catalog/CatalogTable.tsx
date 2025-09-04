@@ -31,6 +31,7 @@ import { formatCurrency } from '@/lib/format'
 import type { FacetFilters } from '@/services/catalog'
 import SupplierChip from '@/components/catalog/SupplierChip'
 import ProductThumb from '@/components/catalog/ProductThumb'
+import { resolveImage } from '@/lib/images'
 import {
   Drawer,
   DrawerTrigger,
@@ -224,7 +225,10 @@ export function CatalogTable({
               <TableCell className="w-10 p-2">
                 <ProductThumb
                   className="h-10 w-10"
-                  src={p.image_main}
+                  src={resolveImage(
+                    p.sample_image_url ?? p.image_main,
+                    p.availability_status,
+                  )}
                   name={p.name}
                   brand={p.brand}
                 />
