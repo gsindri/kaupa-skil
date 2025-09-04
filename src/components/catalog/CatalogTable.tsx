@@ -21,6 +21,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuCheckboxItem,
+  DropdownMenuItem,
 } from '@/components/ui/dropdown-menu'
 import { Button } from '@/components/ui/button'
 import { useVendors } from '@/hooks/useVendors'
@@ -42,10 +43,6 @@ import {
 import { Lock } from 'lucide-react'
 import { toast } from '@/hooks/use-toast'
 import SupplierChip from '@/components/catalog/SupplierChip'
-import SupplierList, { type SupplierEntry } from '@/components/catalog/SupplierList'
-import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover'
-import { QuantityStepper } from '@/components/cart/QuantityStepper'
-import { useCart } from '@/contexts/useBasket'
 
 interface CatalogTableProps {
   products: any[]
@@ -266,7 +263,7 @@ export function CatalogTable({
                 </Tooltip>
               </TableCell>
               <TableCell className="min-w-[112px] max-w-[136px] w-[112px] sm:w-[136px] p-2 text-right whitespace-nowrap">
-                <PriceCell product={p} />
+                <PriceCell product={p} vendors={vendors} />
               </TableCell>
               <TableCell className="min-w-[140px] max-w-[180px] w-40 p-2 whitespace-nowrap">
                 {p.suppliers?.length ? (
@@ -285,6 +282,7 @@ export function CatalogTable({
   )
 }
 
+// Button and quantity control for adding catalog items to the cart
 function AddToCartButton({
   product,
   vendors,
@@ -298,98 +296,123 @@ function AddToCartButton({
   const existing = items.find(it => it.id === product.catalog_id)
   const quantity = existing?.quantity ?? 0
 
-  const handleAdd = (supplier: {
-    name: string
-    availability_status?: AvailabilityStatus | null
-  }) => {
-    const supplierItemId = `${product.catalog_id}:${supplier.name}`
-    addItem(
-      {
-        id: product.catalog_id,
-        supplierId: supplier.name,
-        supplierName: supplier.name,
-        itemName: product.name,
-        sku: product.catalog_id,
-        packSize: product.pack_size ?? '',
-        packPrice: 0,
-        unitPriceExVat: 0,
-        unitPriceIncVat: 0,
-        vatRate: 0,
-        unit: '',
-        supplierItemId,
-        displayName: product.name,
-        packQty: 1,
-        image: product.sample_image_url ?? null,
-      },
-      1,
-      { showToast: false },
     )
+    const existingItem = items.find(it => it.supplierItemId === supplierItemId)
+    if (existingItem) {
+      updateQuantity(supplierItemId, existingItem.quantity + 1)
+    } else {
+      addItem(
+        {
+          id: product.catalog_id,
+          supplierId: supplier.name,
+          supplierName: supplier.name,
+          itemName: product.name,
+          sku: product.catalog_id,
+          packSize: product.pack_size ?? '',
+          packPrice: connected ? 0 : null,
+          unitPriceExVat: connected ? 0 : null,
+          unitPriceIncVat: connected ? 0 : null,
+          vatRate: 0,
+          unit: '',
+          supplierItemId,
+          displayName: product.name,
+          packQty: 1,
+          image: product.sample_image_url ?? null,
+        },
+        1,
+        { showToast: false },
+      )
+    }
     if (supplier.availability_status === 'OUT_OF_STOCK') {
       toast({ description: 'Out of stock at selected supplier.' })
     }
     setOpen(false)
   }
 
-  const supplierEntries = (product.suppliers || []).map((s: SupplierEntry) =>
+  if (quantity > 0 && existing) {
+    return (
+      <QuantityStepper
+        quantity={quantity}
+        onChange={q => updateQuantity(existing.supplierItemId, q)}
+        label={`${product.name} from ${existing.supplierName}`}
+      />
+    )
+  }
+
+  if (supplierEntries.length <= 1) {
+    const supplier = supplierEntries[0]
+    const disabled =
+      supplier?.availability_status === 'OUT_OF_STOCK' || false
+    return (
+      <Button
+        size="sm"
+        onClick={() => handleAdd(supplier)}
+        disabled={disabled}
+        aria-label={`Add ${product.name} to cart`}
+      >
+        Add
+      </Button>
+    )
+  }
+
+  return (
+    <DropdownMenu open={open} onOpenChange={setOpen}>
+      <DropdownMenuTrigger asChild>
+        <Button size="sm" variant="outline">
+          Add
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent>
+        {supplierEntries.map(s => {
+          const disabled = s.availability_status === 'OUT_OF_STOCK'
+          return (
+            <DropdownMenuItem
+              key={s.name}
+              disabled={disabled}
+              onSelect={() => handleAdd(s)}
+            >
+              {s.name}
+            </DropdownMenuItem>
+          )
+        })}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}
+
+// Display supplier badges and availability
+function SupplierList({
+  suppliers,
+  locked,
+}: {
+  suppliers: SupplierEntry[]
+  locked?: boolean
+}) {
+  const entries = suppliers.map((s: SupplierEntry) =>
     typeof s === 'string'
       ? { name: s, availability_status: undefined }
       : {
           name: s.name,
           availability_status:
-            s.availability_status ?? s.status ?? s.availability ?? undefined,
+            s.availability_status ??
+            s.status ??
+            (typeof s.availability === 'string'
+              ? s.availability
+              : s.availability?.status) ??
+            undefined,
         },
   )
 
   return (
-    <div className="ml-2 flex-shrink-0 opacity-100 md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100 transition-opacity">
-      {quantity > 0 && existing ? (
-        <QuantityStepper
-          quantity={quantity}
-          onChange={q => updateQuantity(existing.supplierItemId, q)}
-          label={product.name}
-        />
-        ) : supplierEntries.length > 1 ? (
-          <Popover open={open} onOpenChange={setOpen}>
-            <PopoverTrigger asChild>
-              <Button size="sm" className="h-7 px-2">
-                Add
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-56 p-2 flex flex-col gap-1">
-              {supplierEntries.map(s => {
-                const connected = vendors.some(v => v.name === s.name)
-                return (
-                  <Button
-                    key={s.name}
-                    variant="ghost"
-                    className="justify-start gap-2 px-2 h-8"
-                    onClick={() => handleAdd(s)}
-                    disabled={!connected}
-                  >
-                    <SupplierChip name={s.name} />
-                    <span className="flex-1 text-left">{s.name}</span>
-                    <AvailabilityBadge status={s.availability_status} />
-                    {!connected && <Lock className="h-4 w-4" />}
-                  </Button>
-                )
-              })}
-            </PopoverContent>
-          </Popover>
-        ) : (
-          <Button
-            size="sm"
-            className="h-7 px-2"
-            onClick={() => handleAdd(supplierEntries[0])}
-            disabled={supplierEntries.length === 0}
-          >
-            Add
-          </Button>
-        )}
-      </div>
-    )
-  }
 
-function PriceCell({ product }: { product: any }) {
+// Price display cell including add-to-cart controls
+function PriceCell({
+  product,
+  vendors,
+}: {
+  product: any
+  vendors: { id: string; name: string }[]
+}) {
   const sources: string[] = product.price_sources || product.suppliers || []
   const priceValues: number[] = Array.isArray(product.prices)
     ? product.prices
@@ -398,12 +421,16 @@ function PriceCell({ product }: { product: any }) {
     : []
   const isLocked = product.prices_locked ?? product.price_locked ?? false
 
+  let priceNode: React.ReactNode
+  let tooltip: React.ReactNode | null = null
 
   if (isLocked) {
     priceNode = (
       <div className="flex items-center justify-end gap-2 text-muted-foreground">
         <Lock className="h-4 w-4" />
-        <span aria-hidden="true" className="tabular-nums">—</span>
+        <span aria-hidden="true" className="tabular-nums">
+          —
+        </span>
         <span className="sr-only">Price locked</span>
       </div>
     )
@@ -426,6 +453,7 @@ function PriceCell({ product }: { product: any }) {
       min === max
         ? formatCurrency(min, currency)
         : `${formatCurrency(min, currency)}–${formatCurrency(max, currency)}`
+    priceNode = <span className="tabular-nums">{text}</span>
   } else {
     priceNode = (
       <span className="tabular-nums">
@@ -435,29 +463,18 @@ function PriceCell({ product }: { product: any }) {
     )
   }
 
+  const priceContent = tooltip ? (
+    <Tooltip>
+      <TooltipTrigger asChild>{priceNode}</TooltipTrigger>
+      <TooltipContent className="space-y-1">{tooltip}</TooltipContent>
+    </Tooltip>
+  ) : (
+    priceNode
+  )
 
   return (
     <div className="flex items-center justify-end gap-2">
       {priceContent}
-      {qty > 0 ? (
-        <QuantityStepper
-          quantity={qty}
-          onChange={setQty}
-          label={label}
-        />
-      ) : (
-        <Button
-          size="sm"
-          onClick={() => setQty(1)}
-          aria-label={`Add ${product.name} to cart`}
-        >
-          Add
-        </Button>
-      )}
-    </div>
-  )
-}
-
 
 function ConnectPill() {
   return (
