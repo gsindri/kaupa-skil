@@ -233,17 +233,19 @@ export function CatalogTable({
                   brand={p.brand}
                 />
               </TableCell>
-              <TableCell
-                className="[width:minmax(0,1fr)] p-2"
-                title={p.name}
-              >
+                <TableCell
+                  className="[width:minmax(0,1fr)] p-2"
+                  title={p.name}
+                >
+                  <div className="truncate">
+                    <div>{p.name}</div>
                     {(p.brand || p.pack_size) && (
                       <div className="text-[13px] text-muted-foreground">
                         {[p.brand, p.pack_size].filter(Boolean).join(' • ')}
                       </div>
                     )}
                   </div>
-              </TableCell>
+                </TableCell>
               <TableCell className="w-28 p-2 whitespace-nowrap">
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -328,12 +330,16 @@ function AddToCartButton({
         <QuantityStepper
           quantity={quantity}
           onChange={q => updateQuantity(existing.supplierItemId, q)}
-          label={product.name}
+          label={`${product.name} from ${existing.supplierName}`}
         />
       ) : suppliers.length > 1 ? (
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
-            <Button size="sm" className="h-7 px-2">
+            <Button
+              size="sm"
+              className="h-7 px-2"
+              aria-label={`Add ${product.name} to cart`}
+            >
               Add
             </Button>
           </PopoverTrigger>
@@ -363,6 +369,7 @@ function AddToCartButton({
           className="h-7 px-2"
           onClick={() => handleAdd(suppliers[0])}
           disabled={suppliers.length === 0}
+          aria-label={`Add ${product.name} to cart`}
         >
           Add
         </Button>
@@ -441,28 +448,17 @@ function PriceCell({ product }: { product: any }) {
 }
 
 
-function SupplierList({ suppliers }: { suppliers: SupplierEntry[] }) {
-  const items = suppliers.map(s =>
-    typeof s === 'string'
-      ? { name: s, availability_status: undefined }
-      : {
-          name: s.name,
-          availability_status:
-            s.availability_status ?? s.status ?? s.availability ?? undefined,
-        },
-  )
-
-  const handleClick = (s: {
-    name: string
-    availability_status?: AvailabilityStatus | null
-  }) => {
-    if (s.availability_status === 'OUT_OF_STOCK') {
-      toast({ description: 'Out of stock at selected supplier.' })
-    }
-  }
-
+function SupplierList({ suppliers }: { suppliers: any[] }) {
   return (
-      ))}
+    <div className="flex flex-wrap gap-1">
+      {suppliers.map(s => {
+        const name = typeof s === 'string' ? s : s.name
+        return (
+          <Badge key={name} variant="outline" className="px-2 py-0.5 text-xs">
+            {name}
+          </Badge>
+        )
+      })}
     </div>
   )
 }
