@@ -42,6 +42,7 @@ describe('PriceCell', () => {
           onSort={() => {}}
           filters={{}}
           onFilterChange={() => {}}
+          isBulkMode={false}
         />
       </TooltipProvider>,
     )

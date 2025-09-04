@@ -8,7 +8,6 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Badge } from '@/components/ui/badge'
 import {
   Select,
   SelectTrigger,
@@ -36,14 +35,6 @@ import type { FacetFilters } from '@/services/catalog'
 import ProductThumb from '@/components/catalog/ProductThumb'
 import SupplierList from '@/components/catalog/SupplierList'
 import { resolveImage } from '@/lib/images'
-import {
-  Drawer,
-  DrawerTrigger,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerDescription,
-} from '@/components/ui/drawer'
 import { Lock } from 'lucide-react'
 import { toast } from '@/hooks/use-toast'
 
@@ -56,7 +47,7 @@ interface CatalogTableProps {
   onSort: (key: 'name' | 'supplier' | 'price' | 'availability') => void
   filters: FacetFilters
   onFilterChange: (f: Partial<FacetFilters>) => void
-  showConnectPill?: boolean
+  isBulkMode: boolean
 }
 
 export function CatalogTable({
@@ -68,7 +59,7 @@ export function CatalogTable({
   onSort,
   filters,
   onFilterChange,
-  showConnectPill = true,
+  isBulkMode,
 }: CatalogTableProps) {
   const rowRefs = useRef<Array<HTMLTableRowElement | null>>([])
 
@@ -101,13 +92,15 @@ export function CatalogTable({
     <Table>
       <TableHeader className="sticky top-0 z-10 bg-background">
         <TableRow>
-          <TableHead className="w-8 px-2">
-            <Checkbox
-              aria-label="Select all products"
-              checked={isAllSelected}
-              onCheckedChange={onSelectAll}
-            />
-          </TableHead>
+          {isBulkMode && (
+            <TableHead className="w-8 px-2">
+              <Checkbox
+                aria-label="Select all products"
+                checked={isAllSelected}
+                onCheckedChange={onSelectAll}
+              />
+            </TableHead>
+          )}
           <TableHead className="w-10 px-2">Image</TableHead>
           <TableHead
             className="[width:minmax(0,1fr)] cursor-pointer select-none px-2"
@@ -116,26 +109,26 @@ export function CatalogTable({
             Name {sort?.key === 'name' && (sort?.direction === 'asc' ? '▲' : '▼')}
           </TableHead>
           <TableHead
-            className="w-28 px-2 cursor-pointer select-none"
+            className="w-[120px] px-2 text-center cursor-pointer select-none"
             onClick={() => onSort('availability')}
           >
             Availability {sort?.key === 'availability' && (sort?.direction === 'asc' ? '▲' : '▼')}
           </TableHead>
           <TableHead
-            className="w-[112px] sm:w-[136px] text-right px-2 cursor-pointer select-none"
+            className="w-[120px] text-right px-2 cursor-pointer select-none"
             onClick={() => onSort('price')}
           >
             Price {sort?.key === 'price' && (sort?.direction === 'asc' ? '▲' : '▼')}
           </TableHead>
           <TableHead
-            className="min-w-[140px] max-w-[180px] w-40 cursor-pointer select-none px-2"
+            className="w-40 min-w-[140px] max-w-[180px] cursor-pointer select-none px-2"
             onClick={() => onSort('supplier')}
           >
             Suppliers {sort?.key === 'supplier' && (sort?.direction === 'asc' ? '▲' : '▼')}
           </TableHead>
         </TableRow>
         <TableRow>
-          <TableHead className="px-2" />
+          {isBulkMode && <TableHead className="px-2" />}
           <TableHead className="px-2" />
           <TableHead className="px-2">
             {showBrandFilter && (
@@ -179,8 +172,8 @@ export function CatalogTable({
               </SelectContent>
             </Select>
           </TableHead>
-          <TableHead className="w-[112px] sm:w-[136px] px-2" />
-          <TableHead className="min-w-[140px] max-w-[180px] w-40 px-2">
+          <TableHead className="w-[120px] px-2" />
+          <TableHead className="w-40 min-w-[140px] max-w-[180px] px-2">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" className="h-8 w-full justify-start">
@@ -211,6 +204,14 @@ export function CatalogTable({
         {products.map((p, i) => {
           const id = p.catalog_id
           const isSelected = selected.includes(id)
+          const availabilityLabel =
+            {
+              IN_STOCK: 'In',
+              LOW_STOCK: 'Low',
+              OUT_OF_STOCK: 'Out',
+              UNKNOWN: 'Unknown',
+            }[p.availability_status ?? 'UNKNOWN']
+
           return (
             <TableRow
               key={id}
@@ -220,13 +221,15 @@ export function CatalogTable({
               onKeyDown={e => handleKeyDown(e, i, id)}
               className="group h-[52px] border-b hover:bg-muted/50 focus-visible:bg-muted/50"
             >
-              <TableCell className="w-8 p-2">
-                <Checkbox
-                  aria-label={`Select ${p.name}`}
-                  checked={isSelected}
-                  onCheckedChange={() => onSelect(id)}
-                />
-              </TableCell>
+              {isBulkMode && (
+                <TableCell className="w-8 p-2">
+                  <Checkbox
+                    aria-label={`Select ${p.name}`}
+                    checked={isSelected}
+                    onCheckedChange={() => onSelect(id)}
+                  />
+                </TableCell>
+              )}
               <TableCell className="w-10 p-2">
                 <ProductThumb
                   className="h-10 w-10"
@@ -236,22 +239,8 @@ export function CatalogTable({
                   )}
                   name={p.name}
                   brand={p.brand}
+                  updatedAt={p.availability_updated_at}
                 />
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <AvailabilityBadge
-                      tabIndex={-1}
-                      status={p.availability_status}
-                      updatedAt={p.availability_updated_at}
-                    />
-                  </TooltipTrigger>
-                  <TooltipContent className="space-y-1">
-                    {p.availability_text && <div>{p.availability_text}</div>}
-                    <div className="text-xs text-muted-foreground">
-                      Last checked {p.availability_updated_at ? timeAgo(p.availability_updated_at) : 'unknown'} • Source: {p.suppliers?.[0] || 'Unknown'}
-                    </div>
-                  </TooltipContent>
-              </Tooltip>
               </TableCell>
               <TableCell className="px-2">
                 <div className="flex items-center gap-2">
@@ -262,17 +251,35 @@ export function CatalogTable({
                   >
                     {p.name}
                   </a>
-                  <AddToCartButton product={p} />
+                  <AddToCartButton
+                    product={p}
+                    className="ml-auto md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100"
+                  />
                 </div>
               </TableCell>
-              <TableCell className="min-w-[112px] max-w-[136px] w-[112px] sm:w-[136px] p-2 text-right whitespace-nowrap">
+              <TableCell className="w-[120px] p-2 text-center">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <AvailabilityBadge
+                      tabIndex={-1}
+                      status={p.availability_status}
+                      updatedAt={p.availability_updated_at}
+                    />
+                  </TooltipTrigger>
+                  <TooltipContent className="space-y-1">
+                    <div>{availabilityLabel}.</div>
+                    <div className="text-xs text-muted-foreground">
+                      Last checked {p.availability_updated_at ? timeAgo(p.availability_updated_at) : 'unknown'}. Source: {p.suppliers?.[0] || 'Unknown'}
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+              </TableCell>
+              <TableCell className="w-[120px] p-2 text-right whitespace-nowrap">
                 <PriceCell product={p} vendors={vendors} />
               </TableCell>
               <TableCell className="min-w-[140px] max-w-[180px] w-40 p-2 whitespace-nowrap">
                 {p.suppliers?.length ? (
                   <SupplierList suppliers={p.suppliers} locked={p.prices_locked ?? p.price_locked} />
-                ) : showConnectPill ? (
-                  <ConnectPill />
                 ) : (
                   <span className="text-muted-foreground">—</span>
                 )}
@@ -285,13 +292,19 @@ export function CatalogTable({
   )
 }
 
-function AddToCartButton({ product }: { product: any }) {
-  const { items, addItem, updateQuantity } = useCart()
-  const existingItem = items.find(
-    (i: any) => i.supplierItemId === product.catalog_id,
-  )
+  function AddToCartButton({
+    product,
+    className,
+  }: {
+    product: any
+    className?: string
+  }) {
+    const { items, addItem } = useCart()
+    const existingItem = items.find(
+      (i: any) => i.supplierItemId === product.catalog_id,
+    )
 
-  const [open, setOpen] = useState(false)
+    const [open, setOpen] = useState(false)
 
   const rawSuppliers =
     (product.supplier_products && product.supplier_products.length
@@ -320,51 +333,40 @@ function AddToCartButton({ product }: { product: any }) {
     }
   })
 
-  if (existingItem) {
-    const supplierName =
-      existingItem.supplierName ||
-      supplierEntries.find(s => s.id === existingItem.supplierId)?.name
-    return (
-      <QuantityStepper
-        quantity={existingItem.quantity}
-        onChange={qty => updateQuantity(existingItem.supplierItemId, qty)}
-        label={product.name}
-        supplier={supplierName}
-      />
-    )
-  }
+    if (existingItem) return null
 
   if (supplierEntries.length === 0) return null
 
   if (supplierEntries.length === 1) {
     const s = supplierEntries[0]
-    return (
-      <Button
-        size="sm"
-        onClick={() => {
-          addItem({
-            product_id: product.catalog_id,
-            supplier_id: s.id,
-            price: null,
-            qty: 1,
-          } as any)
-          if (s.availability === 'OUT_OF_STOCK') {
-            toast({ description: 'Out of stock at selected supplier.' })
-          }
-        }}
-        aria-label={`Add ${product.name} to cart`}
-      >
-        Add
-      </Button>
-    )
-  }
-  return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button size="sm" aria-label={`Add ${product.name} to cart`}>
+      return (
+        <Button
+          size="sm"
+          className={className}
+          onClick={() => {
+            addItem({
+              product_id: product.catalog_id,
+              supplier_id: s.id,
+              price: null,
+              qty: 1,
+            } as any)
+            if (s.availability === 'OUT_OF_STOCK') {
+              toast({ description: 'Out of stock at selected supplier.' })
+            }
+          }}
+          aria-label={`Add ${product.name} to cart`}
+        >
           Add
         </Button>
-      </PopoverTrigger>
+      )
+    }
+    return (
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button size="sm" className={className} aria-label={`Add ${product.name} to cart`}>
+            Add
+          </Button>
+        </PopoverTrigger>
       <PopoverContent className="w-64 p-2 space-y-1">
         {supplierEntries.map(s => {
           const initials = s.name
@@ -427,6 +429,10 @@ function PriceCell({
   product: any
   vendors: { id: string; name: string }[]
 }) {
+  const { items, updateQuantity } = useCart()
+  const existingItem = items.find(
+    (i: any) => i.supplierItemId === product.catalog_id,
+  )
   const sources: string[] = product.price_sources || product.suppliers || []
   const priceValues: number[] = Array.isArray(product.prices)
     ? product.prices
@@ -438,7 +444,19 @@ function PriceCell({
   let priceNode: React.ReactNode
   let tooltip: React.ReactNode | null = null
 
-  if (isLocked) {
+  if (existingItem) {
+    const supplierName =
+      existingItem.supplierName ||
+      vendors.find(v => v.id === existingItem.supplierId)?.name
+    priceNode = (
+      <QuantityStepper
+        quantity={existingItem.quantity}
+        onChange={qty => updateQuantity(existingItem.supplierItemId, qty)}
+        label={product.name}
+        supplier={supplierName}
+      />
+    )
+  } else if (isLocked) {
     priceNode = (
       <div className="flex items-center justify-end gap-2 text-muted-foreground">
         <Lock className="h-4 w-4" />
@@ -490,31 +508,6 @@ function PriceCell({
     <div className="flex items-center justify-end gap-2">
       {priceContent}
     </div>
-  )
-}
-
-function ConnectPill() {
-  return (
-    <Drawer>
-      <DrawerTrigger asChild>
-        <Badge
-          variant="outline"
-          className="cursor-pointer px-2 py-0.5 text-xs"
-          aria-label="Connect suppliers"
-          tabIndex={0}
-        >
-          Connect
-        </Badge>
-      </DrawerTrigger>
-      <DrawerContent>
-        <DrawerHeader>
-          <DrawerTitle>Connect suppliers</DrawerTitle>
-          <DrawerDescription>
-            Connect suppliers to view their prices and availability.
-          </DrawerDescription>
-        </DrawerHeader>
-      </DrawerContent>
-    </Drawer>
   )
 }
 
