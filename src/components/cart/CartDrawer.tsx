@@ -77,7 +77,7 @@ function CartItemRow({ item, includeVat, updateQuantity, removeItem }: CartItemR
   return (
     <div
       ref={cardRef}
-      className="grid items-center gap-3 grid-cols-[44px,1fr,auto,auto] md:grid-cols-[56px,1fr,auto,auto] px-3 py-2.5 rounded-lg hover:bg-muted/50 focus-within:ring-2 focus-within:ring-primary/30"
+      className="grid items-center gap-3 grid-cols-[44px,minmax(0,1fr),112px] md:grid-cols-[56px,minmax(0,1fr),128px] px-2 py-2 rounded-lg hover:bg-muted/50 focus-within:ring-2 focus-within:ring-primary/30"
     >
       <img
         src={getCachedImageUrl(item.image) || PLACEHOLDER_IMAGE}
@@ -91,13 +91,15 @@ function CartItemRow({ item, includeVat, updateQuantity, removeItem }: CartItemR
         >
           {item.itemName || item.displayName}
         </p>
-        <div className="text-xs text-muted-foreground">{item.packSize}</div>
-      </div>
-      <div className="min-w-[9ch] md:min-w-[11ch] text-right tabular-nums whitespace-nowrap text-sm">
-        {formatCurrency(lineTotal)}
+        <div className="flex items-baseline justify-between text-xs text-muted-foreground">
+          <span className="flex-1 truncate">{item.packSize}</span>
+          <span className="ml-2 tabular-nums whitespace-nowrap">
+            {formatCurrency(lineTotal)}
+          </span>
+        </div>
       </div>
       <div className="flex items-center">
-        <div className="inline-flex h-7 w-[92px] items-center divide-x rounded-md border">
+        <div className="inline-flex h-7 w-[88px] md:w-[96px] items-center divide-x rounded-md border">
           <button
             className="flex h-full w-7 items-center justify-center p-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50"
             aria-label="Decrease quantity"
