@@ -25,12 +25,13 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Button } from '@/components/ui/button'
 import { useVendors } from '@/hooks/useVendors'
-import AvailabilityBadge, { type AvailabilityStatus } from '@/components/catalog/AvailabilityBadge'
+import AvailabilityBadge from '@/components/catalog/AvailabilityBadge'
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
 import { timeAgo } from '@/lib/timeAgo'
 import { formatCurrency } from '@/lib/format'
 import type { FacetFilters } from '@/services/catalog'
 import ProductThumb from '@/components/catalog/ProductThumb'
+import SupplierList from '@/components/catalog/SupplierList'
 import { resolveImage } from '@/lib/images'
 import {
   Drawer,
@@ -42,12 +43,6 @@ import {
 } from '@/components/ui/drawer'
 import { Lock } from 'lucide-react'
 import { toast } from '@/hooks/use-toast'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { QuantityStepper } from '@/components/cart/QuantityStepper'
-import { useCart } from '@/contexts/useBasket'
-import SupplierList, {
-  type SupplierEntry,
-} from '@/components/catalog/SupplierList'
 
 interface CatalogTableProps {
   products: any[]
@@ -217,7 +212,7 @@ export function CatalogTable({
             <TableRow
               key={id}
               ref={el => (rowRefs.current[i] = el)}
-              tabIndex={0}
+              tabIndex={-1}
               data-state={isSelected ? 'selected' : undefined}
               onKeyDown={e => handleKeyDown(e, i, id)}
               className="group h-[52px] border-b hover:bg-muted/50 focus-visible:bg-muted/50"
@@ -240,14 +235,6 @@ export function CatalogTable({
                   brand={p.brand}
                 />
               </TableCell>
-              <TableCell className="[width:minmax(0,1fr)] p-2" title={p.name}>
-                <div>
-                  {p.name}
-                  {(p.brand || p.pack_size) && (
-                    <div className="text-[13px] text-muted-foreground">
-                      {[p.brand, p.pack_size].filter(Boolean).join(' • ')}
-                    </div>
-                  )}
                 </div>
               </TableCell>
               <TableCell className="w-28 p-2 whitespace-nowrap">
@@ -288,170 +275,65 @@ export function CatalogTable({
 }
 
 // Button and quantity control for adding catalog items to the cart
-function AddToCartButton({
-  product,
-  vendors,
-}: {
-  product: any
-  vendors: { id: string; name: string }[]
-}) {
-  const { items, addItem, updateQuantity } = useCart()
-  const [open, setOpen] = useState(false)
+  function AddToCartButton({
+    product,
+    vendors,
+  }: {
+    product: any
+    vendors: { id: string; name: string; availability_status?: string }[]
+  }) {
+    const { items, addItem, updateQuantity } = useCart()
+    const [open, setOpen] = useState(false)
 
-  const existing = items.find(it => it.id === product.catalog_id)
-  const quantity = existing?.quantity ?? 0
-
-  const supplierEntries = (product.suppliers as SupplierEntry[] | undefined)?.map(s => {
-    if (typeof s === 'string') {
-      return {
-        name: s,
-        connected: vendors.some(v => v.name === s),
-        logoUrl: null,
-        availability_status: undefined,
-      }
-    }
-    return {
-      name: s.name,
-      connected: s.connected ?? vendors.some(v => v.name === s.name),
-      logoUrl: (s as any).logoUrl ?? (s as any).logo_url ?? null,
-      availability_status:
-        s.availability_status ??
-        s.status ??
-        (typeof s.availability === 'string'
-          ? s.availability
-          : s.availability?.status) ??
-        undefined,
-    }
-  }) ?? []
-
-  const handleAdd = (supplier: {
-    name: string
-    connected?: boolean
-    availability_status?: AvailabilityStatus | null
-    logoUrl?: string | null
-  }) => {
-    const supplierItemId = `${product.catalog_id}:${supplier.name}`
-    const connected = supplier.connected ?? vendors.some(v => v.name === supplier.name)
-    if (supplier.availability_status === 'OUT_OF_STOCK') {
-      toast({ description: 'Out of stock at selected supplier.' })
-      setOpen(false)
-      return
-    }
-    const existingItem = items.find(it => it.supplierItemId === supplierItemId)
-    if (existingItem) {
-      updateQuantity(supplierItemId, existingItem.quantity + 1)
-    } else {
-      addItem(
-        {
-          id: product.catalog_id,
-          supplierId: supplier.name,
-          supplierName: supplier.name,
-          itemName: product.name,
-          sku: product.catalog_id,
-          packSize: product.pack_size ?? '',
-          packPrice: connected ? 0 : null,
-          unitPriceExVat: connected ? 0 : null,
-          unitPriceIncVat: connected ? 0 : null,
-          vatRate: 0,
-          unit: '',
-          supplierItemId,
-          displayName: product.name,
-          packQty: 1,
-          image: product.sample_image_url ?? null,
-        },
-        1,
-        { showToast: false },
       )
+
+      if (existingItem) {
+        updateQuantity(supplierItemId, existingItem.quantity + 1)
+      } else {
+        addItem(
+          {
+            id: product.catalog_id,
+            supplierId: supplier.id,
+            supplierName: supplier.name,
+            itemName: product.name,
+            sku: product.catalog_id,
+            packSize: product.pack_size ?? '',
+            packPrice: null,
+            unitPriceExVat: null,
+            unitPriceIncVat: null,
+            vatRate: 0,
+            unit: '',
+            supplierItemId,
+            displayName: product.name,
+            packQty: 1,
+            image: product.sample_image_url ?? null,
+          },
+          1,
+          { showToast: false },
+        )
+      }
+      if (supplier.availability_status === 'OUT_OF_STOCK') {
+        toast({ description: 'Out of stock at selected supplier.' })
+      }
+      setOpen(false)
     }
-    setOpen(false)
-  }
 
-  if (quantity > 0 && existing) {
-    return (
-      <QuantityStepper
-        quantity={quantity}
-        onChange={q => updateQuantity(existing.supplierItemId, q)}
-        label={`${product.name} from ${existing.supplierName}`}
-      />
-    )
-  }
-
-  if (supplierEntries.length <= 1) {
-    const supplier = supplierEntries[0]
-    const disabled = supplier?.availability_status === 'OUT_OF_STOCK' || false
-    return (
-      <Button
-        size="sm"
-        onClick={() => handleAdd(supplier)}
-        disabled={disabled}
-        onPointerDown={e => {
-          if (disabled) {
-            e.preventDefault()
-            toast({ description: 'Out of stock at selected supplier.' })
-          }
-        }}
-        aria-label={`Add ${product.name} to cart`}
-      >
-        Add
-      </Button>
-    )
-  }
-
-  return (
-    <DropdownMenu open={open} onOpenChange={setOpen}>
-      <DropdownMenuTrigger asChild>
-        <Button size="sm" variant="outline">
+    if (supplierEntries.length <= 1) {
+      const supplier = supplierEntries[0]
+      const disabled =
+        supplier?.availability_status === 'OUT_OF_STOCK' || false
+      return (
+        <Button
+          size="sm"
+          onClick={() => handleAdd(supplier)}
+          disabled={disabled}
+          aria-label={`Add ${product.name} to cart`}
+        >
           Add
         </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent>
-        {supplierEntries.map(s => {
-          const disabled = s.availability_status === 'OUT_OF_STOCK'
-          const initials = s.name
-            .split(' ')
-            .filter(Boolean)
-            .map(n => n[0]!)
-            .join('')
-            .slice(0, 2)
-            .toUpperCase()
-          return (
-            <DropdownMenuItem
-              key={s.name}
-              disabled={disabled}
-              onSelect={() => handleAdd(s)}
-              onPointerDown={e => {
-                if (disabled) {
-                  e.preventDefault()
-                  toast({ description: 'Out of stock at selected supplier.' })
-                  setOpen(false)
-                }
-              }}
-            >
-              <div className="flex w-full items-center gap-2">
-                <Avatar className="h-5 w-5">
-                  {s.logoUrl ? (
-                    <AvatarImage src={s.logoUrl} alt={s.name} />
-                  ) : (
-                    <AvatarFallback className="text-[10px]">
-                      {initials}
-                    </AvatarFallback>
-                  )}
-                </Avatar>
-                <span className="flex-1 truncate">{s.name}</span>
-                <AvailabilityBadge status={s.availability_status} />
-                {s.connected === false && (
-                  <Lock className="ml-1 h-3 w-3" aria-label="Not connected" />
-                )}
-              </div>
-            </DropdownMenuItem>
-          )
-        })}
-      </DropdownMenuContent>
-    </DropdownMenu>
-  )
-}
+      )
+    }
 
-// Price display cell including add-to-cart controls
 function PriceCell({
   product,
   vendors,
@@ -521,7 +403,6 @@ function PriceCell({
   return (
     <div className="flex items-center justify-end gap-2">
       {priceContent}
-      <AddToCartButton product={product} vendors={vendors} />
     </div>
   )
 }
