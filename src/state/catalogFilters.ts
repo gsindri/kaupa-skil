@@ -47,7 +47,14 @@ export const useCatalogFilters = create<CatalogFiltersState>()(
     set => ({
       ...defaultState,
       setFilters: f =>
-        set(state => ({ filters: { ...state.filters, ...f } })),
+        set(state => {
+          // Only update if filters actually changed to prevent unnecessary re-renders
+          const newFilters = { ...state.filters, ...f }
+          const hasChanges = Object.keys(f).some(key => 
+            JSON.stringify(state.filters[key as keyof FacetFilters]) !== JSON.stringify(newFilters[key as keyof FacetFilters])
+          )
+          return hasChanges ? { filters: newFilters } : state
+        }),
       setOnlyWithPrice: v => set({ onlyWithPrice: v }),
       setSort: v => set({ sort: v }),
       clear: () => set({ ...defaultState }),

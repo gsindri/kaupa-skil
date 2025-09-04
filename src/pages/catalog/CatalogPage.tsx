@@ -31,7 +31,7 @@ import { AnalyticsTracker } from '@/components/quick/AnalyticsTrackerUtils'
 import { ViewToggle } from '@/components/place-order/ViewToggle'
 import { LayoutDebugger } from '@/components/debug/LayoutDebugger'
 import { FullWidthLayout } from '@/components/layout/FullWidthLayout'
-import { useCatalogFilters, shallow, SortOrder } from '@/state/catalogFilters'
+import { useCatalogFilters, SortOrder } from '@/state/catalogFilters'
 import { useCart } from '@/contexts/useBasket'
 import type { CartItem } from '@/lib/types'
 import { resolveImage } from '@/lib/images'
@@ -41,24 +41,13 @@ export default function CatalogPage() {
   const { profile } = useAuth()
   const orgId = profile?.tenant_id || ''
 
-  const {
-    filters,
-    setFilters,
-    onlyWithPrice,
-    setOnlyWithPrice,
-    sort: sortOrder,
-    setSort: setSortOrder,
-  } = useCatalogFilters(
-    s => ({
-      filters: s.filters,
-      setFilters: s.setFilters,
-      onlyWithPrice: s.onlyWithPrice,
-      setOnlyWithPrice: s.setOnlyWithPrice,
-      sort: s.sort,
-      setSort: s.setSort,
-    }),
-    shallow,
-  )
+  // Direct access to avoid shallow comparison issues
+  const filters = useCatalogFilters(s => s.filters)
+  const setFilters = useCatalogFilters(s => s.setFilters)
+  const onlyWithPrice = useCatalogFilters(s => s.onlyWithPrice)
+  const setOnlyWithPrice = useCatalogFilters(s => s.setOnlyWithPrice)
+  const sortOrder = useCatalogFilters(s => s.sort)
+  const setSortOrder = useCatalogFilters(s => s.setSort)
 
   const [searchParams, setSearchParams] = useSearchParams()
 
