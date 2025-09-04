@@ -139,19 +139,23 @@ export function MiniCart() {
           </div>
         ) : (
           <React.Fragment>
-            <div
-              className="max-h-[320px] overflow-y-auto overflow-x-hidden py-1 px-1"
-              style={{ scrollbarGutter: 'stable' }}
-            >
-              {items.map((it, index) => {
-                const displayName = getItemDisplayName(it)
-                return (
-                  <div
-                    key={it.supplierItemId}
-                    ref={el => (rowRefs.current[index] = el)}
-                    tabIndex={keyboardNavigationActive ? 0 : -1}
-                    onKeyDown={e => handleKeyDown(e, index)}
-                  >
+              <div
+                className="max-h-[320px] overflow-y-auto overflow-x-hidden py-1 px-1 space-y-1"
+                style={{ scrollbarGutter: 'stable' }}
+              >
+                {items.map((it, index) => {
+                  const displayName = getItemDisplayName(it)
+                  return (
+                    <div
+                      key={it.supplierItemId}
+                      ref={el => (rowRefs.current[index] = el)}
+                      tabIndex={keyboardNavigationActive ? 0 : -1}
+                      onKeyDown={e => handleKeyDown(e, index)}
+                      className={cn(
+                        "grid items-center gap-3 grid-cols-[44px,minmax(0,1fr),112px] md:grid-cols-[56px,minmax(0,1fr),128px] px-2 py-2 rounded-lg hover:bg-muted/50 focus-within:ring-2 focus-within:ring-brand/50",
+                        it.quantity === 0 && "bg-red-50 text-red-700",
+                      )}
+                    >
                     <img
                       src={getCachedImageUrl(it.image) || PLACEHOLDER_IMAGE}
                       alt=""
