@@ -30,26 +30,7 @@ import { getCachedImageUrl } from '@/services/ImageCache'
 import { PLACEHOLDER_IMAGE } from '@/lib/images'
 import { cn } from '@/lib/utils'
 import { QuantityStepper } from './QuantityStepper'
-
-const formatPrice = (price: number) => {
-  const narrow = new Intl.NumberFormat('is-IS', {
-    style: 'currency',
-    currency: 'ISK',
-    currencyDisplay: 'narrowSymbol',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(price)
-  if (narrow.includes('kr')) {
-    return narrow.replace('kr.', 'kr')
-  }
-  return new Intl.NumberFormat('is-IS', {
-    style: 'currency',
-    currency: 'ISK',
-    currencyDisplay: 'code',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(price)
-}
+import { formatPrice } from '@/lib/formatPrice'
 
 interface CartItemRowProps {
   item: CartItem
