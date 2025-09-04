@@ -177,7 +177,7 @@ export function CatalogTable({
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" className="h-8 w-full justify-start">
-                  {supplierValues.length ? `${supplierValues.length} selected` : 'Supplier'}
+                  {supplierValues.length ? `${supplierValues.length} selected` : 'Suppliers'}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-40">
@@ -376,7 +376,7 @@ function ConnectPill() {
         <Badge
           variant="outline"
           className="cursor-pointer px-2 py-0.5 text-xs"
-          aria-label="Connect supplier"
+          aria-label="Connect suppliers"
           tabIndex={0}
         >
           Connect
@@ -384,9 +384,9 @@ function ConnectPill() {
       </DrawerTrigger>
       <DrawerContent>
         <DrawerHeader>
-          <DrawerTitle>Connect a supplier</DrawerTitle>
+          <DrawerTitle>Connect suppliers</DrawerTitle>
           <DrawerDescription>
-            Connect a supplier to view their prices and availability.
+            Connect suppliers to view their prices and availability.
           </DrawerDescription>
         </DrawerHeader>
       </DrawerContent>
