@@ -8,15 +8,22 @@ interface SupplierFilterProps {
   onChange: (value: string) => void
 }
 
-export const SupplierFilter = memo(function SupplierFilter({ suppliers, value, onChange }: SupplierFilterProps) {
+export const SupplierFilter = memo(function SupplierFilter({
+  suppliers,
+  value,
+  onChange,
+}: SupplierFilterProps) {
   return (
-    <Select value={value} onValueChange={onChange}>
+    <Select
+      value={value || 'all'}
+      onValueChange={v => onChange(v === 'all' ? '' : v)}
+    >
       <SelectTrigger className="w-[180px]">
         <SelectValue placeholder="All suppliers" />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value="">All suppliers</SelectItem>
-        {suppliers.map((s) => (
+        <SelectItem value="all">All suppliers</SelectItem>
+        {suppliers.map(s => (
           <SelectItem key={s.id} value={s.id}>
             {s.name}
           </SelectItem>
