@@ -235,8 +235,6 @@ export function CatalogTable({
                   brand={p.brand}
                 />
               </TableCell>
-                </div>
-              </TableCell>
               <TableCell className="w-28 p-2 whitespace-nowrap">
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -275,64 +273,112 @@ export function CatalogTable({
 }
 
 // Button and quantity control for adding catalog items to the cart
-  function AddToCartButton({
-    product,
-    vendors,
-  }: {
-    product: any
-    vendors: { id: string; name: string; availability_status?: string }[]
+function AddToCartButton({
+  product,
+  vendors,
+}: {
+  product: any
+  vendors: { id: string; name: string; availability_status?: string }[]
+}) {
+  const { items, addItem, updateQuantity } = useCart()
+  const [open, setOpen] = useState(false)
+
+  const existing = items.find(it => it.id === product.catalog_id)
+  const quantity = existing?.quantity ?? 0
+
+  const supplierEntries = vendors
+
+  function handleAdd(supplier: {
+    id: string
+    name: string
+    availability_status?: string
   }) {
-    const { items, addItem, updateQuantity } = useCart()
-    const [open, setOpen] = useState(false)
+    const supplierItemId = `${product.catalog_id}:${supplier.id}`
+    const existingItem = items.find(
+      it => it.supplierItemId === supplierItemId,
+    )
 
+    if (existingItem) {
+      updateQuantity(supplierItemId, existingItem.quantity + 1)
+    } else {
+      addItem(
+        {
+          id: product.catalog_id,
+          supplierId: supplier.id,
+          supplierName: supplier.name,
+          itemName: product.name,
+          sku: product.catalog_id,
+          packSize: product.pack_size ?? '',
+          packPrice: null,
+          unitPriceExVat: null,
+          unitPriceIncVat: null,
+          vatRate: 0,
+          unit: '',
+          supplierItemId,
+          displayName: product.name,
+          packQty: 1,
+          image: product.sample_image_url ?? null,
+        },
+        1,
+        { showToast: false },
       )
-
-      if (existingItem) {
-        updateQuantity(supplierItemId, existingItem.quantity + 1)
-      } else {
-        addItem(
-          {
-            id: product.catalog_id,
-            supplierId: supplier.id,
-            supplierName: supplier.name,
-            itemName: product.name,
-            sku: product.catalog_id,
-            packSize: product.pack_size ?? '',
-            packPrice: null,
-            unitPriceExVat: null,
-            unitPriceIncVat: null,
-            vatRate: 0,
-            unit: '',
-            supplierItemId,
-            displayName: product.name,
-            packQty: 1,
-            image: product.sample_image_url ?? null,
-          },
-          1,
-          { showToast: false },
-        )
-      }
-      if (supplier.availability_status === 'OUT_OF_STOCK') {
-        toast({ description: 'Out of stock at selected supplier.' })
-      }
-      setOpen(false)
     }
+    if (supplier.availability_status === 'OUT_OF_STOCK') {
+      toast({ description: 'Out of stock at selected supplier.' })
+    }
+    setOpen(false)
+  }
 
-    if (supplierEntries.length <= 1) {
-      const supplier = supplierEntries[0]
-      const disabled =
-        supplier?.availability_status === 'OUT_OF_STOCK' || false
-      return (
-        <Button
-          size="sm"
-          onClick={() => handleAdd(supplier)}
-          disabled={disabled}
-          aria-label={`Add ${product.name} to cart`}
-        >
+  if (quantity > 0 && existing) {
+    return (
+      <QuantityStepper
+        quantity={quantity}
+        onChange={q => updateQuantity(existing.supplierItemId, q)}
+        label={`${product.name} from ${existing.supplierName}`}
+      />
+    )
+  }
+
+  if (supplierEntries.length <= 1) {
+    const supplier = supplierEntries[0]
+    const disabled =
+      supplier?.availability_status === 'OUT_OF_STOCK' || false
+    return (
+      <Button
+        size="sm"
+        onClick={() => handleAdd(supplier)}
+        disabled={disabled}
+        aria-label={`Add ${product.name} to cart`}
+      >
+        Add
+      </Button>
+    )
+  }
+
+  return (
+    <DropdownMenu open={open} onOpenChange={setOpen}>
+      <DropdownMenuTrigger asChild>
+        <Button size="sm" variant="outline">
           Add
         </Button>
-      )
-    }
+      </DropdownMenuTrigger>
+      <DropdownMenuContent>
+        {supplierEntries.map(s => {
+          const disabled = s.availability_status === 'OUT_OF_STOCK'
+          return (
+            <DropdownMenuItem
+              key={s.id ?? s.name}
+              disabled={disabled}
+              onSelect={() => handleAdd(s)}
+            >
+              {s.name}
+            </DropdownMenuItem>
+          )
+        })}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}
 
 function PriceCell({
   product,
