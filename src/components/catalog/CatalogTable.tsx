@@ -50,6 +50,7 @@ interface CatalogTableProps {
   onSort: (key: 'name' | 'supplier' | 'price' | 'availability') => void
   filters: FacetFilters
   onFilterChange: (f: Partial<FacetFilters>) => void
+  showConnectPill?: boolean
 }
 
 export function CatalogTable({
@@ -61,6 +62,7 @@ export function CatalogTable({
   onSort,
   filters,
   onFilterChange,
+  showConnectPill = true,
 }: CatalogTableProps) {
   const rowRefs = useRef<Array<HTMLTableRowElement | null>>([])
 
@@ -255,11 +257,11 @@ export function CatalogTable({
                 {p.suppliers?.length ? (
                   <SupplierList suppliers={p.suppliers} />
                 ) : (
-                  <ConnectPill />
+                  showConnectPill && <ConnectPill />
                 )}
               </TableCell>
               <TableCell className="min-w-[112px] max-w-[136px] w-[112px] sm:w-[136px] p-2 text-right whitespace-nowrap">
-                <PriceCell product={p} />
+                <PriceCell product={p} showConnectPill={showConnectPill} />
               </TableCell>
             </TableRow>
           )
@@ -269,7 +271,7 @@ export function CatalogTable({
   )
 }
 
-function PriceCell({ product }: { product: any }) {
+function PriceCell({ product, showConnectPill }: { product: any; showConnectPill: boolean }) {
   const sources: string[] = product.price_sources || product.suppliers || []
   const priceValues: number[] = Array.isArray(product.prices)
     ? product.prices
@@ -284,10 +286,6 @@ function PriceCell({ product }: { product: any }) {
     content = (
       <div className="flex items-center justify-end gap-1 text-muted-foreground">
         <Lock className="h-4 w-4" />
-        <span className="tabular-nums">
-          <span aria-hidden="true">—</span>
-          <span className="sr-only">No data yet</span>
-        </span>
       </div>
     )
   } else if (priceValues.length) {
@@ -302,12 +300,6 @@ function PriceCell({ product }: { product: any }) {
         : `${formatCurrency(min, currency)}–${formatCurrency(max, currency)}`
     content = <span className="tabular-nums">{text}</span>
   } else {
-    content = (
-      <span className="tabular-nums text-muted-foreground">
-        <span aria-hidden="true">—</span>
-        <span className="sr-only">No data yet</span>
-      </span>
-    )
   }
 
   if ((isLocked || priceValues.length) && sources.length) {

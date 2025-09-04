@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { SortDropdown } from '@/components/catalog/SortDropdown'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { AlertCircle, Mic } from 'lucide-react'
+import { AlertCircle, Mic, X } from 'lucide-react'
 import { useAuth } from '@/contexts/useAuth'
 import { useCatalogProducts } from '@/hooks/useCatalogProducts'
 import { useOrgCatalog } from '@/hooks/useOrgCatalog'
@@ -81,6 +81,14 @@ export default function CatalogPage() {
   const [showMoreFilters, setShowMoreFilters] = useState(false)
   const [cols, setCols] = useState(1)
   const stringifiedFilters = useMemo(() => JSON.stringify(filters), [filters])
+  const [bannerDismissed, setBannerDismissed] = useState(false)
+
+  const unconnectedPercentage = useMemo(() => {
+    if (!products.length) return 0
+    const missing = products.filter(p => !p.suppliers?.length).length
+    return (missing / products.length) * 100
+  }, [products])
+  const hideConnectPill = unconnectedPercentage > 80
 
   // Read initial sort from URL on mount
   useEffect(() => {
@@ -466,16 +474,34 @@ export default function CatalogPage() {
 
       <div className="mt-6 px-4 sm:px-6 lg:px-8 xl:px-10 2xl:px-12">
         {view === 'list' ? (
-          <CatalogTable
-            products={sortedProducts}
-            selected={selected}
-            onSelect={toggleSelect}
-            onSelectAll={handleSelectAll}
-            sort={tableSort}
-            onSort={handleSort}
-            filters={filters}
-            onFilterChange={handleFilterChange}
-          />
+          <>
+            {hideConnectPill && !bannerDismissed && (
+              <Alert className="mb-4">
+                <AlertDescription className="flex items-center justify-between">
+                  Connect suppliers to unlock prices.
+                  <button
+                    type="button"
+                    aria-label="Dismiss"
+                    onClick={() => setBannerDismissed(true)}
+                    className="ml-2"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </AlertDescription>
+              </Alert>
+            )}
+            <CatalogTable
+              products={sortedProducts}
+              selected={selected}
+              onSelect={toggleSelect}
+              onSelectAll={handleSelectAll}
+              sort={tableSort}
+              onSort={handleSort}
+              filters={filters}
+              onFilterChange={handleFilterChange}
+              showConnectPill={!hideConnectPill}
+            />
+          </>
         ) : (
           <div
             ref={gridRef}
