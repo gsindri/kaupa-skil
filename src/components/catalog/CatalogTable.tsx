@@ -10,6 +10,9 @@ import {
 import { Checkbox } from '@/components/ui/checkbox'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
+import AvailabilityBadge from '@/components/catalog/AvailabilityBadge'
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
+import { timeAgo } from '@/lib/timeAgo'
 import type { FacetFilters } from '@/services/catalog'
 
 interface CatalogTableProps {
@@ -135,7 +138,20 @@ export function CatalogTable({
                 )}
               </TableCell>
               <TableCell className="w-28 p-2 whitespace-nowrap">
-                {p.availability || 'Unknown'}
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <AvailabilityBadge
+                      status={p.availability_status}
+                      updatedAt={p.availability_updated_at}
+                    />
+                  </TooltipTrigger>
+                  <TooltipContent className="space-y-1">
+                    {p.availability_text && <div>{p.availability_text}</div>}
+                    <div className="text-xs text-muted-foreground">
+                      Last checked {p.availability_updated_at ? timeAgo(p.availability_updated_at) : 'unknown'} • Source: {p.suppliers?.[0] || 'Unknown'}
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
               </TableCell>
               <TableCell className="w-32 p-2 space-x-1 whitespace-nowrap">
                 {p.suppliers?.map((s: string) => (
