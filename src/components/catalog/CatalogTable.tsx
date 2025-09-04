@@ -43,6 +43,7 @@ import {
 } from '@/components/ui/drawer'
 import { Lock } from 'lucide-react'
 import { toast } from '@/hooks/use-toast'
+import { useCart } from '@/contexts/useBasket'
 
 interface CatalogTableProps {
   products: any[]
@@ -281,23 +282,6 @@ function AddToCartButton({
   vendors: { id: string; name: string; availability_status?: string }[]
 }) {
   const { items, addItem, updateQuantity } = useCart()
-  const [open, setOpen] = useState(false)
-
-  const existing = items.find(it => it.id === product.catalog_id)
-  const quantity = existing?.quantity ?? 0
-
-  const supplierEntries = vendors
-
-  function handleAdd(supplier: {
-    id: string
-    name: string
-    availability_status?: string
-  }) {
-    const supplierItemId = `${product.catalog_id}:${supplier.id}`
-    const existingItem = items.find(
-      it => it.supplierItemId === supplierItemId,
-    )
-
     if (existingItem) {
       updateQuantity(supplierItemId, existingItem.quantity + 1)
     } else {
@@ -329,54 +313,6 @@ function AddToCartButton({
     setOpen(false)
   }
 
-  if (quantity > 0 && existing) {
-    return (
-      <QuantityStepper
-        quantity={quantity}
-        onChange={q => updateQuantity(existing.supplierItemId, q)}
-        label={`${product.name} from ${existing.supplierName}`}
-      />
-    )
-  }
-
-  if (supplierEntries.length <= 1) {
-    const supplier = supplierEntries[0]
-    const disabled =
-      supplier?.availability_status === 'OUT_OF_STOCK' || false
-    return (
-      <Button
-        size="sm"
-        onClick={() => handleAdd(supplier)}
-        disabled={disabled}
-        aria-label={`Add ${product.name} to cart`}
-      >
-        Add
-      </Button>
-    )
-  }
-
-  return (
-    <DropdownMenu open={open} onOpenChange={setOpen}>
-      <DropdownMenuTrigger asChild>
-        <Button size="sm" variant="outline">
-          Add
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent>
-        {supplierEntries.map(s => {
-          const disabled = s.availability_status === 'OUT_OF_STOCK'
-          return (
-            <DropdownMenuItem
-              key={s.id ?? s.name}
-              disabled={disabled}
-              onSelect={() => handleAdd(s)}
-            >
-              {s.name}
-            </DropdownMenuItem>
-          )
-        })}
-      </DropdownMenuContent>
-    </DropdownMenu>
   )
 }
 
