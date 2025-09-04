@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { shallow } from 'zustand/shallow'
+import { shallow } from 'zustand/vanilla/shallow'
 
 export type AvailabilityFilter = 'in' | 'low' | 'out' | 'unknown'
 export type SortKey = 'name' | 'price' | 'availability'
