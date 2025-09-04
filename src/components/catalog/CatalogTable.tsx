@@ -45,7 +45,7 @@ interface CatalogTableProps {
   selected: string[]
   onSelect: (id: string) => void
   onSelectAll: (checked: boolean) => void
-  sort: { key: 'name' | 'supplier' | 'price' | 'availability'; direction: 'asc' | 'desc' }
+  sort: { key: 'name' | 'supplier' | 'price' | 'availability'; direction: 'asc' | 'desc' } | null
   onSort: (key: 'name' | 'supplier' | 'price' | 'availability') => void
   filters: FacetFilters
   onFilterChange: (f: Partial<FacetFilters>) => void
@@ -104,25 +104,25 @@ export function CatalogTable({
             className="[width:minmax(0,1fr)] cursor-pointer select-none px-2"
             onClick={() => onSort('name')}
           >
-            Name {sort.key === 'name' && (sort.direction === 'asc' ? '▲' : '▼')}
+            Name {sort?.key === 'name' && (sort?.direction === 'asc' ? '▲' : '▼')}
           </TableHead>
           <TableHead
             className="w-28 px-2 cursor-pointer select-none"
             onClick={() => onSort('availability')}
           >
-            Availability {sort.key === 'availability' && (sort.direction === 'asc' ? '▲' : '▼')}
+            Availability {sort?.key === 'availability' && (sort?.direction === 'asc' ? '▲' : '▼')}
           </TableHead>
           <TableHead
             className="min-w-[140px] max-w-[180px] w-40 cursor-pointer select-none px-2"
             onClick={() => onSort('supplier')}
           >
-            Suppliers {sort.key === 'supplier' && (sort.direction === 'asc' ? '▲' : '▼')}
+            Suppliers {sort?.key === 'supplier' && (sort?.direction === 'asc' ? '▲' : '▼')}
           </TableHead>
           <TableHead
             className="w-[112px] sm:w-[136px] text-right px-2 cursor-pointer select-none"
             onClick={() => onSort('price')}
           >
-            Price {sort.key === 'price' && (sort.direction === 'asc' ? '▲' : '▼')}
+            Price {sort?.key === 'price' && (sort?.direction === 'asc' ? '▲' : '▼')}
           </TableHead>
         </TableRow>
         <TableRow>
