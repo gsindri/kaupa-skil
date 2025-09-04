@@ -84,7 +84,7 @@ export function MiniCart() {
           id="mini-cart-button"
           variant="default"
           size="sm"
-          className="relative flex-shrink-0 h-10 px-4 rounded-lg focus-visible:ring-brand/50 hover:shadow-sm transition-shadow"
+          className="relative flex-shrink-0 h-10 px-4 rounded-lg focus-visible:outline-none focus-visible:ring-0 hover:shadow-sm transition-shadow"
           onClick={e => {
             e.preventDefault()
             setOpen(false)
