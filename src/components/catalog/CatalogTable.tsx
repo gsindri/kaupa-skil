@@ -31,6 +31,7 @@ import { timeAgo } from '@/lib/timeAgo'
 import { formatCurrency } from '@/lib/format'
 import type { FacetFilters } from '@/services/catalog'
 import ProductThumb from '@/components/catalog/ProductThumb'
+import SupplierList from '@/components/catalog/SupplierList'
 import { resolveImage } from '@/lib/images'
 import {
   Drawer,
@@ -295,7 +296,7 @@ export function CatalogTable({
     vendors,
   }: {
     product: any
-    vendors: { id: string; name: string }[]
+    vendors: { id: string; name: string; availability_status?: string }[]
   }) {
     const { items, addItem, updateQuantity } = useCart()
     const [open, setOpen] = useState(false)
@@ -303,21 +304,32 @@ export function CatalogTable({
     const existing = items.find(it => it.id === product.catalog_id)
     const quantity = existing?.quantity ?? 0
 
+    const supplierEntries = vendors
+
+    function handleAdd(supplier: {
+      id: string
+      name: string
+      availability_status?: string
+    }) {
+      const supplierItemId = `${product.catalog_id}:${supplier.id}`
+      const existingItem = items.find(
+        it => it.supplierItemId === supplierItemId,
       )
+
       if (existingItem) {
         updateQuantity(supplierItemId, existingItem.quantity + 1)
       } else {
         addItem(
           {
             id: product.catalog_id,
-            supplierId: supplier.name,
+            supplierId: supplier.id,
             supplierName: supplier.name,
             itemName: product.name,
             sku: product.catalog_id,
             packSize: product.pack_size ?? '',
-            packPrice: connected ? 0 : null,
-            unitPriceExVat: connected ? 0 : null,
-            unitPriceIncVat: connected ? 0 : null,
+            packPrice: null,
+            unitPriceExVat: null,
+            unitPriceIncVat: null,
             vatRate: 0,
             unit: '',
             supplierItemId,
@@ -340,51 +352,51 @@ export function CatalogTable({
         <QuantityStepper
           quantity={quantity}
           onChange={q => updateQuantity(existing.supplierItemId, q)}
-        label={`${product.name} from ${existing.supplierName}`}
-      />
-    )
-  }
+          label={`${product.name} from ${existing.supplierName}`}
+        />
+      )
+    }
 
-  if (supplierEntries.length <= 1) {
-    const supplier = supplierEntries[0]
-    const disabled =
-      supplier?.availability_status === 'OUT_OF_STOCK' || false
-    return (
-      <Button
-        size="sm"
-        onClick={() => handleAdd(supplier)}
-        disabled={disabled}
-        aria-label={`Add ${product.name} to cart`}
-      >
-        Add
-      </Button>
-    )
-  }
-
-  return (
-    <DropdownMenu open={open} onOpenChange={setOpen}>
-      <DropdownMenuTrigger asChild>
-        <Button size="sm" variant="outline">
+    if (supplierEntries.length <= 1) {
+      const supplier = supplierEntries[0]
+      const disabled =
+        supplier?.availability_status === 'OUT_OF_STOCK' || false
+      return (
+        <Button
+          size="sm"
+          onClick={() => handleAdd(supplier)}
+          disabled={disabled}
+          aria-label={`Add ${product.name} to cart`}
+        >
           Add
         </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent>
-        {supplierEntries.map(s => {
-          const disabled = s.availability_status === 'OUT_OF_STOCK'
-          return (
-            <DropdownMenuItem
-              key={s.name}
-              disabled={disabled}
-              onSelect={() => handleAdd(s)}
-            >
-              {s.name}
-            </DropdownMenuItem>
-          )
-        })}
-      </DropdownMenuContent>
-    </DropdownMenu>
-  )
-}
+      )
+    }
+
+    return (
+      <DropdownMenu open={open} onOpenChange={setOpen}>
+        <DropdownMenuTrigger asChild>
+          <Button size="sm" variant="outline">
+            Add
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent>
+          {supplierEntries.map(s => {
+            const disabled = s.availability_status === 'OUT_OF_STOCK'
+            return (
+              <DropdownMenuItem
+                key={s.id ?? s.name}
+                disabled={disabled}
+                onSelect={() => handleAdd(s)}
+              >
+                {s.name}
+              </DropdownMenuItem>
+            )
+          })}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    )
+  }
 
 function PriceCell({
   product,
