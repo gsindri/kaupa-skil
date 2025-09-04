@@ -45,6 +45,7 @@ import {
   DrawerDescription,
 } from '@/components/ui/drawer'
 import { Lock } from 'lucide-react'
+import { toast } from '@/hooks/use-toast'
 
 interface CatalogTableProps {
   products: any[]
@@ -336,13 +337,17 @@ function AddToCartButton({ product }: { product: any }) {
     return (
       <Button
         size="sm"
-        onClick={() =>
+        onClick={() => {
           addItem({
             product_id: product.catalog_id,
             supplier_id: s.id,
+            price: null,
             qty: 1,
           } as any)
-        }
+          if (s.availability === 'OUT_OF_STOCK') {
+            toast({ description: 'Out of stock at selected supplier.' })
+          }
+        }}
         aria-label={`Add ${product.name}`}
       >
         Add
@@ -375,8 +380,12 @@ function AddToCartButton({ product }: { product: any }) {
                 addItem({
                   product_id: product.catalog_id,
                   supplier_id: s.id,
+                  price: null,
                   qty: 1,
                 } as any)
+                if (s.availability === 'OUT_OF_STOCK') {
+                  toast({ description: 'Out of stock at selected supplier.' })
+                }
                 setOpen(false)
               }}
             >
