@@ -33,6 +33,7 @@ import type { FacetFilters } from '@/services/catalog'
 import ProductThumb from '@/components/catalog/ProductThumb'
 import SupplierList from '@/components/catalog/SupplierList'
 import { resolveImage } from '@/lib/images'
+import AddToCartButton from '@/components/cart/AddToCartButton'
 import {
   Drawer,
   DrawerTrigger,
@@ -247,7 +248,19 @@ export function CatalogTable({
                       Last checked {p.availability_updated_at ? timeAgo(p.availability_updated_at) : 'unknown'} • Source: {p.suppliers?.[0] || 'Unknown'}
                     </div>
                   </TooltipContent>
-                </Tooltip>
+              </Tooltip>
+              </TableCell>
+              <TableCell className="px-2">
+                <div className="flex items-center gap-2">
+                  <a
+                    href={`#${p.catalog_id}`}
+                    aria-label={`View details for ${p.name}`}
+                    className="flex-1 truncate hover:underline"
+                  >
+                    {p.name}
+                  </a>
+                  <AddToCartButton product={p} vendors={vendors} />
+                </div>
               </TableCell>
               <TableCell className="min-w-[112px] max-w-[136px] w-[112px] sm:w-[136px] p-2 text-right whitespace-nowrap">
                 <PriceCell product={p} vendors={vendors} />

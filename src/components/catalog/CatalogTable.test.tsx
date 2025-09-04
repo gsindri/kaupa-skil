@@ -16,6 +16,10 @@ vi.mock('@/components/catalog/SupplierList', () => ({
   default: () => <div />,
 }))
 
+vi.mock('@/components/cart/AddToCartButton', () => ({
+  default: () => <div />,
+}))
+
 describe('PriceCell', () => {
   it('shows lock icon and tooltip when price is locked', async () => {
     const product = {
