@@ -139,7 +139,7 @@ export function MiniCart() {
         ) : (
           <React.Fragment>
             <div
-              className="max-h-[320px] overflow-y-auto overflow-x-hidden py-1 px-1.5"
+              className="max-h-[320px] overflow-y-auto overflow-x-hidden py-1 px-1"
               style={{ scrollbarGutter: 'stable' }}
             >
               {items.map((it, index) => {
@@ -150,7 +150,7 @@ export function MiniCart() {
                     ref={el => (rowRefs.current[index] = el)}
                     tabIndex={keyboardNavigationActive ? 0 : -1}
                     onKeyDown={e => handleKeyDown(e, index)}
-                    className="grid grid-cols-[44px,minmax(0,1fr),112px] md:grid-cols-[48px,minmax(0,1fr),128px] items-center gap-2 rounded-md px-2 py-2 hover:bg-muted/60 transition focus-visible:ring-2 focus-visible:ring-primary/30"
+                    className="grid grid-cols-[44px,minmax(0,1fr),112px] md:grid-cols-[48px,minmax(0,1fr),128px] items-center gap-2 rounded-md pl-2 pr-1 py-2 hover:bg-muted/60 transition focus-visible:ring-2 focus-visible:ring-primary/30"
                   >
                     <img
                       src={getCachedImageUrl(it.image) || PLACEHOLDER_IMAGE}
