@@ -14,9 +14,13 @@ export default function SupplierChip({ name, logoUrl }: SupplierChipProps) {
     .toUpperCase()
 
   return (
-    <Avatar className="h-6 w-6">
-      {logoUrl && <AvatarImage src={logoUrl} alt={name} />}
-      <AvatarFallback>{initials}</AvatarFallback>
+    <Avatar
+      className="h-6 w-6 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+      tabIndex={0}
+      aria-label={name}
+    >
+      {logoUrl && <AvatarImage src={logoUrl} alt="" />}
+      <AvatarFallback aria-hidden>{initials}</AvatarFallback>
     </Avatar>
   )
 }

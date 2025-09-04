@@ -163,7 +163,6 @@ export function CatalogTable({
                 <SelectValue placeholder="Avail." />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">—</SelectItem>
                 <SelectItem value="IN_STOCK">In</SelectItem>
                 <SelectItem value="LOW_STOCK">Low</SelectItem>
                 <SelectItem value="OUT_OF_STOCK">Out</SelectItem>
@@ -290,7 +289,14 @@ function PriceCell({ product }: { product: any }) {
     content = (
       <div className="flex items-center justify-end gap-1 text-muted-foreground">
         <Lock className="h-4 w-4" />
-        {sources.length ? <span>—</span> : <ConnectPill />}
+        {sources.length ? (
+          <span>
+            <span aria-hidden="true">—</span>
+            <span className="sr-only">No data yet</span>
+          </span>
+        ) : (
+          <ConnectPill />
+        )}
       </div>
     )
   } else if (priceValues.length) {
@@ -372,6 +378,8 @@ function ConnectPill() {
         <Badge
           variant="outline"
           className="cursor-pointer px-2 py-0.5 text-xs"
+          aria-label="Connect supplier"
+          tabIndex={0}
         >
           Connect
         </Badge>

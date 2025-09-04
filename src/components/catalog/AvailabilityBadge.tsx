@@ -1,5 +1,7 @@
 import { Badge } from '@/components/ui/badge'
 import { timeAgo } from '@/lib/timeAgo'
+import { Clock, Loader2 } from 'lucide-react'
+import type { ReactNode } from 'react'
 
 export type AvailabilityStatus = 'IN_STOCK' | 'LOW_STOCK' | 'OUT_OF_STOCK' | 'UNKNOWN'
 
@@ -36,7 +38,31 @@ const MAP: Record<AvailabilityStatus, { icon: string; label: string; className: 
 }
 
 export default function AvailabilityBadge({ status = 'UNKNOWN', updatedAt }: AvailabilityBadgeProps) {
-  const { icon, label, className, aria } = MAP[status] ?? MAP.UNKNOWN
+  const isChecking = status === null
+  const isStale =
+    !isChecking && updatedAt
+      ? Date.now() - new Date(updatedAt).getTime() > 24 * 60 * 60 * 1000
+      : false
+
+  const base = MAP[status ?? 'UNKNOWN'] ?? MAP.UNKNOWN
+
+  let iconNode: ReactNode = <span aria-hidden="true">{base.icon}</span>
+  let label: string | null = base.label
+  let className = base.className
+  let aria = base.aria
+
+  if (isChecking) {
+    iconNode = <Loader2 className="h-3 w-3 animate-spin" aria-hidden="true" />
+    label = null
+    className = 'bg-muted text-muted-foreground'
+    aria = 'Checking availability'
+  } else if (isStale) {
+    iconNode = <Clock className="h-3 w-3" aria-hidden="true" />
+    label = 'Stale'
+    className = 'bg-muted text-muted-foreground'
+    aria = 'Availability data stale'
+  }
+
   const time = updatedAt ? timeAgo(updatedAt) : null
   const ariaLabel = time ? `${aria}, checked ${time}` : aria
 
@@ -44,9 +70,17 @@ export default function AvailabilityBadge({ status = 'UNKNOWN', updatedAt }: Ava
     <Badge
       className={`gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${className}`}
       aria-label={ariaLabel}
+      tabIndex={0}
     >
-      <span aria-hidden="true">{icon}</span>
-      {label}
+      {iconNode}
+      {label === '—' ? (
+        <>
+          <span aria-hidden="true">—</span>
+          <span className="sr-only">No data yet</span>
+        </>
+      ) : (
+        label
+      )}
     </Badge>
   )
 }
