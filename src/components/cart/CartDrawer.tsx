@@ -19,7 +19,7 @@ import {
   AlertDialogCancel,
   AlertDialogAction,
 } from '@/components/ui/alert-dialog'
-import { ShoppingCart, Trash2, Minus, Plus } from 'lucide-react'
+import { ShoppingCart, Trash2 } from 'lucide-react'
 import { toast } from '@/hooks/use-toast'
 import { ToastAction } from '@/components/ui/toast'
 import { useCart } from '@/contexts/useBasket'
@@ -29,6 +29,7 @@ import type { CartItem } from '@/lib/types'
 import { getCachedImageUrl } from '@/services/ImageCache'
 import { PLACEHOLDER_IMAGE } from '@/lib/images'
 import { cn } from '@/lib/utils'
+import { QuantityStepper } from './QuantityStepper'
 
 const formatPrice = (price: number) => {
   const narrow = new Intl.NumberFormat('is-IS', {
@@ -91,6 +92,7 @@ function CartItemRow({ item, includeVat, updateQuantity, removeItem }: CartItemR
     }
   }, [item.supplierItemId, item.quantity, updateQuantity])
 
+  const displayName = item.itemName || item.displayName
   const lineTotal =
     (includeVat ? item.unitPriceIncVat : item.unitPriceExVat) * item.quantity
 
@@ -110,9 +112,9 @@ function CartItemRow({ item, includeVat, updateQuantity, removeItem }: CartItemR
       <div className="min-w-0">
         <p
           className="text-sm md:text-base font-medium leading-tight line-clamp-2"
-          title={item.itemName || item.displayName}
+          title={displayName}
         >
-          {item.itemName || item.displayName}
+          {displayName}
         </p>
         <div className="mt-[-2px] flex items-baseline justify-between text-xs text-muted-foreground">
           <span className="flex-1 truncate">{item.packSize}</span>
@@ -122,27 +124,11 @@ function CartItemRow({ item, includeVat, updateQuantity, removeItem }: CartItemR
         </div>
       </div>
       <div className="flex items-center">
-        <div className="inline-flex h-7 w-[88px] md:w-[96px] items-center divide-x rounded-md border ring-offset-1 focus-within:ring-2 focus-within:ring-brand/50">
-          <button
-            className="flex h-full w-7 items-center justify-center p-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50 disabled:opacity-50"
-            aria-label="Decrease quantity"
-            onClick={() => updateQuantity(item.supplierItemId, Math.max(0, item.quantity - 1))}
-            disabled={item.quantity === 0}
-          >
-            <Minus className="h-4 w-4 stroke-[1.5]" />
-          </button>
-          <span className={cn("flex h-full flex-1 items-center justify-center tabular-nums text-sm", item.quantity === 0 && "text-red-700")}
-          >
-            {item.quantity}
-          </span>
-          <button
-            className="flex h-full w-7 items-center justify-center p-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50"
-            aria-label="Increase quantity"
-            onClick={() => updateQuantity(item.supplierItemId, item.quantity + 1)}
-          >
-            <Plus className="h-4 w-4 stroke-[1.5]" />
-          </button>
-        </div>
+        <QuantityStepper
+          quantity={item.quantity}
+          onChange={qty => updateQuantity(item.supplierItemId, qty)}
+          label={displayName}
+        />
         <button
           aria-label="Remove item"
           className="ml-2 flex h-7 w-7 items-center justify-center p-0 text-muted-foreground hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50 focus-visible:ring-offset-1"

@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Button } from '@/components/ui/button'
-import { ShoppingCart, Trash2, Plus, Minus } from 'lucide-react'
+import { ShoppingCart, Trash2 } from 'lucide-react'
 import { useCart } from '@/contexts/useBasket'
 import { useSettings } from '@/contexts/useSettings'
 import { useToast } from '@/hooks/use-toast'
@@ -11,6 +11,7 @@ import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip
 import { getCachedImageUrl } from '@/services/ImageCache'
 import { PLACEHOLDER_IMAGE } from '@/lib/images'
 import { cn } from '@/lib/utils'
+import { QuantityStepper } from './QuantityStepper'
 
 export function MiniCart() {
   const {
@@ -27,12 +28,6 @@ export function MiniCart() {
   const [keyboardNavigationActive, setKeyboardNavigationActive] = useState(false)
   const { toast } = useToast()
   const rowRefs = useRef<(HTMLDivElement | null)[]>([])
-
-  const [editing, setEditing] = useState<Record<string, boolean>>({})
-  const [tempQty, setTempQty] = useState<Record<string, string>>({})
-
-  const MIN_QTY = 0
-  const MAX_QTY = 9999
 
   const cartCount = getTotalItems()
 
@@ -151,59 +146,6 @@ export function MiniCart() {
               >
                 {items.map((it, index) => {
                   const displayName = getItemDisplayName(it)
-                  const isEditing = editing[it.supplierItemId]
-                  const value = tempQty[it.supplierItemId] ?? String(it.quantity)
-                  const numericValue = Number(value)
-                  const isInvalid = numericValue > MAX_QTY || numericValue < MIN_QTY
-
-                  const startEdit = () => {
-                    setEditing(prev => ({ ...prev, [it.supplierItemId]: true }))
-                    setTempQty(prev => ({ ...prev, [it.supplierItemId]: String(it.quantity) }))
-                  }
-
-                  const cancelEdit = () => {
-                    setEditing(prev => ({ ...prev, [it.supplierItemId]: false }))
-                    setTempQty(prev => {
-                      const cp = { ...prev }
-                      delete cp[it.supplierItemId]
-                      return cp
-                    })
-                  }
-
-                  const commitEdit = () => {
-                    const newQty = Math.min(
-                      MAX_QTY,
-                      Math.max(MIN_QTY, numericValue || 0)
-                    )
-                    updateQuantity(it.supplierItemId, newQty)
-                    cancelEdit()
-                  }
-
-                  const handleInputKey = (
-                    e: React.KeyboardEvent<HTMLInputElement>
-                  ) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault()
-                      commitEdit()
-                    } else if (e.key === 'Escape') {
-                      e.preventDefault()
-                      cancelEdit()
-                    } else if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
-                      e.preventDefault()
-                      const delta = e.shiftKey ? 10 : 1
-                      const newVal =
-                        numericValue + (e.key === 'ArrowUp' ? delta : -delta)
-                      const clamped = Math.min(
-                        MAX_QTY,
-                        Math.max(MIN_QTY, newVal)
-                      )
-                      setTempQty(prev => ({
-                        ...prev,
-                        [it.supplierItemId]: String(clamped),
-                      }))
-                    }
-                  }
-
                   return (
                     <div
                       key={it.supplierItemId}
@@ -240,74 +182,13 @@ export function MiniCart() {
                       </div>
                     </div>
                     <div className="flex items-center">
-                      <div
-                        className={cn(
-                          "relative inline-flex h-7 w-[92px] md:w-[100px] items-center divide-x rounded-md border ring-offset-1 focus-within:ring-2 focus-within:ring-brand/50",
-                          (it.quantity === 0 || isInvalid) && "border-destructive"
-                        )}
-                      >
-                        <button
-                          className="flex h-full w-7 items-center justify-center p-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50 disabled:opacity-50"
-                          aria-label={`Decrease quantity of ${displayName}`}
-                          onClick={() =>
-                            updateQuantity(it.supplierItemId, Math.max(0, it.quantity - 1))
-                          }
-                          disabled={it.quantity === 0}
-                        >
-                          <Minus className="h-4 w-4 stroke-[1.5]" />
-                        </button>
-                        {isEditing ? (
-                          <input
-                            aria-label={`Quantity of ${displayName}`}
-                            autoFocus
-                            inputMode="numeric"
-                            pattern="[0-9]*"
-                            className={cn(
-                              "h-full w-full bg-transparent text-center font-mono tabular-nums text-sm focus-visible:outline-none",
-                              isInvalid && "text-destructive"
-                            )}
-                            value={value}
-                            onChange={e =>
-                              setTempQty(prev => ({
-                                ...prev,
-                                [it.supplierItemId]: e.target.value,
-                              }))
-                            }
-                            onFocus={e => e.target.select()}
-                            onBlur={commitEdit}
-                            onKeyDown={handleInputKey}
-                          />
-                        ) : (
-                          <span
-                            aria-label={`Quantity of ${displayName}`}
-                            tabIndex={0}
-                            onClick={startEdit}
-                            onKeyDown={e => {
-                              if (e.key === 'Enter' || e.key === ' ') {
-                                e.preventDefault()
-                                startEdit()
-                              }
-                            }}
-                            className="flex h-full flex-1 cursor-text items-center justify-center tabular-nums text-sm"
-                          >
-                            {it.quantity}
-                          </span>
-                        )}
-                        <button
-                          className="flex h-full w-7 items-center justify-center p-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50"
-                          aria-label={`Increase quantity of ${displayName}`}
-                          onClick={() =>
-                            updateQuantity(it.supplierItemId, it.quantity + 1)
-                          }
-                        >
-                          <Plus className="h-4 w-4 stroke-[1.5]" />
-                        </button>
-                        {isInvalid && (
-                          <span className="absolute -bottom-4 left-1/2 -translate-x-1/2 text-[10px] text-destructive">
-                            {numericValue < MIN_QTY ? `Min ${MIN_QTY}` : `Max ${MAX_QTY}`}
-                          </span>
-                        )}
-                      </div>
+                      <QuantityStepper
+                        quantity={it.quantity}
+                        onChange={qty =>
+                          updateQuantity(it.supplierItemId, qty)
+                        }
+                        label={displayName}
+                      />
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <button
