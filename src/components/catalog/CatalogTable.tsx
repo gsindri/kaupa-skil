@@ -30,6 +30,7 @@ import { timeAgo } from '@/lib/timeAgo'
 import { formatCurrency } from '@/lib/format'
 import type { FacetFilters } from '@/services/catalog'
 import SupplierChip from '@/components/catalog/SupplierChip'
+import ProductThumb from '@/components/catalog/ProductThumb'
 import {
   Drawer,
   DrawerTrigger,
@@ -219,13 +220,7 @@ export function CatalogTable({
                 />
               </TableCell>
               <TableCell className="w-14 p-2">
-                {p.image_main && (
-                  <img
-                    src={p.image_main}
-                    alt={p.name}
-                    className="h-10 w-10 rounded object-cover"
-                  />
-                )}
+                <ProductThumb src={p.image_main} name={p.name} brand={p.brand} />
               </TableCell>
               <TableCell
                 className="[width:minmax(0,1fr)] p-2"
