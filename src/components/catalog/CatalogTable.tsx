@@ -237,12 +237,22 @@ export function CatalogTable({
                 className="[width:minmax(0,1fr)] p-2"
                 title={p.name}
               >
+                <div className="flex items-center justify-between gap-2">
+                  <div className="min-w-0">
+                    <a
+                      href={`#${id}`}
+                      aria-label={`View details for ${p.name}`}
+                      className="block truncate font-medium hover:underline focus:underline"
+                    >
+                      {p.name}
+                    </a>
                     {(p.brand || p.pack_size) && (
                       <div className="text-[13px] text-muted-foreground">
                         {[p.brand, p.pack_size].filter(Boolean).join(' • ')}
                       </div>
                     )}
                   </div>
+                </div>
               </TableCell>
               <TableCell className="w-28 p-2 whitespace-nowrap">
                 <Tooltip>
