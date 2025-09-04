@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import {
   Table,
   TableBody,
@@ -14,6 +14,15 @@ import AvailabilityBadge from '@/components/catalog/AvailabilityBadge'
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
 import { timeAgo } from '@/lib/timeAgo'
 import type { FacetFilters } from '@/services/catalog'
+import SupplierChip from '@/components/catalog/SupplierChip'
+import {
+  Drawer,
+  DrawerTrigger,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerDescription,
+} from '@/components/ui/drawer'
 
 interface CatalogTableProps {
   products: any[]
@@ -74,7 +83,7 @@ export function CatalogTable({
           </TableHead>
           <TableHead className="w-28">Availability</TableHead>
           <TableHead
-            className="w-32 cursor-pointer select-none"
+            className="min-w-[140px] max-w-[180px] w-40 cursor-pointer select-none"
             onClick={() => onSort('supplier')}
           >
             Suppliers {sort?.key === 'supplier' && (sort.direction === 'asc' ? '▲' : '▼')}
@@ -86,7 +95,7 @@ export function CatalogTable({
           <TableHead />
           <TableHead />
           <TableHead />
-          <TableHead>
+          <TableHead className="min-w-[140px] max-w-[180px] w-40">
             <Input
               value={filters.supplier ?? ''}
               onChange={e => onFilterChange({ supplier: e.target.value })}
@@ -153,12 +162,12 @@ export function CatalogTable({
                   </TooltipContent>
                 </Tooltip>
               </TableCell>
-              <TableCell className="w-32 p-2 space-x-1 whitespace-nowrap">
-                {p.suppliers?.map((s: string) => (
-                  <Badge key={s} variant="secondary">
-                    {s}
-                  </Badge>
-                ))}
+              <TableCell className="min-w-[140px] max-w-[180px] w-40 p-2 whitespace-nowrap">
+                {p.suppliers?.length ? (
+                  <SupplierList suppliers={p.suppliers} />
+                ) : (
+                  <ConnectPill />
+                )}
               </TableCell>
               <TableCell className="w-24 p-2 whitespace-nowrap">
                 Connect to see price
@@ -168,6 +177,68 @@ export function CatalogTable({
         })}
       </TableBody>
     </Table>
+  )
+}
+
+function SupplierList({ suppliers }: { suppliers: string[] }) {
+  const ref = useRef<HTMLDivElement>(null)
+  const [visible, setVisible] = useState(suppliers.length)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el || typeof ResizeObserver === 'undefined') return
+
+    const CHIP = 24
+    const GAP = 6
+
+    const observer = new ResizeObserver(entries => {
+      const width = entries[0].contentRect.width
+      let count = Math.floor((width + GAP) / (CHIP + GAP))
+      if (count < suppliers.length) {
+        count = Math.max(0, count - 1)
+      }
+      setVisible(count)
+    })
+
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [suppliers.length])
+
+  const shown = suppliers.slice(0, visible)
+  const remaining = suppliers.length - shown.length
+
+  return (
+    <div ref={ref} className="flex items-center gap-1.5 overflow-hidden">
+      {shown.map(name => (
+        <SupplierChip key={name} name={name} />
+      ))}
+      {remaining > 0 && (
+        <span className="text-xs text-muted-foreground">+{remaining}</span>
+      )}
+    </div>
+  )
+}
+
+function ConnectPill() {
+  return (
+    <Drawer>
+      <DrawerTrigger asChild>
+        <Badge
+          variant="outline"
+          className="cursor-pointer px-2 py-0.5 text-xs"
+        >
+          Connect
+        </Badge>
+      </DrawerTrigger>
+      <DrawerContent>
+        <DrawerHeader>
+          <DrawerTitle>Connect a supplier</DrawerTitle>
+          <DrawerDescription>
+            Connect a supplier to view their prices and availability.
+          </DrawerDescription>
+        </DrawerHeader>
+      </DrawerContent>
+    </Drawer>
   )
 }
 
