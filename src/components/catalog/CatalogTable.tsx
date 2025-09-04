@@ -9,7 +9,21 @@ import {
 } from '@/components/ui/table'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Badge } from '@/components/ui/badge'
-import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValue,
+} from '@/components/ui/select'
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuCheckboxItem,
+} from '@/components/ui/dropdown-menu'
+import { Button } from '@/components/ui/button'
+import { useVendors } from '@/hooks/useVendors'
 import AvailabilityBadge from '@/components/catalog/AvailabilityBadge'
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
 import { timeAgo } from '@/lib/timeAgo'
@@ -31,8 +45,8 @@ interface CatalogTableProps {
   selected: string[]
   onSelect: (id: string) => void
   onSelectAll: (checked: boolean) => void
-  sort: { key: 'name' | 'supplier'; direction: 'asc' | 'desc' } | null
-  onSort: (key: 'name' | 'supplier') => void
+  sort: { key: 'name' | 'supplier' | 'price' | 'availability'; direction: 'asc' | 'desc' }
+  onSort: (key: 'name' | 'supplier' | 'price' | 'availability') => void
   filters: FacetFilters
   onFilterChange: (f: Partial<FacetFilters>) => void
 }
@@ -48,6 +62,15 @@ export function CatalogTable({
   onFilterChange,
 }: CatalogTableProps) {
   const rowRefs = useRef<Array<HTMLTableRowElement | null>>([])
+
+  const { vendors } = useVendors()
+  const supplierValues = filters.supplier ?? []
+  const brandOptions = Array.from(
+    new Set(products.map(p => p.brand).filter(Boolean) as string[]),
+  ).sort()
+  const showBrandFilter =
+    products.length > 0 &&
+    products.filter(p => p.brand).length / products.length > 0.3
 
   const allIds = products.map(p => p.catalog_id)
   const isAllSelected = allIds.length > 0 && allIds.every(id => selected.includes(id))
@@ -81,29 +104,91 @@ export function CatalogTable({
             className="[width:minmax(0,1fr)] cursor-pointer select-none px-2"
             onClick={() => onSort('name')}
           >
-            Name {sort?.key === 'name' && (sort.direction === 'asc' ? '▲' : '▼')}
+            Name {sort.key === 'name' && (sort.direction === 'asc' ? '▲' : '▼')}
           </TableHead>
-          <TableHead className="w-28 px-2">Availability</TableHead>
+          <TableHead
+            className="w-28 px-2 cursor-pointer select-none"
+            onClick={() => onSort('availability')}
+          >
+            Availability {sort.key === 'availability' && (sort.direction === 'asc' ? '▲' : '▼')}
+          </TableHead>
           <TableHead
             className="min-w-[140px] max-w-[180px] w-40 cursor-pointer select-none px-2"
             onClick={() => onSort('supplier')}
           >
-            Suppliers {sort?.key === 'supplier' && (sort.direction === 'asc' ? '▲' : '▼')}
+            Suppliers {sort.key === 'supplier' && (sort.direction === 'asc' ? '▲' : '▼')}
           </TableHead>
-          <TableHead className="w-[112px] sm:w-[136px] text-right px-2">Price</TableHead>
+          <TableHead
+            className="w-[112px] sm:w-[136px] text-right px-2 cursor-pointer select-none"
+            onClick={() => onSort('price')}
+          >
+            Price {sort.key === 'price' && (sort.direction === 'asc' ? '▲' : '▼')}
+          </TableHead>
         </TableRow>
         <TableRow>
           <TableHead className="px-2" />
           <TableHead className="px-2" />
-          <TableHead className="px-2" />
-          <TableHead className="px-2" />
+          <TableHead className="px-2">
+            {showBrandFilter && (
+              <Select
+                value={filters.brand ?? ''}
+                onValueChange={v => onFilterChange({ brand: v || undefined })}
+              >
+                <SelectTrigger className="h-8">
+                  <SelectValue placeholder="Brand" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">All</SelectItem>
+                  {brandOptions.map(b => (
+                    <SelectItem key={b} value={b}>
+                      {b}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          </TableHead>
+          <TableHead className="px-2">
+            <Select
+              value={filters.availability ?? ''}
+              onValueChange={v => onFilterChange({ availability: v || undefined })}
+            >
+              <SelectTrigger className="h-8">
+                <SelectValue placeholder="Avail." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">—</SelectItem>
+                <SelectItem value="IN_STOCK">In</SelectItem>
+                <SelectItem value="LOW_STOCK">Low</SelectItem>
+                <SelectItem value="OUT_OF_STOCK">Out</SelectItem>
+                <SelectItem value="UNKNOWN">Unknown</SelectItem>
+              </SelectContent>
+            </Select>
+          </TableHead>
           <TableHead className="min-w-[140px] max-w-[180px] w-40 px-2">
-            <Input
-              value={filters.supplier ?? ''}
-              onChange={e => onFilterChange({ supplier: e.target.value })}
-              placeholder="Supplier"
-              className="h-8"
-            />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="h-8 w-full justify-start">
+                  {supplierValues.length ? `${supplierValues.length} selected` : 'Supplier'}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-40">
+                {vendors.map(v => (
+                  <DropdownMenuCheckboxItem
+                    key={v.id}
+                    checked={supplierValues.includes(v.id)}
+                    onCheckedChange={chk => {
+                      const next = chk
+                        ? [...supplierValues, v.id]
+                        : supplierValues.filter(id => id !== v.id)
+                      onFilterChange({ supplier: next.length ? next : undefined })
+                    }}
+                  >
+                    {v.name}
+                  </DropdownMenuCheckboxItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </TableHead>
           <TableHead className="w-[112px] sm:w-[136px] px-2" />
         </TableRow>

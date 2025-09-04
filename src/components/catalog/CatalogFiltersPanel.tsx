@@ -13,7 +13,9 @@ export function CatalogFiltersPanel({ filters, onChange }: CatalogFiltersPanelPr
     queryFn: () => fetchCatalogFacets(filters),
   })
 
-  const active = Object.entries(filters).filter(([, v]) => v)
+  const active = Object.entries(filters).filter(([, v]) =>
+    Array.isArray(v) ? v.length > 0 : Boolean(v),
+  )
 
   const renderFacet = (
     label: string,
@@ -22,22 +24,36 @@ export function CatalogFiltersPanel({ filters, onChange }: CatalogFiltersPanelPr
   ) => (
     <div className="space-y-1">
       <div className="font-medium text-sm">{label}</div>
-      {items.map((item) => (
-        <button
-          key={item.id}
-          type="button"
-          onClick={() =>
-            onChange({ [key]: filters[key] === item.id ? undefined : item.id })
-          }
-          className={cn(
-            'flex w-full justify-between text-sm text-left',
-            filters[key] === item.id ? 'underline font-semibold' : 'hover:underline',
-          )}
-        >
-          <span>{item.name || 'Unknown'}</span>
-          <span className="text-muted-foreground">{item.count}</span>
-        </button>
-      ))}
+      {items.map(item => {
+        const isSupplier = key === 'supplier'
+        const selected = isSupplier
+          ? (filters.supplier ?? []).includes(item.id)
+          : (filters as any)[key] === item.id
+        return (
+          <button
+            key={item.id}
+            type="button"
+            onClick={() => {
+              if (isSupplier) {
+                const cur = filters.supplier ?? []
+                const next = selected
+                  ? cur.filter(id => id !== item.id)
+                  : [...cur, item.id]
+                onChange({ supplier: next.length ? next : undefined })
+              } else {
+                onChange({ [key]: selected ? undefined : item.id })
+              }
+            }}
+            className={cn(
+              'flex w-full justify-between text-sm text-left',
+              selected ? 'underline font-semibold' : 'hover:underline',
+            )}
+          >
+            <span>{item.name || 'Unknown'}</span>
+            <span className="text-muted-foreground">{item.count}</span>
+          </button>
+        )
+      })}
     </div>
   )
 
@@ -52,7 +68,7 @@ export function CatalogFiltersPanel({ filters, onChange }: CatalogFiltersPanelPr
               onClick={() => onChange({ [k]: undefined })}
               className="flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs"
             >
-              {String(v)}
+              {Array.isArray(v) ? v.join(', ') : String(v)}
               <span className="text-muted-foreground">×</span>
             </button>
           ))}

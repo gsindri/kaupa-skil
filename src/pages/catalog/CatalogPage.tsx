@@ -72,9 +72,9 @@ export default function CatalogPage() {
   const { addItem } = useCart()
   const [addingId, setAddingId] = useState<string | null>(null)
   const [tableSort, setTableSort] = useState<{
-    key: 'name' | 'supplier'
+    key: 'name' | 'supplier' | 'price' | 'availability'
     direction: 'asc' | 'desc'
-  } | null>(null)
+  }>({ key: 'name', direction: 'asc' })
   const debouncedSearch = useDebounce(filters.search ?? '', 300)
   const sentinelRef = useRef<HTMLDivElement | null>(null)
   const gridRef = useRef<HTMLDivElement>(null)
@@ -218,7 +218,8 @@ export default function CatalogPage() {
   useEffect(() => {
     if (filters.brand) logFacetInteraction('brand', filters.brand)
     if (filters.category) logFacetInteraction('category', filters.category)
-    if (filters.supplier) logFacetInteraction('supplier', filters.supplier)
+    if (filters.supplier?.length)
+      logFacetInteraction('supplier', filters.supplier.join(','))
     if (filters.availability) logFacetInteraction('availability', filters.availability)
     if (filters.packSizeRange) logFacetInteraction('packSizeRange', filters.packSizeRange)
   }, [
@@ -325,16 +326,33 @@ export default function CatalogPage() {
   }, [nextCursor, cursor, loadingMore])
 
   const sortedProducts = useMemo(() => {
-    if (!tableSort) return products
     const sorted = [...products]
+    const availabilityOrder: Record<string, number> = {
+      IN_STOCK: 0,
+      LOW_STOCK: 1,
+      OUT_OF_STOCK: 2,
+      UNKNOWN: 3,
+    }
     sorted.sort((a, b) => {
-      const getVal = (p: any) => {
-        if (tableSort.key === 'supplier')
-          return (p.suppliers?.[0] || '').toLowerCase()
-        return (p[tableSort.key] || '').toLowerCase()
+      let av: any
+      let bv: any
+      switch (tableSort.key) {
+        case 'supplier':
+          av = (a.suppliers?.[0] || '').toLowerCase()
+          bv = (b.suppliers?.[0] || '').toLowerCase()
+          break
+        case 'price':
+          av = a.best_price ?? (tableSort.direction === 'asc' ? Infinity : -Infinity)
+          bv = b.best_price ?? (tableSort.direction === 'asc' ? Infinity : -Infinity)
+          break
+        case 'availability':
+          av = availabilityOrder[a.availability_status] ?? 3
+          bv = availabilityOrder[b.availability_status] ?? 3
+          break
+        default:
+          av = (a.name || '').toLowerCase()
+          bv = (b.name || '').toLowerCase()
       }
-      const av = getVal(a)
-      const bv = getVal(b)
       if (av < bv) return tableSort.direction === 'asc' ? -1 : 1
       if (av > bv) return tableSort.direction === 'asc' ? 1 : -1
       return 0
@@ -371,9 +389,11 @@ export default function CatalogPage() {
     }
   }
 
-  const handleSort = (key: 'name' | 'supplier') => {
+  const handleSort = (
+    key: 'name' | 'supplier' | 'price' | 'availability',
+  ) => {
     setTableSort(prev => {
-      if (prev?.key === key) {
+      if (prev.key === key) {
         return { key, direction: prev.direction === 'asc' ? 'desc' : 'asc' }
       }
       return { key, direction: 'asc' }

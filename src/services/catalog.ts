@@ -5,7 +5,7 @@ export type FacetFilters = {
   search?: string
   brand?: string
   category?: string
-  supplier?: string
+  supplier?: string[]
   availability?: string
   packSizeRange?: string
 }
@@ -212,7 +212,7 @@ export async function fetchCatalogFacets(filters: FacetFilters): Promise<Catalog
   const { data, error } = await supabase.rpc('fetch_catalog_facets', {
     _search: filters.search ?? null,
     _category_ids: filters.category ? [filters.category] : null,
-    _supplier_ids: filters.supplier ? [filters.supplier] : null,
+    _supplier_ids: filters.supplier && filters.supplier.length ? filters.supplier : null,
     _availability: filters.availability ? [filters.availability] : null,
     _pack_size_ranges: filters.packSizeRange ? [filters.packSizeRange] : null,
     _brands: filters.brand ? [filters.brand] : null,

@@ -14,7 +14,9 @@ export function FacetPanel({ filters, onChange }: FacetPanelProps) {
     queryFn: () => fetchCatalogFacets(filters),
   })
 
-  const active = Object.entries(filters).filter(([k, v]) => k !== 'search' && v)
+  const active = Object.entries(filters).filter(
+    ([k, v]) => k !== 'search' && (Array.isArray(v) ? v.length > 0 : v),
+  )
 
   const clearAll = () =>
     onChange({
@@ -34,6 +36,10 @@ export function FacetPanel({ filters, onChange }: FacetPanelProps) {
       <div className="text-sm font-medium">{label}</div>
       {items.map(item => {
         const id = `${String(key)}-${item.id}`
+        const isSupplier = key === 'supplier'
+        const checked = isSupplier
+          ? (filters.supplier ?? []).includes(item.id)
+          : (filters as any)[key] === item.id
         return (
           <label
             key={item.id}
@@ -42,10 +48,18 @@ export function FacetPanel({ filters, onChange }: FacetPanelProps) {
           >
             <Checkbox
               id={id}
-              checked={filters[key] === item.id}
-              onCheckedChange={checked =>
-                onChange({ [key]: checked ? item.id : undefined })
-              }
+              checked={checked}
+              onCheckedChange={chk => {
+                if (isSupplier) {
+                  const cur = filters.supplier ?? []
+                  const next = chk
+                    ? [...cur, item.id]
+                    : cur.filter(id => id !== item.id)
+                  onChange({ supplier: next.length ? next : undefined })
+                } else {
+                  onChange({ [key]: chk ? item.id : undefined })
+                }
+              }}
             />
             <span className="flex-1">{item.name || 'Unknown'}</span>
             <span className="text-muted-foreground">{item.count}</span>
@@ -66,7 +80,7 @@ export function FacetPanel({ filters, onChange }: FacetPanelProps) {
               onClick={() => onChange({ [k]: undefined })}
               className="flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs"
             >
-              {String(v)}
+              {Array.isArray(v) ? v.join(', ') : String(v)}
               <span className="text-muted-foreground">×</span>
             </button>
           ))}
