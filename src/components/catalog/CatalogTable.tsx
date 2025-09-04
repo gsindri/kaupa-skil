@@ -131,14 +131,16 @@ export function CatalogTable({
           <TableHead className="px-2">
             {showBrandFilter && (
               <Select
-                value={filters.brand ?? ''}
-                onValueChange={v => onFilterChange({ brand: v || undefined })}
+                value={filters.brand ?? 'all'}
+                onValueChange={v =>
+                  onFilterChange({ brand: v === 'all' ? undefined : v })
+                }
               >
                 <SelectTrigger className="h-8">
                   <SelectValue placeholder="Brand" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All</SelectItem>
+                  <SelectItem value="all">All</SelectItem>
                   {brandOptions.map(b => (
                     <SelectItem key={b} value={b}>
                       {b}
@@ -150,17 +152,17 @@ export function CatalogTable({
           </TableHead>
           <TableHead className="px-2">
             <Select
-              value={filters.availability ?? ''}
-              onValueChange={v => onFilterChange({ availability: v || undefined })}
+              value={filters.availability ?? 'all'}
+              onValueChange={v =>
+                onFilterChange({
+                  availability: v === 'all' ? undefined : v,
+                })
+              }
             >
               <SelectTrigger className="h-8">
                 <SelectValue placeholder="Avail." />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="" aria-label="No data yet">
-                  <span aria-hidden="true">—</span>
-                  <span className="sr-only">No data yet</span>
-                </SelectItem>
                 <SelectItem value="IN_STOCK">In</SelectItem>
                 <SelectItem value="LOW_STOCK">Low</SelectItem>
                 <SelectItem value="OUT_OF_STOCK">Out</SelectItem>
