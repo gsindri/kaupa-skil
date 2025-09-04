@@ -90,7 +90,7 @@ function CartItemRow({ item, includeVat, updateQuantity, removeItem }: CartItemR
         alt=""
         className="h-10 w-10 md:h-12 md:w-12 rounded object-cover bg-muted/40"
       />
-      <div className="min-w-0">
+      <div className="min-w-0 pr-6 md:pr-8">
         <p
           className="text-sm md:text-base font-medium leading-tight line-clamp-2"
           title={displayName}

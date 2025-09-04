@@ -143,7 +143,7 @@ export function MiniCart() {
                       alt=""
                       className="h-9 w-9 md:h-10 md:w-10 rounded object-cover bg-muted/40"
                     />
-                    <div className="min-w-0">
+                    <div className="min-w-0 pr-6 md:pr-8">
                       <p
                         className="text-sm md:text-[15px] font-medium leading-tight line-clamp-2"
                         title={displayName}
