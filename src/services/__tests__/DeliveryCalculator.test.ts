@@ -39,6 +39,7 @@ function makeItem(overrides: Partial<CartItem> = {}): CartItem {
     supplierItemId: '1',
     displayName: 'Item',
     packQty: 1,
+    image: overrides.image ?? null,
     ...overrides
   }
 }

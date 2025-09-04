@@ -363,7 +363,10 @@ export interface CartItem {
   supplierItemId: string // Maps to supplier_items.id for database
   displayName: string
   packQty: number
-  image?: string
+  /**
+   * URL or path to a product image. Use `null` when no image is available.
+   */
+  image: string | null
 }
 
 // Price comparison types
