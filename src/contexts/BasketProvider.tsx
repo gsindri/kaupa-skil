@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react'
 import { useToast } from '@/hooks/use-toast'
 import type { CartItem } from '@/lib/types'
@@ -36,14 +35,14 @@ export default function BasketProvider({ children }: { children: React.ReactNode
       return []
     }
   })
-  
+
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
   const { toast } = useToast()
 
   // Sync basket across tabs
   useEffect(() => {
     const channel = new BroadcastChannel('procurewise-basket')
-    
+
     const handleMessage = (event: MessageEvent) => {
       if (event.data.type === 'BASKET_UPDATED') {
         setItems(event.data.items)
@@ -56,21 +55,49 @@ export default function BasketProvider({ children }: { children: React.ReactNode
 
   const syncBasket = (newItems: CartItem[]) => {
     localStorage.setItem('procurewise-basket', JSON.stringify(newItems))
-    
+
     const channel = new BroadcastChannel('procurewise-basket')
     channel.postMessage({ type: 'BASKET_UPDATED', items: newItems })
     channel.close()
   }
 
   const addItem = (
-    item: Omit<CartItem, 'quantity'>,
+    item:
+      | Omit<CartItem, 'quantity'>
+      | { product_id: string; supplier_id: string; quantity?: number },
     quantity = 1,
     options: { showToast?: boolean; animateElement?: HTMLElement } = {}
   ) => {
-    const normalizedItem = {
-      ...item,
-      itemName: item.itemName ?? item.displayName ?? 'Item',
-      displayName: item.displayName ?? item.itemName ?? 'Item'
+    let normalizedItem: Omit<CartItem, 'quantity'>
+    let finalQuantity = quantity
+
+    if ('product_id' in item && 'supplier_id' in item) {
+      normalizedItem = {
+        id: item.product_id,
+        supplierId: item.supplier_id,
+        supplierName: '',
+        itemName: 'Item',
+        sku: '',
+        packSize: '',
+        packPrice: null,
+        unitPriceExVat: null,
+        unitPriceIncVat: null,
+        vatRate: 0,
+        unit: '',
+        supplierItemId: item.product_id,
+        displayName: 'Item',
+        packQty: 1,
+        image: null
+      }
+      if (item.quantity != null) {
+        finalQuantity = item.quantity
+      }
+    } else {
+      normalizedItem = {
+        ...item,
+        itemName: item.itemName ?? item.displayName ?? 'Item',
+        displayName: item.displayName ?? item.itemName ?? 'Item'
+      }
     }
 
     const previousItems = items.map(i => ({ ...i }))
@@ -86,18 +113,18 @@ export default function BasketProvider({ children }: { children: React.ReactNode
       if (existingIndex >= 0) {
         newItems = prev.map((basketItem, index) =>
           index === existingIndex
-            ? { ...basketItem, quantity: basketItem.quantity + quantity }
+            ? { ...basketItem, quantity: basketItem.quantity + finalQuantity }
             : basketItem
         )
       } else {
-        newItems = [...prev, { ...normalizedItem, quantity }]
+        newItems = [...prev, { ...normalizedItem, quantity: finalQuantity }]
       }
 
       syncBasket(newItems)
 
       if (options.showToast !== false) {
         toast({
-          description: `Added ${normalizedItem.itemName} × ${quantity}`,
+          description: `Added ${normalizedItem.itemName} × ${finalQuantity}`,
           action: (
             <ToastAction altText="Undo" onClick={() => restoreItems(previousItems)}>
               Undo
@@ -148,11 +175,14 @@ export default function BasketProvider({ children }: { children: React.ReactNode
     return items.reduce((total, item) => total + item.quantity, 0)
   }
 
-  const getTotalPrice = (includeVat: boolean) => {
-    return items.reduce((total, item) => {
+  const getTotalPrice = (includeVat: boolean): number | null => {
+    let total = 0
+    for (const item of items) {
       const price = includeVat ? item.unitPriceIncVat : item.unitPriceExVat
-      return total + (price * item.quantity)
-    }, 0)
+      if (price == null) return null
+      total += price * item.quantity
+    }
+    return total
   }
 
   return (
@@ -173,3 +203,4 @@ export default function BasketProvider({ children }: { children: React.ReactNode
     </BasketContext.Provider>
   )
 }
+
