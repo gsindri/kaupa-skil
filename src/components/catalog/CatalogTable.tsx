@@ -32,6 +32,13 @@ import type { FacetFilters } from '@/services/catalog'
 import SupplierChip from '@/components/catalog/SupplierChip'
 import ProductThumb from '@/components/catalog/ProductThumb'
 import { resolveImage } from '@/lib/images'
+import { useCart } from '@/contexts/useBasket'
+import { QuantityStepper } from '@/components/cart/QuantityStepper'
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from '@/components/ui/popover'
 import {
   Drawer,
   DrawerTrigger,
@@ -213,7 +220,7 @@ export function CatalogTable({
               tabIndex={0}
               data-state={isSelected ? 'selected' : undefined}
               onKeyDown={e => handleKeyDown(e, i, id)}
-              className="h-[52px] border-b hover:bg-muted/50 focus-visible:bg-muted/50"
+              className="group h-[52px] border-b hover:bg-muted/50 focus-visible:bg-muted/50"
             >
               <TableCell className="w-8 p-2">
                 <Checkbox
@@ -237,13 +244,18 @@ export function CatalogTable({
                 className="[width:minmax(0,1fr)] p-2"
                 title={p.name}
               >
-                <div className="line-clamp-2">
-                  <div className="text-[15px] font-medium leading-snug">{p.name}</div>
-                  {(p.brand || p.pack_size) && (
-                    <div className="text-[13px] text-muted-foreground">
-                      {[p.brand, p.pack_size].filter(Boolean).join(' • ')}
+                <div className="flex items-start justify-between gap-2">
+                  <div className="line-clamp-2">
+                    <div className="text-[15px] font-medium leading-snug">
+                      {p.name}
                     </div>
-                  )}
+                    {(p.brand || p.pack_size) && (
+                      <div className="text-[13px] text-muted-foreground">
+                        {[p.brand, p.pack_size].filter(Boolean).join(' • ')}
+                      </div>
+                    )}
+                  </div>
+                  <AddToCartButton product={p} vendors={vendors} />
                 </div>
               </TableCell>
               <TableCell className="w-28 p-2 whitespace-nowrap">
@@ -279,6 +291,96 @@ export function CatalogTable({
         })}
       </TableBody>
     </Table>
+  )
+}
+
+function AddToCartButton({
+  product,
+  vendors,
+}: {
+  product: any
+  vendors: { id: string; name: string }[]
+}) {
+  const { items, addItem, updateQuantity } = useCart()
+  const [open, setOpen] = useState(false)
+
+  const existing = items.find(it => it.id === product.catalog_id)
+  const quantity = existing?.quantity ?? 0
+
+  const handleAdd = (supplier: string) => {
+    const supplierItemId = `${product.catalog_id}:${supplier}`
+    addItem(
+      {
+        id: product.catalog_id,
+        supplierId: supplier,
+        supplierName: supplier,
+        itemName: product.name,
+        sku: product.catalog_id,
+        packSize: product.pack_size ?? '',
+        packPrice: 0,
+        unitPriceExVat: 0,
+        unitPriceIncVat: 0,
+        vatRate: 0,
+        unit: '',
+        supplierItemId,
+        displayName: product.name,
+        packQty: 1,
+        image: product.sample_image_url ?? null,
+      },
+      1,
+      { showToast: false },
+    )
+    setOpen(false)
+  }
+
+  const suppliers: string[] = product.suppliers || []
+
+  return (
+    <div className="ml-2 flex-shrink-0 opacity-100 md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100 transition-opacity">
+      {quantity > 0 && existing ? (
+        <QuantityStepper
+          quantity={quantity}
+          onChange={q => updateQuantity(existing.supplierItemId, q)}
+          label={product.name}
+        />
+      ) : suppliers.length > 1 ? (
+        <Popover open={open} onOpenChange={setOpen}>
+          <PopoverTrigger asChild>
+            <Button size="sm" className="h-7 px-2">
+              Add
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-56 p-2 flex flex-col gap-1">
+            {suppliers.map(s => {
+              const connected = vendors.some(v => v.name === s)
+              return (
+                <Button
+                  key={s}
+                  variant="ghost"
+                  className="justify-start gap-2 px-2 h-8"
+                  onClick={() => handleAdd(s)}
+                  disabled={!connected}
+                >
+                  <SupplierChip name={s} />
+                  <span className="flex-1 text-left">{s}</span>
+                  <AvailabilityBadge status={product.availability_status} />
+                  {!connected && <Lock className="h-4 w-4" />}
+                </Button>
+              )
+            })}
+          </PopoverContent>
+        </Popover>
+      ) : (
+        <Button
+          size="sm"
+          className="h-7 px-2"
+          onClick={() => handleAdd(suppliers[0])}
+          disabled={suppliers.length === 0}
+        >
+          Add
+        </Button>
+      )}
+    </div>
   )
 }
 
