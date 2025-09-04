@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import {
   Table,
   TableBody,
@@ -24,6 +24,9 @@ import {
   DropdownMenuItem,
 } from '@/components/ui/dropdown-menu'
 import { Button } from '@/components/ui/button'
+import { useCart } from '@/contexts/useBasket'
+import { QuantityStepper } from '@/components/cart/QuantityStepper'
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover'
 import { useVendors } from '@/hooks/useVendors'
 import AvailabilityBadge from '@/components/catalog/AvailabilityBadge'
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
@@ -33,7 +36,6 @@ import type { FacetFilters } from '@/services/catalog'
 import ProductThumb from '@/components/catalog/ProductThumb'
 import SupplierList from '@/components/catalog/SupplierList'
 import { resolveImage } from '@/lib/images'
-import AddToCartButton from '@/components/cart/AddToCartButton'
 import {
   Drawer,
   DrawerTrigger,
@@ -259,7 +261,7 @@ export function CatalogTable({
                   >
                     {p.name}
                   </a>
-                  <AddToCartButton product={p} vendors={vendors} />
+                  <AddToCartButton product={p} />
                 </div>
               </TableCell>
               <TableCell className="min-w-[112px] max-w-[136px] w-[112px] sm:w-[136px] p-2 text-right whitespace-nowrap">
@@ -279,6 +281,129 @@ export function CatalogTable({
         })}
       </TableBody>
     </Table>
+  )
+}
+
+function AddToCartButton({ product }: { product: any }) {
+  const { items, addItem, updateQuantity } = useCart()
+  const existingItem = items.find(
+    (i: any) => i.supplierItemId === product.catalog_id,
+  )
+
+  const [open, setOpen] = useState(false)
+
+  const rawSuppliers =
+    (product.supplier_products && product.supplier_products.length
+      ? product.supplier_products
+      : product.suppliers) || []
+
+  const supplierEntries = rawSuppliers.map((s: any) => {
+    if (typeof s === 'string') {
+      return { id: s, name: s, connected: true }
+    }
+    const status =
+      s.availability?.status ??
+      s.availability_status ??
+      s.status ??
+      null
+    const updatedAt =
+      s.availability?.updatedAt ?? s.availability_updated_at ?? null
+    return {
+      id: s.supplier_id || s.id || s.supplier?.id,
+      name: s.supplier?.name || s.name,
+      connected: s.connected ?? s.supplier?.connected ?? true,
+      logoUrl:
+        s.logoUrl || s.logo_url || s.supplier?.logo_url || null,
+      availability: status,
+      updatedAt,
+    }
+  })
+
+  if (existingItem) {
+    return (
+      <QuantityStepper
+        quantity={existingItem.quantity}
+        onChange={qty => updateQuantity(existingItem.supplierItemId, qty)}
+        label={product.name}
+      />
+    )
+  }
+
+  if (supplierEntries.length === 0) return null
+
+  if (supplierEntries.length === 1) {
+    const s = supplierEntries[0]
+    return (
+      <Button
+        size="sm"
+        onClick={() =>
+          addItem({
+            product_id: product.catalog_id,
+            supplier_id: s.id,
+            qty: 1,
+          } as any)
+        }
+        aria-label={`Add ${product.name}`}
+      >
+        Add
+      </Button>
+    )
+  }
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button size="sm" aria-label={`Choose supplier for ${product.name}`}>
+          Add
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-64 p-2 space-y-1">
+        {supplierEntries.map(s => {
+          const initials = s.name
+            ? s.name
+                .split(' ')
+                .map((n: string) => n[0])
+                .join('')
+                .slice(0, 2)
+                .toUpperCase()
+            : '?'
+          return (
+            <Button
+              key={s.id}
+              variant="ghost"
+              className="w-full justify-start gap-2 px-2"
+              onClick={() => {
+                addItem({
+                  product_id: product.catalog_id,
+                  supplier_id: s.id,
+                  qty: 1,
+                } as any)
+                setOpen(false)
+              }}
+            >
+              {s.logoUrl ? (
+                <img
+                  src={s.logoUrl}
+                  alt=""
+                  className="h-6 w-6 rounded-sm"
+                />
+              ) : (
+                <span className="flex h-6 w-6 items-center justify-center rounded-sm bg-muted text-xs font-medium">
+                  {initials}
+                </span>
+              )}
+              <span className="flex-1 text-left">{s.name}</span>
+              {s.availability && (
+                <AvailabilityBadge
+                  status={s.availability}
+                  updatedAt={s.updatedAt}
+                />
+              )}
+              {!s.connected && <Lock className="h-4 w-4" />}
+            </Button>
+          )
+        })}
+      </PopoverContent>
+    </Popover>
   )
 }
 
