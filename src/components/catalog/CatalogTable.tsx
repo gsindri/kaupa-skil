@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/input'
 import AvailabilityBadge from '@/components/catalog/AvailabilityBadge'
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
 import { timeAgo } from '@/lib/timeAgo'
+import { formatCurrency } from '@/lib/format'
 import type { FacetFilters } from '@/services/catalog'
 import SupplierChip from '@/components/catalog/SupplierChip'
 import {
@@ -23,6 +24,7 @@ import {
   DrawerTitle,
   DrawerDescription,
 } from '@/components/ui/drawer'
+import { Lock } from 'lucide-react'
 
 interface CatalogTableProps {
   products: any[]
@@ -88,7 +90,7 @@ export function CatalogTable({
           >
             Suppliers {sort?.key === 'supplier' && (sort.direction === 'asc' ? '▲' : '▼')}
           </TableHead>
-          <TableHead className="w-24">Price</TableHead>
+          <TableHead className="w-[112px] sm:w-[136px] text-right">Price</TableHead>
         </TableRow>
         <TableRow>
           <TableHead />
@@ -103,7 +105,7 @@ export function CatalogTable({
               className="h-8"
             />
           </TableHead>
-          <TableHead />
+          <TableHead className="w-[112px] sm:w-[136px]" />
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -169,8 +171,8 @@ export function CatalogTable({
                   <ConnectPill />
                 )}
               </TableCell>
-              <TableCell className="w-24 p-2 whitespace-nowrap">
-                Connect to see price
+              <TableCell className="min-w-[112px] max-w-[136px] w-[112px] sm:w-[136px] p-2 text-right whitespace-nowrap">
+                <PriceCell product={p} />
               </TableCell>
             </TableRow>
           )
@@ -178,6 +180,57 @@ export function CatalogTable({
       </TableBody>
     </Table>
   )
+}
+
+function PriceCell({ product }: { product: any }) {
+  const sources: string[] = product.price_sources || product.suppliers || []
+  const priceValues: number[] = Array.isArray(product.prices)
+    ? product.prices
+        .map((p: any) => (typeof p === 'number' ? p : p?.price))
+        .filter((p: any) => typeof p === 'number')
+    : []
+  const isLocked = product.prices_locked ?? product.price_locked ?? false
+
+  let content: React.ReactNode
+
+  if (isLocked) {
+    content = (
+      <div className="flex items-center justify-end gap-1 text-muted-foreground">
+        <Lock className="h-4 w-4" />
+        {sources.length ? <span>—</span> : <ConnectPill />}
+      </div>
+    )
+  } else if (priceValues.length) {
+    priceValues.sort((a, b) => a - b)
+    const min = priceValues[0]
+    const max = priceValues[priceValues.length - 1]
+    const currency =
+      (Array.isArray(product.prices) && product.prices[0]?.currency) || 'ISK'
+    const text =
+      min === max
+        ? formatCurrency(min, currency)
+        : `${formatCurrency(min, currency)}–${formatCurrency(max, currency)}`
+    content = <span className="tabular-nums">{text}</span>
+  } else {
+    content = <ConnectPill />
+  }
+
+  if ((isLocked || priceValues.length) && sources.length) {
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div>{content}</div>
+        </TooltipTrigger>
+        <TooltipContent className="space-y-0.5">
+          {sources.map((s: string) => (
+            <div key={s}>{s}</div>
+          ))}
+        </TooltipContent>
+      </Tooltip>
+    )
+  }
+
+  return content
 }
 
 function SupplierList({ suppliers }: { suppliers: string[] }) {
