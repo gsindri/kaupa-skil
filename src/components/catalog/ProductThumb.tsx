@@ -2,14 +2,12 @@ import { useState } from 'react'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Package } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
 
 interface ProductThumbProps {
   src?: string | null
   name: string
   brand?: string | null
   className?: string
-  updatedAt?: string | Date | null
 }
 
 export default function ProductThumb({
@@ -17,7 +15,6 @@ export default function ProductThumb({
   name,
   brand,
   className,
-  updatedAt,
 }: ProductThumbProps) {
   const [loaded, setLoaded] = useState(false)
   const [error, setError] = useState(false)
@@ -32,10 +29,6 @@ export default function ProductThumb({
     : ''
 
   const showFallback = !src || error
-
-  const isStale = updatedAt
-    ? Date.now() - new Date(updatedAt).getTime() > 24 * 60 * 60 * 1000
-    : false
 
   return (
     <div
@@ -70,16 +63,6 @@ export default function ProductThumb({
             )}
           />
         </>
-      )}
-      {isStale && (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <span className="absolute left-0 top-0 m-[2px] rounded-sm bg-muted px-1 py-0 text-[10px] leading-none">
-              Stale
-            </span>
-          </TooltipTrigger>
-          <TooltipContent>Data is older than 24h.</TooltipContent>
-        </Tooltip>
       )}
     </div>
   )
