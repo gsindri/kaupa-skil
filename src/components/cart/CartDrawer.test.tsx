@@ -110,4 +110,60 @@ describe('CartDrawer', () => {
     expect(screen.getByText('Fallback Name')).toBeInTheDocument()
     expect(screen.getByTitle('Fallback Name')).toBeInTheDocument()
   })
+
+  it('allows typing quantity directly', async () => {
+    const item = {
+      supplierItemId: '1',
+      itemName: 'Sample',
+      packSize: '1kg',
+      supplierName: 'Supp',
+      quantity: 2,
+      unitPriceIncVat: 0,
+      unitPriceExVat: 0,
+      image: '',
+    } as any
+
+    const updateQuantity = vi.fn()
+
+    render(
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <SettingsContext.Provider
+          value={{
+            includeVat: false,
+            setIncludeVat: vi.fn(),
+            preferredUnit: 'auto',
+            setPreferredUnit: vi.fn(),
+            userMode: 'balanced',
+            setUserMode: vi.fn(),
+          }}
+        >
+          <BasketContext.Provider
+            value={{
+              items: [item],
+              addItem: vi.fn(),
+              updateQuantity,
+              removeItem: vi.fn(),
+              clearBasket: vi.fn(),
+              clearCart: vi.fn(),
+              restoreItems: vi.fn(),
+              getTotalItems: () => 1,
+              getTotalPrice: () => 0,
+              isDrawerOpen: true,
+              setIsDrawerOpen: vi.fn(),
+            }}
+          >
+            <CartDrawer />
+          </BasketContext.Provider>
+        </SettingsContext.Provider>
+      </MemoryRouter>
+    )
+
+    const qtyDisplay = screen.getByLabelText('Quantity of Sample')
+    await userEvent.click(qtyDisplay)
+    const input = screen.getByLabelText('Quantity of Sample')
+    await userEvent.clear(input)
+    await userEvent.type(input, '5{Enter}')
+
+    expect(updateQuantity).toHaveBeenCalledWith('1', 5)
+  })
 })
