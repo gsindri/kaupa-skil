@@ -27,7 +27,21 @@ export function SuppliersPanel() {
                     {s.name}
                     <Badge className={`${supplierStatusTokens[s.status].badge}`}>{supplierStatusTokens[s.status].label}</Badge>
                   </div>
-                  <div className="text-xs text-muted-foreground">Last sync {s.last_sync ? new Date(s.last_sync).toLocaleString('is-IS') : '—'} • Next run {s.next_run ? new Date(s.next_run).toLocaleString('is-IS') : 'Pending'}</div>
+                  <div className="text-xs text-muted-foreground">
+                    Last sync{' '}
+                    {s.last_sync ? (
+                      new Date(s.last_sync).toLocaleString('is-IS')
+                    ) : (
+                      <>
+                        <span aria-hidden="true">—</span>
+                        <span className="sr-only">No data yet</span>
+                      </>
+                    )}{' '}
+                    • Next run{' '}
+                    {s.next_run
+                      ? new Date(s.next_run).toLocaleString('is-IS')
+                      : 'Pending'}
+                  </div>
                 </div>
                 <div className="flex gap-2">
                   {s.status === 'needs_login' && (
