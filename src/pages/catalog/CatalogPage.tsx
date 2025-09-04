@@ -88,7 +88,7 @@ export default function CatalogPage() {
     const missing = products.filter(p => !p.suppliers?.length).length
     return (missing / products.length) * 100
   }, [products])
-  const hideConnectPill = unconnectedPercentage > 80
+  const hideConnectPill = unconnectedPercentage > 70
 
   // Read initial sort from URL on mount
   useEffect(() => {
