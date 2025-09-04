@@ -1,25 +1,32 @@
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 
-interface SupplierChipProps {
+interface AvailabilityInfo {
+  status?: AvailabilityStatus | null
+  updatedAt?: string | Date | null
+}
+
+interface SupplierChipProps extends React.HTMLAttributes<HTMLDivElement> {
   name: string
   logoUrl?: string | null
 }
 
-export default function SupplierChip({ name, logoUrl }: SupplierChipProps) {
   const initials = name
-    .split(" ")
+    .split(' ')
     .map(s => s[0])
-    .join("")
+    .join('')
     .slice(0, 2)
     .toUpperCase()
 
-  return (
-    <Avatar className="h-4 w-4">
-      {logoUrl ? (
-        <AvatarImage src={logoUrl} alt={name} />
-      ) : (
-        <AvatarFallback>{initials}</AvatarFallback>
-      )}
-    </Avatar>
   )
+
+  if (availability) {
+    const time = availability.updatedAt ? timeAgo(availability.updatedAt) : 'unknown'
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>{avatar}</TooltipTrigger>
+        <TooltipContent>{`Last updated ${time}`}</TooltipContent>
+      </Tooltip>
+    )
+  }
+
+  return avatar
 }
