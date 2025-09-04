@@ -69,35 +69,35 @@ export function CatalogTable({
     <Table>
       <TableHeader className="sticky top-0 z-10 bg-background">
         <TableRow>
-          <TableHead className="w-8">
+          <TableHead className="w-8 px-2">
             <Checkbox
               aria-label="Select all products"
               checked={isAllSelected}
               onCheckedChange={onSelectAll}
             />
           </TableHead>
-          <TableHead className="w-16">Image</TableHead>
+          <TableHead className="w-14 px-2">Image</TableHead>
           <TableHead
-            className="[width:minmax(0,1fr)] cursor-pointer select-none"
+            className="[width:minmax(0,1fr)] cursor-pointer select-none px-2"
             onClick={() => onSort('name')}
           >
             Name {sort?.key === 'name' && (sort.direction === 'asc' ? '▲' : '▼')}
           </TableHead>
-          <TableHead className="w-28">Availability</TableHead>
+          <TableHead className="w-28 px-2">Availability</TableHead>
           <TableHead
-            className="min-w-[140px] max-w-[180px] w-40 cursor-pointer select-none"
+            className="min-w-[140px] max-w-[180px] w-40 cursor-pointer select-none px-2"
             onClick={() => onSort('supplier')}
           >
             Suppliers {sort?.key === 'supplier' && (sort.direction === 'asc' ? '▲' : '▼')}
           </TableHead>
-          <TableHead className="w-[112px] sm:w-[136px] text-right">Price</TableHead>
+          <TableHead className="w-[112px] sm:w-[136px] text-right px-2">Price</TableHead>
         </TableRow>
         <TableRow>
-          <TableHead />
-          <TableHead />
-          <TableHead />
-          <TableHead />
-          <TableHead className="min-w-[140px] max-w-[180px] w-40">
+          <TableHead className="px-2" />
+          <TableHead className="px-2" />
+          <TableHead className="px-2" />
+          <TableHead className="px-2" />
+          <TableHead className="min-w-[140px] max-w-[180px] w-40 px-2">
             <Input
               value={filters.supplier ?? ''}
               onChange={e => onFilterChange({ supplier: e.target.value })}
@@ -105,7 +105,7 @@ export function CatalogTable({
               className="h-8"
             />
           </TableHead>
-          <TableHead className="w-[112px] sm:w-[136px]" />
+          <TableHead className="w-[112px] sm:w-[136px] px-2" />
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -119,7 +119,7 @@ export function CatalogTable({
               tabIndex={0}
               data-state={isSelected ? 'selected' : undefined}
               onKeyDown={e => handleKeyDown(e, i, id)}
-              className="h-12 focus-visible:bg-muted/50"
+              className="h-auto min-h-12 max-h-14 focus-visible:bg-muted/50"
             >
               <TableCell className="w-8 p-2">
                 <Checkbox
@@ -128,12 +128,12 @@ export function CatalogTable({
                   onCheckedChange={() => onSelect(id)}
                 />
               </TableCell>
-              <TableCell className="w-16 p-2">
+              <TableCell className="w-14 p-2">
                 {p.image_main && (
                   <img
                     src={p.image_main}
                     alt={p.name}
-                    className="h-12 w-12 rounded object-cover"
+                    className="h-10 w-10 rounded object-cover"
                   />
                 )}
               </TableCell>
@@ -141,12 +141,14 @@ export function CatalogTable({
                 className="[width:minmax(0,1fr)] p-2"
                 title={p.name}
               >
-                <div className="truncate font-medium">{p.name}</div>
-                {(p.brand || p.pack_size) && (
-                  <div className="truncate text-xs text-muted-foreground">
-                    {[p.brand, p.pack_size].filter(Boolean).join(' • ')}
-                  </div>
-                )}
+                <div className="line-clamp-2">
+                  <div className="text-[15px] font-medium leading-snug">{p.name}</div>
+                  {(p.brand || p.pack_size) && (
+                    <div className="text-[13px] text-muted-foreground">
+                      {[p.brand, p.pack_size].filter(Boolean).join(' • ')}
+                    </div>
+                  )}
+                </div>
               </TableCell>
               <TableCell className="w-28 p-2 whitespace-nowrap">
                 <Tooltip>
