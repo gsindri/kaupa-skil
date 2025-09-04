@@ -66,29 +66,37 @@ export default function BasketProvider({ children }: { children: React.ReactNode
     quantity = 1,
     options: { showToast?: boolean; animateElement?: HTMLElement } = {}
   ) => {
+    const normalizedItem = {
+      ...item,
+      itemName: item.itemName ?? item.displayName ?? 'Item',
+      displayName: item.displayName ?? item.itemName ?? 'Item'
+    }
+
     const previousItems = items.map(i => ({ ...i }))
     if (options.animateElement) {
       flyToCart(options.animateElement)
     }
     setItems(prev => {
-      const existingIndex = prev.findIndex(i => i.supplierItemId === item.supplierItemId)
-      
+      const existingIndex = prev.findIndex(
+        i => i.supplierItemId === normalizedItem.supplierItemId
+      )
+
       let newItems: CartItem[]
       if (existingIndex >= 0) {
-        newItems = prev.map((basketItem, index) => 
-          index === existingIndex 
+        newItems = prev.map((basketItem, index) =>
+          index === existingIndex
             ? { ...basketItem, quantity: basketItem.quantity + quantity }
             : basketItem
         )
       } else {
-        newItems = [...prev, { ...item, quantity }]
+        newItems = [...prev, { ...normalizedItem, quantity }]
       }
-      
+
       syncBasket(newItems)
 
       if (options.showToast !== false) {
         toast({
-          description: `Added ${item.itemName} × ${quantity}`,
+          description: `Added ${normalizedItem.itemName} × ${quantity}`,
           action: (
             <ToastAction altText="Undo" onClick={() => restoreItems(previousItems)}>
               Undo

@@ -109,7 +109,9 @@ function buildPaginator(categoryUrl: string, $first: cheerio.CheerioAPI) {
         u.searchParams.set(pageKey, "{n}");
         template = "?" + u.searchParams.toString().replace("%7Bn%7D", "{n}");
       }
-    } catch {}
+    } catch {
+      // ignore invalid URLs in pagination template discovery
+    }
   }
 
   return (n: number) => {
