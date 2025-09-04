@@ -1,3 +1,9 @@
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { Lock } from 'lucide-react'
+import { timeAgo } from '@/lib/timeAgo'
+import type { AvailabilityStatus } from '@/components/catalog/AvailabilityBadge'
+import type React from 'react'
 
 interface AvailabilityInfo {
   status?: AvailabilityStatus | null
@@ -7,8 +13,18 @@ interface AvailabilityInfo {
 interface SupplierChipProps extends React.HTMLAttributes<HTMLDivElement> {
   name: string
   logoUrl?: string | null
+  connected?: boolean
+  availability?: AvailabilityInfo
 }
 
+export default function SupplierChip({
+  name,
+  logoUrl,
+  connected,
+  availability,
+  className = '',
+  ...props
+}: SupplierChipProps) {
   const initials = name
     .split(' ')
     .map(s => s[0])
@@ -16,6 +32,21 @@ interface SupplierChipProps extends React.HTMLAttributes<HTMLDivElement> {
     .slice(0, 2)
     .toUpperCase()
 
+  const avatar = (
+    <div
+      className={`relative flex h-full w-full items-center justify-center rounded-full border bg-background ${className}`}
+      {...props}
+    >
+      <Avatar className="h-full w-full">
+        {logoUrl ? (
+          <AvatarImage src={logoUrl} alt="" />
+        ) : (
+          <AvatarFallback>{initials}</AvatarFallback>
+        )}
+      </Avatar>
+      {!connected && <Lock className="absolute h-3 w-3 text-muted-foreground" />}
+      <span className="sr-only">{name}</span>
+    </div>
   )
 
   if (availability) {
@@ -30,3 +61,4 @@ interface SupplierChipProps extends React.HTMLAttributes<HTMLDivElement> {
 
   return avatar
 }
+

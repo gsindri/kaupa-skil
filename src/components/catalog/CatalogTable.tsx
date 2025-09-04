@@ -43,8 +43,6 @@ import {
 import { Lock } from 'lucide-react'
 import { toast } from '@/hooks/use-toast'
 import SupplierChip from '@/components/catalog/SupplierChip'
-import { useCart } from '@/contexts/useBasket'
-import QuantityStepper from '@/components/cart/QuantityStepper'
 
 interface CatalogTableProps {
   products: any[]
@@ -57,18 +55,6 @@ interface CatalogTableProps {
   onFilterChange: (f: Partial<FacetFilters>) => void
   showConnectPill?: boolean
 }
-
-type SupplierEntry =
-  | string
-  | {
-      name: string
-      connected?: boolean
-      logoUrl?: string | null
-      availability_status?: AvailabilityStatus | null
-      status?: AvailabilityStatus | null
-      availability?: { status?: AvailabilityStatus | null; updatedAt?: string | Date | null }
-      availability_updated_at?: string | Date | null
-    }
 
 export function CatalogTable({
   products,
@@ -249,6 +235,16 @@ export function CatalogTable({
                   brand={p.brand}
                 />
               </TableCell>
+              <TableCell className="[width:minmax(0,1fr)] p-2" title={p.name}>
+                <div>
+                  {p.name}
+                  {(p.brand || p.pack_size) && (
+                    <div className="text-[13px] text-muted-foreground">
+                      {[p.brand, p.pack_size].filter(Boolean).join(' • ')}
+                    </div>
+                  )}
+                </div>
+              </TableCell>
               <TableCell className="w-28 p-2 whitespace-nowrap">
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -300,27 +296,6 @@ function AddToCartButton({
   const existing = items.find(it => it.id === product.catalog_id)
   const quantity = existing?.quantity ?? 0
 
-  const supplierEntries = (product.suppliers || []).map((s: SupplierEntry) =>
-    typeof s === 'string'
-      ? { name: s, availability_status: undefined }
-      : {
-          name: s.name,
-          availability_status:
-            s.availability_status ??
-            s.status ??
-            (typeof s.availability === 'string'
-              ? s.availability
-              : s.availability?.status) ??
-            undefined,
-        },
-  )
-
-  const handleAdd = (
-    supplier: { name: string; availability_status?: AvailabilityStatus | null },
-  ) => {
-    const supplierItemId = `${product.catalog_id}-${supplier.name}`
-    const connected = vendors.some(
-      v => v.id === supplier.name || v.name === supplier.name,
     )
     const existingItem = items.find(it => it.supplierItemId === supplierItemId)
     if (existingItem) {
@@ -429,22 +404,6 @@ function SupplierList({
   )
 
   return (
-    <div className="flex flex-wrap items-center gap-1">
-      {entries.map(s => {
-        const disabled = locked || s.availability_status === 'OUT_OF_STOCK'
-        const chip = (
-          <div className="flex items-center gap-1">
-            <SupplierChip name={s.name} className={disabled ? 'opacity-50' : ''} />
-            {s.availability_status && (
-              <AvailabilityBadge status={s.availability_status} />
-            )}
-          </div>
-        )
-        return <div key={s.name}>{chip}</div>
-      })}
-    </div>
-  )
-}
 
 // Price display cell including add-to-cart controls
 function PriceCell({
@@ -516,10 +475,6 @@ function PriceCell({
   return (
     <div className="flex items-center justify-end gap-2">
       {priceContent}
-      <AddToCartButton product={product} vendors={vendors} />
-    </div>
-  )
-}
 
 function ConnectPill() {
   return (
