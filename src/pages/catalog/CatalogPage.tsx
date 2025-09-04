@@ -72,7 +72,7 @@ export default function CatalogPage() {
   const { addItem } = useCart()
   const [addingId, setAddingId] = useState<string | null>(null)
   const [tableSort, setTableSort] = useState<{
-    key: 'name' | 'brand' | 'supplier'
+    key: 'name' | 'supplier'
     direction: 'asc' | 'desc'
   } | null>(null)
   const debouncedSearch = useDebounce(filters.search ?? '', 300)
@@ -371,7 +371,7 @@ export default function CatalogPage() {
     }
   }
 
-  const handleSort = (key: 'name' | 'brand' | 'supplier') => {
+  const handleSort = (key: 'name' | 'supplier') => {
     setTableSort(prev => {
       if (prev?.key === key) {
         return { key, direction: prev.direction === 'asc' ? 'desc' : 'asc' }
