@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import {
   Table,
   TableBody,
@@ -41,6 +41,9 @@ import {
 } from '@/components/ui/drawer'
 import { Lock } from 'lucide-react'
 import { toast } from '@/hooks/use-toast'
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover'
+import { QuantityStepper } from '@/components/cart/QuantityStepper'
+import { useCart } from '@/contexts/useBasket'
 
 interface CatalogTableProps {
   products: any[]
@@ -237,12 +240,14 @@ export function CatalogTable({
                 className="[width:minmax(0,1fr)] p-2"
                 title={p.name}
               >
-                    {(p.brand || p.pack_size) && (
-                      <div className="text-[13px] text-muted-foreground">
-                        {[p.brand, p.pack_size].filter(Boolean).join(' • ')}
-                      </div>
-                    )}
-                  </div>
+                <div className="truncate">
+                  {p.name}
+                  {(p.brand || p.pack_size) && (
+                    <div className="text-[13px] text-muted-foreground">
+                      {[p.brand, p.pack_size].filter(Boolean).join(' • ')}
+                    </div>
+                  )}
+                </div>
               </TableCell>
               <TableCell className="w-28 p-2 whitespace-nowrap">
                 <Tooltip>
@@ -289,9 +294,19 @@ function AddToCartButton({
   vendors: { id: string; name: string }[]
 }) {
   const { items, addItem, updateQuantity } = useCart()
+  const suppliers: string[] = product.suppliers || []
   const [open, setOpen] = useState(false)
+  const [selectedSupplier, setSelectedSupplier] = useState<string | null>(
+    suppliers.length === 1 ? suppliers[0] : null,
+  )
 
-  const existing = items.find(it => it.id === product.catalog_id)
+  const supplierItemId =
+    selectedSupplier != null
+      ? `${product.catalog_id}:${selectedSupplier}`
+      : null
+  const existing = supplierItemId
+    ? items.find(it => it.supplierItemId === supplierItemId)
+    : undefined
   const quantity = existing?.quantity ?? 0
 
   const handleAdd = (supplier: string) => {
@@ -317,17 +332,18 @@ function AddToCartButton({
       1,
       { showToast: false },
     )
+    setSelectedSupplier(supplier)
     setOpen(false)
   }
-
-  const suppliers: string[] = product.suppliers || []
 
   return (
     <div className="ml-2 flex-shrink-0 opacity-100 md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100 transition-opacity">
       {quantity > 0 && existing ? (
         <QuantityStepper
           quantity={quantity}
-          onChange={q => updateQuantity(existing.supplierItemId, q)}
+          onChange={q =>
+            supplierItemId && updateQuantity(supplierItemId, q)
+          }
           label={product.name}
         />
       ) : suppliers.length > 1 ? (
@@ -348,7 +364,6 @@ function AddToCartButton({
                   onClick={() => handleAdd(s)}
                   disabled={!connected}
                 >
-                  <SupplierChip name={s} />
                   <span className="flex-1 text-left">{s}</span>
                   <AvailabilityBadge status={product.availability_status} />
                   {!connected && <Lock className="h-4 w-4" />}
@@ -441,7 +456,16 @@ function PriceCell({ product }: { product: any }) {
 }
 
 
-function SupplierList({ suppliers }: { suppliers: SupplierEntry[] }) {
+type SupplierEntry =
+  | string
+  | { name: string; availability_status?: AvailabilityStatus | null }
+
+function SupplierList({
+  suppliers,
+}: {
+  suppliers: SupplierEntry[]
+  locked?: boolean
+}) {
   const items = suppliers.map(s =>
     typeof s === 'string'
       ? { name: s, availability_status: undefined }
@@ -452,16 +476,19 @@ function SupplierList({ suppliers }: { suppliers: SupplierEntry[] }) {
         },
   )
 
-  const handleClick = (s: {
-    name: string
-    availability_status?: AvailabilityStatus | null
-  }) => {
-    if (s.availability_status === 'OUT_OF_STOCK') {
-      toast({ description: 'Out of stock at selected supplier.' })
-    }
-  }
-
   return (
+    <div className="flex flex-wrap gap-1">
+      {items.map(s => (
+        <Badge
+          key={s.name}
+          variant="outline"
+          onClick={() =>
+            s.availability_status === 'OUT_OF_STOCK' &&
+            toast({ description: 'Out of stock at selected supplier.' })
+          }
+        >
+          {s.name}
+        </Badge>
       ))}
     </div>
   )
@@ -491,4 +518,3 @@ function ConnectPill() {
     </Drawer>
   )
 }
-
