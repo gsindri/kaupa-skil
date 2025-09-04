@@ -209,7 +209,7 @@ export function CatalogTable({
               tabIndex={0}
               data-state={isSelected ? 'selected' : undefined}
               onKeyDown={e => handleKeyDown(e, i, id)}
-              className="h-auto min-h-12 max-h-14 focus-visible:bg-muted/50"
+              className="h-[52px] border-b hover:bg-muted/50 focus-visible:bg-muted/50"
             >
               <TableCell className="w-8 p-2">
                 <Checkbox
@@ -287,7 +287,7 @@ function PriceCell({ product }: { product: any }) {
 
   if (isLocked) {
     content = (
-      <div className="flex items-center justify-end gap-1 text-muted-foreground">
+      <div className="flex items-center justify-end gap-2 text-muted-foreground">
         <Lock className="h-4 w-4" />
         {sources.length ? (
           <span>
@@ -360,7 +360,7 @@ function SupplierList({ suppliers }: { suppliers: string[] }) {
   const remaining = suppliers.length - shown.length
 
   return (
-    <div ref={ref} className="flex items-center gap-1.5 overflow-hidden">
+    <div ref={ref} className="flex items-center gap-2 overflow-hidden">
       {shown.map(name => (
         <SupplierChip key={name} name={name} />
       ))}
