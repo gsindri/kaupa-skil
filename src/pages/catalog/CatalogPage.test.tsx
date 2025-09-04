@@ -60,9 +60,7 @@ vi.mock('@/hooks/useOrgCatalog', () => ({
 }))
 vi.mock('@/hooks/useDebounce', () => ({ useDebounce: (v: any) => v }))
 vi.mock('@/components/catalog/CatalogTable', () => ({
-  CatalogTable: (props: any) => (
-    <div data-testid="catalog-table" data-show-connect-pill={String(props.showConnectPill)} />
-  ),
+  CatalogTable: () => <div data-testid="catalog-table" />,
 }))
 vi.mock('@/components/catalog/ProductCard', () => ({ ProductCard: () => <div /> }))
 vi.mock('@/components/catalog/ProductCardSkeleton', () => ({ ProductCardSkeleton: () => <div /> }))
@@ -112,7 +110,7 @@ describe('CatalogPage', () => {
     await userEvent.click(screen.getByText('list'))
     await screen.findByTestId('alert')
     expect(screen.getByText('Connect suppliers to unlock prices.')).toBeInTheDocument()
-    expect(screen.getByTestId('catalog-table').getAttribute('data-show-connect-pill')).toBe('false')
+    expect(screen.getByTestId('catalog-table')).toBeInTheDocument()
   })
 })
 

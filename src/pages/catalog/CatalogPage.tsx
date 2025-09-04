@@ -18,6 +18,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible'
+import { Button } from '@/components/ui/button'
 import type { FacetFilters, PublicCatalogFilters, OrgCatalogFilters } from '@/services/catalog'
 import {
   logFilter,
@@ -69,6 +70,7 @@ export default function CatalogPage() {
   const [products, setProducts] = useState<any[]>([])
   const lastCursor = useRef<string | null>(null)
   const [selected, setSelected] = useState<string[]>([])
+  const [bulkMode, setBulkMode] = useState(false)
   const { addItem } = useCart()
   const [addingId, setAddingId] = useState<string | null>(null)
   const [tableSort, setTableSort] = useState<{
@@ -470,37 +472,47 @@ export default function CatalogPage() {
         orgError={orgError}
         showMoreFilters={showMoreFilters}
         setShowMoreFilters={setShowMoreFilters}
+        bulkMode={bulkMode}
+        setBulkMode={setBulkMode}
       />
 
       <div className="mt-6 px-4 sm:px-6 lg:px-8 xl:px-10 2xl:px-12">
         {view === 'list' ? (
           <>
-            {hideConnectPill && !bannerDismissed && (
-              <Alert className="mb-4">
-                <AlertDescription className="flex items-center justify-between">
-                  Connect suppliers to unlock prices.
-                  <button
-                    type="button"
-                    aria-label="Dismiss"
-                    onClick={() => setBannerDismissed(true)}
-                    className="ml-2"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                </AlertDescription>
-              </Alert>
-            )}
-            <CatalogTable
-              products={sortedProducts}
-              selected={selected}
-              onSelect={toggleSelect}
-              onSelectAll={handleSelectAll}
-              sort={tableSort}
-              onSort={handleSort}
-              filters={filters}
-              onFilterChange={handleFilterChange}
-              showConnectPill={!hideConnectPill}
-            />
+              {hideConnectPill && !bannerDismissed && (
+                <Alert className="mb-4">
+                  <AlertDescription className="flex items-center justify-between">
+                    Connect suppliers to unlock prices.
+                    <button
+                      type="button"
+                      aria-label="Dismiss"
+                      onClick={() => setBannerDismissed(true)}
+                      className="ml-2"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </AlertDescription>
+                </Alert>
+              )}
+              {bulkMode && (
+                <div className="sticky top-[var(--filters-h)] z-20 flex items-center justify-between border-b bg-background px-4 py-2 text-sm">
+                  <span>{selected.length} selected</span>
+                  <Button variant="ghost" onClick={() => { setBulkMode(false); setSelected([]) }}>
+                    Done
+                  </Button>
+                </div>
+              )}
+              <CatalogTable
+                products={sortedProducts}
+                selected={selected}
+                onSelect={toggleSelect}
+                onSelectAll={handleSelectAll}
+                sort={tableSort}
+                onSort={handleSort}
+                filters={filters}
+                onFilterChange={handleFilterChange}
+                isBulkMode={bulkMode}
+              />
           </>
         ) : (
           <div
@@ -548,6 +560,8 @@ interface FiltersBarProps {
   orgError: unknown
   showMoreFilters: boolean
   setShowMoreFilters: (v: boolean) => void
+  bulkMode: boolean
+  setBulkMode: (v: boolean) => void
 }
 
 function FiltersBar({
@@ -569,6 +583,8 @@ function FiltersBar({
   orgError,
   showMoreFilters,
   setShowMoreFilters,
+  bulkMode,
+  setBulkMode,
 }: FiltersBarProps) {
   const ref = React.useRef<HTMLDivElement>(null)
   React.useEffect(() => {
@@ -600,11 +616,11 @@ function FiltersBar({
           </Alert>
         )}
         <Collapsible open={showMoreFilters} onOpenChange={setShowMoreFilters}>
-          <div className="grid grid-cols-[1fr,auto,auto] gap-3 items-center">
-            <HeroSearchInput
-              placeholder="Search products"
-              value={filters.search ?? ''}
-              onChange={e => setFilters({ search: e.target.value })}
+            <div className="grid grid-cols-[1fr,auto,auto,auto] gap-3 items-center">
+              <HeroSearchInput
+                placeholder="Search products"
+                value={filters.search ?? ''}
+                onChange={e => setFilters({ search: e.target.value })}
               rightSlot={
                 <button
                   type="button"
@@ -616,9 +632,15 @@ function FiltersBar({
                 </button>
               }
             />
-            <SortDropdown value={sortOrder} onChange={setSortOrder} />
-            <ViewToggle value={view} onChange={setView} />
-          </div>
+              <SortDropdown value={sortOrder} onChange={setSortOrder} />
+              <ViewToggle value={view} onChange={setView} />
+              <Button
+                variant="outline"
+                onClick={() => setBulkMode(!bulkMode)}
+              >
+                {bulkMode ? 'Cancel' : 'Select'}
+              </Button>
+            </div>
           <div className="mt-3 flex flex-wrap gap-2">
             {/* Disable pricing filter until pricing data is available */}
             {/* <FilterChip selected={onlyWithPrice} onSelectedChange={setOnlyWithPrice}>

@@ -58,9 +58,12 @@ export default function SupplierList({
     }
   }
 
+  const visible = items.slice(0, 2)
+  const extra = items.length - visible.length
+
   return (
     <div className="flex flex-wrap items-center gap-1.5">
-      {items.map(it => (
+      {visible.map(it => (
         <SupplierChip
           key={it.name}
           name={it.name}
@@ -73,6 +76,11 @@ export default function SupplierList({
           onKeyDown={e => e.key === 'Enter' && handleClick(it)}
         />
       ))}
+      {extra > 0 && (
+        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-muted text-[10px]">
+          +{extra}
+        </span>
+      )}
     </div>
   )
 }

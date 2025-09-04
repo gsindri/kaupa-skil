@@ -1,6 +1,6 @@
 import { Badge } from '@/components/ui/badge'
 import { timeAgo } from '@/lib/timeAgo'
-import { Clock, Loader2 } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 import { type ReactNode, forwardRef } from 'react'
 
 export type AvailabilityStatus = 'IN_STOCK' | 'LOW_STOCK' | 'OUT_OF_STOCK' | 'UNKNOWN'
@@ -43,10 +43,6 @@ const MAP: Record<
 const AvailabilityBadge = forwardRef<HTMLDivElement, AvailabilityBadgeProps>(
   ({ status = 'UNKNOWN', updatedAt, tabIndex = 0 }, ref) => {
   const isChecking = status === null
-  const isStale =
-    !isChecking && updatedAt
-      ? Date.now() - new Date(updatedAt).getTime() > 24 * 60 * 60 * 1000
-      : false
 
   const base = MAP[status ?? 'UNKNOWN'] ?? MAP.UNKNOWN
 
@@ -62,11 +58,6 @@ const AvailabilityBadge = forwardRef<HTMLDivElement, AvailabilityBadgeProps>(
     label = null
     className = 'bg-muted text-muted-foreground'
     aria = 'Checking availability'
-  } else if (isStale) {
-    iconNode = <Clock className="h-3 w-3" aria-hidden="true" />
-    label = 'Stale'
-    className = 'bg-muted text-muted-foreground'
-    aria = 'Availability data stale'
   }
 
   const time = updatedAt ? timeAgo(updatedAt) : null
