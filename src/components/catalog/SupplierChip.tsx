@@ -1,8 +1,4 @@
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
-import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
-import { timeAgo } from '@/lib/timeAgo'
-import { cn } from '@/lib/utils'
-import type { AvailabilityStatus } from '@/components/catalog/AvailabilityBadge'
 
 interface AvailabilityInfo {
   status?: AvailabilityStatus | null
@@ -19,9 +15,6 @@ interface SupplierChipProps extends React.HTMLAttributes<HTMLDivElement> {
 export default function SupplierChip({
   name,
   logoUrl,
-  connected = true,
-  availability,
-  className,
   ...props
 }: SupplierChipProps) {
   const initials = name
@@ -33,13 +26,6 @@ export default function SupplierChip({
     .toUpperCase()
 
   const avatar = (
-    <Avatar className={cn('h-8 w-8', className, !connected && 'opacity-50')} {...props}>
-      {logoUrl ? (
-        <AvatarImage src={logoUrl} alt={name} />
-      ) : (
-        <AvatarFallback>{initials}</AvatarFallback>
-      )}
-    </Avatar>
   )
 
   if (availability) {
