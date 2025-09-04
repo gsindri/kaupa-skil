@@ -41,6 +41,7 @@ import {
 } from '@/components/ui/drawer'
 import { Lock } from 'lucide-react'
 import { toast } from '@/hooks/use-toast'
+import SupplierChip from '@/components/catalog/SupplierChip'
 
 interface CatalogTableProps {
   products: any[]
@@ -53,6 +54,18 @@ interface CatalogTableProps {
   onFilterChange: (f: Partial<FacetFilters>) => void
   showConnectPill?: boolean
 }
+
+type SupplierEntry =
+  | string
+  | {
+      name: string
+      connected?: boolean
+      logoUrl?: string | null
+      availability_status?: AvailabilityStatus | null
+      status?: AvailabilityStatus | null
+      availability?: { status?: AvailabilityStatus | null; updatedAt?: string | Date | null }
+      availability_updated_at?: string | Date | null
+    }
 
 export function CatalogTable({
   products,
@@ -233,19 +246,6 @@ export function CatalogTable({
                   brand={p.brand}
                 />
               </TableCell>
-                <TableCell
-                  className="[width:minmax(0,1fr)] p-2"
-                  title={p.name}
-                >
-                  <div className="truncate">
-                    <div>{p.name}</div>
-                    {(p.brand || p.pack_size) && (
-                      <div className="text-[13px] text-muted-foreground">
-                        {[p.brand, p.pack_size].filter(Boolean).join(' • ')}
-                      </div>
-                    )}
-                  </div>
-                </TableCell>
               <TableCell className="w-28 p-2 whitespace-nowrap">
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -296,7 +296,7 @@ function AddToCartButton({
   const existing = items.find(it => it.id === product.catalog_id)
   const quantity = existing?.quantity ?? 0
 
-  const handleAdd = (supplier: string) => {
+  const handleAdd = (supplier: string, connected: boolean) => {
     const supplierItemId = `${product.catalog_id}:${supplier}`
     addItem(
       {
@@ -306,9 +306,9 @@ function AddToCartButton({
         itemName: product.name,
         sku: product.catalog_id,
         packSize: product.pack_size ?? '',
-        packPrice: 0,
-        unitPriceExVat: 0,
-        unitPriceIncVat: 0,
+        packPrice: connected ? 0 : null,
+        unitPriceExVat: connected ? 0 : null,
+        unitPriceIncVat: connected ? 0 : null,
         vatRate: 0,
         unit: '',
         supplierItemId,
@@ -351,13 +351,11 @@ function AddToCartButton({
                   key={s}
                   variant="ghost"
                   className="justify-start gap-2 px-2 h-8"
-                  onClick={() => handleAdd(s)}
-                  disabled={!connected}
+                  onClick={() => handleAdd(s, connected)}
                 >
-                  <SupplierChip name={s} />
+                  <SupplierChip name={s} connected={connected} />
                   <span className="flex-1 text-left">{s}</span>
                   <AvailabilityBadge status={product.availability_status} />
-                  {!connected && <Lock className="h-4 w-4" />}
                 </Button>
               )
             })}
@@ -367,7 +365,7 @@ function AddToCartButton({
         <Button
           size="sm"
           className="h-7 px-2"
-          onClick={() => handleAdd(suppliers[0])}
+          onClick={() => handleAdd(suppliers[0], vendors.some(v => v.name === suppliers[0]))}
           disabled={suppliers.length === 0}
           aria-label={`Add ${product.name} to cart`}
         >
@@ -447,8 +445,6 @@ function PriceCell({ product }: { product: any }) {
   )
 }
 
-
-function SupplierList({ suppliers }: { suppliers: any[] }) {
   return (
     <div className="flex flex-wrap gap-1">
       {suppliers.map(s => {
