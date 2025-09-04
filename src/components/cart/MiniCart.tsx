@@ -134,7 +134,7 @@ export function MiniCart() {
                       tabIndex={keyboardNavigationActive ? 0 : -1}
                       onKeyDown={e => handleKeyDown(e, index)}
                       className={cn(
-                        "grid items-center gap-2 grid-cols-[40px,minmax(0,1fr),128px] md:grid-cols-[40px,minmax(0,1fr),144px] px-2 py-2 hover:bg-muted/50 focus-within:bg-muted/50",
+                        "grid items-center gap-2 grid-cols-[40px,minmax(0,1fr),120px] md:grid-cols-[40px,minmax(0,1fr),128px] px-2 py-2 hover:bg-muted/50 focus-within:bg-muted/50",
                         it.quantity === 0 && "bg-red-50 text-red-700"
                       )}
                     >
@@ -143,7 +143,7 @@ export function MiniCart() {
                       alt=""
                       className="h-9 w-9 md:h-10 md:w-10 rounded object-cover bg-muted/40"
                     />
-                    <div className="min-w-0 pr-6 md:pr-8">
+                    <div className="min-w-0 pr-4 md:pr-6">
                       <p
                         className="text-sm md:text-[15px] font-medium leading-tight line-clamp-2"
                         title={displayName}
@@ -185,6 +185,7 @@ export function MiniCart() {
                           updateQuantity(it.supplierItemId, qty)
                         }
                         label={displayName}
+                        className="!w-[84px] md:!w-[92px]"
                       />
                       <Tooltip>
                         <TooltipTrigger asChild>
