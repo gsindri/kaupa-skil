@@ -48,7 +48,7 @@ describe('PriceCell', () => {
     )
 
     const hidden = screen.getByText('Price locked')
-    const lockIcon = hidden.parentElement?.querySelector('svg') as HTMLElement
+    const lockIcon = hidden.parentElement?.querySelector('svg') as SVGElement
     expect(lockIcon).toBeInTheDocument()
 
     const user = userEvent.setup()

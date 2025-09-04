@@ -92,7 +92,8 @@ export function MiniCompareDrawer({ itemId, isOpen, onClose }: MiniCompareDrawer
           unit: 'unit',
           supplierItemId: item.id,
           displayName: item.display_name,
-          packQty: item.pack_qty
+          packQty: item.pack_qty,
+          image: null
         };
 
         const delivery = await deliveryCalculator.calculateDeliveryForSupplier(
@@ -163,7 +164,7 @@ export function MiniCompareDrawer({ itemId, isOpen, onClose }: MiniCompareDrawer
       displayName: `Premium Item from ${option.name}`,
       packQty: 1,
       image: PLACEHOLDER_IMAGE
-    });
+    }, 1);
     
     onClose();
   };

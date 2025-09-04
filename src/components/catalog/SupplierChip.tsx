@@ -45,7 +45,7 @@ export default function SupplierChip({
   const status = availability?.status ?? 'UNKNOWN'
   const state = AVAILABILITY_MAP[status]
   const updatedAt = availability?.updatedAt
-  const time = updatedAt ? timeAgo(updatedAt as string | Date) : 'unknown'
+  const time = updatedAt ? timeAgo(typeof updatedAt === 'string' ? updatedAt : updatedAt.toISOString()) : 'unknown'
 
   const { tabIndex, ['aria-label']: ariaLabelProp, ...rest } = props as any
   const ariaLabel = !connected

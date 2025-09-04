@@ -5,22 +5,25 @@ import { vi, describe, it, expect } from 'vitest'
 import CatalogPage from './CatalogPage'
 
 // Mock ResizeObserver and IntersectionObserver
-class ResizeObserver {
-  observe() {}
-  unobserve() {}
-  disconnect() {}
-}
-class IntersectionObserver {
-  observe() {}
-  unobserve() {}
-  disconnect() {}
-}
-// @ts-expect-error test env
-window.ResizeObserver = ResizeObserver
-// @ts-expect-error test env
-window.IntersectionObserver = IntersectionObserver
-// @ts-expect-error test env
-window.scrollTo = vi.fn()
+const MockResizeObserver = vi.fn(() => ({
+  observe: vi.fn(),
+  unobserve: vi.fn(),
+  disconnect: vi.fn(),
+}))
+
+const MockIntersectionObserver = vi.fn(() => ({
+  observe: vi.fn(),
+  unobserve: vi.fn(),
+  disconnect: vi.fn(),
+  root: null,
+  rootMargin: '',
+  thresholds: [],
+  takeRecords: vi.fn(() => []),
+}))
+
+vi.stubGlobal('ResizeObserver', MockResizeObserver)
+vi.stubGlobal('IntersectionObserver', MockIntersectionObserver)
+vi.stubGlobal('scrollTo', vi.fn())
 
 const productsMock = [
   { catalog_id: '1', suppliers: [] },

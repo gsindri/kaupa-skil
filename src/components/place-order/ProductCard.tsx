@@ -47,6 +47,7 @@ export function ProductCard({ product }: { product: Product }) {
         supplierItemId: product.id,
         displayName: product.name,
         packQty: 1,
+        image: product.image || null,
       },
       1,
     )
