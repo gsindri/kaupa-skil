@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { TrendingUp, Plus } from 'lucide-react'
 import { useCart } from '@/contexts/useBasket'
 import { useSettings } from '@/contexts/useSettings'
+import { PLACEHOLDER_IMAGE } from '@/lib/images'
 
 interface DeliveryHint {
   supplierId: string
@@ -80,7 +81,7 @@ export function DeliveryHints({ hints }: DeliveryHintsProps) {
                         unit: 'pc',
                         displayName: item.name,
                         packQty: 1,
-                        image: '/placeholder.svg'
+                        image: PLACEHOLDER_IMAGE
                       })}
                     >
                       <Plus className="h-3 w-3 mr-1" />

@@ -28,6 +28,7 @@ import { Link } from 'react-router-dom'
 import type { CartItem } from '@/lib/types'
 import { getCachedImageUrl } from '@/services/ImageCache'
 import { formatCurrency } from '@/lib/format'
+import { PLACEHOLDER_IMAGE } from '@/lib/images'
 
 interface CartItemRowProps {
   item: CartItem
@@ -79,7 +80,7 @@ function CartItemRow({ item, includeVat, updateQuantity, removeItem }: CartItemR
       className="grid items-center gap-3 grid-cols-[44px,1fr,auto,auto] md:grid-cols-[56px,1fr,auto,auto] px-3 py-2.5 rounded-lg hover:bg-muted/50 focus-within:ring-2 focus-within:ring-primary/30"
     >
       <img
-        src={getCachedImageUrl(item.image) || '/placeholder.svg'}
+        src={getCachedImageUrl(item.image) || PLACEHOLDER_IMAGE}
         alt=""
         className="h-10 w-10 md:h-12 md:w-12 rounded object-cover bg-muted/40"
       />

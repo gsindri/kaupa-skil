@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { timeAgo } from "@/lib/timeAgo";
 import { formatCurrency } from "@/lib/format";
 import type { PublicCatalogItem } from "@/services/catalog";
+import { resolveImage } from "@/lib/images";
 
 interface ProductCardProps {
   product: PublicCatalogItem;
@@ -26,9 +27,10 @@ export function ProductCard({
     | "LOW_STOCK"
     | "OUT_OF_STOCK"
     | "UNKNOWN";
-  const img =
-    product.sample_image_url ??
-    (availability === "UNKNOWN" ? "/unavailable.svg" : "/placeholder.svg");
+  const img = resolveImage(
+    product.sample_image_url,
+    availability,
+  );
   const supplierLabel = `${product.suppliers_count} supplier${
     product.suppliers_count === 1 ? "" : "s"
   }`;

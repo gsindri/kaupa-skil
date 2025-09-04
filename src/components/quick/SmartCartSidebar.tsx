@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { useCart } from '@/contexts/useBasket';
 import { useSettings } from '@/contexts/useSettings';
+import { PLACEHOLDER_IMAGE } from '@/lib/images';
 
 interface SmartCartSidebarProps {
   className?: string;
@@ -67,7 +68,7 @@ export function SmartCartSidebar({ className = "" }: SmartCartSidebarProps) {
       supplierItemId: `suggested-${Date.now()}`,
       displayName: itemName,
       packQty: 1,
-      image: '/placeholder.svg'
+      image: PLACEHOLDER_IMAGE
     });
   };
 

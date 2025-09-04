@@ -9,6 +9,7 @@ import { ToastAction } from '@/components/ui/toast'
 import { Link } from 'react-router-dom'
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
 import { getCachedImageUrl } from '@/services/ImageCache'
+import { PLACEHOLDER_IMAGE } from '@/lib/images'
 
 export function MiniCart() {
   const {
@@ -80,7 +81,6 @@ export function MiniCart() {
   }
 
   const subtotal = formatPrice(getTotalPrice(includeVat))
-  const fallbackImage = '/placeholder.svg'
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -141,7 +141,7 @@ export function MiniCart() {
                     className="grid grid-cols-[44px,minmax(0,1fr),120px] md:grid-cols-[48px,minmax(0,1fr),136px] items-center gap-2 rounded-md px-1.5 py-1.5 hover:bg-muted/60 transition focus-visible:ring-2 focus-visible:ring-primary/30"
                   >
                     <img
-                      src={getCachedImageUrl(it.image) || fallbackImage}
+                      src={getCachedImageUrl(it.image) || PLACEHOLDER_IMAGE}
                       alt=""
                       className="h-9 w-9 md:h-10 md:w-10 rounded object-cover bg-muted/40"
                     />

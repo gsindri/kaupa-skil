@@ -15,6 +15,7 @@ import { lockScroll, unlockScroll } from '@/lib/lockScroll';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { deliveryCalculator } from '@/services/DeliveryCalculator';
+import { PLACEHOLDER_IMAGE } from '@/lib/images';
 
 interface MiniCompareDrawerProps {
   itemId: string | null;
@@ -161,7 +162,7 @@ export function MiniCompareDrawer({ itemId, isOpen, onClose }: MiniCompareDrawer
       supplierItemId: `${itemId}-${option.id}`,
       displayName: `Premium Item from ${option.name}`,
       packQty: 1,
-      image: '/placeholder.svg'
+      image: PLACEHOLDER_IMAGE
     });
     
     onClose();

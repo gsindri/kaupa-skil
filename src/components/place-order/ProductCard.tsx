@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover'
 import { useCart } from '@/contexts/useBasket'
+import { resolveImage } from '@/lib/images'
 
 export interface Product {
   id: string
@@ -46,7 +47,7 @@ export function ProductCard({ product }: { product: Product }) {
         supplierItemId: product.id,
         displayName: product.name,
         packQty: 1,
-        image: product.image,
+        image: resolveImage(product.image),
       },
       1,
     )

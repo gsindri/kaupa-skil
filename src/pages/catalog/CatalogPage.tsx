@@ -32,6 +32,7 @@ import { FullWidthLayout } from '@/components/layout/FullWidthLayout'
 import { useCatalogFilters, shallow, SortOrder } from '@/state/catalogFilters'
 import { useCart } from '@/contexts/useBasket'
 import type { CartItem } from '@/lib/types'
+import { resolveImage } from '@/lib/images'
 import { useSearchParams } from 'react-router-dom'
 
 export default function CatalogPage() {
@@ -399,11 +400,10 @@ export default function CatalogPage() {
       supplierItemId: product.catalog_id,
       displayName: product.name,
       packQty: 1,
-      image:
-        product.sample_image_url ||
-        (product.availability_status === 'UNKNOWN'
-          ? '/unavailable.svg'
-          : '/placeholder.svg'),
+      image: resolveImage(
+        product.sample_image_url,
+        product.availability_status,
+      ),
     }
     setAddingId(product.catalog_id)
     addItem(item, 1)
