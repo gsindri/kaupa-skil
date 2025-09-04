@@ -25,7 +25,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Button } from '@/components/ui/button'
 import { useVendors } from '@/hooks/useVendors'
-import AvailabilityBadge, { type AvailabilityStatus } from '@/components/catalog/AvailabilityBadge'
+import AvailabilityBadge from '@/components/catalog/AvailabilityBadge'
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
 import { timeAgo } from '@/lib/timeAgo'
 import { formatCurrency } from '@/lib/format'
@@ -42,7 +42,9 @@ import {
 } from '@/components/ui/drawer'
 import { Lock } from 'lucide-react'
 import { toast } from '@/hooks/use-toast'
-import SupplierChip from '@/components/catalog/SupplierChip'
+import { useCart } from '@/contexts/useBasket'
+import { QuantityStepper } from '@/components/cart/QuantityStepper'
+import SupplierList from '@/components/catalog/SupplierList'
 
 interface CatalogTableProps {
   products: any[]
@@ -296,7 +298,26 @@ function AddToCartButton({
   const existing = items.find(it => it.id === product.catalog_id)
   const quantity = existing?.quantity ?? 0
 
-    )
+  const supplierEntries =
+    Array.isArray(product.suppliers) && product.suppliers.length
+      ? product.suppliers.map((s: any) =>
+          typeof s === 'string'
+            ? { name: s, availability_status: undefined }
+            : {
+                name: s.name,
+                availability_status:
+                  s.availability_status ??
+                  s.status ??
+                  (typeof s.availability === 'string'
+                    ? s.availability
+                    : s.availability?.status),
+              },
+        )
+      : []
+
+  const handleAdd = (supplier: any) => {
+    const connected = vendors.some(v => v.name === supplier.name)
+    const supplierItemId = `${product.catalog_id}:${supplier.name}`
     const existingItem = items.find(it => it.supplierItemId === supplierItemId)
     if (existingItem) {
       updateQuantity(supplierItemId, existingItem.quantity + 1)
@@ -380,31 +401,6 @@ function AddToCartButton({
   )
 }
 
-// Display supplier badges and availability
-function SupplierList({
-  suppliers,
-  locked,
-}: {
-  suppliers: SupplierEntry[]
-  locked?: boolean
-}) {
-  const entries = suppliers.map((s: SupplierEntry) =>
-    typeof s === 'string'
-      ? { name: s, availability_status: undefined }
-      : {
-          name: s.name,
-          availability_status:
-            s.availability_status ??
-            s.status ??
-            (typeof s.availability === 'string'
-              ? s.availability
-              : s.availability?.status) ??
-            undefined,
-        },
-  )
-
-  return (
-
 // Price display cell including add-to-cart controls
 function PriceCell({
   product,
@@ -475,6 +471,10 @@ function PriceCell({
   return (
     <div className="flex items-center justify-end gap-2">
       {priceContent}
+      <AddToCartButton product={product} vendors={vendors} />
+    </div>
+  )
+}
 
 function ConnectPill() {
   return (
