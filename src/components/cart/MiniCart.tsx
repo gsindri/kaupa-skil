@@ -12,6 +12,7 @@ import { getCachedImageUrl } from '@/services/ImageCache'
 import { PLACEHOLDER_IMAGE } from '@/lib/images'
 import { cn } from '@/lib/utils'
 import { QuantityStepper } from './QuantityStepper'
+import { formatPrice } from '@/lib/formatPrice'
 
 export function MiniCart() {
   const {
@@ -40,26 +41,6 @@ export function MiniCart() {
       item.productName ||
       'Unknown item'
     )
-  }
-
-  const formatPrice = (price: number) => {
-    const narrow = new Intl.NumberFormat('is-IS', {
-      style: 'currency',
-      currency: 'ISK',
-      currencyDisplay: 'narrowSymbol',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(price)
-    if (narrow.includes('kr')) {
-      return narrow.replace('kr.', 'kr')
-    }
-    return new Intl.NumberFormat('is-IS', {
-      style: 'currency',
-      currency: 'ISK',
-      currencyDisplay: 'code',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(price)
   }
 
   const handleRemove = (index: number) => {
