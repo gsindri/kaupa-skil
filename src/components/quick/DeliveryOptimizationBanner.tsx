@@ -17,6 +17,7 @@ import {
 import type { OrderDeliveryOptimization } from '@/lib/types/delivery';
 import { useCart } from '@/contexts/useBasket';
 import { useSettings } from '@/contexts/useSettings';
+import { PLACEHOLDER_IMAGE } from '@/lib/images';
 
 interface DeliveryOptimizationBannerProps {
   className?: string;
@@ -90,7 +91,7 @@ export function DeliveryOptimizationBanner({
       supplierItemId: `opt-${Date.now()}`,
       displayName: itemName,
       packQty: 1,
-      image: '/placeholder.svg'
+      image: PLACEHOLDER_IMAGE
     });
   };
 
