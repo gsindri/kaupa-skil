@@ -10,7 +10,10 @@ interface AvailabilityBadgeProps {
   updatedAt?: string | null
 }
 
-const MAP: Record<AvailabilityStatus, { icon: string; label: string; className: string; aria: string }> = {
+const MAP: Record<
+  AvailabilityStatus,
+  { icon?: string; label: string; className: string; aria: string }
+> = {
   IN_STOCK: {
     icon: '✓',
     label: 'In',
@@ -30,7 +33,6 @@ const MAP: Record<AvailabilityStatus, { icon: string; label: string; className: 
     aria: 'Out of stock',
   },
   UNKNOWN: {
-    icon: '?',
     label: '—',
     className: 'bg-muted text-muted-foreground',
     aria: 'Availability unknown',
@@ -46,7 +48,9 @@ export default function AvailabilityBadge({ status = 'UNKNOWN', updatedAt }: Ava
 
   const base = MAP[status ?? 'UNKNOWN'] ?? MAP.UNKNOWN
 
-  let iconNode: ReactNode = <span aria-hidden="true">{base.icon}</span>
+  let iconNode: ReactNode = base.icon ? (
+    <span aria-hidden="true">{base.icon}</span>
+  ) : null
   let label: string | null = base.label
   let className = base.className
   let aria = base.aria
