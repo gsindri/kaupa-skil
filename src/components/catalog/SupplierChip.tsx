@@ -1,9 +1,4 @@
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { Lock } from 'lucide-react'
-import { timeAgo } from '@/lib/timeAgo'
-import type { AvailabilityStatus } from '@/components/catalog/AvailabilityBadge'
-import type React from 'react'
 
 interface AvailabilityInfo {
   status?: AvailabilityStatus | null
@@ -20,37 +15,27 @@ interface SupplierChipProps extends React.HTMLAttributes<HTMLDivElement> {
 export default function SupplierChip({
   name,
   logoUrl,
-  connected,
-  availability,
-  className = '',
   ...props
 }: SupplierChipProps) {
   const initials = name
     .split(' ')
-    .map(s => s[0])
+    .filter(Boolean)
+    .map(s => s[0]!)
     .join('')
     .slice(0, 2)
     .toUpperCase()
 
   const avatar = (
-    <div
-      className={`relative flex h-full w-full items-center justify-center rounded-full border bg-background ${className}`}
-      {...props}
-    >
-      <Avatar className="h-full w-full">
-        {logoUrl ? (
-          <AvatarImage src={logoUrl} alt="" />
-        ) : (
-          <AvatarFallback>{initials}</AvatarFallback>
-        )}
-      </Avatar>
-      {!connected && <Lock className="absolute h-3 w-3 text-muted-foreground" />}
-      <span className="sr-only">{name}</span>
-    </div>
   )
 
   if (availability) {
-    const time = availability.updatedAt ? timeAgo(availability.updatedAt) : 'unknown'
+    const time = availability.updatedAt
+      ? timeAgo(
+          typeof availability.updatedAt === 'string'
+            ? availability.updatedAt
+            : availability.updatedAt.toISOString()
+        )
+      : 'unknown'
     return (
       <Tooltip>
         <TooltipTrigger asChild>{avatar}</TooltipTrigger>
