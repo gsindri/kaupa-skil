@@ -10,6 +10,7 @@ import { Link } from 'react-router-dom'
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
 import { getCachedImageUrl } from '@/services/ImageCache'
 import { PLACEHOLDER_IMAGE } from '@/lib/images'
+import { cn } from '@/lib/utils'
 
 export function MiniCart() {
   const {
@@ -150,7 +151,6 @@ export function MiniCart() {
                     ref={el => (rowRefs.current[index] = el)}
                     tabIndex={keyboardNavigationActive ? 0 : -1}
                     onKeyDown={e => handleKeyDown(e, index)}
-                    className="grid grid-cols-[44px,minmax(0,1fr),112px] md:grid-cols-[48px,minmax(0,1fr),128px] items-center gap-2 rounded-md pl-2 pr-1 py-2 hover:bg-muted/60 transition focus-visible:ring-2 focus-visible:ring-primary/30"
                   >
                     <img
                       src={getCachedImageUrl(it.image) || PLACEHOLDER_IMAGE}
@@ -179,15 +179,17 @@ export function MiniCart() {
                     <div className="flex items-center">
                       <div className="inline-flex h-7 w-[88px] md:w-[96px] items-center divide-x rounded-md border ring-offset-1 focus-within:ring-2 focus-within:ring-brand/50">
                         <button
-                          className="flex h-full w-7 items-center justify-center p-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50"
+                          className="flex h-full w-7 items-center justify-center p-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50 disabled:opacity-50"
                           aria-label={`Decrease quantity of ${displayName}`}
                           onClick={() =>
-                            updateQuantity(it.supplierItemId, it.quantity - 1)
+                            updateQuantity(it.supplierItemId, Math.max(0, it.quantity - 1))
                           }
+                          disabled={it.quantity === 0}
                         >
                           <Minus className="h-4 w-4 stroke-[1.5]" />
                         </button>
-                        <span className="flex h-full flex-1 items-center justify-center tabular-nums text-sm">
+                        <span className={cn("flex h-full flex-1 items-center justify-center tabular-nums text-sm", it.quantity === 0 && "text-red-700")}
+                        >
                           {it.quantity}
                         </span>
                         <button

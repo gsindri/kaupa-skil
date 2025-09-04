@@ -28,6 +28,7 @@ import { Link } from 'react-router-dom'
 import type { CartItem } from '@/lib/types'
 import { getCachedImageUrl } from '@/services/ImageCache'
 import { PLACEHOLDER_IMAGE } from '@/lib/images'
+import { cn } from '@/lib/utils'
 
 const formatPrice = (price: number) => {
   const narrow = new Intl.NumberFormat('is-IS', {
@@ -67,7 +68,7 @@ function CartItemRow({ item, includeVat, updateQuantity, removeItem }: CartItemR
       if (e.key === 'Enter' || e.key === '+') {
         updateQuantity(item.supplierItemId, item.quantity + 1)
       } else if (e.key === '-') {
-        updateQuantity(item.supplierItemId, item.quantity - 1)
+        updateQuantity(item.supplierItemId, Math.max(0, item.quantity - 1))
       } else if (/^[1-9]$/.test(e.key)) {
         updateQuantity(item.supplierItemId, Number(e.key))
       }
@@ -96,7 +97,10 @@ function CartItemRow({ item, includeVat, updateQuantity, removeItem }: CartItemR
   return (
     <div
       ref={cardRef}
-      className="grid items-center gap-3 grid-cols-[44px,minmax(0,1fr),112px] md:grid-cols-[56px,minmax(0,1fr),128px] px-2 py-2 rounded-lg hover:bg-muted/50 focus-within:ring-2 focus-within:ring-primary/30"
+      className={cn(
+        "grid items-center gap-3 grid-cols-[44px,minmax(0,1fr),112px] md:grid-cols-[56px,minmax(0,1fr),128px] px-2 py-2 rounded-lg focus-within:ring-2 focus-within:ring-primary/30",
+        item.quantity === 0 ? "bg-red-50 text-red-700" : "hover:bg-muted/50"
+      )}
     >
       <img
         src={getCachedImageUrl(item.image) || PLACEHOLDER_IMAGE}
@@ -120,13 +124,15 @@ function CartItemRow({ item, includeVat, updateQuantity, removeItem }: CartItemR
       <div className="flex items-center">
         <div className="inline-flex h-7 w-[88px] md:w-[96px] items-center divide-x rounded-md border ring-offset-1 focus-within:ring-2 focus-within:ring-brand/50">
           <button
-            className="flex h-full w-7 items-center justify-center p-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50"
+            className="flex h-full w-7 items-center justify-center p-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50 disabled:opacity-50"
             aria-label="Decrease quantity"
-            onClick={() => updateQuantity(item.supplierItemId, item.quantity - 1)}
+            onClick={() => updateQuantity(item.supplierItemId, Math.max(0, item.quantity - 1))}
+            disabled={item.quantity === 0}
           >
             <Minus className="h-4 w-4 stroke-[1.5]" />
           </button>
-          <span className="flex h-full flex-1 items-center justify-center tabular-nums text-sm">
+          <span className={cn("flex h-full flex-1 items-center justify-center tabular-nums text-sm", item.quantity === 0 && "text-red-700")}
+          >
             {item.quantity}
           </span>
           <button
