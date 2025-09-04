@@ -109,7 +109,7 @@ export function MiniCart() {
         </Button>
       </PopoverTrigger>
       <PopoverContent
-        className="w-[320px] sm:w-[340px] rounded-xl border bg-background shadow-md overflow-hidden"
+        className="w-[min(90vw,360px)] rounded-xl border bg-background shadow-md overflow-hidden"
         side="bottom"
         sideOffset={8}
         collisionPadding={8}
@@ -138,7 +138,7 @@ export function MiniCart() {
                     ref={el => (rowRefs.current[index] = el)}
                     tabIndex={keyboardNavigationActive ? 0 : -1}
                     onKeyDown={e => handleKeyDown(e, index)}
-                    className="grid grid-cols-[36px,1fr,auto,auto] md:grid-cols-[40px,1fr,auto,auto] items-center gap-2 rounded-md px-1.5 py-1.5 hover:bg-muted/60 transition focus-visible:ring-2 focus-visible:ring-primary/30"
+                    className="grid grid-cols-[36px,minmax(0,2fr),auto,auto] md:grid-cols-[40px,minmax(0,2fr),auto,auto] items-center gap-2 rounded-md px-1.5 py-1.5 hover:bg-muted/60 transition focus-visible:ring-2 focus-visible:ring-primary/30"
                   >
                     <img
                       src={getCachedImageUrl(it.image) || fallbackImage}
