@@ -6,6 +6,8 @@ interface QuantityStepperProps {
   quantity: number
   onChange: (qty: number) => void
   label: string
+  /** Optional supplier name for accessibility labels */
+  supplier?: string
   min?: number
   max?: number
   className?: string
@@ -15,6 +17,7 @@ export function QuantityStepper({
   quantity,
   onChange,
   label,
+  supplier,
   min = 0,
   max = 9999,
   className,
@@ -63,6 +66,8 @@ export function QuantityStepper({
     }
   }
 
+  const itemLabel = supplier ? `${label} from ${supplier}` : label
+
   return (
     <div
       className={cn(
@@ -73,7 +78,7 @@ export function QuantityStepper({
     >
       <button
         className="flex h-full w-7 items-center justify-center p-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50 disabled:opacity-50"
-        aria-label={`Decrease quantity of ${label}`}
+        aria-label={`Decrease quantity of ${itemLabel}`}
         onClick={() => onChange(Math.max(min, quantity - 1))}
         disabled={quantity === min}
       >
@@ -81,7 +86,7 @@ export function QuantityStepper({
       </button>
       {editing ? (
         <input
-          aria-label={`Quantity of ${label}`}
+          aria-label={`Quantity of ${itemLabel}`}
           autoFocus
           inputMode="numeric"
           pattern="[0-9]*"
@@ -97,7 +102,7 @@ export function QuantityStepper({
         />
       ) : (
         <span
-          aria-label={`Quantity of ${label}`}
+          aria-label={`Quantity of ${itemLabel}`}
           tabIndex={0}
           onClick={startEdit}
           onKeyDown={e => {
@@ -113,7 +118,7 @@ export function QuantityStepper({
       )}
       <button
         className="flex h-full w-7 items-center justify-center p-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50"
-        aria-label={`Increase quantity of ${label}`}
+        aria-label={`Increase quantity of ${itemLabel}`}
         onClick={() => onChange(Math.min(max, quantity + 1))}
       >
         <Plus className="h-4 w-4 stroke-[1.5]" />
