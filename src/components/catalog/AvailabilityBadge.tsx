@@ -8,6 +8,7 @@ export type AvailabilityStatus = 'IN_STOCK' | 'LOW_STOCK' | 'OUT_OF_STOCK' | 'UN
 interface AvailabilityBadgeProps {
   status?: AvailabilityStatus | null
   updatedAt?: string | null
+  tabIndex?: number
 }
 
 const MAP: Record<
@@ -39,7 +40,11 @@ const MAP: Record<
   },
 }
 
-export default function AvailabilityBadge({ status = 'UNKNOWN', updatedAt }: AvailabilityBadgeProps) {
+export default function AvailabilityBadge({
+  status = 'UNKNOWN',
+  updatedAt,
+  tabIndex = 0,
+}: AvailabilityBadgeProps) {
   const isChecking = status === null
   const isStale =
     !isChecking && updatedAt
@@ -74,7 +79,7 @@ export default function AvailabilityBadge({ status = 'UNKNOWN', updatedAt }: Ava
     <Badge
       className={`gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${className}`}
       aria-label={ariaLabel}
-      tabIndex={0}
+      tabIndex={tabIndex}
     >
       {iconNode}
       {label === '—' ? (

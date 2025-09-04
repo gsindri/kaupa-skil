@@ -31,13 +31,6 @@ import { formatCurrency } from '@/lib/format'
 import type { FacetFilters } from '@/services/catalog'
 import ProductThumb from '@/components/catalog/ProductThumb'
 import { resolveImage } from '@/lib/images'
-import { useCart } from '@/contexts/useBasket'
-import { QuantityStepper } from '@/components/cart/QuantityStepper'
-import {
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
-} from '@/components/ui/popover'
 import {
   Drawer,
   DrawerTrigger,
@@ -124,16 +117,16 @@ export function CatalogTable({
             Availability {sort?.key === 'availability' && (sort?.direction === 'asc' ? '▲' : '▼')}
           </TableHead>
           <TableHead
-            className="min-w-[140px] max-w-[180px] w-40 cursor-pointer select-none px-2"
-            onClick={() => onSort('supplier')}
-          >
-            Suppliers {sort?.key === 'supplier' && (sort?.direction === 'asc' ? '▲' : '▼')}
-          </TableHead>
-          <TableHead
             className="w-[112px] sm:w-[136px] text-right px-2 cursor-pointer select-none"
             onClick={() => onSort('price')}
           >
             Price {sort?.key === 'price' && (sort?.direction === 'asc' ? '▲' : '▼')}
+          </TableHead>
+          <TableHead
+            className="min-w-[140px] max-w-[180px] w-40 cursor-pointer select-none px-2"
+            onClick={() => onSort('supplier')}
+          >
+            Suppliers {sort?.key === 'supplier' && (sort?.direction === 'asc' ? '▲' : '▼')}
           </TableHead>
         </TableRow>
         <TableRow>
@@ -181,6 +174,7 @@ export function CatalogTable({
               </SelectContent>
             </Select>
           </TableHead>
+          <TableHead className="w-[112px] sm:w-[136px] px-2" />
           <TableHead className="min-w-[140px] max-w-[180px] w-40 px-2">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -206,7 +200,6 @@ export function CatalogTable({
               </DropdownMenuContent>
             </DropdownMenu>
           </TableHead>
-          <TableHead className="w-[112px] sm:w-[136px] px-2" />
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -244,24 +237,18 @@ export function CatalogTable({
                 className="[width:minmax(0,1fr)] p-2"
                 title={p.name}
               >
-                <div className="flex items-start justify-between gap-2">
-                  <div className="line-clamp-2">
-                    <div className="text-[15px] font-medium leading-snug">
-                      {p.name}
-                    </div>
                     {(p.brand || p.pack_size) && (
                       <div className="text-[13px] text-muted-foreground">
                         {[p.brand, p.pack_size].filter(Boolean).join(' • ')}
                       </div>
                     )}
                   </div>
-                  <AddToCartButton product={p} vendors={vendors} />
-                </div>
               </TableCell>
               <TableCell className="w-28 p-2 whitespace-nowrap">
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <AvailabilityBadge
+                      tabIndex={-1}
                       status={p.availability_status}
                       updatedAt={p.availability_updated_at}
                     />
@@ -274,17 +261,17 @@ export function CatalogTable({
                   </TooltipContent>
                 </Tooltip>
               </TableCell>
+              <TableCell className="min-w-[112px] max-w-[136px] w-[112px] sm:w-[136px] p-2 text-right whitespace-nowrap">
+                <PriceCell product={p} />
+              </TableCell>
               <TableCell className="min-w-[140px] max-w-[180px] w-40 p-2 whitespace-nowrap">
                 {p.suppliers?.length ? (
-                  <SupplierList suppliers={p.suppliers} />
+                  <SupplierList suppliers={p.suppliers} locked={p.prices_locked ?? p.price_locked} />
                 ) : showConnectPill ? (
                   <ConnectPill />
                 ) : (
                   <span className="text-muted-foreground">—</span>
                 )}
-              </TableCell>
-              <TableCell className="min-w-[112px] max-w-[136px] w-[112px] sm:w-[136px] p-2 text-right whitespace-nowrap">
-                <PriceCell product={p} />
               </TableCell>
             </TableRow>
           )
@@ -393,16 +380,12 @@ function PriceCell({ product }: { product: any }) {
     : []
   const isLocked = product.prices_locked ?? product.price_locked ?? false
 
-  let content: React.ReactNode
-  let tooltip: React.ReactNode | null = null
 
   if (isLocked) {
-    content = (
+    priceNode = (
       <div className="flex items-center justify-end gap-2 text-muted-foreground">
         <Lock className="h-4 w-4" />
-        <span aria-hidden="true" className="tabular-nums">
-          —
-        </span>
+        <span aria-hidden="true" className="tabular-nums">—</span>
         <span className="sr-only">Price locked</span>
       </div>
     )
@@ -425,18 +408,8 @@ function PriceCell({ product }: { product: any }) {
       min === max
         ? formatCurrency(min, currency)
         : `${formatCurrency(min, currency)}–${formatCurrency(max, currency)}`
-    content = <span className="tabular-nums">{text}</span>
-    if (sources.length) {
-      tooltip = (
-        <>
-          {sources.map((s: string) => (
-            <div key={s}>{s}</div>
-          ))}
-        </>
-      )
-    }
   } else {
-    content = (
+    priceNode = (
       <span className="tabular-nums">
         <span aria-hidden="true">—</span>
         <span className="sr-only">No data yet</span>
@@ -444,28 +417,29 @@ function PriceCell({ product }: { product: any }) {
     )
   }
 
-  if (tooltip) {
-    return (
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <div>{content}</div>
-        </TooltipTrigger>
-        <TooltipContent className="space-y-0.5">{tooltip}</TooltipContent>
-      </Tooltip>
-    )
-  }
 
-  return content
+  return (
+    <div className="flex items-center justify-end gap-2">
+      {priceContent}
+      {qty > 0 ? (
+        <QuantityStepper
+          quantity={qty}
+          onChange={setQty}
+          label={label}
+        />
+      ) : (
+        <Button
+          size="sm"
+          onClick={() => setQty(1)}
+          aria-label={`Add ${product.name} to cart`}
+        >
+          Add
+        </Button>
+      )}
+    </div>
+  )
 }
 
-type SupplierEntry =
-  | string
-  | {
-      name: string
-      availability_status?: AvailabilityStatus | null
-      status?: AvailabilityStatus | null
-      availability?: AvailabilityStatus | null
-    }
 
 function SupplierList({ suppliers }: { suppliers: SupplierEntry[] }) {
   const items = suppliers.map(s =>
@@ -488,16 +462,6 @@ function SupplierList({ suppliers }: { suppliers: SupplierEntry[] }) {
   }
 
   return (
-    <div className="flex flex-col gap-1">
-      {items.map(s => (
-        <div
-          key={s.name}
-          className="flex items-center gap-2 cursor-pointer"
-          onClick={() => handleClick(s)}
-        >
-          <span className="truncate text-sm">{s.name}</span>
-          <AvailabilityBadge status={s.availability_status ?? 'UNKNOWN'} />
-        </div>
       ))}
     </div>
   )
