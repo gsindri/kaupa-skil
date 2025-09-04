@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import {
   Table,
   TableBody,
@@ -43,6 +43,9 @@ import {
 } from '@/components/ui/drawer'
 import { Lock } from 'lucide-react'
 import { toast } from '@/hooks/use-toast'
+import { useCart } from '@/contexts/useBasket'
+import { QuantityStepper } from '@/components/cart/QuantityStepper'
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover'
 
 interface CatalogTableProps {
   products: any[]
@@ -234,10 +237,14 @@ export function CatalogTable({
                   name={p.name}
                   brand={p.brand}
                 />
-              </TableCell>
-                </div>
-              </TableCell>
-              <TableCell className="w-28 p-2 whitespace-nowrap">
+                </TableCell>
+                <TableCell className="[width:minmax(0,1fr)] p-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="truncate">{p.name}</div>
+                    <AddToCartButton product={p} vendors={vendors} />
+                  </div>
+                </TableCell>
+                <TableCell className="w-28 p-2 whitespace-nowrap">
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <AvailabilityBadge
@@ -274,7 +281,7 @@ export function CatalogTable({
   )
 }
 
-// Button and quantity control for adding catalog items to the cart
+  // Button and quantity control for adding catalog items to the cart
   function AddToCartButton({
     product,
     vendors,
@@ -285,10 +292,82 @@ export function CatalogTable({
     const { items, addItem, updateQuantity } = useCart()
     const [open, setOpen] = useState(false)
 
-      )
+    const supplierEntries = product.supplier_products?.length
+      ? product.supplier_products.map((sp: any) => ({
+          id: sp.supplier_id ?? sp.id,
+          name: sp.name ?? sp.supplier_name ?? sp.supplier?.name,
+          connected:
+            sp.connected ??
+            sp.supplier?.connected ??
+            vendors.some(
+              v =>
+                v.id === (sp.supplier_id ?? sp.id) ||
+                v.name === (sp.name ?? sp.supplier?.name),
+            ),
+          logo_url: sp.logo_url ?? sp.supplier?.logo_url ?? null,
+          availability_status:
+            sp.availability_status ??
+            sp.availability?.status ??
+            sp.status ??
+            null,
+          supplier_item_id:
+            sp.supplier_item_id ??
+            sp.supplierItemId ??
+            sp.id ??
+            `${product.catalog_id}:${sp.supplier_id ?? sp.id}`,
+        }))
+      : (product.suppliers ?? []).map((s: any) => {
+          if (typeof s === 'string') {
+            const vendor = vendors.find(v => v.name === s)
+            return {
+              id: vendor?.id ?? s,
+              name: s,
+              connected: vendor != null,
+              logo_url: vendor?.logo_url ?? null,
+              availability_status: null,
+              supplier_item_id: `${product.catalog_id}:${vendor?.id ?? s}`,
+            }
+          }
+          return {
+            id: s.id ?? s.supplier_id,
+            name: s.name,
+            connected:
+              s.connected ??
+              vendors.some(
+                v => v.id === (s.id ?? s.supplier_id) || v.name === s.name,
+              ),
+            logo_url: s.logo_url ?? s.logoUrl ?? null,
+            availability_status:
+              s.availability_status ??
+              s.availability?.status ??
+              s.status ??
+              null,
+            supplier_item_id:
+              s.supplier_item_id ??
+              s.supplierItemId ??
+              s.id ??
+              `${product.catalog_id}:${s.name}`,
+          }
+        })
 
-      if (existingItem) {
-        updateQuantity(supplierItemId, existingItem.quantity + 1)
+    const existingItem = supplierEntries
+      .map((s: any) => items.find(i => i.supplierItemId === s.supplier_item_id))
+      .find(Boolean)
+
+    const [qty, setQty] = useState(existingItem?.quantity ?? 1)
+
+    useEffect(() => {
+      setQty(existingItem?.quantity ?? 1)
+    }, [existingItem])
+
+    const handleAdd = (supplier: any) => {
+      const supplierItemId = supplier.supplier_item_id
+      const existing = items.find(i => i.supplierItemId === supplierItemId)
+
+      if (existing) {
+        const newQty = existing.quantity + 1
+        updateQuantity(supplierItemId, newQty)
+        setQty(newQty)
       } else {
         addItem(
           {
@@ -311,6 +390,7 @@ export function CatalogTable({
           1,
           { showToast: false },
         )
+        setQty(1)
       }
       if (supplier.availability_status === 'OUT_OF_STOCK') {
         toast({ description: 'Out of stock at selected supplier.' })
@@ -318,10 +398,25 @@ export function CatalogTable({
       setOpen(false)
     }
 
+    if (existingItem) {
+      return (
+        <QuantityStepper
+          quantity={qty}
+          onChange={q => {
+            setQty(q)
+            updateQuantity(existingItem.supplierItemId, q)
+          }}
+          label={product.name}
+          className="h-7 w-[92px]"
+        />
+      )
+    }
+
     if (supplierEntries.length <= 1) {
       const supplier = supplierEntries[0]
       const disabled =
-        supplier?.availability_status === 'OUT_OF_STOCK' || false
+        supplier?.availability_status === 'OUT_OF_STOCK' ||
+        supplier?.connected === false
       return (
         <Button
           size="sm"
@@ -333,6 +428,57 @@ export function CatalogTable({
         </Button>
       )
     }
+
+    return (
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button size="sm" aria-label={`Add ${product.name} to cart`}>
+            Add
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-56 p-1">
+          {supplierEntries.map((s: any) => {
+            const disabled =
+              s.availability_status === 'OUT_OF_STOCK' || s.connected === false
+            const initials = (s.name || '')
+              .split(' ')
+              .filter(Boolean)
+              .map((part: string) => part[0])
+              .join('')
+              .slice(0, 2)
+              .toUpperCase()
+            return (
+              <button
+                key={s.supplier_item_id}
+                className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-left text-sm hover:bg-muted disabled:opacity-50"
+                onClick={() => handleAdd(s)}
+                disabled={disabled}
+              >
+                {s.logo_url ? (
+                  <img
+                    src={s.logo_url}
+                    alt=""
+                    className="h-5 w-5 rounded-full object-cover"
+                  />
+                ) : (
+                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-muted text-[10px] font-medium">
+                    {initials}
+                  </span>
+                )}
+                <span className="flex-1 truncate">{s.name}</span>
+                {s.availability_status && (
+                  <AvailabilityBadge status={s.availability_status} />
+                )}
+                {s.connected === false && (
+                  <Lock className="h-3 w-3 text-muted-foreground" />
+                )}
+              </button>
+            )
+          })}
+        </PopoverContent>
+      </Popover>
+    )
+  }
 
 function PriceCell({
   product,
