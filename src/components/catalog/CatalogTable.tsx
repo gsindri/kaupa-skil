@@ -44,7 +44,6 @@ import { Lock } from 'lucide-react'
 import { toast } from '@/hooks/use-toast'
 import { useCart } from '@/contexts/useBasket'
 import { QuantityStepper } from '@/components/cart/QuantityStepper'
-import SupplierList, { type SupplierEntry } from '@/components/catalog/SupplierList'
 
 interface CatalogTableProps {
   products: any[]
@@ -304,28 +303,6 @@ export function CatalogTable({
     const existing = items.find(it => it.id === product.catalog_id)
     const quantity = existing?.quantity ?? 0
 
-    const supplierEntries: SupplierEntry[] = (
-      product.supplier_products ?? product.suppliers ?? []
-    ).map((s: any) =>
-      typeof s === 'string'
-        ? { name: s }
-        : {
-            name: s.name ?? s.supplier,
-            availability_status:
-              s.availability_status ??
-              s.status ??
-              (typeof s.availability === 'string'
-                ? s.availability
-                : s.availability?.status) ??
-              undefined,
-          },
-    )
-
-    const handleAdd = (supplier: SupplierEntry) => {
-      const supplierItemId = `${product.catalog_id}:${supplier.name}`
-      const connected = vendors.some(v => v.name === supplier.name)
-      const existingItem = items.find(
-        it => it.supplierItemId === supplierItemId,
       )
       if (existingItem) {
         updateQuantity(supplierItemId, existingItem.quantity + 1)
@@ -409,7 +386,6 @@ export function CatalogTable({
   )
 }
 
-  // Price display cell
 function PriceCell({
   product,
   vendors,
