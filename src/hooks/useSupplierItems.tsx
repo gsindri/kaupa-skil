@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
 import type { Database } from '@/lib/types'
 
-type SupplierItem = Database['public']['Tables']['supplier_items']['Row']
+type SupplierItem = Database['public']['Tables']['supplier_items']['Row'] & { logo_url?: string | null }
 
 export function useSupplierItems(supplierId?: string) {
   const { data: items = [], isLoading, error } = useQuery({
@@ -13,12 +13,12 @@ export function useSupplierItems(supplierId?: string) {
       
       const { data, error } = await supabase
         .from('supplier_items')
-        .select('*')
+        .select('*, suppliers(logo_url)')
         .eq('supplier_id', supplierId)
         .order('last_seen_at', { ascending: false, nullsFirst: false })
 
       if (error) throw error
-      return data || []
+      return (data || []).map((d: any) => ({ ...d, logo_url: d.suppliers?.logo_url ?? null }))
     },
     enabled: !!supplierId
   })

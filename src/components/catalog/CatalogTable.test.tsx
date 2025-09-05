@@ -17,15 +17,6 @@ vi.mock('@/components/catalog/SupplierChips', () => ({
   default: () => <div />,
 }))
 
-import { CatalogTable } from './CatalogTable'
-
-describe('CatalogTable', () => {
-  beforeEach(() => {
-    cartState.items = []
-    cartState.addItem.mockClear()
-    cartState.updateQuantity.mockClear()
-  })
-
   it('shows lock icon and tooltip when price is locked', async () => {
     const product = {
       catalog_id: '1',

@@ -100,12 +100,14 @@ vi.mock('@/components/debug/LayoutDebugger', () => ({ LayoutDebugger: () => <div
 vi.mock('@/components/layout/FullWidthLayout', () => ({ FullWidthLayout: ({ children }: any) => <div>{children}</div> }))
 // eslint-disable-next-line prefer-const
 let catalogFiltersStore: any
-vi.mock('@/state/catalogFilters', () => ({
-  useCatalogFilters: (selector: any) => catalogFiltersStore(selector),
-  shallow: (fn: any) => fn,
-  SortOrder: {},
-  triStockToAvailability: vi.fn(() => undefined),
-}))
+vi.mock('@/state/catalogFilters', async () => {
+  const actual = await vi.importActual<any>('@/state/catalogFilters')
+  return {
+    ...actual,
+    useCatalogFilters: (selector: any) => catalogFiltersStore(selector),
+    shallow: (fn: any) => fn,
+  }
+})
 catalogFiltersStore = create((set: any) => ({
   filters: {},
   setFilters: vi.fn(),
@@ -114,7 +116,7 @@ catalogFiltersStore = create((set: any) => ({
   sort: 'relevance',
   setSort: vi.fn(),
   triStock: 'off',
-  setTriStock: vi.fn(),
+  setTriStock: (v: any) => set({ triStock: v }),
   triSpecial: 'off',
   setTriSpecial: (v: any) => set({ triSpecial: v }),
   triSuppliers: 'off',
@@ -190,6 +192,87 @@ describe('CatalogPage', () => {
       expect.objectContaining({ onSpecial: true }),
       'relevance',
     )
+  })
+
+  it('cycles triStock filter through all states and forwards availability filters', async () => {
+    render(<CatalogPage />)
+    await userEvent.click(screen.getByText('list'))
+
+    const stockChip = await screen.findByText('All stock')
+
+    // initial state: off
+    let lastPublicCall = useCatalogProductsMock.mock.calls.at(-1)
+    expect(lastPublicCall[0]).not.toHaveProperty('availability')
+    let lastOrgCall = useOrgCatalogMock.mock.calls.at(-1)
+    expect(lastOrgCall[1]).not.toHaveProperty('availability')
+
+    // include state
+    useCatalogProductsMock.mockClear()
+    useOrgCatalogMock.mockClear()
+    await userEvent.click(stockChip)
+    await screen.findByText('In stock')
+    expect(useCatalogProductsMock).toHaveBeenCalled()
+    expect(useOrgCatalogMock).toHaveBeenCalled()
+    lastPublicCall = useCatalogProductsMock.mock.calls.at(-1)
+    expect(lastPublicCall[0]).toMatchObject({ availability: ['IN_STOCK'] })
+    lastOrgCall = useOrgCatalogMock.mock.calls.at(-1)
+    expect(lastOrgCall[1]).toMatchObject({ availability: ['IN_STOCK'] })
+
+    // exclude state
+    useCatalogProductsMock.mockClear()
+    useOrgCatalogMock.mockClear()
+    await userEvent.click(stockChip)
+    await screen.findByText('Not in stock')
+    expect(useCatalogProductsMock).toHaveBeenCalled()
+    expect(useOrgCatalogMock).toHaveBeenCalled()
+    lastPublicCall = useCatalogProductsMock.mock.calls.at(-1)
+    expect(lastPublicCall[0]).toMatchObject({
+      availability: ['LOW_STOCK', 'OUT_OF_STOCK', 'UNKNOWN'],
+    })
+    lastOrgCall = useOrgCatalogMock.mock.calls.at(-1)
+    expect(lastOrgCall[1]).toMatchObject({
+      availability: ['LOW_STOCK', 'OUT_OF_STOCK', 'UNKNOWN'],
+    })
+
+    // back to off
+    useCatalogProductsMock.mockClear()
+    useOrgCatalogMock.mockClear()
+    await userEvent.click(stockChip)
+    await screen.findByText('All stock')
+    expect(useCatalogProductsMock).toHaveBeenCalled()
+    expect(useOrgCatalogMock).toHaveBeenCalled()
+    lastPublicCall = useCatalogProductsMock.mock.calls.at(-1)
+    expect(lastPublicCall[0]).not.toHaveProperty('availability')
+    lastOrgCall = useOrgCatalogMock.mock.calls.at(-1)
+    expect(lastOrgCall[1]).not.toHaveProperty('availability')
+  })
+
+  it('requests only out-of-stock items when Not in stock is selected', async () => {
+    render(<CatalogPage />)
+    await userEvent.click(screen.getByText('list'))
+
+    const stockChip = await screen.findByText('All stock')
+    useCatalogProductsMock.mockClear()
+    useOrgCatalogMock.mockClear()
+
+    await userEvent.click(stockChip) // include
+    await userEvent.click(stockChip) // exclude
+    await screen.findByText('Not in stock')
+
+    expect(useCatalogProductsMock).toHaveBeenCalled()
+    expect(useOrgCatalogMock).toHaveBeenCalled()
+    const lastPublicCall = useCatalogProductsMock.mock.calls.at(-1)
+    expect(lastPublicCall[0].availability).toEqual([
+      'LOW_STOCK',
+      'OUT_OF_STOCK',
+      'UNKNOWN',
+    ])
+    const lastOrgCall = useOrgCatalogMock.mock.calls.at(-1)
+    expect(lastOrgCall[1].availability).toEqual([
+      'LOW_STOCK',
+      'OUT_OF_STOCK',
+      'UNKNOWN',
+    ])
   })
 })
 

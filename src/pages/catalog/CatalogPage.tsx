@@ -900,10 +900,10 @@ function FiltersBar({
               state={triStock}
               onStateChange={setTriStock}
               includeLabel="In stock"
-              excludeLabel="Not in stock"
+              excludeLabel="Out of stock"
               offLabel="All stock"
               includeAriaLabel="Filter: only in stock"
-              excludeAriaLabel="Filter: not in stock"
+              excludeAriaLabel="Filter: out of stock"
               includeClassName="bg-green-500 text-white border-green-500"
               excludeClassName="bg-red-500 text-white border-red-500"
             />
