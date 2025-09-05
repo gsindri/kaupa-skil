@@ -16,10 +16,6 @@ vi.mock('@/components/catalog/SupplierChips', () => ({
   default: () => <div />,
 }))
 
-vi.mock('@/components/cart/AddToCartButton', () => ({
-  default: () => <div />,
-}))
-
 describe('PriceCell', () => {
   it('shows lock icon and tooltip when price is locked', async () => {
     const product = {
@@ -56,5 +52,39 @@ describe('PriceCell', () => {
 
     const tooltip = await screen.findAllByText('Connect Acme to see price.')
     expect(tooltip.length).toBeGreaterThan(0)
+  })
+})
+
+describe('AddToCartButton', () => {
+  it('is visible without hover', () => {
+    const product = {
+      catalog_id: '1',
+      name: 'Visible Product',
+      supplier_products: [
+        { supplier_id: 'sup1', supplier_name: 'Supplier 1', is_connected: true },
+      ],
+      availability_status: 'IN_STOCK',
+    }
+
+    render(
+      <TooltipProvider>
+        <CatalogTable
+          products={[product]}
+          selected={[]}
+          onSelect={() => {}}
+          onSelectAll={() => {}}
+          sort={null}
+          onSort={() => {}}
+          filters={{}}
+          onFilterChange={() => {}}
+          isBulkMode={false}
+        />
+      </TooltipProvider>,
+    )
+
+    const button = screen.getByRole('button', { name: /add/i })
+    expect(button).toBeVisible()
+    expect(button.className).toContain('ml-auto')
+    expect(button.className).not.toContain('opacity-0')
   })
 })
