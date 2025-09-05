@@ -639,6 +639,7 @@ export type Database = {
           catalog_id: string | null
           category_tags: string[] | null
           name: string | null
+          on_special: boolean | null
           pack_sizes: string[] | null
           sample_image_url: string | null
           sample_source_url: string | null
