@@ -19,7 +19,7 @@ export const ViewToggle = memo(function ViewToggle({ value, onChange }: ViewTogg
           <ToggleGroupItem
             value="grid"
             aria-label="Grid view"
-            className="group transition-all duration-200"
+            className="group transition-all duration-200 data-[state=on]:shadow-inner"
           >
             <div className="grid h-4 w-4 grid-cols-2 gap-0.5 transition-transform group-hover:scale-110">
               <span className="h-1.5 w-1.5 rounded-sm bg-current" />
@@ -36,7 +36,7 @@ export const ViewToggle = memo(function ViewToggle({ value, onChange }: ViewTogg
           <ToggleGroupItem
             value="list"
             aria-label="Compact list"
-            className="group transition-all duration-200"
+            className="group transition-all duration-200 data-[state=on]:shadow-inner"
           >
             <div className="flex h-4 w-4 flex-col gap-0.5 transition-transform group-hover:scale-110">
               <span className="h-0.5 w-3 rounded-sm bg-current" />
