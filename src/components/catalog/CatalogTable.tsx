@@ -65,6 +65,8 @@ export function CatalogTable({
     products.length > 0 &&
     products.filter(p => p.brand).length / products.length > 0.3
 
+  const showFilterRow = showBrandFilter
+
   const allIds = products.map(p => p.catalog_id)
   const isAllSelected = allIds.length > 0 && allIds.every(id => selected.includes(id))
 
@@ -85,15 +87,15 @@ export function CatalogTable({
     <Table>
       <TableHeader className="sticky top-0 z-10 bg-background">
         <TableRow>
-            {isBulkMode && (
-              <TableHead className="w-8 px-3">
-                <Checkbox
-                  aria-label="Select all products"
-                  checked={isAllSelected}
-                  onCheckedChange={onSelectAll}
-                />
-              </TableHead>
-            )}
+          {isBulkMode && (
+            <TableHead className="w-8 px-3">
+              <Checkbox
+                aria-label="Select all products"
+                checked={isAllSelected}
+                onCheckedChange={onSelectAll}
+              />
+            </TableHead>
+          )}
           <TableHead className="w-10 px-3">Image</TableHead>
           <TableHead
             className="[width:minmax(0,1fr)] cursor-pointer select-none px-3"
@@ -120,36 +122,38 @@ export function CatalogTable({
             Suppliers {sort?.key === 'supplier' && (sort?.direction === 'asc' ? '▲' : '▼')}
           </TableHead>
         </TableRow>
-        <TableRow>
-          {isBulkMode && <TableHead className="px-3" />}
-          <TableHead className="px-3" />
-          <TableHead className="px-3">
-            {showBrandFilter && (
-              <Select
-                value={brandValues[0] ?? 'all'}
-                onValueChange={v =>
-                  onFilterChange({ brand: v === 'all' ? undefined : [v] })
-                }
-              >
-                <SelectTrigger className="h-8">
-                  <SelectValue placeholder="Brand" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All</SelectItem>
-                  {brandOptions.map(b => (
-                    <SelectItem key={b} value={b}>
-                      {b}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-          </TableHead>
-          <TableHead className="px-3">
-            {/* Availability filter removed */}
-          </TableHead>
-          <TableHead className="w-[136px] px-3 pl-8 border-r" />
-        </TableRow>
+        {showFilterRow && (
+          <TableRow>
+            {isBulkMode && <TableHead className="px-3" />}
+            <TableHead className="px-3" />
+            <TableHead className="px-3">
+              {showBrandFilter && (
+                <Select
+                  value={brandValues[0] ?? 'all'}
+                  onValueChange={v =>
+                    onFilterChange({ brand: v === 'all' ? undefined : [v] })
+                  }
+                >
+                  <SelectTrigger className="h-8">
+                    <SelectValue placeholder="Brand" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All</SelectItem>
+                    {brandOptions.map(b => (
+                      <SelectItem key={b} value={b}>
+                        {b}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            </TableHead>
+            <TableHead className="px-3">
+              {/* Availability filter removed */}
+            </TableHead>
+            <TableHead className="w-[136px] px-3 pl-8 border-r" />
+          </TableRow>
+        )}
       </TableHeader>
       <TableBody>
         {products.map((p, i) => {
