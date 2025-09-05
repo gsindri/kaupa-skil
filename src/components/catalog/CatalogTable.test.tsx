@@ -21,8 +21,6 @@ describe('CatalogTable', () => {
   beforeEach(() => {
     cartState.items = []
   })
-
-describe('CatalogTable', () => {
   it('shows lock icon and tooltip when price is locked', async () => {
     const product = {
       catalog_id: '1',

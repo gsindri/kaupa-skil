@@ -31,6 +31,10 @@ INSERT INTO public.suppliers (name, website, contact_email, logo_url) VALUES
   ('Quality Produce Co.', 'https://qualityproduce.com', 'sales@qualityproduce.com', '/placeholder.svg'),
   ('Local Dairy', 'https://localdairy.com', 'info@localdairy.com', '/placeholder.svg');
 
+-- Innnes supplier with custom logo
+INSERT INTO public.suppliers (id, name, contact_email, ordering_email, connector_type, logo_url) VALUES
+  ('INNNES', 'Innnes', 'contact@innnes.is', 'orders@innnes.is', 'portal', '/inneslogo.svg');
+
 -- Sample supplier items
 INSERT INTO public.supplier_items (supplier_id, category_id, ext_sku, display_name, description, price_ex_vat, in_stock)
 SELECT
