@@ -97,9 +97,6 @@ export async function fetchPublicCatalogItems(
   if (filters.availability && filters.availability.length) {
     query = query.in('availability_status', filters.availability)
   }
-  if (filters.onSpecial !== undefined) {
-    query = query.eq('on_special', filters.onSpecial)
-  }
   if (filters.cursor) query = query.gt('catalog_id', filters.cursor)
 
   const { data, error, count } = await query
@@ -154,9 +151,6 @@ export async function fetchOrgCatalogItems(
   // if (filters.onlyWithPrice) query = query.not('best_price', 'is', null)
   if (filters.availability && filters.availability.length) {
     query = query.in('availability_status', filters.availability)
-  }
-  if (filters.onSpecial !== undefined) {
-    query = query.eq('on_special', filters.onSpecial)
   }
 
   query = query.limit(50)
