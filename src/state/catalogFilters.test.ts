@@ -1,5 +1,5 @@
 import { renderHook, act } from '@testing-library/react'
-import { useCatalogFilters } from './catalogFilters'
+import { useCatalogFilters, triStockToAvailability } from './catalogFilters'
 
 describe('catalogFilters store', () => {
   it('updates filters, sort and tri-state filters', () => {
@@ -33,6 +33,23 @@ describe('catalogFilters store', () => {
       triSuppliers: 'off',
       sort: 'relevance',
     })
+  })
+})
+
+describe('triStockToAvailability', () => {
+  it('maps tri-state values to availability statuses', () => {
+    expect(triStockToAvailability('off')).toBeUndefined()
+    expect(triStockToAvailability('include')).toEqual(['IN_STOCK'])
+    expect(triStockToAvailability('exclude')).toEqual(['OUT_OF_STOCK'])
+  })
+
+  it('updates correctly as triStock state changes', () => {
+    const { result } = renderHook(() => useCatalogFilters())
+    expect(triStockToAvailability(result.current.triStock)).toBeUndefined()
+    act(() => result.current.setTriStock('include'))
+    expect(triStockToAvailability(result.current.triStock)).toEqual(['IN_STOCK'])
+    act(() => result.current.setTriStock('exclude'))
+    expect(triStockToAvailability(result.current.triStock)).toEqual(['OUT_OF_STOCK'])
   })
 })
 
