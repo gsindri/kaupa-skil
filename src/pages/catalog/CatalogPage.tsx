@@ -502,7 +502,16 @@ export default function CatalogPage() {
     if (!data) return
     if (cursor && cursor === lastCursor.current) return
 
-    setProducts(prev => (cursor ? [...prev, ...data] : data))
+    // Merge newly fetched items while ensuring unique catalog entries
+    setProducts(prev => {
+      const merged = cursor ? [...prev, ...data] : data
+      const seen = new Set<string>()
+      return merged.filter(item => {
+        if (seen.has(item.catalog_id)) return false
+        seen.add(item.catalog_id)
+        return true
+      })
+    })
     setNextCursor(next ?? null)
     lastCursor.current = cursor
   }, [
