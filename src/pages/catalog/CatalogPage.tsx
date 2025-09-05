@@ -238,7 +238,7 @@ export default function CatalogPage() {
     }
     if (Object.keys(f).length) setFilters(f)
     const suppliersParam = searchParams.get('mySuppliers')
-    const specialParam = searchParams.get('onSpecial')
+    const specialParam = searchParams.get('special')
     if (suppliersParam === 'include' || suppliersParam === 'exclude') {
       setTriSuppliers(suppliersParam as TriState)
     }
@@ -293,17 +293,17 @@ export default function CatalogPage() {
     }
   }, [triSuppliers, searchParams, setSearchParams])
 
-  // Persist on special selection to URL
+  // Persist special selection to URL
   useEffect(() => {
     const params = new URLSearchParams(searchParams.toString())
-    const current = params.get('onSpecial')
+    const current = params.get('special')
     if (triSpecial === 'off') {
       if (current) {
-        params.delete('onSpecial')
+        params.delete('special')
         setSearchParams(params, { replace: true })
       }
     } else if (current !== triSpecial) {
-      params.set('onSpecial', triSpecial)
+      params.set('special', triSpecial)
       setSearchParams(params, { replace: true })
     }
   }, [triSpecial, searchParams, setSearchParams])
@@ -332,16 +332,6 @@ export default function CatalogPage() {
     updateParam('pack', packValue)
     if (changed) setSearchParams(params, { replace: true })
   }, [filters, searchParams, setSearchParams])
-
-  // Persist view selection to localStorage
-  useEffect(() => {
-    try {
-      localStorage.setItem('catalog-view', view)
-    } catch {
-      /* ignore */
-    }
-  }, [view])
-
 
   useEffect(() => {
     const updateCols = () => {
@@ -477,7 +467,7 @@ export default function CatalogPage() {
   }, [triSuppliers])
 
   useEffect(() => {
-    logFacetInteraction('onSpecial', triSpecial)
+    logFacetInteraction('special', triSpecial)
   }, [triSpecial])
 
   useEffect(() => {
@@ -854,7 +844,13 @@ function FiltersBar({
     setTriStock('off')
     setTriSuppliers('off')
     setTriSpecial('off')
-    setFilters({})
+    setOnlyWithPrice(false)
+    setFilters({
+      brand: undefined,
+      category: undefined,
+      supplier: undefined,
+      packSizeRange: undefined,
+    })
   }
 
   return (
