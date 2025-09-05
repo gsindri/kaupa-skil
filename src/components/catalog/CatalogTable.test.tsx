@@ -1,11 +1,12 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, it, expect, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { TooltipProvider } from '@/components/ui/tooltip'
-import { CatalogTable } from './CatalogTable'
+
+const cartState = { items: [] as any[], addItem: vi.fn(), updateQuantity: vi.fn() }
 
 vi.mock('@/contexts/useBasket', () => ({
-  useCart: () => ({ items: [], addItem: vi.fn(), updateQuantity: vi.fn() }),
+  useCart: () => cartState,
 }))
 
 vi.mock('@/hooks/useVendors', () => ({
@@ -16,11 +17,15 @@ vi.mock('@/components/catalog/SupplierChips', () => ({
   default: () => <div />,
 }))
 
-vi.mock('@/components/cart/AddToCartButton', () => ({
-  default: () => <div />,
-}))
+import { CatalogTable } from './CatalogTable'
 
-describe('PriceCell', () => {
+describe('CatalogTable', () => {
+  beforeEach(() => {
+    cartState.items = []
+    cartState.addItem.mockClear()
+    cartState.updateQuantity.mockClear()
+  })
+
   it('shows lock icon and tooltip when price is locked', async () => {
     const product = {
       catalog_id: '1',
@@ -57,4 +62,67 @@ describe('PriceCell', () => {
     const tooltip = await screen.findAllByText('Connect Acme to see price.')
     expect(tooltip.length).toBeGreaterThan(0)
   })
+
+  it('displays price even when item is in cart', () => {
+    cartState.items = [{ supplierItemId: '1', quantity: 1 }]
+
+    const product = {
+      catalog_id: '1',
+      name: 'Priced Product',
+      prices: [100],
+      suppliers: ['Acme'],
+      availability_status: 'IN_STOCK',
+    }
+
+    render(
+      <TooltipProvider>
+        <CatalogTable
+          products={[product]}
+          selected={[]}
+          onSelect={() => {}}
+          onSelectAll={() => {}}
+          sort={null}
+          onSort={() => {}}
+          filters={{}}
+          onFilterChange={() => {}}
+          isBulkMode={false}
+        />
+      </TooltipProvider>,
+    )
+
+    expect(screen.getByText(/100/)).toBeInTheDocument()
+  })
+
+  it('shows quantity controls near the product name when item is in cart', () => {
+    cartState.items = [{ supplierItemId: '1', quantity: 2 }]
+
+    const product = {
+      catalog_id: '1',
+      name: 'Stepper Product',
+      prices: [100],
+      suppliers: ['Acme'],
+      availability_status: 'IN_STOCK',
+    }
+
+    render(
+      <TooltipProvider>
+        <CatalogTable
+          products={[product]}
+          selected={[]}
+          onSelect={() => {}}
+          onSelectAll={() => {}}
+          sort={null}
+          onSort={() => {}}
+          filters={{}}
+          onFilterChange={() => {}}
+          isBulkMode={false}
+        />
+      </TooltipProvider>,
+    )
+
+    expect(
+      screen.getByLabelText('Decrease quantity of Stepper Product'),
+    ).toBeInTheDocument()
+  })
 })
+
