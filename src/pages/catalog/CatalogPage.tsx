@@ -238,7 +238,6 @@ export default function CatalogPage() {
     }
     if (Object.keys(f).length) setFilters(f)
     const suppliersParam = searchParams.get('mySuppliers')
-    const specialParam = searchParams.get('onSpecial')
     if (suppliersParam === 'include' || suppliersParam === 'exclude') {
       setTriSuppliers(suppliersParam as TriState)
     }
@@ -912,6 +911,10 @@ function FiltersBar({
               state={triSpecial}
               onStateChange={setTriSpecial}
               includeLabel="On special"
+              excludeLabel="Not on special"
+              offLabel="All specials"
+              includeAriaLabel="Filter: on special only"
+              excludeAriaLabel="Filter: not on special"
             />
             {chips.map(chip => (
               <div
