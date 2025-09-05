@@ -95,9 +95,10 @@ vi.mock('@/components/place-order/ViewToggle', () => ({
 }))
 vi.mock('@/components/debug/LayoutDebugger', () => ({ LayoutDebugger: () => <div /> }))
 vi.mock('@/components/layout/FullWidthLayout', () => ({ FullWidthLayout: ({ children }: any) => <div>{children}</div> }))
-let mockTriSpecial: 'off' | 'include' | 'exclude' = 'off'
+var catalogFiltersStore: any
 vi.mock('@/state/catalogFilters', () => {
-  const store = {
+  const { create } = require('zustand')
+  catalogFiltersStore = create((set: any) => ({
     filters: {},
     setFilters: vi.fn(),
     onlyWithPrice: false,
@@ -106,17 +107,13 @@ vi.mock('@/state/catalogFilters', () => {
     setSort: vi.fn(),
     triStock: 'off',
     setTriStock: vi.fn(),
-    get triSpecial() {
-      return mockTriSpecial
-    },
-    setTriSpecial: (v: any) => {
-      mockTriSpecial = v
-    },
+    triSpecial: 'off',
+    setTriSpecial: (v: any) => set({ triSpecial: v }),
     triSuppliers: 'off',
-    setTriSuppliers: vi.fn(),
-  }
+    setTriSuppliers: (v: any) => set({ triSuppliers: v }),
+  }))
   return {
-    useCatalogFilters: (selector: any) => selector(store),
+    useCatalogFilters: (selector: any) => catalogFiltersStore(selector),
     shallow: (fn: any) => fn,
     SortOrder: {},
     triStockToAvailability: vi.fn(() => undefined),
@@ -131,7 +128,7 @@ describe('CatalogPage', () => {
     localStorage.clear()
     useCatalogProductsMock.mockClear()
     useOrgCatalogMock.mockClear()
-    mockTriSpecial = 'off'
+    catalogFiltersStore.setState({ triSpecial: 'off', triSuppliers: 'off' })
   })
 
   it('shows banner when connect pills are hidden', async () => {
@@ -171,7 +168,7 @@ describe('CatalogPage', () => {
   })
 
   it('applies onSpecial filter when triSpecial is include', () => {
-    mockTriSpecial = 'include'
+    catalogFiltersStore.setState({ triSpecial: 'include' })
     render(<CatalogPage />)
     expect(useCatalogProductsMock).toHaveBeenCalledWith(
       expect.objectContaining({ onSpecial: true }),
