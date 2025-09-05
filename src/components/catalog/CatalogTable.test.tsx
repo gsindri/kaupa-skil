@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { TooltipProvider } from '@/components/ui/tooltip'
+import { CatalogTable } from './CatalogTable'
 
 const cartState = { items: [] as any[], addItem: vi.fn(), updateQuantity: vi.fn() }
 
@@ -16,6 +17,10 @@ vi.mock('@/hooks/useVendors', () => ({
 vi.mock('@/components/catalog/SupplierChips', () => ({
   default: () => <div />,
 }))
+describe('CatalogTable', () => {
+  beforeEach(() => {
+    cartState.items = []
+  })
 
   it('shows lock icon and tooltip when price is locked', async () => {
     const product = {
