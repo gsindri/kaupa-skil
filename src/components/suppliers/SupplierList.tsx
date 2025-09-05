@@ -56,7 +56,8 @@ export function SupplierList({
     try {
       await createSupplier.mutateAsync({
         name: newSupplierName,
-        connector_type: newConnectorType
+        connector_type: newConnectorType,
+        logo_url: '/placeholder.svg'
       })
       setIsDialogOpen(false)
       setNewSupplierName('')

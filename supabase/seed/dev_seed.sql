@@ -21,15 +21,15 @@ INSERT INTO public.categories (name, description) VALUES
   ('Bakery', 'Bread, pastries, and baked goods');
 
 -- Suppliers
-INSERT INTO public.suppliers (name, contact_email, ordering_email, connector_type) VALUES
-    ('Véfkaupmenn', 'contact@vefkaupmenn.is', 'orders@vefkaupmenn.is', 'portal'),
-    ('Heilsuhúsið', 'contact@heilsukhusid.is', 'orders@heilsukhusid.is', 'email'),
-    ('Matfuglinn', 'contact@matfuglinn.is', 'orders@matfuglinn.is', 'portal');
+INSERT INTO public.suppliers (name, contact_email, ordering_email, connector_type, logo_url) VALUES
+    ('Véfkaupmenn', 'contact@vefkaupmenn.is', 'orders@vefkaupmenn.is', 'portal', '/placeholder.svg'),
+    ('Heilsuhúsið', 'contact@heilsukhusid.is', 'orders@heilsukhusid.is', 'email', '/placeholder.svg'),
+    ('Matfuglinn', 'contact@matfuglinn.is', 'orders@matfuglinn.is', 'portal', '/placeholder.svg');
 
-INSERT INTO public.suppliers (name, website, contact_email) VALUES
-  ('Fresh Farm Foods', 'https://freshfarmfoods.com', 'orders@freshfarmfoods.com'),
-  ('Quality Produce Co.', 'https://qualityproduce.com', 'sales@qualityproduce.com'),
-  ('Local Dairy', 'https://localdairy.com', 'info@localdairy.com');
+INSERT INTO public.suppliers (name, website, contact_email, logo_url) VALUES
+  ('Fresh Farm Foods', 'https://freshfarmfoods.com', 'orders@freshfarmfoods.com', '/placeholder.svg'),
+  ('Quality Produce Co.', 'https://qualityproduce.com', 'sales@qualityproduce.com', '/placeholder.svg'),
+  ('Local Dairy', 'https://localdairy.com', 'info@localdairy.com', '/placeholder.svg');
 
 -- Sample supplier items
 INSERT INTO public.supplier_items (supplier_id, category_id, ext_sku, display_name, description, price_ex_vat, in_stock)

@@ -248,6 +248,7 @@ export function CatalogTable({
                       ? p.supplier_ids.map((id: string, idx: number) => ({
                           supplier_id: id,
                           supplier_name: p.supplier_names[idx] || id,
+                          supplier_logo_url: p.supplier_logo_urls ? p.supplier_logo_urls[idx] : undefined,
                           is_connected: true,
                         }))
                       : Array.isArray(p.suppliers)
