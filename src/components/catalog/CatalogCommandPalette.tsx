@@ -29,10 +29,8 @@ export function CatalogCommandPalette({ onApply }: CatalogCommandPaletteProps) {
     let match
     while ((match = tokenRegex.exec(value)) !== null) {
       const [, key, val] = match
-      if (key === 'supplier') {
-        result.supplier = [...(result.supplier || []), val]
-      } else {
-        result[key] = val
+      if (key === 'supplier' || key === 'brand' || key === 'category') {
+        result[key] = [...(result[key] || []), val]
       }
       text = text.replace(match[0], '')
     }

@@ -3,11 +3,19 @@ import type { SortOrder } from '@/state/catalogFilters'
 
 export type FacetFilters = {
   search?: string
-  brand?: string
-  category?: string
+  brand?: string[]
+  category?: string[]
   supplier?: string[]
   availability?: string[]
-  packSizeRange?: string
+  packSizeRange?: { min?: number; max?: number } | null
+}
+
+function packSizeRangeToString(range: { min?: number; max?: number }): string {
+  const { min, max } = range
+  if (min != null && max != null) return `${min}-${max}`
+  if (min != null) return `${min}+`
+  if (max != null) return `0-${max}`
+  return ''
 }
 
 export type PublicCatalogFilters = FacetFilters & {
@@ -73,10 +81,13 @@ export async function fetchPublicCatalogItems(
   query = query.limit(50)
 
   if (filters.search) query = query.ilike('name', `%${filters.search}%`)
-  if (filters.brand) query = query.eq('brand', filters.brand)
-  if (filters.category) {
+  if (filters.brand?.length) query = query.in('brand', filters.brand)
+  if (filters.category?.length) {
     // Filter by category using the category_tags array
-    query = query.contains('category_tags', [filters.category])
+    query = query.overlaps('category_tags', filters.category)
+  }
+  if (filters.supplier?.length) {
+    query = query.overlaps('supplier_ids', filters.supplier)
   }
   // Skip pricing filter when no pricing data is available
   // if (filters.onlyWithPrice) query = query.not('best_price', 'is', null)
@@ -124,6 +135,11 @@ export async function fetchOrgCatalogItems(
   } else {
     query = query.order('catalog_id', { ascending: true })
   }
+
+  if (filters.search) query = query.ilike('name', `%${filters.search}%`)
+  if (filters.brand?.length) query = query.in('brand', filters.brand)
+  if (filters.category?.length) query = query.overlaps('category_tags', filters.category)
+  if (filters.supplier?.length) query = query.overlaps('supplier_ids', filters.supplier)
 
   // Skip pricing filter when no pricing data is available
   // if (filters.onlyWithPrice) query = query.not('best_price', 'is', null)
@@ -206,14 +222,16 @@ export interface CatalogFacets {
 export async function fetchCatalogFacets(filters: FacetFilters): Promise<CatalogFacets> {
   const { data, error } = await supabase.rpc('fetch_catalog_facets', {
     _search: filters.search ?? null,
-    _category_ids: filters.category ? [filters.category] : null,
+    _category_ids: filters.category && filters.category.length ? filters.category : null,
     _supplier_ids: filters.supplier && filters.supplier.length ? filters.supplier : null,
     _availability:
       filters.availability && filters.availability.length
         ? filters.availability
         : null,
-    _pack_size_ranges: filters.packSizeRange ? [filters.packSizeRange] : null,
-    _brands: filters.brand ? [filters.brand] : null,
+    _pack_size_ranges: filters.packSizeRange
+      ? [packSizeRangeToString(filters.packSizeRange)]
+      : null,
+    _brands: filters.brand && filters.brand.length ? filters.brand : null,
   })
   if (error) throw error
   const result: CatalogFacets = {
