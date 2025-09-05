@@ -17,14 +17,18 @@ export function CatalogFiltersPanel({ filters, onChange, focusedFacet }: Catalog
   const setTriStock = useCatalogFilters(s => s.setTriStock)
   const availability = triStockToAvailability(triStock)
 
-  const facetRefs: Record<keyof FacetFilters, React.RefObject<HTMLDivElement>> = {
-    search: React.createRef(),
-    brand: React.createRef(),
-    category: React.createRef(),
-    supplier: React.createRef(),
-    availability: React.createRef(),
-    packSizeRange: React.createRef(),
-  }
+  const facetRefs = React.useMemo(
+    () =>
+      ({
+        search: React.createRef<HTMLDivElement>(),
+        brand: React.createRef<HTMLDivElement>(),
+        category: React.createRef<HTMLDivElement>(),
+        supplier: React.createRef<HTMLDivElement>(),
+        availability: React.createRef<HTMLDivElement>(),
+        packSizeRange: React.createRef<HTMLDivElement>(),
+      }) satisfies Record<keyof FacetFilters, React.RefObject<HTMLDivElement>>,
+    [],
+  )
 
   React.useEffect(() => {
     if (focusedFacet && facetRefs[focusedFacet]?.current) {
@@ -32,7 +36,7 @@ export function CatalogFiltersPanel({ filters, onChange, focusedFacet }: Catalog
         block: 'start',
       })
     }
-  }, [focusedFacet])
+  }, [focusedFacet, facetRefs])
 
   const { data } = useQuery({
     queryKey: ['catalogFacets', filters, triStock],
