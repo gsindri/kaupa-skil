@@ -10,7 +10,10 @@ import { fetchPublicCatalogItems, fetchOrgCatalogItems } from '../catalog'
 const mockFrom = supabase.from as unknown as ReturnType<typeof vi.fn>
 const mockRpc = supabase.rpc as unknown as ReturnType<typeof vi.fn>
 
-function createQueryMock(eq: ReturnType<typeof vi.fn>) {
+function createQueryMock(
+  eq: ReturnType<typeof vi.fn>,
+  neq: ReturnType<typeof vi.fn> = vi.fn().mockReturnThis(),
+) {
   return {
     select: vi.fn().mockReturnThis(),
     order: vi.fn().mockReturnThis(),
@@ -19,6 +22,7 @@ function createQueryMock(eq: ReturnType<typeof vi.fn>) {
     overlaps: vi.fn().mockReturnThis(),
     in: vi.fn().mockReturnThis(),
     eq,
+    neq,
     gt: vi.fn().mockReturnThis(),
     then: (resolve: any) => resolve({ data: [], error: null, count: 0 }),
   }
@@ -47,5 +51,24 @@ describe('fetchOrgCatalogItems', () => {
     await fetchOrgCatalogItems('org1', { onSpecial: false }, 'az')
 
     expect(eq).toHaveBeenCalledWith('on_special', false)
+  })
+
+  it('filters to my suppliers when include is set', async () => {
+    const eq = vi.fn().mockReturnThis()
+    mockRpc.mockReturnValue(createQueryMock(eq))
+
+    await fetchOrgCatalogItems('org1', { mySuppliers: 'include' }, 'az')
+
+    expect(eq).toHaveBeenCalledWith('is_my_supplier', true)
+  })
+
+  it('excludes my suppliers when exclude is set', async () => {
+    const eq = vi.fn().mockReturnThis()
+    const neq = vi.fn().mockReturnThis()
+    mockRpc.mockReturnValue(createQueryMock(eq, neq))
+
+    await fetchOrgCatalogItems('org1', { mySuppliers: 'exclude' }, 'az')
+
+    expect(neq).toHaveBeenCalledWith('is_my_supplier', true)
   })
 })

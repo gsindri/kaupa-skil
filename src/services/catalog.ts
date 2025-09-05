@@ -146,6 +146,11 @@ export async function fetchOrgCatalogItems(
   if (filters.onSpecial !== undefined) {
     query = query.eq('on_special', filters.onSpecial)
   }
+  if (filters.mySuppliers === 'include') {
+    query = query.eq('is_my_supplier', true)
+  } else if (filters.mySuppliers === 'exclude') {
+    query = query.neq('is_my_supplier', true)
+  }
 
   // Skip pricing filter when no pricing data is available
   // if (filters.onlyWithPrice) query = query.not('best_price', 'is', null)
