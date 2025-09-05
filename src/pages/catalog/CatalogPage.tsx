@@ -483,8 +483,6 @@ export default function CatalogPage() {
         orgError={orgError}
         showMoreFilters={showMoreFilters}
         setShowMoreFilters={setShowMoreFilters}
-        bulkMode={bulkMode}
-        setBulkMode={setBulkMode}
       />
 
       <div className="mt-6 px-4 sm:px-6 lg:px-8 xl:px-10 2xl:px-12">
@@ -571,8 +569,6 @@ interface FiltersBarProps {
   orgError: unknown
   showMoreFilters: boolean
   setShowMoreFilters: (v: boolean) => void
-  bulkMode: boolean
-  setBulkMode: (v: boolean) => void
 }
 
 function FiltersBar({
@@ -594,8 +590,6 @@ function FiltersBar({
   orgError,
   showMoreFilters,
   setShowMoreFilters,
-  bulkMode,
-  setBulkMode,
 }: FiltersBarProps) {
   const ref = React.useRef<HTMLDivElement>(null)
   React.useEffect(() => {
@@ -640,7 +634,7 @@ function FiltersBar({
           </Alert>
         )}
         <Collapsible open={showMoreFilters} onOpenChange={setShowMoreFilters}>
-            <div className="grid grid-cols-[1fr,auto,auto,auto] gap-3 items-center">
+            <div className="grid grid-cols-[1fr,auto,auto] gap-3 items-center">
               <HeroSearchInput
                 placeholder="Search products"
                 value={filters.search ?? ''}
@@ -658,12 +652,6 @@ function FiltersBar({
             />
               <SortDropdown value={sortOrder} onChange={setSortOrder} />
               <ViewToggle value={view} onChange={setView} />
-              <Button
-                variant="outline"
-                onClick={() => setBulkMode(!bulkMode)}
-              >
-                {bulkMode ? 'Cancel' : 'Select'}
-              </Button>
             </div>
           <div className="mt-3 flex flex-wrap gap-2">
             {/* Disable pricing filter until pricing data is available */}
