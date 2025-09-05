@@ -104,7 +104,16 @@ export async function fetchPublicCatalogItems(
   const { data, error, count } = await query
   if (error) throw error
 
-  const items: PublicCatalogItem[] = (data ?? []).map((item: any) => ({
+  // Deduplicate catalog entries by catalog_id in case the view returns duplicates
+  const rows: any[] = data ?? []
+  const seen = new Set<string>()
+  const deduped = rows.filter(r => {
+    if (seen.has(r.catalog_id)) return false
+    seen.add(r.catalog_id)
+    return true
+  })
+
+  const items: PublicCatalogItem[] = deduped.map((item: any) => ({
     catalog_id: item.catalog_id,
     name: item.name,
     brand: item.brand ?? null,
@@ -123,7 +132,7 @@ export async function fetchPublicCatalogItems(
     best_price: item.best_price ?? null,
   }))
   const nextCursor = items.length ? items[items.length - 1].catalog_id : null
-  return { items, nextCursor, total: count ?? 0 }
+  return { items, nextCursor, total: count ?? items.length }
 }
 
 export async function fetchOrgCatalogItems(
@@ -167,7 +176,16 @@ export async function fetchOrgCatalogItems(
   const { data, error } = await query
   if (error) throw error
 
-  const items: PublicCatalogItem[] = (data ?? []).map((item: any) => ({
+  // Deduplicate any duplicate catalog rows returned from the view
+  const rows: any[] = data ?? []
+  const seen = new Set<string>()
+  const deduped = rows.filter(r => {
+    if (seen.has(r.catalog_id)) return false
+    seen.add(r.catalog_id)
+    return true
+  })
+
+  const items: PublicCatalogItem[] = deduped.map((item: any) => ({
     catalog_id: item.catalog_id,
     name: item.name,
     brand: item.brand ?? null,
