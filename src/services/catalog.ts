@@ -228,9 +228,11 @@ export async function fetchCatalogFacets(filters: FacetFilters): Promise<Catalog
       filters.availability && filters.availability.length
         ? filters.availability
         : null,
-    _pack_size_ranges: filters.packSizeRange
-      ? [packSizeRangeToString(filters.packSizeRange)]
-      : null,
+    _pack_size_ranges:
+      filters.packSizeRange &&
+      (filters.packSizeRange.min !== undefined || filters.packSizeRange.max !== undefined)
+        ? [packSizeRangeToString(filters.packSizeRange)]
+        : null,
     _brands: filters.brand && filters.brand.length ? filters.brand : null,
   })
   if (error) throw error
