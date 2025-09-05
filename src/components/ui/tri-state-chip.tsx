@@ -83,11 +83,12 @@ export function TriStateFilterChip({
       aria-label={ariaLabel}
       onClick={handleClick}
       onKeyDown={handleKeyDown}
-        className={cn(
-          'inline-flex h-8 w-auto whitespace-nowrap items-center justify-center rounded-full border px-3 text-sm font-medium transition-colors focus:outline-none',
-          styles,
-          className,
-        )}
+      className={cn(
+        // Responsive width and no wrapping to keep chip labels on a single line
+        'inline-flex h-8 w-auto whitespace-nowrap items-center justify-center rounded-full border px-3 text-sm font-medium transition-colors focus:outline-none',
+        styles,
+        className,
+      )}
       {...props}
     >
       {label}
