@@ -20,7 +20,8 @@ export type SortOrder =
   | 'az'
   | 'recent'
 
-export type TriStock = 'off' | 'include' | 'exclude'
+export type TriState = 'off' | 'include' | 'exclude'
+export type TriStock = TriState
 
 interface CatalogFiltersState {
   /** Current facet filters applied to the catalog */
@@ -28,23 +29,32 @@ interface CatalogFiltersState {
   /** Whether to show only items with price information */
   onlyWithPrice: boolean
   /** Tri-state stock filter */
-  triStock: TriStock
+  triStock: TriState
+  /** Tri-state my suppliers filter */
+  triSuppliers: TriState
   /** Selected sort order */
   sort: SortOrder
   setFilters: (f: Partial<FacetFilters>) => void
   setOnlyWithPrice: (v: boolean) => void
-  setTriStock: (v: TriStock) => void
+  setTriStock: (v: TriState) => void
+  setTriSuppliers: (v: TriState) => void
   setSort: (v: SortOrder) => void
   clear: () => void
 }
 
 const defaultState: Omit<
   CatalogFiltersState,
-  'setFilters' | 'setOnlyWithPrice' | 'setSort' | 'clear'
+  | 'setFilters'
+  | 'setOnlyWithPrice'
+  | 'setSort'
+  | 'setTriStock'
+  | 'setTriSuppliers'
+  | 'clear'
 > = {
   filters: {},
   onlyWithPrice: false,
   triStock: 'off',
+  triSuppliers: 'off',
   sort: 'relevance',
 }
 
@@ -65,13 +75,15 @@ export const useCatalogFilters = create<CatalogFiltersState>()(
       setSort: v => set({ sort: v }),
       setTriStock: v =>
         set(state => (state.triStock === v ? state : { triStock: v })),
+      setTriSuppliers: v =>
+        set(state => (state.triSuppliers === v ? state : { triSuppliers: v })),
       clear: () => set({ ...defaultState }),
     }),
     { name: 'catalogFilters' },
   ),
 )
 
-export function triStockToAvailability(tri: TriStock): string[] | undefined {
+export function triStockToAvailability(tri: TriState): string[] | undefined {
   switch (tri) {
     case 'include':
       return ['IN_STOCK']

@@ -2,7 +2,7 @@ import { renderHook, act } from '@testing-library/react'
 import { useCatalogFilters } from './catalogFilters'
 
 describe('catalogFilters store', () => {
-  it('updates filters, sort and triStock', () => {
+  it('updates filters, sort and tri-state filters', () => {
     const { result } = renderHook(() => useCatalogFilters())
     act(() => result.current.setFilters({ brand: ['Foo'] }))
     expect(result.current.filters.brand).toEqual(['Foo'])
@@ -10,6 +10,8 @@ describe('catalogFilters store', () => {
     expect(result.current.sort).toBe('az')
     act(() => result.current.setTriStock('include'))
     expect(result.current.triStock).toBe('include')
+    act(() => result.current.setTriSuppliers('include'))
+    expect(result.current.triSuppliers).toBe('include')
   })
 
   it('clears to default state', () => {
@@ -18,11 +20,13 @@ describe('catalogFilters store', () => {
     act(() => result.current.setOnlyWithPrice(true))
     act(() => result.current.setSort('az'))
     act(() => result.current.setTriStock('include'))
+    act(() => result.current.setTriSuppliers('exclude'))
     act(() => result.current.clear())
     expect(result.current).toMatchObject({
       filters: {},
       onlyWithPrice: false,
       triStock: 'off',
+      triSuppliers: 'off',
       sort: 'relevance',
     })
   })

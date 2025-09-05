@@ -1,5 +1,5 @@
 import { supabase } from '@/integrations/supabase/client'
-import type { SortOrder } from '@/state/catalogFilters'
+import type { SortOrder, TriState } from '@/state/catalogFilters'
 
 export type FacetFilters = {
   search?: string
@@ -26,7 +26,7 @@ export type PublicCatalogFilters = FacetFilters & {
 
 export type OrgCatalogFilters = FacetFilters & {
   onlyWithPrice?: boolean
-  mySuppliers?: boolean
+  mySuppliers?: Exclude<TriState, 'off'>
   onSpecial?: boolean
   cursor?: string | null
 }

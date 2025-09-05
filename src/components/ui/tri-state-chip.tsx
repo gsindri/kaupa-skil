@@ -1,14 +1,29 @@
 import * as React from 'react'
 import { cn } from '@/lib/utils'
-import type { TriStock } from '@/state/catalogFilters'
+import type { TriState } from '@/state/catalogFilters'
 
 interface TriStateFilterChipProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  state: TriStock
-  onStateChange: (state: TriStock) => void
+  state: TriState
+  onStateChange: (state: TriState) => void
+  includeLabel?: string
+  excludeLabel?: string
+  includeAriaLabel?: string
+  excludeAriaLabel?: string
+  offAriaLabel?: string
 }
 
-export function TriStateFilterChip({ state, onStateChange, className, ...props }: TriStateFilterChipProps) {
+export function TriStateFilterChip({
+  state,
+  onStateChange,
+  className,
+  includeLabel = 'In stock',
+  excludeLabel = 'Not in stock',
+  includeAriaLabel = 'Filter: only in stock',
+  excludeAriaLabel = 'Filter: not in stock',
+  offAriaLabel,
+  ...props
+}: TriStateFilterChipProps) {
   const cycle = (reverse = false) => {
     const next = reverse
       ? state === 'off'
@@ -35,13 +50,13 @@ export function TriStateFilterChip({ state, onStateChange, className, ...props }
     }
   }
 
-  const label = state === 'exclude' ? 'Not in stock' : 'In stock'
+  const label = state === 'exclude' ? excludeLabel : includeLabel
   const ariaLabel =
     state === 'include'
-      ? 'Filter: only in stock'
+      ? includeAriaLabel
       : state === 'exclude'
-        ? 'Filter: not in stock'
-        : 'In stock filter off'
+        ? excludeAriaLabel
+        : offAriaLabel ?? `${includeLabel} filter off`
 
   const styles =
     state === 'include'
