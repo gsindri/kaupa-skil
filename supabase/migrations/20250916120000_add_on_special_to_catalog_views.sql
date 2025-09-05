@@ -16,6 +16,8 @@ SELECT
   MAX(sp.last_seen_at) AS availability_updated_at,
   STRING_AGG(DISTINCT sp.pack_size, ', ') AS canonical_pack,
   COUNT(DISTINCT sp.supplier_id)::bigint AS suppliers_count,
+  ARRAY_AGG(DISTINCT sp.supplier_id) FILTER (WHERE sp.supplier_id IS NOT NULL) AS supplier_ids,
+  ARRAY_AGG(DISTINCT s.name) FILTER (WHERE s.name IS NOT NULL) AS supplier_names,
   MAX(sp.image_url) AS sample_image_url,
   ARRAY_AGG(DISTINCT sp.pack_size) FILTER (WHERE sp.pack_size IS NOT NULL) AS pack_sizes,
   NULL::numeric AS best_price,
@@ -40,6 +42,8 @@ FROM public.catalog_product cp
 LEFT JOIN public.supplier_product sp
   ON sp.catalog_product_id = cp.id
   AND sp.active_status = 'ACTIVE'
+LEFT JOIN public.suppliers s
+  ON s.id = sp.supplier_id
 LEFT JOIN LATERAL unnest(sp.category_path) AS category ON true
 GROUP BY cp.id, cp.name, cp.brand;
 

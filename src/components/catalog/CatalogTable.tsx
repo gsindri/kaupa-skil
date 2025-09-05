@@ -253,29 +253,38 @@ export function CatalogTable({
                 {(() => {
                   const suppliers = p.supplier_products?.length
                     ? p.supplier_products
-                    : Array.isArray(p.suppliers)
-                      ? p.suppliers.map((s: any) =>
-                          typeof s === 'string'
-                            ? {
-                                supplier_id: s,
-                                supplier_name: s,
-                                is_connected: true,
-                              }
-                            : {
-                                supplier_id: s.supplier_id || s.id,
-                                supplier_name:
-                                  s.supplier_name || s.name || '',
-                                is_connected: s.is_connected ?? true,
-                                supplier_logo_url:
-                                  s.supplier_logo_url || s.logo_url || s.logoUrl,
-                                availability_state:
-                                  s.availability_state || s.availability_status,
-                                location_city: s.location_city || null,
-                                location_country_code:
-                                  s.location_country_code || null,
-                              },
-                        )
-                      : []
+                    : p.supplier_ids && p.supplier_names
+                      ? p.supplier_ids.map((id: string, idx: number) => ({
+                          supplier_id: id,
+                          supplier_name: p.supplier_names[idx] || id,
+                          is_connected: true,
+                        }))
+                      : Array.isArray(p.suppliers)
+                        ? p.suppliers.map((s: any) =>
+                            typeof s === 'string'
+                              ? {
+                                  supplier_id: s,
+                                  supplier_name: s,
+                                  is_connected: true,
+                                }
+                              : {
+                                  supplier_id: s.supplier_id || s.id,
+                                  supplier_name:
+                                    s.supplier_name || s.name || '',
+                                  is_connected: s.is_connected ?? true,
+                                  supplier_logo_url:
+                                    s.supplier_logo_url ||
+                                    s.logo_url ||
+                                    s.logoUrl,
+                                  availability_state:
+                                    s.availability_state ||
+                                    s.availability_status,
+                                  location_city: s.location_city || null,
+                                  location_country_code:
+                                    s.location_country_code || null,
+                                },
+                          )
+                        : []
                   return suppliers.length ? (
                     <SupplierChips suppliers={suppliers} />
                   ) : (
@@ -313,7 +322,13 @@ export function CatalogTable({
   const rawSuppliers =
     (product.supplier_products && product.supplier_products.length
       ? product.supplier_products
-      : product.suppliers) || []
+      : product.supplier_ids && product.supplier_names
+        ? product.supplier_ids.map((id: string, idx: number) => ({
+            supplier_id: id,
+            supplier_name: product.supplier_names[idx] || id,
+            is_connected: true,
+          }))
+        : product.suppliers) || []
 
   const supplierEntries = rawSuppliers.map((s: any) => {
     if (typeof s === 'string') {
@@ -437,12 +452,15 @@ function PriceCell({
   const existingItem = items.find(
     (i: any) => i.supplierItemId === product.catalog_id,
   )
-  const sources: string[] = product.price_sources ||
+  const sources: string[] =
+    product.price_sources ||
     (Array.isArray(product.suppliers)
       ? product.suppliers.map((s: any) =>
           typeof s === 'string' ? s : s.name || s.supplier_name || '',
         )
-      : [])
+      : Array.isArray(product.supplier_names)
+        ? product.supplier_names
+        : [])
   const priceValues: number[] = Array.isArray(product.prices)
     ? product.prices
         .map((p: any) => (typeof p === 'number' ? p : p?.price))
