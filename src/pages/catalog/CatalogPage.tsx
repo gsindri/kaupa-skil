@@ -386,6 +386,9 @@ export default function CatalogPage() {
       ...filters,
       search: debouncedSearch || undefined,
       ...(onlyWithPrice ? { onlyWithPrice: true } : {}),
+      ...(triSpecial !== 'off'
+        ? { onSpecial: triSpecial === 'include' }
+        : {}),
       ...(availability ? { availability } : {}),
       cursor,
     }),
@@ -397,6 +400,9 @@ export default function CatalogPage() {
       search: debouncedSearch || undefined,
       onlyWithPrice,
       ...(triSuppliers !== 'off' ? { mySuppliers: triSuppliers } : {}),
+      ...(triSpecial !== 'off'
+        ? { onSpecial: triSpecial === 'include' }
+        : {}),
       ...(availability ? { availability } : {}),
       cursor,
     }),
@@ -437,7 +443,7 @@ export default function CatalogPage() {
       mySuppliers: triSuppliers,
       sort: sortOrder,
     })
-  }, [filters, onlyWithPrice, triStock, triSuppliers, triSpecial, sortOrder])
+  }, [filters, onlyWithPrice, triStock, triSuppliers, sortOrder])
 
   useEffect(() => {
     if (debouncedSearch) logSearch(debouncedSearch)
@@ -541,7 +547,6 @@ export default function CatalogPage() {
     onlyWithPrice,
     triStock,
     triSuppliers,
-    triSpecial,
     sortOrder,
   ])
 
