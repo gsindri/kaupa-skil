@@ -110,11 +110,22 @@ vi.mock('@/lib/images', () => ({ resolveImage: () => '' }))
 vi.mock('react-router-dom', () => ({ useSearchParams: () => [new URLSearchParams(), vi.fn()] }))
 
 describe('CatalogPage', () => {
+  beforeEach(() => {
+    localStorage.clear()
+  })
+
   it('shows banner when connect pills are hidden', async () => {
     render(<CatalogPage />)
     await userEvent.click(screen.getByText('list'))
     await screen.findByTestId('alert')
     expect(screen.getByText('Connect suppliers to unlock prices.')).toBeInTheDocument()
+    expect(screen.getByTestId('catalog-table')).toBeInTheDocument()
+    expect(localStorage.getItem('catalog-view')).toBe('list')
+  })
+
+  it('restores view preference from localStorage', () => {
+    localStorage.setItem('catalog-view', 'list')
+    render(<CatalogPage />)
     expect(screen.getByTestId('catalog-table')).toBeInTheDocument()
   })
 })

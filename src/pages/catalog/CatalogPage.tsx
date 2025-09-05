@@ -120,7 +120,17 @@ export default function CatalogPage() {
 
   const [mySuppliers, setMySuppliers] = useState(false)
   const [onSpecial, setOnSpecial] = useState(false)
-  const [view, setView] = useState<'grid' | 'list'>('grid')
+  const [view, setView] = useState<'grid' | 'list'>(() => {
+    const param = searchParams.get('view')
+    if (param === 'grid' || param === 'list') return param
+    try {
+      const stored = localStorage.getItem('catalog-view')
+      if (stored === 'grid' || stored === 'list') return stored
+    } catch {
+      /* ignore */
+    }
+    return 'grid'
+  })
   const [cursor, setCursor] = useState<string | null>(null)
   const [nextCursor, setNextCursor] = useState<string | null>(null)
   const [products, setProducts] = useState<any[]>([])
@@ -211,30 +221,6 @@ export default function CatalogPage() {
     }
   }, [triStock, setSearchParams])
 
-  // Persist facet filters and toggles to URL
-  useEffect(() => {
-    const params = new URLSearchParams(searchParams.toString())
-    let changed = false
-    const update = (key: string, value?: string) => {
-      const current = params.get(key)
-      if (value) {
-        if (current !== value) {
-          params.set(key, value)
-          changed = true
-        }
-      } else if (current) {
-        params.delete(key)
-        changed = true
-      }
-    }
-    update('category', filters.category)
-    update('brand', filters.brand)
-    update('suppliers', filters.supplier?.join(','))
-    update('packSize', filters.packSizeRange)
-    update('mySuppliers', mySuppliers ? 'true' : undefined)
-    update('onSpecial', onSpecial ? 'true' : undefined)
-    if (changed) setSearchParams(params, { replace: true })
-  }, [filters, mySuppliers, onSpecial, setSearchParams])
 
   useEffect(() => {
     const updateCols = () => {
