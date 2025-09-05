@@ -238,7 +238,7 @@ export function CatalogTable({
                 </Tooltip>
               </TableCell>
               <TableCell className="w-[136px] px-3 py-2 text-right border-r whitespace-nowrap">
-                <PriceCell product={p} vendors={vendors} />
+                <PriceCell product={p} />
               </TableCell>
               <TableCell className="w-[220px] min-w-[180px] max-w-[220px] px-3 py-2">
                 {(() => {
@@ -304,7 +304,7 @@ export function CatalogTable({
     product: any
     className?: string
   }) {
-    const { items, addItem } = useCart()
+    const { items, addItem, updateQuantity } = useCart()
     const existingItem = items.find(
       (i: any) => i.supplierItemId === product.catalog_id,
     )
@@ -344,7 +344,18 @@ export function CatalogTable({
     }
   })
 
-    if (existingItem) return null
+    if (existingItem)
+      return (
+        <QuantityStepper
+          className={className}
+          quantity={existingItem.quantity}
+          onChange={qty =>
+            updateQuantity(existingItem.supplierItemId, qty)
+          }
+          label={product.name}
+          supplier={existingItem.supplierName}
+        />
+      )
 
   if (supplierEntries.length === 0) return null
 
@@ -435,15 +446,9 @@ export function CatalogTable({
 
 function PriceCell({
   product,
-  vendors,
 }: {
   product: any
-  vendors: { id: string; name: string }[]
 }) {
-  const { items, updateQuantity } = useCart()
-  const existingItem = items.find(
-    (i: any) => i.supplierItemId === product.catalog_id,
-  )
   const sources: string[] =
     product.price_sources ||
     (Array.isArray(product.suppliers)
@@ -463,19 +468,7 @@ function PriceCell({
   let priceNode: React.ReactNode
   let tooltip: React.ReactNode | null = null
 
-  if (existingItem) {
-    const supplierName =
-      existingItem.supplierName ||
-      vendors.find(v => v.id === existingItem.supplierId)?.name
-    priceNode = (
-      <QuantityStepper
-        quantity={existingItem.quantity}
-        onChange={qty => updateQuantity(existingItem.supplierItemId, qty)}
-        label={product.name}
-        supplier={supplierName}
-      />
-    )
-  } else if (isLocked) {
+  if (isLocked) {
     priceNode = (
       <div className="flex items-center justify-end gap-2 text-muted-foreground">
         <Lock className="h-4 w-4" />
