@@ -238,6 +238,7 @@ export default function CatalogPage() {
     }
     if (Object.keys(f).length) setFilters(f)
     const suppliersParam = searchParams.get('mySuppliers')
+    const specialParam = searchParams.get('onSpecial')
     if (suppliersParam === 'include' || suppliersParam === 'exclude') {
       setTriSuppliers(suppliersParam as TriState)
     }
@@ -516,6 +517,15 @@ export default function CatalogPage() {
     orgFetching,
     publicFetching,
     cursor,
+    // ensure products update when filter flags change
+    debouncedSearch,
+    onlyWithPrice,
+    triStock,
+    triSuppliers,
+    triSpecial,
+    sortOrder,
+    stringifiedFilters,
+    orgId,
   ])
 
   useEffect(() => {
