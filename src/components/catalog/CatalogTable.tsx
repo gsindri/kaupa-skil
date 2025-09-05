@@ -216,7 +216,7 @@ export function CatalogTable({
                   </div>
                   <AddToCartButton
                     product={p}
-                    className="ml-auto md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100"
+                    className="ml-auto"
                   />
                 </div>
               </TableCell>
