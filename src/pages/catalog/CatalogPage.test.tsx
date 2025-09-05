@@ -2,6 +2,7 @@ import React from 'react'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { vi, describe, it, expect } from 'vitest'
+import { create } from 'zustand'
 import CatalogPage from './CatalogPage'
 
 // Mock ResizeObserver and IntersectionObserver
@@ -97,30 +98,28 @@ vi.mock('@/components/place-order/ViewToggle', () => ({
 }))
 vi.mock('@/components/debug/LayoutDebugger', () => ({ LayoutDebugger: () => <div /> }))
 vi.mock('@/components/layout/FullWidthLayout', () => ({ FullWidthLayout: ({ children }: any) => <div>{children}</div> }))
-var catalogFiltersStore: any
-vi.mock('@/state/catalogFilters', () => {
-  const { create } = require('zustand')
-  catalogFiltersStore = create((set: any) => ({
-    filters: {},
-    setFilters: vi.fn(),
-    onlyWithPrice: false,
-    setOnlyWithPrice: vi.fn(),
-    sort: 'relevance',
-    setSort: vi.fn(),
-    triStock: 'off',
-    setTriStock: vi.fn(),
-    triSpecial: 'off',
-    setTriSpecial: (v: any) => set({ triSpecial: v }),
-    triSuppliers: 'off',
-    setTriSuppliers: (v: any) => set({ triSuppliers: v }),
-  }))
-  return {
-    useCatalogFilters: (selector: any) => catalogFiltersStore(selector),
-    shallow: (fn: any) => fn,
-    SortOrder: {},
-    triStockToAvailability: vi.fn(() => undefined),
-  }
-})
+// eslint-disable-next-line prefer-const
+let catalogFiltersStore: any
+vi.mock('@/state/catalogFilters', () => ({
+  useCatalogFilters: (selector: any) => catalogFiltersStore(selector),
+  shallow: (fn: any) => fn,
+  SortOrder: {},
+  triStockToAvailability: vi.fn(() => undefined),
+}))
+catalogFiltersStore = create((set: any) => ({
+  filters: {},
+  setFilters: vi.fn(),
+  onlyWithPrice: false,
+  setOnlyWithPrice: vi.fn(),
+  sort: 'relevance',
+  setSort: vi.fn(),
+  triStock: 'off',
+  setTriStock: vi.fn(),
+  triSpecial: 'off',
+  setTriSpecial: (v: any) => set({ triSpecial: v }),
+  triSuppliers: 'off',
+  setTriSuppliers: (v: any) => set({ triSuppliers: v }),
+}))
 vi.mock('@/contexts/useBasket', () => ({ useCart: () => ({ addItem: vi.fn() }) }))
 vi.mock('@/lib/images', () => ({ resolveImage: () => '' }))
 vi.mock('react-router-dom', () => ({ useSearchParams: () => [new URLSearchParams(), vi.fn()] }))
