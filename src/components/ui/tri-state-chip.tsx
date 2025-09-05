@@ -84,7 +84,7 @@ export function TriStateFilterChip({
       onClick={handleClick}
       onKeyDown={handleKeyDown}
         className={cn(
-          'inline-flex h-8 w-28 items-center justify-center rounded-full border px-3 text-sm font-medium transition-colors focus:outline-none',
+          'inline-flex h-8 w-auto whitespace-nowrap items-center justify-center rounded-full border px-3 text-sm font-medium transition-colors focus:outline-none',
           styles,
           className,
         )}

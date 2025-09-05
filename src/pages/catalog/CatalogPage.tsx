@@ -886,7 +886,7 @@ function FiltersBar({
             <SortDropdown value={sortOrder} onChange={setSortOrder} />
             <ViewToggle value={view} onChange={setView} />
           </div>
-          <div className="mt-3 flex items-center gap-2 overflow-x-auto">
+          <div className="mt-3 flex flex-nowrap items-center gap-2 overflow-x-auto">
             {/* Disable pricing filter until pricing data is available */}
             {/* <FilterChip selected={onlyWithPrice} onSelectedChange={setOnlyWithPrice}>
                Only with price
