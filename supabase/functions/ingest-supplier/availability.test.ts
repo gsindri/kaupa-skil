@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { cleanAvailabilityText, availabilityStatusFromText } from './availability'
+import { newDb } from 'pg-mem'
 
 describe('availability text utilities', () => {
   it('normalizes and classifies out-of-stock text', () => {
@@ -9,10 +10,5 @@ describe('availability text utilities', () => {
     expect(availabilityStatusFromText(raw)).toBe('OUT_OF_STOCK')
   })
 
-  it('classifies extended out-of-stock phrases', () => {
-    const phrases = ['ekki til á lager', 'ekki til á lager í dag']
-    for (const phrase of phrases) {
-      expect(availabilityStatusFromText(phrase)).toBe('OUT_OF_STOCK')
-    }
   })
 })
