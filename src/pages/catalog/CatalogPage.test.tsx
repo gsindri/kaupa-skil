@@ -43,23 +43,27 @@ vi.mock('@/components/ui/alert', () => ({
 }))
 vi.mock('lucide-react', () => ({ AlertCircle: () => <div />, Mic: () => <div />, X: () => <div /> }))
 vi.mock('@/contexts/useAuth', () => ({ useAuth: () => ({ profile: { tenant_id: 'org1' } }) }))
+const useCatalogProductsMock = vi.fn()
 vi.mock('@/hooks/useCatalogProducts', () => ({
-  useCatalogProducts: () => ({
-    data: productsMock,
-    nextCursor: null,
-    isFetching: false,
-    error: null,
-    isFetched: true,
-  }),
+  useCatalogProducts: (...args: any[]) => useCatalogProductsMock(...args),
 }))
+useCatalogProductsMock.mockImplementation(() => ({
+  data: productsMock,
+  nextCursor: null,
+  isFetching: false,
+  error: null,
+  isFetched: true,
+}))
+const useOrgCatalogMock = vi.fn()
 vi.mock('@/hooks/useOrgCatalog', () => ({
-  useOrgCatalog: () => ({
-    data: [],
-    nextCursor: null,
-    isFetching: false,
-    error: null,
-    isFetched: true,
-  }),
+  useOrgCatalog: (...args: any[]) => useOrgCatalogMock(...args),
+}))
+useOrgCatalogMock.mockImplementation(() => ({
+  data: [],
+  nextCursor: null,
+  isFetching: false,
+  error: null,
+  isFetched: true,
 }))
 vi.mock('@/hooks/useDebounce', () => ({ useDebounce: (v: any) => v }))
 vi.mock('@/components/catalog/CatalogTable', () => ({
@@ -73,7 +77,6 @@ vi.mock('@/components/search/HeroSearchInput', () => ({ HeroSearchInput: () => <
 vi.mock('@/components/ui/filter-chip', () => ({ FilterChip: () => <div /> }))
 vi.mock('@/components/catalog/CatalogFiltersPanel', () => ({ CatalogFiltersPanel: () => <div /> }))
 vi.mock('@/components/ui/tri-state-chip', () => {
-  const React = require('react')
   return {
     TriStateFilterChip: ({ includeLabel, excludeLabel, offLabel, onStateChange }: any) => {
       const [state, setState] = React.useState<'off' | 'include' | 'exclude'>('off')
@@ -115,26 +118,33 @@ vi.mock('@/components/place-order/ViewToggle', () => ({
 }))
 vi.mock('@/components/debug/LayoutDebugger', () => ({ LayoutDebugger: () => <div /> }))
 vi.mock('@/components/layout/FullWidthLayout', () => ({ FullWidthLayout: ({ children }: any) => <div>{children}</div> }))
-vi.mock('@/state/catalogFilters', () => ({
-  useCatalogFilters: (selector: any) =>
-    selector({
-      filters: {},
-      setFilters: vi.fn(),
-      onlyWithPrice: false,
-      setOnlyWithPrice: vi.fn(),
-      sort: 'relevance',
-      setSort: vi.fn(),
-      triStock: 'off',
-      setTriStock: vi.fn(),
-      triSpecial: 'off',
-      setTriSpecial: vi.fn(),
-      triSuppliers: 'off',
-      setTriSuppliers: vi.fn(),
-    }),
-  shallow: (fn: any) => fn,
-  SortOrder: {},
-  triStockToAvailability: vi.fn(() => undefined),
-}))
+let mockTriSpecial: 'off' | 'include' | 'exclude' = 'off'
+vi.mock('@/state/catalogFilters', () => {
+  const store = {
+    filters: {},
+    setFilters: vi.fn(),
+    onlyWithPrice: false,
+    setOnlyWithPrice: vi.fn(),
+    sort: 'relevance',
+    setSort: vi.fn(),
+    triStock: 'off',
+    setTriStock: vi.fn(),
+    get triSpecial() {
+      return mockTriSpecial
+    },
+    setTriSpecial: (v: any) => {
+      mockTriSpecial = v
+    },
+    triSuppliers: 'off',
+    setTriSuppliers: vi.fn(),
+  }
+  return {
+    useCatalogFilters: (selector: any) => selector(store),
+    shallow: (fn: any) => fn,
+    SortOrder: {},
+    triStockToAvailability: vi.fn(() => undefined),
+  }
+})
 vi.mock('@/contexts/useBasket', () => ({ useCart: () => ({ addItem: vi.fn() }) }))
 vi.mock('@/lib/images', () => ({ resolveImage: () => '' }))
 vi.mock('react-router-dom', () => ({ useSearchParams: () => [new URLSearchParams(), vi.fn()] }))
@@ -142,6 +152,9 @@ vi.mock('react-router-dom', () => ({ useSearchParams: () => [new URLSearchParams
 describe('CatalogPage', () => {
   beforeEach(() => {
     localStorage.clear()
+    useCatalogProductsMock.mockClear()
+    useOrgCatalogMock.mockClear()
+    mockTriSpecial = 'off'
   })
 
   it('shows banner when connect pills are hidden', async () => {
@@ -178,6 +191,20 @@ describe('CatalogPage', () => {
     await userEvent.click(screen.getByText('Not my suppliers'))
     await screen.findByText('All suppliers')
     await screen.findByText('8')
+  })
+
+  it('applies onSpecial filter when triSpecial is include', () => {
+    mockTriSpecial = 'include'
+    render(<CatalogPage />)
+    expect(useCatalogProductsMock).toHaveBeenCalledWith(
+      expect.objectContaining({ onSpecial: true }),
+      'relevance',
+    )
+    expect(useOrgCatalogMock).toHaveBeenCalledWith(
+      'org1',
+      expect.objectContaining({ onSpecial: true }),
+      'relevance',
+    )
   })
 })
 
