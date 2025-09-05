@@ -15,13 +15,6 @@ import {
   SelectItem,
   SelectValue,
 } from '@/components/ui/select'
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuCheckboxItem,
-  DropdownMenuItem,
-} from '@/components/ui/dropdown-menu'
 import { Button } from '@/components/ui/button'
 import { useCart } from '@/contexts/useBasket'
 import { QuantityStepper } from '@/components/cart/QuantityStepper'
@@ -64,7 +57,6 @@ export function CatalogTable({
   const rowRefs = useRef<Array<HTMLTableRowElement | null>>([])
 
   const { vendors } = useVendors()
-  const supplierValues = filters.supplier ?? []
   const brandValues = filters.brand ?? []
   const brandOptions = Array.from(
     new Set(products.map(p => p.brand).filter(Boolean) as string[]),
@@ -157,31 +149,6 @@ export function CatalogTable({
             {/* Availability filter removed */}
           </TableHead>
           <TableHead className="w-[120px] px-2" />
-          <TableHead className="w-40 min-w-[140px] max-w-[180px] px-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="h-8 w-full justify-start">
-                  {supplierValues.length ? `${supplierValues.length} selected` : 'Suppliers'}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-40">
-                {vendors.map(v => (
-                  <DropdownMenuCheckboxItem
-                    key={v.id}
-                    checked={supplierValues.includes(v.id)}
-                    onCheckedChange={chk => {
-                      const next = chk
-                        ? [...supplierValues, v.id]
-                        : supplierValues.filter(id => id !== v.id)
-                      onFilterChange({ supplier: next.length ? next : undefined })
-                    }}
-                  >
-                    {v.name}
-                  </DropdownMenuCheckboxItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
