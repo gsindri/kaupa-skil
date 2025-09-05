@@ -238,6 +238,7 @@ export default function CatalogPage() {
     }
     if (Object.keys(f).length) setFilters(f)
     const suppliersParam = searchParams.get('mySuppliers')
+    const specialParam = searchParams.get('onSpecial')
     if (suppliersParam === 'include' || suppliersParam === 'exclude') {
       setTriSuppliers(suppliersParam as TriState)
     }
@@ -276,21 +277,6 @@ export default function CatalogPage() {
       setSearchParams(params, { replace: true })
     }
   }, [triStock, searchParams, setSearchParams])
-
-  // Persist special selection to URL
-  useEffect(() => {
-    const params = new URLSearchParams(searchParams.toString())
-    const current = params.get('special')
-    if (triSpecial === 'off') {
-      if (current) {
-        params.delete('special')
-        setSearchParams(params, { replace: true })
-      }
-    } else if (current !== triSpecial) {
-      params.set('special', triSpecial)
-      setSearchParams(params, { replace: true })
-    }
-  }, [triSpecial, searchParams, setSearchParams])
 
   // Persist my suppliers selection to URL
   useEffect(() => {
