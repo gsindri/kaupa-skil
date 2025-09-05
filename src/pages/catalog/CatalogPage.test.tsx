@@ -70,7 +70,6 @@ vi.mock('@/components/catalog/ProductCardSkeleton', () => ({ ProductCardSkeleton
 vi.mock('@/components/search/HeroSearchInput', () => ({ HeroSearchInput: () => <div /> }))
 vi.mock('@/components/ui/filter-chip', () => ({ FilterChip: () => <div /> }))
 vi.mock('@/components/catalog/CatalogFiltersPanel', () => ({ CatalogFiltersPanel: () => <div /> }))
-vi.mock('@/components/catalog/ActiveFilterChips', () => ({ ActiveFilterChips: () => <div /> }))
 vi.mock('@/components/ui/collapsible', () => ({
   Collapsible: ({ children }: any) => <div>{children}</div>,
   CollapsibleContent: ({ children }: any) => <div>{children}</div>,

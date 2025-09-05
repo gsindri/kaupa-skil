@@ -1,5 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { SortDropdown } from '@/components/catalog/SortDropdown'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -38,6 +36,71 @@ import { useCart } from '@/contexts/useBasket'
 import type { CartItem } from '@/lib/types'
 import { resolveImage } from '@/lib/images'
 import { useSearchParams } from 'react-router-dom'
+
+interface DerivedChip {
+  key: string
+  label: string
+  onRemove: () => void
+  onEdit: () => void
+}
+
+function deriveChipsFromFilters(
+  filters: FacetFilters,
+  setFilters: (f: Partial<FacetFilters>) => void,
+  openFacet: (facet: keyof FacetFilters) => void,
+): DerivedChip[] {
+  const chips: DerivedChip[] = []
+
+  if (filters.category) {
+    chips.push({
+      key: 'category',
+      label: filters.category,
+      onRemove: () => setFilters({ category: undefined }),
+      onEdit: () => openFacet('category'),
+    })
+  }
+
+  if (filters.supplier && filters.supplier.length) {
+    if (filters.supplier.length <= 2) {
+      filters.supplier.forEach(id => {
+        chips.push({
+          key: `supplier-${id}`,
+          label: id,
+          onRemove: () =>
+            setFilters({ supplier: filters.supplier!.filter(s => s !== id) }),
+          onEdit: () => openFacet('supplier'),
+        })
+      })
+    } else {
+      chips.push({
+        key: 'supplier',
+        label: `Suppliers (${filters.supplier.length})`,
+        onRemove: () => setFilters({ supplier: undefined }),
+        onEdit: () => openFacet('supplier'),
+      })
+    }
+  }
+
+  if (filters.brand) {
+    chips.push({
+      key: 'brand',
+      label: filters.brand,
+      onRemove: () => setFilters({ brand: undefined }),
+      onEdit: () => openFacet('brand'),
+    })
+  }
+
+  if (filters.packSizeRange) {
+    chips.push({
+      key: 'packSizeRange',
+      label: `Pack ${filters.packSizeRange}`,
+      onRemove: () => setFilters({ packSizeRange: undefined }),
+      onEdit: () => openFacet('packSizeRange'),
+    })
+  }
+
+  return chips
+}
 
 export default function CatalogPage() {
   const { profile } = useAuth()
@@ -111,6 +174,23 @@ export default function CatalogPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  // Read initial facet filters and toggles from URL on mount
+  useEffect(() => {
+    const f: Partial<FacetFilters> = {}
+    const category = searchParams.get('category') || undefined
+    const brand = searchParams.get('brand') || undefined
+    const suppliers = searchParams.get('suppliers')
+    const pack = searchParams.get('packSize') || undefined
+    if (category) f.category = category
+    if (brand) f.brand = brand
+    if (suppliers) f.supplier = suppliers.split(',').filter(Boolean)
+    if (pack) f.packSizeRange = pack
+    if (Object.keys(f).length) setFilters(f)
+    if (searchParams.get('mySuppliers') === 'true') setMySuppliers(true)
+    if (searchParams.get('onSpecial') === 'true') setOnSpecial(true)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   // Persist sort selection to URL
   useEffect(() => {
     const params = new URLSearchParams(searchParams.toString())
@@ -141,25 +221,6 @@ export default function CatalogPage() {
     }
   }, [triStock, setSearchParams])
 
-  // Persist view selection to URL and localStorage
-  useEffect(() => {
-    try {
-      localStorage.setItem('catalog-view', view)
-    } catch {
-      /* ignore */
-    }
-    const params = new URLSearchParams(searchParams.toString())
-    const current = params.get('view')
-    if (view === 'grid') {
-      if (current) {
-        params.delete('view')
-        setSearchParams(params, { replace: true })
-      }
-    } else if (current !== view) {
-      params.set('view', view)
-      setSearchParams(params, { replace: true })
-    }
-  }, [view, setSearchParams])
 
   useEffect(() => {
     const updateCols = () => {
@@ -649,6 +710,11 @@ function FiltersBar({
     (mySuppliers ? 1 : 0) +
     (onSpecial ? 1 : 0) +
     activeFacetCount
+  const chips = deriveChipsFromFilters(
+    filters,
+    setFilters,
+    () => setShowMoreFilters(true),
+  )
   const clearAll = () => {
     setTriStock('off')
     setMySuppliers(false)
@@ -696,7 +762,7 @@ function FiltersBar({
                 {bulkMode ? 'Cancel' : 'Select'}
               </Button>
             </div>
-          <div className="mt-3 flex flex-wrap gap-2">
+          <div className="mt-3 flex items-center gap-2 overflow-x-auto">
             {/* Disable pricing filter until pricing data is available */}
             {/* <FilterChip selected={onlyWithPrice} onSelectedChange={setOnlyWithPrice}>
                Only with price
@@ -708,13 +774,38 @@ function FiltersBar({
             <FilterChip selected={onSpecial} onSelectedChange={setOnSpecial}>
               On special
             </FilterChip>
+            {chips.map(chip => (
+              <div
+                key={chip.key}
+                className="flex items-center rounded-full border px-3 py-1 text-sm"
+              >
+                <button
+                  type="button"
+                  onClick={chip.onEdit}
+                  aria-description={`Edit filter: ${chip.key}`}
+                  className="flex items-center"
+                >
+                  {chip.label}
+                </button>
+                <button
+                  type="button"
+                  onClick={chip.onRemove}
+                  aria-label={`Remove filter: ${chip.label}`}
+                  className="ml-1 text-muted-foreground hover:text-foreground"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </div>
+            ))}
             <CollapsibleTrigger asChild>
-              <FilterChip selected={showMoreFilters}>More filters</FilterChip>
+              <FilterChip selected={showMoreFilters}>
+                {activeFacetCount ? `More filters (${activeFacetCount})` : 'More filters'}
+              </FilterChip>
             </CollapsibleTrigger>
           </div>
           {activeCount > 0 && (
-            <div className="mt-2 text-sm text-muted-foreground">
-              Filters: {activeCount} active{' '}
+            <div className="mt-2 text-sm text-muted-foreground text-right">
+              Filters: {activeCount} active •{' '}
               <button type="button" className="underline" onClick={clearAll}>
                 Clear all
               </button>
