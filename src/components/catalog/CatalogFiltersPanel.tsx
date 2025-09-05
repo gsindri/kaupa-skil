@@ -105,12 +105,11 @@ export function CatalogFiltersPanel({ filters, onChange, focusedFacet }: Catalog
                     ...(filters.packSizeRange ?? {}),
                     min: e.target.value ? Number(e.target.value) : undefined,
                   }
-                  onChange({
-                    packSizeRange:
-                      packSizeRange.min === undefined && packSizeRange.max === undefined
-                        ? undefined
-                        : packSizeRange,
-                  })
+                  const nextPackSizeRange =
+                    packSizeRange.min === undefined && packSizeRange.max === undefined
+                      ? undefined
+                      : packSizeRange
+                  onChange({ packSizeRange: nextPackSizeRange })
                 }}
               />
               <Input
@@ -122,12 +121,11 @@ export function CatalogFiltersPanel({ filters, onChange, focusedFacet }: Catalog
                     ...(filters.packSizeRange ?? {}),
                     max: e.target.value ? Number(e.target.value) : undefined,
                   }
-                  onChange({
-                    packSizeRange:
-                      packSizeRange.min === undefined && packSizeRange.max === undefined
-                        ? undefined
-                        : packSizeRange,
-                  })
+                  const nextPackSizeRange =
+                    packSizeRange.min === undefined && packSizeRange.max === undefined
+                      ? undefined
+                      : packSizeRange
+                  onChange({ packSizeRange: nextPackSizeRange })
                 }}
               />
             </div>
