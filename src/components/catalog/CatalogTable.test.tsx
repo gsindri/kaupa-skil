@@ -17,6 +17,10 @@ vi.mock('@/hooks/useVendors', () => ({
 vi.mock('@/components/catalog/SupplierChips', () => ({
   default: () => <div />,
 }))
+describe('CatalogTable', () => {
+  beforeEach(() => {
+    cartState.items = []
+  })
 
 describe('CatalogTable', () => {
   it('shows lock icon and tooltip when price is locked', async () => {
