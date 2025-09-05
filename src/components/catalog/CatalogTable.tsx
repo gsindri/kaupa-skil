@@ -108,7 +108,7 @@ export function CatalogTable({
             Availability {sort?.key === 'availability' && (sort?.direction === 'asc' ? '▲' : '▼')}
           </TableHead>
           <TableHead
-            className="w-[136px] text-right px-3 pl-8 cursor-pointer select-none border-r"
+            className="w-[136px] text-right px-3 cursor-pointer select-none border-r"
             onClick={() => onSort('price')}
           >
             Price {sort?.key === 'price' && (sort?.direction === 'asc' ? '▲' : '▼')}
@@ -190,17 +190,39 @@ export function CatalogTable({
                   )}
                   name={p.name}
                   brand={p.brand}
+                  stale={
+                    p.availability_updated_at
+                      ? Date.now() - new Date(p.availability_updated_at).getTime() >
+                        86_400_000
+                      : false
+                  }
+                  staleInfo={
+                    p.availability_updated_at
+                      ? `Last checked ${timeAgo(p.availability_updated_at)}. Source: ${
+                          p.suppliers?.[0] || 'Unknown'
+                        }`
+                      : undefined
+                  }
                 />
               </TableCell>
               <TableCell className="px-3 py-2">
                 <div className="flex items-center gap-2">
-                  <a
-                    href={`#${p.catalog_id}`}
-                    aria-label={`View details for ${p.name}`}
-                    className="flex-1 truncate hover:underline"
-                  >
-                    {p.name}
-                  </a>
+                  <div className="flex min-w-0 flex-1 flex-col">
+                    <a
+                      href={`#${p.catalog_id}`}
+                      aria-label={`View details for ${p.name}`}
+                      className="truncate text-sm font-medium hover:underline"
+                    >
+                      {p.name}
+                    </a>
+                    {(p.brand || p.canonical_pack) && (
+                      <span className="truncate text-xs text-muted-foreground">
+                        {p.brand}
+                        {p.brand && p.canonical_pack && ' • '}
+                        {p.canonical_pack}
+                      </span>
+                    )}
+                  </div>
                   <AddToCartButton
                     product={p}
                     className="ml-auto md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100"
@@ -224,15 +246,47 @@ export function CatalogTable({
                   </TooltipContent>
                 </Tooltip>
               </TableCell>
-              <TableCell className="w-[136px] px-3 pl-8 py-2 text-right border-r whitespace-nowrap">
+              <TableCell className="w-[136px] px-3 py-2 text-right border-r whitespace-nowrap">
                 <PriceCell product={p} vendors={vendors} />
               </TableCell>
               <TableCell className="w-[220px] min-w-[180px] max-w-[220px] px-3 py-2">
-                {p.supplier_products?.length ? (
-                  <SupplierChips suppliers={p.supplier_products} />
-                ) : (
-                  <div className="flex justify-center text-muted-foreground">—</div>
-                )}
+                {(() => {
+                  const suppliers = p.supplier_products?.length
+                    ? p.supplier_products
+                    : Array.isArray(p.suppliers)
+                      ? p.suppliers.map((s: any) =>
+                          typeof s === 'string'
+                            ? {
+                                supplier_id: s,
+                                supplier_name: s,
+                                is_connected: true,
+                              }
+                            : {
+                                supplier_id: s.supplier_id || s.id,
+                                supplier_name:
+                                  s.supplier_name || s.name || '',
+                                is_connected: s.is_connected ?? true,
+                                supplier_logo_url:
+                                  s.supplier_logo_url || s.logo_url || s.logoUrl,
+                                availability_state:
+                                  s.availability_state || s.availability_status,
+                                location_city: s.location_city || null,
+                                location_country_code:
+                                  s.location_country_code || null,
+                              },
+                        )
+                      : []
+                  return suppliers.length ? (
+                    <SupplierChips suppliers={suppliers} />
+                  ) : (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="flex justify-center text-muted-foreground">—</div>
+                      </TooltipTrigger>
+                      <TooltipContent>No supplier data</TooltipContent>
+                    </Tooltip>
+                  )
+                })()}
               </TableCell>
             </TableRow>
           )
@@ -383,7 +437,12 @@ function PriceCell({
   const existingItem = items.find(
     (i: any) => i.supplierItemId === product.catalog_id,
   )
-  const sources: string[] = product.price_sources || product.suppliers || []
+  const sources: string[] = product.price_sources ||
+    (Array.isArray(product.suppliers)
+      ? product.suppliers.map((s: any) =>
+          typeof s === 'string' ? s : s.name || s.supplier_name || '',
+        )
+      : [])
   const priceValues: number[] = Array.isArray(product.prices)
     ? product.prices
         .map((p: any) => (typeof p === 'number' ? p : p?.price))
@@ -440,9 +499,10 @@ function PriceCell({
     priceNode = (
       <span className="tabular-nums">
         <span aria-hidden="true">—</span>
-        <span className="sr-only">No data yet</span>
+        <span className="sr-only">No supplier data</span>
       </span>
     )
+    tooltip = 'No supplier data'
   }
 
   const priceContent = tooltip ? (
