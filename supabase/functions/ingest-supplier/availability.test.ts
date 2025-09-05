@@ -8,4 +8,11 @@ describe('availability text utilities', () => {
     expect(cleaned).toBe('ekki til á lager')
     expect(availabilityStatusFromText(raw)).toBe('OUT_OF_STOCK')
   })
+
+  it('classifies extended out-of-stock phrases', () => {
+    const phrases = ['ekki til á lager', 'ekki til á lager í dag']
+    for (const phrase of phrases) {
+      expect(availabilityStatusFromText(phrase)).toBe('OUT_OF_STOCK')
+    }
+  })
 })
