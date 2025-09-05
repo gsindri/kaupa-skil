@@ -29,6 +29,7 @@ export default function SupplierList({
       return {
         name: s,
         connected: vendors.some(v => v.name === s),
+        logoUrl: null,
       }
     }
     const status =
@@ -43,6 +44,7 @@ export default function SupplierList({
     return {
       name: s.name,
       connected: s.connected ?? vendors.some(v => v.name === s.name),
+      logoUrl: s.logoUrl ?? null,
       availability: status ? { status, updatedAt: updated } : undefined,
     }
   })
@@ -67,6 +69,7 @@ export default function SupplierList({
         <SupplierChip
           key={it.name}
           name={it.name}
+          logoUrl={it.logoUrl}
           connected={it.connected}
           availability={it.availability}
           className="h-5 w-5"
