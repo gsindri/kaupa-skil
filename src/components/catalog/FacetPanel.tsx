@@ -35,10 +35,9 @@ export function FacetPanel({ filters, onChange }: FacetPanelProps) {
       <div className="text-sm font-medium">{label}</div>
       {items.map(item => {
         const id = `${String(key)}-${item.id}`
-        const isSupplier = key === 'supplier'
-        const checked = isSupplier
-          ? (filters.supplier ?? []).includes(item.id)
-          : (filters as any)[key] === item.id
+        const current = (filters as any)[key] ?? []
+        const isArray = Array.isArray(current)
+        const checked = isArray ? current.includes(item.id) : current === item.id
         return (
           <label
             key={item.id}
@@ -49,14 +48,14 @@ export function FacetPanel({ filters, onChange }: FacetPanelProps) {
               id={id}
               checked={checked}
               onCheckedChange={chk => {
-                if (isSupplier) {
-                  const cur = filters.supplier ?? []
+                if (isArray) {
+                  const cur = current as string[]
                   const next = chk
                     ? [...cur, item.id]
-                    : cur.filter(id => id !== item.id)
-                  onChange({ supplier: next.length ? next : undefined })
+                    : cur.filter((id: string) => id !== item.id)
+                  onChange({ [key]: next.length ? next : undefined } as any)
                 } else {
-                  onChange({ [key]: chk ? item.id : undefined })
+                  onChange({ [key]: chk ? item.id : undefined } as any)
                 }
               }}
             />

@@ -47,13 +47,25 @@ function deriveChipsFromFilters(
 ): DerivedChip[] {
   const chips: DerivedChip[] = []
 
-  if (filters.category) {
-    chips.push({
-      key: 'category',
-      label: filters.category,
-      onRemove: () => setFilters({ category: undefined }),
-      onEdit: () => openFacet('category'),
-    })
+  if (filters.category && filters.category.length) {
+    if (filters.category.length <= 2) {
+      filters.category.forEach(id => {
+        chips.push({
+          key: `category-${id}`,
+          label: id,
+          onRemove: () =>
+            setFilters({ category: filters.category!.filter(c => c !== id) }),
+          onEdit: () => openFacet('category'),
+        })
+      })
+    } else {
+      chips.push({
+        key: 'category',
+        label: `Categories (${filters.category.length})`,
+        onRemove: () => setFilters({ category: undefined }),
+        onEdit: () => openFacet('category'),
+      })
+    }
   }
 
   if (filters.supplier && filters.supplier.length) {
@@ -68,28 +80,55 @@ function deriveChipsFromFilters(
         })
       })
     } else {
+      const [first, second, ...rest] = filters.supplier
+      ;[first, second].forEach(id => {
+        chips.push({
+          key: `supplier-${id}`,
+          label: id,
+          onRemove: () =>
+            setFilters({ supplier: filters.supplier!.filter(s => s !== id) }),
+          onEdit: () => openFacet('supplier'),
+        })
+      })
       chips.push({
-        key: 'supplier',
-        label: `Suppliers (${filters.supplier.length})`,
+        key: 'supplier-extra',
+        label: `Suppliers (+${rest.length})`,
         onRemove: () => setFilters({ supplier: undefined }),
         onEdit: () => openFacet('supplier'),
       })
     }
   }
 
-  if (filters.brand) {
-    chips.push({
-      key: 'brand',
-      label: filters.brand,
-      onRemove: () => setFilters({ brand: undefined }),
-      onEdit: () => openFacet('brand'),
-    })
+  if (filters.brand && filters.brand.length) {
+    if (filters.brand.length <= 2) {
+      filters.brand.forEach(id => {
+        chips.push({
+          key: `brand-${id}`,
+          label: id,
+          onRemove: () =>
+            setFilters({ brand: filters.brand!.filter(b => b !== id) }),
+          onEdit: () => openFacet('brand'),
+        })
+      })
+    } else {
+      chips.push({
+        key: 'brand',
+        label: `Brands (${filters.brand.length})`,
+        onRemove: () => setFilters({ brand: undefined }),
+        onEdit: () => openFacet('brand'),
+      })
+    }
   }
 
   if (filters.packSizeRange) {
+    const { min, max } = filters.packSizeRange
+    let label = 'Pack'
+    if (min != null && max != null) label += ` ${min}-${max}`
+    else if (min != null) label += ` ≥ ${min}`
+    else if (max != null) label += ` ≤ ${max}`
     chips.push({
       key: 'packSizeRange',
-      label: `Pack ${filters.packSizeRange}`,
+      label,
       onRemove: () => setFilters({ packSizeRange: undefined }),
       onEdit: () => openFacet('packSizeRange'),
     })
@@ -182,14 +221,19 @@ export default function CatalogPage() {
   // Read initial facet filters and toggles from URL on mount
   useEffect(() => {
     const f: Partial<FacetFilters> = {}
-    const category = searchParams.get('category') || undefined
-    const brand = searchParams.get('brand') || undefined
+    const categories = searchParams.get('categories')
+    const brands = searchParams.get('brands')
     const suppliers = searchParams.get('suppliers')
-    const pack = searchParams.get('packSize') || undefined
-    if (category) f.category = category
-    if (brand) f.brand = brand
+    const pack = searchParams.get('pack')
+    if (categories) f.category = categories.split(',').filter(Boolean)
+    if (brands) f.brand = brands.split(',').filter(Boolean)
     if (suppliers) f.supplier = suppliers.split(',').filter(Boolean)
-    if (pack) f.packSizeRange = pack
+    if (pack) {
+      const [minStr, maxStr] = pack.split('-')
+      const min = minStr ? Number(minStr) : undefined
+      const max = maxStr ? Number(maxStr) : undefined
+      f.packSizeRange = { min, max }
+    }
     if (Object.keys(f).length) setFilters(f)
     if (searchParams.get('mySuppliers') === 'true') setMySuppliers(true)
     if (searchParams.get('onSpecial') === 'true') setOnSpecial(true)
@@ -225,6 +269,31 @@ export default function CatalogPage() {
       setSearchParams(params, { replace: true })
     }
   }, [triStock, searchParams, setSearchParams])
+
+  // Persist facet filters to URL
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams.toString())
+    let changed = false
+    const updateParam = (key: string, value: string | null) => {
+      const cur = params.get(key)
+      if (value && cur !== value) {
+        params.set(key, value)
+        changed = true
+      } else if (!value && cur) {
+        params.delete(key)
+        changed = true
+      }
+    }
+    updateParam('categories', filters.category?.join(',') || null)
+    updateParam('suppliers', filters.supplier?.join(',') || null)
+    updateParam('brands', filters.brand?.join(',') || null)
+    const packValue =
+      filters.packSizeRange && (filters.packSizeRange.min != null || filters.packSizeRange.max != null)
+        ? `${filters.packSizeRange.min ?? ''}-${filters.packSizeRange.max ?? ''}`
+        : null
+    updateParam('pack', packValue)
+    if (changed) setSearchParams(params, { replace: true })
+  }, [filters, searchParams, setSearchParams])
 
   // Persist view selection to localStorage
   useEffect(() => {
@@ -350,11 +419,12 @@ export default function CatalogPage() {
   }, [debouncedSearch])
 
   useEffect(() => {
-    if (filters.brand) logFacetInteraction('brand', filters.brand)
-    if (filters.category) logFacetInteraction('category', filters.category)
+    if (filters.brand?.length) logFacetInteraction('brand', filters.brand.join(','))
+    if (filters.category?.length) logFacetInteraction('category', filters.category.join(','))
     if (filters.supplier?.length)
       logFacetInteraction('supplier', filters.supplier.join(','))
-    if (filters.packSizeRange) logFacetInteraction('packSizeRange', filters.packSizeRange)
+    if (filters.packSizeRange)
+      logFacetInteraction('packSizeRange', JSON.stringify(filters.packSizeRange))
   }, [filters.brand, filters.category, filters.supplier, filters.packSizeRange])
 
   useEffect(() => {

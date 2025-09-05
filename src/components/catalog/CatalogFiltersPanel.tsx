@@ -2,9 +2,9 @@ import React from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { fetchCatalogFacets, FacetFilters } from '@/services/catalog'
 import { cn } from '@/lib/utils'
-import { TriStateFilterChip } from '@/components/ui/tri-state-chip'
 import { useCatalogFilters, triStockToAvailability } from '@/state/catalogFilters'
 import { Checkbox } from '@/components/ui/checkbox'
+import { Input } from '@/components/ui/input'
 
 interface CatalogFiltersPanelProps {
   filters: FacetFilters
@@ -14,7 +14,6 @@ interface CatalogFiltersPanelProps {
 
 export function CatalogFiltersPanel({ filters, onChange, focusedFacet }: CatalogFiltersPanelProps) {
   const triStock = useCatalogFilters(s => s.triStock)
-  const setTriStock = useCatalogFilters(s => s.setTriStock)
   const availability = triStockToAvailability(triStock)
 
   const facetRefs = React.useMemo(
@@ -55,10 +54,9 @@ export function CatalogFiltersPanel({ filters, onChange, focusedFacet }: Catalog
     <div ref={facetRefs[key]} className="space-y-2">
       <div className="font-medium text-sm">{label}</div>
       {items.map(item => {
-        const isSupplier = key === 'supplier'
-        const selected = isSupplier
-          ? (filters.supplier ?? []).includes(item.id)
-          : (filters as any)[key] === item.id
+        const current = (filters as any)[key] ?? []
+        const isArray = Array.isArray(current)
+        const selected = isArray ? current.includes(item.id) : current === item.id
         return (
           <label
             key={item.id}
@@ -68,14 +66,14 @@ export function CatalogFiltersPanel({ filters, onChange, focusedFacet }: Catalog
               <Checkbox
                 checked={selected}
                 onCheckedChange={checked => {
-                  if (isSupplier) {
-                    const cur = filters.supplier ?? []
+                  if (isArray) {
+                    const cur = current as string[]
                     const next = checked
                       ? [...cur, item.id]
-                      : cur.filter(id => id !== item.id)
-                    onChange({ supplier: next.length ? next : undefined })
+                      : cur.filter((id: string) => id !== item.id)
+                    onChange({ [key]: next.length ? next : undefined } as any)
                   } else {
-                    onChange({ [key]: checked ? item.id : undefined })
+                    onChange({ [key]: checked ? item.id : undefined } as any)
                   }
                 }}
               />
@@ -90,13 +88,42 @@ export function CatalogFiltersPanel({ filters, onChange, focusedFacet }: Catalog
 
   return (
     <div className="space-y-4">
-      <TriStateFilterChip state={triStock} onStateChange={setTriStock} />
       {data && (
         <div className="space-y-4">
           {renderFacet('Categories', data.categories, 'category')}
           {renderFacet('Suppliers', data.suppliers, 'supplier')}
-          {renderFacet('Pack size', data.packSizeRanges, 'packSizeRange')}
           {renderFacet('Brands', data.brands, 'brand')}
+          <div ref={facetRefs.packSizeRange} className="space-y-2">
+            <div className="font-medium text-sm">Pack size</div>
+            <div className="flex gap-2">
+              <Input
+                type="number"
+                placeholder="Min"
+                value={filters.packSizeRange?.min ?? ''}
+                onChange={e =>
+                  onChange({
+                    packSizeRange: {
+                      ...filters.packSizeRange,
+                      min: e.target.value ? Number(e.target.value) : undefined,
+                    },
+                  })
+                }
+              />
+              <Input
+                type="number"
+                placeholder="Max"
+                value={filters.packSizeRange?.max ?? ''}
+                onChange={e =>
+                  onChange({
+                    packSizeRange: {
+                      ...filters.packSizeRange,
+                      max: e.target.value ? Number(e.target.value) : undefined,
+                    },
+                  })
+                }
+              />
+            </div>
+          </div>
         </div>
       )}
     </div>

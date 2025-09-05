@@ -65,6 +65,7 @@ export function CatalogTable({
 
   const { vendors } = useVendors()
   const supplierValues = filters.supplier ?? []
+  const brandValues = filters.brand ?? []
   const brandOptions = Array.from(
     new Set(products.map(p => p.brand).filter(Boolean) as string[]),
   ).sort()
@@ -133,9 +134,9 @@ export function CatalogTable({
           <TableHead className="px-2">
             {showBrandFilter && (
               <Select
-                value={filters.brand ?? 'all'}
+                value={brandValues[0] ?? 'all'}
                 onValueChange={v =>
-                  onFilterChange({ brand: v === 'all' ? undefined : v })
+                  onFilterChange({ brand: v === 'all' ? undefined : [v] })
                 }
               >
                 <SelectTrigger className="h-8">
