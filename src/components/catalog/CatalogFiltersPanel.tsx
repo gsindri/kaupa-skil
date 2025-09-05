@@ -1,18 +1,38 @@
+import React from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { fetchCatalogFacets, FacetFilters } from '@/services/catalog'
 import { cn } from '@/lib/utils'
 import { TriStateFilterChip } from '@/components/ui/tri-state-chip'
 import { useCatalogFilters, triStockToAvailability } from '@/state/catalogFilters'
+import { Checkbox } from '@/components/ui/checkbox'
 
 interface CatalogFiltersPanelProps {
   filters: FacetFilters
   onChange: (f: Partial<FacetFilters>) => void
+  focusedFacet?: keyof FacetFilters | null
 }
 
-export function CatalogFiltersPanel({ filters, onChange }: CatalogFiltersPanelProps) {
+export function CatalogFiltersPanel({ filters, onChange, focusedFacet }: CatalogFiltersPanelProps) {
   const triStock = useCatalogFilters(s => s.triStock)
   const setTriStock = useCatalogFilters(s => s.setTriStock)
   const availability = triStockToAvailability(triStock)
+
+  const facetRefs: Record<keyof FacetFilters, React.RefObject<HTMLDivElement>> = {
+    search: React.createRef(),
+    brand: React.createRef(),
+    category: React.createRef(),
+    supplier: React.createRef(),
+    availability: React.createRef(),
+    packSizeRange: React.createRef(),
+  }
+
+  React.useEffect(() => {
+    if (focusedFacet && facetRefs[focusedFacet]?.current) {
+      facetRefs[focusedFacet]!.current!.scrollIntoView({
+        block: 'start',
+      })
+    }
+  }, [focusedFacet])
 
   const { data } = useQuery({
     queryKey: ['catalogFacets', filters, triStock],
@@ -28,7 +48,7 @@ export function CatalogFiltersPanel({ filters, onChange }: CatalogFiltersPanelPr
     items: { id: string; name: string; count: number }[],
     key: keyof FacetFilters,
   ) => (
-    <div className="space-y-1">
+    <div ref={facetRefs[key]} className="space-y-2">
       <div className="font-medium text-sm">{label}</div>
       {items.map(item => {
         const isSupplier = key === 'supplier'
@@ -36,28 +56,29 @@ export function CatalogFiltersPanel({ filters, onChange }: CatalogFiltersPanelPr
           ? (filters.supplier ?? []).includes(item.id)
           : (filters as any)[key] === item.id
         return (
-          <button
+          <label
             key={item.id}
-            type="button"
-            onClick={() => {
-              if (isSupplier) {
-                const cur = filters.supplier ?? []
-                const next = selected
-                  ? cur.filter(id => id !== item.id)
-                  : [...cur, item.id]
-                onChange({ supplier: next.length ? next : undefined })
-              } else {
-                onChange({ [key]: selected ? undefined : item.id })
-              }
-            }}
-            className={cn(
-              'flex w-full justify-between text-sm text-left',
-              selected ? 'underline font-semibold' : 'hover:underline',
-            )}
+            className={cn('flex items-center justify-between gap-2 text-sm')}
           >
-            <span>{item.name || 'Unknown'}</span>
+            <div className="flex items-center gap-2">
+              <Checkbox
+                checked={selected}
+                onCheckedChange={checked => {
+                  if (isSupplier) {
+                    const cur = filters.supplier ?? []
+                    const next = checked
+                      ? [...cur, item.id]
+                      : cur.filter(id => id !== item.id)
+                    onChange({ supplier: next.length ? next : undefined })
+                  } else {
+                    onChange({ [key]: checked ? item.id : undefined })
+                  }
+                }}
+              />
+              <span>{item.name || 'Unknown'}</span>
+            </div>
             <span className="text-muted-foreground">{item.count}</span>
-          </button>
+          </label>
         )
       })}
     </div>

@@ -13,11 +13,7 @@ import { HeroSearchInput } from '@/components/search/HeroSearchInput'
 import { FilterChip } from '@/components/ui/filter-chip'
 import { TriStateFilterChip } from '@/components/ui/tri-state-chip'
 import { CatalogFiltersPanel } from '@/components/catalog/CatalogFiltersPanel'
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible'
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import { Button } from '@/components/ui/button'
 import type { FacetFilters, PublicCatalogFilters, OrgCatalogFilters } from '@/services/catalog'
 import {
@@ -146,7 +142,8 @@ export default function CatalogPage() {
   const debouncedSearch = useDebounce(filters.search ?? '', 300)
   const sentinelRef = useRef<HTMLDivElement | null>(null)
   const gridRef = useRef<HTMLDivElement>(null)
-  const [showMoreFilters, setShowMoreFilters] = useState(false)
+  const [showFilters, setShowFilters] = useState(false)
+  const [focusedFacet, setFocusedFacet] = useState<keyof FacetFilters | null>(null)
   const [cols, setCols] = useState(1)
   const stringifiedFilters = useMemo(() => JSON.stringify(filters), [filters])
   const [bannerDismissed, setBannerDismissed] = useState(false)
@@ -220,6 +217,15 @@ export default function CatalogPage() {
       setSearchParams(params, { replace: true })
     }
   }, [triStock, setSearchParams])
+
+  // Persist view selection to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem('catalog-view', view)
+    } catch {
+      /* ignore */
+    }
+  }, [view])
 
 
   useEffect(() => {
@@ -573,8 +579,10 @@ export default function CatalogPage() {
         setView={setView}
         publicError={publicError}
         orgError={orgError}
-        showMoreFilters={showMoreFilters}
-        setShowMoreFilters={setShowMoreFilters}
+        showFilters={showFilters}
+        setShowFilters={setShowFilters}
+        focusedFacet={focusedFacet}
+        setFocusedFacet={setFocusedFacet}
       />
 
       <div className="mt-6 px-4 sm:px-6 lg:px-8 xl:px-10 2xl:px-12">
@@ -659,8 +667,10 @@ interface FiltersBarProps {
   setView: (v: 'grid' | 'list') => void
   publicError: unknown
   orgError: unknown
-  showMoreFilters: boolean
-  setShowMoreFilters: (v: boolean) => void
+  showFilters: boolean
+  setShowFilters: (v: boolean) => void
+  focusedFacet: keyof FacetFilters | null
+  setFocusedFacet: (f: keyof FacetFilters | null) => void
 }
 
 function FiltersBar({
@@ -680,8 +690,10 @@ function FiltersBar({
   setView,
   publicError,
   orgError,
-  showMoreFilters,
-  setShowMoreFilters,
+  showFilters,
+  setShowFilters,
+  focusedFacet,
+  setFocusedFacet,
 }: FiltersBarProps) {
   const ref = React.useRef<HTMLDivElement>(null)
   React.useEffect(() => {
@@ -707,7 +719,10 @@ function FiltersBar({
   const chips = deriveChipsFromFilters(
     filters,
     setFilters,
-    () => setShowMoreFilters(true),
+    facet => {
+      setFocusedFacet(facet)
+      setShowFilters(true)
+    },
   )
   const clearAll = () => {
     setTriStock('off')
@@ -717,25 +732,31 @@ function FiltersBar({
   }
 
   return (
-    <div
-      ref={ref}
-      className="sticky top-0 z-30 border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+    <Sheet
+      open={showFilters}
+      onOpenChange={open => {
+        setShowFilters(open)
+        if (!open) setFocusedFacet(null)
+      }}
     >
-      <div className="py-3 space-y-3">
-        {(publicError || orgError) && (
-          <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
-              {String(publicError || orgError)}
-            </AlertDescription>
-          </Alert>
-        )}
-        <Collapsible open={showMoreFilters} onOpenChange={setShowMoreFilters}>
-            <div className="grid grid-cols-[1fr,auto,auto] gap-3 items-center">
-              <HeroSearchInput
-                placeholder="Search products"
-                value={filters.search ?? ''}
-                onChange={e => setFilters({ search: e.target.value })}
+      <div
+        ref={ref}
+        className="sticky top-0 z-30 border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+      >
+        <div className="py-3 space-y-3">
+          {(publicError || orgError) && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                {String(publicError || orgError)}
+              </AlertDescription>
+            </Alert>
+          )}
+          <div className="grid grid-cols-[1fr,auto,auto] gap-3 items-center">
+            <HeroSearchInput
+              placeholder="Search products"
+              value={filters.search ?? ''}
+              onChange={e => setFilters({ search: e.target.value })}
               rightSlot={
                 <button
                   type="button"
@@ -747,9 +768,9 @@ function FiltersBar({
                 </button>
               }
             />
-              <SortDropdown value={sortOrder} onChange={setSortOrder} />
-              <ViewToggle value={view} onChange={setView} />
-            </div>
+            <SortDropdown value={sortOrder} onChange={setSortOrder} />
+            <ViewToggle value={view} onChange={setView} />
+          </div>
           <div className="mt-3 flex items-center gap-2 overflow-x-auto">
             {/* Disable pricing filter until pricing data is available */}
             {/* <FilterChip selected={onlyWithPrice} onSelectedChange={setOnlyWithPrice}>
@@ -785,25 +806,45 @@ function FiltersBar({
                 </button>
               </div>
             ))}
-            <CollapsibleTrigger asChild>
-              <FilterChip selected={showMoreFilters}>
-                {activeFacetCount ? `More filters (${activeFacetCount})` : 'More filters'}
+            <SheetTrigger asChild>
+              <FilterChip
+                selected={showFilters}
+                aria-controls="catalog-filters-sheet"
+                onClick={() => {
+                  if (!showFilters) {
+                    const first = Object.entries(facetFilters).find(([, v]) =>
+                      Array.isArray(v) ? v.length > 0 : Boolean(v),
+                    )?.[0] as keyof FacetFilters | undefined
+                    setFocusedFacet(first ?? null)
+                  }
+                }}
+              >
+                {activeFacetCount ? `Filters (${activeFacetCount})` : 'More filters'}
               </FilterChip>
-            </CollapsibleTrigger>
-          </div>
-          {activeCount > 0 && (
-            <div className="mt-2 text-sm text-muted-foreground text-right">
-              Filters: {activeCount} active •{' '}
-              <button type="button" className="underline" onClick={clearAll}>
+            </SheetTrigger>
+            {activeCount > 0 && (
+              <button
+                type="button"
+                className="text-sm underline whitespace-nowrap"
+                onClick={clearAll}
+              >
                 Clear all
               </button>
-            </div>
-          )}
-          <CollapsibleContent className="mt-3">
-            <CatalogFiltersPanel filters={filters} onChange={setFilters} />
-          </CollapsibleContent>
-        </Collapsible>
+            )}
+          </div>
+        </div>
       </div>
-    </div>
+      <SheetContent
+        side="right"
+        className="w-3/4 sm:max-w-sm"
+        id="catalog-filters-sheet"
+      >
+        <CatalogFiltersPanel
+          filters={filters}
+          onChange={setFilters}
+          focusedFacet={focusedFacet}
+        />
+      </SheetContent>
+    </Sheet>
   )
 }

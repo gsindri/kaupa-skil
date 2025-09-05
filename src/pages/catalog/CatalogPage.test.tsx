@@ -70,10 +70,10 @@ vi.mock('@/components/catalog/ProductCardSkeleton', () => ({ ProductCardSkeleton
 vi.mock('@/components/search/HeroSearchInput', () => ({ HeroSearchInput: () => <div /> }))
 vi.mock('@/components/ui/filter-chip', () => ({ FilterChip: () => <div /> }))
 vi.mock('@/components/catalog/CatalogFiltersPanel', () => ({ CatalogFiltersPanel: () => <div /> }))
-vi.mock('@/components/ui/collapsible', () => ({
-  Collapsible: ({ children }: any) => <div>{children}</div>,
-  CollapsibleContent: ({ children }: any) => <div>{children}</div>,
-  CollapsibleTrigger: ({ children }: any) => <div>{children}</div>,
+vi.mock('@/components/ui/sheet', () => ({
+  Sheet: ({ children }: any) => <div>{children}</div>,
+  SheetContent: ({ children }: any) => <div>{children}</div>,
+  SheetTrigger: ({ children }: any) => <div>{children}</div>,
 }))
 vi.mock('@/lib/analytics', () => ({
   logFilter: vi.fn(),
