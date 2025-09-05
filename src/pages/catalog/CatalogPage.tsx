@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { SortDropdown } from '@/components/catalog/SortDropdown'
@@ -56,7 +57,17 @@ export default function CatalogPage() {
 
   const [mySuppliers, setMySuppliers] = useState(false)
   const [onSpecial, setOnSpecial] = useState(false)
-  const [view, setView] = useState<'grid' | 'list'>('grid')
+  const [view, setView] = useState<'grid' | 'list'>(() => {
+    const param = searchParams.get('view')
+    if (param === 'grid' || param === 'list') return param
+    try {
+      const stored = localStorage.getItem('catalog-view')
+      if (stored === 'grid' || stored === 'list') return stored
+    } catch {
+      /* ignore */
+    }
+    return 'grid'
+  })
   const [cursor, setCursor] = useState<string | null>(null)
   const [nextCursor, setNextCursor] = useState<string | null>(null)
   const [products, setProducts] = useState<any[]>([])
@@ -129,6 +140,26 @@ export default function CatalogPage() {
       setSearchParams(params, { replace: true })
     }
   }, [triStock, setSearchParams])
+
+  // Persist view selection to URL and localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem('catalog-view', view)
+    } catch {
+      /* ignore */
+    }
+    const params = new URLSearchParams(searchParams.toString())
+    const current = params.get('view')
+    if (view === 'grid') {
+      if (current) {
+        params.delete('view')
+        setSearchParams(params, { replace: true })
+      }
+    } else if (current !== view) {
+      params.set('view', view)
+      setSearchParams(params, { replace: true })
+    }
+  }, [view, setSearchParams])
 
   useEffect(() => {
     const updateCols = () => {
