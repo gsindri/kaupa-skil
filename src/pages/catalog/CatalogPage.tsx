@@ -928,7 +928,7 @@ function FiltersBar({
             {chips.map(chip => (
               <div
                 key={chip.key}
-                className="flex items-center rounded-full border px-3 py-1 text-sm"
+                className="flex items-center rounded-full border border-primary bg-primary px-3 py-1 text-sm text-primary-foreground"
               >
                 <button
                   type="button"
@@ -942,7 +942,7 @@ function FiltersBar({
                   type="button"
                   onClick={chip.onRemove}
                   aria-label={`Remove filter: ${chip.label}`}
-                  className="ml-1 text-muted-foreground hover:text-foreground"
+                  className="ml-1 text-primary-foreground/70 hover:text-primary-foreground"
                 >
                   <X className="h-3 w-3" />
                 </button>
