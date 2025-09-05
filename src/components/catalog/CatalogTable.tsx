@@ -26,7 +26,7 @@ import { timeAgo } from '@/lib/timeAgo'
 import { formatCurrency } from '@/lib/format'
 import type { FacetFilters } from '@/services/catalog'
 import ProductThumb from '@/components/catalog/ProductThumb'
-import SupplierList from '@/components/catalog/SupplierList'
+import SupplierChips from '@/components/catalog/SupplierChips'
 import { resolveImage } from '@/lib/images'
 import { Lock } from 'lucide-react'
 import { toast } from '@/hooks/use-toast'
@@ -85,45 +85,45 @@ export function CatalogTable({
     <Table>
       <TableHeader className="sticky top-0 z-10 bg-background">
         <TableRow>
-          {isBulkMode && (
-            <TableHead className="w-8 px-2">
-              <Checkbox
-                aria-label="Select all products"
-                checked={isAllSelected}
-                onCheckedChange={onSelectAll}
-              />
-            </TableHead>
-          )}
-          <TableHead className="w-10 px-2">Image</TableHead>
+            {isBulkMode && (
+              <TableHead className="w-8 px-3">
+                <Checkbox
+                  aria-label="Select all products"
+                  checked={isAllSelected}
+                  onCheckedChange={onSelectAll}
+                />
+              </TableHead>
+            )}
+          <TableHead className="w-10 px-3">Image</TableHead>
           <TableHead
-            className="[width:minmax(0,1fr)] cursor-pointer select-none px-2"
+            className="[width:minmax(0,1fr)] cursor-pointer select-none px-3"
             onClick={() => onSort('name')}
           >
             Name {sort?.key === 'name' && (sort?.direction === 'asc' ? '▲' : '▼')}
           </TableHead>
           <TableHead
-            className="w-[120px] px-2 text-center cursor-pointer select-none"
+            className="w-[120px] px-3 text-center cursor-pointer select-none"
             onClick={() => onSort('availability')}
           >
             Availability {sort?.key === 'availability' && (sort?.direction === 'asc' ? '▲' : '▼')}
           </TableHead>
           <TableHead
-            className="w-[120px] text-right px-2 cursor-pointer select-none"
+            className="w-[136px] text-right px-3 pl-8 cursor-pointer select-none border-r"
             onClick={() => onSort('price')}
           >
             Price {sort?.key === 'price' && (sort?.direction === 'asc' ? '▲' : '▼')}
           </TableHead>
           <TableHead
-            className="w-40 min-w-[140px] max-w-[180px] cursor-pointer select-none px-2"
+            className="w-[220px] min-w-[180px] max-w-[220px] cursor-pointer select-none px-3"
             onClick={() => onSort('supplier')}
           >
             Suppliers {sort?.key === 'supplier' && (sort?.direction === 'asc' ? '▲' : '▼')}
           </TableHead>
         </TableRow>
         <TableRow>
-          {isBulkMode && <TableHead className="px-2" />}
-          <TableHead className="px-2" />
-          <TableHead className="px-2">
+          {isBulkMode && <TableHead className="px-3" />}
+          <TableHead className="px-3" />
+          <TableHead className="px-3">
             {showBrandFilter && (
               <Select
                 value={brandValues[0] ?? 'all'}
@@ -145,10 +145,10 @@ export function CatalogTable({
               </Select>
             )}
           </TableHead>
-          <TableHead className="px-2">
+          <TableHead className="px-3">
             {/* Availability filter removed */}
           </TableHead>
-          <TableHead className="w-[120px] px-2" />
+          <TableHead className="w-[136px] px-3 pl-8 border-r" />
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -173,7 +173,7 @@ export function CatalogTable({
               className="group h-[52px] border-b hover:bg-muted/50 focus-visible:bg-muted/50"
             >
               {isBulkMode && (
-                <TableCell className="w-8 p-2">
+                <TableCell className="w-8 px-3 py-2">
                   <Checkbox
                     aria-label={`Select ${p.name}`}
                     checked={isSelected}
@@ -181,7 +181,7 @@ export function CatalogTable({
                   />
                 </TableCell>
               )}
-              <TableCell className="w-10 p-2">
+              <TableCell className="w-10 px-3 py-2">
                 <ProductThumb
                   className="h-10 w-10"
                   src={resolveImage(
@@ -192,7 +192,7 @@ export function CatalogTable({
                   brand={p.brand}
                 />
               </TableCell>
-              <TableCell className="px-2">
+              <TableCell className="px-3 py-2">
                 <div className="flex items-center gap-2">
                   <a
                     href={`#${p.catalog_id}`}
@@ -207,7 +207,7 @@ export function CatalogTable({
                   />
                 </div>
               </TableCell>
-              <TableCell className="w-[120px] p-2 text-center">
+              <TableCell className="w-[120px] px-3 py-2 text-center">
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <AvailabilityBadge
@@ -224,14 +224,14 @@ export function CatalogTable({
                   </TooltipContent>
                 </Tooltip>
               </TableCell>
-              <TableCell className="w-[120px] p-2 text-right whitespace-nowrap">
+              <TableCell className="w-[136px] px-3 pl-8 py-2 text-right border-r whitespace-nowrap">
                 <PriceCell product={p} vendors={vendors} />
               </TableCell>
-              <TableCell className="min-w-[140px] max-w-[180px] w-40 p-2 whitespace-nowrap">
-                {p.suppliers?.length ? (
-                  <SupplierList suppliers={p.suppliers} locked={p.prices_locked ?? p.price_locked} />
+              <TableCell className="w-[220px] min-w-[180px] max-w-[220px] px-3 py-2">
+                {p.supplier_products?.length ? (
+                  <SupplierChips suppliers={p.supplier_products} />
                 ) : (
-                  <span className="text-muted-foreground">—</span>
+                  <div className="flex justify-center text-muted-foreground">—</div>
                 )}
               </TableCell>
             </TableRow>
