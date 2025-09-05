@@ -72,30 +72,27 @@ vi.mock('@/components/catalog/ProductCardSkeleton', () => ({ ProductCardSkeleton
 vi.mock('@/components/search/HeroSearchInput', () => ({ HeroSearchInput: () => <div /> }))
 vi.mock('@/components/ui/filter-chip', () => ({ FilterChip: () => <div /> }))
 vi.mock('@/components/catalog/CatalogFiltersPanel', () => ({ CatalogFiltersPanel: () => <div /> }))
-vi.mock('@/components/ui/tri-state-chip', () => {
-  const React = require('react')
-  return {
-    TriStateFilterChip: ({ includeLabel, excludeLabel, offLabel, onStateChange }: any) => {
-      const [state, setState] = React.useState<'off' | 'include' | 'exclude'>('off')
-      const labels: Record<string, string> = {
-        include: includeLabel,
-        exclude: excludeLabel,
-        off: offLabel,
-      }
-      return (
-        <button
-          onClick={() => {
-            const next = state === 'off' ? 'include' : state === 'include' ? 'exclude' : 'off'
-            setState(next)
-            onStateChange(next)
-          }}
-        >
-          {labels[state]}
-        </button>
-      )
-    },
-  }
-})
+vi.mock('@/components/ui/tri-state-chip', () => ({
+  TriStateFilterChip: ({ includeLabel, excludeLabel, offLabel, onStateChange }: any) => {
+    const [state, setState] = React.useState<'off' | 'include' | 'exclude'>('off')
+    const labels: Record<string, string> = {
+      include: includeLabel,
+      exclude: excludeLabel,
+      off: offLabel,
+    }
+    return (
+      <button
+        onClick={() => {
+          const next = state === 'off' ? 'include' : state === 'include' ? 'exclude' : 'off'
+          setState(next)
+          onStateChange(next)
+        }}
+      >
+        {labels[state]}
+      </button>
+    )
+  },
+}))
 vi.mock('@/components/ui/sheet', () => ({
   Sheet: ({ children }: any) => <div>{children}</div>,
   SheetContent: ({ children }: any) => <div>{children}</div>,
