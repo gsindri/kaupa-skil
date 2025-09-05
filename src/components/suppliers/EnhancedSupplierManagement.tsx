@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { SupplierList } from './SupplierList'
 import { SupplierCredentialsForm } from './SupplierCredentialsForm'
 import { IngestionRunsList } from './IngestionRunsList'
@@ -23,8 +23,21 @@ export function EnhancedSupplierManagement() {
   const [selectedSupplier, setSelectedSupplier] = useState<string | null>(null)
   const [harUploadOpen, setHarUploadOpen] = useState(false)
   const [processingSupplier, setProcessingSupplier] = useState<string | null>(null)
+  const previousSupplierCount = useRef(0)
 
   const { items: selectedSupplierItems, stats: itemStats } = useSupplierItems(selectedSupplier || undefined)
+
+  useEffect(() => {
+    if (
+      suppliers &&
+      suppliers.length > 0 &&
+      previousSupplierCount.current === 0 &&
+      !selectedSupplier
+    ) {
+      setSelectedSupplier(suppliers[0].id)
+    }
+    previousSupplierCount.current = suppliers?.length ?? 0
+  }, [suppliers, selectedSupplier])
 
   const handleSelectSupplier = (supplierId: string) => {
     setSelectedSupplier(supplierId)
@@ -114,7 +127,11 @@ export function EnhancedSupplierManagement() {
         </TabsContent>
 
         <TabsContent value="items" className="space-y-6">
-          {selectedSupplier && selectedSupplierData ? (
+          {!suppliers || suppliers.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              No suppliers found. Add a supplier to view items and sync status
+            </div>
+          ) : selectedSupplier && selectedSupplierData ? (
             <div className="space-y-6">
               <HarSyncStatus
                 supplierId={selectedSupplier}
@@ -124,14 +141,14 @@ export function EnhancedSupplierManagement() {
                 onHarUpload={() => handleHarUpload(selectedSupplier)}
                 isProcessing={processingSupplier === selectedSupplier}
               />
-              
+
               {/* Add Bookmarklet Sync option */}
               <BookmarkletSync
                 tenantId={profile?.tenant_id || ''}
                 supplierId={selectedSupplier}
                 supplierDomainHint={getDomainHint(selectedSupplierData.website)}
               />
-              
+
               <SupplierItemsWithHarInfo
                 items={selectedSupplierItems}
                 supplierId={selectedSupplier}
