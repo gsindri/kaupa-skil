@@ -150,12 +150,13 @@ export default function CatalogPage() {
   const setSortOrder = useCatalogFilters(s => s.setSort)
   const triStock = useCatalogFilters(s => s.triStock)
   const setTriStock = useCatalogFilters(s => s.setTriStock)
+  const triSpecial = useCatalogFilters(s => s.triSpecial)
+  const setTriSpecial = useCatalogFilters(s => s.setTriSpecial)
   const triSuppliers = useCatalogFilters(s => s.triSuppliers)
   const setTriSuppliers = useCatalogFilters(s => s.setTriSuppliers)
 
   const [searchParams, setSearchParams] = useSearchParams()
 
-  const [triSpecial, setTriSpecial] = useState<TriState>('off')
   const [view, setView] = useState<'grid' | 'list'>(() => {
     const param = searchParams.get('view')
     if (param === 'grid' || param === 'list') return param
@@ -240,7 +241,6 @@ export default function CatalogPage() {
     if (suppliersParam === 'include' || suppliersParam === 'exclude') {
       setTriSuppliers(suppliersParam as TriState)
     }
-    const specialParam = searchParams.get('onSpecial')
     if (specialParam === 'include' || specialParam === 'exclude') {
       setTriSpecial(specialParam as TriState)
     }
@@ -276,6 +276,21 @@ export default function CatalogPage() {
       setSearchParams(params, { replace: true })
     }
   }, [triStock, searchParams, setSearchParams])
+
+  // Persist special selection to URL
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams.toString())
+    const current = params.get('special')
+    if (triSpecial === 'off') {
+      if (current) {
+        params.delete('special')
+        setSearchParams(params, { replace: true })
+      }
+    } else if (current !== triSpecial) {
+      params.set('special', triSpecial)
+      setSearchParams(params, { replace: true })
+    }
+  }, [triSpecial, searchParams, setSearchParams])
 
   // Persist my suppliers selection to URL
   useEffect(() => {
@@ -395,7 +410,6 @@ export default function CatalogPage() {
       ...filters,
       search: debouncedSearch || undefined,
       ...(onlyWithPrice ? { onlyWithPrice: true } : {}),
-      ...(triSpecial !== 'off' ? { onSpecial: triSpecial === 'include' } : {}),
       ...(availability ? { availability } : {}),
       cursor,
     }),
@@ -407,7 +421,6 @@ export default function CatalogPage() {
       search: debouncedSearch || undefined,
       onlyWithPrice,
       ...(triSuppliers !== 'off' ? { mySuppliers: triSuppliers } : {}),
-      ...(triSpecial !== 'off' ? { onSpecial: triSpecial === 'include' } : {}),
       ...(availability ? { availability } : {}),
       cursor,
     }),
@@ -446,7 +459,6 @@ export default function CatalogPage() {
       onlyWithPrice,
       triStock,
       mySuppliers: triSuppliers,
-      onSpecial: triSpecial !== 'off' ? triSpecial : undefined,
       sort: sortOrder,
     })
   }, [filters, onlyWithPrice, triStock, triSuppliers, triSpecial, sortOrder])
@@ -532,7 +544,6 @@ export default function CatalogPage() {
         onlyWithPrice,
         triStock,
         mySuppliers: triSuppliers,
-        onSpecial: triSpecial !== 'off' ? triSpecial : undefined,
         sort: sortOrder,
       })
     }
@@ -684,10 +695,10 @@ export default function CatalogPage() {
         setOnlyWithPrice={setOnlyWithPrice}
         triStock={triStock}
         setTriStock={setTriStock}
-        triSuppliers={triSuppliers}
-        setTriSuppliers={setTriSuppliers}
         triSpecial={triSpecial}
         setTriSpecial={setTriSpecial}
+        triSuppliers={triSuppliers}
+        setTriSuppliers={setTriSuppliers}
         sortOrder={sortOrder}
         setSortOrder={setSortOrder}
         view={view}
@@ -772,10 +783,10 @@ interface FiltersBarProps {
   setOnlyWithPrice: (v: boolean) => void
   triStock: TriState
   setTriStock: (v: TriState) => void
-  triSuppliers: TriState
-  setTriSuppliers: (v: TriState) => void
   triSpecial: TriState
   setTriSpecial: (v: TriState) => void
+  triSuppliers: TriState
+  setTriSuppliers: (v: TriState) => void
   sortOrder: SortOrder
   setSortOrder: (v: SortOrder) => void
   view: 'grid' | 'list'
@@ -795,10 +806,10 @@ function FiltersBar({
   setOnlyWithPrice,
   triStock,
   setTriStock,
-  triSuppliers,
-  setTriSuppliers,
   triSpecial,
   setTriSpecial,
+  triSuppliers,
+  setTriSuppliers,
   sortOrder,
   setSortOrder,
   view,
@@ -915,10 +926,6 @@ function FiltersBar({
               state={triSpecial}
               onStateChange={setTriSpecial}
               includeLabel="On special"
-              excludeLabel="Not on special"
-              offLabel="All specials"
-              includeClassName="bg-purple-500 text-white border-purple-500"
-              excludeClassName="bg-red-500 text-white border-red-500"
             />
             {chips.map(chip => (
               <div
