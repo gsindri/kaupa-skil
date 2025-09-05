@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { Package } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -8,6 +9,8 @@ interface ProductThumbProps {
   name: string
   brand?: string | null
   className?: string
+  stale?: boolean
+  staleInfo?: string
 }
 
 export default function ProductThumb({
@@ -15,6 +18,8 @@ export default function ProductThumb({
   name,
   brand,
   className,
+  stale,
+  staleInfo,
 }: ProductThumbProps) {
   const [loaded, setLoaded] = useState(false)
   const [error, setError] = useState(false)
@@ -63,6 +68,16 @@ export default function ProductThumb({
             )}
           />
         </>
+      )}
+      {stale && (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span className="absolute left-0 top-0 rounded-br bg-yellow-200 px-1 text-[8px] font-medium text-yellow-800">
+              Stale
+            </span>
+          </TooltipTrigger>
+          {staleInfo && <TooltipContent className="max-w-[200px] text-xs">{staleInfo}</TooltipContent>}
+        </Tooltip>
       )}
     </div>
   )
