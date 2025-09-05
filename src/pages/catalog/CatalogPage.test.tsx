@@ -100,6 +100,8 @@ vi.mock('@/state/catalogFilters', () => ({
       setSort: vi.fn(),
       triStock: 'off',
       setTriStock: vi.fn(),
+      triSuppliers: 'off',
+      setTriSuppliers: vi.fn(),
     }),
   shallow: (fn: any) => fn,
   SortOrder: {},

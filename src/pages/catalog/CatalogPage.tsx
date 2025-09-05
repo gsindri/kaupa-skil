@@ -27,7 +27,7 @@ import { ViewToggle } from '@/components/place-order/ViewToggle'
 import { LayoutDebugger } from '@/components/debug/LayoutDebugger'
 import { FullWidthLayout } from '@/components/layout/FullWidthLayout'
 import { useCatalogFilters, SortOrder, triStockToAvailability } from '@/state/catalogFilters'
-import type { TriStock } from '@/state/catalogFilters'
+import type { TriState } from '@/state/catalogFilters'
 import { useCart } from '@/contexts/useBasket'
 import type { CartItem } from '@/lib/types'
 import { resolveImage } from '@/lib/images'
@@ -150,10 +150,11 @@ export default function CatalogPage() {
   const setSortOrder = useCatalogFilters(s => s.setSort)
   const triStock = useCatalogFilters(s => s.triStock)
   const setTriStock = useCatalogFilters(s => s.setTriStock)
+  const triSuppliers = useCatalogFilters(s => s.triSuppliers)
+  const setTriSuppliers = useCatalogFilters(s => s.setTriSuppliers)
 
   const [searchParams, setSearchParams] = useSearchParams()
 
-  const [mySuppliers, setMySuppliers] = useState(false)
   const [onSpecial, setOnSpecial] = useState(false)
   const [view, setView] = useState<'grid' | 'list'>(() => {
     const param = searchParams.get('view')
@@ -213,7 +214,7 @@ export default function CatalogPage() {
   useEffect(() => {
     const param = searchParams.get('stock')
     if (param === 'include' || param === 'exclude') {
-      setTriStock(param as TriStock)
+      setTriStock(param as TriState)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -235,7 +236,10 @@ export default function CatalogPage() {
       f.packSizeRange = { min, max }
     }
     if (Object.keys(f).length) setFilters(f)
-    if (searchParams.get('mySuppliers') === 'true') setMySuppliers(true)
+    const suppliersParam = searchParams.get('mySuppliers')
+    if (suppliersParam === 'include' || suppliersParam === 'exclude') {
+      setTriSuppliers(suppliersParam as TriState)
+    }
     if (searchParams.get('onSpecial') === 'true') setOnSpecial(true)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -269,6 +273,21 @@ export default function CatalogPage() {
       setSearchParams(params, { replace: true })
     }
   }, [triStock, searchParams, setSearchParams])
+
+  // Persist my suppliers selection to URL
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams.toString())
+    const current = params.get('mySuppliers')
+    if (triSuppliers === 'off') {
+      if (current) {
+        params.delete('mySuppliers')
+        setSearchParams(params, { replace: true })
+      }
+    } else if (current !== triSuppliers) {
+      params.set('mySuppliers', triSuppliers)
+      setSearchParams(params, { replace: true })
+    }
+  }, [triSuppliers, searchParams, setSearchParams])
 
   // Persist facet filters to URL
   useEffect(() => {
@@ -337,7 +356,7 @@ export default function CatalogPage() {
     onlyWithPrice,
     orgId,
     triStock,
-    mySuppliers,
+    triSuppliers,
     onSpecial,
     sortOrder,
     stringifiedFilters,
@@ -369,7 +388,7 @@ export default function CatalogPage() {
       ...filters,
       search: debouncedSearch || undefined,
       onlyWithPrice,
-      ...(mySuppliers ? { mySuppliers: true } : {}),
+      ...(triSuppliers !== 'off' ? { mySuppliers: triSuppliers } : {}),
       ...(onSpecial ? { onSpecial: true } : {}),
       ...(availability ? { availability } : {}),
       cursor,
@@ -378,7 +397,7 @@ export default function CatalogPage() {
       filters,
       debouncedSearch,
       onlyWithPrice,
-      mySuppliers,
+      triSuppliers,
       onSpecial,
       availability,
       cursor,
@@ -408,11 +427,11 @@ export default function CatalogPage() {
       ...filters,
       onlyWithPrice,
       triStock,
-      mySuppliers,
+      mySuppliers: triSuppliers,
       onSpecial,
       sort: sortOrder,
     })
-  }, [filters, onlyWithPrice, triStock, mySuppliers, onSpecial, sortOrder])
+  }, [filters, onlyWithPrice, triStock, triSuppliers, onSpecial, sortOrder])
 
   useEffect(() => {
     if (debouncedSearch) logSearch(debouncedSearch)
@@ -432,8 +451,8 @@ export default function CatalogPage() {
   }, [onlyWithPrice])
 
   useEffect(() => {
-    logFacetInteraction('mySuppliers', mySuppliers)
-  }, [mySuppliers])
+    logFacetInteraction('mySuppliers', triSuppliers)
+  }, [triSuppliers])
 
   useEffect(() => {
     logFacetInteraction('onSpecial', onSpecial)
@@ -494,7 +513,7 @@ export default function CatalogPage() {
         ...filters,
         onlyWithPrice,
         triStock,
-        mySuppliers,
+        mySuppliers: triSuppliers,
         onSpecial,
         sort: sortOrder,
       })
@@ -507,7 +526,7 @@ export default function CatalogPage() {
     filters,
     onlyWithPrice,
     triStock,
-    mySuppliers,
+    triSuppliers,
     onSpecial,
     sortOrder,
   ])
@@ -647,8 +666,8 @@ export default function CatalogPage() {
         setOnlyWithPrice={setOnlyWithPrice}
         triStock={triStock}
         setTriStock={setTriStock}
-        mySuppliers={mySuppliers}
-        setMySuppliers={setMySuppliers}
+        triSuppliers={triSuppliers}
+        setTriSuppliers={setTriSuppliers}
         onSpecial={onSpecial}
         setOnSpecial={setOnSpecial}
         sortOrder={sortOrder}
@@ -733,10 +752,10 @@ interface FiltersBarProps {
   setFilters: (f: Partial<FacetFilters>) => void
   onlyWithPrice: boolean
   setOnlyWithPrice: (v: boolean) => void
-  triStock: TriStock
-  setTriStock: (v: TriStock) => void
-  mySuppliers: boolean
-  setMySuppliers: (v: boolean) => void
+  triStock: TriState
+  setTriStock: (v: TriState) => void
+  triSuppliers: TriState
+  setTriSuppliers: (v: TriState) => void
   onSpecial: boolean
   setOnSpecial: (v: boolean) => void
   sortOrder: SortOrder
@@ -758,8 +777,8 @@ function FiltersBar({
   setOnlyWithPrice,
   triStock,
   setTriStock,
-  mySuppliers,
-  setMySuppliers,
+  triSuppliers,
+  setTriSuppliers,
   onSpecial,
   setOnSpecial,
   sortOrder,
@@ -791,7 +810,7 @@ function FiltersBar({
   ).length
   const activeCount =
     (triStock !== 'off' ? 1 : 0) +
-    (mySuppliers ? 1 : 0) +
+    (triSuppliers !== 'off' ? 1 : 0) +
     (onSpecial ? 1 : 0) +
     activeFacetCount
   const chips = deriveChipsFromFilters(
@@ -804,7 +823,7 @@ function FiltersBar({
   )
   const clearAll = () => {
     setTriStock('off')
-    setMySuppliers(false)
+    setTriSuppliers('off')
     setOnSpecial(false)
     setFilters({})
   }
@@ -855,9 +874,14 @@ function FiltersBar({
                Only with price
              </FilterChip> */}
             <TriStateFilterChip state={triStock} onStateChange={setTriStock} />
-            <FilterChip selected={mySuppliers} onSelectedChange={setMySuppliers}>
-              My suppliers
-            </FilterChip>
+            <TriStateFilterChip
+              state={triSuppliers}
+              onStateChange={setTriSuppliers}
+              includeLabel="My suppliers"
+              excludeLabel="Not my suppliers"
+              includeAriaLabel="Filter: my suppliers only"
+              excludeAriaLabel="Filter: not my suppliers"
+            />
             <FilterChip selected={onSpecial} onSelectedChange={setOnSpecial}>
               On special
             </FilterChip>
