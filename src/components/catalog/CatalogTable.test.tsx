@@ -12,7 +12,7 @@ vi.mock('@/hooks/useVendors', () => ({
   useVendors: () => ({ vendors: [] }),
 }))
 
-vi.mock('@/components/catalog/SupplierList', () => ({
+vi.mock('@/components/catalog/SupplierChips', () => ({
   default: () => <div />,
 }))
 
