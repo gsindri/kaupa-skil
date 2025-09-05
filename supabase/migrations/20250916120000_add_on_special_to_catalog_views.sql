@@ -23,14 +23,32 @@ SELECT
   NULL::numeric AS best_price,
   MAX(sp.source_url) AS sample_source_url,
   CASE
-    WHEN COUNT(CASE WHEN sp.availability_text ILIKE '%ekki til á lager%' OR sp.availability_text ILIKE '%out of stock%' OR sp.availability_text ILIKE '%unavailable%' THEN 1 END) > 0
-         AND COUNT(CASE WHEN sp.availability_text ILIKE '%til á lager%' AND sp.availability_text NOT ILIKE '%ekki til á lager%' THEN 1 END) = 0
+    WHEN COUNT(
+           CASE WHEN lower(unaccent(sp.availability_text)) ~* '\yekki\s+til\s+a\s+lager\y'
+                     OR lower(unaccent(sp.availability_text)) ~* '\yout\s+of\s+stock\y'
+                     OR lower(unaccent(sp.availability_text)) ~* '\yunavailable\y'
+                THEN 1 END
+         ) > 0
+         AND COUNT(
+           CASE WHEN lower(unaccent(sp.availability_text)) ~* '\ytil\s+a\s+lager\y'
+                     AND lower(unaccent(sp.availability_text)) !~* '\yekki\s+til\s+a\s+lager\y'
+                THEN 1 END
+         ) = 0
       THEN 'OUT_OF_STOCK'
-    WHEN COUNT(CASE WHEN (sp.availability_text ILIKE '%til á lager%' AND sp.availability_text NOT ILIKE '%ekki til á lager%')
-                      OR sp.availability_text ILIKE '%in stock%'
-                      OR sp.availability_text ILIKE '%available%' THEN 1 END) > 0
+    WHEN COUNT(
+           CASE WHEN (lower(unaccent(sp.availability_text)) ~* '\ytil\s+a\s+lager\y'
+                        AND lower(unaccent(sp.availability_text)) !~* '\yekki\s+til\s+a\s+lager\y')
+                     OR lower(unaccent(sp.availability_text)) ~* '\yin\s+stock\y'
+                     OR lower(unaccent(sp.availability_text)) ~* '\yavailable\y'
+                THEN 1 END
+         ) > 0
       THEN 'IN_STOCK'
-    WHEN COUNT(CASE WHEN sp.availability_text ILIKE '%lítið magn%' OR sp.availability_text ILIKE '%low stock%' OR sp.availability_text ILIKE '%limited%' THEN 1 END) > 0
+    WHEN COUNT(
+           CASE WHEN lower(unaccent(sp.availability_text)) ~* '\ylitid\s+magn\y'
+                     OR lower(unaccent(sp.availability_text)) ~* '\ylow\s+stock\y'
+                     OR lower(unaccent(sp.availability_text)) ~* '\ylimited\y'
+                THEN 1 END
+         ) > 0
       THEN 'LOW_STOCK'
     ELSE 'UNKNOWN'
   END AS availability_status,
