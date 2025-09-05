@@ -63,13 +63,39 @@ vi.mock('@/hooks/useOrgCatalog', () => ({
 }))
 vi.mock('@/hooks/useDebounce', () => ({ useDebounce: (v: any) => v }))
 vi.mock('@/components/catalog/CatalogTable', () => ({
-  CatalogTable: () => <div data-testid="catalog-table" />,
+  CatalogTable: ({ products }: any) => (
+    <div data-testid="catalog-table">{products.length}</div>
+  ),
 }))
 vi.mock('@/components/catalog/ProductCard', () => ({ ProductCard: () => <div /> }))
 vi.mock('@/components/catalog/ProductCardSkeleton', () => ({ ProductCardSkeleton: () => <div /> }))
 vi.mock('@/components/search/HeroSearchInput', () => ({ HeroSearchInput: () => <div /> }))
 vi.mock('@/components/ui/filter-chip', () => ({ FilterChip: () => <div /> }))
 vi.mock('@/components/catalog/CatalogFiltersPanel', () => ({ CatalogFiltersPanel: () => <div /> }))
+vi.mock('@/components/ui/tri-state-chip', () => {
+  const React = require('react')
+  return {
+    TriStateFilterChip: ({ includeLabel, excludeLabel, offLabel, onStateChange }: any) => {
+      const [state, setState] = React.useState<'off' | 'include' | 'exclude'>('off')
+      const labels: Record<string, string> = {
+        include: includeLabel,
+        exclude: excludeLabel,
+        off: offLabel,
+      }
+      return (
+        <button
+          onClick={() => {
+            const next = state === 'off' ? 'include' : state === 'include' ? 'exclude' : 'off'
+            setState(next)
+            onStateChange(next)
+          }}
+        >
+          {labels[state]}
+        </button>
+      )
+    },
+  }
+})
 vi.mock('@/components/ui/sheet', () => ({
   Sheet: ({ children }: any) => <div>{children}</div>,
   SheetContent: ({ children }: any) => <div>{children}</div>,
@@ -131,6 +157,27 @@ describe('CatalogPage', () => {
     localStorage.setItem('catalog-view', 'list')
     render(<CatalogPage />)
     expect(screen.getByTestId('catalog-table')).toBeInTheDocument()
+  })
+
+  it('cycles triSuppliers filter without clearing results', async () => {
+    render(<CatalogPage />)
+    await userEvent.click(screen.getByText('list'))
+
+    // initial state: off
+    await screen.findByText('All suppliers')
+    await screen.findByText('8')
+
+    await userEvent.click(screen.getByText('All suppliers'))
+    await screen.findByText('My suppliers')
+    await screen.findByText('8')
+
+    await userEvent.click(screen.getByText('My suppliers'))
+    await screen.findByText('Not my suppliers')
+    await screen.findByText('8')
+
+    await userEvent.click(screen.getByText('Not my suppliers'))
+    await screen.findByText('All suppliers')
+    await screen.findByText('8')
   })
 })
 
