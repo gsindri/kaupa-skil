@@ -22,13 +22,11 @@ interface SupplierChipsProps {
   suppliers: SupplierInfo[]
 }
 
-const AVAILABILITY_ORDER: Record<Availability | 'UNKNOWN', number> = {
+const AVAILABILITY_ORDER: Record<string, number> = {
   IN_STOCK: 0,
   LOW_STOCK: 1,
   OUT_OF_STOCK: 2,
   UNKNOWN: 3,
-  null: 3,
-  undefined: 3,
 }
 
 export default function SupplierChips({ suppliers }: SupplierChipsProps) {
@@ -36,8 +34,8 @@ export default function SupplierChips({ suppliers }: SupplierChipsProps) {
 
   const sorted = [...suppliers].sort((a, b) => {
     if (a.is_connected !== b.is_connected) return a.is_connected ? -1 : 1
-    const aOrder = AVAILABILITY_ORDER[a.availability_state ?? 'UNKNOWN']
-    const bOrder = AVAILABILITY_ORDER[b.availability_state ?? 'UNKNOWN']
+    const aOrder = AVAILABILITY_ORDER[a.availability_state || 'UNKNOWN']
+    const bOrder = AVAILABILITY_ORDER[b.availability_state || 'UNKNOWN']
     if (aOrder !== bOrder) return aOrder - bOrder
     return a.supplier_name.localeCompare(b.supplier_name)
   })
