@@ -3,8 +3,10 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from './use-toast'
 
-type Supplier = any
-type SupplierInsert = any
+import type { Database } from '@/lib/types'
+
+type Supplier = Database['public']['Tables']['suppliers']['Row']
+type SupplierInsert = Database['public']['Tables']['suppliers']['Insert']
 
 export function useSuppliers() {
   const queryClient = useQueryClient()

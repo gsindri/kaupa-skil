@@ -292,6 +292,7 @@ export interface CatalogSupplier {
   availability: string | null
   price: number | null
   currency: string | null
+  logo_url: string | null
 }
 
 export async function fetchCatalogItemSuppliers(
@@ -301,7 +302,7 @@ export async function fetchCatalogItemSuppliers(
   const { data, error } = await supabase
     .from('supplier_product')
     .select(
-      'supplier_id, pack_size, availability_text, suppliers(name), offer(price, currency, org_id)'
+      'supplier_id, pack_size, availability_text, suppliers(name, logo_url), offer(price, currency, org_id)'
     )
     .eq('catalog_id', catalogId)
 
@@ -319,6 +320,7 @@ export async function fetchCatalogItemSuppliers(
     return {
       supplier_id: item.supplier_id,
       name: supplier?.name ?? '',
+      logo_url: supplier?.logo_url ?? null,
       pack_size: item.pack_size ?? null,
       availability: item.availability_text ?? null,
       price: offer?.price ?? null,

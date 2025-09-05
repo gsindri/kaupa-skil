@@ -14,7 +14,7 @@ const supabase = createClient(url, serviceKey)
 async function seed() {
   const { data: supplier, error: supplierErr } = await supabase
     .from('suppliers')
-    .insert({ name: 'Demo Supplier' })
+    .insert({ name: 'Demo Supplier', logo_url: '/placeholder.svg' })
     .select('id')
     .single()
   if (supplierErr) throw supplierErr
