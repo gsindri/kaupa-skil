@@ -74,7 +74,9 @@ vi.mock('@/components/catalog/CatalogTable', () => ({
 vi.mock('@/components/catalog/ProductCard', () => ({ ProductCard: () => <div /> }))
 vi.mock('@/components/catalog/ProductCardSkeleton', () => ({ ProductCardSkeleton: () => <div /> }))
 vi.mock('@/components/search/HeroSearchInput', () => ({ HeroSearchInput: () => <div /> }))
-vi.mock('@/components/ui/filter-chip', () => ({ FilterChip: () => <div /> }))
+vi.mock('@/components/ui/filter-chip', () => ({
+  FilterChip: ({ children }: any) => <div>{children}</div>,
+}))
 vi.mock('@/components/catalog/CatalogFiltersPanel', () => ({ CatalogFiltersPanel: () => <div /> }))
 vi.mock('@/components/ui/sheet', () => ({
   Sheet: ({ children }: any) => <div>{children}</div>,
@@ -128,7 +130,11 @@ describe('CatalogPage', () => {
     localStorage.clear()
     useCatalogProductsMock.mockClear()
     useOrgCatalogMock.mockClear()
-    catalogFiltersStore.setState({ triSpecial: 'off', triSuppliers: 'off' })
+    catalogFiltersStore.setState({
+      triSpecial: 'off',
+      triSuppliers: 'off',
+      filters: {},
+    })
   })
 
   it('shows banner when connect pills are hidden', async () => {
@@ -165,6 +171,12 @@ describe('CatalogPage', () => {
     await userEvent.click(screen.getByText('Not my suppliers'))
     await screen.findByText('All suppliers')
     await screen.findByText('8')
+  })
+
+  it('counts multiple selections in a single facet', async () => {
+    catalogFiltersStore.setState({ filters: { supplier: ['s1', 's2'] } })
+    render(<CatalogPage />)
+    expect(await screen.findByText('Filters (2)')).toBeInTheDocument()
   })
 
   it('applies onSpecial filter when triSpecial is include', () => {

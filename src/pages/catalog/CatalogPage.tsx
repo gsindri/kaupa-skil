@@ -824,14 +824,6 @@ function FiltersBar({
   }, [])
 
   const { search: _search, ...facetFilters } = filters
-  const activeFacetCount = Object.values(facetFilters).filter(v =>
-    Array.isArray(v) ? v.length > 0 : Boolean(v),
-  ).length
-  const activeCount =
-    (triStock !== 'off' ? 1 : 0) +
-    (triSuppliers !== 'off' ? 1 : 0) +
-    (triSpecial !== 'off' ? 1 : 0) +
-    activeFacetCount
   const chips = deriveChipsFromFilters(
     filters,
     setFilters,
@@ -840,6 +832,12 @@ function FiltersBar({
       setShowFilters(true)
     },
   )
+  const activeFacetCount = chips.length
+  const activeCount =
+    (triStock !== 'off' ? 1 : 0) +
+    (triSuppliers !== 'off' ? 1 : 0) +
+    (triSpecial !== 'off' ? 1 : 0) +
+    activeFacetCount
   const clearAll = () => {
     setTriStock('off')
     setTriSuppliers('off')
