@@ -30,6 +30,8 @@ interface CatalogFiltersState {
   onlyWithPrice: boolean
   /** Tri-state stock filter */
   triStock: TriState
+  /** Tri-state special filter */
+  triSpecial: TriState
   /** Tri-state my suppliers filter */
   triSuppliers: TriState
   /** Selected sort order */
@@ -37,6 +39,7 @@ interface CatalogFiltersState {
   setFilters: (f: Partial<FacetFilters>) => void
   setOnlyWithPrice: (v: boolean) => void
   setTriStock: (v: TriState) => void
+  setTriSpecial: (v: TriState) => void
   setTriSuppliers: (v: TriState) => void
   setSort: (v: SortOrder) => void
   clear: () => void
@@ -48,12 +51,14 @@ const defaultState: Omit<
   | 'setOnlyWithPrice'
   | 'setSort'
   | 'setTriStock'
+  | 'setTriSpecial'
   | 'setTriSuppliers'
   | 'clear'
 > = {
   filters: {},
   onlyWithPrice: false,
   triStock: 'off',
+  triSpecial: 'off',
   triSuppliers: 'off',
   sort: 'relevance',
 }
@@ -75,6 +80,8 @@ export const useCatalogFilters = create<CatalogFiltersState>()(
       setSort: v => set({ sort: v }),
       setTriStock: v =>
         set(state => (state.triStock === v ? state : { triStock: v })),
+      setTriSpecial: v =>
+        set(state => (state.triSpecial === v ? state : { triSpecial: v })),
       setTriSuppliers: v =>
         set(state => (state.triSuppliers === v ? state : { triSuppliers: v })),
       clear: () => set({ ...defaultState }),

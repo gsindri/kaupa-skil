@@ -89,6 +89,9 @@ export async function fetchPublicCatalogItems(
   if (filters.supplier?.length) {
     query = query.overlaps('supplier_ids', filters.supplier)
   }
+  if (filters.onSpecial !== undefined) {
+    query = query.eq('on_special', filters.onSpecial)
+  }
   // Skip pricing filter when no pricing data is available
   // if (filters.onlyWithPrice) query = query.not('best_price', 'is', null)
   if (filters.availability && filters.availability.length) {
@@ -140,6 +143,9 @@ export async function fetchOrgCatalogItems(
   if (filters.brand?.length) query = query.in('brand', filters.brand)
   if (filters.category?.length) query = query.overlaps('category_tags', filters.category)
   if (filters.supplier?.length) query = query.overlaps('supplier_ids', filters.supplier)
+  if (filters.onSpecial !== undefined) {
+    query = query.eq('on_special', filters.onSpecial)
+  }
 
   // Skip pricing filter when no pricing data is available
   // if (filters.onlyWithPrice) query = query.not('best_price', 'is', null)

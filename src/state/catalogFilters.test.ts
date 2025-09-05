@@ -10,6 +10,8 @@ describe('catalogFilters store', () => {
     expect(result.current.sort).toBe('az')
     act(() => result.current.setTriStock('include'))
     expect(result.current.triStock).toBe('include')
+    act(() => result.current.setTriSpecial('include'))
+    expect(result.current.triSpecial).toBe('include')
     act(() => result.current.setTriSuppliers('include'))
     expect(result.current.triSuppliers).toBe('include')
   })
@@ -20,12 +22,14 @@ describe('catalogFilters store', () => {
     act(() => result.current.setOnlyWithPrice(true))
     act(() => result.current.setSort('az'))
     act(() => result.current.setTriStock('include'))
+    act(() => result.current.setTriSpecial('include'))
     act(() => result.current.setTriSuppliers('exclude'))
     act(() => result.current.clear())
     expect(result.current).toMatchObject({
       filters: {},
       onlyWithPrice: false,
       triStock: 'off',
+      triSpecial: 'off',
       triSuppliers: 'off',
       sort: 'relevance',
     })
