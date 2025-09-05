@@ -642,6 +642,8 @@ export type Database = {
           pack_sizes: string[] | null
           sample_image_url: string | null
           sample_source_url: string | null
+          supplier_ids: string[] | null
+          supplier_names: string[] | null
           suppliers_count: number | null
         }
         Relationships: []
