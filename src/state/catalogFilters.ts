@@ -95,7 +95,7 @@ export function triStockToAvailability(tri: TriState): string[] | undefined {
     case 'include':
       return ['IN_STOCK']
     case 'exclude':
-      return ['LOW_STOCK', 'OUT_OF_STOCK', 'UNKNOWN']
+      return ['OUT_OF_STOCK']
     default:
       return undefined
   }
