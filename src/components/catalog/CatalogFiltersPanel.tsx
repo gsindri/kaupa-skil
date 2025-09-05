@@ -23,10 +23,6 @@ export function CatalogFiltersPanel({ filters, onChange }: CatalogFiltersPanelPr
       }),
   })
 
-  const active = Object.entries(filters).filter(([, v]) =>
-    Array.isArray(v) ? v.length > 0 : Boolean(v),
-  )
-
   const renderFacet = (
     label: string,
     items: { id: string; name: string; count: number }[],
@@ -70,21 +66,6 @@ export function CatalogFiltersPanel({ filters, onChange }: CatalogFiltersPanelPr
   return (
     <div className="space-y-4">
       <TriStateFilterChip state={triStock} onStateChange={setTriStock} />
-      {active.length > 0 && (
-        <div className="flex flex-wrap gap-2">
-          {active.map(([k, v]) => (
-            <button
-              key={k}
-              type="button"
-              onClick={() => onChange({ [k]: undefined })}
-              className="flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs"
-            >
-              {Array.isArray(v) ? v.join(', ') : String(v)}
-              <span className="text-muted-foreground">×</span>
-            </button>
-          ))}
-        </div>
-      )}
       {data && (
         <div className="space-y-4">
           {renderFacet('Categories', data.categories, 'category')}
