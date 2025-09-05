@@ -190,19 +190,6 @@ export function CatalogTable({
                   )}
                   name={p.name}
                   brand={p.brand}
-                  stale={
-                    p.availability_updated_at
-                      ? Date.now() - new Date(p.availability_updated_at).getTime() >
-                        86_400_000
-                      : false
-                  }
-                  staleInfo={
-                    p.availability_updated_at
-                      ? `Last checked ${timeAgo(p.availability_updated_at)}. Source: ${
-                          p.suppliers?.[0] || 'Unknown'
-                        }`
-                      : undefined
-                  }
                 />
               </TableCell>
               <TableCell className="px-3 py-2">
