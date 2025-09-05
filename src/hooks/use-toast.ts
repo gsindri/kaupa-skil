@@ -187,7 +187,6 @@ function useToast() {
     // Including `state` in the dependency array causes the effect
     // to re-register on every state change, which can trigger
     // unnecessary updates and, in some cases, render loops.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return {

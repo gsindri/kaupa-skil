@@ -148,6 +148,14 @@ export default function CatalogPage() {
   const stringifiedFilters = useMemo(() => JSON.stringify(filters), [filters])
   const [bannerDismissed, setBannerDismissed] = useState(false)
 
+  useEffect(() => {
+    try {
+      localStorage.setItem('catalog-view', view)
+    } catch {
+      /* ignore */
+    }
+  }, [view])
+
   const unconnectedPercentage = useMemo(() => {
     if (!products.length) return 0
     const missing = products.filter(p => !p.suppliers?.length).length
@@ -201,7 +209,7 @@ export default function CatalogPage() {
       params.set('sort', sortOrder)
       setSearchParams(params, { replace: true })
     }
-  }, [sortOrder, setSearchParams])
+  }, [sortOrder, searchParams, setSearchParams])
 
   // Persist stock selection to URL
   useEffect(() => {
@@ -216,7 +224,7 @@ export default function CatalogPage() {
       params.set('stock', triStock)
       setSearchParams(params, { replace: true })
     }
-  }, [triStock, setSearchParams])
+  }, [triStock, searchParams, setSearchParams])
 
   // Persist view selection to localStorage
   useEffect(() => {
