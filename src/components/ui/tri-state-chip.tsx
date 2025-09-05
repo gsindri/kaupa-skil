@@ -57,11 +57,11 @@ export function TriStateFilterChip({ state, onStateChange, className, ...props }
       aria-label={ariaLabel}
       onClick={handleClick}
       onKeyDown={handleKeyDown}
-      className={cn(
-        'inline-flex h-8 w-28 items-center justify-center rounded-full border px-3 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
-        styles,
-        className,
-      )}
+        className={cn(
+          'inline-flex h-8 w-28 items-center justify-center rounded-full border px-3 text-sm font-medium transition-colors focus:outline-none',
+          styles,
+          className,
+        )}
       {...props}
     >
       {label}
