@@ -134,6 +134,7 @@ describe('CatalogPage', () => {
     catalogFiltersStore.setState({
       triSpecial: 'off',
       triSuppliers: 'off',
+      triStock: 'off',
       filters: {},
     })
   })
@@ -222,16 +223,16 @@ describe('CatalogPage', () => {
     useCatalogProductsMock.mockClear()
     useOrgCatalogMock.mockClear()
     await userEvent.click(stockChip)
-    await screen.findByText('Not in stock')
+    await screen.findByText('Out of stock')
     expect(useCatalogProductsMock).toHaveBeenCalled()
     expect(useOrgCatalogMock).toHaveBeenCalled()
     lastPublicCall = useCatalogProductsMock.mock.calls.at(-1)
     expect(lastPublicCall[0]).toMatchObject({
-      availability: ['LOW_STOCK', 'OUT_OF_STOCK', 'UNKNOWN'],
+      availability: ['OUT_OF_STOCK'],
     })
     lastOrgCall = useOrgCatalogMock.mock.calls.at(-1)
     expect(lastOrgCall[1]).toMatchObject({
-      availability: ['LOW_STOCK', 'OUT_OF_STOCK', 'UNKNOWN'],
+      availability: ['OUT_OF_STOCK'],
     })
 
     // back to off
@@ -247,7 +248,7 @@ describe('CatalogPage', () => {
     expect(lastOrgCall[1]).not.toHaveProperty('availability')
   })
 
-  it('requests only out-of-stock items when Not in stock is selected', async () => {
+  it('requests only out-of-stock items when Out of stock is selected', async () => {
     render(<CatalogPage />)
     await userEvent.click(screen.getByText('list'))
 
@@ -257,21 +258,17 @@ describe('CatalogPage', () => {
 
     await userEvent.click(stockChip) // include
     await userEvent.click(stockChip) // exclude
-    await screen.findByText('Not in stock')
+    await screen.findByText('Out of stock')
 
     expect(useCatalogProductsMock).toHaveBeenCalled()
     expect(useOrgCatalogMock).toHaveBeenCalled()
     const lastPublicCall = useCatalogProductsMock.mock.calls.at(-1)
     expect(lastPublicCall[0].availability).toEqual([
-      'LOW_STOCK',
       'OUT_OF_STOCK',
-      'UNKNOWN',
     ])
     const lastOrgCall = useOrgCatalogMock.mock.calls.at(-1)
     expect(lastOrgCall[1].availability).toEqual([
-      'LOW_STOCK',
       'OUT_OF_STOCK',
-      'UNKNOWN',
     ])
   })
 })
