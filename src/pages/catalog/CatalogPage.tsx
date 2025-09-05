@@ -849,7 +849,13 @@ function FiltersBar({
     setTriStock('off')
     setTriSuppliers('off')
     setTriSpecial('off')
-    setFilters({})
+    setOnlyWithPrice(false)
+    setFilters({
+      brand: undefined,
+      category: undefined,
+      supplier: undefined,
+      packSizeRange: undefined,
+    })
   }
 
   return (
