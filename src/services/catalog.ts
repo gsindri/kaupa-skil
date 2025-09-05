@@ -97,6 +97,9 @@ export async function fetchPublicCatalogItems(
   if (filters.availability && filters.availability.length) {
     query = query.in('availability_status', filters.availability)
   }
+  if (filters.onSpecial !== undefined) {
+    query = query.eq('on_special', filters.onSpecial)
+  }
   if (filters.cursor) query = query.gt('catalog_id', filters.cursor)
 
   const { data, error, count } = await query
@@ -151,6 +154,9 @@ export async function fetchOrgCatalogItems(
   // if (filters.onlyWithPrice) query = query.not('best_price', 'is', null)
   if (filters.availability && filters.availability.length) {
     query = query.in('availability_status', filters.availability)
+  }
+  if (filters.onSpecial !== undefined) {
+    query = query.eq('on_special', filters.onSpecial)
   }
 
   query = query.limit(50)
@@ -234,9 +240,11 @@ export async function fetchCatalogFacets(filters: FacetFilters): Promise<Catalog
       filters.availability && filters.availability.length
         ? filters.availability
         : null,
-    _pack_size_ranges: filters.packSizeRange
-      ? [packSizeRangeToString(filters.packSizeRange)]
-      : null,
+    _pack_size_ranges:
+      filters.packSizeRange &&
+      (filters.packSizeRange.min !== undefined || filters.packSizeRange.max !== undefined)
+        ? [packSizeRangeToString(filters.packSizeRange)]
+        : null,
     _brands: filters.brand && filters.brand.length ? filters.brand : null,
   })
   if (error) throw error

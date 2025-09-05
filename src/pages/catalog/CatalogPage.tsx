@@ -241,7 +241,6 @@ export default function CatalogPage() {
     if (suppliersParam === 'include' || suppliersParam === 'exclude') {
       setTriSuppliers(suppliersParam as TriState)
     }
-    const specialParam = searchParams.get('special')
     if (specialParam === 'include' || specialParam === 'exclude') {
       setTriSpecial(specialParam as TriState)
     }
@@ -307,6 +306,21 @@ export default function CatalogPage() {
       setSearchParams(params, { replace: true })
     }
   }, [triSuppliers, searchParams, setSearchParams])
+
+  // Persist on special selection to URL
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams.toString())
+    const current = params.get('onSpecial')
+    if (triSpecial === 'off') {
+      if (current) {
+        params.delete('onSpecial')
+        setSearchParams(params, { replace: true })
+      }
+    } else if (current !== triSpecial) {
+      params.set('onSpecial', triSpecial)
+      setSearchParams(params, { replace: true })
+    }
+  }, [triSpecial, searchParams, setSearchParams])
 
   // Persist facet filters to URL
   useEffect(() => {
@@ -396,11 +410,6 @@ export default function CatalogPage() {
       ...filters,
       search: debouncedSearch || undefined,
       ...(onlyWithPrice ? { onlyWithPrice: true } : {}),
-      ...(triSpecial === 'include'
-        ? { onSpecial: true }
-        : triSpecial === 'exclude'
-          ? { onSpecial: false }
-          : {}),
       ...(availability ? { availability } : {}),
       cursor,
     }),
@@ -412,11 +421,6 @@ export default function CatalogPage() {
       search: debouncedSearch || undefined,
       onlyWithPrice,
       ...(triSuppliers !== 'off' ? { mySuppliers: triSuppliers } : {}),
-      ...(triSpecial === 'include'
-        ? { onSpecial: true }
-        : triSpecial === 'exclude'
-          ? { onSpecial: false }
-          : {}),
       ...(availability ? { availability } : {}),
       cursor,
     }),
@@ -455,7 +459,6 @@ export default function CatalogPage() {
       onlyWithPrice,
       triStock,
       mySuppliers: triSuppliers,
-      onSpecial: triSpecial,
       sort: sortOrder,
     })
   }, [filters, onlyWithPrice, triStock, triSuppliers, triSpecial, sortOrder])
@@ -541,7 +544,6 @@ export default function CatalogPage() {
         onlyWithPrice,
         triStock,
         mySuppliers: triSuppliers,
-        onSpecial: triSpecial,
         sort: sortOrder,
       })
     }
@@ -895,17 +897,28 @@ function FiltersBar({
             <SortDropdown value={sortOrder} onChange={setSortOrder} />
             <ViewToggle value={view} onChange={setView} />
           </div>
-          <div className="mt-3 flex items-center gap-2 overflow-x-auto">
+          <div className="mt-3 flex flex-nowrap items-center gap-2 overflow-x-auto">
             {/* Disable pricing filter until pricing data is available */}
             {/* <FilterChip selected={onlyWithPrice} onSelectedChange={setOnlyWithPrice}>
                Only with price
              </FilterChip> */}
-            <TriStateFilterChip state={triStock} onStateChange={setTriStock} />
+            <TriStateFilterChip
+              state={triStock}
+              onStateChange={setTriStock}
+              includeLabel="In stock"
+              excludeLabel="Not in stock"
+              offLabel="All stock"
+              includeAriaLabel="Filter: only in stock"
+              excludeAriaLabel="Filter: not in stock"
+              includeClassName="bg-green-500 text-white border-green-500"
+              excludeClassName="bg-red-500 text-white border-red-500"
+            />
             <TriStateFilterChip
               state={triSuppliers}
               onStateChange={setTriSuppliers}
               includeLabel="My suppliers"
               excludeLabel="Not my suppliers"
+              offLabel="All suppliers"
               includeAriaLabel="Filter: my suppliers only"
               excludeAriaLabel="Filter: not my suppliers"
             />
@@ -913,9 +926,6 @@ function FiltersBar({
               state={triSpecial}
               onStateChange={setTriSpecial}
               includeLabel="On special"
-              excludeLabel="Not special"
-              includeAriaLabel="Filter: on special"
-              excludeAriaLabel="Filter: not special"
             />
             {chips.map(chip => (
               <div

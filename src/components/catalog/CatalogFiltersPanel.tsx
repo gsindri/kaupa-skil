@@ -100,27 +100,35 @@ export function CatalogFiltersPanel({ filters, onChange, focusedFacet }: Catalog
                 type="number"
                 placeholder="Min"
                 value={filters.packSizeRange?.min ?? ''}
-                onChange={e =>
+                onChange={e => {
+                  const packSizeRange = {
+                    ...(filters.packSizeRange ?? {}),
+                    min: e.target.value ? Number(e.target.value) : undefined,
+                  }
                   onChange({
-                    packSizeRange: {
-                      ...filters.packSizeRange,
-                      min: e.target.value ? Number(e.target.value) : undefined,
-                    },
+                    packSizeRange:
+                      packSizeRange.min === undefined && packSizeRange.max === undefined
+                        ? undefined
+                        : packSizeRange,
                   })
-                }
+                }}
               />
               <Input
                 type="number"
                 placeholder="Max"
                 value={filters.packSizeRange?.max ?? ''}
-                onChange={e =>
+                onChange={e => {
+                  const packSizeRange = {
+                    ...(filters.packSizeRange ?? {}),
+                    max: e.target.value ? Number(e.target.value) : undefined,
+                  }
                   onChange({
-                    packSizeRange: {
-                      ...filters.packSizeRange,
-                      max: e.target.value ? Number(e.target.value) : undefined,
-                    },
+                    packSizeRange:
+                      packSizeRange.min === undefined && packSizeRange.max === undefined
+                        ? undefined
+                        : packSizeRange,
                   })
-                }
+                }}
               />
             </div>
           </div>

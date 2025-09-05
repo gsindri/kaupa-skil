@@ -8,9 +8,12 @@ interface TriStateFilterChipProps
   onStateChange: (state: TriState) => void
   includeLabel?: string
   excludeLabel?: string
+  offLabel?: string
   includeAriaLabel?: string
   excludeAriaLabel?: string
   offAriaLabel?: string
+  includeClassName?: string
+  excludeClassName?: string
 }
 
 export function TriStateFilterChip({
@@ -19,9 +22,12 @@ export function TriStateFilterChip({
   className,
   includeLabel = 'In stock',
   excludeLabel = 'Not in stock',
+  offLabel = 'All',
   includeAriaLabel = 'Filter: only in stock',
   excludeAriaLabel = 'Filter: not in stock',
   offAriaLabel,
+  includeClassName,
+  excludeClassName,
   ...props
 }: TriStateFilterChipProps) {
   const cycle = (reverse = false) => {
@@ -50,19 +56,24 @@ export function TriStateFilterChip({
     }
   }
 
-  const label = state === 'exclude' ? excludeLabel : includeLabel
+  const label =
+    state === 'include'
+      ? includeLabel
+      : state === 'exclude'
+        ? excludeLabel
+        : offLabel
   const ariaLabel =
     state === 'include'
       ? includeAriaLabel
       : state === 'exclude'
         ? excludeAriaLabel
-        : offAriaLabel ?? `${includeLabel} filter off`
+        : offAriaLabel ?? `${offLabel} filter off`
 
   const styles =
     state === 'include'
-      ? 'bg-green-500 text-white border-green-500'
+      ? includeClassName ?? 'bg-green-500 text-white border-green-500'
       : state === 'exclude'
-        ? 'bg-red-500 text-white border-red-500'
+        ? excludeClassName ?? 'bg-red-500 text-white border-red-500'
         : 'border-input text-foreground'
 
   return (
@@ -73,7 +84,7 @@ export function TriStateFilterChip({
       onClick={handleClick}
       onKeyDown={handleKeyDown}
         className={cn(
-          'inline-flex h-8 w-28 items-center justify-center rounded-full border px-3 text-sm font-medium transition-colors focus:outline-none',
+          'inline-flex h-8 w-auto whitespace-nowrap items-center justify-center rounded-full border px-3 text-sm font-medium transition-colors focus:outline-none',
           styles,
           className,
         )}
