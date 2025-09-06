@@ -245,37 +245,48 @@ export function CatalogTable({
                   const suppliers = p.supplier_products?.length
                     ? p.supplier_products
                     : p.supplier_ids && p.supplier_names
-                      ? p.supplier_ids.map((id: string, idx: number) => ({
-                          supplier_id: id,
-                          supplier_name: p.supplier_names[idx] || id,
-                          supplier_logo_url: p.supplier_logo_urls ? p.supplier_logo_urls[idx] : undefined,
-                          is_connected: true,
-                        }))
+                      ? p.supplier_ids.map((id: string, idx: number) => {
+                          const name = p.supplier_names[idx] || id
+                          return {
+                            supplier_id: id,
+                            supplier_name: name,
+                            supplier_logo_url:
+                              p.supplier_logo_urls?.[idx] ||
+                              vendors.find(v => v.name === name)?.logo_url ||
+                              null,
+                            is_connected: true,
+                          }
+                        })
                       : Array.isArray(p.suppliers)
-                        ? p.suppliers.map((s: any) =>
-                            typeof s === 'string'
-                              ? {
-                                  supplier_id: s,
-                                  supplier_name: s,
-                                  is_connected: true,
-                                }
-                              : {
-                                  supplier_id: s.supplier_id || s.id,
-                                  supplier_name:
-                                    s.supplier_name || s.name || '',
-                                  is_connected: s.is_connected ?? true,
-                                  supplier_logo_url:
-                                    s.supplier_logo_url ||
-                                    s.logo_url ||
-                                    s.logoUrl,
-                                  availability_state:
-                                    s.availability_state ||
-                                    s.availability_status,
-                                  location_city: s.location_city || null,
-                                  location_country_code:
-                                    s.location_country_code || null,
-                                },
-                          )
+                        ? p.suppliers.map((s: any) => {
+                            if (typeof s === 'string') {
+                              return {
+                                supplier_id: s,
+                                supplier_name: s,
+                                is_connected: true,
+                                supplier_logo_url:
+                                  vendors.find(v => v.name === s)?.logo_url ||
+                                  null,
+                              }
+                            }
+                            const name = s.supplier_name || s.name || ''
+                            return {
+                              supplier_id: s.supplier_id || s.id,
+                              supplier_name: name,
+                              is_connected: s.is_connected ?? true,
+                              supplier_logo_url:
+                                s.supplier_logo_url ||
+                                s.logo_url ||
+                                s.logoUrl ||
+                                vendors.find(v => v.name === name)?.logo_url ||
+                                null,
+                              availability_state:
+                                s.availability_state || s.availability_status,
+                              location_city: s.location_city || null,
+                              location_country_code:
+                                s.location_country_code || null,
+                            }
+                          })
                         : []
                   return suppliers.length ? (
                     <SupplierChips suppliers={suppliers} />
