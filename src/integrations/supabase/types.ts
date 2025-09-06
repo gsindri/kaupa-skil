@@ -554,6 +554,30 @@ export type Database = {
           },
         ]
       }
+      suppliers: {
+        Row: {
+          created_at: string | null
+          id: string
+          logo_url: string | null
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id: string
+          logo_url?: string | null
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          logo_url?: string | null
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       support_sessions: {
         Row: {
           actor_id: string
@@ -644,6 +668,7 @@ export type Database = {
           sample_image_url: string | null
           sample_source_url: string | null
           supplier_ids: string[] | null
+          supplier_logo_urls: string[] | null
           supplier_names: string[] | null
           suppliers_count: number | null
         }
