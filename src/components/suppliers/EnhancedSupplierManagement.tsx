@@ -146,7 +146,7 @@ export function EnhancedSupplierManagement() {
               <BookmarkletSync
                 tenantId={profile?.tenant_id || ''}
                 supplierId={selectedSupplier}
-                supplierDomainHint={getDomainHint(selectedSupplierData.website)}
+                supplierDomainHint={getDomainHint(selectedSupplier)}
               />
 
               <SupplierItemsWithHarInfo
