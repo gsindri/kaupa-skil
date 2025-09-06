@@ -139,8 +139,12 @@ export default function BasketProvider({ children }: { children: React.ReactNode
   }
 
   const updateQuantity = (supplierItemId: string, quantity: number) => {
+    if (quantity < 1) {
+      removeItem(supplierItemId)
+      return
+    }
     setItems(prev => {
-      const newQuantity = Math.max(0, quantity)
+      const newQuantity = Math.max(1, quantity)
       const newItems = prev.map(item =>
         item.supplierItemId === supplierItemId
           ? { ...item, quantity: newQuantity }
@@ -153,8 +157,20 @@ export default function BasketProvider({ children }: { children: React.ReactNode
 
   const removeItem = (supplierItemId: string) => {
     setItems(prev => {
+      const previousItems = prev.map(i => ({ ...i }))
+      const removed = prev.find(i => i.supplierItemId === supplierItemId)
       const newItems = prev.filter(item => item.supplierItemId !== supplierItemId)
       syncBasket(newItems)
+      if (removed) {
+        toast({
+          description: `${removed.itemName} removed from cart`,
+          action: (
+            <ToastAction altText="Undo" onClick={() => restoreItems(previousItems)}>
+              Undo
+            </ToastAction>
+          ),
+        })
+      }
       return newItems
     })
   }

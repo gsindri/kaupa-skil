@@ -82,8 +82,7 @@ function CartItemRow({ item, includeVat, updateQuantity, removeItem }: CartItemR
     <div
       ref={cardRef}
       className={cn(
-        "grid items-center gap-3 grid-cols-[44px,minmax(0,1fr),112px] md:grid-cols-[56px,minmax(0,1fr),128px] px-2 py-2 rounded-lg hover:bg-muted/50 focus-within:ring-2 focus-within:ring-primary/30",
-        item.quantity === 0 && "bg-red-50 text-red-700"
+        "grid items-center gap-3 grid-cols-[44px,minmax(0,1fr),112px] md:grid-cols-[56px,minmax(0,1fr),128px] px-2 py-2 rounded-lg hover:bg-muted/50 focus-within:ring-2 focus-within:ring-primary/30"
       )}
     >
       <img
@@ -120,16 +119,9 @@ function CartItemRow({ item, includeVat, updateQuantity, removeItem }: CartItemR
         <QuantityStepper
           quantity={item.quantity}
           onChange={qty => updateQuantity(item.supplierItemId, qty)}
+          onRemove={() => removeItem(item.supplierItemId)}
           label={displayName}
         />
-        <button
-          aria-label="Remove item"
-          className="ml-2 flex h-7 w-7 items-center justify-center p-0 text-muted-foreground hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50 focus-visible:ring-offset-1"
-          onClick={() => removeItem(item.supplierItemId)}
-          title="Remove"
-        >
-          <Trash2 className="h-4 w-4 stroke-[1.5]" />
-        </button>
       </div>
     </div>
   )
