@@ -5,6 +5,8 @@ export interface Vendor {
   name: string
   /** optional meta like delivery info */
   meta?: string
+  logo_url?: string | null
+  logoUrl?: string | null
 }
 
 /**
