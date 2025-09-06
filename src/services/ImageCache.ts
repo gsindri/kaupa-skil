@@ -28,13 +28,14 @@ export function getCachedImageUrl(
   }
 
   if (/^https?:\/\//i.test(path)) return path
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`
   if (!CDN_BASE) {
     if (!warnedMissingCdnBase) {
       console.warn('getCachedImageUrl: no CDN base configured')
       warnedMissingCdnBase = true
     }
-    return path.startsWith('/') ? path : `/${path}`
+    return normalizedPath
   }
-  return `${CDN_BASE}/${path}`
+  return `${CDN_BASE}${normalizedPath}`
 }
 
