@@ -122,6 +122,57 @@ describe('MiniCart', () => {
     expect(screen.getByTitle('Only Name')).toBeInTheDocument()
   })
 
+  it('renders provided image for cart items', () => {
+    const items = [
+      {
+        supplierItemId: 'img1',
+        displayName: 'Image Item',
+        packSize: '1kg',
+        supplierName: 'Supp',
+        quantity: 1,
+        unitPriceIncVat: 0,
+        unitPriceExVat: 0,
+        image: 'http://example.com/img.jpg',
+      },
+    ] as any
+
+    render(
+      <MemoryRouter>
+        <SettingsContext.Provider
+          value={{
+            includeVat: false,
+            setIncludeVat: vi.fn(),
+            preferredUnit: 'auto',
+            setPreferredUnit: vi.fn(),
+            userMode: 'balanced',
+            setUserMode: vi.fn(),
+          }}
+        >
+          <BasketContext.Provider
+            value={{
+              items,
+              addItem: vi.fn(),
+              updateQuantity: vi.fn(),
+              removeItem: vi.fn(),
+              clearBasket: vi.fn(),
+              clearCart: vi.fn(),
+              restoreItems: vi.fn(),
+              getTotalItems: () => items.length,
+              getTotalPrice: () => 0,
+              isDrawerOpen: false,
+              setIsDrawerOpen: vi.fn(),
+            }}
+          >
+            <MiniCart />
+          </BasketContext.Provider>
+        </SettingsContext.Provider>
+      </MemoryRouter>,
+    )
+
+    const img = screen.getByAltText('') as HTMLImageElement
+    expect(img.src).toContain('http://example.com/img.jpg')
+  })
+
   it('falls back to title when name fields are missing', () => {
     const items = [
       {

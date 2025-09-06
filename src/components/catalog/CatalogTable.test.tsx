@@ -119,5 +119,49 @@ describe('CatalogTable', () => {
       screen.getByLabelText('Decrease quantity of Stepper Product'),
     ).toBeInTheDocument()
   })
+
+  it('passes full product info to addItem', async () => {
+    const product = {
+      catalog_id: 'p1',
+      name: 'Full Info Product',
+      sample_image_url: 'http://example.com/img.jpg',
+      canonical_pack: '1kg',
+      suppliers: ['Acme'],
+      availability_status: 'IN_STOCK',
+    }
+
+    const user = userEvent.setup()
+
+    render(
+      <TooltipProvider>
+        <CatalogTable
+          products={[product]}
+          selected={[]}
+          onSelect={() => {}}
+          onSelectAll={() => {}}
+          sort={null}
+          onSort={() => {}}
+          filters={{}}
+          onFilterChange={() => {}}
+          isBulkMode={false}
+        />
+      </TooltipProvider>,
+    )
+
+    await user.click(
+      screen.getByRole('button', {
+        name: `Add ${product.name} to cart`,
+      }),
+    )
+
+    const added = cartState.addItem.mock.calls[0][0]
+    expect(added).toMatchObject({
+      itemName: 'Full Info Product',
+      displayName: 'Full Info Product',
+      supplierName: 'Acme',
+      image: 'http://example.com/img.jpg',
+      packSize: '1kg',
+    })
+  })
 })
 
