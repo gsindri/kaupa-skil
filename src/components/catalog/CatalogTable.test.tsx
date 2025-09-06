@@ -163,5 +163,40 @@ describe('CatalogTable', () => {
       packSize: '1kg',
     })
   })
+
+  it('disables Add button when product is out of stock', async () => {
+    const product = {
+      catalog_id: '1',
+      name: 'Unavailable Product',
+      suppliers: ['Acme'],
+      availability_status: 'OUT_OF_STOCK',
+    }
+
+    const user = userEvent.setup()
+
+    render(
+      <TooltipProvider>
+        <CatalogTable
+          products={[product]}
+          selected={[]}
+          onSelect={() => {}}
+          onSelectAll={() => {}}
+          sort={null}
+          onSort={() => {}}
+          filters={{}}
+          onFilterChange={() => {}}
+          isBulkMode={false}
+        />
+      </TooltipProvider>,
+    )
+
+    const button = screen.getByRole('button', {
+      name: `Add ${product.name} to cart`,
+    })
+    expect(button).toBeDisabled()
+    await user.hover(button.parentElement as HTMLElement)
+    const tooltip = await screen.findAllByText('Out of stock')
+    expect(tooltip.length).toBeGreaterThan(0)
+  })
 })
 
