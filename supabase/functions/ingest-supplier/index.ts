@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { cleanAvailabilityText } from './availability.ts'
 
 // Types
 type RawItem = {
@@ -188,7 +189,9 @@ async function runOnce(supabaseUrl: string, serviceRoleKey: string, supplierId: 
     for (const n of normalized) {
       const catalogId = await matchOrCreateCatalog(sb, n);
       const now = new Date().toISOString();
-      
+
+      const availabilityText = cleanAvailabilityText(n.availabilityText);
+
       // Check if product exists
       const { data: existing } = await sb
         .from('supplier_product')
@@ -203,7 +206,7 @@ async function runOnce(supabaseUrl: string, serviceRoleKey: string, supplierId: 
         supplier_sku: n.supplierSku,
         pack_size: n.packSize ?? null,
         category_path: n.categoryPath ?? null,
-        availability_text: n.availabilityText ?? null,
+        availability_text: availabilityText,
         image_url: n.imageUrl ?? null,
         source_url: n.sourceUrl ?? null,
         data_provenance: n.dataProvenance,
@@ -215,8 +218,8 @@ async function runOnce(supabaseUrl: string, serviceRoleKey: string, supplierId: 
 
       // Trigger image fetch if available
       if (n.imageUrl) {
-        sb.functions.invoke('fetch-image', { 
-          body: { catalogId, imageUrl: n.imageUrl } 
+        sb.functions.invoke('fetch-image', {
+          body: { catalogId, imageUrl: n.imageUrl }
         }).catch(() => {});
       }
     }
