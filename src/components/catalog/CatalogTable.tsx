@@ -316,7 +316,7 @@ export function CatalogTable({
     product: any
     className?: string
   }) {
-    const { items, addItem, updateQuantity } = useCart()
+    const { items, addItem, updateQuantity, removeItem } = useCart()
     const existingItem = items.find(
       (i: any) => i.supplierItemId === product.catalog_id,
     )
@@ -403,6 +403,7 @@ export function CatalogTable({
         onChange={qty =>
           updateQuantity(existingItem.supplierItemId, qty)
         }
+        onRemove={() => removeItem(existingItem.supplierItemId)}
         label={product.name}
         supplier={existingItem.supplierName}
       />

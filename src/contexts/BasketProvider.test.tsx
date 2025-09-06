@@ -8,7 +8,7 @@ describe('BasketProvider', () => {
     localStorage.clear()
   })
 
-  it('keeps items with zero quantity instead of removing them', () => {
+  it('removes items when quantity is set to zero', () => {
     const wrapper = ({ children }: { children: React.ReactNode }) => (
       <BasketProvider>{children}</BasketProvider>
     )
@@ -44,8 +44,7 @@ describe('BasketProvider', () => {
       result.current.updateQuantity('1', 0)
     })
 
-    expect(result.current.items).toHaveLength(1)
-    expect(result.current.items[0].quantity).toBe(0)
+    expect(result.current.items).toHaveLength(0)
   })
 
   it('migrates legacy cart items and avoids duplicates on add', () => {

@@ -1,11 +1,9 @@
 import React, { useRef, useState } from 'react'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Button } from '@/components/ui/button'
-import { ShoppingCart, Trash2 } from 'lucide-react'
+import { ShoppingCart } from 'lucide-react'
 import { useCart } from '@/contexts/useBasket'
 import { useSettings } from '@/contexts/useSettings'
-import { useToast } from '@/hooks/use-toast'
-import { ToastAction } from '@/components/ui/toast'
 import { Link } from 'react-router-dom'
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
 import { getCachedImageUrl } from '@/services/ImageCache'
@@ -21,13 +19,11 @@ export function MiniCart() {
     getTotalPrice,
     setIsDrawerOpen,
     updateQuantity,
-    removeItem,
-    restoreItems
+    removeItem
   } = useCart()
   const { includeVat } = useSettings()
   const [open, setOpen] = useState(false)
   const [keyboardNavigationActive, setKeyboardNavigationActive] = useState(false)
-  const { toast } = useToast()
   const rowRefs = useRef<(HTMLDivElement | null)[]>([])
 
   const cartCount = getTotalItems()
@@ -46,16 +42,7 @@ export function MiniCart() {
   const handleRemove = (index: number) => {
     const item = items[index]
     if (!item) return
-    const previous = [...items]
     removeItem(item.supplierItemId)
-    toast({
-      description: `Removed ${getItemDisplayName(item)}`,
-      action: (
-        <ToastAction altText="Undo" onClick={() => restoreItems(previous)}>
-          Undo
-        </ToastAction>
-      )
-    })
   }
 
   const handleKeyDown = (
@@ -184,21 +171,10 @@ export function MiniCart() {
                         onChange={qty =>
                           updateQuantity(it.supplierItemId, qty)
                         }
+                        onRemove={() => handleRemove(index)}
                         label={displayName}
                         className="!w-[84px] md:!w-[92px]"
                       />
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <button
-                            aria-label={`Remove ${displayName}`}
-                            onClick={() => handleRemove(index)}
-                            className="ml-2 flex h-7 w-7 items-center justify-center p-0 text-muted-foreground hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50 focus-visible:ring-offset-1"
-                          >
-                            <Trash2 className="h-4 w-4 stroke-[1.5]" />
-                          </button>
-                        </TooltipTrigger>
-                        <TooltipContent>Remove</TooltipContent>
-                      </Tooltip>
                     </div>
                   </div>
                 )
