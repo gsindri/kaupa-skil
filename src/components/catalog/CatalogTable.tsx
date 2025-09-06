@@ -31,6 +31,7 @@ import { resolveImage } from '@/lib/images'
 import type { CartItem } from '@/lib/types'
 import { Lock } from 'lucide-react'
 import { toast } from '@/hooks/use-toast'
+import { cn } from '@/lib/utils'
 
 interface CatalogTableProps {
   products: any[]
@@ -316,12 +317,22 @@ export function CatalogTable({
     product: any
     className?: string
   }) {
-    const { items, addItem, updateQuantity, removeItem } = useCart()
-    const existingItem = items.find(
-      (i: any) => i.supplierItemId === product.catalog_id,
-    )
+  const { items, addItem, updateQuantity, removeItem } = useCart()
+  const existingItem = items.find(
+    (i: any) => i.supplierItemId === product.catalog_id,
+  )
 
-    const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState(false)
+
+  const availability = (product.availability_status ?? 'UNKNOWN') as
+    | 'IN_STOCK'
+    | 'LOW_STOCK'
+    | 'OUT_OF_STOCK'
+    | 'UNKNOWN'
+  const isUnavailable =
+    availability === 'OUT_OF_STOCK' ||
+    (availability === 'UNKNOWN' &&
+      (product.active_supplier_count ?? 0) === 0)
 
   const rawSuppliers =
     (product.supplier_products && product.supplier_products.length
@@ -410,6 +421,27 @@ export function CatalogTable({
     )
 
   if (supplierEntries.length === 0) return null
+
+  if (isUnavailable) {
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span className={cn(className, 'cursor-not-allowed')}>
+            <Button
+              size="sm"
+              disabled
+              aria-disabled="true"
+              aria-label={`Add ${product.name} to cart`}
+              className="pointer-events-none"
+            >
+              Add
+            </Button>
+          </span>
+        </TooltipTrigger>
+        <TooltipContent>Out of stock</TooltipContent>
+      </Tooltip>
+    )
+  }
 
   if (supplierEntries.length === 1) {
     const s = supplierEntries[0]
