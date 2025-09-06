@@ -30,7 +30,6 @@ export default function BasketProvider({ children }: { children: React.ReactNode
           it.name ??
           it.title ??
           it.productName,
-        image: it.image ? getCachedImageUrl(it.image) : null
       }))
     } catch {
       return []
