@@ -140,11 +140,14 @@ export default function BasketProvider({ children }: { children: React.ReactNode
   const updateQuantity = (supplierItemId: string, quantity: number) => {
     setItems(prev => {
       const newQuantity = Math.max(0, quantity)
-      const newItems = prev.map(item =>
-        item.supplierItemId === supplierItemId
-          ? { ...item, quantity: newQuantity }
-          : item
-      )
+      const newItems =
+        newQuantity === 0
+          ? prev.filter(item => item.supplierItemId !== supplierItemId)
+          : prev.map(item =>
+              item.supplierItemId === supplierItemId
+                ? { ...item, quantity: newQuantity }
+                : item
+            )
       syncBasket(newItems)
       return newItems
     })

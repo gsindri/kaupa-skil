@@ -20,6 +20,7 @@ vi.mock('@/components/catalog/SupplierChips', () => ({
 describe('CatalogTable', () => {
   beforeEach(() => {
     cartState.items = []
+    cartState.updateQuantity = vi.fn()
   })
   it('shows lock icon and tooltip when price is locked', async () => {
     const product = {
@@ -118,6 +119,64 @@ describe('CatalogTable', () => {
     expect(
       screen.getByLabelText('Decrease quantity of Stepper Product'),
     ).toBeInTheDocument()
+  })
+
+  it('reverts to Add button when quantity is reduced to zero', async () => {
+    cartState.items = [{ supplierItemId: '1', quantity: 1 }]
+    cartState.updateQuantity = vi.fn((id: string, qty: number) => {
+      if (qty === 0) {
+        cartState.items = []
+      } else {
+        cartState.items = [{ supplierItemId: id, quantity: qty }]
+      }
+    })
+
+    const product = {
+      catalog_id: '1',
+      name: 'Stepper Product',
+      prices: [100],
+      suppliers: ['Acme'],
+      availability_status: 'IN_STOCK',
+    }
+
+    const { rerender } = render(
+      <TooltipProvider>
+        <CatalogTable
+          products={[product]}
+          selected={[]}
+          onSelect={() => {}}
+          onSelectAll={() => {}}
+          sort={null}
+          onSort={() => {}}
+          filters={{}}
+          onFilterChange={() => {}}
+          isBulkMode={false}
+        />
+      </TooltipProvider>,
+    )
+
+    const user = userEvent.setup()
+    await user.click(
+      screen.getByLabelText('Decrease quantity of Stepper Product'),
+    )
+
+    rerender(
+      <TooltipProvider>
+        <CatalogTable
+          products={[product]}
+          selected={[]}
+          onSelect={() => {}}
+          onSelectAll={() => {}}
+          sort={null}
+          onSort={() => {}}
+          filters={{}}
+          onFilterChange={() => {}}
+          isBulkMode={false}
+        />
+      </TooltipProvider>,
+    )
+
+    expect(screen.getByRole('button', { name: /add/i })).toBeInTheDocument()
   })
 })
 
