@@ -9,7 +9,7 @@
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test": "vitest run",
+    "test": "node --max-old-space-size=4096 ./node_modules/vitest/vitest.mjs run --maxWorkers=2",
     "test:e2e": "playwright test",
     "merge:mock-items": "node supabase/scripts/mergeMockItems.js",
     "db:seed:catalog": "node supabase/scripts/seedCatalog.js",
