@@ -9,7 +9,5 @@ describe('availability text utilities', () => {
     expect(cleaned).toBe('ekki til á lager')
     expect(availabilityStatusFromText(raw)).toBe('OUT_OF_STOCK')
   })
-
-  })
 })
 
