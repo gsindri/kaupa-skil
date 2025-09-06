@@ -4,6 +4,7 @@ import type { CartItem } from '@/lib/types'
 import { BasketContext } from './BasketProviderUtils'
 import { ToastAction } from '@/components/ui/toast'
 import { flyToCart } from '@/lib/flyToCart'
+import { getCachedImageUrl } from '@/services/ImageCache'
 
 export default function BasketProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>(() => {
@@ -29,7 +30,7 @@ export default function BasketProvider({ children }: { children: React.ReactNode
           it.name ??
           it.title ??
           it.productName,
-        image: it.image ?? null
+        image: it.image ? getCachedImageUrl(it.image) : null
       }))
     } catch {
       return []
@@ -96,7 +97,8 @@ export default function BasketProvider({ children }: { children: React.ReactNode
       normalizedItem = {
         ...item,
         itemName: item.itemName ?? item.displayName ?? 'Item',
-        displayName: item.displayName ?? item.itemName ?? 'Item'
+        displayName: item.displayName ?? item.itemName ?? 'Item',
+        image: item.image ? getCachedImageUrl(item.image) : null
       }
     }
 
