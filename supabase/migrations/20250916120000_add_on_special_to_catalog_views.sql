@@ -24,21 +24,18 @@ SELECT
   MAX(sp.source_url) AS sample_source_url,
   CASE
     WHEN COUNT(
-           CASE WHEN lower(unaccent(sp.availability_text)) ~* '\bekki\s+til\s+a\s+lager\b'
-                     OR lower(unaccent(sp.availability_text)) ~* '\yout\s+of\s+stock\y'
-                     OR lower(unaccent(sp.availability_text)) ~* '\yunavailable\y'
-                THEN 1 END
+           CASE
+             WHEN lower(unaccent(sp.availability_text)) ~* '\bekki\b.*\btil\s+a\s+lager\b'
+             THEN 1
+           END
          ) > 0
-         AND COUNT(
-           CASE WHEN lower(unaccent(sp.availability_text)) ~* '(?<!ekki\s)til\s+a\s+lager\b'
-                THEN 1 END
-         ) = 0
       THEN 'OUT_OF_STOCK'
     WHEN COUNT(
-           CASE WHEN lower(unaccent(sp.availability_text)) ~* '(?<!ekki\s)til\s+a\s+lager\b'
-                     OR lower(unaccent(sp.availability_text)) ~* '\yin\s+stock\y'
-                     OR lower(unaccent(sp.availability_text)) ~* '\yavailable\y'
-                THEN 1 END
+           CASE
+             WHEN lower(unaccent(sp.availability_text)) ~* '\btil\s+a\s+lager\b'
+                  AND lower(unaccent(sp.availability_text)) !~* '\bekki\b'
+             THEN 1
+           END
          ) > 0
       THEN 'IN_STOCK'
     WHEN COUNT(
