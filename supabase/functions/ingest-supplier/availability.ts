@@ -12,15 +12,9 @@ export function cleanAvailabilityText(text?: string | null): string | null {
 export function availabilityStatusFromText(text?: string | null): AvailabilityStatus {
   const cleaned = cleanAvailabilityText(text)
   if (!cleaned) return 'UNKNOWN'
-  if (cleaned.includes('ekki til') || cleaned.includes('ekki á lager') || cleaned.includes('útselt')) {
-    return 'OUT_OF_STOCK'
-  }
-  if (cleaned.includes('lítið') || cleaned.includes('fátt')) {
-    return 'LOW_STOCK'
-  }
-  if (cleaned.includes('til á lager') || cleaned.includes('á lager')) {
-    return 'IN_STOCK'
-  }
+  if (/\bekki\b.*\btil\s+á\s+lager\b/.test(cleaned)) return 'OUT_OF_STOCK'
+  if (cleaned.includes('lítið') || cleaned.includes('fátt')) return 'LOW_STOCK'
+  if (/\btil\s+á\s+lager\b/.test(cleaned) && !/\bekki\b/.test(cleaned)) return 'IN_STOCK'
   return 'UNKNOWN'
 }
 
