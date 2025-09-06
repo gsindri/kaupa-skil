@@ -12,15 +12,6 @@ export function cleanAvailabilityText(text?: string | null): string | null {
 export function availabilityStatusFromText(text?: string | null): AvailabilityStatus {
   const cleaned = cleanAvailabilityText(text)
   if (!cleaned) return 'UNKNOWN'
-  if (cleaned.includes('ekki') && cleaned.includes('til á lager')) {
-    return 'OUT_OF_STOCK'
-  }
-  if (cleaned.includes('ylitid magn') || cleaned.includes('low stock') || cleaned.includes('limited')) {
-    return 'LOW_STOCK'
-  }
-  if (cleaned.includes('til á lager')) {
-    return 'IN_STOCK'
-  }
   return 'UNKNOWN'
 }
 

@@ -671,6 +671,10 @@ export type Database = {
         Args: { encrypted_data: string }
         Returns: Json
       }
+      derive_availability_status: {
+        Args: { availability_text: string }
+        Returns: string
+      }
       encrypt_credential_data: {
         Args: { credential_data: Json }
         Returns: string
