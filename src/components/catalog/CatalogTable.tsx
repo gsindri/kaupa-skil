@@ -28,6 +28,7 @@ import type { FacetFilters } from '@/services/catalog'
 import ProductThumb from '@/components/catalog/ProductThumb'
 import SupplierChips from '@/components/catalog/SupplierChips'
 import { resolveImage } from '@/lib/images'
+import type { CartItem } from '@/lib/types'
 import { Lock } from 'lucide-react'
 import { toast } from '@/hooks/use-toast'
 
@@ -355,53 +356,87 @@ export function CatalogTable({
     }
   })
 
-    if (existingItem)
-      return (
-        <QuantityStepper
-          className={className}
-          quantity={existingItem.quantity}
-          onChange={qty =>
-            updateQuantity(existingItem.supplierItemId, qty)
-          }
-          label={product.name}
-          supplier={existingItem.supplierName}
-        />
+  const buildCartItem = (
+    supplier: (typeof supplierEntries)[number],
+    index: number
+  ): Omit<CartItem, 'quantity'> => {
+    const raw = rawSuppliers[index] as any
+    const priceEntry = Array.isArray(product.prices)
+      ? product.prices[index]
+      : raw?.price ?? raw?.unit_price_ex_vat ?? null
+    const priceValue =
+      typeof priceEntry === 'number' ? priceEntry : priceEntry?.price ?? null
+    const unitPriceExVat = raw?.unit_price_ex_vat ?? priceValue ?? null
+    const unitPriceIncVat = raw?.unit_price_inc_vat ?? priceValue ?? null
+    const packSize =
+      raw?.pack_size || raw?.packSize || product.canonical_pack || ''
+    const packQty = raw?.pack_qty ?? 1
+    const sku = raw?.sku || raw?.supplier_sku || product.catalog_id
+    const unit = raw?.unit || ''
+    return {
+      id: product.catalog_id,
+      supplierId: supplier.id,
+      supplierName: supplier.name ?? '',
+      itemName: product.name,
+      sku,
+      packSize,
+      packPrice: priceValue,
+      unitPriceExVat,
+      unitPriceIncVat,
+      vatRate: raw?.vat_rate ?? 0,
+      unit,
+      supplierItemId: product.catalog_id,
+      displayName: product.name,
+      packQty,
+      image: resolveImage(
+        product.sample_image_url ?? product.image_main,
+        product.availability_status
       )
+    }
+  }
+
+  if (existingItem)
+    return (
+      <QuantityStepper
+        className={className}
+        quantity={existingItem.quantity}
+        onChange={qty =>
+          updateQuantity(existingItem.supplierItemId, qty)
+        }
+        label={product.name}
+        supplier={existingItem.supplierName}
+      />
+    )
 
   if (supplierEntries.length === 0) return null
 
   if (supplierEntries.length === 1) {
     const s = supplierEntries[0]
-      return (
-        <Button
-          size="sm"
-          className={className}
-          onClick={() => {
-            addItem({
-              product_id: product.catalog_id,
-              supplier_id: s.id,
-              price: null,
-              qty: 1,
-            } as any)
-            if (s.availability === 'OUT_OF_STOCK') {
-              toast({ description: 'Out of stock at selected supplier.' })
-            }
-          }}
-          aria-label={`Add ${product.name} to cart`}
-        >
+    return (
+      <Button
+        size="sm"
+        className={className}
+        onClick={() => {
+          addItem(buildCartItem(s, 0))
+          if (s.availability === 'OUT_OF_STOCK') {
+            toast({ description: 'Out of stock at selected supplier.' })
+          }
+        }}
+        aria-label={`Add ${product.name} to cart`}
+      >
+        Add
+      </Button>
+    )
+  }
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button size="sm" className={className} aria-label={`Add ${product.name} to cart`}>
           Add
         </Button>
-      )
-    }
-    return (
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <Button size="sm" className={className} aria-label={`Add ${product.name} to cart`}>
-            Add
-          </Button>
-        </PopoverTrigger>
-      <PopoverContent className="w-64 p-2 space-y-1">
-        {supplierEntries.map(s => {
+      </PopoverTrigger>
+    <PopoverContent className="w-64 p-2 space-y-1">
+        {supplierEntries.map((s, index) => {
           const initials = s.name
             ? s.name
                 .split(' ')
@@ -416,12 +451,7 @@ export function CatalogTable({
               variant="ghost"
               className="w-full justify-start gap-2 px-2"
               onClick={() => {
-                addItem({
-                  product_id: product.catalog_id,
-                  supplier_id: s.id,
-                  price: null,
-                  qty: 1,
-                } as any)
+                addItem(buildCartItem(s, index))
                 if (s.availability === 'OUT_OF_STOCK') {
                   toast({ description: 'Out of stock at selected supplier.' })
                 }
