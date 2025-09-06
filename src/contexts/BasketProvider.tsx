@@ -29,7 +29,13 @@ export default function BasketProvider({ children }: { children: React.ReactNode
           it.name ??
           it.title ??
           it.productName,
-        image: it.image ?? null
+        image: it.image ?? null,
+        supplierItemId:
+          it.supplierItemId ??
+          it.id ??
+          ((it.supplierId ?? it.supplier_id) && it.product_id
+            ? `${it.supplierId ?? it.supplier_id}-${it.product_id}`
+            : it.product_id)
       }))
     } catch {
       return []
