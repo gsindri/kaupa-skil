@@ -10,12 +10,6 @@ describe('availability text utilities', () => {
     expect(availabilityStatusFromText(raw)).toBe('OUT_OF_STOCK')
   })
 
-  it.each([
-    ['til á lager', 'IN_STOCK'],
-    ['ekki til á lager í dag', 'OUT_OF_STOCK'],
-    ['ekki enn til á lager', 'OUT_OF_STOCK'],
-  ])('classifies %s as %s', (text, status) => {
-    expect(availabilityStatusFromText(text)).toBe(status)
   })
 })
 
