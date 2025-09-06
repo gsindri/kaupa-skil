@@ -9,6 +9,7 @@ export type SupplierEntry =
       name: string
       connected?: boolean
       logoUrl?: string | null
+      logo_url?: string | null
       availability_status?: AvailabilityStatus | null
       status?: AvailabilityStatus | null
       availability?: { status?: AvailabilityStatus | null; updatedAt?: string | Date | null }
@@ -26,10 +27,11 @@ export default function SupplierList({
 
   const items = suppliers.map(s => {
     if (typeof s === 'string') {
+      const vendor = vendors.find(v => v.name === s)
       return {
         name: s,
-        connected: vendors.some(v => v.name === s),
-        logoUrl: null,
+        connected: !!vendor,
+        logoUrl: vendor?.logo_url || vendor?.logoUrl || null,
       }
     }
     const status =
@@ -44,7 +46,7 @@ export default function SupplierList({
     return {
       name: s.name,
       connected: s.connected ?? vendors.some(v => v.name === s.name),
-      logoUrl: s.logoUrl ?? null,
+      logoUrl: s.logoUrl || s.logo_url || null,
       availability: status ? { status, updatedAt: updated } : undefined,
     }
   })
