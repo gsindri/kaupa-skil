@@ -1,6 +1,6 @@
-import { Badge } from '@/components/ui/badge'
 import { timeAgo } from '@/lib/timeAgo'
-import { Loader2 } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import { Check, Loader2, AlertTriangle, Slash } from 'lucide-react'
 import { type ReactNode, forwardRef } from 'react'
 
 export type AvailabilityStatus = 'IN_STOCK' | 'LOW_STOCK' | 'OUT_OF_STOCK' | 'UNKNOWN'
@@ -13,24 +13,24 @@ interface AvailabilityBadgeProps {
 
 const MAP: Record<
   AvailabilityStatus,
-  { icon?: string; label: string; className: string; aria: string }
+  { icon?: ReactNode; label: string; className: string; aria: string }
 > = {
   IN_STOCK: {
-    icon: '✓',
+    icon: <Check className="h-3 w-3" aria-hidden="true" />,
     label: 'In',
-    className: 'bg-emerald-100 text-emerald-700',
+    className: 'bg-green-100 text-green-700',
     aria: 'In stock',
   },
   LOW_STOCK: {
-    icon: '!',
+    icon: <AlertTriangle className="h-3 w-3" aria-hidden="true" />,
     label: 'Low',
     className: 'bg-amber-100 text-amber-700',
     aria: 'Low stock',
   },
   OUT_OF_STOCK: {
-    icon: '⃠',
+    icon: <Slash className="h-3 w-3" aria-hidden="true" />,
     label: 'Out',
-    className: 'bg-rose-100 text-rose-700',
+    className: 'bg-red-100 text-red-700',
     aria: 'Out of stock',
   },
   UNKNOWN: {
@@ -40,15 +40,13 @@ const MAP: Record<
   },
 }
 
-const AvailabilityBadge = forwardRef<HTMLDivElement, AvailabilityBadgeProps>(
+const AvailabilityBadge = forwardRef<HTMLSpanElement, AvailabilityBadgeProps>(
   ({ status = 'UNKNOWN', updatedAt, tabIndex = 0 }, ref) => {
   const isChecking = status === null
 
   const base = MAP[status ?? 'UNKNOWN'] ?? MAP.UNKNOWN
 
-  let iconNode: ReactNode = base.icon ? (
-    <span aria-hidden="true">{base.icon}</span>
-  ) : null
+  let iconNode: ReactNode = base.icon ?? null
   let label: string | null = base.label
   let className = base.className
   let aria = base.aria
@@ -64,9 +62,12 @@ const AvailabilityBadge = forwardRef<HTMLDivElement, AvailabilityBadgeProps>(
   const ariaLabel = time ? `${aria}, checked ${time}` : aria
 
   return (
-    <Badge
+    <span
       ref={ref}
-      className={`gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${className}`}
+      className={cn(
+        'inline-flex items-center justify-center gap-1 px-2.5 h-6 min-w-[44px] rounded-full text-xs font-medium leading-none cursor-default',
+        className,
+      )}
       aria-label={ariaLabel}
       tabIndex={tabIndex}
     >
@@ -79,7 +80,7 @@ const AvailabilityBadge = forwardRef<HTMLDivElement, AvailabilityBadgeProps>(
       ) : (
         label
       )}
-    </Badge>
+    </span>
   )
 })
 

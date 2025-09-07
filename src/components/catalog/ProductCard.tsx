@@ -1,10 +1,9 @@
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import SupplierLogo from "./SupplierLogo";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { timeAgo } from "@/lib/timeAgo";
 import { formatCurrency } from "@/lib/format";
+import AvailabilityBadge from "./AvailabilityBadge";
 import type { PublicCatalogItem } from "@/services/catalog";
 import { resolveImage } from "@/lib/images";
 
@@ -39,23 +38,6 @@ export function ProductCard({
   const primarySupplierLogo = product.supplier_logo_urls?.[0] ?? null;
   const packInfo =
     product.canonical_pack ?? product.pack_sizes?.join(", ") ?? "";
-  const availabilityClass =
-    availability === "IN_STOCK"
-      ? "bg-emerald-100 text-emerald-700"
-      : availability === "OUT_OF_STOCK"
-        ? "bg-rose-100 text-rose-700"
-        : availability === "LOW_STOCK"
-          ? "bg-amber-100 text-amber-700"
-          : "bg-muted text-muted-foreground";
-  const availabilityLabel =
-    product.availability_text ??
-    (availability === "IN_STOCK"
-      ? "In stock"
-      : availability === "OUT_OF_STOCK"
-        ? "Out of stock"
-        : availability === "LOW_STOCK"
-          ? "Low stock"
-          : "Availability unknown");
 
   const handleAdd = () => {
     if (onAdd) return onAdd();
@@ -97,42 +79,27 @@ export function ProductCard({
           {packInfo}
         </div>
         <div className="mt-2 flex flex-wrap items-center gap-1 min-h-[24px]">
-          <Badge
-            className={cn(
-              "rounded-full px-2 py-0.5 text-[11px] font-medium",
-              availabilityClass,
-            )}
-            title={
-              product.availability_updated_at
-                ? `Updated ${timeAgo(product.availability_updated_at)}`
-                : undefined
-            }
-          >
-            {availabilityLabel}
-          </Badge>
+          <AvailabilityBadge
+            status={availability}
+            updatedAt={product.availability_updated_at}
+          />
           {product.suppliers_count > 0 && (
             <div className="flex items-center gap-1">
               <SupplierLogo
                 name={primarySupplierName || supplierLabel}
                 logoUrl={primarySupplierLogo}
               />
-              <Badge
-                variant="secondary"
-                className="rounded-full px-2 py-0.5 text-[11px] font-medium"
-              >
+              <span className="inline-flex items-center rounded-full bg-secondary px-2 py-0.5 text-[11px] font-medium text-secondary-foreground">
                 {primarySupplierName
                   ? `${supplierLabel} / ${primarySupplierName}`
                   : supplierLabel}
-              </Badge>
+              </span>
             </div>
           )}
           {product.active_supplier_count === 0 && (
-            <Badge
-              variant="outline"
-              className="rounded-full px-2 py-0.5 text-[11px] font-medium text-muted-foreground border-muted-foreground/30"
-            >
+            <span className="inline-flex items-center rounded-full border border-muted-foreground/30 px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
               Not seen recently
-            </Badge>
+            </span>
           )}
         </div>
         <div className="mt-auto" />
