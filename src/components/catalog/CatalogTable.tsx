@@ -222,22 +222,24 @@ export function CatalogTable({
                   />
                 </div>
               </TableCell>
-              <TableCell className="w-[120px] px-3 py-2 text-center">
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <AvailabilityBadge
-                      tabIndex={-1}
-                      status={p.availability_status}
-                      updatedAt={p.availability_updated_at}
-                    />
-                  </TooltipTrigger>
-                  <TooltipContent className="space-y-1">
-                    <div>{availabilityLabel}.</div>
-                    <div className="text-xs text-muted-foreground">
-                      Last checked {p.availability_updated_at ? timeAgo(p.availability_updated_at) : 'unknown'}. Source: {p.suppliers?.[0] || 'Unknown'}
-                    </div>
-                  </TooltipContent>
-                </Tooltip>
+              <TableCell className="w-[120px] px-3 py-2">
+                <div className="flex h-6 items-center justify-center">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <AvailabilityBadge
+                        tabIndex={-1}
+                        status={p.availability_status}
+                        updatedAt={p.availability_updated_at}
+                      />
+                    </TooltipTrigger>
+                    <TooltipContent className="space-y-1">
+                      <div>{availabilityLabel}.</div>
+                      <div className="text-xs text-muted-foreground">
+                        Last checked {p.availability_updated_at ? timeAgo(p.availability_updated_at) : 'unknown'}. Source: {p.suppliers?.[0] || 'Unknown'}
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
               </TableCell>
               <TableCell className="w-[136px] px-3 py-2 text-right border-r whitespace-nowrap">
                 <PriceCell product={p} />
