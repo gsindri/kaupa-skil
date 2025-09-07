@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
+import SupplierLogo from './SupplierLogo'
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerFooter, DrawerClose } from '@/components/ui/drawer'
 import { Button } from '@/components/ui/button'
@@ -70,13 +70,11 @@ export default function SupplierChips({ suppliers }: SupplierChipsProps) {
         tabIndex={0}
         aria-label={aria}
       >
-        <Avatar className="h-4 w-4">
-          {s.supplier_logo_url ? (
-            <AvatarImage src={s.supplier_logo_url} alt="" />
-          ) : (
-            <AvatarFallback>{initials}</AvatarFallback>
-          )}
-        </Avatar>
+        <SupplierLogo
+          name={s.supplier_name}
+          logoUrl={s.supplier_logo_url}
+          className="h-4 w-4"
+        />
         <span className="truncate text-xs">
           {s.supplier_name}
           {loc && (

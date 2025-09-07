@@ -1,5 +1,6 @@
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import SupplierLogo from "./SupplierLogo";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { timeAgo } from "@/lib/timeAgo";
@@ -34,6 +35,8 @@ export function ProductCard({
   const supplierLabel = `${product.suppliers_count} supplier${
     product.suppliers_count === 1 ? "" : "s"
   }`;
+  const primarySupplierName = product.supplier_names?.[0] ?? "";
+  const primarySupplierLogo = product.supplier_logo_urls?.[0] ?? null;
   const packInfo =
     product.canonical_pack ?? product.pack_sizes?.join(", ") ?? "";
   const availabilityClass =
@@ -93,7 +96,7 @@ export function ProductCard({
         <div className="mt-1 min-h-[1rem] text-xs text-muted-foreground">
           {packInfo}
         </div>
-        <div className="mt-2 flex flex-wrap gap-1 min-h-[24px]">
+        <div className="mt-2 flex flex-wrap items-center gap-1 min-h-[24px]">
           <Badge
             className={cn(
               "rounded-full px-2 py-0.5 text-[11px] font-medium",
@@ -107,12 +110,22 @@ export function ProductCard({
           >
             {availabilityLabel}
           </Badge>
-          <Badge
-            variant="secondary"
-            className="rounded-full px-2 py-0.5 text-[11px] font-medium"
-          >
-            {supplierLabel}
-          </Badge>
+          {product.suppliers_count > 0 && (
+            <div className="flex items-center gap-1">
+              <SupplierLogo
+                name={primarySupplierName || supplierLabel}
+                logoUrl={primarySupplierLogo}
+              />
+              <Badge
+                variant="secondary"
+                className="rounded-full px-2 py-0.5 text-[11px] font-medium"
+              >
+                {primarySupplierName
+                  ? `${supplierLabel} / ${primarySupplierName}`
+                  : supplierLabel}
+              </Badge>
+            </div>
+          )}
           {product.active_supplier_count === 0 && (
             <Badge
               variant="outline"
