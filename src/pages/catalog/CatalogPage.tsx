@@ -194,9 +194,8 @@ export default function CatalogPage() {
   const [headerLocked, setHeaderLocked] = useState(false)
   const lockCount = useRef(0)
   const lastY = useRef(0)
-  const directionRef = useRef<'down' | 'up'>('down')
-  const anchorDown = useRef(0)
-  const anchorUp = useRef(0)
+  const anchor = useRef(0)
+  const stateRef = useRef<'shown' | 'hidden'>('shown')
   const [scrolled, setScrolled] = useState(false)
 
   useEffect(() => {
@@ -707,42 +706,46 @@ export default function CatalogPage() {
     const scrollEl = document.querySelector('.app-scroll') as HTMLElement | null
     if (!scrollEl) return
 
-    const handle = () => {
-      const current = Math.max(0, scrollEl.scrollTop)
-      const delta = current - lastY.current
+    const onScroll = () => {
+      const y = Math.max(0, scrollEl.scrollTop)
+      const dy = y - lastY.current
+      lastY.current = y
 
-      if (delta > 0) {
-        if (directionRef.current !== 'down') {
-          directionRef.current = 'down'
-          anchorDown.current = current
-        }
-        if (!headerLocked && !headerHidden && current - anchorDown.current > 64) {
-          setHeaderHidden(true)
-          anchorUp.current = current
-        }
-      } else if (delta < 0) {
-        if (directionRef.current !== 'up') {
-          directionRef.current = 'up'
-          anchorUp.current = current
-        }
-        if (
-          !headerLocked &&
-          headerHidden &&
-          anchorUp.current - current > 24
-        ) {
+      if (document.activeElement?.closest('#catalogHeader') || headerLocked) {
+        if (stateRef.current !== 'shown') {
           setHeaderHidden(false)
-          anchorDown.current = current
+          stateRef.current = 'shown'
+        }
+        anchor.current = y
+        setScrolled(y > 0)
+        return
+      }
+
+      if (dy > 6) {
+        if (stateRef.current === 'shown' && y - anchor.current > 56) {
+          setHeaderHidden(true)
+          stateRef.current = 'hidden'
+          anchor.current = y
+        }
+      } else if (dy < -6) {
+        if (stateRef.current === 'hidden' && anchor.current - y > 20) {
+          setHeaderHidden(false)
+          stateRef.current = 'shown'
+          anchor.current = y
         }
       }
 
-      if (current < 24 && !headerLocked) {
-        setHeaderHidden(false)
-        directionRef.current = 'down'
-        anchorDown.current = current
+      if ((dy > 0 && stateRef.current === 'shown') || (dy < 0 && stateRef.current === 'hidden')) {
+        anchor.current = y
       }
 
-      setScrolled(current > 0)
-      lastY.current = current
+      if (y < 16 && stateRef.current === 'hidden') {
+        setHeaderHidden(false)
+        stateRef.current = 'shown'
+        anchor.current = y
+      }
+
+      setScrolled(y > 0)
     }
 
     let ticking = false
@@ -750,18 +753,21 @@ export default function CatalogPage() {
       if (!ticking) {
         requestAnimationFrame(() => {
           ticking = false
-          handle()
+          onScroll()
         })
         ticking = true
       }
     }
 
-    scrollEl.addEventListener('scroll', listener)
+    scrollEl.addEventListener('scroll', listener, { passive: true })
     return () => scrollEl.removeEventListener('scroll', listener)
-  }, [headerLocked, headerHidden])
+  }, [headerLocked])
 
   useEffect(() => {
-    if (headerLocked) setHeaderHidden(false)
+    if (headerLocked) {
+      setHeaderHidden(false)
+      stateRef.current = 'shown'
+    }
   }, [headerLocked])
 
   const total =
@@ -801,11 +807,8 @@ export default function CatalogPage() {
       headerRef={headerRef}
       headerClassName={cn(
         headerHidden ? 'is-hidden' : '',
-        headerHidden && scrolled ? 'shadow-sm' : '',
+        scrolled ? 'shadow-sm' : '',
       )}
-      contentProps={{
-        style: { paddingTop: headerHidden ? 0 : 'var(--header-h)' },
-      }}
     >
       {/* eslint-disable-next-line no-constant-binary-expression */}
       {false && <LayoutDebugger show />}

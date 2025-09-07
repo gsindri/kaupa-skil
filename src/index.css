@@ -59,22 +59,18 @@ html { scrollbar-gutter: stable; }
   transform: translateY(0);
   transition: transform 220ms ease;
   will-change: transform;
+  contain: paint;
   z-index: 50;
   backdrop-filter: saturate(180%) blur(8px);
 }
 
 #catalogHeader.is-hidden {
   transform: translateY(-100%);
-}
-
-#catalogContent {
-  padding-top: var(--header-h, 0px);
-  transition: padding-top 220ms ease;
+  pointer-events: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  #catalogHeader,
-  #catalogContent {
+  #catalogHeader {
     transition: none !important;
   }
 }
