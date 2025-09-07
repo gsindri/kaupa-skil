@@ -36,11 +36,13 @@ export function FullWidthLayout({
               ref={headerRef}
               id="catalogHeader"
               className={cn(
-                'fixed top-0 left-0 right-0 z-50 bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/75 transform transition-transform duration-[220ms] ease-in-out motion-reduce:transition-none',
+                'fixed top-0 left-0 right-0 z-50 bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/75 transform transition-transform duration-[120ms] ease-out motion-reduce:transition-none',
                 headerClassName,
               )}
             >
-              <TopNavigation />
+              <div className="header-row global-row">
+                <TopNavigation />
+              </div>
               {header}
             </div>
             <div

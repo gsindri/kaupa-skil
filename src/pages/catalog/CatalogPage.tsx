@@ -190,12 +190,15 @@ export default function CatalogPage() {
   const stringifiedFilters = useMemo(() => JSON.stringify(filters), [filters])
   const [bannerDismissed, setBannerDismissed] = useState(false)
   const headerRef = useRef<HTMLDivElement>(null)
-  const [headerHidden, setHeaderHidden] = useState(false)
+  const [headerHiddenState, _setHeaderHidden] = useState(false)
+  const headerHiddenRef = useRef(headerHiddenState)
+  const setHeaderHidden = (v: boolean) => {
+    headerHiddenRef.current = v
+    _setHeaderHidden(v)
+  }
+  const headerHidden = headerHiddenState
   const [headerLocked, setHeaderLocked] = useState(false)
   const lockCount = useRef(0)
-  const lastY = useRef(0)
-  const anchor = useRef(0)
-  const stateRef = useRef<'shown' | 'hidden'>('shown')
   const [scrolled, setScrolled] = useState(false)
 
   useEffect(() => {
@@ -703,46 +706,77 @@ export default function CatalogPage() {
   }
 
   useEffect(() => {
+    const reduceMotion =
+      typeof window !== 'undefined' &&
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    if (reduceMotion) {
+      setHeaderHidden(false)
+      setScrolled(false)
+      return
+    }
+
     const scrollEl = document.querySelector('.app-scroll') as HTMLElement | null
-    if (!scrollEl) return
+    const headerEl = headerRef.current
+    if (!scrollEl || !headerEl) return
 
-    const onScroll = () => {
+    const chips = headerEl.querySelector('.chips-row') as HTMLElement | null
+    const search = headerEl.querySelector('.search-row') as HTMLElement | null
+    const global = headerEl.querySelector('.global-row') as HTMLElement | null
+    const rows = [chips, search, global].filter(Boolean) as HTMLElement[]
+
+    let H = 0
+    const measure = () => {
+      H = rows.reduce((sum, r) => sum + r.offsetHeight, 0)
+    }
+    measure()
+    const ro = new ResizeObserver(measure)
+    rows.forEach(r => ro.observe(r))
+    window.addEventListener('resize', measure)
+
+    let lastY = scrollEl.scrollTop
+    const hysteresis = 10
+
+    const showHeader = () => {
+      if (headerHiddenRef.current) setHeaderHidden(false)
+      rows.forEach(r => (r.style.transform = 'translateY(0)'))
+    }
+    const hideHeader = () => {
+      if (!headerHiddenRef.current) setHeaderHidden(true)
+    }
+    const removeHiddenClass = () => {
+      if (headerHiddenRef.current) setHeaderHidden(false)
+    }
+    const applyTransforms = (y: number) => {
+      const progress = Math.min(Math.max(y / H, 0), 1)
+      const segments = rows.length
+      rows.forEach((row, i) => {
+        const start = i / segments
+        let t = (progress - start) * segments
+        t = Math.min(Math.max(t, 0), 1)
+        const eased = 1 - Math.pow(1 - t, 3)
+        row.style.transform = `translateY(-${eased * 100}%)`
+      })
+    }
+
+    const onScrollRAF = () => {
       const y = Math.max(0, scrollEl.scrollTop)
-      const dy = y - lastY.current
-      lastY.current = y
+      const dy = y - lastY
+      lastY = y
 
-      if (document.activeElement?.closest('#catalogHeader') || headerLocked) {
-        if (stateRef.current !== 'shown') {
-          setHeaderHidden(false)
-          stateRef.current = 'shown'
-        }
-        anchor.current = y
+      const pinned = headerLocked || document.activeElement?.closest('#catalogHeader')
+      if (pinned || y < 1) {
+        showHeader()
         setScrolled(y > 0)
         return
       }
 
-      if (dy > 6) {
-        if (stateRef.current === 'shown' && y - anchor.current > 56) {
-          setHeaderHidden(true)
-          stateRef.current = 'hidden'
-          anchor.current = y
-        }
-      } else if (dy < -6) {
-        if (stateRef.current === 'hidden' && anchor.current - y > 20) {
-          setHeaderHidden(false)
-          stateRef.current = 'shown'
-          anchor.current = y
-        }
-      }
-
-      if ((dy > 0 && stateRef.current === 'shown') || (dy < 0 && stateRef.current === 'hidden')) {
-        anchor.current = y
-      }
-
-      if (y < 16 && stateRef.current === 'hidden') {
-        setHeaderHidden(false)
-        stateRef.current = 'shown'
-        anchor.current = y
+      if (y < H) {
+        applyTransforms(y)
+        removeHiddenClass()
+      } else {
+        if (dy > hysteresis) hideHeader()
+        else if (dy < -hysteresis) showHeader()
       }
 
       setScrolled(y > 0)
@@ -753,20 +787,32 @@ export default function CatalogPage() {
       if (!ticking) {
         requestAnimationFrame(() => {
           ticking = false
-          onScroll()
+          onScrollRAF()
         })
         ticking = true
       }
     }
 
     scrollEl.addEventListener('scroll', listener, { passive: true })
-    return () => scrollEl.removeEventListener('scroll', listener)
+    return () => {
+      scrollEl.removeEventListener('scroll', listener)
+      window.removeEventListener('resize', measure)
+      ro.disconnect()
+    }
   }, [headerLocked])
 
   useEffect(() => {
     if (headerLocked) {
+      const headerEl = headerRef.current
+      const rows = headerEl
+        ? ([
+            headerEl.querySelector('.chips-row'),
+            headerEl.querySelector('.search-row'),
+            headerEl.querySelector('.global-row'),
+          ].filter(Boolean) as HTMLElement[])
+        : []
+      rows.forEach(r => (r.style.transform = 'translateY(0)'))
       setHeaderHidden(false)
-      stateRef.current = 'shown'
     }
   }, [headerLocked])
 
@@ -972,28 +1018,31 @@ function FiltersBar({
               </AlertDescription>
             </Alert>
           )}
-          <div className="grid grid-cols-[1fr,auto,auto] gap-3 items-center">
-            <HeroSearchInput
-              placeholder="Search products"
-              value={filters.search ?? ''}
-              onChange={e => setFilters({ search: e.target.value })}
-              onFocus={() => onLockChange(true)}
-              onBlur={() => onLockChange(false)}
-              rightSlot={
-                <button
-                  type="button"
-                  aria-label="Voice search"
-                  onClick={() => console.log('voice search')}
-                  className="text-muted-foreground hover:text-foreground"
-                >
-                  <Mic className="h-5 w-5" />
-                </button>
-              }
-            />
-            <SortDropdown value={sortOrder} onChange={setSortOrder} onOpenChange={onLockChange} />
-            <ViewToggle value={view} onChange={setView} />
+          <div className="header-row search-row">
+            <div className="grid grid-cols-[1fr,auto,auto] gap-3 items-center">
+              <HeroSearchInput
+                placeholder="Search products"
+                value={filters.search ?? ''}
+                onChange={e => setFilters({ search: e.target.value })}
+                onFocus={() => onLockChange(true)}
+                onBlur={() => onLockChange(false)}
+                rightSlot={
+                  <button
+                    type="button"
+                    aria-label="Voice search"
+                    onClick={() => console.log('voice search')}
+                    className="text-muted-foreground hover:text-foreground"
+                  >
+                    <Mic className="h-5 w-5" />
+                  </button>
+                }
+              />
+              <SortDropdown value={sortOrder} onChange={setSortOrder} onOpenChange={onLockChange} />
+              <ViewToggle value={view} onChange={setView} />
+            </div>
           </div>
-          <div className="mt-3 flex flex-nowrap items-center gap-2 overflow-x-auto">
+          <div className="header-row chips-row">
+            <div className="flex flex-nowrap items-center gap-2 overflow-x-auto">
             {/* Disable pricing filter until pricing data is available */}
             {/* <FilterChip selected={onlyWithPrice} onSelectedChange={setOnlyWithPrice}>
                Only with price
@@ -1075,6 +1124,7 @@ function FiltersBar({
                 Clear all
               </button>
             )}
+            </div>
           </div>
         </div>
       </div>
