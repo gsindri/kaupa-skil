@@ -33,11 +33,10 @@ export function TopNavigation() {
   const lastKey = useRef<string>('')
 
   useEffect(() => {
-    const scrollEl = document.querySelector('.app-scroll') as HTMLElement | null
-    const onScroll = () => setScrolled((scrollEl?.scrollTop || 0) > 0)
+    const onScroll = () => setScrolled(window.scrollY > 0)
     onScroll()
-    scrollEl?.addEventListener('scroll', onScroll)
-    return () => scrollEl?.removeEventListener('scroll', onScroll)
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
   useEffect(() => {

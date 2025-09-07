@@ -27,11 +27,11 @@ export function FullWidthLayout({
           className="min-h-screen grid transition-[grid-template-columns] duration-300 ease-in-out"
           style={{ gridTemplateColumns: 'var(--sidebar-width,16rem) minmax(0,1fr)' }}
         >
-          <aside className="sticky top-0 h-svh w-[var(--sidebar-width,16rem)] transition-[width] duration-300 ease-in-out">
+          <aside className="sticky top-0 min-h-screen w-[var(--sidebar-width,16rem)] transition-[width] duration-300 ease-in-out">
             <EnhancedAppSidebar />
           </aside>
 
-          <div className="min-w-0 h-svh flex flex-col transition-all duration-300 ease-in-out">
+          <div className="min-w-0 flex flex-col transition-all duration-300 ease-in-out">
             <div
               ref={headerRef}
               id="catalogHeader"
@@ -48,12 +48,13 @@ export function FullWidthLayout({
             <div
               id="catalogContent"
               className={cn(
-                'app-scroll flex-1 min-h-0 overflow-y-auto px-4 sm:px-6 lg:px-8 xl:px-10 2xl:px-12',
+                'px-4 sm:px-6 lg:px-8 xl:px-10 2xl:px-12',
                 contentClassName,
               )}
               style={{ ...contentStyle }}
               {...restContentProps}
             >
+              <div id="headerSpacer" aria-hidden="true" />
               {children}
             </div>
           </div>
