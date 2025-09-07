@@ -26,7 +26,7 @@ import { timeAgo } from '@/lib/timeAgo'
 import { formatCurrency } from '@/lib/format'
 import type { FacetFilters } from '@/services/catalog'
 import ProductThumb from '@/components/catalog/ProductThumb'
-import SupplierChips from '@/components/catalog/SupplierChips'
+import SupplierLogo from './SupplierLogo'
 import { resolveImage } from '@/lib/images'
 import type { CartItem } from '@/lib/types'
 import { Lock } from 'lucide-react'
@@ -244,54 +244,54 @@ export function CatalogTable({
               </TableCell>
               <TableCell className="w-[220px] min-w-[180px] max-w-[220px] px-3 py-2">
                 {(() => {
-                  const suppliers = p.supplier_products?.length
-                    ? p.supplier_products
-                    : p.supplier_ids && p.supplier_names
-                      ? p.supplier_ids.map((id: string, idx: number) => {
-                          const name = p.supplier_names[idx] || id
-                          return {
-                            supplier_id: id,
-                            supplier_name: name,
-                            supplier_logo_url:
-                              p.supplier_logo_urls?.[idx] ||
-                              vendors.find(v => v.name === name)?.logo_url ||
-                              null,
-                            is_connected: true,
-                          }
-                        })
-                      : Array.isArray(p.suppliers)
-                        ? p.suppliers.map((s: any) => {
-                            if (typeof s === 'string') {
-                              return {
-                                supplier_id: s,
-                                supplier_name: s,
-                                is_connected: true,
-                                supplier_logo_url:
-                                  vendors.find(v => v.name === s)?.logo_url ||
-                                  null,
-                              }
-                            }
-                            const name = s.supplier_name || s.name || ''
-                            return {
-                              supplier_id: s.supplier_id || s.id,
-                              supplier_name: name,
-                              is_connected: s.is_connected ?? true,
-                              supplier_logo_url:
-                                s.supplier_logo_url ||
-                                s.logo_url ||
-                                s.logoUrl ||
-                                vendors.find(v => v.name === name)?.logo_url ||
-                                null,
-                              availability_state:
-                                s.availability_state || s.availability_status,
-                              location_city: s.location_city || null,
-                              location_country_code:
-                                s.location_country_code || null,
-                            }
-                          })
-                        : []
-                  return suppliers.length ? (
-                    <SupplierChips suppliers={suppliers} />
+                  let supplierName = ''
+                  let supplierLogo: string | null = null
+
+                  if (p.supplier_products?.length) {
+                    const s = p.supplier_products[0]
+                    supplierName = s.supplier_name || s.name || ''
+                    supplierLogo =
+                      s.supplier_logo_url ||
+                      s.logo_url ||
+                      s.logoUrl ||
+                      null
+                  } else if (p.supplier_ids && p.supplier_names) {
+                    supplierName = p.supplier_names[0] || ''
+                    supplierLogo =
+                      p.supplier_logo_urls?.[0] ||
+                      vendors.find(v => v.name === supplierName)?.logo_url ||
+                      null
+                  } else if (Array.isArray(p.suppliers) && p.suppliers.length) {
+                    const s = p.suppliers[0]
+                    if (typeof s === 'string') {
+                      supplierName = s
+                      supplierLogo = vendors.find(v => v.name === s)?.logo_url || null
+                    } else {
+                      supplierName = s.supplier_name || s.name || ''
+                      supplierLogo =
+                        s.supplier_logo_url ||
+                        s.logo_url ||
+                        s.logoUrl ||
+                        vendors.find(v => v.name === supplierName)?.logo_url ||
+                        null
+                    }
+                  }
+
+                  const supplierCount =
+                    p.suppliers_count ??
+                    p.supplier_names?.length ??
+                    (Array.isArray(p.suppliers) ? p.suppliers.length : 0)
+                  const supplierLabel = `${supplierCount} supplier${
+                    supplierCount === 1 ? '' : 's'
+                  }`
+
+                  return supplierName ? (
+                    <div className="flex items-center gap-2">
+                      <SupplierLogo name={supplierName} logoUrl={supplierLogo} />
+                      <span className="truncate text-sm">
+                        {supplierLabel} / {supplierName}
+                      </span>
+                    </div>
                   ) : (
                     <Tooltip>
                       <TooltipTrigger asChild>
