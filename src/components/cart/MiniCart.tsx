@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Button } from '@/components/ui/button'
-import { ShoppingCart } from 'lucide-react'
+import { ShoppingCart, Trash2 } from 'lucide-react'
 import { useCart } from '@/contexts/useBasket'
 import { useSettings } from '@/contexts/useSettings'
 import { Link } from 'react-router-dom'
@@ -165,16 +165,22 @@ export function MiniCart() {
                         })()}
                       </div>
                     </div>
-                    <div className="flex items-center">
+                    <div className="flex items-center gap-1">
                       <QuantityStepper
                         quantity={it.quantity}
                         onChange={qty =>
                           updateQuantity(it.supplierItemId, qty)
                         }
-                        onRemove={() => handleRemove(index)}
                         label={displayName}
                         className="!w-[84px] md:!w-[92px]"
                       />
+                      <button
+                        className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive/50"
+                        aria-label={`Remove ${displayName}`}
+                        onClick={() => handleRemove(index)}
+                      >
+                        <Trash2 className="h-4 w-4 stroke-[1.5]" />
+                      </button>
                     </div>
                   </div>
                 )
