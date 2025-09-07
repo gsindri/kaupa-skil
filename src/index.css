@@ -18,15 +18,13 @@ html, body, #root {
 }
 
 /* Set a fallback header height so content can offset correctly */
-/* Set default header and filters height variables */
 :root {
   --header-h: 56px;
-  --filters-h: 0px;
 }
 
 body {
   @apply m-0 p-0;
-  scroll-padding-top: calc(var(--header-h) + var(--filters-h));
+  scroll-padding-top: var(--header-h);
 }
 
 #root {
@@ -50,5 +48,33 @@ html { scrollbar-gutter: stable; }
 .app-scroll {
   scrollbar-gutter: stable;
   overscroll-behavior: contain;
-  scroll-padding-top: calc(var(--header-h) + var(--filters-h));
+  scroll-padding-top: var(--header-h);
+}
+
+#catalogHeader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  transform: translateY(0);
+  transition: transform 220ms ease;
+  will-change: transform;
+  z-index: 50;
+  backdrop-filter: saturate(180%) blur(8px);
+}
+
+#catalogHeader.is-hidden {
+  transform: translateY(-100%);
+}
+
+#catalogContent {
+  padding-top: var(--header-h, 0px);
+  transition: padding-top 220ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #catalogHeader,
+  #catalogContent {
+    transition: none !important;
+  }
 }

@@ -10,6 +10,7 @@ interface FullWidthLayoutProps {
   header?: React.ReactNode
   headerClassName?: string
   headerRef?: React.Ref<HTMLDivElement>
+  contentProps?: React.HTMLAttributes<HTMLDivElement>
 }
 
 export function FullWidthLayout({
@@ -17,7 +18,9 @@ export function FullWidthLayout({
   header,
   headerClassName,
   headerRef,
+  contentProps,
 }: FullWidthLayoutProps) {
+  const { className: contentClassName, style: contentStyle, ...restContentProps } = contentProps || {}
   return (
       <SidebarProvider>
         <div
@@ -31,15 +34,24 @@ export function FullWidthLayout({
           <div className="min-w-0 h-svh flex flex-col transition-all duration-300 ease-in-out">
             <div
               ref={headerRef}
+              id="catalogHeader"
               className={cn(
-                'sticky top-0 z-50 bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/75 transition-transform duration-200 ease-in-out motion-reduce:transition-none',
+                'fixed top-0 left-0 right-0 z-50 bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/75 transform transition-transform duration-[220ms] ease-in-out motion-reduce:transition-none',
                 headerClassName,
               )}
             >
               <TopNavigation />
               {header}
             </div>
-            <div className="app-scroll flex-1 min-h-0 overflow-y-auto px-4 sm:px-6 lg:px-8 xl:px-10 2xl:px-12">
+            <div
+              id="catalogContent"
+              className={cn(
+                'app-scroll flex-1 min-h-0 overflow-y-auto px-4 sm:px-6 lg:px-8 xl:px-10 2xl:px-12 transition-[padding-top] duration-[220ms] ease-in-out',
+                contentClassName,
+              )}
+              style={{ paddingTop: 'var(--header-h)', ...contentStyle }}
+              {...restContentProps}
+            >
               {children}
             </div>
           </div>
