@@ -1,5 +1,5 @@
 
-import React, { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { HelpCircle, ChevronDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -27,28 +27,10 @@ export function TopNavigation() {
   const { open, openMobile, isMobile, toggleSidebar } = useSidebar()
   const sidebarOpen = isMobile ? openMobile : open
 
-  const headerRef = useRef<HTMLElement>(null)
   const searchRef = useRef<HTMLInputElement>(null)
   const [helpOpen, setHelpOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const lastKey = useRef<string>('')
-
-  // Fallback so first paint isn’t overlapped
-  useLayoutEffect(() => {
-    document.documentElement.style.setProperty('--header-h', '56px')
-  }, [])
-
-  // Keep --header-h in sync with actual header height
-  useEffect(() => {
-    const el = headerRef.current
-    if (!el) return
-    const ro = new ResizeObserver(() => {
-      const h = Math.round(el.getBoundingClientRect().height)
-      document.documentElement.style.setProperty('--header-h', `${h}px`)
-    })
-    ro.observe(el)
-    return () => ro.disconnect()
-  }, [])
 
   useEffect(() => {
     const scrollEl = document.querySelector('.app-scroll') as HTMLElement | null
@@ -93,10 +75,9 @@ export function TopNavigation() {
   
   return (
     <header
-      ref={headerRef}
       role="banner"
       className={cn(
-        'sticky top-0 z-50 h-[var(--header-h)] border-b bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/75 transition-shadow',
+        'border-b bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/75 transition-shadow',
         scrolled ? 'shadow-sm' : ''
       )}
     >

@@ -193,9 +193,24 @@ export default function CatalogPage() {
   const [headerHidden, setHeaderHidden] = useState(false)
   const [headerLocked, setHeaderLocked] = useState(false)
   const lockCount = useRef(0)
-  const lastToggleY = useRef(0)
-  const lastScrollY = useRef(0)
+  const lastY = useRef(0)
+  const directionRef = useRef<'down' | 'up'>('down')
+  const anchorDown = useRef(0)
+  const anchorUp = useRef(0)
   const [scrolled, setScrolled] = useState(false)
+
+  useEffect(() => {
+    const el = headerRef.current
+    if (!el) return
+    const update = () => {
+      const h = Math.round(el.offsetHeight)
+      document.documentElement.style.setProperty('--header-h', `${h}px`)
+    }
+    update()
+    const ro = new ResizeObserver(update)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
 
   useEffect(() => {
     try {
@@ -692,36 +707,51 @@ export default function CatalogPage() {
     const scrollEl = document.querySelector('.app-scroll') as HTMLElement | null
     if (!scrollEl) return
 
-    const onScroll = () => {
+    const handle = () => {
       const current = Math.max(0, scrollEl.scrollTop)
-      const delta = current - lastScrollY.current
-      setScrolled(current > 0)
+      const delta = current - lastY.current
 
-      if (!headerLocked) {
-        if (!headerHidden && delta > 0 && current - lastToggleY.current > 64) {
+      if (delta > 0) {
+        if (directionRef.current !== 'down') {
+          directionRef.current = 'down'
+          anchorDown.current = current
+        }
+        if (!headerLocked && !headerHidden && current - anchorDown.current > 64) {
           setHeaderHidden(true)
-          lastToggleY.current = current
-        } else if (
-          (headerHidden && delta < 0 && lastToggleY.current - current > 24) ||
-          current <= 0
+          anchorUp.current = current
+        }
+      } else if (delta < 0) {
+        if (directionRef.current !== 'up') {
+          directionRef.current = 'up'
+          anchorUp.current = current
+        }
+        if (
+          !headerLocked &&
+          headerHidden &&
+          anchorUp.current - current > 24
         ) {
           setHeaderHidden(false)
-          lastToggleY.current = current
+          anchorDown.current = current
         }
       }
 
-      lastScrollY.current = current
+      if (current < 24 && !headerLocked) {
+        setHeaderHidden(false)
+        directionRef.current = 'down'
+        anchorDown.current = current
+      }
+
+      setScrolled(current > 0)
+      lastY.current = current
     }
 
     let ticking = false
-    const handle = () => {
-      ticking = false
-      onScroll()
-    }
-
     const listener = () => {
       if (!ticking) {
-        requestAnimationFrame(handle)
+        requestAnimationFrame(() => {
+          ticking = false
+          handle()
+        })
         ticking = true
       }
     }
@@ -770,9 +800,12 @@ export default function CatalogPage() {
       }
       headerRef={headerRef}
       headerClassName={cn(
-        headerHidden ? '-translate-y-full' : 'translate-y-0',
+        headerHidden ? 'is-hidden' : '',
         headerHidden && scrolled ? 'shadow-sm' : '',
       )}
+      contentProps={{
+        style: { paddingTop: headerHidden ? 0 : 'var(--header-h)' },
+      }}
     >
       {/* eslint-disable-next-line no-constant-binary-expression */}
       {false && <LayoutDebugger show />}
@@ -796,7 +829,7 @@ export default function CatalogPage() {
                 </Alert>
               )}
               {bulkMode && (
-                <div className="sticky top-[calc(var(--header-h)+var(--filters-h))] z-20 flex items-center justify-between border-b bg-background px-4 py-2 text-sm">
+                <div className="sticky top-0 z-20 flex items-center justify-between border-b bg-background px-4 py-2 text-sm">
                   <span>{selected.length} selected</span>
                   <Button variant="ghost" onClick={() => { setBulkMode(false); setSelected([]) }}>
                     Done
@@ -889,18 +922,6 @@ function FiltersBar({
   setFocusedFacet,
   onLockChange,
 }: FiltersBarProps) {
-  const ref = React.useRef<HTMLDivElement>(null)
-  React.useEffect(() => {
-    const el = ref.current
-    if (!el) return
-    const ro = new ResizeObserver(() => {
-      const h = Math.round(el.getBoundingClientRect().height)
-      document.documentElement.style.setProperty('--filters-h', `${h}px`)
-    })
-    ro.observe(el)
-    return () => ro.disconnect()
-  }, [])
-
   const { search: _search, ...facetFilters } = filters
   const chips = deriveChipsFromFilters(
     filters,
@@ -938,10 +959,7 @@ function FiltersBar({
         if (!open) setFocusedFacet(null)
       }}
     >
-      <div
-        ref={ref}
-        className="border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60"
-      >
+      <div className="border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="py-3 space-y-3">
           {(publicError || orgError) && (
             <Alert variant="destructive">
