@@ -46,10 +46,10 @@ export function FullWidthLayout({
             <div
               id="catalogContent"
               className={cn(
-                'app-scroll flex-1 min-h-0 overflow-y-auto px-4 sm:px-6 lg:px-8 xl:px-10 2xl:px-12 transition-[padding-top] duration-[220ms] ease-in-out',
+                'app-scroll flex-1 min-h-0 overflow-y-auto px-4 sm:px-6 lg:px-8 xl:px-10 2xl:px-12',
                 contentClassName,
               )}
-              style={{ paddingTop: 'var(--header-h)', ...contentStyle }}
+              style={{ ...contentStyle }}
               {...restContentProps}
             >
               {children}
