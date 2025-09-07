@@ -2,7 +2,7 @@ let lockCount = 0
 let scrollTop = 0
 let currentTarget: HTMLElement | null = null
 
-export function lockScroll(target: HTMLElement | null = document.querySelector('.app-scroll') as HTMLElement) {
+export function lockScroll(target: HTMLElement | null = document.documentElement) {
   if (!target) return
   if (lockCount === 0) {
     currentTarget = target
@@ -12,11 +12,12 @@ export function lockScroll(target: HTMLElement | null = document.querySelector('
     target.style.overflow = 'hidden'
     target.style.touchAction = 'none'
     target.setAttribute('data-scroll-locked', '1')
+    document.body.setAttribute('data-scroll-locked', '1')
   }
   lockCount++
 }
 
-export function unlockScroll(target: HTMLElement | null = currentTarget || (document.querySelector('.app-scroll') as HTMLElement)) {
+export function unlockScroll(target: HTMLElement | null = currentTarget || document.documentElement) {
   if (!target) return
   if (lockCount > 0) {
     lockCount--
@@ -27,6 +28,7 @@ export function unlockScroll(target: HTMLElement | null = currentTarget || (docu
       delete target.dataset.prevOverflow
       delete target.dataset.prevTouchAction
       target.removeAttribute('data-scroll-locked')
+      document.body.removeAttribute('data-scroll-locked')
       currentTarget = null
     }
   }
