@@ -31,13 +31,14 @@ interface SortDropdownProps {
   value: SortOrder
   onChange: (s: SortOrder) => void
   className?: string
+  onOpenChange?: (open: boolean) => void
 }
 
-export function SortDropdown({ value, onChange, className }: SortDropdownProps) {
+export function SortDropdown({ value, onChange, className, onOpenChange }: SortDropdownProps) {
   const label = labels[value]
 
   return (
-    <DropdownMenu>
+    <DropdownMenu onOpenChange={onOpenChange}>
       <DropdownMenuTrigger asChild>
         <Button
           variant="outline"

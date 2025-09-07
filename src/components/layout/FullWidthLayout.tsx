@@ -3,12 +3,21 @@ import { SidebarProvider } from '@/components/ui/sidebar-provider'
 import { EnhancedAppSidebar } from './EnhancedAppSidebar'
 import { TopNavigation } from './TopNavigation'
 import { CartDrawer } from '@/components/cart/CartDrawer'
+import { cn } from '@/lib/utils'
 
 interface FullWidthLayoutProps {
   children: React.ReactNode
+  header?: React.ReactNode
+  headerClassName?: string
+  headerRef?: React.Ref<HTMLDivElement>
 }
 
-export function FullWidthLayout({ children }: FullWidthLayoutProps) {
+export function FullWidthLayout({
+  children,
+  header,
+  headerClassName,
+  headerRef,
+}: FullWidthLayoutProps) {
   return (
       <SidebarProvider>
         <div
@@ -20,7 +29,16 @@ export function FullWidthLayout({ children }: FullWidthLayoutProps) {
           </aside>
 
           <div className="min-w-0 h-svh flex flex-col transition-all duration-300 ease-in-out">
-            <TopNavigation />
+            <div
+              ref={headerRef}
+              className={cn(
+                'sticky top-0 z-50 bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/75 transition-transform duration-200 ease-in-out motion-reduce:transition-none',
+                headerClassName,
+              )}
+            >
+              <TopNavigation />
+              {header}
+            </div>
             <div className="app-scroll flex-1 min-h-0 overflow-y-auto px-4 sm:px-6 lg:px-8 xl:px-10 2xl:px-12">
               {children}
             </div>

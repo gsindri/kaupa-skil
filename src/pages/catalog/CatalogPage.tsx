@@ -32,6 +32,7 @@ import { useCart } from '@/contexts/useBasket'
 import type { CartItem } from '@/lib/types'
 import { resolveImage } from '@/lib/images'
 import { useSearchParams } from 'react-router-dom'
+import { cn } from '@/lib/utils'
 
 interface DerivedChip {
   key: string
@@ -188,6 +189,13 @@ export default function CatalogPage() {
   const [cols, setCols] = useState(1)
   const stringifiedFilters = useMemo(() => JSON.stringify(filters), [filters])
   const [bannerDismissed, setBannerDismissed] = useState(false)
+  const headerRef = useRef<HTMLDivElement>(null)
+  const [headerHidden, setHeaderHidden] = useState(false)
+  const [headerLocked, setHeaderLocked] = useState(false)
+  const lockCount = useRef(0)
+  const lastToggleY = useRef(0)
+  const lastScrollY = useRef(0)
+  const [scrolled, setScrolled] = useState(false)
 
   useEffect(() => {
     try {
@@ -675,6 +683,57 @@ export default function CatalogPage() {
     setTimeout(() => setAddingId(null), 500)
   }
 
+  const handleLockChange = (locked: boolean) => {
+    lockCount.current += locked ? 1 : -1
+    setHeaderLocked(lockCount.current > 0)
+  }
+
+  useEffect(() => {
+    const scrollEl = document.querySelector('.app-scroll') as HTMLElement | null
+    if (!scrollEl) return
+
+    const onScroll = () => {
+      const current = Math.max(0, scrollEl.scrollTop)
+      const delta = current - lastScrollY.current
+      setScrolled(current > 0)
+
+      if (!headerLocked) {
+        if (!headerHidden && delta > 0 && current - lastToggleY.current > 64) {
+          setHeaderHidden(true)
+          lastToggleY.current = current
+        } else if (
+          (headerHidden && delta < 0 && lastToggleY.current - current > 24) ||
+          current <= 0
+        ) {
+          setHeaderHidden(false)
+          lastToggleY.current = current
+        }
+      }
+
+      lastScrollY.current = current
+    }
+
+    let ticking = false
+    const handle = () => {
+      ticking = false
+      onScroll()
+    }
+
+    const listener = () => {
+      if (!ticking) {
+        requestAnimationFrame(handle)
+        ticking = true
+      }
+    }
+
+    scrollEl.addEventListener('scroll', listener)
+    return () => scrollEl.removeEventListener('scroll', listener)
+  }, [headerLocked, headerHidden])
+
+  useEffect(() => {
+    if (headerLocked) setHeaderHidden(false)
+  }, [headerLocked])
+
   const total =
     gotOrg && typeof orgTotal === 'number'
       ? orgTotal
@@ -683,32 +742,40 @@ export default function CatalogPage() {
         : null
 
   return (
-    <FullWidthLayout>
+    <FullWidthLayout
+      header={
+        <FiltersBar
+          filters={filters}
+          setFilters={setFilters}
+          onlyWithPrice={onlyWithPrice}
+          setOnlyWithPrice={setOnlyWithPrice}
+          triStock={triStock}
+          setTriStock={setTriStock}
+          triSpecial={triSpecial}
+          setTriSpecial={setTriSpecial}
+          triSuppliers={triSuppliers}
+          setTriSuppliers={setTriSuppliers}
+          sortOrder={sortOrder}
+          setSortOrder={setSortOrder}
+          view={view}
+          setView={setView}
+          publicError={publicError}
+          orgError={orgError}
+          showFilters={showFilters}
+          setShowFilters={setShowFilters}
+          focusedFacet={focusedFacet}
+          setFocusedFacet={setFocusedFacet}
+          onLockChange={handleLockChange}
+        />
+      }
+      headerRef={headerRef}
+      headerClassName={cn(
+        headerHidden ? '-translate-y-full' : 'translate-y-0',
+        headerHidden && scrolled ? 'shadow-sm' : '',
+      )}
+    >
       {/* eslint-disable-next-line no-constant-binary-expression */}
       {false && <LayoutDebugger show />}
-
-      <FiltersBar
-        filters={filters}
-        setFilters={setFilters}
-        onlyWithPrice={onlyWithPrice}
-        setOnlyWithPrice={setOnlyWithPrice}
-        triStock={triStock}
-        setTriStock={setTriStock}
-        triSpecial={triSpecial}
-        setTriSpecial={setTriSpecial}
-        triSuppliers={triSuppliers}
-        setTriSuppliers={setTriSuppliers}
-        sortOrder={sortOrder}
-        setSortOrder={setSortOrder}
-        view={view}
-        setView={setView}
-        publicError={publicError}
-        orgError={orgError}
-        showFilters={showFilters}
-        setShowFilters={setShowFilters}
-        focusedFacet={focusedFacet}
-        setFocusedFacet={setFocusedFacet}
-      />
 
       <div className="mt-6 px-4 sm:px-6 lg:px-8 xl:px-10 2xl:px-12">
         {view === 'list' ? (
@@ -729,7 +796,7 @@ export default function CatalogPage() {
                 </Alert>
               )}
               {bulkMode && (
-                <div className="sticky top-[var(--filters-h)] z-20 flex items-center justify-between border-b bg-background px-4 py-2 text-sm">
+                <div className="sticky top-[calc(var(--header-h)+var(--filters-h))] z-20 flex items-center justify-between border-b bg-background px-4 py-2 text-sm">
                   <span>{selected.length} selected</span>
                   <Button variant="ghost" onClick={() => { setBulkMode(false); setSelected([]) }}>
                     Done
@@ -796,6 +863,7 @@ interface FiltersBarProps {
   setShowFilters: (v: boolean) => void
   focusedFacet: keyof FacetFilters | null
   setFocusedFacet: (f: keyof FacetFilters | null) => void
+  onLockChange: (locked: boolean) => void
 }
 
 function FiltersBar({
@@ -819,6 +887,7 @@ function FiltersBar({
   setShowFilters,
   focusedFacet,
   setFocusedFacet,
+  onLockChange,
 }: FiltersBarProps) {
   const ref = React.useRef<HTMLDivElement>(null)
   React.useEffect(() => {
@@ -865,12 +934,13 @@ function FiltersBar({
       open={showFilters}
       onOpenChange={open => {
         setShowFilters(open)
+        onLockChange(open)
         if (!open) setFocusedFacet(null)
       }}
     >
       <div
         ref={ref}
-        className="sticky top-0 z-30 border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+        className="border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60"
       >
         <div className="py-3 space-y-3">
           {(publicError || orgError) && (
@@ -886,6 +956,8 @@ function FiltersBar({
               placeholder="Search products"
               value={filters.search ?? ''}
               onChange={e => setFilters({ search: e.target.value })}
+              onFocus={() => onLockChange(true)}
+              onBlur={() => onLockChange(false)}
               rightSlot={
                 <button
                   type="button"
@@ -897,7 +969,7 @@ function FiltersBar({
                 </button>
               }
             />
-            <SortDropdown value={sortOrder} onChange={setSortOrder} />
+            <SortDropdown value={sortOrder} onChange={setSortOrder} onOpenChange={onLockChange} />
             <ViewToggle value={view} onChange={setView} />
           </div>
           <div className="mt-3 flex flex-nowrap items-center gap-2 overflow-x-auto">
