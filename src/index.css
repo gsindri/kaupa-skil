@@ -57,7 +57,7 @@ html { scrollbar-gutter: stable; }
   left: 0;
   right: 0;
   transform: translateY(0);
-  transition: transform 220ms ease;
+  transition: transform 120ms ease-out;
   will-change: transform;
   contain: paint;
   z-index: 50;
@@ -69,8 +69,17 @@ html { scrollbar-gutter: stable; }
   pointer-events: none;
 }
 
+.header-row {
+  will-change: transform;
+  transition: none;
+  contain: paint;
+}
+
 @media (prefers-reduced-motion: reduce) {
   #catalogHeader {
+    transition: none !important;
+  }
+  .header-row {
     transition: none !important;
   }
 }
