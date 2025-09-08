@@ -850,7 +850,7 @@ export default function CatalogPage() {
       {/* eslint-disable-next-line no-constant-binary-expression */}
       {false && <LayoutDebugger show />}
 
-      <div className="mt-6 px-4 sm:px-6 lg:px-8 xl:px-10 2xl:px-12">
+      <div style={{ paddingTop: 'var(--header-h, 0px)' }} className="px-4 sm:px-6 lg:px-8 xl:px-10 2xl:px-12">
         {view === 'list' ? (
           <>
               {hideConnectPill && !bannerDismissed && (
@@ -1016,7 +1016,8 @@ function FiltersBar({
             </Alert>
           )}
           <div ref={searchRowRef} className="header-row search-row">
-            <div className="grid grid-cols-[1fr,auto,auto] gap-3 items-center">
+            <div className="px-4 sm:px-6 lg:px-8 xl:px-10 2xl:px-12 py-3">
+              <div className="grid grid-cols-[1fr,auto,auto] gap-3 items-center">
               <HeroSearchInput
                 placeholder="Search products"
                 value={filters.search ?? ''}
@@ -1036,10 +1037,12 @@ function FiltersBar({
               />
               <SortDropdown value={sortOrder} onChange={setSortOrder} onOpenChange={onDropdownOpen} />
               <ViewToggle value={view} onChange={setView} />
+              </div>
             </div>
           </div>
           <div ref={chipsRowRef} className="header-row chips-row">
-            <div className="flex flex-nowrap items-center gap-2 overflow-x-auto">
+            <div className="px-4 sm:px-6 lg:px-8 xl:px-10 2xl:px-12 py-2">
+              <div className="flex flex-nowrap items-center gap-2 overflow-x-auto">
             {/* Disable pricing filter until pricing data is available */}
             {/* <FilterChip selected={onlyWithPrice} onSelectedChange={setOnlyWithPrice}>
                Only with price
@@ -1121,6 +1124,7 @@ function FiltersBar({
                 Clear all
               </button>
             )}
+              </div>
             </div>
           </div>
         </div>
