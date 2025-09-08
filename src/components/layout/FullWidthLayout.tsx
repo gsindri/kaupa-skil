@@ -31,15 +31,14 @@ export function FullWidthLayout({
             <EnhancedAppSidebar />
           </aside>
 
-          <div className="min-w-0 flex flex-col">
+          <div className="min-w-0 flex flex-col transition-all duration-300 ease-in-out">
             <div
               ref={headerRef}
               id="catalogHeader"
               className={cn(
-                'fixed top-0 z-50 bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/75 transform transition-transform duration-[120ms] ease-out motion-reduce:transition-none',
+                'fixed top-0 left-0 right-0 z-50 bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/75 transform transition-transform duration-[120ms] ease-out motion-reduce:transition-none',
                 headerClassName,
               )}
-              style={{ left: 'var(--sidebar-width,16rem)', right: '0' }}
             >
               <div className="header-row global-row">
                 <TopNavigation />
@@ -49,7 +48,7 @@ export function FullWidthLayout({
             <div
               id="catalogContent"
               className={cn(
-                'flex-1',
+                'px-4 sm:px-6 lg:px-8 xl:px-10 2xl:px-12',
                 contentClassName,
               )}
               style={{ ...contentStyle }}
