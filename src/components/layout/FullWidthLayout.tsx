@@ -36,7 +36,7 @@ export function FullWidthLayout({
               ref={headerRef}
               id="catalogHeader"
               className={cn(
-                'fixed top-0 left-0 right-0 z-50 bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/75 transform transition-transform duration-[120ms] ease-out motion-reduce:transition-none',
+                'fixed top-0 left-0 right-0 z-50 transform transition-transform duration-[120ms] ease-out motion-reduce:transition-none',
                 headerClassName,
               )}
             >

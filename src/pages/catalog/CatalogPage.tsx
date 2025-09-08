@@ -738,16 +738,20 @@ export default function CatalogPage() {
 
     const showHeader = () => {
       if (headerHiddenRef.current) setHeaderHidden(false)
+      headerEl.style.setProperty('--hdr-p', '0')
       rows.forEach(r => (r.style.transform = 'translateY(0)'))
     }
     const hideHeader = () => {
       if (!headerHiddenRef.current) setHeaderHidden(true)
+      headerEl.style.setProperty('--hdr-p', '1')
     }
     const removeHiddenClass = () => {
       if (headerHiddenRef.current) setHeaderHidden(false)
     }
     const applyTransforms = (y: number) => {
       const progress = Math.min(Math.max(y / H, 0), 1)
+      const p = 1 - Math.pow(1 - progress, 3)
+      headerEl.style.setProperty('--hdr-p', p.toFixed(3))
       const segments = rows.length
       rows.forEach((row, i) => {
         const start = i / segments
@@ -811,6 +815,7 @@ export default function CatalogPage() {
           ].filter(Boolean) as HTMLElement[])
         : []
       rows.forEach(r => (r.style.transform = 'translateY(0)'))
+      headerEl?.style.setProperty('--hdr-p', '0')
       setHeaderHidden(false)
     }
   }, [headerLocked])

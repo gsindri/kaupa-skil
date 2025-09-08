@@ -56,6 +56,17 @@ html { scrollbar-gutter: stable; }
   contain: paint;
   z-index: 50;
   backdrop-filter: saturate(180%) blur(8px);
+  --hdr-p: 0;
+  --hdr-backdrop: calc(1 - var(--hdr-p));
+}
+
+#catalogHeader::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: hsl(var(--background));
+  opacity: var(--hdr-backdrop, 1);
+  pointer-events: none;
 }
 
 #catalogHeader.is-hidden {
