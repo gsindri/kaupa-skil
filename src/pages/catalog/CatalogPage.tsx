@@ -1005,19 +1005,18 @@ function FiltersBar({
         if (!open) setFocusedFacet(null)
       }}
     >
-      <div className="border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="py-3 space-y-3">
-          {(publicError || orgError) && (
-            <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>
-                {String(publicError || orgError)}
-              </AlertDescription>
-            </Alert>
-          )}
-          <div ref={searchRowRef} className="header-row search-row">
-            <div className="px-4 sm:px-6 lg:px-8 xl:px-10 2xl:px-12 py-3">
-              <div className="grid grid-cols-[1fr,auto,auto] gap-3 items-center">
+      <div>
+        {(publicError || orgError) && (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              {String(publicError || orgError)}
+            </AlertDescription>
+          </Alert>
+        )}
+        <div ref={searchRowRef} className="header-row search-row">
+          <div className="px-4 sm:px-6 lg:px-8 xl:px-10 2xl:px-12 py-3">
+            <div className="grid grid-cols-[1fr,auto,auto] gap-3 items-center">
               <HeroSearchInput
                 placeholder="Search products"
                 value={filters.search ?? ''}
@@ -1037,94 +1036,89 @@ function FiltersBar({
               />
               <SortDropdown value={sortOrder} onChange={setSortOrder} onOpenChange={onDropdownOpen} />
               <ViewToggle value={view} onChange={setView} />
-              </div>
             </div>
           </div>
-          <div ref={chipsRowRef} className="header-row chips-row">
-            <div className="px-4 sm:px-6 lg:px-8 xl:px-10 2xl:px-12 py-2">
-              <div className="flex flex-nowrap items-center gap-2 overflow-x-auto">
-            {/* Disable pricing filter until pricing data is available */}
-            {/* <FilterChip selected={onlyWithPrice} onSelectedChange={setOnlyWithPrice}>
-               Only with price
-             </FilterChip> */}
-            <TriStateFilterChip
-              state={triStock}
-              onStateChange={setTriStock}
-              includeLabel="In stock"
-              excludeLabel="Out of stock"
-              offLabel="All stock"
-              includeAriaLabel="Filter: only in stock"
-              excludeAriaLabel="Filter: out of stock"
-              includeClassName="bg-green-500 text-white border-green-500"
-              excludeClassName="bg-red-500 text-white border-red-500"
-            />
-            <TriStateFilterChip
-              state={triSuppliers}
-              onStateChange={setTriSuppliers}
-              includeLabel="My suppliers"
-              excludeLabel="Not my suppliers"
-              offLabel="All suppliers"
-              includeAriaLabel="Filter: my suppliers only"
-              excludeAriaLabel="Filter: not my suppliers"
-            />
-            <TriStateFilterChip
-              state={triSpecial}
-              onStateChange={setTriSpecial}
-              includeLabel="On special"
-              excludeLabel="Not on special"
-              offLabel="All specials"
-              includeAriaLabel="Filter: on special only"
-              excludeAriaLabel="Filter: not on special"
-            />
-            {chips.map(chip => (
-              <div
-                key={chip.key}
-                className="flex items-center rounded-full border border-primary bg-primary px-3 py-1 text-sm text-primary-foreground"
-              >
+        </div>
+        <div ref={chipsRowRef} className="header-row chips-row">
+          <div className="px-4 sm:px-6 lg:px-8 xl:px-10 2xl:px-12 py-2">
+            <div className="flex flex-nowrap items-center gap-2 overflow-x-auto">
+              <TriStateFilterChip
+                state={triStock}
+                onStateChange={setTriStock}
+                includeLabel="In stock"
+                excludeLabel="Out of stock"
+                offLabel="All stock"
+                includeAriaLabel="Filter: only in stock"
+                excludeAriaLabel="Filter: out of stock"
+                includeClassName="bg-green-500 text-white border-green-500"
+                excludeClassName="bg-red-500 text-white border-red-500"
+              />
+              <TriStateFilterChip
+                state={triSuppliers}
+                onStateChange={setTriSuppliers}
+                includeLabel="My suppliers"
+                excludeLabel="Not my suppliers"
+                offLabel="All suppliers"
+                includeAriaLabel="Filter: my suppliers only"
+                excludeAriaLabel="Filter: not my suppliers"
+              />
+              <TriStateFilterChip
+                state={triSpecial}
+                onStateChange={setTriSpecial}
+                includeLabel="On special"
+                excludeLabel="Not on special"
+                offLabel="All specials"
+                includeAriaLabel="Filter: on special only"
+                excludeAriaLabel="Filter: not on special"
+              />
+              {chips.map(chip => (
+                <div
+                  key={chip.key}
+                  className="flex items-center rounded-full border border-primary bg-primary px-3 py-1 text-sm text-primary-foreground"
+                >
+                  <button
+                    type="button"
+                    onClick={chip.onEdit}
+                    aria-description={`Edit filter: ${chip.key}`}
+                    className="flex items-center"
+                  >
+                    {chip.label}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={chip.onRemove}
+                    aria-label={`Remove filter: ${chip.label}`}
+                    className="ml-1 text-primary-foreground/70 hover:text-primary-foreground"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              ))}
+              <SheetTrigger asChild>
+                <FilterChip
+                  selected={showFilters}
+                  aria-controls="catalog-filters-sheet"
+                  onClick={() => {
+                    if (!showFilters) {
+                      const first = Object.entries(facetFilters).find(([, v]) =>
+                        Array.isArray(v) ? v.length > 0 : Boolean(v),
+                      )?.[0] as keyof FacetFilters | undefined
+                      setFocusedFacet(first ?? null)
+                    }
+                  }}
+                >
+                  {activeFacetCount ? `Filters (${activeFacetCount})` : 'More filters'}
+                </FilterChip>
+              </SheetTrigger>
+              {activeCount > 0 && (
                 <button
                   type="button"
-                  onClick={chip.onEdit}
-                  aria-description={`Edit filter: ${chip.key}`}
-                  className="flex items-center"
+                  className="text-sm underline whitespace-nowrap"
+                  onClick={clearAll}
                 >
-                  {chip.label}
+                  Clear all
                 </button>
-                <button
-                  type="button"
-                  onClick={chip.onRemove}
-                  aria-label={`Remove filter: ${chip.label}`}
-                  className="ml-1 text-primary-foreground/70 hover:text-primary-foreground"
-                >
-                  <X className="h-3 w-3" />
-                </button>
-              </div>
-            ))}
-            <SheetTrigger asChild>
-              <FilterChip
-                selected={showFilters}
-                aria-controls="catalog-filters-sheet"
-                onClick={() => {
-                  if (!showFilters) {
-                    const first = Object.entries(facetFilters).find(([, v]) =>
-                      Array.isArray(v) ? v.length > 0 : Boolean(v),
-                    )?.[0] as keyof FacetFilters | undefined
-                    setFocusedFacet(first ?? null)
-                  }
-                }}
-              >
-                {activeFacetCount ? `Filters (${activeFacetCount})` : 'More filters'}
-              </FilterChip>
-            </SheetTrigger>
-            {activeCount > 0 && (
-              <button
-                type="button"
-                className="text-sm underline whitespace-nowrap"
-                onClick={clearAll}
-              >
-                Clear all
-              </button>
-            )}
-              </div>
+              )}
             </div>
           </div>
         </div>
