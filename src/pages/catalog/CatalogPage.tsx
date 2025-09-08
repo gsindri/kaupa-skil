@@ -190,13 +190,6 @@ export default function CatalogPage() {
   const stringifiedFilters = useMemo(() => JSON.stringify(filters), [filters])
   const [bannerDismissed, setBannerDismissed] = useState(false)
   const headerRef = useRef<HTMLDivElement>(null)
-  const [headerHiddenState, _setHeaderHidden] = useState(false)
-  const headerHiddenRef = useRef(headerHiddenState)
-  const setHeaderHidden = (v: boolean) => {
-    headerHiddenRef.current = v
-    _setHeaderHidden(v)
-  }
-  const headerHidden = headerHiddenState
   const [headerLocked, setHeaderLocked] = useState(false)
   const lockCount = useRef(0)
   const [scrolled, setScrolled] = useState(false)
@@ -711,7 +704,7 @@ export default function CatalogPage() {
       typeof window.matchMedia === 'function' &&
       window.matchMedia('(prefers-reduced-motion: reduce)').matches
     if (reduceMotion) {
-      setHeaderHidden(false)
+      headerRef.current?.style.setProperty('--hdr-p', '0')
       setScrolled(false)
       return
     }
@@ -719,11 +712,7 @@ export default function CatalogPage() {
     const headerEl = headerRef.current
     if (!headerEl) return
 
-    const chips = headerEl.querySelector('.chips-row') as HTMLElement | null
-    const search = headerEl.querySelector('.search-row') as HTMLElement | null
-    const global = headerEl.querySelector('.global-row') as HTMLElement | null
-    const rows = [chips, search, global].filter(Boolean) as HTMLElement[]
-
+    const rows = Array.from(headerEl.querySelectorAll('.header-row')) as HTMLElement[]
     let H = 0
     const measure = () => {
       H = rows.reduce((sum, r) => sum + r.offsetHeight, 0)
@@ -736,67 +725,43 @@ export default function CatalogPage() {
     let lastY = window.scrollY
     const hysteresis = 10
 
-    const showHeader = () => {
-      if (headerHiddenRef.current) setHeaderHidden(false)
-      headerEl.style.setProperty('--hdr-p', '0')
-      rows.forEach(r => (r.style.transform = 'translateY(0)'))
-    }
-    const hideHeader = () => {
-      if (!headerHiddenRef.current) setHeaderHidden(true)
-      headerEl.style.setProperty('--hdr-p', '1')
-    }
-    const removeHiddenClass = () => {
-      if (headerHiddenRef.current) setHeaderHidden(false)
-    }
-    const applyTransforms = (y: number) => {
-      const progress = Math.min(Math.max(y / H, 0), 1)
-      const p = 1 - Math.pow(1 - progress, 3)
-      headerEl.style.setProperty('--hdr-p', p.toFixed(3))
-      const segments = rows.length
-      rows.forEach((row, i) => {
-        const start = i / segments
-        let t = (progress - start) * segments
-        t = Math.min(Math.max(t, 0), 1)
-        const eased = 1 - Math.pow(1 - t, 3)
-        row.style.transform = `translateY(-${eased * 100}%)`
-      })
+    const setP = (p: number) => {
+      headerEl.style.setProperty('--hdr-p', Math.min(1, Math.max(0, p)).toFixed(3))
     }
 
-    const onScrollRAF = () => {
+    const pinned = () =>
+      window.scrollY < 1 ||
+      headerLocked ||
+      document.activeElement?.closest('#catalogHeader') ||
+      headerEl.querySelector('[data-open="true"]')
+
+    const onScroll = () => {
       const y = Math.max(0, window.scrollY)
       const dy = y - lastY
       lastY = y
 
-      const pinned = headerLocked || document.activeElement?.closest('#catalogHeader')
-      if (pinned || y < 1) {
-        showHeader()
+      if (pinned()) {
+        setP(0)
         setScrolled(y > 0)
         return
       }
 
       if (y < H) {
-        applyTransforms(y)
-        removeHiddenClass()
+        const progress = y / H
+        const p = 1 - Math.pow(1 - progress, 3)
+        setP(p)
       } else {
-        if (dy > hysteresis) hideHeader()
-        else if (dy < -hysteresis) showHeader()
+        if (dy < -hysteresis) setP(0)
+        else if (dy > hysteresis) setP(1)
       }
 
       setScrolled(y > 0)
     }
 
-    let ticking = false
-    const listener = () => {
-      if (!ticking) {
-        requestAnimationFrame(() => {
-          ticking = false
-          onScrollRAF()
-        })
-        ticking = true
-      }
-    }
-
+    const listener = () => requestAnimationFrame(onScroll)
     window.addEventListener('scroll', listener, { passive: true })
+    onScroll()
+
     return () => {
       window.removeEventListener('scroll', listener)
       window.removeEventListener('resize', measure)
@@ -806,17 +771,7 @@ export default function CatalogPage() {
 
   useEffect(() => {
     if (headerLocked) {
-      const headerEl = headerRef.current
-      const rows = headerEl
-        ? ([
-            headerEl.querySelector('.chips-row'),
-            headerEl.querySelector('.search-row'),
-            headerEl.querySelector('.global-row'),
-          ].filter(Boolean) as HTMLElement[])
-        : []
-      rows.forEach(r => (r.style.transform = 'translateY(0)'))
-      headerEl?.style.setProperty('--hdr-p', '0')
-      setHeaderHidden(false)
+      headerRef.current?.style.setProperty('--hdr-p', '0')
     }
   }, [headerLocked])
 
@@ -856,7 +811,6 @@ export default function CatalogPage() {
       }
       headerRef={headerRef}
       headerClassName={cn(
-        headerHidden ? 'is-hidden' : '',
         scrolled ? 'shadow-sm' : '',
       )}
     >
