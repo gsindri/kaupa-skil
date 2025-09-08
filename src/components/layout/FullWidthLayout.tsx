@@ -31,7 +31,7 @@ export function FullWidthLayout({
             <EnhancedAppSidebar />
           </aside>
 
-          <div className="min-w-0 h-svh flex flex-col transition-all duration-300 ease-in-out">
+          <div className="min-w-0 min-h-screen flex flex-col transition-all duration-300 ease-in-out">
             <div
               ref={headerRef}
               id="catalogHeader"
@@ -48,12 +48,13 @@ export function FullWidthLayout({
             <div
               id="catalogContent"
               className={cn(
-                'app-scroll flex-1 min-h-0 overflow-y-auto px-4 sm:px-6 lg:px-8 xl:px-10 2xl:px-12',
+                'flex-1 min-h-0 px-4 sm:px-6 lg:px-8 xl:px-10 2xl:px-12',
                 contentClassName,
               )}
               style={{ ...contentStyle }}
               {...restContentProps}
             >
+              <div style={{ height: 'var(--header-h)' }} aria-hidden />
               {children}
             </div>
           </div>

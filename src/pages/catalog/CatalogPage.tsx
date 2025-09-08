@@ -716,9 +716,8 @@ export default function CatalogPage() {
       return
     }
 
-    const scrollEl = document.querySelector('.app-scroll') as HTMLElement | null
     const headerEl = headerRef.current
-    if (!scrollEl || !headerEl) return
+    if (!headerEl) return
 
     const chips = headerEl.querySelector('.chips-row') as HTMLElement | null
     const search = headerEl.querySelector('.search-row') as HTMLElement | null
@@ -734,7 +733,7 @@ export default function CatalogPage() {
     rows.forEach(r => ro.observe(r))
     window.addEventListener('resize', measure)
 
-    let lastY = scrollEl.scrollTop
+    let lastY = window.scrollY
     const hysteresis = 10
 
     const showHeader = () => {
@@ -760,7 +759,7 @@ export default function CatalogPage() {
     }
 
     const onScrollRAF = () => {
-      const y = Math.max(0, scrollEl.scrollTop)
+      const y = Math.max(0, window.scrollY)
       const dy = y - lastY
       lastY = y
 
@@ -793,9 +792,9 @@ export default function CatalogPage() {
       }
     }
 
-    scrollEl.addEventListener('scroll', listener, { passive: true })
+    window.addEventListener('scroll', listener, { passive: true })
     return () => {
-      scrollEl.removeEventListener('scroll', listener)
+      window.removeEventListener('scroll', listener)
       window.removeEventListener('resize', measure)
       ro.disconnect()
     }
@@ -859,66 +858,64 @@ export default function CatalogPage() {
       {/* eslint-disable-next-line no-constant-binary-expression */}
       {false && <LayoutDebugger show />}
 
-      <div className="mt-6 px-4 sm:px-6 lg:px-8 xl:px-10 2xl:px-12">
-        {view === 'list' ? (
-          <>
-              {hideConnectPill && !bannerDismissed && (
-                <Alert className="mb-4">
-                  <AlertDescription className="flex items-center justify-between">
-                    Connect suppliers to unlock prices.
-                    <button
-                      type="button"
-                      aria-label="Dismiss"
-                      onClick={() => setBannerDismissed(true)}
-                      className="ml-2"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                  </AlertDescription>
-                </Alert>
-              )}
-              {bulkMode && (
-                <div className="sticky top-0 z-20 flex items-center justify-between border-b bg-background px-4 py-2 text-sm">
-                  <span>{selected.length} selected</span>
-                  <Button variant="ghost" onClick={() => { setBulkMode(false); setSelected([]) }}>
-                    Done
-                  </Button>
-                </div>
-              )}
-              <CatalogTable
-                products={sortedProducts}
-                selected={selected}
-                onSelect={toggleSelect}
-                onSelectAll={handleSelectAll}
-                sort={tableSort}
-                onSort={handleSort}
-                filters={filters}
-                onFilterChange={handleFilterChange}
-                isBulkMode={bulkMode}
-              />
-          </>
-        ) : (
-          <div
-            ref={gridRef}
-            className="grid justify-center justify-items-center gap-6"
-            style={{ gridTemplateColumns: `repeat(${cols}, minmax(260px,1fr))` }}
-          >
-            {sortedProducts.map(product => (
-              <ProductCard
-                key={product.catalog_id}
-                product={product}
-                showPrice
-                onAdd={() => handleAdd(product)}
-                isAdding={addingId === product.catalog_id}
-              />
+      {view === 'list' ? (
+        <>
+            {hideConnectPill && !bannerDismissed && (
+              <Alert className="mb-4">
+                <AlertDescription className="flex items-center justify-between">
+                  Connect suppliers to unlock prices.
+                  <button
+                    type="button"
+                    aria-label="Dismiss"
+                    onClick={() => setBannerDismissed(true)}
+                    className="ml-2"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </AlertDescription>
+              </Alert>
+            )}
+            {bulkMode && (
+              <div className="sticky top-0 z-20 flex items-center justify-between border-b bg-background px-4 py-2 text-sm">
+                <span>{selected.length} selected</span>
+                <Button variant="ghost" onClick={() => { setBulkMode(false); setSelected([]) }}>
+                  Done
+                </Button>
+              </div>
+            )}
+            <CatalogTable
+              products={sortedProducts}
+              selected={selected}
+              onSelect={toggleSelect}
+              onSelectAll={handleSelectAll}
+              sort={tableSort}
+              onSort={handleSort}
+              filters={filters}
+              onFilterChange={handleFilterChange}
+              isBulkMode={bulkMode}
+            />
+        </>
+      ) : (
+        <div
+          ref={gridRef}
+          className="grid justify-center justify-items-center gap-6"
+          style={{ gridTemplateColumns: `repeat(${cols}, minmax(260px,1fr))` }}
+        >
+          {sortedProducts.map(product => (
+            <ProductCard
+              key={product.catalog_id}
+              product={product}
+              showPrice
+              onAdd={() => handleAdd(product)}
+              isAdding={addingId === product.catalog_id}
+            />
+          ))}
+          {loadingMore &&
+            Array.from({ length: 3 }).map((_, i) => (
+              <ProductCardSkeleton key={`skeleton-${i}`} />
             ))}
-            {loadingMore &&
-              Array.from({ length: 3 }).map((_, i) => (
-                <ProductCardSkeleton key={`skeleton-${i}`} />
-              ))}
-          </div>
-        )}
-      </div>
+        </div>
+      )}
       <div ref={sentinelRef} />
     </FullWidthLayout>
   )

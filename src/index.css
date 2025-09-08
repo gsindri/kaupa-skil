@@ -45,12 +45,6 @@ main > *:first-child {
 
 html { scrollbar-gutter: stable; }
 
-.app-scroll {
-  scrollbar-gutter: stable;
-  overscroll-behavior: contain;
-  scroll-padding-top: var(--header-h);
-}
-
 #catalogHeader {
   position: fixed;
   top: 0;
