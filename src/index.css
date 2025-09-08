@@ -15,14 +15,6 @@ html, body, #root {
   margin: 0;
   padding: 0;
   height: 100%;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
-#app, #root, .app-root, main, #catalogContent {
-  height: auto;
-  min-height: 100%;
-  overflow: visible;
 }
 
 /* Set a fallback header height so content can offset correctly */
@@ -53,7 +45,11 @@ main > *:first-child {
 
 html { scrollbar-gutter: stable; }
 
-#headerSpacer { height: var(--header-h, 0px); }
+.app-scroll {
+  scrollbar-gutter: stable;
+  overscroll-behavior: contain;
+  scroll-padding-top: var(--header-h);
+}
 
 #catalogHeader {
   position: fixed;

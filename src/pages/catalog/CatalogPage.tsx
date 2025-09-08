@@ -716,8 +716,9 @@ export default function CatalogPage() {
       return
     }
 
+    const scrollEl = document.querySelector('.app-scroll') as HTMLElement | null
     const headerEl = headerRef.current
-    if (!headerEl) return
+    if (!scrollEl || !headerEl) return
 
     const chips = headerEl.querySelector('.chips-row') as HTMLElement | null
     const search = headerEl.querySelector('.search-row') as HTMLElement | null
@@ -727,14 +728,13 @@ export default function CatalogPage() {
     let H = 0
     const measure = () => {
       H = rows.reduce((sum, r) => sum + r.offsetHeight, 0)
-      document.documentElement.style.setProperty('--header-h', `${H}px`)
     }
     measure()
     const ro = new ResizeObserver(measure)
     rows.forEach(r => ro.observe(r))
     window.addEventListener('resize', measure)
 
-    let lastY = window.scrollY
+    let lastY = scrollEl.scrollTop
     const hysteresis = 10
 
     const showHeader = () => {
@@ -760,7 +760,7 @@ export default function CatalogPage() {
     }
 
     const onScrollRAF = () => {
-      const y = Math.max(0, window.scrollY)
+      const y = Math.max(0, scrollEl.scrollTop)
       const dy = y - lastY
       lastY = y
 
@@ -793,9 +793,9 @@ export default function CatalogPage() {
       }
     }
 
-    window.addEventListener('scroll', listener, { passive: true })
+    scrollEl.addEventListener('scroll', listener, { passive: true })
     return () => {
-      window.removeEventListener('scroll', listener)
+      scrollEl.removeEventListener('scroll', listener)
       window.removeEventListener('resize', measure)
       ro.disconnect()
     }
