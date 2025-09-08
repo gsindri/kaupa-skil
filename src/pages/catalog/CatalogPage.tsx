@@ -189,30 +189,137 @@ export default function CatalogPage() {
   const [cols, setCols] = useState(1)
   const stringifiedFilters = useMemo(() => JSON.stringify(filters), [filters])
   const [bannerDismissed, setBannerDismissed] = useState(false)
-  const headerRef = useRef<HTMLDivElement>(null)
-  const [headerHiddenState, _setHeaderHidden] = useState(false)
-  const headerHiddenRef = useRef(headerHiddenState)
-  const setHeaderHidden = (v: boolean) => {
-    headerHiddenRef.current = v
-    _setHeaderHidden(v)
-  }
-  const headerHidden = headerHiddenState
-  const [headerLocked, setHeaderLocked] = useState(false)
-  const lockCount = useRef(0)
-  const [scrolled, setScrolled] = useState(false)
 
+  // Smart header auto-hide refs and state
+  const headerRef = useRef<HTMLDivElement>(null)
+  const searchRowRef = useRef<HTMLDivElement>(null)
+  const chipsRowRef = useRef<HTMLDivElement>(null)
+  const lastScrollY = useRef(0)
+  const headerHeight = useRef(0)
+  const rafId = useRef<number>()
+  const [isSearchFocused, setIsSearchFocused] = useState(false)
+  const [hasOpenDropdown, setHasOpenDropdown] = useState(false)
+
+  // Smart header auto-hide implementation
   useEffect(() => {
-    const el = headerRef.current
-    if (!el) return
-    const update = () => {
-      const h = Math.round(el.offsetHeight)
+    const header = headerRef.current
+    const searchRow = searchRowRef.current
+    const chipsRow = chipsRowRef.current
+    if (!header || !searchRow || !chipsRow) return
+
+    // Measure header height and set CSS custom property
+    const updateHeaderHeight = () => {
+      const h = Math.round(header.offsetHeight)
+      headerHeight.current = h
       document.documentElement.style.setProperty('--header-h', `${h}px`)
     }
-    update()
-    const ro = new ResizeObserver(update)
-    ro.observe(el)
-    return () => ro.disconnect()
-  }, [])
+    updateHeaderHeight()
+
+    // Check if user prefers reduced motion
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+    // Reset header and row transforms
+    const resetHeader = () => {
+      if (prefersReducedMotion) return
+      header.classList.remove('is-hidden')
+      searchRow.style.transform = ''
+      chipsRow.style.transform = ''
+    }
+
+    // Apply progressive transforms during first screen
+    const applyProgressiveTransforms = (scrollY: number) => {
+      if (prefersReducedMotion) return
+      
+      const H = headerHeight.current
+      if (H === 0) return
+
+      const progress = Math.min(scrollY / H, 1)
+      const eased = 1 - Math.pow(1 - progress, 3) // easeOutCubic
+
+      // Slide rows out in thirds
+      const third = H / 3
+      const chipsProgress = Math.min(Math.max((scrollY - 0) / third, 0), 1)
+      const searchProgress = Math.min(Math.max((scrollY - third) / third, 0), 1)
+      
+      chipsRow.style.transform = `translateY(-${chipsProgress * 100}%)`
+      searchRow.style.transform = `translateY(-${searchProgress * 100}%)`
+    }
+
+    // Check if header should be pinned (always visible)
+    const isPinned = () => {
+      return isSearchFocused || hasOpenDropdown || window.scrollY < 1
+    }
+
+    let lastDirection = 0
+    let snapThreshold = 10 // hysteresis threshold
+
+    const handleScroll = () => {
+      const scrollY = Math.max(0, window.scrollY)
+      const deltaY = scrollY - lastScrollY.current
+      lastScrollY.current = scrollY
+
+      // Always show if pinned
+      if (isPinned()) {
+        resetHeader()
+        applyProgressiveTransforms(0)
+        return
+      }
+
+      const H = headerHeight.current
+      if (H === 0) return
+
+      // Progressive phase (first screenful)
+      if (scrollY < H) {
+        header.classList.remove('is-hidden')
+        applyProgressiveTransforms(scrollY)
+        return
+      }
+
+      // Snap phase (beyond first screenful)
+      if (!prefersReducedMotion) {
+        // Reset progressive transforms since we're in snap mode
+        searchRow.style.transform = ''
+        chipsRow.style.transform = ''
+
+        // Apply hysteresis for snap behavior
+        if (Math.abs(deltaY) > snapThreshold) {
+          if (deltaY > 0 && lastDirection >= 0) {
+            // Scrolling down - hide header
+            header.classList.add('is-hidden')
+            lastDirection = 1
+          } else if (deltaY < 0 && lastDirection <= 0) {
+            // Scrolling up - show header
+            header.classList.remove('is-hidden')
+            lastDirection = -1
+          }
+        }
+      }
+    }
+
+    const scheduleUpdate = () => {
+      if (rafId.current) return
+      rafId.current = requestAnimationFrame(() => {
+        handleScroll()
+        rafId.current = undefined
+      })
+    }
+
+    // Set up scroll listener
+    window.addEventListener('scroll', scheduleUpdate, { passive: true })
+    
+    // Set up resize observer for header height changes
+    const resizeObserver = new ResizeObserver(updateHeaderHeight)
+    resizeObserver.observe(header)
+
+    // Cleanup
+    return () => {
+      window.removeEventListener('scroll', scheduleUpdate)
+      resizeObserver.disconnect()
+      if (rafId.current) {
+        cancelAnimationFrame(rafId.current)
+      }
+    }
+  }, [isSearchFocused, hasOpenDropdown])
 
   useEffect(() => {
     try {
@@ -700,121 +807,6 @@ export default function CatalogPage() {
     setTimeout(() => setAddingId(null), 500)
   }
 
-  const handleLockChange = (locked: boolean) => {
-    lockCount.current += locked ? 1 : -1
-    setHeaderLocked(lockCount.current > 0)
-  }
-
-  useEffect(() => {
-    const reduceMotion =
-      typeof window !== 'undefined' &&
-      typeof window.matchMedia === 'function' &&
-      window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    if (reduceMotion) {
-      setHeaderHidden(false)
-      setScrolled(false)
-      return
-    }
-
-    const headerEl = headerRef.current
-    if (!headerEl) return
-
-    const chips = headerEl.querySelector('.chips-row') as HTMLElement | null
-    const search = headerEl.querySelector('.search-row') as HTMLElement | null
-    const global = headerEl.querySelector('.global-row') as HTMLElement | null
-    const rows = [chips, search, global].filter(Boolean) as HTMLElement[]
-
-    let H = 0
-    const measure = () => {
-      H = rows.reduce((sum, r) => sum + r.offsetHeight, 0)
-      document.documentElement.style.setProperty('--header-h', `${H}px`)
-    }
-    measure()
-    const ro = new ResizeObserver(measure)
-    rows.forEach(r => ro.observe(r))
-    window.addEventListener('resize', measure)
-
-    let lastY = window.scrollY
-    const hysteresis = 10
-
-    const showHeader = () => {
-      if (headerHiddenRef.current) setHeaderHidden(false)
-      rows.forEach(r => (r.style.transform = 'translateY(0)'))
-    }
-    const hideHeader = () => {
-      if (!headerHiddenRef.current) setHeaderHidden(true)
-    }
-    const removeHiddenClass = () => {
-      if (headerHiddenRef.current) setHeaderHidden(false)
-    }
-    const applyTransforms = (y: number) => {
-      const progress = Math.min(Math.max(y / H, 0), 1)
-      const segments = rows.length
-      rows.forEach((row, i) => {
-        const start = i / segments
-        let t = (progress - start) * segments
-        t = Math.min(Math.max(t, 0), 1)
-        const eased = 1 - Math.pow(1 - t, 3)
-        row.style.transform = `translateY(-${eased * 100}%)`
-      })
-    }
-
-    const onScrollRAF = () => {
-      const y = Math.max(0, window.scrollY)
-      const dy = y - lastY
-      lastY = y
-
-      const pinned = headerLocked || document.activeElement?.closest('#catalogHeader')
-      if (pinned || y < 1) {
-        showHeader()
-        setScrolled(y > 0)
-        return
-      }
-
-      if (y < H) {
-        applyTransforms(y)
-        removeHiddenClass()
-      } else {
-        if (dy > hysteresis) hideHeader()
-        else if (dy < -hysteresis) showHeader()
-      }
-
-      setScrolled(y > 0)
-    }
-
-    let ticking = false
-    const listener = () => {
-      if (!ticking) {
-        requestAnimationFrame(() => {
-          ticking = false
-          onScrollRAF()
-        })
-        ticking = true
-      }
-    }
-
-    window.addEventListener('scroll', listener, { passive: true })
-    return () => {
-      window.removeEventListener('scroll', listener)
-      window.removeEventListener('resize', measure)
-      ro.disconnect()
-    }
-  }, [headerLocked])
-
-  useEffect(() => {
-    if (headerLocked) {
-      const headerEl = headerRef.current
-      const rows = headerEl
-        ? ([
-            headerEl.querySelector('.chips-row'),
-            headerEl.querySelector('.search-row'),
-            headerEl.querySelector('.global-row'),
-          ].filter(Boolean) as HTMLElement[])
-        : []
-      rows.forEach(r => (r.style.transform = 'translateY(0)'))
-      setHeaderHidden(false)
-    }
-  }, [headerLocked])
 
   const total =
     gotOrg && typeof orgTotal === 'number'
@@ -847,14 +839,13 @@ export default function CatalogPage() {
           setShowFilters={setShowFilters}
           focusedFacet={focusedFacet}
           setFocusedFacet={setFocusedFacet}
-          onLockChange={handleLockChange}
+          onSearchFocus={setIsSearchFocused}
+          onDropdownOpen={setHasOpenDropdown}
+          searchRowRef={searchRowRef}
+          chipsRowRef={chipsRowRef}
         />
       }
       headerRef={headerRef}
-      headerClassName={cn(
-        headerHidden ? 'is-hidden' : '',
-        scrolled ? 'shadow-sm' : '',
-      )}
     >
       {/* eslint-disable-next-line no-constant-binary-expression */}
       {false && <LayoutDebugger show />}
@@ -945,7 +936,10 @@ interface FiltersBarProps {
   setShowFilters: (v: boolean) => void
   focusedFacet: keyof FacetFilters | null
   setFocusedFacet: (f: keyof FacetFilters | null) => void
-  onLockChange: (locked: boolean) => void
+  onSearchFocus: (focused: boolean) => void
+  onDropdownOpen: (open: boolean) => void
+  searchRowRef: React.RefObject<HTMLDivElement>
+  chipsRowRef: React.RefObject<HTMLDivElement>
 }
 
 function FiltersBar({
@@ -969,7 +963,10 @@ function FiltersBar({
   setShowFilters,
   focusedFacet,
   setFocusedFacet,
-  onLockChange,
+  onSearchFocus,
+  onDropdownOpen,
+  searchRowRef,
+  chipsRowRef,
 }: FiltersBarProps) {
   const { search: _search, ...facetFilters } = filters
   const chips = deriveChipsFromFilters(
@@ -1004,7 +1001,7 @@ function FiltersBar({
       open={showFilters}
       onOpenChange={open => {
         setShowFilters(open)
-        onLockChange(open)
+        onDropdownOpen(open)
         if (!open) setFocusedFacet(null)
       }}
     >
@@ -1018,14 +1015,14 @@ function FiltersBar({
               </AlertDescription>
             </Alert>
           )}
-          <div className="header-row search-row">
+          <div ref={searchRowRef} className="header-row search-row">
             <div className="grid grid-cols-[1fr,auto,auto] gap-3 items-center">
               <HeroSearchInput
                 placeholder="Search products"
                 value={filters.search ?? ''}
                 onChange={e => setFilters({ search: e.target.value })}
-                onFocus={() => onLockChange(true)}
-                onBlur={() => onLockChange(false)}
+                onFocus={() => onSearchFocus(true)}
+                onBlur={() => onSearchFocus(false)}
                 rightSlot={
                   <button
                     type="button"
@@ -1037,11 +1034,11 @@ function FiltersBar({
                   </button>
                 }
               />
-              <SortDropdown value={sortOrder} onChange={setSortOrder} onOpenChange={onLockChange} />
+              <SortDropdown value={sortOrder} onChange={setSortOrder} onOpenChange={onDropdownOpen} />
               <ViewToggle value={view} onChange={setView} />
             </div>
           </div>
-          <div className="header-row chips-row">
+          <div ref={chipsRowRef} className="header-row chips-row">
             <div className="flex flex-nowrap items-center gap-2 overflow-x-auto">
             {/* Disable pricing filter until pricing data is available */}
             {/* <FilterChip selected={onlyWithPrice} onSelectedChange={setOnlyWithPrice}>
