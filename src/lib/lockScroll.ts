@@ -2,7 +2,7 @@ let lockCount = 0
 let scrollTop = 0
 let currentTarget: HTMLElement | null = null
 
-export function lockScroll(target: HTMLElement | null = document.querySelector('.app-scroll') as HTMLElement) {
+export function lockScroll(target: HTMLElement | null = document.documentElement as HTMLElement) {
   if (!target) return
   if (lockCount === 0) {
     currentTarget = target
@@ -16,7 +16,9 @@ export function lockScroll(target: HTMLElement | null = document.querySelector('
   lockCount++
 }
 
-export function unlockScroll(target: HTMLElement | null = currentTarget || (document.querySelector('.app-scroll') as HTMLElement)) {
+export function unlockScroll(
+  target: HTMLElement | null = currentTarget || (document.documentElement as HTMLElement),
+) {
   if (!target) return
   if (lockCount > 0) {
     lockCount--
