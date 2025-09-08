@@ -45,46 +45,21 @@ main > *:first-child {
 
 html { scrollbar-gutter: stable; }
 
-#catalogHeader {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  transform: translateY(0);
-  transition: transform 120ms ease-out;
-  will-change: transform;
-  contain: paint;
-  z-index: 50;
+#catalogHeader{
+  position:fixed; top:0; left:0; right:0; z-index:50;
+  transform: translateY(calc(-100% * var(--hdr-p, 0)));
+  transition: transform 120ms ease-out; /* used only in snap phase */
+  will-change: transform; contain: paint;
   backdrop-filter: saturate(180%) blur(8px);
-  --hdr-p: 0;
-  --hdr-backdrop: calc(1 - var(--hdr-p));
 }
 
-#catalogHeader::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: hsl(var(--background));
-  opacity: var(--hdr-backdrop, 1);
-  pointer-events: none;
+#catalogHeader::before{
+  content:""; position:absolute; inset:0;
+  background: var(--surface, #fff);
+  opacity: calc(1 - var(--hdr-p, 0));
+  pointer-events:none;
 }
 
-#catalogHeader.is-hidden {
-  transform: translateY(-100%);
-  pointer-events: none;
-}
-
-.header-row {
-  will-change: transform;
-  transition: none;
-  contain: paint;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  #catalogHeader {
-    transition: none !important;
-  }
-  .header-row {
-    transition: none !important;
-  }
+@media (prefers-reduced-motion: reduce){
+  #catalogHeader{ transition:none; }
 }

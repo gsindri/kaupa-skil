@@ -36,7 +36,7 @@ export function FullWidthLayout({
               ref={headerRef}
               id="catalogHeader"
               className={cn(
-                'fixed top-0 left-0 right-0 z-50 transform transition-transform duration-[120ms] ease-out motion-reduce:transition-none',
+                'fixed top-0 left-0 right-0 z-50',
                 headerClassName,
               )}
             >
@@ -54,7 +54,7 @@ export function FullWidthLayout({
               style={{ ...contentStyle }}
               {...restContentProps}
             >
-              <div style={{ height: 'var(--header-h)' }} aria-hidden />
+              <div id="headerSpacer" style={{ height: 'var(--header-h)' }} aria-hidden />
               {children}
             </div>
           </div>
