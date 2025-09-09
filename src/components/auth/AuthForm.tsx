@@ -1,5 +1,5 @@
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   CheckCircle2,
@@ -38,6 +38,7 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
   const [errorType, setErrorType] = useState<"existing" | "unconfirmed" | "">("");
   const [resending, setResending] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
+  const resendIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const trimmedEmail = email.trim();
   const trimmedFullName = fullName.trim();
@@ -48,6 +49,14 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
     !emailError &&
     !passwordError &&
     (isLogin || !fullNameError);
+
+  useEffect(() => {
+    return () => {
+      if (resendIntervalRef.current) {
+        clearInterval(resendIntervalRef.current);
+      }
+    };
+  }, []);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -153,10 +162,16 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
       });
       toast({ title: "Email sent", description: "Activation email resent." });
       setResendCooldown(60);
-      const interval = setInterval(() => {
+      if (resendIntervalRef.current) {
+        clearInterval(resendIntervalRef.current);
+      }
+      resendIntervalRef.current = setInterval(() => {
         setResendCooldown((prev) => {
           if (prev <= 1) {
-            clearInterval(interval);
+            if (resendIntervalRef.current) {
+              clearInterval(resendIntervalRef.current);
+              resendIntervalRef.current = null;
+            }
             return 0;
           }
           return prev - 1;
