@@ -21,29 +21,46 @@ export function FullWidthLayout({
   contentProps,
 }: FullWidthLayoutProps) {
   const { className: contentClassName, style: contentStyle, ...restContentProps } = contentProps || {}
+
+  React.useEffect(() => {
+    const sidebar = document.getElementById('appSidebar')
+    if (!sidebar) return
+    const apply = () => {
+      const isMobile = window.matchMedia('(max-width: 1024px)').matches
+      const w = isMobile ? 0 : Math.round(sidebar.getBoundingClientRect().width || 0)
+      document.documentElement.style.setProperty('--header-left', `${w}px`)
+    }
+    apply()
+    const ro = new ResizeObserver(apply)
+    ro.observe(sidebar)
+    window.addEventListener('resize', apply)
+    return () => {
+      ro.disconnect()
+      window.removeEventListener('resize', apply)
+    }
+  }, [])
+
   return (
       <SidebarProvider>
         <div
           className="min-h-screen grid transition-[grid-template-columns] duration-300 ease-in-out"
           style={{ gridTemplateColumns: 'var(--sidebar-width,16rem) minmax(0,1fr)' }}
         >
-          <aside className="sticky top-0 h-svh w-[var(--sidebar-width,16rem)] transition-[width] duration-300 ease-in-out">
+          <aside
+            id="appSidebar"
+            className="sticky top-0 h-svh w-[var(--sidebar-width,16rem)] transition-[width] duration-300 ease-in-out"
+          >
             <EnhancedAppSidebar />
           </aside>
 
           <div className="min-w-0 min-h-screen flex flex-col transition-all duration-300 ease-in-out">
-            <div
-              ref={headerRef}
-              id="catalogHeader"
-              className={cn(
-                'fixed top-0 left-0 right-0 z-50',
-                headerClassName,
-              )}
-            >
-              <div className="header-row global-row">
-                <TopNavigation />
+            <div ref={headerRef} id="catalogHeader" className={cn(headerClassName)}>
+              <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
+                <div className="header-row global-row">
+                  <TopNavigation />
+                </div>
+                {header}
               </div>
-              {header}
             </div>
             <div
               id="catalogContent"
