@@ -193,6 +193,7 @@ export default function CatalogPage() {
   const [headerLocked, setHeaderLocked] = useState(false)
   const lockCount = useRef(0)
   const [scrolled, setScrolled] = useState(false)
+  const viewSwapQuietUntil = useRef(0)
 
   useEffect(() => {
     try {
@@ -200,6 +201,22 @@ export default function CatalogPage() {
     } catch {
       /* ignore */
     }
+  }, [view])
+
+  useEffect(() => {
+    viewSwapQuietUntil.current = performance.now() + 250
+  }, [view])
+
+  useEffect(() => {
+    const el = headerRef.current
+    if (!el) return
+
+    el.style.setProperty('--hdr-p', '0')
+
+    requestAnimationFrame(() => {
+      const H = Math.round(el.getBoundingClientRect().height)
+      document.documentElement.style.setProperty('--header-h', `${H}px`)
+    })
   }, [view])
 
   const unconnectedPercentage = useMemo(() => {
@@ -706,6 +723,20 @@ export default function CatalogPage() {
     ro.observe(el)
     window.addEventListener('resize', setHeaderVars)
 
+    const isTypeable = (el: Element | null) =>
+      !!el &&
+      ((el instanceof HTMLInputElement) ||
+        (el instanceof HTMLTextAreaElement) ||
+        (el as HTMLElement).isContentEditable ||
+        el.getAttribute('role') === 'combobox')
+
+    let interactionLockUntil = 0
+    const lockFor = (ms: number) => {
+      interactionLockUntil = performance.now() + ms
+    }
+    const handlePointerDown = () => lockFor(180)
+    el.addEventListener('pointerdown', handlePointerDown, { passive: true })
+
     // Tunables
     const PROGRESS_START = 10      // px before progressive begins
     const GAP            = 24      // latch hysteresis around H
@@ -727,11 +758,18 @@ export default function CatalogPage() {
       }
     }
 
-    const isPinned = () =>
-      headerLocked ||
-      window.scrollY < 1 ||
-      document.activeElement?.closest('#catalogHeader') ||
-      el.querySelector('[data-open="true"]')
+    const isPinned = () => {
+      const now = performance.now()
+      const ae = document.activeElement
+      const menuOpen = el.querySelector('[data-open="true"]')
+      return (
+        window.scrollY < 1 ||
+        headerLocked ||
+        isTypeable(ae) ||
+        !!menuOpen ||
+        now < interactionLockUntil
+      )
+    }
 
     const onScroll = () => {
       const y  = Math.max(0, window.scrollY)
@@ -785,8 +823,11 @@ export default function CatalogPage() {
     window.addEventListener('scroll', listener, { passive: true })
     // If you keep wheel/touch preempts, guard them so they don't fight the rAF:
     const wheel = (e: WheelEvent) => {
-      const y = window.scrollY
-      if (y >= H + GAP) { setP(e.deltaY > 0 ? 1 : 0); lock = e.deltaY > 0 ? 'hidden' : 'visible' }
+      if (performance.now() < viewSwapQuietUntil.current) return
+      if (window.scrollY >= H + GAP) {
+        setP(e.deltaY > 0 ? 1 : 0)
+        lock = e.deltaY > 0 ? 'hidden' : 'visible'
+      }
     }
     window.addEventListener('wheel', wheel, { passive: true })
 
@@ -797,9 +838,10 @@ export default function CatalogPage() {
       window.removeEventListener('scroll', listener)
       window.removeEventListener('wheel', wheel)
       window.removeEventListener('resize', setHeaderVars)
+      el.removeEventListener('pointerdown', handlePointerDown)
       ro.disconnect()
     }
-  }, [headerLocked])
+  }, [headerLocked, view])
 
   useEffect(() => {
     if (headerLocked) {
