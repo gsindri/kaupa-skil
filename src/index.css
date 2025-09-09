@@ -20,6 +20,16 @@ html, body, #root {
 /* Set a fallback header height so content can offset correctly */
 :root {
   --header-h: 56px;
+  --sidebar-w: 256px; /* expanded width */
+  --sidebar-rail-w: 48px; /* collapsed rail width */
+  --header-left: 0px; /* computed from sidebar width */
+  --header-right: 0px; /* reserved for symmetry */
+}
+
+@media (max-width: 1024px) {
+  :root {
+    --header-left: 0px;
+  }
 }
 
 body {
@@ -46,7 +56,11 @@ main > *:first-child {
 html { scrollbar-gutter: stable; }
 
 #catalogHeader{
-  position:fixed; top:0; left:0; right:0; z-index:50;
+  position:fixed;
+  top:0;
+  left:var(--header-left);
+  right:var(--header-right);
+  z-index:50;
   transform: translateY(calc(-100% * var(--hdr-p, 0)));
   transition: transform 120ms ease-out; /* used only in snap phase */
   will-change: transform; contain: paint;
