@@ -724,9 +724,11 @@ export default function CatalogPage() {
 
     const MIN_DY = 0.25
     const SNAP_THRESHOLD = 3
+    const GAP = 24
     let lastY = window.scrollY
     let acc = 0
     let lastDir = 0
+    let lock: 'none' | 'visible' | 'hidden' = 'none'
 
     const setP = (p: number) => {
       headerEl.style.setProperty('--hdr-p', Math.min(1, Math.max(0, p)).toFixed(3))
@@ -744,6 +746,7 @@ export default function CatalogPage() {
       lastY = y
 
       if (pinned()) {
+        lock = 'none'
         acc = 0
         lastDir = 0
         setP(0)
@@ -751,25 +754,40 @@ export default function CatalogPage() {
         return
       }
 
-      if (y < H) {
-        const t = y / H
-        const p = 1 - Math.pow(1 - t, 3)
-        acc = 0
-        lastDir = 0
-        setP(p)
-      } else {
-        const dir = Math.abs(dy) < MIN_DY ? 0 : dy > 0 ? 1 : -1
-        if (dir !== 0) {
-          if (dir !== lastDir) acc = 0
-          acc += dy
-          lastDir = dir
+      if (lock === 'visible' && y <= H - GAP) lock = 'none'
+      if (lock === 'hidden' && y >= H + GAP) lock = 'none'
 
-          if (acc >= SNAP_THRESHOLD) {
-            setP(1)
-            acc = 0
-          } else if (acc <= -SNAP_THRESHOLD) {
-            setP(0)
-            acc = 0
+      if (y < H) {
+        if (lock === 'visible') {
+          acc = 0
+          lastDir = 0
+          setP(0)
+        } else {
+          const t = y / H
+          const p = 1 - Math.pow(1 - t, 3)
+          acc = 0
+          lastDir = 0
+          setP(p)
+        }
+      } else {
+        if (lock === 'hidden') {
+          setP(1)
+        } else {
+          const dir = Math.abs(dy) < MIN_DY ? 0 : dy > 0 ? 1 : -1
+          if (dir !== 0) {
+            if (dir !== lastDir) acc = 0
+            acc += dy
+            lastDir = dir
+
+            if (acc >= SNAP_THRESHOLD) {
+              setP(1)
+              lock = 'hidden'
+              acc = 0
+            } else if (acc <= -SNAP_THRESHOLD) {
+              setP(0)
+              lock = 'visible'
+              acc = 0
+            }
           }
         }
       }
@@ -779,7 +797,15 @@ export default function CatalogPage() {
 
     const listener = () => requestAnimationFrame(onScroll)
     const wheelListener = (e: WheelEvent) => {
-      if (window.scrollY >= H) setP(e.deltaY > 0 ? 1 : 0)
+      if (window.scrollY >= H) {
+        if (e.deltaY > 0) {
+          setP(1)
+          lock = 'hidden'
+        } else {
+          setP(0)
+          lock = 'visible'
+        }
+      }
     }
     let lastTouchY = 0
     const touchStart = (e: TouchEvent) => {
@@ -788,7 +814,15 @@ export default function CatalogPage() {
     const touchMove = (e: TouchEvent) => {
       const dy = lastTouchY - e.touches[0].clientY
       lastTouchY = e.touches[0].clientY
-      if (window.scrollY >= H && Math.abs(dy) > 0.5) setP(dy > 0 ? 1 : 0)
+      if (window.scrollY >= H && Math.abs(dy) > 0.5) {
+        if (dy > 0) {
+          setP(1)
+          lock = 'hidden'
+        } else {
+          setP(0)
+          lock = 'visible'
+        }
+      }
     }
 
     window.addEventListener('scroll', listener, { passive: true })
