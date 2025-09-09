@@ -1,6 +1,7 @@
 import '@testing-library/jest-dom/vitest'
 // src/setupTests.ts
-import { vi } from 'vitest'
+import { vi, afterAll } from 'vitest'
+import { stopPerformanceLogging } from '@/lib/performance'
 
 // Mock the Supabase client module so unit tests never hit real API
 vi.mock('@/integrations/supabase/client', () => {
@@ -25,4 +26,8 @@ vi.mock('@/integrations/supabase/client', () => {
       storage: { from: vi.fn(() => ({ upload: vi.fn(), download: vi.fn(), remove: vi.fn() })) },
     },
   }
+})
+
+afterAll(() => {
+  stopPerformanceLogging()
 })
