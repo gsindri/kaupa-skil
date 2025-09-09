@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import SupplierLogo from "./SupplierLogo";
 import { Button } from "@/components/ui/button";
@@ -6,10 +7,12 @@ import { formatCurrency } from "@/lib/format";
 import AvailabilityBadge from "./AvailabilityBadge";
 import type { PublicCatalogItem } from "@/services/catalog";
 import { resolveImage } from "@/lib/images";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import { useCart } from "@/contexts/useBasket";
 
 interface ProductCardProps {
   product: PublicCatalogItem;
-  onAdd?: () => void;
+  onAdd?: (supplierId?: string) => void;
   isAdding?: boolean;
   className?: string;
   showPrice?: boolean;
@@ -22,6 +25,8 @@ export function ProductCard({
   className,
   showPrice,
 }: ProductCardProps) {
+  const { addItem } = useCart();
+  const [open, setOpen] = useState(false);
   const availability = (product.availability_status ?? "UNKNOWN") as
     | "IN_STOCK"
     | "LOW_STOCK"
@@ -38,10 +43,41 @@ export function ProductCard({
   const primarySupplierLogo = product.supplier_logo_urls?.[0] ?? null;
   const packInfo =
     product.canonical_pack ?? product.pack_sizes?.join(", ") ?? "";
+  const supplierIds = product.supplier_ids ?? [];
+  const supplierNames = product.supplier_names ?? [];
+  const hasMultipleSuppliers = supplierIds.length > 1;
+  const defaultSupplierId = supplierIds[0] ?? "";
+  const defaultSupplierName = supplierNames[0] ?? defaultSupplierId;
+  const orderedSuppliers = supplierIds.map((id, idx) => ({
+    id,
+    name: supplierNames[idx] ?? id,
+  }));
 
-  const handleAdd = () => {
-    if (onAdd) return onAdd();
-    console.log("Add to basket", product.catalog_id);
+  const handleAdd = (supplierId: string, supplierName: string) => {
+    if (onAdd) {
+      onAdd(supplierId);
+      return;
+    }
+    addItem(
+      {
+        id: product.catalog_id,
+        supplierId,
+        supplierName,
+        itemName: product.name,
+        sku: product.catalog_id,
+        packSize: packInfo,
+        packPrice: product.best_price ?? 0,
+        unitPriceExVat: product.best_price ?? 0,
+        unitPriceIncVat: product.best_price ?? 0,
+        vatRate: 0,
+        unit: "",
+        supplierItemId: product.catalog_id,
+        displayName: product.name,
+        packQty: 1,
+        image: img,
+      },
+      1,
+    );
   };
 
   const isUnavailable =
@@ -114,15 +150,46 @@ export function ProductCard({
             Connect supplier to see price
           </div>
         )}
-        <Button
-          size="lg"
-          className="w-full rounded-xl"
-          onClick={handleAdd}
-          disabled={isAdding || isUnavailable}
-          aria-label={`Add ${product.name}`}
-        >
-          {isAdding ? "Adding…" : "Add to cart"}
-        </Button>
+        {hasMultipleSuppliers ? (
+          <Popover open={open} onOpenChange={setOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                size="lg"
+                className="w-full rounded-xl"
+                disabled={isAdding || isUnavailable}
+                aria-label={`Add ${product.name}`}
+              >
+                {isAdding ? "Adding…" : "Add to cart"}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-2 flex flex-col gap-2">
+              {orderedSuppliers.map(supplier => (
+                <Button
+                  key={supplier.id}
+                  variant={
+                    supplier.id === defaultSupplierId ? "default" : "outline"
+                  }
+                  onClick={() => {
+                    handleAdd(supplier.id, supplier.name);
+                    setOpen(false);
+                  }}
+                >
+                  {supplier.name} - {packInfo}
+                </Button>
+              ))}
+            </PopoverContent>
+          </Popover>
+        ) : (
+          <Button
+            size="lg"
+            className="w-full rounded-xl"
+            onClick={() => handleAdd(defaultSupplierId, defaultSupplierName)}
+            disabled={isAdding || isUnavailable}
+            aria-label={`Add ${product.name}`}
+          >
+            {isAdding ? "Adding…" : "Add to cart"}
+          </Button>
+        )}
       </CardFooter>
     </Card>
   );
