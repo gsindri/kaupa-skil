@@ -195,19 +195,6 @@ export default function CatalogPage() {
   const [scrolled, setScrolled] = useState(false)
 
   useEffect(() => {
-    const el = headerRef.current
-    if (!el) return
-    const update = () => {
-      const h = Math.round(el.offsetHeight)
-      document.documentElement.style.setProperty('--header-h', `${h}px`)
-    }
-    update()
-    const ro = new ResizeObserver(update)
-    ro.observe(el)
-    return () => ro.disconnect()
-  }, [])
-
-  useEffect(() => {
     try {
       localStorage.setItem('catalog-view', view)
     } catch {
@@ -699,144 +686,108 @@ export default function CatalogPage() {
   }
 
   useEffect(() => {
+    // Respect reduced motion
     const reduceMotion =
       typeof window !== 'undefined' &&
       typeof window.matchMedia === 'function' &&
       window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    if (reduceMotion) {
-      headerRef.current?.style.setProperty('--hdr-p', '0')
-      setScrolled(false)
-      return
+
+    const el = headerRef.current
+    if (!el) return
+
+    // Single source of truth for header height.
+    let H = Math.round(el.getBoundingClientRect().height)
+    const setHeaderVars = () => {
+      H = Math.round(el.getBoundingClientRect().height)
+      document.documentElement.style.setProperty('--header-h', `${H}px`)
     }
+    setHeaderVars()
+    const ro = new ResizeObserver(setHeaderVars)
+    ro.observe(el)
+    window.addEventListener('resize', setHeaderVars)
 
-    const headerEl = headerRef.current
-    if (!headerEl) return
+    // Tunables
+    const PROGRESS_START = 6       // px before progressive begins (prevents 0→ε jumps)
+    const GAP            = 24      // latch hysteresis around H
+    const MIN_DY         = 0.25    // ignore micro-noise
+    const SNAP_THRESHOLD = 3       // accumulated px to flip in snap mode
 
-    const rows = Array.from(headerEl.querySelectorAll('.header-row')) as HTMLElement[]
-    let H = 0
-    const measure = () => {
-      H = rows.reduce((sum, r) => sum + r.offsetHeight, 0)
-    }
-    measure()
-    const ro = new ResizeObserver(measure)
-    rows.forEach(r => ro.observe(r))
-    window.addEventListener('resize', measure)
-
-    const MIN_DY = 0.25
-    const SNAP_THRESHOLD = 3
-    const GAP = 24
-    let lastY = window.scrollY
-    let acc = 0
-    let lastDir = 0
-    let lock: 'none' | 'visible' | 'hidden' = 'none'
+    let lastY  = window.scrollY
+    let acc    = 0                 // accumulator for snap sensitivity
+    let lastDir: -1|0|1 = 0
+    let lock: 'none'|'visible'|'hidden' = 'none'
+    let prevP = -1                 // last applied p (avoid redundant style writes)
 
     const setP = (p: number) => {
-      headerEl.style.setProperty('--hdr-p', Math.min(1, Math.max(0, p)).toFixed(3))
+      const clamped = Math.max(0, Math.min(1, p))
+      if (clamped !== prevP) {
+        el.style.setProperty('--hdr-p', clamped.toFixed(3))
+        prevP = clamped
+      }
     }
 
-    const pinned = () =>
-      window.scrollY < 1 ||
+    const isPinned = () =>
       headerLocked ||
+      window.scrollY < 1 ||
       document.activeElement?.closest('#catalogHeader') ||
-      headerEl.querySelector('[data-open="true"]')
+      el.querySelector('[data-open="true"]')
 
     const onScroll = () => {
-      const y = Math.max(0, window.scrollY)
+      const y  = Math.max(0, window.scrollY)
       const dy = y - lastY
       lastY = y
+      setScrolled(y > 0)
 
-      if (pinned()) {
-        lock = 'none'
-        acc = 0
-        lastDir = 0
-        setP(0)
-        setScrolled(y > 0)
+      if (reduceMotion) { setP(0); return }
+
+      if (isPinned()) {
+        lock = 'none'; acc = 0; lastDir = 0; setP(0)
         return
       }
 
+      // Release latches only when safely past the boundary.
       if (lock === 'visible' && y <= H - GAP) lock = 'none'
-      if (lock === 'hidden' && y >= H + GAP) lock = 'none'
+      if (lock === 'hidden'  && y >= H + GAP) lock = 'none'
 
+      // Progressive zone with soft start (PROGRESS_START) to remove tiny flicker.
       if (y < H) {
-        if (lock === 'visible') {
-          acc = 0
-          lastDir = 0
-          setP(0)
-        } else {
-          const t = y / H
-          const p = 1 - Math.pow(1 - t, 3)
-          acc = 0
-          lastDir = 0
-          setP(p)
-        }
-      } else {
-        if (lock === 'hidden') {
-          setP(1)
-        } else {
-          const dir = Math.abs(dy) < MIN_DY ? 0 : dy > 0 ? 1 : -1
-          if (dir !== 0) {
-            if (dir !== lastDir) acc = 0
-            acc += dy
-            lastDir = dir
-
-            if (acc >= SNAP_THRESHOLD) {
-              setP(1)
-              lock = 'hidden'
-              acc = 0
-            } else if (acc <= -SNAP_THRESHOLD) {
-              setP(0)
-              lock = 'visible'
-              acc = 0
-            }
-          }
-        }
+        if (lock === 'visible') { acc = 0; lastDir = 0; setP(0); return }
+        const span = Math.max(1, H - PROGRESS_START)
+        const t = Math.max(0, y - PROGRESS_START) / span
+        const p = 1 - Math.pow(1 - t, 3) // easeOutCubic
+        acc = 0; lastDir = 0; setP(p)
+        return
       }
 
-      setScrolled(y > 0)
+      // Snap zone (y >= H): sensitive but stable using accumulator.
+      if (lock === 'hidden') { setP(1); return }
+
+      const dir: -1|0|1 = Math.abs(dy) < MIN_DY ? 0 : (dy > 0 ? 1 : -1)
+      if (dir !== 0) {
+        if (dir !== lastDir) acc = 0
+        acc += dy
+        lastDir = dir
+        if (acc >=  SNAP_THRESHOLD) { setP(1); lock = 'hidden';  acc = 0; return }
+        if (acc <= -SNAP_THRESHOLD) { setP(0); lock = 'visible'; acc = 0; return }
+      }
     }
 
     const listener = () => requestAnimationFrame(onScroll)
-    const wheelListener = (e: WheelEvent) => {
-      if (window.scrollY >= H) {
-        if (e.deltaY > 0) {
-          setP(1)
-          lock = 'hidden'
-        } else {
-          setP(0)
-          lock = 'visible'
-        }
-      }
-    }
-    let lastTouchY = 0
-    const touchStart = (e: TouchEvent) => {
-      lastTouchY = e.touches[0].clientY
-    }
-    const touchMove = (e: TouchEvent) => {
-      const dy = lastTouchY - e.touches[0].clientY
-      lastTouchY = e.touches[0].clientY
-      if (window.scrollY >= H && Math.abs(dy) > 0.5) {
-        if (dy > 0) {
-          setP(1)
-          lock = 'hidden'
-        } else {
-          setP(0)
-          lock = 'visible'
-        }
-      }
-    }
-
     window.addEventListener('scroll', listener, { passive: true })
-    window.addEventListener('wheel', wheelListener, { passive: true })
-    window.addEventListener('touchstart', touchStart, { passive: true })
-    window.addEventListener('touchmove', touchMove, { passive: true })
-    onScroll()
+    // If you keep wheel/touch preempts, guard them so they don't fight the rAF:
+    const wheel = (e: WheelEvent) => {
+      const y = window.scrollY
+      if (y >= H + GAP) { setP(e.deltaY > 0 ? 1 : 0); lock = e.deltaY > 0 ? 'hidden' : 'visible' }
+    }
+    window.addEventListener('wheel', wheel, { passive: true })
+
+    // Initial apply
+    listener()
 
     return () => {
       window.removeEventListener('scroll', listener)
-      window.removeEventListener('wheel', wheelListener)
-      window.removeEventListener('touchstart', touchStart)
-      window.removeEventListener('touchmove', touchMove)
-      window.removeEventListener('resize', measure)
+      window.removeEventListener('wheel', wheel)
+      window.removeEventListener('resize', setHeaderVars)
       ro.disconnect()
     }
   }, [headerLocked])
