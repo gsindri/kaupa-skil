@@ -99,8 +99,17 @@ export class PerformanceMonitor {
 }
 
 // Auto-log memory usage only in development
+let performanceInterval: ReturnType<typeof setInterval> | undefined
+
 if (process.env.NODE_ENV === 'development') {
-  setInterval(() => {
+  performanceInterval = setInterval(() => {
     PerformanceMonitor.logMemoryUsage()
   }, 30000)
+}
+
+export function stopPerformanceLogging() {
+  if (performanceInterval) {
+    clearInterval(performanceInterval)
+    performanceInterval = undefined
+  }
 }

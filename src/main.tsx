@@ -2,6 +2,7 @@ import React from "react"
 import { createRoot } from "react-dom/client"
 import App from "./App"
 import "./index.css"
+import { stopPerformanceLogging } from "./lib/performance"
 
 // Simple error boundary so crashes render instead of blank screen
 class Boundary extends React.Component<{ children: React.ReactNode }, { err: Error | null }> {
@@ -49,4 +50,10 @@ if (!rootEl) {
       </Boundary>
     </React.StrictMode>
   )
+}
+
+if (import.meta.hot) {
+  import.meta.hot.dispose(() => {
+    stopPerformanceLogging()
+  })
 }

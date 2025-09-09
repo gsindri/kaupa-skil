@@ -1,7 +1,5 @@
 import '@testing-library/jest-dom/vitest'
 // src/setupTests.ts
-import { afterEach, vi } from 'vitest'
-import { stopQueryClientCleanup } from '@/lib/queryClient'
 
 // Mock the Supabase client module so unit tests never hit real API
 vi.mock('@/integrations/supabase/client', () => {
@@ -28,6 +26,4 @@ vi.mock('@/integrations/supabase/client', () => {
   }
 })
 
-afterEach(() => {
-  stopQueryClientCleanup()
 })
