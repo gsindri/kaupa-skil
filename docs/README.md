@@ -3,6 +3,10 @@
 
 A comprehensive buyer-side B2B wholesale comparison and ordering tool designed specifically for the Icelandic market. This platform enables restaurants, hotels, and shops to compare unit-normalized prices across their authorized wholesalers, maintain price history, and place split orders via email.
 
+## Developer Onboarding
+
+- [Duplication Audit](duplication-audit.md) – inventory of duplicated code segments and remediation plans.
+
 ## 🎯 Core Features
 
 ### Phase 1 (Current Implementation)
