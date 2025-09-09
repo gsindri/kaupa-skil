@@ -102,9 +102,20 @@ if (import.meta.env.DEV) {
 }
 
 // Query cache cleanup for memory management
-setInterval(() => {
-  if (queryClient.getQueryCache().getAll().length > 1000) {
-    console.warn('Query cache size exceeded 1000 entries, clearing old entries')
-    queryClient.clear()
+let queryClientCleanupInterval: ReturnType<typeof setInterval> | undefined
+
+if (typeof window !== 'undefined') {
+  queryClientCleanupInterval = setInterval(() => {
+    if (queryClient.getQueryCache().getAll().length > 1000) {
+      console.warn('Query cache size exceeded 1000 entries, clearing old entries')
+      queryClient.clear()
+    }
+  }, 5 * 60 * 1000) // Check every 5 minutes
+}
+
+export function stopQueryClientCleanup() {
+  if (queryClientCleanupInterval) {
+    clearInterval(queryClientCleanupInterval)
+    queryClientCleanupInterval = undefined
   }
-}, 5 * 60 * 1000) // Check every 5 minutes
+}
