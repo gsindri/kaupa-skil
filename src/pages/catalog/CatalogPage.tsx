@@ -707,7 +707,7 @@ export default function CatalogPage() {
     window.addEventListener('resize', setHeaderVars)
 
     // Tunables
-    const PROGRESS_START = 6       // px before progressive begins (prevents 0→ε jumps)
+    const PROGRESS_START = 10      // px before progressive begins
     const GAP            = 24      // latch hysteresis around H
     const MIN_DY         = 0.25    // ignore micro-noise
     const SNAP_THRESHOLD = 3       // accumulated px to flip in snap mode
@@ -719,10 +719,11 @@ export default function CatalogPage() {
     let prevP = -1                 // last applied p (avoid redundant style writes)
 
     const setP = (p: number) => {
-      const clamped = Math.max(0, Math.min(1, p))
-      if (clamped !== prevP) {
-        el.style.setProperty('--hdr-p', clamped.toFixed(3))
-        prevP = clamped
+      // snap near extremes to avoid micro "reload"
+      const v = p < 0.02 ? 0 : p > 0.98 ? 1 : p
+      if (v !== prevP) {
+        el.style.setProperty('--hdr-p', v.toFixed(3))
+        prevP = v
       }
     }
 
@@ -749,13 +750,21 @@ export default function CatalogPage() {
       if (lock === 'visible' && y <= H - GAP) lock = 'none'
       if (lock === 'hidden'  && y >= H + GAP) lock = 'none'
 
-      // Progressive zone with soft start (PROGRESS_START) to remove tiny flicker.
+      // Progressive zone with soft start and direction gating.
       if (y < H) {
-        if (lock === 'visible') { acc = 0; lastDir = 0; setP(0); return }
+        const dir: -1|0|1 = Math.abs(dy) < MIN_DY ? 0 : (dy > 0 ? 1 : -1)
+
+        // If we're scrolling up (or holding still), keep header fully visible.
+        if (lock === 'visible' || dir <= 0) {
+          acc = 0; lastDir = dir; setP(0)
+          return
+        }
+
+        // Only when moving down do we start progressive fade.
         const span = Math.max(1, H - PROGRESS_START)
-        const t = Math.max(0, y - PROGRESS_START) / span
+        const t = Math.max(0, y - PROGRESS_START) / span // 0..1
         const p = 1 - Math.pow(1 - t, 3) // easeOutCubic
-        acc = 0; lastDir = 0; setP(p)
+        acc = 0; lastDir = dir; setP(p)
         return
       }
 
