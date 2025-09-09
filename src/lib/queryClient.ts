@@ -119,3 +119,16 @@ export function stopQueryClientCleanup() {
     queryClientCleanupInterval = undefined
   }
 }
+
+// Automatically clean up the interval when the page is unloading or hidden
+if (typeof window !== 'undefined') {
+  window.addEventListener('beforeunload', stopQueryClientCleanup)
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') {
+      stopQueryClientCleanup()
+    }
+  })
+}
+
+// Helper for tests to manually trigger cleanup in afterAll blocks
+export const cleanupQueryClient = stopQueryClientCleanup
