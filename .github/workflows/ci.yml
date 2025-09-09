@@ -98,6 +98,9 @@ jobs:
       - name: Lint
         run: pnpm lint
 
+      - name: Check duplicates
+        run: pnpm check:dupes
+
       - name: Unit/Integration tests (Vitest)
         run: pnpm test -- --run
 

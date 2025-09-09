@@ -13,7 +13,8 @@
     "test:e2e": "playwright test",
     "merge:mock-items": "node supabase/scripts/mergeMockItems.js",
     "db:seed:catalog": "node supabase/scripts/seedCatalog.js",
-    "cache:images": "node supabase/scripts/cacheImages.js"
+    "cache:images": "node supabase/scripts/cacheImages.js",
+    "check:dupes": "tsx scripts/check-duplicates.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
