@@ -33,7 +33,10 @@ export default function SettingsProvider({ children }: { children: React.ReactNo
     }
 
     channel.addEventListener('message', handleMessage)
-    return () => channel.close()
+    return () => {
+      channel.removeEventListener('message', handleMessage)
+      channel.close()
+    }
   }, [])
 
   const handleSetIncludeVat = (value: boolean) => {

@@ -51,7 +51,10 @@ export default function BasketProvider({ children }: { children: React.ReactNode
     }
 
     channel.addEventListener('message', handleMessage)
-    return () => channel.close()
+    return () => {
+      channel.removeEventListener('message', handleMessage)
+      channel.close()
+    }
   }, [])
 
   const syncBasket = (newItems: CartItem[]) => {
