@@ -739,15 +739,21 @@ export default function CatalogPage() {
 
     // Tunables
     const PROGRESS_START = 10      // px before progressive begins
-    const GAP            = 24      // latch hysteresis around H
-    const MIN_DY         = 0.25    // ignore micro-noise
-    const SNAP_THRESHOLD = 3       // accumulated px to flip in snap mode
+    const GAP             = 24      // latch hysteresis around H
+    const MIN_DY          = 0.25    // ignore micro-noise
+    const SNAP_THRESHOLD  = 3       // accumulated px to flip in snap mode
+    const SNAP_COOLDOWN_MS = 200    // minimum time between opposite snaps
+    const REVEAL_DIST     = 32      // px upward after hide before show allowed
+    const REHIDE_DIST     = 32      // px downward after show before hide allowed
 
     let lastY  = window.scrollY
-    let acc    = 0                 // accumulator for snap sensitivity
+    let acc    = 0                  // accumulator for snap sensitivity
     let lastDir: -1|0|1 = 0
     let lock: 'none'|'visible'|'hidden' = 'none'
-    let prevP = -1                 // last applied p (avoid redundant style writes)
+    let prevP = -1                  // last applied p (avoid redundant style writes)
+    let lastSnapDir: -1 | 0 | 1 = 0 // -1 visible, 1 hidden
+    let lastSnapTime = 0
+    let lastSnapY = 0
 
     const setP = (p: number) => {
       // snap near extremes to avoid micro "reload"
@@ -806,7 +812,7 @@ export default function CatalogPage() {
         return
       }
 
-      // Snap zone (y >= H): sensitive but stable using accumulator.
+      // Snap zone (y >= H): sensitive but stable using cooldown + distance hysteresis.
       if (lock === 'hidden') { setP(1); return }
 
       const dir: -1|0|1 = Math.abs(dy) < MIN_DY ? 0 : (dy > 0 ? 1 : -1)
@@ -814,8 +820,44 @@ export default function CatalogPage() {
         if (dir !== lastDir) acc = 0
         acc += dy
         lastDir = dir
-        if (acc >=  SNAP_THRESHOLD) { setP(1); lock = 'hidden';  acc = 0; return }
-        if (acc <= -SNAP_THRESHOLD) { setP(0); lock = 'visible'; acc = 0; return }
+
+        const now = performance.now()
+
+        // Try to hide (downward snap)
+        if (acc >= SNAP_THRESHOLD) {
+          if (
+            lastSnapDir === -1 &&
+            (now - lastSnapTime < SNAP_COOLDOWN_MS || (y - lastSnapY) < REHIDE_DIST)
+          ) {
+            // hold visible
+          } else {
+            setP(1)
+            lock = 'hidden'
+            acc = 0
+            lastSnapDir = 1
+            lastSnapTime = now
+            lastSnapY = y
+            return
+          }
+        }
+
+        // Try to show (upward snap)
+        if (acc <= -SNAP_THRESHOLD) {
+          if (
+            lastSnapDir === 1 &&
+            (now - lastSnapTime < SNAP_COOLDOWN_MS || (lastSnapY - y) < REVEAL_DIST)
+          ) {
+            // keep hidden
+          } else {
+            setP(0)
+            lock = 'visible'
+            acc = 0
+            lastSnapDir = -1
+            lastSnapTime = now
+            lastSnapY = y
+            return
+          }
+        }
       }
     }
 
@@ -825,8 +867,26 @@ export default function CatalogPage() {
     const wheel = (e: WheelEvent) => {
       if (performance.now() < viewSwapQuietUntil.current) return
       if (window.scrollY >= H + GAP) {
-        setP(e.deltaY > 0 ? 1 : 0)
-        lock = e.deltaY > 0 ? 'hidden' : 'visible'
+        const now = performance.now()
+        if (e.deltaY > 0) {
+          // down → hide
+          if (!(lastSnapDir === -1 && (now - lastSnapTime < SNAP_COOLDOWN_MS))) {
+            setP(1)
+            lock = 'hidden'
+            lastSnapDir = 1
+            lastSnapTime = now
+            lastSnapY = window.scrollY
+          }
+        } else if (e.deltaY < 0) {
+          // up → show
+          if (!(lastSnapDir === 1 && (now - lastSnapTime < SNAP_COOLDOWN_MS))) {
+            setP(0)
+            lock = 'visible'
+            lastSnapDir = -1
+            lastSnapTime = now
+            lastSnapY = window.scrollY
+          }
+        }
       }
     }
     window.addEventListener('wheel', wheel, { passive: true })
