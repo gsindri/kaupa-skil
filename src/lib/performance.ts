@@ -113,3 +113,16 @@ export function stopPerformanceLogging() {
     performanceInterval = undefined
   }
 }
+
+// Automatically stop logging when the page is unloading or hidden
+if (typeof window !== 'undefined') {
+  window.addEventListener('beforeunload', stopPerformanceLogging)
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') {
+      stopPerformanceLogging()
+    }
+  })
+}
+
+// Helper export for tests to ensure cleanup is invoked
+export const cleanupPerformanceLogging = stopPerformanceLogging
