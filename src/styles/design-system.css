@@ -62,12 +62,12 @@
     --sidebar-fg: 222 47% 11%;
     --sidebar-fg-muted: 222 12% 35%;
     --sidebar-border: 210 16% 90%;
-    --sidebar: hsl(var(--sidebar-bg));
-    --sidebar-foreground: hsl(var(--sidebar-fg));
-    --sidebar-muted-foreground: hsl(var(--sidebar-fg-muted));
-    --sidebar-accent: hsl(212 95% 35% / 0.1);
-    --sidebar-accent-foreground: hsl(var(--sidebar-fg));
-    --sidebar-ring: hsl(212 95% 35%);
+    --sidebar: var(--sidebar-bg);
+    --sidebar-foreground: var(--sidebar-fg);
+    --sidebar-muted-foreground: var(--sidebar-fg-muted);
+    --sidebar-accent: 212 95% 35% / 0.1;
+    --sidebar-accent-foreground: var(--sidebar-fg);
+    --sidebar-ring: 212 95% 35%;
     
     /* Radius */
     --radius: 0.5rem;
@@ -107,12 +107,12 @@
     --sidebar-fg: 0 0% 100%;
     --sidebar-fg-muted: 220 9% 70%;
     --sidebar-border: 220 8% 20%;
-    --sidebar: hsl(var(--sidebar-bg));
-    --sidebar-foreground: hsl(var(--sidebar-fg));
-    --sidebar-muted-foreground: hsl(var(--sidebar-fg-muted));
-    --sidebar-accent: hsl(0 0% 100% / 0.06);
-    --sidebar-accent-foreground: hsl(var(--sidebar-fg));
-    --sidebar-ring: hsl(212 95% 50%);
+    --sidebar: var(--sidebar-bg);
+    --sidebar-foreground: var(--sidebar-fg);
+    --sidebar-muted-foreground: var(--sidebar-fg-muted);
+    --sidebar-accent: 0 0% 100% / 0.06;
+    --sidebar-accent-foreground: var(--sidebar-fg);
+    --sidebar-ring: 212 95% 50%;
 
     /* Softer borders and shadows */
     --border-soft: hsl(var(--foreground) / 0.15);
