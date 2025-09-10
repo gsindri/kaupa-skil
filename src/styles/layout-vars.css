@@ -5,6 +5,6 @@
   --header-left: 0px;
 
   --z-rail: 40;
-  --z-header: 50;  /* header above chrome */
+  --z-header: 45;  /* header above chrome */
   --z-chrome: 20;  /* gradient below header */
 }
