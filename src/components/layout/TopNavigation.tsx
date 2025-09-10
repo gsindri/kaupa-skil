@@ -71,11 +71,13 @@ export function TopNavigation() {
       role="banner"
       className={cn(
         'relative z-[var(--z-header,50)] pt-[2px] px-3 sm:px-4 flex items-center gap-3 text-white',
-        '[height:clamp(40px,var(--chrome-h,56px),120px)]',
         scrolled ? 'shadow-lg' : 'shadow-none',
         'transition-[box-shadow] duration-base ease-snap motion-reduce:transition-none'
       )}
-      style={{ paddingLeft: 'var(--header-left,0px)' }}
+      style={{
+        height: 'clamp(40px, var(--chrome-h, 56px), 120px)',
+        paddingLeft: 'var(--header-left,0px)'
+      }}
     >
       <TenantSwitcher />
 
