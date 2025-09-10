@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { memo, useState } from "react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import SupplierLogo from "./SupplierLogo";
 import { Button } from "@/components/ui/button";
@@ -18,7 +18,7 @@ interface ProductCardProps {
   showPrice?: boolean;
 }
 
-export function ProductCard({
+export const ProductCard = memo(function ProductCard({
   product,
   onAdd,
   isAdding,
@@ -99,16 +99,21 @@ export function ProductCard({
         className,
       )}
     >
-      <div className="relative aspect-square w-full overflow-hidden bg-muted">
+      <div className="w-full aspect-[4/3] overflow-hidden bg-muted">
         <img
           src={img}
           alt={product.name}
-          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
           loading="lazy"
+          decoding="async"
+          fetchpriority="low"
+          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
         />
       </div>
       <CardContent className="flex flex-1 flex-col p-4">
-        <a {...linkProps} className="text-sm font-medium line-clamp-2 hover:underline">
+        <a
+          {...linkProps}
+          className="text-sm font-medium line-clamp-2 min-h-[2.6em] hover:underline"
+        >
           {product.name}
         </a>
         <div className="mt-1 min-h-[1rem] text-xs text-muted-foreground">
@@ -193,5 +198,5 @@ export function ProductCard({
       </CardFooter>
     </Card>
   );
-}
+});
 

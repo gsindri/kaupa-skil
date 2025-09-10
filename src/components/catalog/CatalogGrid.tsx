@@ -1,79 +1,38 @@
-import { useEffect, useRef, useState } from 'react'
-import { FixedSizeGrid as Grid } from 'react-window'
+import * as React from 'react'
+import { VirtualizedGrid } from './VirtualizedGrid'
 import { ProductCard } from './ProductCard'
-import { Checkbox } from '@/components/ui/checkbox'
 
 interface CatalogGridProps {
   products: any[]
-  selected: string[]
-  onSelect: (id: string) => void
+  onAddToCart: (p: any) => void
+  onNearEnd?: () => void
   showPrice?: boolean
 }
 
-export function CatalogGrid({ products, selected, onSelect, showPrice }: CatalogGridProps) {
-  const containerRef = useRef<HTMLDivElement>(null)
-  const [width, setWidth] = useState(0)
-
-  useEffect(() => {
-    const updateWidth = () => setWidth(containerRef.current?.clientWidth || 0)
-    updateWidth()
-    window.addEventListener('resize', updateWidth)
-    return () => window.removeEventListener('resize', updateWidth)
-  }, [])
-
-  const getGap = () => Math.max(16, Math.min(28, window.innerWidth * 0.02))
-  const gap = getGap()
-  const minColumnWidth = 296
-  const maxColumns = window.innerWidth > 1800 ? 6 : 4
-  const columnCount = Math.min(
-    maxColumns,
-    Math.max(1, Math.floor(width / (minColumnWidth + gap)))
+export function CatalogGrid({
+  products,
+  onAddToCart,
+  onNearEnd,
+  showPrice,
+}: CatalogGridProps) {
+  const renderItem = React.useCallback(
+    (p: any, _index: number) => (
+      <ProductCard product={p} onAdd={() => onAddToCart(p)} showPrice={showPrice} />
+    ),
+    [onAddToCart, showPrice],
   )
-  const cardWidth = columnCount
-    ? (width - gap * (columnCount - 1)) / columnCount
-    : width
-  const columnWidth = cardWidth + gap
-  const rowHeight = cardWidth * 0.75 + 120 + gap
-  const rowCount = Math.ceil(products.length / columnCount)
 
   return (
-    <div ref={containerRef} className="w-full h-[800px]">
-      {width > 0 && (
-        <Grid
-          columnCount={columnCount}
-          columnWidth={columnWidth}
-          height={800}
-          rowCount={rowCount}
-          rowHeight={rowHeight}
-          width={width + gap}
-          className="scrollbar-thin"
-          style={{ margin: `-${gap / 2}px` }}
-        >
-          {({ columnIndex, rowIndex, style }) => {
-            const index = rowIndex * columnCount + columnIndex
-            if (index >= products.length) return null
-            const product = products[index]
-            const id = product.catalog_id
-            const isSelected = selected.includes(id)
-            return (
-              <div
-                style={{ ...style, padding: gap / 2 }}
-                className="flex h-full"
-              >
-                <div className="relative flex h-full w-full">
-                  <ProductCard product={product} showPrice={showPrice} />
-                  <Checkbox
-                    checked={isSelected}
-                    onCheckedChange={() => onSelect(id)}
-                    className="absolute top-2 right-2"
-                  />
-                </div>
-              </div>
-            )
-          }}
-        </Grid>
-      )}
-    </div>
+    <VirtualizedGrid
+      items={products}
+      renderItem={renderItem}
+      minCardWidth={260}
+      rowHeight={320}
+      gap={16}
+      onNearEnd={onNearEnd}
+      className="px-4 py-2"
+      style={{ height: 'calc(100vh - var(--chrome-h))' }}
+    />
   )
 }
 
