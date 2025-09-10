@@ -47,12 +47,13 @@ const DrawerContent = React.forwardRef<
       ref={ref}
       className={cn(
         'fixed z-50 flex flex-col bg-background',
-        side === 'bottom' && 'inset-x-0 bottom-0 mt-24 h-auto rounded-t-[10px] border',
-        side === 'right' && 'inset-y-0 right-0 h-full w-full border-l',
+        side === 'bottom' && 'inset-x-0 bottom-0 mt-24 h-auto rounded-t-4 border',
+        side === 'right' && 'inset-y-0 right-0 h-full w-full border-l rounded-l-4',
         className
       )}
       {...props}
     >
+      <div className="memory-stripe w-full" />
       {showBar && side === 'bottom' && (
         <div className="mx-auto mt-4 h-2 w-[100px] rounded-full bg-muted" />
       )}
