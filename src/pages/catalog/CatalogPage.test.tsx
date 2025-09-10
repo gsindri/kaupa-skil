@@ -128,6 +128,14 @@ catalogFiltersStore = create((set: any) => ({
 vi.mock('@/contexts/useBasket', () => ({ useCart: () => ({ addItem: () => {} }) }))
 vi.mock('@/lib/images', () => ({ resolveImage: () => '' }))
 
+function renderCatalogPage() {
+  return render(
+    <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <CatalogPage />
+    </MemoryRouter>,
+  )
+}
+
 describe('CatalogPage', () => {
   beforeEach(() => {
     localStorage.clear()
@@ -143,11 +151,7 @@ describe('CatalogPage', () => {
 
   it('shows banner when connect pills are hidden', async () => {
     localStorage.setItem('catalog-view', 'list')
-    render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-        <CatalogPage />
-      </MemoryRouter>
-    )
+    renderCatalogPage()
     await screen.findByTestId('alert')
     expect(screen.getByText('Connect suppliers to unlock prices.')).toBeInTheDocument()
     expect(screen.getByTestId('catalog-table')).toBeInTheDocument()
@@ -156,11 +160,7 @@ describe('CatalogPage', () => {
 
   it('restores view preference from localStorage', () => {
     localStorage.setItem('catalog-view', 'list')
-    render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-        <CatalogPage />
-      </MemoryRouter>
-    )
+    renderCatalogPage()
     expect(screen.getByTestId('catalog-table')).toBeInTheDocument()
   })
 
@@ -174,11 +174,7 @@ describe('CatalogPage', () => {
 
   it('applies onSpecial filter when triSpecial is include', () => {
     catalogFiltersStore.setState({ triSpecial: 'include' })
-    render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-        <CatalogPage />
-      </MemoryRouter>
-    )
+    renderCatalogPage()
     expect(useCatalogProductsMock).toHaveBeenCalledWith(
       expect.objectContaining({ onSpecial: true }),
       'relevance',
