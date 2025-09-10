@@ -14,7 +14,15 @@ import { useCart } from '@/contexts/useBasket'
 import { useSettings } from '@/contexts/useSettings'
 
 export function OrderComposer() {
-  const { items, updateQuantity, removeItem, clearCart, getTotalItems, getTotalPrice } = useCart()
+  const {
+    items,
+    updateQuantity,
+    removeItem,
+    clearCart,
+    getTotalItems,
+    getTotalPrice,
+    getMissingPriceCount,
+  } = useCart()
   const { includeVat } = useSettings()
   const { data: deliveryCalculations, isLoading: isLoadingDelivery } = useDeliveryCalculation()
   const { data: optimization } = useDeliveryOptimization()
@@ -33,6 +41,7 @@ export function OrderComposer() {
 
   const totalItems = getTotalItems()
   const subtotalPrice = getTotalPrice(includeVat)
+  const missingPriceCount = getMissingPriceCount()
   const totalDeliveryFees = deliveryCalculations?.reduce((sum, calc) => sum + calc.total_delivery_cost, 0) || 0
   const grandTotal = subtotalPrice + totalDeliveryFees
 
@@ -260,7 +269,14 @@ export function OrderComposer() {
       {/* Order Summary */}
       <Card>
         <CardHeader>
-          <CardTitle>Order Summary</CardTitle>
+          <div className="flex items-center gap-2">
+            <CardTitle>Order Summary</CardTitle>
+            {missingPriceCount > 0 && (
+              <Badge variant="destructive" className="text-xs">
+                Some prices unavailable
+              </Badge>
+            )}
+          </div>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="flex justify-between">

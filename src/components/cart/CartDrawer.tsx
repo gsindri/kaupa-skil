@@ -2,9 +2,11 @@ import * as React from "react"
 import { Sheet, SheetContent, SheetClose } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Minus, Plus, Trash2, X } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { Trash2, X } from "lucide-react"
 import { useCart } from "@/contexts/useBasket"
 import { useSettings } from "@/contexts/useSettings"
+import { QuantityStepper } from "./QuantityStepper"
 
 export function CartDrawer() {
   const {
@@ -12,12 +14,14 @@ export function CartDrawer() {
     updateQuantity,
     removeItem,
     getTotalPrice,
+    getMissingPriceCount,
     isDrawerOpen,
     setIsDrawerOpen,
   } = useCart()
   const { includeVat, setIncludeVat } = useSettings()
 
-  const subtotal = getTotalPrice(includeVat) ?? 0
+  const subtotal = getTotalPrice(includeVat)
+  const missingPriceCount = getMissingPriceCount()
   const formatCurrency = (n: number) =>
     new Intl.NumberFormat(undefined, {
       style: "currency",
@@ -36,10 +40,18 @@ export function CartDrawer() {
         <div className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b">
           <div className="flex items-center justify-between px-4 py-3">
             <div className="text-sm leading-tight">
+              <span aria-live="polite" className="sr-only">
+                Cart subtotal {formatCurrency(subtotal)}
+              </span>
               <div className="text-muted-foreground">Subtotal</div>
               <div className="font-semibold text-base">{formatCurrency(subtotal)}</div>
             </div>
             <div className="flex items-center gap-2">
+              {missingPriceCount > 0 && (
+                <Badge variant="destructive" className="text-xs">
+                  Some prices unavailable
+                </Badge>
+              )}
               <Button
                 variant="secondary"
                 size="sm"
@@ -94,28 +106,15 @@ export function CartDrawer() {
                     </div>
 
                     <div className="mt-2 inline-flex items-center gap-2">
-                      <Button
-                        size="icon"
-                        variant="outline"
-                        aria-label="Decrease quantity"
-                        onClick={() => {
-                          const next = Math.max(0, (it.quantity || 1) - 1)
-                          if (next === 0) removeItem(it.supplierItemId)
-                          else updateQuantity(it.supplierItemId, next)
-                        }}
-                      >
-                        <Minus className="h-4 w-4" />
-                      </Button>
-
-                      <div className="w-10 text-center text-sm tabular-nums">{it.quantity}</div>
-
-                      <Button
-                        size="icon"
-                        aria-label="Increase quantity"
-                        onClick={() => updateQuantity(it.supplierItemId, (it.quantity || 0) + 1)}
-                      >
-                        <Plus className="h-4 w-4" />
-                      </Button>
+                      <QuantityStepper
+                        quantity={it.quantity}
+                        onChange={qty =>
+                          qty === 0
+                            ? removeItem(it.supplierItemId)
+                            : updateQuantity(it.supplierItemId, qty)
+                        }
+                        label={it.displayName || it.itemName}
+                      />
 
                       <Button
                         variant="ghost"

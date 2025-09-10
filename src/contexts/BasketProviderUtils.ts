@@ -16,7 +16,8 @@ export interface BasketContextType {
   clearCart: () => void
   restoreItems: (items: CartItem[]) => void
   getTotalItems: () => number
-  getTotalPrice: (includeVat: boolean) => number | null
+  getTotalPrice: (includeVat: boolean) => number
+  getMissingPriceCount: () => number
   isDrawerOpen: boolean
   setIsDrawerOpen: (open: boolean) => void
 }

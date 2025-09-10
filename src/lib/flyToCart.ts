@@ -1,6 +1,13 @@
 export function flyToCart(source: HTMLElement, target?: HTMLElement) {
   try {
-    const cart = target || document.getElementById('mini-cart-button') as HTMLElement | null;
+    if (
+      typeof window !== 'undefined' &&
+      window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+    ) {
+      return
+    }
+
+    const cart = target || (document.getElementById('mini-cart-button') as HTMLElement | null);
     if (!source || !cart) return;
 
     const start = source.getBoundingClientRect();
