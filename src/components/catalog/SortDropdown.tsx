@@ -17,7 +17,7 @@ import {
   History,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import type { SortOrder } from '@/state/catalogFilters'
+import type { SortOrder } from '@/state/catalogFiltersStore'
 
 const labels: Record<SortOrder, string> = {
   relevance: 'Relevance',

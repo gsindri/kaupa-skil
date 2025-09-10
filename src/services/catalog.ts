@@ -1,5 +1,5 @@
 import { supabase } from '@/integrations/supabase/client'
-import type { SortOrder, TriState } from '@/state/catalogFilters'
+import type { SortOrder, TriState } from '@/state/catalogFiltersStore'
 
 export type FacetFilters = {
   search?: string

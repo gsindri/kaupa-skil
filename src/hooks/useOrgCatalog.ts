@@ -5,7 +5,7 @@ import {
   fetchOrgCatalogItems,
   OrgCatalogFilters,
 } from '@/services/catalog'
-import type { SortOrder } from '@/state/catalogFilters'
+import type { SortOrder } from '@/state/catalogFiltersStore'
 
 export function useOrgCatalog(
   orgId: string,

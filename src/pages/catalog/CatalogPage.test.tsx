@@ -113,8 +113,8 @@ vi.mock('@/components/place-order/ViewToggle', () => ({
 vi.mock('@/components/debug/LayoutDebugger', () => ({ LayoutDebugger: () => <div /> }))
 // eslint-disable-next-line prefer-const
 let catalogFiltersStore: any
-vi.mock('@/state/catalogFilters', async () => {
-  const actual = await vi.importActual<any>('@/state/catalogFilters')
+vi.mock('@/state/catalogFiltersStore', async () => {
+  const actual = await vi.importActual<any>('@/state/catalogFiltersStore')
   return {
     ...actual,
     useCatalogFilters: (selector: any) => catalogFiltersStore(selector),

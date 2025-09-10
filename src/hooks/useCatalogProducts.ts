@@ -6,7 +6,7 @@ import {
   PublicCatalogFilters,
   type PublicCatalogItem,
 } from '@/services/catalog';
-import type { SortOrder } from '@/state/catalogFilters';
+import type { SortOrder } from '@/state/catalogFiltersStore';
 import { stateKeyFragment } from '@/lib/catalogState';
 
 export type { PublicCatalogItem };
