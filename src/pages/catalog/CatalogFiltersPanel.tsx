@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { FacetPanel } from './FacetPanel'
+import { FacetPanel } from '@/components/catalog/FacetPanel'
 import { ActiveFiltersBar } from './ActiveFiltersBar'
 import { createEmptyFilters, toggleArray, type Tri, type CatalogFilters } from '@/lib/catalogFilters'
 

@@ -1,103 +1,66 @@
-import { useQuery } from '@tanstack/react-query'
-import { fetchCatalogFacets, FacetFilters } from '@/services/catalog'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Button } from '@/components/ui/button'
+import * as React from 'react'
+import { FilterChip } from '@/components/filters/filter-chip'
+import { TriStateChip } from '@/components/filters/tri-state-chip'
+import type { Tri } from '@/lib/catalogFilters'
 
 interface FacetPanelProps {
-  filters: FacetFilters
-  onChange: (f: Partial<FacetFilters>) => void
+  title: string
+  items: { id: string; label: string; count?: number }[]
+  type: 'include' | 'tri'
+  values: string[] | Record<string, Tri>
+  onToggleInclude?: (id: string) => void
+  onTriChange?: (id: string, next: Tri) => void
+  onClearFacet?: () => void
 }
 
-export function FacetPanel({ filters, onChange }: FacetPanelProps) {
-  const { data } = useQuery({
-    queryKey: ['catalogFacets', filters],
-    queryFn: () => fetchCatalogFacets(filters),
-  })
-
-  const active = Object.entries(filters).filter(
-    ([k, v]) => k !== 'search' && (Array.isArray(v) ? v.length > 0 : v),
-  )
-
-  const clearAll = () =>
-    onChange({
-      brand: undefined,
-      category: undefined,
-      supplier: undefined,
-      packSizeRange: undefined,
-    })
-
-  const renderFacet = (
-    label: string,
-    items: { id: string; name: string; count: number }[],
-    key: keyof FacetFilters,
-  ) => (
-    <div className="space-y-2" key={label}>
-      <div className="text-sm font-medium">{label}</div>
-      {items.map(item => {
-        const id = `${String(key)}-${item.id}`
-        const current = (filters as any)[key] ?? []
-        const isArray = Array.isArray(current)
-        const checked = isArray ? current.includes(item.id) : current === item.id
-        return (
-          <label
-            key={item.id}
-            htmlFor={id}
-            className="flex items-center gap-2 text-sm cursor-pointer"
-          >
-            <Checkbox
-              id={id}
-              checked={checked}
-              onCheckedChange={chk => {
-                if (isArray) {
-                  const cur = current as string[]
-                  const next = chk
-                    ? [...cur, item.id]
-                    : cur.filter((id: string) => id !== item.id)
-                  onChange({ [key]: next.length ? next : undefined } as any)
-                } else {
-                  onChange({ [key]: chk ? item.id : undefined } as any)
-                }
-              }}
-            />
-            <span className="flex-1">{item.name || 'Unknown'}</span>
-            <span className="text-muted-foreground">{item.count}</span>
-          </label>
-        )
-      })}
-    </div>
-  )
+export function FacetPanel(props: FacetPanelProps) {
+  const [q, setQ] = React.useState('')
+  const filtered = React.useMemo(() => {
+    const t = q.trim().toLowerCase()
+    return t ? props.items.filter(i => i.label.toLowerCase().includes(t)) : props.items
+  }, [props.items, q])
 
   return (
-    <div className="space-y-4">
-      {active.length > 0 && (
-        <div className="flex flex-wrap items-center gap-2">
-          {active.map(([k, v]) => (
-            <button
-              key={k}
-              type="button"
-              onClick={() => onChange({ [k]: undefined })}
-              className="flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs"
-            >
-              {Array.isArray(v) ? v.join(', ') : String(v)}
-              <span className="text-muted-foreground">×</span>
-            </button>
-          ))}
-          <Button variant="ghost" size="sm" onClick={clearAll}>
-            Clear all
-          </Button>
-        </div>
-      )}
-      {data && (
-        <div className="space-y-4">
-          {renderFacet('Categories', data.categories, 'category')}
-          {renderFacet('Suppliers', data.suppliers, 'supplier')}
-          {renderFacet('Pack size', data.packSizeRanges, 'packSizeRange')}
-          {renderFacet('Brands', data.brands, 'brand')}
-        </div>
-      )}
-    </div>
+    <section className="space-y-2">
+      <header className="flex items-center justify-between">
+        <h4 className="text-sm font-medium">{props.title}</h4>
+        <button className="text-xs text-muted-foreground hover:underline" onClick={props.onClearFacet}>Clear</button>
+      </header>
+
+      <input
+        className="w-full rounded border px-2 py-1 text-xs"
+        placeholder={`Search ${props.title.toLowerCase()}…`}
+        value={q}
+        onChange={(e) => setQ(e.target.value)}
+      />
+
+      <div className="flex flex-wrap gap-2 pt-1">
+        {filtered.map((it) => {
+          const suffix = it.count != null ? ` (${it.count})` : ''
+          if (props.type === 'include') {
+            const active = Array.isArray(props.values) && props.values.includes(it.id)
+            return (
+              <FilterChip
+                key={it.id}
+                label={it.label + suffix}
+                active={!!active}
+                onToggle={() => props.onToggleInclude?.(it.id)}
+                onRemove={() => props.onToggleInclude?.(it.id)}
+              />
+            )
+          } else {
+            const v = (props.values as Record<string, Tri>)[it.id] ?? 0
+            return (
+              <TriStateChip
+                key={it.id}
+                label={it.label + suffix}
+                value={v}
+                onChange={(next) => props.onTriChange?.(it.id, next)}
+              />
+            )
+          }
+        })}
+      </div>
+    </section>
   )
 }
-
-export default FacetPanel
-
