@@ -1,6 +1,10 @@
 :root {
   --layout-rail: 72px;     /* nav rail width */
   --layout-header-h: 56px; /* fallback; JS already updates --header-h */
+  --chrome-h: var(--layout-header-h);
+  --header-left: 0px;
+
   --z-rail: 40;
-  --z-header: 30;
+  --z-header: 50;  /* header above chrome */
+  --z-chrome: 30;  /* background gradient */
 }

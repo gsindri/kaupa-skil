@@ -70,10 +70,13 @@ export function TopNavigation() {
     <div
       role="banner"
       className={cn(
-        'pt-[2px] h-[var(--chrome-h,56px)] px-3 sm:px-4 flex items-center gap-3 text-white',
-        scrolled ? 'shadow-lg' : 'shadow-none',
-        'transition-[box-shadow] duration-base ease-snap motion-reduce:transition-none'
+        'relative z-[var(--z-header,50)] h-[var(--chrome-h,56px)] px-3 sm:px-4 flex items-center gap-3 text-white',
+        scrolled
+          ? 'backdrop-blur-sm shadow-[0_1px_0_rgba(255,255,255,.08)]'
+          : 'shadow-none',
+        'transition-[backdrop-filter,box-shadow] duration-base ease-snap motion-reduce:transition-none'
       )}
+      style={{ paddingLeft: 'var(--header-left,0px)' }}
     >
       <TenantSwitcher />
 
