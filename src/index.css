@@ -5,6 +5,7 @@
 
 @import './styles/globals.css';
 @import './styles/design-system.css';
+@import './styles/layout-vars.css';
 
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&display=swap');
 
@@ -77,15 +78,8 @@ main > *:first-child {
 html { scrollbar-gutter: stable; }
 
 #catalogHeader{
-  position:fixed;
-  top:0;
-  left:var(--header-left);
-  right:0;
-  z-index:50;
-  transform: translateY(calc(-100% * var(--hdr-p, 0)));
-  transition: transform 120ms ease-out; /* used only in snap phase */
-  will-change: transform; contain: paint;
-  backdrop-filter: saturate(180%) blur(8px);
+  /* Remove the problematic fixed positioning that causes the white overlay */
+  /* Header now lives inside the right column via the 2-column grid layout */
 }
 
   /* Gradient header handles its own background; remove default surface overlay */

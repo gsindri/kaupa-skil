@@ -11,8 +11,8 @@ vi.mock('@/hooks/useSuppliers', () => ({
 describe('SupplierList', () => {
   it('renders suppliers and handles selection', () => {
     const suppliers = [
-      { id: '1', name: 'Supplier A', connector_type: 'generic' },
-      { id: '2', name: 'Supplier B', connector_type: 'api' },
+      { id: '1', name: 'Supplier A', connector_type: 'generic', logo_url: '', created_at: '2023-01-01', updated_at: '2023-01-01' },
+      { id: '2', name: 'Supplier B', connector_type: 'api', logo_url: '', created_at: '2023-01-01', updated_at: '2023-01-01' },
     ]
     const credentials: any[] = []
     const handleSelect = vi.fn()

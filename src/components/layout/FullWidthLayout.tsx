@@ -1,10 +1,9 @@
 import React from 'react'
-import { SidebarProvider } from '@/components/ui/sidebar-provider'
-import { EnhancedAppSidebar } from './EnhancedAppSidebar'
 import { TopNavigation } from './TopNavigation'
 import { CartDrawer } from '@/components/cart/CartDrawer'
 import { cn } from '@/lib/utils'
 import { AppChrome } from './AppChrome'
+import { PrimaryNavRail } from './PrimaryNavRail'
 
 interface FullWidthLayoutProps {
   children: React.ReactNode
@@ -23,61 +22,54 @@ export function FullWidthLayout({
 }: FullWidthLayoutProps) {
   const { className: contentClassName, style: contentStyle, ...restContentProps } = contentProps || {}
 
-  React.useEffect(() => {
-    const sidebar = document.getElementById('appSidebar')
-    if (!sidebar) return
-    const apply = () => {
-      const isMobile = window.matchMedia('(max-width: 1024px)').matches
-      const w = isMobile ? 0 : Math.round(sidebar.getBoundingClientRect().width || 0)
-      document.documentElement.style.setProperty('--header-left', `${w}px`)
-    }
-    apply()
-    const ro = new ResizeObserver(apply)
-    ro.observe(sidebar)
-    window.addEventListener('resize', apply)
-    return () => {
-      ro.disconnect()
-      window.removeEventListener('resize', apply)
-    }
-  }, [])
-
   return (
-      <SidebarProvider>
-        <AppChrome />
-        <div
-          className="min-h-screen grid transition-[grid-template-columns] duration-300 ease-in-out"
-          style={{ gridTemplateColumns: 'var(--sidebar-width,16rem) minmax(0,1fr)' }}
-        >
-          <aside
-            id="appSidebar"
-            className="sticky top-0 h-svh w-[var(--sidebar-width,16rem)] transition-[width] duration-300 ease-in-out z-40"
-          >
-            <EnhancedAppSidebar />
-          </aside>
+    <div
+      className="min-h-dvh grid"
+      style={{ gridTemplateColumns: 'var(--layout-rail,72px) 1fr' }}
+    >
+      <AppChrome />
 
-          <div className="min-w-0 min-h-screen flex flex-col transition-all duration-300 ease-in-out">
-            <div ref={headerRef} id="catalogHeader" className={cn(headerClassName)}>
-              <TopNavigation />
-              {header && (
-                <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">{header}</div>
-              )}
-            </div>
-            <div
-              id="catalogContent"
-              className={cn(
-                'flex-1 min-h-0 px-4 sm:px-6 lg:px-8 xl:px-10 2xl:px-12',
-                contentClassName,
-              )}
-              style={{ ...contentStyle }}
-              {...restContentProps}
-            >
-              <div id="headerSpacer" style={{ height: 'var(--header-h)' }} aria-hidden />
-              {children}
-            </div>
-          </div>
+      {/* Left rail */}
+      <aside
+        className="sticky top-0 h-dvh"
+        style={{ zIndex: 'var(--z-rail,40)' }}
+      >
+        <PrimaryNavRail />
+      </aside>
+
+      {/* Right column: header + page */}
+      <div className="relative">
+        {/* Header is now scoped to the right column only */}
+        <div
+          id="catalogHeader"
+          ref={headerRef}
+          className={cn(headerClassName)}
+          style={{ position: 'sticky', top: 0, zIndex: 'var(--z-header,30)' }}
+        >
+          <TopNavigation />
+          {header && (
+            <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">{header}</div>
+          )}
         </div>
 
-        <CartDrawer />
-      </SidebarProvider>
+        {/* Content; if header overlays, pad with the measured height */}
+        <div
+          id="catalogContent"
+          className={cn(
+            'flex-1 min-h-0 px-4 sm:px-6 lg:px-8 xl:px-10 2xl:px-12',
+            contentClassName,
+          )}
+          style={{ 
+            paddingTop: 'var(--header-h, var(--layout-header-h,56px))',
+            ...contentStyle 
+          }}
+          {...restContentProps}
+        >
+          {children}
+        </div>
+      </div>
+
+      <CartDrawer />
+    </div>
   )
 }

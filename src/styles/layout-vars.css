@@ -1,0 +1,6 @@
+:root {
+  --layout-rail: 72px;     /* nav rail width */
+  --layout-header-h: 56px; /* fallback; JS already updates --header-h */
+  --z-rail: 40;
+  --z-header: 30;
+}
