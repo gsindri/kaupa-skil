@@ -2,7 +2,7 @@ import * as React from 'react'
 import { cn } from '@/lib/utils'
 import type { TriState } from '@/state/catalogFiltersStore'
 
-interface TriStateFilterChipProps
+export interface TriStateChipProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   state: TriState
   onStateChange: (state: TriState) => void
@@ -16,20 +16,20 @@ interface TriStateFilterChipProps
   excludeClassName?: string
 }
 
-export function TriStateFilterChip({
+export function TriStateChip({
   state,
   onStateChange,
   className,
-  includeLabel = 'In stock',
-  excludeLabel = 'Out of stock',
+  includeLabel = 'Include',
+  excludeLabel = 'Exclude',
   offLabel = 'All',
-  includeAriaLabel = 'Filter: only in stock',
-  excludeAriaLabel = 'Filter: out of stock',
+  includeAriaLabel = 'Filter: include only',
+  excludeAriaLabel = 'Filter: exclude only',
   offAriaLabel,
   includeClassName,
   excludeClassName,
   ...props
-}: TriStateFilterChipProps) {
+}: TriStateChipProps) {
   const cycle = (reverse = false) => {
     const next = reverse
       ? state === 'off'
@@ -46,13 +46,18 @@ export function TriStateFilterChip({
   }
 
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    cycle(e.shiftKey)
+    cycle(e.shiftKey || e.altKey)
+  }
+
+  const handleContextMenu = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault()
+    cycle(true)
   }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault()
-      cycle(e.shiftKey)
+      cycle(e.shiftKey || e.altKey)
     }
   }
 
@@ -83,6 +88,7 @@ export function TriStateFilterChip({
       aria-label={ariaLabel}
       onClick={handleClick}
       onKeyDown={handleKeyDown}
+      onContextMenu={handleContextMenu}
       className={cn(
         // Responsive width and no wrapping to keep chip labels on a single line
         'inline-flex h-8 w-auto whitespace-nowrap items-center justify-center rounded-pill border px-3 text-sm font-medium transition-colors duration-fast ease-snap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)] motion-reduce:transition-none',
@@ -96,4 +102,4 @@ export function TriStateFilterChip({
   )
 }
 
-export default TriStateFilterChip
+export default TriStateChip
