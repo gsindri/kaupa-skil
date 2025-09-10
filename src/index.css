@@ -67,12 +67,10 @@ html { scrollbar-gutter: stable; }
   backdrop-filter: saturate(180%) blur(8px);
 }
 
-#catalogHeader::before{
-  content:""; position:absolute; inset:0;
-  background: var(--surface, #fff);
-  opacity: calc(1 - var(--hdr-p, 0));
-  pointer-events:none;
-}
+  /* Gradient header handles its own background; remove default surface overlay */
+  #catalogHeader::before{
+    content:none;
+  }
 
 @media (prefers-reduced-motion: reduce){
   #catalogHeader{ transition:none; }

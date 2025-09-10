@@ -11,9 +11,9 @@ export function LanguageSwitcher() {
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
         <Button
-          variant="outline"
+          variant="ghost"
           size="sm"
-          className="flex items-center flex-shrink-0 border-border focus-visible:ring-brand/50"
+          className="h-10 px-3 rounded-xl bg-white/6 hover:bg-white/10 ring-1 ring-white/10 text-slate-100 flex items-center focus-visible:ring-2 focus-visible:ring-cyan-400/70"
           aria-label="Language"
         >
           <span>{language === 'is' ? 'Icelandic' : 'English'}</span>
