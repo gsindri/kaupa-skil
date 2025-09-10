@@ -55,12 +55,10 @@ export function FullWidthLayout({
 
           <div className="min-w-0 min-h-screen flex flex-col transition-all duration-300 ease-in-out">
             <div ref={headerRef} id="catalogHeader" className={cn(headerClassName)}>
-              <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
-                <div className="header-row global-row">
-                  <TopNavigation />
-                </div>
-                {header}
-              </div>
+              <TopNavigation />
+              {header && (
+                <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">{header}</div>
+              )}
             </div>
             <div
               id="catalogContent"
