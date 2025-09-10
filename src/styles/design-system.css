@@ -288,3 +288,33 @@
   font-weight: normal;
   color: hsl(var(--muted-foreground));
 }
+/* --- Sidebar chrome fixes --- */
+
+/* Ensure sidebar runs flush to the very top */
+[data-sidebar="sidebar"] {
+  top: 0 !important;
+}
+
+/* Remove any accidental top border/stripe from the sidebar */
+[data-sidebar="sidebar"] {
+  border-top: 0 !important;
+}
+[data-sidebar="sidebar"]::before,
+[data-sidebar="sidebar"] > .top-stripe,
+[data-sidebar="sidebar"] [data-top-stripe] {
+  display: none !important; /* hides any extra cyan stripe element if present */
+}
+
+/* Start the menu lower for visual balance (rail + full modes) */
+:root {
+  --sidebar-offset: clamp(20px, 9vh, 80px);      /* expanded */
+  --sidebar-offset-rail: clamp(12px, 7vh, 56px); /* collapsed (icon-only) */
+}
+
+[data-sidebar="content"] {
+  padding-top: var(--sidebar-offset);
+}
+
+[data-collapsible="icon"] [data-sidebar="content"] {
+  padding-top: var(--sidebar-offset-rail);
+}

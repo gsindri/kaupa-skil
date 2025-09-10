@@ -26,6 +26,7 @@ import { usePermissions } from "@/hooks/usePermissions"
 import { HeildaLogo } from "@/components/branding/HeildaLogo"
 import { Separator } from "@/components/ui/separator"
 import { useSidebar } from "@/components/ui/use-sidebar"
+import { cn } from "@/lib/utils"
 
 // Core workflow pages
 const coreItems = [
@@ -99,7 +100,13 @@ export function EnhancedAppSidebar() {
   return (
     <nav aria-label="Primary" id="app-sidebar" className="h-full">
         {/* Remove hardcoded w-64 class to allow dynamic width management */}
-        <Sidebar collapsible="icon">
+        <Sidebar
+          collapsible="icon"
+          className={cn(
+            "fixed left-0 top-0 h-svh rounded-none border-t-0",
+            "will-change-[width]",
+          )}
+        >
         <SidebarHeader>
           <NavLink
             to="/"
@@ -112,7 +119,7 @@ export function EnhancedAppSidebar() {
             <HeildaLogo className="h-7 w-auto" />
           </NavLink>
         </SidebarHeader>
-        <SidebarContent>
+        <SidebarContent className="pt-[var(--sidebar-offset)] data-[collapsible=icon]:pt-[var(--sidebar-offset-rail)]">
           <SidebarGroup className="p-2 pb-0">
             <SidebarGroupContent>
               <SidebarMenu className="gap-2">
