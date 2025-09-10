@@ -7,8 +7,7 @@ import { useCatalogProducts } from '@/hooks/useCatalogProducts'
 import { useOrgCatalog } from '@/hooks/useOrgCatalog'
 import { useDebounce } from '@/hooks/useDebounce'
 import { CatalogTable } from '@/components/catalog/CatalogTable'
-import { ProductCard } from '@/components/catalog/ProductCard'
-import { ProductCardSkeleton } from '@/components/catalog/ProductCardSkeleton'
+import { CatalogGrid } from '@/components/catalog/CatalogGrid'
 import { HeroSearchInput } from '@/components/search/HeroSearchInput'
 import { FilterChip } from '@/components/ui/filter-chip'
 import { TriStateFilterChip } from '@/components/ui/tri-state-chip'
@@ -180,11 +179,8 @@ export default function CatalogPage() {
     direction: 'asc' | 'desc'
   } | null>({ key: 'name', direction: 'asc' })
   const debouncedSearch = useDebounce(filters.search ?? '', 300)
-  const sentinelRef = useRef<HTMLDivElement | null>(null)
-  const gridRef = useRef<HTMLDivElement>(null)
   const [showFilters, setShowFilters] = useState(true)
   const [focusedFacet, setFocusedFacet] = useState<keyof FacetFilters | null>(null)
-  const [cols, setCols] = useState(1)
   const stringifiedFilters = useMemo(() => JSON.stringify(filters), [filters])
   const [bannerDismissed, setBannerDismissed] = useState(false)
   const headerRef = useRef<HTMLDivElement>(null)
@@ -352,27 +348,6 @@ export default function CatalogPage() {
     updateParam('pack', packValue)
     if (changed) setSearchParams(params, { replace: true })
   }, [filters, searchParams, setSearchParams])
-
-  useEffect(() => {
-    const updateCols = () => {
-      if (!gridRef.current) return
-      const width = gridRef.current.getBoundingClientRect().width
-      let max = 4
-      if (width >= 1800) max = 6
-      const cols = Math.min(max, Math.floor(width / 320))
-      setCols(cols)
-    }
-
-    if (view === 'grid') {
-      const observer = new ResizeObserver(updateCols)
-      const el = gridRef.current
-      if (el) observer.observe(el)
-      updateCols()
-      return () => {
-        if (el) observer.unobserve(el)
-      }
-    }
-  }, [view])
 
   useEffect(() => {
     setProducts([])
@@ -624,21 +599,6 @@ export default function CatalogPage() {
     })
     return sorted
   }, [products, tableSort])
-
-  useEffect(() => {
-    const sentinel = sentinelRef.current
-    if (!sentinel || !nextCursor) return
-    const observer = new IntersectionObserver(entries => {
-      const [entry] = entries
-      if (entry.isIntersecting) {
-        loadMore()
-      }
-    })
-    observer.observe(sentinel)
-    return () => {
-      observer.disconnect()
-    }
-  }, [nextCursor, loadMore])
 
   const toggleSelect = (id: string) => {
     setSelected(prev =>
@@ -995,27 +955,13 @@ export default function CatalogPage() {
             />
         </>
       ) : (
-        <div
-          ref={gridRef}
-          className="grid justify-center justify-items-center gap-6"
-          style={{ gridTemplateColumns: `repeat(${cols}, minmax(260px,1fr))` }}
-        >
-          {sortedProducts.map(product => (
-            <ProductCard
-              key={product.catalog_id}
-              product={product}
-              showPrice
-              onAdd={() => handleAdd(product)}
-              isAdding={addingId === product.catalog_id}
-            />
-          ))}
-          {loadingMore &&
-            Array.from({ length: 3 }).map((_, i) => (
-              <ProductCardSkeleton key={`skeleton-${i}`} />
-            ))}
-        </div>
+        <CatalogGrid
+          products={sortedProducts}
+          onAddToCart={handleAdd}
+          onNearEnd={nextCursor ? loadMore : undefined}
+          showPrice
+        />
       )}
-      <div ref={sentinelRef} />
     </AppLayout>
   )
 }
