@@ -42,9 +42,9 @@ export const SearchInput = React.forwardRef<HTMLInputElement, SearchInputProps>(
           className="absolute left-3 top-1/2 -translate-y-1/2 cursor-text text-slate-400"
         >
           {isLoading ? (
-            <div className="h-4 w-4 animate-spin rounded-full border-2 border-muted border-t-primary" />
+            <div className="h-5 w-5 animate-spin rounded-full border-2 border-muted border-t-primary" />
           ) : (
-            <Search className="h-4 w-4" />
+            <Search className="h-5 w-5" strokeWidth={1.75} />
           )}
         </button>
         <input
@@ -59,7 +59,7 @@ export const SearchInput = React.forwardRef<HTMLInputElement, SearchInputProps>(
           onKeyDown={onKeyDown}
           placeholder="Search products, suppliers, orders..."
           className={cn(
-            'h-10 w-full rounded-full bg-white/95 text-slate-800 ring-1 ring-white/10 pl-10 pr-9 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-400/70',
+            'h-11 w-full rounded-full bg-white/95 text-slate-800 ring-1 ring-white/10 pl-11 pr-10 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-400/70',
             expanded && 'shadow-md'
           )}
         />

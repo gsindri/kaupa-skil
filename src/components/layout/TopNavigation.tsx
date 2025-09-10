@@ -1,7 +1,6 @@
 
 import React, { useEffect, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
-import { HelpCircle, ChevronDown } from 'lucide-react'
+import { HelpCircle, ChevronDown, Menu } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,7 +14,6 @@ import { useAuth } from '@/contexts/useAuth'
 import { useCart } from '@/contexts/useBasket'
 import MiniCart from '@/components/cart/MiniCart'
 import { LanguageSwitcher } from './LanguageSwitcher'
-import { HeildaLogo } from '@/components/branding/HeildaLogo'
 import { useSidebar } from '@/components/ui/use-sidebar'
 import { cn } from '@/lib/utils'
 import { HeaderSearch } from '@/components/search/HeaderSearch'
@@ -81,49 +79,44 @@ export function TopNavigation() {
       )}
     >
       <div className="pointer-events-none memory-stripe absolute inset-x-0 top-0" />
-      <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
-        <div className={cn('flex items-center gap-3', scrolled ? 'h-[52px]' : 'h-14', 'transition-[height] duration-[var(--dur-base)] ease-[var(--ease-snap)] motion-reduce:transition-none')}>
-          <div className="flex items-center gap-2 min-w-0">
+      <div
+        className="w-full"
+        style={{ paddingLeft: 'calc(var(--header-left) + 16px)', paddingRight: '16px' }}
+      >
+        <div
+          className={cn(
+            'flex items-center gap-3',
+            scrolled ? 'h-[52px]' : 'h-14',
+            'transition-[height] duration-[var(--dur-base)] ease-[var(--ease-snap)] motion-reduce:transition-none'
+          )}
+        >
+          <div className="flex items-center gap-3 min-w-0">
             <button
-              className="rounded-2 bg-white/5 hover:bg-white/10 ring-1 ring-white/10 p-2 transition-colors duration-[var(--dur-fast)] ease-[var(--ease-snap)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-accent)] motion-reduce:transition-none"
+              className="flex h-11 w-11 items-center justify-center rounded-3 bg-white/5 hover:bg-white/10 ring-1 ring-white/10 transition-colors duration-[var(--dur-fast)] ease-[var(--ease-snap)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-accent)] motion-reduce:transition-none"
               aria-label="Toggle sidebar"
               aria-controls="app-sidebar"
               aria-expanded={sidebarOpen}
               onClick={toggleSidebar}
             >
-              <span aria-hidden>☰</span>
+              <Menu className="icon-20" strokeWidth={1.75} />
             </button>
-            <Link
-              to="/"
-              className={cn(
-                'flex items-center transition-[opacity,transform] duration-[var(--dur-fast)] ease-[var(--ease-snap)] will-change-[transform,opacity] motion-reduce:transition-none motion-reduce:transform-none',
-                sidebarOpen
-                  ? 'opacity-0 translate-y-1 scale-95 pointer-events-none ease-out'
-                  : 'opacity-100 translate-y-0 scale-100 delay-[40ms] ease-in-out'
-              )}
-              aria-label="Deilda home"
-              aria-hidden={sidebarOpen}
-              tabIndex={sidebarOpen ? -1 : 0}
-            >
-              <HeildaLogo className="h-6 w-auto" />
-            </Link>
             <TenantSwitcher />
           </div>
 
-          <div className="flex-1 min-w-[280px]">
+          <div className="flex-1 min-w-[200px] md:min-w-[520px] max-w-[1040px]">
             <HeaderSearch ref={searchRef} />
           </div>
 
-          <nav aria-label="Global actions" className="flex items-center gap-2">
+          <nav aria-label="Global actions" className="flex items-center gap-3">
             <DropdownMenu open={helpOpen} onOpenChange={setHelpOpen} modal={false}>
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-10 px-3 rounded-2 bg-white/5 hover:bg-white/10 ring-1 ring-white/10 focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)]"
+                  className="h-11 px-3 rounded-3 bg-white/5 hover:bg-white/10 ring-1 ring-white/10 focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)]"
                 >
-                  <HelpCircle className="icon-20" />
-                  <span className="hidden sm:inline ml-2">Help</span>
+                  <HelpCircle className="icon-20" strokeWidth={1.75} />
+                  <span className="hidden xl:inline ml-2">Help</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent
@@ -144,7 +137,7 @@ export function TopNavigation() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-10 px-2 rounded-2 bg-white/5 hover:bg-white/10 ring-1 ring-white/10 flex items-center space-x-2 focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)]"
+                  className="h-11 px-3 rounded-3 bg-white/5 hover:bg-white/10 ring-1 ring-white/10 flex items-center space-x-2 focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)]"
                   disabled={isBusy}
                 >
                   <div className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center">
@@ -155,7 +148,7 @@ export function TopNavigation() {
                     )}
                   </div>
                   <span className="hidden sm:inline font-medium">{displayName}</span>
-                  <ChevronDown className="icon-18" />
+                  <ChevronDown className="icon-20" strokeWidth={1.75} />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent

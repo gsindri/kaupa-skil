@@ -71,14 +71,14 @@ export function MiniCart() {
           id="mini-cart-button"
           variant="ghost"
           size="sm"
-          className="relative inline-flex items-center gap-2 rounded-3 bg-[var(--button-primary)] hover:bg-[var(--button-primary-hover)] px-3 h-10 text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-[var(--brand-accent)] ui-numeric duration-[var(--dur-fast)] ease-[var(--ease-snap)] motion-reduce:transition-none"
+          className="relative inline-flex items-center gap-2 rounded-3 bg-[var(--button-primary)] hover:bg-[var(--button-primary-hover)] px-3 h-11 text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-[var(--brand-accent)] ui-numeric duration-[var(--dur-fast)] ease-[var(--ease-snap)] motion-reduce:transition-none"
           onClick={e => {
             e.preventDefault()
             setOpen(false)
             setIsDrawerOpen(true)
           }}
         >
-          <ShoppingCart className="icon-20" />
+          <ShoppingCart className="icon-20" strokeWidth={1.75} />
           <span className="font-semibold">Cart</span>
           {cartCount > 0 && (
             <span

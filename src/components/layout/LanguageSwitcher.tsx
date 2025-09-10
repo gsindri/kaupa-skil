@@ -1,7 +1,7 @@
 import React from 'react'
 import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import { ChevronDown } from 'lucide-react'
+import { ChevronDown, Languages } from 'lucide-react'
 import { useLanguage } from '@/contexts/LanguageProvider'
 
 export function LanguageSwitcher() {
@@ -13,11 +13,12 @@ export function LanguageSwitcher() {
         <Button
           variant="ghost"
           size="sm"
-          className="h-10 px-3 rounded-xl bg-white/6 hover:bg-white/10 ring-1 ring-white/10 text-slate-100 flex items-center focus-visible:ring-2 focus-visible:ring-cyan-400/70"
+          className="h-11 px-3 rounded-3 bg-white/5 hover:bg-white/10 ring-1 ring-white/10 text-slate-100 flex items-center focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)]"
           aria-label="Language"
         >
-          <span>{language === 'is' ? 'Icelandic' : 'English'}</span>
-          <ChevronDown className="ml-1 h-4 w-4" />
+          <Languages className="icon-20" strokeWidth={1.75} />
+          <span className="hidden lg:inline ml-2">{language === 'is' ? 'Icelandic' : 'English'}</span>
+          <ChevronDown className="hidden lg:inline ml-1 icon-20" strokeWidth={1.75} />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
