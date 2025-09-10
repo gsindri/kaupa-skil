@@ -28,7 +28,7 @@ export function AppLayout({ header, secondary, panelOpen = false, children }: Ap
 
       {/* Header */}
       <div
-        style={{ position: 'fixed', insetInlineStart: 'var(--rail-w)', insetInlineEnd: 0, top: 0, zIndex: 40 }}
+        style={{ position: 'fixed', insetInlineStart: 'var(--rail-w)', insetInlineEnd: 0, top: 0, zIndex: 50 }}
       >
         <TopNavigation />
         {header}
