@@ -13,7 +13,7 @@ export function LanguageSwitcher() {
         <Button
           variant="ghost"
           size="sm"
-          className="h-11 px-3 rounded-3 bg-white/5 hover:bg-white/10 ring-1 ring-white/10 text-slate-100 flex items-center focus-visible:outline-none focus-visible:ring-0 focus-visible:shadow-[0_0_0_2px_var(--brand-accent)]"
+          className="h-9 px-3 rounded-2xl bg-white/8 hover:bg-white/12 ring-1 ring-white/10 text-slate-100 flex items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#21D4D6]"
           aria-label="Language"
         >
           <Languages className="icon-20" strokeWidth={1.75} />

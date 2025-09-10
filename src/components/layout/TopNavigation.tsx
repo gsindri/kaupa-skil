@@ -70,120 +70,100 @@ export function TopNavigation() {
     <div
       role="banner"
       className={cn(
-        'relative z-50 text-[var(--text-on-dark)] bg-gradient-to-r from-[var(--brand-from)] via-[var(--brand-via)] to-[var(--brand-to)]',
+        'pt-[2px] h-[var(--chrome-h,56px)] px-3 sm:px-4 flex items-center gap-3 text-white',
         scrolled ? 'shadow-lg' : 'shadow-none',
-        'transition-[box-shadow,height] duration-base ease-snap motion-reduce:transition-none'
+        'transition-[box-shadow] duration-base ease-snap motion-reduce:transition-none'
       )}
     >
-      <div className="pointer-events-none memory-stripe absolute inset-x-0 top-0" />
-      <div
-        className="w-full"
-        style={{
-          paddingLeft: 'calc(var(--header-left) + 12px)',
-          paddingRight: '16px',
-          borderLeft: '1px solid rgba(255,255,255,0.06)'
-        }}
-      >
-        <div
-          className={cn(
-            'flex items-center',
-            scrolled ? 'h-[52px]' : 'h-14',
-            'transition-[height] duration-base ease-snap motion-reduce:transition-none'
-          )}
-        >
-          <div className="flex items-center gap-3 min-w-0">
-            <TenantSwitcher />
-          </div>
+      <TenantSwitcher />
 
-          <div className="flex-1 min-w-[200px] md:min-w-[520px] max-w-[1040px] ml-4">
-            <HeaderSearch ref={searchRef} />
-          </div>
-
-          <nav aria-label="Global actions" className="flex items-center gap-3 ml-4">
-            <DropdownMenu open={helpOpen} onOpenChange={setHelpOpen} modal={false}>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-11 px-3 rounded-3 bg-white/5 hover:bg-white/10 ring-1 ring-white/10 focus-visible:outline-none focus-visible:ring-0 focus-visible:shadow-[0_0_0_2px_var(--brand-accent)]"
-                >
-                  <HelpCircle className="icon-20" strokeWidth={1.75} />
-                  <span className="hidden xl:inline ml-2">Help</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                side="bottom"
-                sideOffset={8}
-                collisionPadding={8}
-                sticky="partial"
-                className="min-w-[200px]"
-              >
-                <DropdownMenuItem>Keyboard Shortcuts</DropdownMenuItem>
-                <DropdownMenuItem>Support</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            <LanguageSwitcher />
-            <button
-              type="button"
-              onClick={() => setIsDrawerOpen(true)}
-              className="relative inline-flex items-center gap-2 rounded-3 bg-[var(--button-primary)] hover:bg-[var(--button-primary-hover)] px-3 h-11 min-w-[84px] text-white shadow-sm focus-visible:outline-none focus-visible:ring-0 focus-visible:shadow-[0_0_0_2px_var(--brand-accent)] ui-numeric duration-fast ease-snap motion-reduce:transition-none"
-              aria-haspopup="dialog"
-              aria-expanded={isDrawerOpen}
-              aria-controls="cart-drawer"
-            >
-              <ShoppingCart className="icon-20" strokeWidth={1.75} />
-              <span className="font-semibold">Cart</span>
-              {cartCount > 0 && (
-                <span
-                  aria-live="polite"
-                  className="ml-1 rounded-pill bg-[var(--brand-accent)] text-slate-900 text-xs px-2 py-0.5 min-w-[1.25rem] text-center ui-numeric"
-                >
-                  {cartCount}
-                </span>
-              )}
-            </button>
-            <DropdownMenu modal={false}>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-11 px-3 rounded-3 bg-white/5 hover:bg-white/10 ring-1 ring-white/10 flex items-center space-x-2 focus-visible:outline-none focus-visible:ring-0 focus-visible:shadow-[0_0_0_2px_var(--brand-accent)]"
-                  disabled={isBusy}
-                >
-                  <div className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center">
-                    {isBusy ? (
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[var(--brand-accent)]" />
-                    ) : (
-                      <span className="text-sm font-medium text-[var(--text-on-dark)]">{userInitial}</span>
-                    )}
-                  </div>
-                  <span className="hidden sm:inline font-medium">{displayName}</span>
-                  <ChevronDown className="icon-20" strokeWidth={1.75} />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                side="bottom"
-                sideOffset={8}
-                collisionPadding={8}
-                sticky="partial"
-                className="min-w-[200px]"
-              >
-                <DropdownMenuItem>
-                  <div className="flex flex-col">
-                    <span className="font-medium">{displayName}</span>
-                    <span className="text-sm text-muted-foreground">{displayEmail}</span>
-                  </div>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>Profile Settings</DropdownMenuItem>
-                <DropdownMenuItem>Organization Settings</DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleSignOut}>Sign Out</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </nav>
-        </div>
+      <div className="flex-1 min-w-[200px] md:min-w-[520px] max-w-[1040px]">
+        <HeaderSearch ref={searchRef} />
       </div>
+
+      <nav aria-label="Global actions" className="flex items-center gap-2">
+        <DropdownMenu open={helpOpen} onOpenChange={setHelpOpen} modal={false}>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-9 px-3 rounded-2xl bg-white/8 hover:bg-white/12 ring-1 ring-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#21D4D6]"
+            >
+              <HelpCircle className="icon-20" strokeWidth={1.75} />
+              <span className="hidden xl:inline ml-2">Help</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            side="bottom"
+            sideOffset={8}
+            collisionPadding={8}
+            sticky="partial"
+            className="min-w-[200px]"
+          >
+            <DropdownMenuItem>Keyboard Shortcuts</DropdownMenuItem>
+            <DropdownMenuItem>Support</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+        <LanguageSwitcher />
+        <button
+          type="button"
+          onClick={() => setIsDrawerOpen(true)}
+          className="relative inline-flex items-center gap-2 h-9 px-3 rounded-2xl bg-[var(--button-primary)] hover:bg-[var(--button-primary-hover)] text-white shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#21D4D6] ui-numeric duration-fast ease-snap motion-reduce:transition-none"
+          aria-haspopup="dialog"
+          aria-expanded={isDrawerOpen}
+          aria-controls="cart-drawer"
+        >
+          <ShoppingCart className="icon-20" strokeWidth={1.75} />
+          <span className="font-semibold">Cart</span>
+          {cartCount > 0 && (
+            <span
+              aria-live="polite"
+              className="ml-1 rounded-pill bg-[var(--brand-accent)] text-slate-900 text-xs px-2 py-0.5 min-w-[1.25rem] text-center ui-numeric"
+            >
+              {cartCount}
+            </span>
+          )}
+        </button>
+        <DropdownMenu modal={false}>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-9 px-2 rounded-2xl bg-white/8 hover:bg-white/12 ring-1 ring-white/10 flex items-center space-x-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#21D4D6]"
+              disabled={isBusy}
+            >
+              <div className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center">
+                {isBusy ? (
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[var(--brand-accent)]" />
+                ) : (
+                  <span className="text-sm font-medium text-[var(--text-on-dark)]">{userInitial}</span>
+                )}
+              </div>
+              <span className="hidden sm:inline font-medium">{displayName}</span>
+              <ChevronDown className="icon-20" strokeWidth={1.75} />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            side="bottom"
+            sideOffset={8}
+            collisionPadding={8}
+            sticky="partial"
+            className="min-w-[200px]"
+          >
+            <DropdownMenuItem>
+              <div className="flex flex-col">
+                <span className="font-medium">{displayName}</span>
+                <span className="text-sm text-muted-foreground">{displayEmail}</span>
+              </div>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem>Profile Settings</DropdownMenuItem>
+            <DropdownMenuItem>Organization Settings</DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={handleSignOut}>Sign Out</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </nav>
     </div>
   )
 }
