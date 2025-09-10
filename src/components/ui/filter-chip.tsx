@@ -4,7 +4,7 @@ import { cva } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const filterChipVariants = cva(
-  "inline-flex items-center rounded-full border px-3 py-1 text-sm font-medium transition-colors focus:outline-none cursor-pointer select-none border-input text-foreground data-[selected=true]:bg-primary data-[selected=true]:text-primary-foreground data-[selected=true]:border-primary"
+  "inline-flex h-7 items-center rounded-pill border px-3 text-sm font-medium transition-colors duration-[var(--dur-fast)] ease-[var(--ease-snap)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)] cursor-pointer select-none border-input text-foreground data-[selected=true]:bg-primary data-[selected=true]:text-primary-foreground data-[selected=true]:border-primary motion-reduce:transition-none"
 )
 
 export interface FilterChipProps

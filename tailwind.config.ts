@@ -26,19 +26,27 @@ export default {
                         transitionDuration: {
                                 120: '120ms',
                         },
-                        colors: {
-                                border: 'hsl(var(--border))',
-                                input: 'hsl(var(--input))',
-                                ring: 'hsl(var(--ring))',
-                                background: 'hsl(var(--background))',
-                                foreground: 'hsl(var(--foreground))',
-                                sidebar: 'hsl(var(--sidebar))',
-                                'sidebar-foreground': 'hsl(var(--sidebar-foreground))',
-                                'sidebar-muted-foreground': 'hsl(var(--sidebar-muted-foreground))',
-                                'sidebar-border': 'hsl(var(--sidebar-border))',
-                                'sidebar-accent': 'hsl(var(--sidebar-accent))',
-                                'sidebar-accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
-                                'sidebar-ring': 'hsl(var(--sidebar-ring))',
+                       colors: {
+                               border: 'hsl(var(--border))',
+                               input: 'hsl(var(--input))',
+                               ring: 'hsl(var(--ring))',
+                               background: 'hsl(var(--background))',
+                               foreground: 'hsl(var(--foreground))',
+                               sidebar: 'hsl(var(--sidebar))',
+                               'sidebar-foreground': 'hsl(var(--sidebar-foreground))',
+                               'sidebar-muted-foreground': 'hsl(var(--sidebar-muted-foreground))',
+                               'sidebar-border': 'hsl(var(--sidebar-border))',
+                               'sidebar-accent': 'hsl(var(--sidebar-accent))',
+                               'sidebar-accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
+                               'sidebar-ring': 'hsl(var(--sidebar-ring))',
+                               'brand-from': 'var(--brand-from)',
+                               'brand-via': 'var(--brand-via)',
+                               'brand-to': 'var(--brand-to)',
+                               'brand-accent': 'var(--brand-accent)',
+                               'text-on-dark': 'var(--text-on-dark)',
+                               'text-subtle': 'var(--text-subtle)',
+                               'button-primary': 'var(--button-primary)',
+                               'button-primary-hover': 'var(--button-primary-hover)',
                                 primary: {
                                         DEFAULT: 'hsl(var(--primary))',
                                         foreground: 'hsl(var(--primary-foreground))',
@@ -110,11 +118,16 @@ export default {
 				'table-row-hover': 'hsl(var(--table-row-hover))',
 				'table-border': 'hsl(var(--table-border))',
 			},
-			borderRadius: {
-				lg: 'var(--radius)',
-				md: 'calc(var(--radius) - 2px)',
-				sm: 'calc(var(--radius) - 4px)'
-			},
+                        borderRadius: {
+                                lg: 'var(--radius)',
+                                md: 'calc(var(--radius) - 2px)',
+                                sm: 'calc(var(--radius) - 4px)',
+                                1: 'var(--radius-1)',
+                                2: 'var(--radius-2)',
+                                3: 'var(--radius-3)',
+                                4: 'var(--radius-4)',
+                                pill: 'var(--radius-pill)'
+                        },
 			keyframes: {
 				'accordion-down': {
 					from: {

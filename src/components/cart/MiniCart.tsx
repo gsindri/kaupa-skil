@@ -71,19 +71,19 @@ export function MiniCart() {
           id="mini-cart-button"
           variant="ghost"
           size="sm"
-          className="relative inline-flex items-center gap-2 rounded-xl bg-[#0B5BD3] hover:bg-[#0A53C1] px-3 h-10 text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-cyan-400/70 ui-numeric"
+          className="relative inline-flex items-center gap-2 rounded-3 bg-[var(--button-primary)] hover:bg-[var(--button-primary-hover)] px-3 h-10 text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-[var(--brand-accent)] ui-numeric duration-[var(--dur-fast)] ease-[var(--ease-snap)] motion-reduce:transition-none"
           onClick={e => {
             e.preventDefault()
             setOpen(false)
             setIsDrawerOpen(true)
           }}
         >
-          <ShoppingCart className="h-5 w-5" />
+          <ShoppingCart className="icon-20" />
           <span className="font-semibold">Cart</span>
           {cartCount > 0 && (
             <span
               aria-live="polite"
-              className="ml-1 rounded-full bg-cyan-400 text-slate-900 text-xs px-2 py-0.5 min-w-[1.25rem] text-center ui-numeric"
+              className="ml-1 rounded-pill bg-[var(--brand-accent)] text-slate-900 text-xs px-2 py-0.5 min-w-[1.25rem] text-center ui-numeric"
             >
               {cartCount}
             </span>
@@ -91,7 +91,7 @@ export function MiniCart() {
         </Button>
       </PopoverTrigger>
       <PopoverContent
-        className="w-[min(90vw,360px)] rounded-xl border bg-background shadow-md overflow-hidden"
+        className="w-[min(90vw,360px)] rounded-4 border bg-background shadow-md overflow-hidden"
         side="bottom"
         sideOffset={8}
         collisionPadding={8}

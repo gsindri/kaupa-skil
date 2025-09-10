@@ -16,26 +16,26 @@ const MAP: Record<
   { icon?: ReactNode; label: string; className: string; aria: string }
 > = {
   IN_STOCK: {
-    icon: <Check className="h-3 w-3" aria-hidden="true" />,
+    icon: <Check className="icon-16" aria-hidden="true" />,
     label: 'In',
-    className: 'bg-green-100 text-green-700',
+    className: 'badge badge--in',
     aria: 'In stock',
   },
   LOW_STOCK: {
-    icon: <AlertTriangle className="h-3 w-3" aria-hidden="true" />,
+    icon: <AlertTriangle className="icon-16" aria-hidden="true" />,
     label: 'Low',
-    className: 'bg-amber-100 text-amber-700',
+    className: 'badge badge--in',
     aria: 'Low stock',
   },
   OUT_OF_STOCK: {
-    icon: <Slash className="h-3 w-3" aria-hidden="true" />,
+    icon: <Slash className="icon-16" aria-hidden="true" />,
     label: 'Out',
-    className: 'bg-red-100 text-red-700',
+    className: 'badge badge--out',
     aria: 'Out of stock',
   },
   UNKNOWN: {
     label: '—',
-    className: 'bg-muted text-muted-foreground',
+    className: 'badge badge--unknown',
     aria: 'Availability unknown',
   },
 }
@@ -48,13 +48,13 @@ const AvailabilityBadge = forwardRef<HTMLSpanElement, AvailabilityBadgeProps>(
 
   let iconNode: ReactNode = base.icon ?? null
   let label: string | null = base.label
-  let className = base.className
+  let variantClass = base.className
   let aria = base.aria
 
   if (isChecking) {
-    iconNode = <Loader2 className="h-3 w-3 animate-spin" aria-hidden="true" />
+    iconNode = <Loader2 className="icon-16 animate-spin" aria-hidden="true" />
     label = null
-    className = 'bg-muted text-muted-foreground'
+    variantClass = 'badge badge--unknown'
     aria = 'Checking availability'
   }
 
@@ -64,10 +64,7 @@ const AvailabilityBadge = forwardRef<HTMLSpanElement, AvailabilityBadgeProps>(
   return (
     <span
       ref={ref}
-      className={cn(
-        'inline-flex items-center justify-center gap-1 px-2.5 h-6 min-w-[44px] rounded-full text-xs font-medium leading-none cursor-default',
-        className,
-      )}
+      className={cn(variantClass, 'ui-numeric')}
       aria-label={ariaLabel}
       tabIndex={tabIndex}
     >

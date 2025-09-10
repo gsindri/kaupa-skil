@@ -3,6 +3,7 @@
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
 
+@import './styles/globals.css';
 @import './styles/design-system.css';
 
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&display=swap');
@@ -26,9 +27,6 @@ h1{ font-size: var(--fs-h1); } h2{ font-size: var(--fs-h2); } h3{ font-size: var
 /* UI text */
 p,li,button,input,select,textarea,table { font-size: var(--fs-body); }
 .meta, small { font-size: var(--fs-meta); opacity:.9; }
-
-/* Numbers align nicely in tables/badges */
-.ui-numeric { font-variant-numeric: tabular-nums; }
 
 /* Import our comprehensive design system */
 
