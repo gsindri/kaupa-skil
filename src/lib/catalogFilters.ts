@@ -1,5 +1,7 @@
 export type Tri = -1 | 0 | 1 // exclude, neutral, include
 
+export type TriState = 'off' | 'include' | 'exclude'
+
 export interface CatalogFilters {
   q?: string
   availability?: 'all' | 'in_stock' | 'preorder'
@@ -26,4 +28,15 @@ export function toggleTri(current: Tri | undefined, mode: 'include'|'exclude'|'c
   if (mode === 'include') return v === 1 ? 0 : 1
   if (mode === 'exclude') return v === -1 ? 0 : -1
   return v === 0 ? 1 : v === 1 ? -1 : 0
+}
+
+export function triStockToAvailability(tri: TriState): string[] | undefined {
+  switch (tri) {
+    case 'include':
+      return ['IN_STOCK']
+    case 'exclude':
+      return ['OUT_OF_STOCK']
+    default:
+      return undefined
+  }
 }

@@ -2,9 +2,11 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { shallow } from 'zustand/vanilla/shallow'
 import type { FacetFilters } from '@/services/catalog'
+import type { TriState } from '@/lib/catalogFilters'
+export type { TriState } from '@/lib/catalogFilters'
 
 // Zustand store managing catalog filter state. Utility helpers have been
-// separated into "@/utils/catalogFilters" to keep this module focused on state.
+// consolidated in "@/lib/catalogFilters" to keep this module focused on state.
 
 // Legacy types kept for backward compatibility with code that may import them
 export type AvailabilityFilter = 'in' | 'low' | 'out' | 'unknown'
@@ -23,7 +25,6 @@ export type SortOrder =
   | 'az'
   | 'recent'
 
-export type TriState = 'off' | 'include' | 'exclude'
 export type TriStock = TriState
 
 interface CatalogFiltersState {
