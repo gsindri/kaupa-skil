@@ -40,6 +40,7 @@ html, body, #root {
 /* Set a fallback header height so content can offset correctly */
 :root {
   --header-h: 56px;
+  --chrome-h: var(--header-h);
   --sidebar-w: 256px; /* expanded width */
   --sidebar-rail-w: 48px; /* collapsed rail width */
   --header-left: 0px; /* computed from sidebar width */
@@ -54,7 +55,7 @@ html, body, #root {
 
 body {
   @apply m-0 p-0;
-  scroll-padding-top: var(--header-h);
+  scroll-padding-top: var(--chrome-h);
 }
 
 #root {
