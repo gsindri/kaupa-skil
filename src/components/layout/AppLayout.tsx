@@ -1,33 +1,33 @@
-import React, { ReactNode } from 'react'
+import React from 'react'
 import { Outlet } from 'react-router-dom'
-import { FullWidthLayout } from './FullWidthLayout'
-import { cn } from '@/lib/utils'
+import { CompactNavRail } from './CompactNavRail'
+import { TopNavigation } from './TopNavigation'
+import { CartDrawer } from '@/components/cart/CartDrawer'
 
-interface AppLayoutProps {
-  header?: ReactNode
-  secondary?: ReactNode
-  panelOpen?: boolean
-  children?: ReactNode
-}
-
-export function AppLayout({ header, secondary, panelOpen = false, children }: AppLayoutProps) {
+export function AppLayout({ header, children }: { header?: React.ReactNode; children?: React.ReactNode }) {
   return (
-    <FullWidthLayout header={header}>
-      <div className="flex">
-        {secondary && (
-          <aside
-            className={cn(
-              'transition-all overflow-hidden border-r bg-background',
-              panelOpen ? 'w-[300px]' : 'w-0'
-            )}
-            aria-label="Secondary"
-          >
-            {secondary}
-          </aside>
-        )}
-        <div className="flex-1 min-w-0">{children ?? <Outlet />}</div>
+    <>
+      <div className="min-h-dvh grid [grid-template-columns:var(--rail)_1fr] bg-[var(--surface)]">
+        <aside className="sticky top-0 h-dvh z-30 bg-[var(--brand-surface)] border-r border-white/10">
+          <CompactNavRail />
+        </aside>
+
+        <div className="relative">
+          <header id="catalogHeader" className="sticky top-0 z-40 shadow-none">
+            <div className="h-0.5 bg-[var(--brand-accent)]" />
+            <div className="bg-[var(--brand-surface)]">
+              <TopNavigation />
+              {header}
+            </div>
+          </header>
+
+          <main className="min-h-[calc(100dvh-var(--header))]">
+            {children ?? <Outlet />}
+          </main>
+        </div>
       </div>
-    </FullWidthLayout>
+      <CartDrawer />
+    </>
   )
 }
 

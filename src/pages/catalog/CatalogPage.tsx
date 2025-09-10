@@ -24,7 +24,8 @@ import {
 import { AnalyticsTracker } from '@/components/quick/AnalyticsTrackerUtils'
 import { ViewToggle } from '@/components/place-order/ViewToggle'
 import { LayoutDebugger } from '@/components/debug/LayoutDebugger'
-import AppLayout from '@/components/layout/AppLayout'
+import { CompactNavRail } from '@/components/layout/CompactNavRail'
+import { TopNavigation } from '@/components/layout/TopNavigation'
 import { useCatalogFilters, SortOrder, triStockToAvailability } from '@/state/catalogFilters'
 import type { TriState } from '@/state/catalogFilters'
 import { useCart } from '@/contexts/useBasket'
@@ -915,108 +916,116 @@ export default function CatalogPage() {
         : null
 
   return (
-    <AppLayout
-      header={
-        <FiltersBar
+    <div className="min-h-dvh grid [grid-template-columns:var(--rail)_var(--filters)_1fr] bg-[var(--surface)]">
+      <aside className="sticky top-0 h-dvh z-30 bg-[var(--brand-surface)] border-r border-white/10">
+        <CompactNavRail />
+      </aside>
+
+      <aside className="sticky top-[var(--header)] h-[calc(100dvh-var(--header))] overflow-auto border-r border-white/10 bg-background">
+        <CatalogFiltersPanel
           filters={filters}
-          setFilters={setFilters}
-          onlyWithPrice={onlyWithPrice}
-          setOnlyWithPrice={setOnlyWithPrice}
-          triStock={triStock}
-          setTriStock={setTriStock}
-          triSpecial={triSpecial}
-          setTriSpecial={setTriSpecial}
-          triSuppliers={triSuppliers}
-          setTriSuppliers={setTriSuppliers}
-          sortOrder={sortOrder}
-          setSortOrder={setSortOrder}
-          view={view}
-          setView={setView}
-          publicError={publicError}
-          orgError={orgError}
-          showFilters={showFilters}
-          setShowFilters={setShowFilters}
+          onChange={setFilters}
           focusedFacet={focusedFacet}
-          setFocusedFacet={setFocusedFacet}
-          onLockChange={handleLockChange}
         />
-      }
-      secondary={
-        showFilters ? (
-          <div id="catalog-filters-panel">
-            <CatalogFiltersPanel
+      </aside>
+
+      <section className="relative">
+        <header id="catalogHeader" className="sticky top-0 z-40 shadow-none">
+          <div className="h-0.5 bg-[var(--brand-accent)]" />
+          <div ref={headerRef} className="bg-[var(--brand-surface)]">
+            <TopNavigation />
+            <FiltersBar
               filters={filters}
-              onChange={setFilters}
+              setFilters={setFilters}
+              onlyWithPrice={onlyWithPrice}
+              setOnlyWithPrice={setOnlyWithPrice}
+              triStock={triStock}
+              setTriStock={setTriStock}
+              triSpecial={triSpecial}
+              setTriSpecial={setTriSpecial}
+              triSuppliers={triSuppliers}
+              setTriSuppliers={setTriSuppliers}
+              sortOrder={sortOrder}
+              setSortOrder={setSortOrder}
+              view={view}
+              setView={setView}
+              publicError={publicError}
+              orgError={orgError}
+              showFilters={showFilters}
+              setShowFilters={setShowFilters}
               focusedFacet={focusedFacet}
+              setFocusedFacet={setFocusedFacet}
+              onLockChange={handleLockChange}
             />
           </div>
-        ) : null
-      }
-      panelOpen={showFilters}
-    >
-      {/* eslint-disable-next-line no-constant-binary-expression */}
-      {false && <LayoutDebugger show />}
+        </header>
 
-      {view === 'list' ? (
-        <>
-            {hideConnectPill && !bannerDismissed && (
-              <Alert className="mb-4">
-                <AlertDescription className="flex items-center justify-between">
-                  Connect suppliers to unlock prices.
-                  <button
-                    type="button"
-                    aria-label="Dismiss"
-                    onClick={() => setBannerDismissed(true)}
-                    className="ml-2"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                </AlertDescription>
-              </Alert>
-            )}
-            {bulkMode && (
-              <div className="sticky top-0 z-20 flex items-center justify-between border-b bg-background px-4 py-2 text-sm">
-                <span>{selected.length} selected</span>
-                <Button variant="ghost" onClick={() => { setBulkMode(false); setSelected([]) }}>
-                  Done
-                </Button>
-              </div>
-            )}
-            <CatalogTable
-              products={sortedProducts}
-              selected={selected}
-              onSelect={toggleSelect}
-              onSelectAll={handleSelectAll}
-              sort={tableSort}
-              onSort={handleSort}
-              filters={filters}
-              onFilterChange={handleFilterChange}
-              isBulkMode={bulkMode}
-            />
-        </>
-      ) : (
-        <div
-          ref={gridRef}
-          className="grid justify-center justify-items-center gap-6"
-          style={{ gridTemplateColumns: `repeat(${cols}, minmax(260px,1fr))` }}
-        >
-          {sortedProducts.map(product => (
-            <ProductCard
-              key={product.catalog_id}
-              product={product}
-              showPrice
-              onAdd={() => handleAdd(product)}
-              isAdding={addingId === product.catalog_id}
-            />
-          ))}
-          {loadingMore &&
-            Array.from({ length: 3 }).map((_, i) => (
-              <ProductCardSkeleton key={`skeleton-${i}`} />
-            ))}
-        </div>
-      )}
-      <div ref={sentinelRef} />
-    </AppLayout>
+        <main className="min-h-[calc(100dvh-var(--header))]">
+          {/* eslint-disable-next-line no-constant-binary-expression */}
+          {false && <LayoutDebugger show />}
+
+          {view === 'list' ? (
+            <>
+              {hideConnectPill && !bannerDismissed && (
+                <Alert className="mb-4">
+                  <AlertDescription className="flex items-center justify-between">
+                    Connect suppliers to unlock prices.
+                    <button
+                      type="button"
+                      aria-label="Dismiss"
+                      onClick={() => setBannerDismissed(true)}
+                      className="ml-2"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </AlertDescription>
+                </Alert>
+              )}
+              {bulkMode && (
+                <div className="sticky top-0 z-20 flex items-center justify-between border-b bg-background px-4 py-2 text-sm">
+                  <span>{selected.length} selected</span>
+                  <Button variant="ghost" onClick={() => { setBulkMode(false); setSelected([]) }}>
+                    Done
+                  </Button>
+                </div>
+              )}
+              <CatalogTable
+                products={sortedProducts}
+                selected={selected}
+                onSelect={toggleSelect}
+                onSelectAll={handleSelectAll}
+                sort={tableSort}
+                onSort={handleSort}
+                filters={filters}
+                onFilterChange={handleFilterChange}
+                isBulkMode={bulkMode}
+              />
+            </>
+          ) : (
+            <div
+              ref={gridRef}
+              className="grid justify-center justify-items-center gap-6"
+              style={{ gridTemplateColumns: `repeat(${cols}, minmax(260px,1fr))` }}
+            >
+              {sortedProducts.map(product => (
+                <ProductCard
+                  key={product.catalog_id}
+                  product={product}
+                  showPrice
+                  onAdd={() => handleAdd(product)}
+                  isAdding={addingId === product.catalog_id}
+                />
+              ))}
+              {loadingMore &&
+                Array.from({ length: 3 }).map((_, i) => (
+                  <ProductCardSkeleton key={`skeleton-${i}`} />
+                ))}
+            </div>
+          )}
+          <div ref={sentinelRef} />
+        </main>
+      </section>
+    </div>
   )
 }
 

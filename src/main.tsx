@@ -1,7 +1,8 @@
 import React from "react"
 import { createRoot } from "react-dom/client"
 import App from "./App"
-import "./index.css"
+import "./styles/globals.css"
+import "./styles/tokens.css"
 import { stopPerformanceLogging } from "./lib/performance"
 
 // Simple error boundary so crashes render instead of blank screen
