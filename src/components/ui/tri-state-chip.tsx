@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { cn } from '@/lib/utils'
-import type { TriState } from '@/state/catalogFilters'
+import type { TriState } from '@/state/catalogFiltersStore'
 
 interface TriStateFilterChipProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement> {

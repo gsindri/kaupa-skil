@@ -3,6 +3,9 @@ import { persist } from 'zustand/middleware'
 import { shallow } from 'zustand/vanilla/shallow'
 import type { FacetFilters } from '@/services/catalog'
 
+// Zustand store managing catalog filter state. Utility helpers have been
+// separated into "@/utils/catalogFilters" to keep this module focused on state.
+
 // Legacy types kept for backward compatibility with code that may import them
 export type AvailabilityFilter = 'in' | 'low' | 'out' | 'unknown'
 export type SortKey = 'name' | 'price' | 'availability'
@@ -71,8 +74,9 @@ export const useCatalogFilters = create<CatalogFiltersState>()(
         set(state => {
           // Only update if filters actually changed to prevent unnecessary re-renders
           const newFilters = { ...state.filters, ...f }
-          const hasChanges = Object.keys(f).some(key => 
-            JSON.stringify(state.filters[key as keyof FacetFilters]) !== JSON.stringify(newFilters[key as keyof FacetFilters])
+          const hasChanges = Object.keys(f).some(key =>
+            JSON.stringify(state.filters[key as keyof FacetFilters]) !==
+              JSON.stringify(newFilters[key as keyof FacetFilters])
           )
           return hasChanges ? { filters: newFilters } : state
         }),
@@ -89,17 +93,6 @@ export const useCatalogFilters = create<CatalogFiltersState>()(
     { name: 'catalogFilters' },
   ),
 )
-
-export function triStockToAvailability(tri: TriState): string[] | undefined {
-  switch (tri) {
-    case 'include':
-      return ['IN_STOCK']
-    case 'exclude':
-      return ['OUT_OF_STOCK']
-    default:
-      return undefined
-  }
-}
 
 export { shallow }
 

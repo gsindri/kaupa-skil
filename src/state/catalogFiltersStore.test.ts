@@ -1,5 +1,6 @@
 import { renderHook, act } from '@testing-library/react'
-import { useCatalogFilters, triStockToAvailability } from './catalogFilters'
+import { useCatalogFilters } from './catalogFiltersStore'
+import { triStockToAvailability } from '@/utils/catalogFilters'
 
 describe('catalogFilters store', () => {
   it('updates filters, sort and tri-state filters', () => {
