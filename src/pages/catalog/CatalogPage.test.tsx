@@ -44,7 +44,17 @@ vi.mock('@/components/ui/alert', () => ({
   Alert: ({ children }: any) => <div data-testid="alert">{children}</div>,
   AlertDescription: ({ children }: any) => <div>{children}</div>,
 }))
-vi.mock('lucide-react', () => ({ AlertCircle: () => <div />, Mic: () => <div />, X: () => <div /> }))
+vi.mock('lucide-react', () => ({
+  AlertCircle: () => <div />,
+  Mic: () => <div />,
+  X: () => <div />,
+  Home: () => <div />,
+  Search: () => <div />,
+  TrendingUp: () => <div />,
+  Package: () => <div />,
+  Heart: () => <div />,
+  History: () => <div />,
+}))
 vi.mock('@/contexts/useAuth', () => ({ useAuth: () => ({ profile: { tenant_id: 'org1' } }) }))
 // Use stable results for catalog hooks to avoid re-renders
 const catalogProductsResult = {
@@ -98,6 +108,7 @@ vi.mock('@/components/layout/AppLayout', () => ({
     </div>
   ),
 }))
+vi.mock('@/components/layout/TopNavigation', () => ({ TopNavigation: () => <div /> }))
 vi.mock('@/lib/analytics', () => ({
   logFilter: () => {},
   logFacetInteraction: () => {},

@@ -1,0 +1,14 @@
+:root{
+  --rail: 72px;
+  --filters: 288px;
+  --header: 56px;
+
+  /* Brand */
+  --brand-surface: linear-gradient(90deg, #0B1220, #0E1B35 40%, #0E2A5E 100%);
+  --brand-accent: #21D4D6;
+  --surface: #0b1220; /* page background under content (very subtle) */
+}
+
+/* Utility classes that both header and rail use */
+.bg-brand-surface { background: var(--brand-surface); }
+.memory-stripe { height: 2px; background: linear-gradient(90deg,#22E0E0,#12B6C5); }
