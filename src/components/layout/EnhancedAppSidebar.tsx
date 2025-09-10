@@ -103,7 +103,7 @@ export function EnhancedAppSidebar() {
         <Sidebar
           collapsible="icon"
           className={cn(
-            "fixed left-0 top-0 h-svh rounded-none border-t-0",
+            "fixed left-0 top-0 h-svh z-[80] rounded-none border-t-0",
             "will-change-[width]",
           )}
         >

@@ -44,7 +44,7 @@ html, body, #root {
   --chrome-h: clamp(40px, var(--header-h, 56px), 120px);
   --sidebar-w: 256px; /* expanded width */
   --sidebar-rail-w: 48px; /* collapsed rail width */
-  --header-left: 0px; /* computed from sidebar width */
+  --header-left: var(--sidebar-w); /* computed from sidebar width */
   --header-right: 0px; /* reserved for symmetry */
 }
 
@@ -52,6 +52,14 @@ html, body, #root {
   :root {
     --header-left: 0px;
   }
+}
+
+/* Header should start to the right of the sidebar */
+[data-app-header="true"] {
+  position: sticky;
+  top: 0;
+  left: var(--header-left);
+  width: calc(100% - var(--header-left));
 }
 
 body {

@@ -298,17 +298,20 @@
 /* Remove any accidental top border/stripe from the sidebar */
 [data-sidebar="sidebar"] {
   border-top: 0 !important;
+  box-shadow: none !important;
 }
 [data-sidebar="sidebar"]::before,
+[data-sidebar="sidebar"]::after,
 [data-sidebar="sidebar"] > .top-stripe,
 [data-sidebar="sidebar"] [data-top-stripe] {
+  content: none !important;
   display: none !important; /* hides any extra cyan stripe element if present */
 }
 
 /* Start the menu lower for visual balance (rail + full modes) */
 :root {
-  --sidebar-offset: clamp(20px, 9vh, 80px);      /* expanded */
-  --sidebar-offset-rail: clamp(12px, 7vh, 56px); /* collapsed (icon-only) */
+  --sidebar-offset: clamp(20px, 9vh, 84px);      /* expanded */
+  --sidebar-offset-rail: clamp(12px, 8vh, 64px); /* collapsed (icon-only) */
 }
 
 [data-sidebar="content"] {

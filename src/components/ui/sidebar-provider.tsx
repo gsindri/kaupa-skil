@@ -50,6 +50,12 @@ export function SidebarProvider({
     return () => window.removeEventListener("resize", checkIsMobile)
   }, [])
 
+  React.useEffect(() => {
+    const expanded = open && !isMobile
+    const v = expanded ? 'var(--sidebar-w)' : 'var(--sidebar-rail-w)'
+    document.documentElement.style.setProperty('--header-left', v)
+  }, [open, isMobile])
+
   const toggleSidebar = React.useCallback(() => {
     return isMobile ? setOpenMobile((prev) => !prev) : setOpen((prev) => !prev)
   }, [isMobile, setOpen, setOpenMobile])

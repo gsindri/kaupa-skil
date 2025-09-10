@@ -24,7 +24,7 @@
   --ease-snap:cubic-bezier(.22,1,.36,1);
 
   /* Header layout */
-  --header-left:0px;  /* set from sidebar width */
+  --header-left:var(--sidebar-w);  /* set from sidebar width */
 
   /* Action colors */
   --button-primary:#0B5BD3;
