@@ -71,7 +71,7 @@ export function MiniCart() {
           id="mini-cart-button"
           variant="ghost"
           size="sm"
-          className="relative inline-flex items-center gap-2 rounded-3 bg-[var(--button-primary)] hover:bg-[var(--button-primary-hover)] px-3 h-11 min-w-[84px] text-white shadow-sm focus-visible:outline-none focus-visible:ring-0 focus-visible:shadow-[0_0_0_2px_var(--brand-accent)] ui-numeric duration-[var(--dur-fast)] ease-[var(--ease-snap)] motion-reduce:transition-none"
+          className="relative inline-flex items-center gap-2 rounded-3 bg-[var(--button-primary)] hover:bg-[var(--button-primary-hover)] px-3 h-11 min-w-[84px] text-white shadow-sm focus-visible:outline-none focus-visible:ring-0 focus-visible:shadow-[0_0_0_2px_var(--brand-accent)] ui-numeric duration-fast ease-snap motion-reduce:transition-none"
           onClick={e => {
             e.preventDefault()
             setOpen(false)

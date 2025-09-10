@@ -25,6 +25,11 @@ export default {
                         },
                         transitionDuration: {
                                 120: '120ms',
+                                base: 'var(--dur-base)',
+                                fast: 'var(--dur-fast)',
+                        },
+                        transitionTimingFunction: {
+                                snap: 'var(--ease-snap)',
                         },
                        colors: {
                                border: 'hsl(var(--border))',
