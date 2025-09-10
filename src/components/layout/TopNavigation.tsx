@@ -1,6 +1,6 @@
 
 import React, { useEffect, useRef, useState } from 'react'
-import { HelpCircle, ChevronDown } from 'lucide-react'
+import { HelpCircle, ChevronDown, ShoppingCart } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,14 +12,14 @@ import { Button } from '@/components/ui/button'
 import { TenantSwitcher } from './TenantSwitcher'
 import { useAuth } from '@/contexts/useAuth'
 import { useCart } from '@/contexts/useBasket'
-import MiniCart from '@/components/cart/MiniCart'
 import { LanguageSwitcher } from './LanguageSwitcher'
 import { cn } from '@/lib/utils'
 import { HeaderSearch } from '@/components/search/HeaderSearch'
 
 export function TopNavigation() {
   const { profile, user, signOut, loading, profileLoading } = useAuth()
-  const { setIsDrawerOpen } = useCart()
+  const { setIsDrawerOpen, getTotalItems, isDrawerOpen } = useCart()
+  const cartCount = getTotalItems()
 
   const searchRef = useRef<HTMLInputElement>(null)
   const [helpOpen, setHelpOpen] = useState(false)
@@ -123,7 +123,25 @@ export function TopNavigation() {
               </DropdownMenuContent>
             </DropdownMenu>
             <LanguageSwitcher />
-            <MiniCart />
+            <button
+              type="button"
+              onClick={() => setIsDrawerOpen(true)}
+              className="relative inline-flex items-center gap-2 rounded-3 bg-[var(--button-primary)] hover:bg-[var(--button-primary-hover)] px-3 h-11 min-w-[84px] text-white shadow-sm focus-visible:outline-none focus-visible:ring-0 focus-visible:shadow-[0_0_0_2px_var(--brand-accent)] ui-numeric duration-fast ease-snap motion-reduce:transition-none"
+              aria-haspopup="dialog"
+              aria-expanded={isDrawerOpen}
+              aria-controls="cart-drawer"
+            >
+              <ShoppingCart className="icon-20" strokeWidth={1.75} />
+              <span className="font-semibold">Cart</span>
+              {cartCount > 0 && (
+                <span
+                  aria-live="polite"
+                  className="ml-1 rounded-pill bg-[var(--brand-accent)] text-slate-900 text-xs px-2 py-0.5 min-w-[1.25rem] text-center ui-numeric"
+                >
+                  {cartCount}
+                </span>
+              )}
+            </button>
             <DropdownMenu modal={false}>
               <DropdownMenuTrigger asChild>
                 <Button
