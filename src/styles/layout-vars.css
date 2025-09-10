@@ -6,5 +6,5 @@
 
   --z-rail: 40;
   --z-header: 50;  /* header above chrome */
-  --z-chrome: 30;  /* background gradient */
+  --z-chrome: 20;  /* gradient below header */
 }
