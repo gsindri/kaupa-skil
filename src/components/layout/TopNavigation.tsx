@@ -1,6 +1,6 @@
 
 import React, { useEffect, useRef, useState } from 'react'
-import { HelpCircle, ChevronDown, Menu } from 'lucide-react'
+import { HelpCircle, ChevronDown } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,15 +14,12 @@ import { useAuth } from '@/contexts/useAuth'
 import { useCart } from '@/contexts/useBasket'
 import MiniCart from '@/components/cart/MiniCart'
 import { LanguageSwitcher } from './LanguageSwitcher'
-import { useSidebar } from '@/components/ui/use-sidebar'
 import { cn } from '@/lib/utils'
 import { HeaderSearch } from '@/components/search/HeaderSearch'
 
 export function TopNavigation() {
   const { profile, user, signOut, loading, profileLoading } = useAuth()
   const { setIsDrawerOpen } = useCart()
-  const { open, openMobile, isMobile, toggleSidebar } = useSidebar()
-  const sidebarOpen = isMobile ? openMobile : open
 
   const searchRef = useRef<HTMLInputElement>(null)
   const [helpOpen, setHelpOpen] = useState(false)
@@ -95,15 +92,6 @@ export function TopNavigation() {
           )}
         >
           <div className="flex items-center gap-3 min-w-0">
-            <button
-              className="flex h-11 w-11 items-center justify-center rounded-3 bg-white/5 hover:bg-white/10 ring-1 ring-white/10 transition-colors duration-fast ease-snap focus-visible:outline-none focus-visible:ring-0 focus-visible:shadow-[0_0_0_2px_var(--brand-accent)] motion-reduce:transition-none"
-              aria-label="Toggle sidebar"
-              aria-controls="app-sidebar"
-              aria-expanded={sidebarOpen}
-              onClick={toggleSidebar}
-            >
-              <Menu className="icon-20" strokeWidth={1.75} />
-            </button>
             <TenantSwitcher />
           </div>
 
