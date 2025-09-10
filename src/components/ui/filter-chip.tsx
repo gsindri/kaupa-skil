@@ -1,4 +1,5 @@
 import * as React from "react"
+import { X } from "lucide-react"
 import { cva } from "class-variance-authority"
 
 import { cn } from "@/lib/utils"
@@ -11,25 +12,43 @@ export interface FilterChipProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   selected?: boolean
   onSelectedChange?: (selected: boolean) => void
+  /**
+   * Optional handler to show a small remove button when the chip is selected.
+   * When provided the remove button will appear next to the chip and invoke
+   * this callback when clicked.
+   */
+  onRemove?: () => void
   animation?: string
 }
 
 const FilterChip = React.forwardRef<HTMLButtonElement, FilterChipProps>(
   (
-    { selected = false, onSelectedChange, animation = "animate-chip-bounce", className, children, ...props },
+    { selected = false, onSelectedChange, onRemove, animation = "animate-chip-bounce", className, children, ...props },
     ref
   ) => (
-    <button
-      type="button"
-      ref={ref}
-      key={String(selected)}
-      data-selected={selected}
-      onClick={() => onSelectedChange?.(!selected)}
-      className={cn(filterChipVariants(), animation, className)}
-      {...props}
-    >
-      {children}
-    </button>
+    <div className="inline-flex items-center">
+      <button
+        type="button"
+        ref={ref}
+        key={String(selected)}
+        data-selected={selected}
+        onClick={() => onSelectedChange?.(!selected)}
+        className={cn(filterChipVariants(), animation, className)}
+        {...props}
+      >
+        {children}
+      </button>
+      {selected && onRemove && (
+        <button
+          type="button"
+          className="ml-1 rounded p-0.5 hover:bg-black/10"
+          aria-label="Remove"
+          onClick={onRemove}
+        >
+          <X className="h-3 w-3" />
+        </button>
+      )}
+    </div>
   )
 )
 

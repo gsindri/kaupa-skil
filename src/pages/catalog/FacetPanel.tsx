@@ -1,6 +1,6 @@
 import * as React from 'react'
-import { FilterChip } from '@/components/filters/filter-chip'
-import { TriStateChip } from '@/components/filters/tri-state-chip'
+import { FilterChip } from '@/components/ui/filter-chip'
+import { TriStateChip } from '@/components/ui/tri-state-chip'
 import type { Tri } from '@/lib/catalogFilters'
 
 interface FacetPanelProps {
@@ -42,20 +42,26 @@ export function FacetPanel(props: FacetPanelProps) {
             return (
               <FilterChip
                 key={it.id}
-                label={it.label + suffix}
-                active={!!active}
-                onToggle={() => props.onToggleInclude?.(it.id)}
+                selected={!!active}
+                onSelectedChange={() => props.onToggleInclude?.(it.id)}
                 onRemove={() => props.onToggleInclude?.(it.id)}
-              />
+              >
+                {it.label + suffix}
+              </FilterChip>
             )
           } else {
             const v = (props.values as Record<string, Tri>)[it.id] ?? 0
+            const state = v === 1 ? 'include' : v === -1 ? 'exclude' : 'off'
             return (
               <TriStateChip
                 key={it.id}
-                label={it.label + suffix}
-                value={v}
-                onChange={(next) => props.onTriChange?.(it.id, next)}
+                state={state}
+                onStateChange={(next) =>
+                  props.onTriChange?.(it.id, next === 'include' ? 1 : next === 'exclude' ? -1 : 0)
+                }
+                includeLabel={'✓ ' + it.label + suffix}
+                excludeLabel={'⨯ ' + it.label + suffix}
+                offLabel={it.label + suffix}
               />
             )
           }

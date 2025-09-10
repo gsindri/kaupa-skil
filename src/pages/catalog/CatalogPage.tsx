@@ -11,7 +11,7 @@ import { CatalogTable } from '@/components/catalog/CatalogTable'
 import { CatalogGrid } from '@/components/catalog/CatalogGrid'
 import { HeroSearchInput } from '@/components/search/HeroSearchInput'
 import { FilterChip } from '@/components/ui/filter-chip'
-import { TriStateFilterChip } from '@/components/ui/tri-state-chip'
+import { TriStateChip } from '@/components/ui/tri-state-chip'
 import { CatalogFiltersPanel } from '@/components/catalog/CatalogFiltersPanel'
 import { Button } from '@/components/ui/button'
 import type { FacetFilters, PublicCatalogFilters, OrgCatalogFilters } from '@/services/catalog'
@@ -1093,7 +1093,7 @@ function FiltersBar({
             {/* <FilterChip selected={onlyWithPrice} onSelectedChange={setOnlyWithPrice}>
                Only with price
              </FilterChip> */}
-            <TriStateFilterChip
+            <TriStateChip
               state={triStock}
               onStateChange={setTriStock}
               includeLabel="In stock"
@@ -1104,7 +1104,7 @@ function FiltersBar({
               includeClassName="bg-green-500 text-white border-green-500"
               excludeClassName="bg-red-500 text-white border-red-500"
             />
-            <TriStateFilterChip
+            <TriStateChip
               state={triSuppliers}
               onStateChange={setTriSuppliers}
               includeLabel="My suppliers"
@@ -1113,7 +1113,7 @@ function FiltersBar({
               includeAriaLabel="Filter: my suppliers only"
               excludeAriaLabel="Filter: not my suppliers"
             />
-            <TriStateFilterChip
+            <TriStateChip
               state={triSpecial}
               onStateChange={setTriSpecial}
               includeLabel="On special"

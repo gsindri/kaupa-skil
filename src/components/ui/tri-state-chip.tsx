@@ -2,7 +2,7 @@ import * as React from 'react'
 import { cn } from '@/lib/utils'
 import type { TriState } from '@/state/catalogFilters'
 
-interface TriStateFilterChipProps
+interface TriStateChipProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   state: TriState
   onStateChange: (state: TriState) => void
@@ -16,7 +16,7 @@ interface TriStateFilterChipProps
   excludeClassName?: string
 }
 
-export function TriStateFilterChip({
+export function TriStateChip({
   state,
   onStateChange,
   className,
@@ -29,7 +29,7 @@ export function TriStateFilterChip({
   includeClassName,
   excludeClassName,
   ...props
-}: TriStateFilterChipProps) {
+}: TriStateChipProps) {
   const cycle = (reverse = false) => {
     const next = reverse
       ? state === 'off'
@@ -96,4 +96,4 @@ export function TriStateFilterChip({
   )
 }
 
-export default TriStateFilterChip
+export default TriStateChip
