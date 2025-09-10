@@ -5,26 +5,27 @@ import { vi, describe, it, expect } from 'vitest'
 import { create } from 'zustand'
 import CatalogPage from './CatalogPage'
 
-// Mock ResizeObserver and IntersectionObserver
-const MockResizeObserver = vi.fn(() => ({
-  observe: vi.fn(),
-  unobserve: vi.fn(),
-  disconnect: vi.fn(),
-}))
+// Mock ResizeObserver and IntersectionObserver without retaining call history
+class MockResizeObserver {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
 
-const MockIntersectionObserver = vi.fn(() => ({
-  observe: vi.fn(),
-  unobserve: vi.fn(),
-  disconnect: vi.fn(),
-  root: null,
-  rootMargin: '',
-  thresholds: [],
-  takeRecords: vi.fn(() => []),
-}))
+class MockIntersectionObserver {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+  takeRecords() { return [] }
+  // properties used by the component
+  readonly root = null
+  readonly rootMargin = ''
+  readonly thresholds: number[] = []
+}
 
 vi.stubGlobal('ResizeObserver', MockResizeObserver)
 vi.stubGlobal('IntersectionObserver', MockIntersectionObserver)
-vi.stubGlobal('scrollTo', vi.fn())
+vi.stubGlobal('scrollTo', () => {})
 
 const productsMock = [
   { catalog_id: '1', suppliers: [] },
@@ -85,12 +86,12 @@ vi.mock('@/components/ui/sheet', () => ({
   SheetTrigger: ({ children }: any) => <div>{children}</div>,
 }))
 vi.mock('@/lib/analytics', () => ({
-  logFilter: vi.fn(),
-  logFacetInteraction: vi.fn(),
-  logSearch: vi.fn(),
-  logZeroResults: vi.fn(),
+  logFilter: () => {},
+  logFacetInteraction: () => {},
+  logSearch: () => {},
+  logZeroResults: () => {},
 }))
-vi.mock('@/components/quick/AnalyticsTrackerUtils', () => ({ AnalyticsTracker: { track: vi.fn() } }))
+vi.mock('@/components/quick/AnalyticsTrackerUtils', () => ({ AnalyticsTracker: { track: () => {} } }))
 vi.mock('@/components/place-order/ViewToggle', () => ({
   ViewToggle: ({ onChange }: any) => (
     <button onClick={() => onChange('list')}>list</button>
@@ -110,11 +111,11 @@ vi.mock('@/state/catalogFilters', async () => {
 })
 catalogFiltersStore = create((set: any) => ({
   filters: {},
-  setFilters: vi.fn(),
+  setFilters: (f: any) => set({ filters: { ...f } }),
   onlyWithPrice: false,
-  setOnlyWithPrice: vi.fn(),
+  setOnlyWithPrice: (v: any) => set({ onlyWithPrice: v }),
   sort: 'relevance',
-  setSort: vi.fn(),
+  setSort: (v: any) => set({ sort: v }),
   triStock: 'off',
   setTriStock: (v: any) => set({ triStock: v }),
   triSpecial: 'off',
@@ -122,9 +123,10 @@ catalogFiltersStore = create((set: any) => ({
   triSuppliers: 'off',
   setTriSuppliers: (v: any) => set({ triSuppliers: v }),
 }))
-vi.mock('@/contexts/useBasket', () => ({ useCart: () => ({ addItem: vi.fn() }) }))
+vi.mock('@/contexts/useBasket', () => ({ useCart: () => ({ addItem: () => {} }) }))
 vi.mock('@/lib/images', () => ({ resolveImage: () => '' }))
-vi.mock('react-router-dom', () => ({ useSearchParams: () => [new URLSearchParams(), vi.fn()] }))
+const searchParams = new URLSearchParams()
+vi.mock('react-router-dom', () => ({ useSearchParams: () => [searchParams, () => {}] }))
 
 describe('CatalogPage', () => {
   beforeEach(() => {
