@@ -16,7 +16,11 @@ const items = [
 export function PrimaryNavRail() {
   const { pathname } = useLocation()
   return (
-    <nav className="mt-2 flex w-full flex-col items-center gap-1">
+    <div className="h-full bg-gradient-to-b from-[#0B1220] via-[#0E1B35] to-[#0E2A5E] relative">
+      {/* Cyan stripe at top */}
+      <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-cyan-300/70 via-cyan-400 to-cyan-300/70" />
+      
+      <nav className="mt-2 flex w-full flex-col items-center gap-1">
       {items.map(({ to, icon: Icon, label }) => {
         const active = pathname === to || pathname.startsWith(to + '/')
         return (
@@ -35,7 +39,8 @@ export function PrimaryNavRail() {
           </Link>
         )
       })}
-      <div className="mt-auto mb-2" />
-    </nav>
+        <div className="mt-auto mb-2" />
+      </nav>
+    </div>
   )
 }

@@ -46,8 +46,6 @@ export function FullWidthLayout({
       className="min-h-dvh grid"
       style={{ gridTemplateColumns: 'var(--layout-rail,72px) 1fr' }}
     >
-      <AppChrome />
-
       {/* Left rail */}
       <aside
         className="sticky top-0 h-dvh"
@@ -58,6 +56,7 @@ export function FullWidthLayout({
 
       {/* Right column: header + page */}
       <div className="relative">
+        <AppChrome />
         {/* Header is now scoped to the right column only */}
         <div
           id="catalogHeader"
