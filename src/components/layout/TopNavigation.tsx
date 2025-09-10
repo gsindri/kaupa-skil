@@ -81,18 +81,22 @@ export function TopNavigation() {
       <div className="pointer-events-none memory-stripe absolute inset-x-0 top-0" />
       <div
         className="w-full"
-        style={{ paddingLeft: 'calc(var(--header-left) + 16px)', paddingRight: '16px' }}
+        style={{
+          paddingLeft: 'calc(var(--header-left) + 12px)',
+          paddingRight: '16px',
+          borderLeft: '1px solid rgba(255,255,255,0.06)'
+        }}
       >
         <div
           className={cn(
-            'flex items-center gap-3',
+            'flex items-center',
             scrolled ? 'h-[52px]' : 'h-14',
             'transition-[height] duration-[var(--dur-base)] ease-[var(--ease-snap)] motion-reduce:transition-none'
           )}
         >
           <div className="flex items-center gap-3 min-w-0">
             <button
-              className="flex h-11 w-11 items-center justify-center rounded-3 bg-white/5 hover:bg-white/10 ring-1 ring-white/10 transition-colors duration-[var(--dur-fast)] ease-[var(--ease-snap)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-accent)] motion-reduce:transition-none"
+              className="flex h-11 w-11 items-center justify-center rounded-3 bg-white/5 hover:bg-white/10 ring-1 ring-white/10 transition-colors duration-[var(--dur-fast)] ease-[var(--ease-snap)] focus-visible:outline-none focus-visible:ring-0 focus-visible:shadow-[0_0_0_2px_var(--brand-accent)] motion-reduce:transition-none"
               aria-label="Toggle sidebar"
               aria-controls="app-sidebar"
               aria-expanded={sidebarOpen}
@@ -103,17 +107,17 @@ export function TopNavigation() {
             <TenantSwitcher />
           </div>
 
-          <div className="flex-1 min-w-[200px] md:min-w-[520px] max-w-[1040px]">
+          <div className="flex-1 min-w-[200px] md:min-w-[520px] max-w-[1040px] ml-4">
             <HeaderSearch ref={searchRef} />
           </div>
 
-          <nav aria-label="Global actions" className="flex items-center gap-3">
+          <nav aria-label="Global actions" className="flex items-center gap-3 ml-4">
             <DropdownMenu open={helpOpen} onOpenChange={setHelpOpen} modal={false}>
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-11 px-3 rounded-3 bg-white/5 hover:bg-white/10 ring-1 ring-white/10 focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)]"
+                  className="h-11 px-3 rounded-3 bg-white/5 hover:bg-white/10 ring-1 ring-white/10 focus-visible:outline-none focus-visible:ring-0 focus-visible:shadow-[0_0_0_2px_var(--brand-accent)]"
                 >
                   <HelpCircle className="icon-20" strokeWidth={1.75} />
                   <span className="hidden xl:inline ml-2">Help</span>
@@ -137,7 +141,7 @@ export function TopNavigation() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-11 px-3 rounded-3 bg-white/5 hover:bg-white/10 ring-1 ring-white/10 flex items-center space-x-2 focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)]"
+                  className="h-11 px-3 rounded-3 bg-white/5 hover:bg-white/10 ring-1 ring-white/10 flex items-center space-x-2 focus-visible:outline-none focus-visible:ring-0 focus-visible:shadow-[0_0_0_2px_var(--brand-accent)]"
                   disabled={isBusy}
                 >
                   <div className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center">

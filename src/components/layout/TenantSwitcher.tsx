@@ -96,7 +96,7 @@ export function TenantSwitcher() {
           variant="ghost"
           role="combobox"
           aria-expanded={open}
-          className="flex w-52 items-center justify-between px-3 h-11 rounded-3 bg-white/5 hover:bg-white/10 ring-1 ring-white/10 text-slate-100 focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)]"
+          className="flex w-52 items-center justify-between px-3 h-11 rounded-3 bg-white/5 hover:bg-white/10 ring-1 ring-white/10 text-slate-100 focus-visible:outline-none focus-visible:ring-0 focus-visible:shadow-[0_0_0_2px_var(--brand-accent)]"
         >
           <span className="truncate display font-semibold" title={displayName}>
             {displayName}

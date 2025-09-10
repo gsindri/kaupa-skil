@@ -32,14 +32,17 @@ export const SearchInput = React.forwardRef<HTMLInputElement, SearchInputProps>(
     useImperativeHandle(ref, () => inputRef.current as HTMLInputElement)
 
     return (
-      <div className="relative" style={{ contain: 'layout paint' }}>
+      <div
+        className="relative rounded-full focus-within:shadow-[0_0_0_2px_var(--brand-accent)]"
+        style={{ contain: 'layout paint' }}
+      >
         <button
           type="button"
           onMouseDown={(e) => {
             e.preventDefault()
             inputRef.current?.focus()
           }}
-          className="absolute left-3 top-1/2 -translate-y-1/2 cursor-text text-slate-400"
+          className="absolute left-4 top-1/2 -translate-y-1/2 cursor-text text-slate-400"
         >
           {isLoading ? (
             <div className="h-5 w-5 animate-spin rounded-full border-2 border-muted border-t-primary" />
@@ -59,18 +62,18 @@ export const SearchInput = React.forwardRef<HTMLInputElement, SearchInputProps>(
           onKeyDown={onKeyDown}
           placeholder="Search products, suppliers, orders..."
           className={cn(
-            'h-11 w-full rounded-full bg-white/95 text-slate-800 ring-1 ring-white/10 pl-11 pr-10 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-400/70',
+            'h-11 w-full rounded-full bg-white/95 text-slate-800 ring-1 ring-white/10 pl-11 pr-10 text-sm placeholder:text-slate-400 focus:outline-none',
             expanded && 'shadow-md'
           )}
         />
         {!expanded && !value && (
-          <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">/</span>
+          <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">/</span>
         )}
         {value && (
           <button
             type="button"
             aria-label="Clear search"
-            className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"
+            className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"
             onMouseDown={(e) => e.preventDefault()}
             onClick={onClear}
           >
