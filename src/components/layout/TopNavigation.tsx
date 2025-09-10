@@ -70,7 +70,7 @@ export function TopNavigation() {
     <div
       role="banner"
       className={cn(
-        'pt-[2px] h-[var(--chrome-h,56px)] px-3 sm:px-4 flex items-center gap-3 text-white',
+        'pt-[2px] h-[var(--chrome-h,56px)] px-3 sm:px-4 flex items-center gap-3 text-white bg-gradient-to-r from-primary to-primary/90',
         scrolled ? 'shadow-lg' : 'shadow-none',
         'transition-[box-shadow] duration-base ease-snap motion-reduce:transition-none'
       )}
