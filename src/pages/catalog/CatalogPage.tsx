@@ -5,6 +5,7 @@ import { AlertCircle, Mic, X } from 'lucide-react'
 import { useAuth } from '@/contexts/useAuth'
 import { useCatalogProducts } from '@/hooks/useCatalogProducts'
 import { useOrgCatalog } from '@/hooks/useOrgCatalog'
+import { rememberScroll, restoreScroll } from '@/lib/scrollMemory'
 import { useDebounce } from '@/hooks/useDebounce'
 import { CatalogTable } from '@/components/catalog/CatalogTable'
 import { ProductCard } from '@/components/catalog/ProductCard'
@@ -167,6 +168,7 @@ export default function CatalogPage() {
     }
     return 'grid'
   })
+  const viewKey = `catalog:${view}`
   const [cursor, setCursor] = useState<string | null>(null)
   const [nextCursor, setNextCursor] = useState<string | null>(null)
   const [products, setProducts] = useState<any[]>([])
@@ -200,6 +202,10 @@ export default function CatalogPage() {
       /* ignore */
     }
   }, [view])
+
+  useEffect(() => {
+    restoreScroll(viewKey)
+  }, [viewKey])
 
   useEffect(() => {
     viewSwapQuietUntil.current = performance.now() + 250
@@ -1126,7 +1132,13 @@ function FiltersBar({
               }
             />
             <SortDropdown value={sortOrder} onChange={setSortOrder} onOpenChange={onLockChange} />
-            <ViewToggle value={view} onChange={setView} />
+            <ViewToggle
+              value={view}
+              onChange={v => {
+                rememberScroll(viewKey)
+                setView(v)
+              }}
+            />
           </div>
         </div>
         <div className="header-row chips-row">
