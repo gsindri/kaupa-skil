@@ -75,7 +75,7 @@ export function TopNavigation() {
       className={cn(
         'relative z-50 text-[var(--text-on-dark)] bg-gradient-to-r from-[var(--brand-from)] via-[var(--brand-via)] to-[var(--brand-to)]',
         scrolled ? 'shadow-lg' : 'shadow-none',
-        'transition-[box-shadow,height] duration-[var(--dur-base)] ease-[var(--ease-snap)] motion-reduce:transition-none'
+        'transition-[box-shadow,height] duration-base ease-snap motion-reduce:transition-none'
       )}
     >
       <div className="pointer-events-none memory-stripe absolute inset-x-0 top-0" />
@@ -91,12 +91,12 @@ export function TopNavigation() {
           className={cn(
             'flex items-center',
             scrolled ? 'h-[52px]' : 'h-14',
-            'transition-[height] duration-[var(--dur-base)] ease-[var(--ease-snap)] motion-reduce:transition-none'
+            'transition-[height] duration-base ease-snap motion-reduce:transition-none'
           )}
         >
           <div className="flex items-center gap-3 min-w-0">
             <button
-              className="flex h-11 w-11 items-center justify-center rounded-3 bg-white/5 hover:bg-white/10 ring-1 ring-white/10 transition-colors duration-[var(--dur-fast)] ease-[var(--ease-snap)] focus-visible:outline-none focus-visible:ring-0 focus-visible:shadow-[0_0_0_2px_var(--brand-accent)] motion-reduce:transition-none"
+              className="flex h-11 w-11 items-center justify-center rounded-3 bg-white/5 hover:bg-white/10 ring-1 ring-white/10 transition-colors duration-fast ease-snap focus-visible:outline-none focus-visible:ring-0 focus-visible:shadow-[0_0_0_2px_var(--brand-accent)] motion-reduce:transition-none"
               aria-label="Toggle sidebar"
               aria-controls="app-sidebar"
               aria-expanded={sidebarOpen}
