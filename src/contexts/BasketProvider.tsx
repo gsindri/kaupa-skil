@@ -42,7 +42,10 @@ export default function BasketProvider({ children }: { children: React.ReactNode
 
   // Sync basket across tabs
   useEffect(() => {
-    const channel = new BroadcastChannel('procurewise-basket')
+    const channel =
+      typeof BroadcastChannel !== 'undefined'
+        ? new BroadcastChannel('procurewise-basket')
+        : null
 
     const handleMessage = (event: MessageEvent) => {
       if (event.data.type === 'BASKET_UPDATED') {
@@ -50,20 +53,45 @@ export default function BasketProvider({ children }: { children: React.ReactNode
       }
     }
 
-    channel.addEventListener('message', handleMessage)
+    channel?.addEventListener('message', handleMessage)
     return () => {
-      channel.removeEventListener('message', handleMessage)
-      channel.close()
+      channel?.removeEventListener('message', handleMessage)
+      channel?.close()
     }
   }, [])
 
-  const syncBasket = (newItems: CartItem[]) => {
-    localStorage.setItem('procurewise-basket', JSON.stringify(newItems))
+  // Fallback: cross-tab sync via storage events
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+        if (e.key === 'procurewise-basket' && e.newValue) {
+          try {
+            setItems(JSON.parse(e.newValue))
+          } catch {
+            /* ignore parse errors */
+          }
+        }
+    }
+    window.addEventListener('storage', onStorage)
+    return () => window.removeEventListener('storage', onStorage)
+  }, [])
 
-    const channel = new BroadcastChannel('procurewise-basket')
-    channel.postMessage({ type: 'BASKET_UPDATED', items: newItems })
-    channel.close()
-  }
+  const syncBasket = (() => {
+    let timeout: number | undefined
+    let latest: CartItem[] = []
+    const send = (items: CartItem[]) => {
+      localStorage.setItem('procurewise-basket', JSON.stringify(items))
+      if (typeof BroadcastChannel !== 'undefined') {
+        const channel = new BroadcastChannel('procurewise-basket')
+        channel.postMessage({ type: 'BASKET_UPDATED', items })
+        channel.close()
+      }
+    }
+    return (items: CartItem[]) => {
+      latest = items
+      if (timeout) window.clearTimeout(timeout)
+      timeout = window.setTimeout(() => send(latest), 400)
+    }
+  })()
 
   const addItem = (
     item:
@@ -196,15 +224,15 @@ export default function BasketProvider({ children }: { children: React.ReactNode
     return items.reduce((total, item) => total + item.quantity, 0)
   }
 
-  const getTotalPrice = (includeVat: boolean): number | null => {
-    let total = 0
-    for (const item of items) {
+  const getTotalPrice = (includeVat: boolean): number => {
+    return items.reduce((total, item) => {
       const price = includeVat ? item.unitPriceIncVat : item.unitPriceExVat
-      if (price == null) return null
-      total += price * item.quantity
-    }
-    return total
+      return total + ((price ?? 0) * item.quantity)
+    }, 0)
   }
+
+  const getMissingPriceCount = () =>
+    items.filter(i => i.unitPriceIncVat == null && i.unitPriceExVat == null).length
 
   return (
     <BasketContext.Provider value={{
@@ -217,6 +245,7 @@ export default function BasketProvider({ children }: { children: React.ReactNode
       restoreItems,
       getTotalItems,
       getTotalPrice,
+      getMissingPriceCount,
       isDrawerOpen,
       setIsDrawerOpen
     }}>

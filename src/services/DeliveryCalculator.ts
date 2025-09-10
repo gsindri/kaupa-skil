@@ -44,9 +44,10 @@ export class DeliveryCalculator {
     const rules = await this.getDeliveryRules()
     const rule = rules.get(supplierId)
 
-    const subtotalExVat = items.reduce((sum, item) => 
-      sum + (item.unitPriceExVat * item.quantity), 0
-    )
+    const subtotalExVat = items.reduce((sum, item) => {
+      const p = item.unitPriceExVat ?? item.unitPriceIncVat ?? 0
+      return sum + (p * item.quantity)
+    }, 0)
 
     if (!rule) {
       return {

@@ -6,9 +6,13 @@ import type { DeliveryCalculation, OrderDeliveryOptimization } from '@/lib/types
 
 export function useDeliveryCalculation() {
   const { items } = useCart()
+  const key = items
+    .map(i => `${i.supplierId}:${i.supplierItemId}:${i.quantity}`)
+    .sort()
+    .join('|')
 
   return useQuery({
-    queryKey: ['delivery-calculation', items],
+    queryKey: ['delivery-calculation', key],
     queryFn: () => deliveryCalculator.calculateOrderDelivery(items),
     enabled: items.length > 0,
     staleTime: 2 * 60 * 1000, // 2 minutes
@@ -17,9 +21,13 @@ export function useDeliveryCalculation() {
 
 export function useDeliveryOptimization() {
   const { items } = useCart()
+  const key = items
+    .map(i => `${i.supplierId}:${i.supplierItemId}:${i.quantity}`)
+    .sort()
+    .join('|')
 
   return useQuery({
-    queryKey: ['delivery-optimization', items],
+    queryKey: ['delivery-optimization', key],
     queryFn: () => deliveryCalculator.optimizeOrder(items),
     enabled: items.length > 0,
     staleTime: 2 * 60 * 1000, // 2 minutes
