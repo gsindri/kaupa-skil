@@ -1,5 +1,6 @@
 import React from 'react'
 import { render, screen } from '@testing-library/react'
+import { MemoryRouter } from 'react-router-dom'
 import userEvent from '@testing-library/user-event'
 import { vi, describe, it, expect } from 'vitest'
 import { create } from 'zustand'
@@ -142,7 +143,11 @@ describe('CatalogPage', () => {
 
   it('shows banner when connect pills are hidden', async () => {
     localStorage.setItem('catalog-view', 'list')
-    render(<CatalogPage />)
+    render(
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <CatalogPage />
+      </MemoryRouter>
+    )
     await screen.findByTestId('alert')
     expect(screen.getByText('Connect suppliers to unlock prices.')).toBeInTheDocument()
     expect(screen.getByTestId('catalog-table')).toBeInTheDocument()
@@ -151,7 +156,11 @@ describe('CatalogPage', () => {
 
   it('restores view preference from localStorage', () => {
     localStorage.setItem('catalog-view', 'list')
-    render(<CatalogPage />)
+    render(
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <CatalogPage />
+      </MemoryRouter>
+    )
     expect(screen.getByTestId('catalog-table')).toBeInTheDocument()
   })
 
@@ -165,7 +174,11 @@ describe('CatalogPage', () => {
 
   it('applies onSpecial filter when triSpecial is include', () => {
     catalogFiltersStore.setState({ triSpecial: 'include' })
-    render(<CatalogPage />)
+    render(
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <CatalogPage />
+      </MemoryRouter>
+    )
     expect(useCatalogProductsMock).toHaveBeenCalledWith(
       expect.objectContaining({ onSpecial: true }),
       'relevance',
