@@ -1,0 +1,98 @@
+
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+@import './styles/globals.css';
+@import './styles/design-system.css';
+
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&display=swap');
+
+:root{
+  --font-ui: "Red Hat Text", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  --font-display: "Red Hat Display", var(--font-ui);
+
+  /* type scale (tweak if needed) */
+  --fs-h1: 28px; --fs-h2: 22px; --fs-h3: 18px; --fs-body: 15px; --fs-meta: 13px;
+}
+
+/* Defaults */
+html { font-family: var(--font-ui); font-size: 15px; }
+body { font-variant-numeric: normal; }
+
+/* Headings / nav “brand voice” */
+h1,h2,h3,.display { font-family: var(--font-display); font-weight: 600; letter-spacing: -0.005em; }
+h1{ font-size: var(--fs-h1); } h2{ font-size: var(--fs-h2); } h3{ font-size: var(--fs-h3); }
+
+/* UI text */
+p,li,button,input,select,textarea,table { font-size: var(--fs-body); }
+.meta, small { font-size: var(--fs-meta); opacity:.9; }
+
+/* Import our comprehensive design system */
+
+/* Ensure no default margins/padding for clean layout */
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+/* Set a fallback header height so content can offset correctly */
+:root {
+  --header-h: 56px;
+  --chrome-h: var(--header-h);
+  --sidebar-w: 256px; /* expanded width */
+  --sidebar-rail-w: 48px; /* collapsed rail width */
+  --header-left: 0px; /* computed from sidebar width */
+  --header-right: 0px; /* reserved for symmetry */
+}
+
+@media (max-width: 1024px) {
+  :root {
+    --header-left: 0px;
+  }
+}
+
+body {
+  @apply m-0 p-0;
+  scroll-padding-top: var(--chrome-h);
+}
+
+#root {
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* If no overlay is actively locking scroll, ensure no ghost gutter on body */
+body:not([data-scroll-locked]) {
+  padding-right: 0 !important;
+  margin-right: 0 !important;
+}
+
+main > *:first-child {
+  margin-top: 0;
+}
+
+html { scrollbar-gutter: stable; }
+
+#catalogHeader{
+  position:fixed;
+  top:0;
+  left:var(--header-left);
+  right:0;
+  z-index:50;
+  transform: translateY(calc(-100% * var(--hdr-p, 0)));
+  transition: transform 120ms ease-out; /* used only in snap phase */
+  will-change: transform; contain: paint;
+  backdrop-filter: saturate(180%) blur(8px);
+}
+
+  /* Gradient header handles its own background; remove default surface overlay */
+  #catalogHeader::before{
+    content:none;
+  }
+
+@media (prefers-reduced-motion: reduce){
+  #catalogHeader{ transition:none; }
+}

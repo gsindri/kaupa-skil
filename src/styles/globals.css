@@ -1,74 +1,65 @@
-
-@import 'tailwindcss/base';
-@import 'tailwindcss/components';
-@import 'tailwindcss/utilities';
-
-@import './design-system.css';
-
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&display=swap');
-
 :root{
-  --font-ui: "Red Hat Text", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-  --font-display: "Red Hat Display", var(--font-ui);
+  /* Brand gradient */
+  --brand-from:#0B1220;
+  --brand-via:#0E1B35;
+  --brand-to:#0E2A5E;
 
-  /* type scale (tweak if needed) */
-  --fs-h1: 28px; --fs-h2: 22px; --fs-h3: 18px; --fs-body: 15px; --fs-meta: 13px;
+  /* Signature accent ("memory stripe", focus, progress) */
+  --brand-accent:#21D4D6;
+
+  /* Text on dark */
+  --text-on-dark:#E6EDF6;
+  --text-subtle:#B9C2D0;
+
+  /* Radius scale (non-default) */
+  --radius-1:6px;   /* small buttons, inputs */
+  --radius-2:12px;  /* chips, pills */
+  --radius-3:18px;  /* big buttons, nav items */
+  --radius-4:24px;  /* cards, search shell */
+  --radius-pill:9999px;
+
+  /* Motion */
+  --dur-fast:120ms;
+  --dur-base:200ms;
+  --ease-snap:cubic-bezier(.22,1,.36,1);
+
+  /* Header layout */
+  --header-left:0px;  /* set from sidebar width */
+
+  /* Action colors */
+  --button-primary:#0B5BD3;
+  --button-primary-hover:#0A53C1;
+
+  /* Availability badges */
+  --badge-in-bg:#D6FBEF;
+  --badge-in-text:#046C4E;
+  --badge-out-bg:#FCE2E6;
+  --badge-out-text:#8C1D2E;
+  --badge-unknown-bg:#E8EEF7;
+  --badge-unknown-text:#2B3A55;
+
+  /* Memory stripe */
+  --stripe-from:#22E0E0;
+  --stripe-to:#12B6C5;
 }
 
-/* Defaults */
-html { font-family: var(--font-ui); font-size: 15px; }
-body { font-variant-numeric: normal; }
+/* Reusable motif */
+.memory-stripe{ height:2px; background:linear-gradient(90deg,var(--stripe-from),var(--stripe-to)); }
 
-/* Headings / nav “brand voice” */
-h1,h2,h3,.display { font-family: var(--font-display); font-weight: 600; letter-spacing: -0.005em; }
-h1{ font-size: var(--fs-h1); } h2{ font-size: var(--fs-h2); } h3{ font-size: var(--fs-h3); }
+/* Numbers align perfectly in tables/badges */
+.ui-numeric{ font-variant-numeric: tabular-nums; }
 
-/* UI text */
-p,li,button,input,select,textarea,table { font-size: var(--fs-body); }
-.meta, small { font-size: var(--fs-meta); opacity:.9; }
+/* Lucide icons */
+svg.lucide{ stroke-width:1.75; }
+.icon-16{ width:16px; height:16px; }
+.icon-18{ width:18px; height:18px; }
+.icon-20{ width:20px; height:20px; }
 
-/* Import our comprehensive design system */
-
-/* Ensure no default margins/padding for clean layout */
-html, body, #root {
-  margin: 0;
-  padding: 0;
-  height: 100%;
+/* Availability badges */
+.badge{ display:inline-flex; align-items:center; gap:6px;
+  height:24px; padding:0 10px; border-radius:var(--radius-pill);
+  font-size:12.5px; line-height:1; font-weight:500;
 }
-
-/* Set a fallback header height so content can offset correctly */
-body {
-  @apply m-0 p-0;
-  scroll-padding-top: var(--header);
-}
-
-#root {
-  max-width: none !important;
-  margin: 0 !important;
-  padding: 0 !important;
-}
-
-/* If no overlay is actively locking scroll, ensure no ghost gutter on body */
-body:not([data-scroll-locked]) {
-  padding-right: 0 !important;
-  margin-right: 0 !important;
-}
-
-main > *:first-child {
-  margin-top: 0;
-}
-
-html { scrollbar-gutter: stable; }
-
-@media (prefers-reduced-motion: reduce){
-  #catalogHeader{ transition:none; }
-}
-
-#catalogHeader{
-  position:sticky;
-  top:0;
-  z-index:50;
-  transform: translateY(calc(-100% * var(--hdr-p, 0)));
-  transition: transform 120ms ease-out;
-  will-change: transform;
-}
+.badge--in{ background:var(--badge-in-bg); color:var(--badge-in-text); }
+.badge--out{ background:var(--badge-out-bg); color:var(--badge-out-text); }
+.badge--unknown{ background:var(--badge-unknown-bg); color:var(--badge-unknown-text); }
