@@ -9,6 +9,7 @@ import { Outlet } from 'react-router-dom'
 import { TopNavigation } from './TopNavigation'
 import { PrimaryNavRail } from './PrimaryNavRail'
 import { AppChrome } from './AppChrome'
+import { CartDrawer } from '@/components/cart/CartDrawer'
 
 interface AppLayoutProps {
   header?: ReactNode
@@ -101,6 +102,7 @@ export function AppLayout({
           </div>
         </main>
       </div>
+      <CartDrawer />
     </div>
   )
 }
