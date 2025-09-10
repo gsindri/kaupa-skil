@@ -5,8 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
-    "build:dev": "vite build --mode development",
+    "build": "npm run build:extension && vite build",
+    "build:dev": "npm run build:extension && vite build --mode development",
+    "build:extension": "npm --prefix extension run build",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "node --max-old-space-size=4096 ./node_modules/vitest/vitest.mjs run --maxWorkers=2",
