@@ -1096,7 +1096,7 @@ function FiltersBar({
   }
 
   return (
-    <div className="border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <div className="border-b border-white/10 bg-transparent">
       <div className="py-3 space-y-3">
         {(publicError || orgError) && (
           <Alert variant="destructive">

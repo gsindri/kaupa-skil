@@ -4,6 +4,7 @@ import { EnhancedAppSidebar } from './EnhancedAppSidebar'
 import { TopNavigation } from './TopNavigation'
 import { CartDrawer } from '@/components/cart/CartDrawer'
 import { cn } from '@/lib/utils'
+import { AppChrome } from './AppChrome'
 
 interface FullWidthLayoutProps {
   children: React.ReactNode
@@ -42,13 +43,14 @@ export function FullWidthLayout({
 
   return (
       <SidebarProvider>
+        <AppChrome />
         <div
           className="min-h-screen grid transition-[grid-template-columns] duration-300 ease-in-out"
           style={{ gridTemplateColumns: 'var(--sidebar-width,16rem) minmax(0,1fr)' }}
         >
           <aside
             id="appSidebar"
-            className="sticky top-0 h-svh w-[var(--sidebar-width,16rem)] transition-[width] duration-300 ease-in-out"
+            className="sticky top-0 h-svh w-[var(--sidebar-width,16rem)] transition-[width] duration-300 ease-in-out z-40"
           >
             <EnhancedAppSidebar />
           </aside>
