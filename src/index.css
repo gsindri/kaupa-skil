@@ -41,7 +41,7 @@ html, body, #root {
 /* Set a fallback header height so content can offset correctly */
 :root {
   --header-h: 56px;
-  --chrome-h: var(--header-h);
+  --chrome-h: clamp(40px, var(--header-h, 56px), 120px);
   --sidebar-w: 256px; /* expanded width */
   --sidebar-rail-w: 48px; /* collapsed rail width */
   --header-left: 0px; /* computed from sidebar width */
