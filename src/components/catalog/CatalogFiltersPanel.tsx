@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { fetchCatalogFacets, FacetFilters } from '@/services/catalog'
 import { cn } from '@/lib/utils'
 import { useCatalogFilters } from '@/state/catalogFiltersStore'
-import { triStockToAvailability } from '@/utils/catalogFilters'
+import { triStockToAvailability } from '@/lib/catalogFilters'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 
