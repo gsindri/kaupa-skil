@@ -13,7 +13,6 @@ import { HeroSearchInput } from '@/components/search/HeroSearchInput'
 import { FilterChip } from '@/components/ui/filter-chip'
 import { TriStateFilterChip } from '@/components/ui/tri-state-chip'
 import { CatalogFiltersPanel } from '@/components/catalog/CatalogFiltersPanel'
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import { Button } from '@/components/ui/button'
 import type { FacetFilters, PublicCatalogFilters, OrgCatalogFilters } from '@/services/catalog'
 import {
@@ -25,14 +24,13 @@ import {
 import { AnalyticsTracker } from '@/components/quick/AnalyticsTrackerUtils'
 import { ViewToggle } from '@/components/place-order/ViewToggle'
 import { LayoutDebugger } from '@/components/debug/LayoutDebugger'
-import { FullWidthLayout } from '@/components/layout/FullWidthLayout'
+import AppLayout from '@/components/layout/AppLayout'
 import { useCatalogFilters, SortOrder, triStockToAvailability } from '@/state/catalogFilters'
 import type { TriState } from '@/state/catalogFilters'
 import { useCart } from '@/contexts/useBasket'
 import type { CartItem } from '@/lib/types'
 import { resolveImage } from '@/lib/images'
 import { useSearchParams } from 'react-router-dom'
-import { cn } from '@/lib/utils'
 
 interface DerivedChip {
   key: string
@@ -184,7 +182,7 @@ export default function CatalogPage() {
   const debouncedSearch = useDebounce(filters.search ?? '', 300)
   const sentinelRef = useRef<HTMLDivElement | null>(null)
   const gridRef = useRef<HTMLDivElement>(null)
-  const [showFilters, setShowFilters] = useState(false)
+  const [showFilters, setShowFilters] = useState(true)
   const [focusedFacet, setFocusedFacet] = useState<keyof FacetFilters | null>(null)
   const [cols, setCols] = useState(1)
   const stringifiedFilters = useMemo(() => JSON.stringify(filters), [filters])
@@ -917,7 +915,7 @@ export default function CatalogPage() {
         : null
 
   return (
-    <FullWidthLayout
+    <AppLayout
       header={
         <FiltersBar
           filters={filters}
@@ -943,10 +941,18 @@ export default function CatalogPage() {
           onLockChange={handleLockChange}
         />
       }
-      headerRef={headerRef}
-      headerClassName={cn(
-        scrolled ? 'shadow-sm' : '',
-      )}
+      secondary={
+        showFilters ? (
+          <div id="catalog-filters-panel">
+            <CatalogFiltersPanel
+              filters={filters}
+              onChange={setFilters}
+              focusedFacet={focusedFacet}
+            />
+          </div>
+        ) : null
+      }
+      panelOpen={showFilters}
     >
       {/* eslint-disable-next-line no-constant-binary-expression */}
       {false && <LayoutDebugger show />}
@@ -1010,7 +1016,7 @@ export default function CatalogPage() {
         </div>
       )}
       <div ref={sentinelRef} />
-    </FullWidthLayout>
+    </AppLayout>
   )
 }
 
@@ -1090,49 +1096,41 @@ function FiltersBar({
   }
 
   return (
-    <Sheet
-      open={showFilters}
-      onOpenChange={open => {
-        setShowFilters(open)
-        onLockChange(open)
-        if (!open) setFocusedFacet(null)
-      }}
-    >
-      <div className="border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="py-3 space-y-3">
-          {(publicError || orgError) && (
-            <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>
-                {String(publicError || orgError)}
-              </AlertDescription>
-            </Alert>
-          )}
-          <div className="header-row search-row">
-            <div className="grid grid-cols-[1fr,auto,auto] gap-3 items-center">
-              <HeroSearchInput
-                placeholder="Search products"
-                value={filters.search ?? ''}
-                onChange={e => setFilters({ search: e.target.value })}
-                onFocus={() => onLockChange(true)}
-                onBlur={() => onLockChange(false)}
-                rightSlot={
-                  <button
-                    type="button"
-                    aria-label="Voice search"
-                    onClick={() => console.log('voice search')}
-                    className="text-muted-foreground hover:text-foreground"
-                  >
-                    <Mic className="h-5 w-5" />
-                  </button>
-                }
-              />
-              <SortDropdown value={sortOrder} onChange={setSortOrder} onOpenChange={onLockChange} />
-              <ViewToggle value={view} onChange={setView} />
-            </div>
+    <div className="border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="py-3 space-y-3">
+        {(publicError || orgError) && (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              {String(publicError || orgError)}
+            </AlertDescription>
+          </Alert>
+        )}
+        <div className="header-row search-row">
+          <div className="grid grid-cols-[1fr,auto,auto] gap-3 items-center">
+            <HeroSearchInput
+              placeholder="Search products"
+              value={filters.search ?? ''}
+              onChange={e => setFilters({ search: e.target.value })}
+              onFocus={() => onLockChange(true)}
+              onBlur={() => onLockChange(false)}
+              rightSlot={
+                <button
+                  type="button"
+                  aria-label="Voice search"
+                  onClick={() => console.log('voice search')}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  <Mic className="h-5 w-5" />
+                </button>
+              }
+            />
+            <SortDropdown value={sortOrder} onChange={setSortOrder} onOpenChange={onLockChange} />
+            <ViewToggle value={view} onChange={setView} />
           </div>
-          <div className="header-row chips-row">
-            <div className="flex flex-nowrap items-center gap-2 overflow-x-auto">
+        </div>
+        <div className="header-row chips-row">
+          <div className="flex flex-nowrap items-center gap-2 overflow-x-auto">
             {/* Disable pricing filter until pricing data is available */}
             {/* <FilterChip selected={onlyWithPrice} onSelectedChange={setOnlyWithPrice}>
                Only with price
@@ -1189,22 +1187,23 @@ function FiltersBar({
                 </button>
               </div>
             ))}
-            <SheetTrigger asChild>
-              <FilterChip
-                selected={showFilters}
-                aria-controls="catalog-filters-sheet"
-                onClick={() => {
-                  if (!showFilters) {
-                    const first = Object.entries(facetFilters).find(([, v]) =>
-                      Array.isArray(v) ? v.length > 0 : Boolean(v),
-                    )?.[0] as keyof FacetFilters | undefined
-                    setFocusedFacet(first ?? null)
-                  }
-                }}
-              >
-                {activeFacetCount ? `Filters (${activeFacetCount})` : 'More filters'}
-              </FilterChip>
-            </SheetTrigger>
+            <FilterChip
+              selected={showFilters}
+              aria-controls="catalog-filters-panel"
+              onClick={() => {
+                if (!showFilters) {
+                  const first = Object.entries(facetFilters).find(([, v]) =>
+                    Array.isArray(v) ? v.length > 0 : Boolean(v),
+                  )?.[0] as keyof FacetFilters | undefined
+                  setFocusedFacet(first ?? null)
+                }
+                const next = !showFilters
+                setShowFilters(next)
+                onLockChange(next)
+              }}
+            >
+              {activeFacetCount ? `Filters (${activeFacetCount})` : 'More filters'}
+            </FilterChip>
             {activeCount > 0 && (
               <button
                 type="button"
@@ -1214,21 +1213,9 @@ function FiltersBar({
                 Clear all
               </button>
             )}
-            </div>
           </div>
         </div>
       </div>
-      <SheetContent
-        side="right"
-        className="w-3/4 sm:max-w-sm"
-        id="catalog-filters-sheet"
-      >
-        <CatalogFiltersPanel
-          filters={filters}
-          onChange={setFilters}
-          focusedFacet={focusedFacet}
-        />
-      </SheetContent>
-    </Sheet>
+    </div>
   )
 }

@@ -82,10 +82,21 @@ vi.mock('@/components/ui/filter-chip', () => ({
   FilterChip: ({ children }: any) => <div>{children}</div>,
 }))
 vi.mock('@/components/catalog/CatalogFiltersPanel', () => ({ CatalogFiltersPanel: () => <div /> }))
-vi.mock('@/components/ui/sheet', () => ({
-  Sheet: ({ children }: any) => <div>{children}</div>,
-  SheetContent: ({ children }: any) => <div>{children}</div>,
-  SheetTrigger: ({ children }: any) => <div>{children}</div>,
+vi.mock('@/components/layout/AppLayout', () => ({
+  default: ({ children, header, secondary }: any) => (
+    <div>
+      {header}
+      {secondary}
+      {children}
+    </div>
+  ),
+  AppLayout: ({ children, header, secondary }: any) => (
+    <div>
+      {header}
+      {secondary}
+      {children}
+    </div>
+  ),
 }))
 vi.mock('@/lib/analytics', () => ({
   logFilter: () => {},
@@ -100,7 +111,6 @@ vi.mock('@/components/place-order/ViewToggle', () => ({
   ),
 }))
 vi.mock('@/components/debug/LayoutDebugger', () => ({ LayoutDebugger: () => <div /> }))
-vi.mock('@/components/layout/FullWidthLayout', () => ({ FullWidthLayout: ({ children }: any) => <div>{children}</div> }))
 // eslint-disable-next-line prefer-const
 let catalogFiltersStore: any
 vi.mock('@/state/catalogFilters', async () => {
