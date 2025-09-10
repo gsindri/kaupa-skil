@@ -19,6 +19,10 @@ export default {
                         }
                 },
                extend: {
+                        fontFamily: {
+                                sans: ['var(--font-ui)'],
+                                display: ['var(--font-display)'],
+                        },
                         transitionDuration: {
                                 120: '120ms',
                         },

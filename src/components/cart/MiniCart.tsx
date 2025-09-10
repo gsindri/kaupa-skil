@@ -71,7 +71,7 @@ export function MiniCart() {
           id="mini-cart-button"
           variant="ghost"
           size="sm"
-          className="relative inline-flex items-center gap-2 rounded-xl bg-[#0B5BD3] hover:bg-[#0A53C1] px-3 h-10 text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-cyan-400/70"
+          className="relative inline-flex items-center gap-2 rounded-xl bg-[#0B5BD3] hover:bg-[#0A53C1] px-3 h-10 text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-cyan-400/70 ui-numeric"
           onClick={e => {
             e.preventDefault()
             setOpen(false)
@@ -83,7 +83,7 @@ export function MiniCart() {
           {cartCount > 0 && (
             <span
               aria-live="polite"
-              className="ml-1 rounded-full bg-cyan-400 text-slate-900 text-xs px-2 py-0.5 min-w-[1.25rem] text-center"
+              className="ml-1 rounded-full bg-cyan-400 text-slate-900 text-xs px-2 py-0.5 min-w-[1.25rem] text-center ui-numeric"
             >
               {cartCount}
             </span>
