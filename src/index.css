@@ -77,15 +77,10 @@ main > *:first-child {
 
 html { scrollbar-gutter: stable; }
 
-#catalogHeader{
-  /* Remove the problematic fixed positioning that causes the white overlay */
-  /* Header now lives inside the right column via the 2-column grid layout */
+#catalogHeader::before {
+  /* Remove pseudo-element overlay that obscured the page */
+  content: none !important;
 }
-
-  /* Gradient header handles its own background; remove default surface overlay */
-  #catalogHeader::before{
-    content:none;
-  }
 
 @media (prefers-reduced-motion: reduce){
   #catalogHeader{ transition:none; }
