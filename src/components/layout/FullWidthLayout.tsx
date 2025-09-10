@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useLayoutEffect, useRef } from 'react'
 import { TopNavigation } from './TopNavigation'
 import { CartDrawer } from '@/components/cart/CartDrawer'
 import { cn } from '@/lib/utils'
@@ -21,6 +21,25 @@ export function FullWidthLayout({
   contentProps,
 }: FullWidthLayoutProps) {
   const { className: contentClassName, style: contentStyle, ...restContentProps } = contentProps || {}
+  const internalHeaderRef = useRef<HTMLDivElement>(null)
+  useLayoutEffect(() => {
+    const el = internalHeaderRef.current
+    if (!el) return
+    const update = () => {
+      const h = el.getBoundingClientRect().height || 56
+      const clamped = Math.min(120, Math.max(40, Math.round(h)))
+      document.documentElement.style.setProperty('--header-h', `${clamped}px`)
+    }
+    update()
+    const ro = new ResizeObserver(update)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
+  const setHeaderRef = (node: HTMLDivElement | null) => {
+    internalHeaderRef.current = node as HTMLDivElement
+    if (typeof headerRef === 'function') headerRef(node as HTMLDivElement)
+    else if (headerRef && 'current' in (headerRef as any)) (headerRef as any).current = node
+  }
 
   return (
     <div
@@ -42,7 +61,7 @@ export function FullWidthLayout({
         {/* Header is now scoped to the right column only */}
         <div
           id="catalogHeader"
-          ref={headerRef}
+          ref={setHeaderRef}
           className={cn(headerClassName)}
           style={{ position: 'sticky', top: 0, zIndex: 'var(--z-header,30)' }}
         >

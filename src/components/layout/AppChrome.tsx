@@ -3,16 +3,10 @@ import React from 'react'
 export function AppChrome() {
   return (
     <>
+      <div className="fixed inset-x-0 top-0 z-[60] h-[2px] bg-gradient-to-r from-cyan-300/70 via-cyan-400 to-cyan-300/70 pointer-events-none" />
       <div
-        className="fixed inset-x-0 top-0 h-[2px] bg-gradient-to-r from-cyan-300/70 via-cyan-400 to-cyan-300/70 pointer-events-none"
-        style={{ zIndex: 'calc(var(--z-header,50) + 1)' }}
-      />
-      <div
-        className="
-        fixed top-0 left-0 right-0 h-[var(--chrome-h,56px)]
-        z-[var(--z-chrome,30)]
-        pointer-events-none
-      "
+        className="fixed top-0 left-0 right-0 z-[var(--z-chrome,20)] pointer-events-none overflow-hidden"
+        style={{ height: 'clamp(40px, var(--chrome-h, 56px), 120px)' }}
         aria-hidden
       >
         {/* gradient */}

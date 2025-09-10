@@ -39,10 +39,13 @@ export function AppLayout({
   useLayoutEffect(() => {
     const el = internalHeaderRef.current
     if (!el) return
-    const setVar = () =>
-      document.documentElement.style.setProperty('--header-h', `${el.offsetHeight}px`)
-    setVar()
-    const ro = new ResizeObserver(setVar)
+    const update = () => {
+      const h = el.getBoundingClientRect().height || 56
+      const clamped = Math.min(120, Math.max(40, Math.round(h)))
+      document.documentElement.style.setProperty('--header-h', `${clamped}px`)
+    }
+    update()
+    const ro = new ResizeObserver(update)
     ro.observe(el)
 
     const rail = document.querySelector('[data-rail]')
