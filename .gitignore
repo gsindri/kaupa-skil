@@ -38,3 +38,5 @@ supabase/.temp/
 src/lib/types/database.ts
 test-results/
 supabase/.temp/
+
+extension/dist/assets/
