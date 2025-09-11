@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Minus, Plus } from 'lucide-react'
+import { Minus, Plus, Trash2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface QuantityStepperProps {
@@ -81,11 +81,21 @@ export function QuantityStepper({
     >
       <button
         className="flex h-full w-7 items-center justify-center p-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50 disabled:opacity-50"
-        aria-label={`Decrease quantity of ${itemLabel}`}
-        onClick={() => onChange(Math.max(min, quantity - 1))}
+        aria-label={
+          quantity === 1 ? `Remove ${itemLabel}` : `Decrease quantity of ${itemLabel}`
+        }
+        onClick={() =>
+          quantity === 1 && onRemove
+            ? onRemove()
+            : onChange(Math.max(min, quantity - 1))
+        }
         disabled={quantity === min}
       >
-        <Minus className="h-4 w-4 stroke-[1.5]" />
+        {quantity === 1 ? (
+          <Trash2 className="h-4 w-4 stroke-[1.5]" />
+        ) : (
+          <Minus className="h-4 w-4 stroke-[1.5]" />
+        )}
       </button>
       {editing ? (
         <input
