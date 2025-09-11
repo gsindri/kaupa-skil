@@ -293,6 +293,7 @@
 /* Ensure sidebar runs flush to the very top */
 [data-sidebar="sidebar"] {
   top: 0 !important;
+  margin-top: 0 !important;
 }
 
 /* Remove any accidental top border/stripe from the sidebar */
