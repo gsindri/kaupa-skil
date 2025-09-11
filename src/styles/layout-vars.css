@@ -5,7 +5,7 @@
   --chrome-h: var(--header-h);  /* chrome follows header */
   --header-left: var(--layout-rail);
 
-  --z-rail: 40;
-  --z-header: 45;  /* header above chrome */
-  --z-chrome: 20;  /* gradient below chrome */
+  --z-rail: 60;   /* highest - sidebar always on top */
+  --z-header: 50;  /* header above chrome */
+  --z-chrome: 30;  /* gradient below header but above content */
 }

@@ -61,8 +61,11 @@ export function AppLayout({
       {/* Left rail - fixed position */}
       <aside
         data-rail
-        className="fixed top-0 left-0 h-screen z-[var(--z-rail,40)]"
-        style={{ width: 'var(--layout-rail,72px)' }}
+        className="fixed top-0 left-0 h-screen"
+        style={{ 
+          width: 'var(--layout-rail,72px)',
+          zIndex: 'var(--z-rail, 60)'
+        }}
       >
         <PrimaryNavRail />
       </aside>
