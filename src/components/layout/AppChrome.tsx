@@ -3,8 +3,6 @@ import React from 'react'
 export function AppChrome() {
   return (
     <>
-      {/* Cyan stripe - positioned absolutely within the right column */}
-      <div className="absolute inset-x-0 top-0 z-[60] h-[2px] bg-gradient-to-r from-cyan-300/70 via-cyan-400 to-cyan-300/70 pointer-events-none" />
       
       {/* Chrome gradient background - scoped to right column */}
       <div
