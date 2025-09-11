@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Plus, Minus } from 'lucide-react';
+import { Plus, Minus, Trash2 } from 'lucide-react';
 
 interface QuantityControlsProps {
   quantity: number;
@@ -58,9 +58,13 @@ export function QuantityControls({
         onClick={onRemove}
         disabled={quantity === 0 || disabled}
         className="h-9 w-9 p-0 rounded-full border hover:bg-muted focus:ring-2 focus:ring-brand-400/60 transition-all duration-200"
-        aria-label="Decrease quantity"
+        aria-label={quantity === 1 ? 'Remove item' : 'Decrease quantity'}
       >
-        <Minus className="h-4 w-4" />
+        {quantity === 1 ? (
+          <Trash2 className="h-4 w-4" />
+        ) : (
+          <Minus className="h-4 w-4" />
+        )}
       </Button>
       
       <div className="relative">
