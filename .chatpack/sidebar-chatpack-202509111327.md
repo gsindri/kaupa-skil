@@ -1,4 +1,4 @@
-# Sidebar ChatPack 2025-09-11T03:04:15.265Z
+# Sidebar ChatPack 2025-09-11T13:27:47.942Z
 
 _Contains 13 file(s)._
 
@@ -1296,8 +1296,6 @@ html, body, #root {
 
 /* Set a fallback header height so content can offset correctly */
 :root {
-  --header-h: 56px;
-  --chrome-h: clamp(40px, var(--header-h, 56px), 120px);
   --sidebar-w: 256px; /* expanded width */
   --sidebar-rail-w: 48px; /* collapsed rail width */
   --header-left: var(--sidebar-w); /* computed from sidebar width */
@@ -1312,10 +1310,9 @@ html, body, #root {
 
 /* Header should start to the right of the sidebar */
 [data-app-header="true"] {
-  position: sticky;
-  top: 0;
-  left: var(--header-left);
-  width: calc(100% - var(--header-left));
+  position: static;
+  left: auto;
+  width: auto;
 }
 
 body {
@@ -1340,6 +1337,13 @@ main > *:first-child {
 }
 
 html { scrollbar-gutter: stable; }
+
+#catalogHeader {
+  --hdr-h: var(--header-h, 56px);
+  transform: translateY(calc(-1 * var(--hdr-p, 0) * var(--hdr-h)));
+  transition: transform 180ms ease;
+  will-change: transform;
+}
 
 #catalogHeader::before {
   /* Remove pseudo-element overlay that obscured the page */

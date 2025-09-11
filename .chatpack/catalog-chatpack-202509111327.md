@@ -1,4 +1,4 @@
-# Catalog ChatPack 2025-09-11T03:04:13.977Z
+# Catalog ChatPack 2025-09-11T13:27:46.952Z
 
 _Contains 37 file(s)._
 
@@ -4825,6 +4825,7 @@ export default function CatalogPage() {
 
   return (
     <AppLayout
+      headerRef={headerRef}
       header={
         <FiltersBar
           filters={filters}

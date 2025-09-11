@@ -1,4 +1,4 @@
-# Topbar ChatPack 2025-09-11T03:04:17.963Z
+# Topbar ChatPack 2025-09-11T13:27:49.926Z
 
 _Contains 11 file(s)._
 
@@ -192,7 +192,7 @@ export function AppChrome() {
       {/* Chrome gradient background - scoped to right column */}
       <div
         className="absolute top-0 left-0 right-0 z-[var(--z-chrome,20)] pointer-events-none overflow-hidden"
-        style={{ height: 'clamp(40px, var(--chrome-h, 56px), 120px)' }}
+        style={{ height: 'clamp(44px, var(--toolbar-h, 56px), 72px)' }}
         aria-hidden
       >
         {/* gradient */}
@@ -257,9 +257,8 @@ export function AppLayout({
     const el = internalHeaderRef.current
     if (!el) return
     const update = () => {
-      const h = el.getBoundingClientRect().height || 56
-      const clamped = Math.min(120, Math.max(40, Math.round(h)))
-      document.documentElement.style.setProperty('--header-h', `${clamped}px`)
+      const h = Math.round(el.getBoundingClientRect().height || 56)
+      document.documentElement.style.setProperty('--header-h', `${h}px`)
     }
     update()
     const ro = new ResizeObserver(update)
@@ -737,7 +736,7 @@ export function TenantSwitcher() {
 
 ```tsx
 
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState, useLayoutEffect } from 'react'
 import { HelpCircle, ChevronDown, ShoppingCart } from 'lucide-react'
 import {
   DropdownMenu,
@@ -760,6 +759,7 @@ export function TopNavigation() {
   const cartCount = getTotalItems()
 
   const searchRef = useRef<HTMLInputElement>(null)
+  const barRef = useRef<HTMLDivElement>(null)
   const [helpOpen, setHelpOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const lastKey = useRef<string>('')
@@ -791,6 +791,20 @@ export function TopNavigation() {
     return () => window.removeEventListener('keydown', handleKey)
   }, [setIsDrawerOpen])
 
+  useLayoutEffect(() => {
+    const el = barRef.current
+    if (!el) return
+    const set = () => {
+      const h = Math.round(el.getBoundingClientRect().height || 56)
+      const clamped = Math.min(72, Math.max(44, h))
+      document.documentElement.style.setProperty('--toolbar-h', `${clamped}px`)
+    }
+    set()
+    const ro = new ResizeObserver(set)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
+
   const handleSignOut = async () => {
     try {
       await signOut()
@@ -806,6 +820,7 @@ export function TopNavigation() {
   
   return (
     <div
+      ref={barRef}
       role="banner"
       data-app-header="true"
       className={cn(
@@ -814,7 +829,7 @@ export function TopNavigation() {
         'transition-[box-shadow] duration-base ease-snap motion-reduce:transition-none'
       )}
       style={{
-        height: 'clamp(40px, var(--chrome-h, 56px), 120px)'
+        height: 'clamp(44px, var(--toolbar-h, 56px), 72px)'
       }}
     >
       <TenantSwitcher />
@@ -1086,8 +1101,6 @@ html, body, #root {
 
 /* Set a fallback header height so content can offset correctly */
 :root {
-  --header-h: 56px;
-  --chrome-h: clamp(40px, var(--header-h, 56px), 120px);
   --sidebar-w: 256px; /* expanded width */
   --sidebar-rail-w: 48px; /* collapsed rail width */
   --header-left: var(--sidebar-w); /* computed from sidebar width */
@@ -1102,10 +1115,9 @@ html, body, #root {
 
 /* Header should start to the right of the sidebar */
 [data-app-header="true"] {
-  position: sticky;
-  top: 0;
-  left: var(--header-left);
-  width: calc(100% - var(--header-left));
+  position: static;
+  left: auto;
+  width: auto;
 }
 
 body {
@@ -1130,6 +1142,13 @@ main > *:first-child {
 }
 
 html { scrollbar-gutter: stable; }
+
+#catalogHeader {
+  --hdr-h: var(--header-h, 56px);
+  transform: translateY(calc(-1 * var(--hdr-p, 0) * var(--hdr-h)));
+  transition: transform 180ms ease;
+  will-change: transform;
+}
 
 #catalogHeader::before {
   /* Remove pseudo-element overlay that obscured the page */
@@ -1224,8 +1243,13 @@ svg.lucide{ stroke-width:1.75; }
 ```css
 :root {
   --layout-rail: 72px;     /* nav rail width */
-  --layout-header-h: 56px; /* fallback; JS already updates --header-h */
-  --chrome-h: clamp(40px, var(--header-h, var(--layout-header-h,56px)), 120px);
+  --layout-header-h: 56px; /* base header height */
+  /* total sticky header (wrapper): Top bar + page-level bars */
+  --header-h: var(--layout-header-h);
+  /* dedicated toolbar height: just the TopNavigation */
+  --toolbar-h: 56px;
+  /* chrome follows the toolbar, not the whole header */
+  --chrome-h: var(--toolbar-h);
   --header-left: var(--sidebar-w);
 
   --z-rail: 40;
