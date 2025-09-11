@@ -85,6 +85,12 @@ main > *:first-child {
 
 html { scrollbar-gutter: stable; }
 
+#catalogHeader {
+  transform: translateY(calc(-100% * var(--hdr-p, 0)));
+  transition: transform 120ms ease-out;
+  will-change: transform;
+}
+
 #catalogHeader::before {
   /* Remove pseudo-element overlay that obscured the page */
   content: none !important;
