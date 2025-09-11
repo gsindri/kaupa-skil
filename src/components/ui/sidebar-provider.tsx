@@ -51,9 +51,12 @@ export function SidebarProvider({
   }, [])
 
   React.useEffect(() => {
-    const expanded = open && !isMobile
-    const v = expanded ? 'var(--sidebar-w)' : 'var(--sidebar-rail-w)'
-    document.documentElement.style.setProperty('--header-left', v)
+    const headerLeft = isMobile
+      ? '0px'
+      : open
+        ? 'var(--sidebar-w)'
+        : 'var(--sidebar-rail-w)'
+    document.documentElement.style.setProperty('--header-left', headerLeft)
   }, [open, isMobile])
 
   const toggleSidebar = React.useCallback(() => {
@@ -81,12 +84,13 @@ export function SidebarProvider({
       <div
           style={
             {
-              "--sidebar-width": isMobile
-                ? SIDEBAR_WIDTH_ICON
+              "--sidebar-w": SIDEBAR_WIDTH,
+              "--sidebar-rail-w": SIDEBAR_WIDTH_ICON,
+              "--header-left": isMobile
+                ? '0px'
                 : open
                   ? SIDEBAR_WIDTH
                   : SIDEBAR_WIDTH_ICON,
-              "--sidebar-width-icon": SIDEBAR_WIDTH_ICON,
               ...style,
             } as React.CSSProperties
           }
