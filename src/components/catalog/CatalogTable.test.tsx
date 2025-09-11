@@ -14,6 +14,14 @@ vi.mock('@/hooks/useVendors', () => ({
   useVendors: () => ({ vendors: [] }),
 }))
 
+vi.mock('@/hooks/useSuppliers', () => ({
+  useSuppliers: () => ({ suppliers: [] })
+}))
+
+vi.mock('@/hooks/useSupplierConnections', () => ({
+  useSupplierConnections: () => ({ suppliers: [] })
+}))
+
 describe('CatalogTable', () => {
   beforeEach(() => {
     cartState.items = []
