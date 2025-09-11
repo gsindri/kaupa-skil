@@ -30,7 +30,7 @@ function useContainerSize(ref: React.RefObject<HTMLElement>) {
     })
     ro.observe(ref.current)
     return () => ro.disconnect()
-  }, [])
+  }, [ref])
   return { width: w }
 }
 
