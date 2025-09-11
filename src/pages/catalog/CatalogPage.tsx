@@ -883,6 +883,7 @@ export default function CatalogPage() {
 
   return (
     <AppLayout
+      headerRef={headerRef}
       header={
         <FiltersBar
           filters={filters}
