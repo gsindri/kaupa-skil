@@ -111,7 +111,7 @@ export function VirtualizedGrid<T>({
 
   const rowVirtualizer = useVirtualizer({
     count: rowCount,
-    getScrollElement: () => scrollerRef.current,
+    getScrollElement: () => null,
     estimateSize: () => rowHeight,
     overscan: 3,
     // measure element for precise size only if you let rowHeight vary
@@ -144,9 +144,7 @@ export function VirtualizedGrid<T>({
       className={className}
       style={{
         position: 'relative',
-        overflow: 'auto',
         willChange: 'transform',
-        contain: 'layout paint size',
         ...style,
       }}
     >

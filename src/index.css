@@ -42,7 +42,7 @@ html, body, #root {
 :root {
   --sidebar-w: 256px; /* expanded width */
   --sidebar-rail-w: 48px; /* collapsed rail width */
-  --header-left: var(--sidebar-w); /* computed from sidebar width */
+  --header-left: var(--layout-rail, 72px); /* computed from rail width */
   --header-right: 0px; /* reserved for symmetry */
 }
 
