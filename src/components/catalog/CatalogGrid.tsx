@@ -31,7 +31,6 @@ export function CatalogGrid({
       gap={16}
       onNearEnd={onNearEnd}
       className="px-4 py-2"
-      style={{ height: 'calc(100vh - var(--chrome-h))' }}
     />
   )
 }

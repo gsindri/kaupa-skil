@@ -740,10 +740,8 @@ export default function CatalogPage() {
       const now = performance.now()
       const ae = document.activeElement
       const menuOpen = el.querySelector('[data-open="true"]')
-      const mainContent = document.getElementById('main-content')
-      const scrollY = mainContent?.scrollTop || 0
       return (
-        scrollY < 1 ||
+        window.scrollY < 1 ||
         headerLocked ||
         isTypeable(ae) ||
         !!menuOpen ||
@@ -752,8 +750,7 @@ export default function CatalogPage() {
     }
 
     const onScroll = () => {
-      const mainContent = document.getElementById('main-content')
-      const y  = Math.max(0, mainContent?.scrollTop || 0)
+      const y  = Math.max(0, window.scrollY)
       const dy = y - lastY
       lastY = y
       setScrolled(y > 0)
@@ -837,13 +834,11 @@ export default function CatalogPage() {
     }
 
     const listener = () => requestAnimationFrame(onScroll)
-    const mainContent = document.getElementById('main-content')
-    mainContent?.addEventListener('scroll', listener, { passive: true })
+    window.addEventListener('scroll', listener, { passive: true })
     // If you keep wheel/touch preempts, guard them so they don't fight the rAF:
     const wheel = (e: WheelEvent) => {
       if (performance.now() < viewSwapQuietUntil.current) return
-      const currentScrollY = mainContent?.scrollTop || 0
-      if (currentScrollY >= H + GAP) {
+      if (window.scrollY >= H + GAP) {
         const now = performance.now()
         if (e.deltaY > 0) {
           // down → hide
@@ -852,7 +847,7 @@ export default function CatalogPage() {
             lock = 'hidden'
             lastSnapDir = 1
             lastSnapTime = now
-            lastSnapY = currentScrollY
+            lastSnapY = window.scrollY
           }
         } else if (e.deltaY < 0) {
           // up → show
@@ -861,21 +856,20 @@ export default function CatalogPage() {
             lock = 'visible'
             lastSnapDir = -1
             lastSnapTime = now
-            lastSnapY = currentScrollY
+            lastSnapY = window.scrollY
           }
         }
       }
     }
-    mainContent?.addEventListener('wheel', wheel, { passive: true })
+    window.addEventListener('wheel', wheel, { passive: true })
 
     // Initial apply
     listener()
 
     return () => {
       document.documentElement.style.setProperty('--hdr-p', '0')
-      const mainContent = document.getElementById('main-content')
-      mainContent?.removeEventListener('scroll', listener)
-      mainContent?.removeEventListener('wheel', wheel)
+      window.removeEventListener('scroll', listener)
+      window.removeEventListener('wheel', wheel)
       window.removeEventListener('resize', setHeaderVars)
       el.removeEventListener('pointerdown', handlePointerDown)
       ro.disconnect()

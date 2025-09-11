@@ -57,30 +57,26 @@ export function AppLayout({
   }, [])
 
   return (
-    <div
-      className="relative h-screen grid"
-      style={{ gridTemplateColumns: 'var(--layout-rail,72px) 1fr' }}
-    >
-      <a
-        href="#main-content"
-        className="sr-only focus:not-sr-only absolute left-2 top-2 z-[var(--z-header,50)] px-3 py-2 rounded bg-[var(--button-primary)] text-white"
-      >
-        Skip to content
-      </a>
-      <AppChrome />
-
-      {/* Left rail */}
+    <div className="relative min-h-screen">
+      {/* Left rail - fixed position */}
       <aside
         data-rail
-        className="sticky top-0 h-screen"
-        style={{ zIndex: 'var(--z-rail,40)' }}
+        className="fixed top-0 left-0 h-screen z-[var(--z-rail,40)]"
+        style={{ width: 'var(--layout-rail,72px)' }}
       >
         <PrimaryNavRail />
       </aside>
 
-      {/* Right column: header + page */}
-      <div className="relative">
-        {/* Header is now scoped to the right column only */}
+      {/* Right content area */}
+      <div style={{ marginLeft: 'var(--layout-rail,72px)' }}>
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only absolute left-2 top-2 z-[var(--z-header,50)] px-3 py-2 rounded bg-[var(--button-primary)] text-white"
+        >
+          Skip to content
+        </a>
+        <AppChrome />
+        {/* Header */}
         <div
           id="catalogHeader"
           ref={combinedHeaderRef}
@@ -91,11 +87,8 @@ export function AppLayout({
           {header}
         </div>
 
-        {/* Content; if header overlays, pad with the measured height */}
-        <main
-          id="main-content"
-          style={{ paddingTop: 'var(--header-h, var(--layout-header-h,56px))' }}
-        >
+        {/* Main content */}
+        <main id="main-content">
           <div className="mx-auto max-w-[1280px] px-4 sm:px-6 lg:px-8">
             {children ?? <Outlet />}
           </div>
