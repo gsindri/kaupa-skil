@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { useVirtualizer } from '@tanstack/react-virtual'
+import { useWindowVirtualizer } from '@tanstack/react-virtual'
 
 export interface VirtualizedGridProps<T> {
   items: T[]
@@ -130,9 +130,8 @@ export function VirtualizedGrid<T>({
 
   const rowCount = Math.ceil(items.length / cols)
 
-  const rowVirtualizer = useVirtualizer({
+  const rowVirtualizer = useWindowVirtualizer({
     count: rowCount,
-    getScrollElement: () => (typeof window !== 'undefined' ? window : null),
     estimateSize: () => rowHeight,
     overscan: 3,
     scrollMargin,
