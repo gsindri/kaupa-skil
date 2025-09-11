@@ -42,16 +42,16 @@ export function useCatalogProducts(filters: PublicCatalogFilters, sort: SortOrde
   const query = useQuery({
     queryKey: ['catalog', stateHash],
     queryFn: () => fetchPublicCatalogItems(filters, sort),
-    keepPreviousData: true,
+    placeholderData: (previousData) => previousData,
     staleTime: 30_000,
     gcTime: 900_000,
   });
 
   return {
     ...query,
-    data: query.data?.items,
-    nextCursor: query.data?.nextCursor,
-    total: query.data?.total,
+    data: (query.data as any)?.items,
+    nextCursor: (query.data as any)?.nextCursor,
+    total: (query.data as any)?.total,
   };
 }
 

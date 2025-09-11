@@ -1083,7 +1083,7 @@ function FiltersBar({
             <ViewToggle
               value={view}
               onChange={v => {
-                rememberScroll(viewKey)
+                rememberScroll(`catalog:${view}`)
                 setView(v)
               }}
             />
