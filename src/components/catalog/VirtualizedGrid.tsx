@@ -86,13 +86,24 @@ export function VirtualizedGrid<T>({
 
   // Debug logging
   React.useEffect(() => {
-    console.log('VirtualizedGrid render:', { 
-      itemsLength: items.length, 
+    console.log('VirtualizedGrid render:', {
+      itemsLength: items.length,
       width,
       minCardWidth,
-      gap 
+      gap
     })
   }, [items.length, width, minCardWidth, gap])
+
+  // Distance from the top of the document to the grid. Used so the
+  // window virtualizer knows where our grid begins.
+  const [scrollMargin, setScrollMargin] = React.useState(0)
+  React.useLayoutEffect(() => {
+    if (typeof window === 'undefined') return
+    const node = scrollerRef.current
+    if (!node) return
+    const rect = node.getBoundingClientRect()
+    setScrollMargin(rect.top + window.scrollY)
+  }, [])
 
   // Derive column count from width.
   const getCols = React.useCallback(() => {
@@ -121,10 +132,10 @@ export function VirtualizedGrid<T>({
 
   const rowVirtualizer = useVirtualizer({
     count: rowCount,
-    getScrollElement: () => null, // Use window scroll
+    getScrollElement: () => (typeof window !== 'undefined' ? window : null),
     estimateSize: () => rowHeight,
     overscan: 3,
-    scrollMargin: scrollerRef.current?.offsetTop ?? 0,
+    scrollMargin,
     // measure element for precise size only if you let rowHeight vary
     // measureElement: (el) => el.getBoundingClientRect().height,
   })
@@ -133,6 +144,16 @@ export function VirtualizedGrid<T>({
   // referenced both for rendering and in effects without re-reading the
   // virtualizer state multiple times.
   const virtualRows = rowVirtualizer.getVirtualItems()
+
+  // Log the virtual row count to help debug empty renders
+  React.useEffect(() => {
+    console.log('VirtualizedGrid virtualRows:', {
+      virtualRowCount: virtualRows.length,
+      rowCount,
+      cols,
+      itemsLength: items.length,
+    })
+  }, [virtualRows, rowCount, cols, items.length])
 
   // Prefetch when near the end (observe the last virtual row)
   React.useEffect(() => {
