@@ -41,3 +41,4 @@ test-results/
 supabase/.temp/
 
 extension/dist/assets/
+/.tmp.driveupload
