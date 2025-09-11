@@ -662,11 +662,13 @@ export type Database = {
           canonical_pack: string | null
           catalog_id: string | null
           category_tags: string[] | null
+          gtin: string | null
           name: string | null
           on_special: boolean | null
           pack_sizes: string[] | null
           sample_image_url: string | null
           sample_source_url: string | null
+          size: string | null
           supplier_ids: string[] | null
           supplier_logo_urls: string[] | null
           supplier_names: string[] | null
