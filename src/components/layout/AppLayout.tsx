@@ -88,10 +88,15 @@ export function AppLayout({
         </div>
 
         {/* Main content */}
-        <main id="main-content">
-          <div className="mx-auto max-w-[1280px] px-4 sm:px-6 lg:px-8">
-            {children ?? <Outlet />}
-          </div>
+        <main 
+          id="main-content" 
+          className="mx-auto max-w-[1280px] px-4 sm:px-6 lg:px-8"
+          style={{ 
+            minHeight: 'calc(100vh - var(--header-h, 56px))',
+            paddingTop: '1rem'
+          }}
+        >
+          {children ?? <Outlet />}
         </main>
       </div>
       <CartDrawer />

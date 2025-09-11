@@ -1,15 +1,11 @@
 :root {
   --layout-rail: 72px;     /* nav rail width */
-  --layout-header-h: 56px; /* base header height */
-  /* total sticky header (wrapper): Top bar + page-level bars */
-  --header-h: var(--layout-header-h);
-  /* dedicated toolbar height: just the TopNavigation */
-  --toolbar-h: 56px;
-  /* chrome follows the toolbar, not the whole header */
-  --chrome-h: var(--toolbar-h);
-  --header-left: var(--sidebar-w);
+  --header-h: 56px;        /* unified header height */
+  --toolbar-h: var(--header-h); /* toolbar follows header */
+  --chrome-h: var(--header-h);  /* chrome follows header */
+  --header-left: var(--layout-rail);
 
   --z-rail: 40;
   --z-header: 45;  /* header above chrome */
-  --z-chrome: 20;  /* gradient below header */
+  --z-chrome: 20;  /* gradient below chrome */
 }
