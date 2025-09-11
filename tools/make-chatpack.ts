@@ -4,27 +4,91 @@ import { promises as fs } from 'fs'
 import path from 'path'
 
 /**
- * Usage:
+ * Usage (examples):
+ *   pnpm dlx tsx tools/make-chatpack.ts --preset suppliers
  *   pnpm dlx tsx tools/make-chatpack.ts --preset topbar
  *   pnpm dlx tsx tools/make-chatpack.ts --preset sidebar
  *   pnpm dlx tsx tools/make-chatpack.ts --preset cart
  *   pnpm dlx tsx tools/make-chatpack.ts --preset catalog
  *
- * (optional) add npm scripts:
- *   "chat:pack": "tsx tools/make-chatpack.ts --preset catalog",
- *   "chat:pack:sidebar": "tsx tools/make-chatpack.ts --preset sidebar",
- *   "chat:pack:cart": "tsx tools/make-chatpack.ts --preset cart",
- *   "chat:pack:topbar": "tsx tools/make-chatpack.ts --preset topbar"
+ * Optional flags:
+ *   --keep 2   # keep the last 2 old packs for this preset (default 0 = delete all old)
+ *
+ * (optional) package.json scripts:
+ *   "chat:pack:suppliers": "tsx tools/make-chatpack.ts --preset suppliers",
+ *   "chat:pack:topbar":    "tsx tools/make-chatpack.ts --preset topbar",
+ *   "chat:pack:sidebar":   "tsx tools/make-chatpack.ts --preset sidebar",
+ *   "chat:pack:cart":      "tsx tools/make-chatpack.ts --preset cart",
+ *   "chat:pack:catalog":   "tsx tools/make-chatpack.ts --preset catalog"
  */
 
 type PresetConfig = {
   /** explicit file names or paths to include (exact path first, else basename search) */
   requested?: string[]
-  /** glob patterns to include (mainly for catalog) */
+  /** glob patterns to include (to catch moved/renamed helpers) */
   patterns?: string[]
 }
 
 const PRESETS: Record<string, PresetConfig> = {
+  suppliers: {
+    requested: [
+      // Database schema
+      'supabase/migrations/20250812165208_79d75377-0718-46c4-ae46-a086b1a517a6.sql',
+      'supabase/migrations/20250830130000_create_supplier_connections.sql',
+      'src/integrations/supabase/types.ts',
+
+      // Supabase edge functions & ingestion pipeline
+      'supabase/functions/ingest-supplier/index.ts',
+      'supabase/functions/ingest-supplier-products/index.ts',
+      'supabase/functions/schedule-supplier-ingestion/index.ts',
+      'supabase/functions/match-supplier-item/index.ts',
+      'ingestion/adapters/api-foo.ts',
+
+      // Frontend hooks and data access
+      'src/hooks/useSuppliers.tsx',
+      'src/hooks/useSupplierCredentials.tsx',
+      'src/hooks/useSupplierConnections.ts',
+      'src/hooks/useSupplierItems.tsx',
+      'src/hooks/useConnectorRuns.tsx',
+
+      // UI components and pages
+      'src/components/suppliers/EnhancedSupplierManagement.tsx',
+      'src/components/suppliers/SupplierList.tsx',
+      'src/components/dashboard/SuppliersPanel.tsx',
+      'src/pages/Suppliers.tsx',
+
+      // Documentation
+      'docs/CONNECTORS.md',
+
+      // Helpful fallbacks by basename
+      'create_supplier_connections.sql',
+      'types.ts',
+      'EnhancedSupplierManagement.tsx',
+      'SupplierList.tsx',
+      'SuppliersPanel.tsx',
+      'Suppliers.tsx',
+      'CONNECTORS.md',
+    ],
+    patterns: [
+      // DB migrations (catch renamed files)
+      'supabase/migrations/**/*supplier*.sql',
+      // Edge functions
+      'supabase/functions/{ingest-supplier,ingest-supplier-products,schedule-supplier-ingestion,match-supplier-item}/**/*.{ts,tsx,js}',
+      // Ingestion adapters
+      'ingestion/adapters/**/*.{ts,tsx}',
+      // Hooks
+      'src/hooks/**/useSupplier*.ts*',
+      'src/hooks/**/useConnectorRuns.ts*',
+      // Components/pages
+      'src/components/**/suppliers/**/*.tsx',
+      'src/components/**/Supplier*.tsx',
+      'src/components/dashboard/*Supplier*.tsx',
+      'src/pages/**/Suppliers.tsx',
+      // Docs
+      'docs/**/CONNECTORS.md',
+    ],
+  },
+
   catalog: {
     patterns: [
       'src/pages/catalog/**/*.{ts,tsx,css}',
@@ -51,7 +115,6 @@ const PRESETS: Record<string, PresetConfig> = {
       '/mnt/data/useBasket.ts',
       '/mnt/data/useAuth.ts',
       '/mnt/data/OrderingSuggestions.ts',
-      // also catch renamed/moved:
       'sidebar.tsx',
       'sidebar-provider.tsx',
       'use-sidebar.ts',
@@ -141,11 +204,18 @@ function langFor(p: string) {
   if (lower.endsWith('.tsx')) return 'tsx'
   if (lower.endsWith('.ts')) return 'ts'
   if (lower.endsWith('.js')) return 'js'
+  if (lower.endsWith('.sql')) return 'sql'
+  if (lower.endsWith('.md') || lower.endsWith('.mdx')) return 'md'
   return ''
 }
 
 async function exists(p: string) {
-  try { await fs.stat(p); return true } catch { return false }
+  try {
+    await fs.stat(p)
+    return true
+  } catch {
+    return false
+  }
 }
 
 function rank(p: string): number {
@@ -204,12 +274,29 @@ async function collectFiles(preset: PresetConfig): Promise<string[]> {
 }
 
 function timestamp() {
-  // YYYYMMDDHHMM windows-safe
+  // YYYYMMDDHHMM (windows-safe)
   return new Date().toISOString().replace(/[-:T]/g, '').slice(0, 12)
+}
+
+async function cleanOldPacks(outDir: string, presetName: string, keep = 0) {
+  const pattern = `${outDir}/${presetName}-chatpack-*.md`
+  const matches = (await fg([pattern], { dot: false })).sort()
+  if (matches.length === 0) return []
+
+  const toDelete = keep > 0 ? matches.slice(0, Math.max(0, matches.length - keep)) : matches
+  await Promise.allSettled(toDelete.map(p => fs.unlink(p)))
+  return toDelete
+}
+
+function capitalize(s: string) {
+  return s.charAt(0).toUpperCase() + s.slice(1)
 }
 
 async function run() {
   const presetName = parseArg('preset', 'catalog') ?? 'catalog'
+  const keepStr = parseArg('keep', '0') ?? '0'
+  const keep = Math.max(0, Number.isFinite(Number(keepStr)) ? Number(keepStr) : 0)
+
   const cfg = PRESETS[presetName]
   if (!cfg) {
     console.error(`Unknown preset "${presetName}". Available: ${Object.keys(PRESETS).join(', ')}`)
@@ -217,11 +304,18 @@ async function run() {
   }
 
   const files = await collectFiles(cfg)
-  const stamp = timestamp()
-  const outDir = '.chatpack'
-  const outPath = `${outDir}/${presetName}-chatpack-${stamp}.md`
 
+  const outDir = '.chatpack'
   await fs.mkdir(outDir, { recursive: true })
+
+  // delete older packs for this preset (keep N if requested)
+  const deleted = await cleanOldPacks(outDir, presetName, keep)
+  if (deleted.length) {
+    console.log(`Deleted ${deleted.length} old pack(s) for "${presetName}".`)
+  }
+
+  const stamp = timestamp()
+  const outPath = `${outDir}/${presetName}-chatpack-${stamp}.md`
 
   let out = `# ${capitalize(presetName)} ChatPack ${new Date().toISOString()}\n\n_Contains ${files.length} file(s)._`
 
@@ -233,10 +327,6 @@ async function run() {
 
   await fs.writeFile(outPath, out, 'utf8')
   console.log(`Wrote ${outPath} with ${files.length} file(s)`)
-}
-
-function capitalize(s: string) {
-  return s.charAt(0).toUpperCase() + s.slice(1)
 }
 
 run().catch(e => {

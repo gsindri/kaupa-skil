@@ -2,3 +2,4 @@ pnpm run chat:pack           # catalog
 pnpm run chat:pack:sidebar
 pnpm run chat:pack:cart
 pnpm run chat:pack:topbar
+pnpm run chat:pack:suppliers
