@@ -16,8 +16,8 @@ const items = [
 export function PrimaryNavRail() {
   const { pathname } = useLocation()
   return (
-    <div className="h-full bg-gradient-to-b from-[#0B1220] via-[#0E1B35] to-[#0E2A5E] relative">
-      
+    <div className="h-full w-[var(--layout-rail,72px)] bg-gradient-to-b from-[#0B1220] via-[#0E1B35] to-[#0E2A5E] relative">
+
       <nav className="mt-2 flex w-full flex-col items-center gap-1">
       {items.map(({ to, icon: Icon, label }) => {
         const active = pathname === to || pathname.startsWith(to + '/')
