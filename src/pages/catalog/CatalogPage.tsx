@@ -213,11 +213,16 @@ export default function CatalogPage() {
     if (!el) return
 
     el.style.setProperty('--hdr-p', '0')
+    document.documentElement.style.setProperty('--hdr-p', '0')
 
     requestAnimationFrame(() => {
       const H = Math.round(el.getBoundingClientRect().height)
       document.documentElement.style.setProperty('--header-h', `${H}px`)
     })
+
+    return () => {
+      document.documentElement.style.setProperty('--hdr-p', '0')
+    }
   }, [view])
 
   const unconnectedPercentage = useMemo(() => {
@@ -724,7 +729,9 @@ export default function CatalogPage() {
       // snap near extremes to avoid micro "reload"
       const v = p < 0.02 ? 0 : p > 0.98 ? 1 : p
       if (v !== prevP) {
-        el.style.setProperty('--hdr-p', v.toFixed(3))
+        const val = v.toFixed(3)
+        el.style.setProperty('--hdr-p', val)
+        document.documentElement.style.setProperty('--hdr-p', val)
         prevP = v
       }
     }
@@ -860,6 +867,7 @@ export default function CatalogPage() {
     listener()
 
     return () => {
+      document.documentElement.style.setProperty('--hdr-p', '0')
       window.removeEventListener('scroll', listener)
       window.removeEventListener('wheel', wheel)
       window.removeEventListener('resize', setHeaderVars)
@@ -871,6 +879,7 @@ export default function CatalogPage() {
   useEffect(() => {
     if (headerLocked) {
       headerRef.current?.style.setProperty('--hdr-p', '0')
+      document.documentElement.style.setProperty('--hdr-p', '0')
     }
   }, [headerLocked])
 

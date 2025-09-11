@@ -8,8 +8,12 @@ export function AppChrome() {
       
       {/* Chrome gradient background - scoped to right column */}
       <div
-        className="absolute top-0 left-0 right-0 z-[var(--z-chrome,20)] pointer-events-none overflow-hidden"
-        style={{ height: 'clamp(44px, var(--toolbar-h, 56px), 72px)' }}
+        className="fixed top-0 left-0 right-0 z-[var(--z-chrome,20)] pointer-events-none overflow-hidden"
+        style={{
+          height: 'clamp(44px, var(--toolbar-h, 56px), 72px)',
+          transform:
+            'translateY(calc(-1 * var(--hdr-p, 0) * var(--header-h, 56px)))',
+        }}
         aria-hidden
       >
         {/* gradient */}
