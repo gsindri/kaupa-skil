@@ -41,9 +41,8 @@ export function AppLayout({
     const el = internalHeaderRef.current
     if (!el) return
     const update = () => {
-      const h = el.getBoundingClientRect().height || 56
-      const clamped = Math.min(120, Math.max(40, Math.round(h)))
-      document.documentElement.style.setProperty('--header-h', `${clamped}px`)
+      const h = Math.round(el.getBoundingClientRect().height || 56)
+      document.documentElement.style.setProperty('--header-h', `${h}px`)
     }
     update()
     const ro = new ResizeObserver(update)

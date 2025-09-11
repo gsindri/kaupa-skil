@@ -9,7 +9,7 @@ export function AppChrome() {
       {/* Chrome gradient background - scoped to right column */}
       <div
         className="absolute top-0 left-0 right-0 z-[var(--z-chrome,20)] pointer-events-none overflow-hidden"
-        style={{ height: 'clamp(40px, var(--chrome-h, 56px), 120px)' }}
+        style={{ height: 'clamp(44px, var(--toolbar-h, 56px), 72px)' }}
         aria-hidden
       >
         {/* gradient */}

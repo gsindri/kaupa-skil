@@ -1,5 +1,5 @@
 
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState, useLayoutEffect } from 'react'
 import { HelpCircle, ChevronDown, ShoppingCart } from 'lucide-react'
 import {
   DropdownMenu,
@@ -22,6 +22,7 @@ export function TopNavigation() {
   const cartCount = getTotalItems()
 
   const searchRef = useRef<HTMLInputElement>(null)
+  const barRef = useRef<HTMLDivElement>(null)
   const [helpOpen, setHelpOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const lastKey = useRef<string>('')
@@ -53,6 +54,20 @@ export function TopNavigation() {
     return () => window.removeEventListener('keydown', handleKey)
   }, [setIsDrawerOpen])
 
+  useLayoutEffect(() => {
+    const el = barRef.current
+    if (!el) return
+    const set = () => {
+      const h = Math.round(el.getBoundingClientRect().height || 56)
+      const clamped = Math.min(72, Math.max(44, h))
+      document.documentElement.style.setProperty('--toolbar-h', `${clamped}px`)
+    }
+    set()
+    const ro = new ResizeObserver(set)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
+
   const handleSignOut = async () => {
     try {
       await signOut()
@@ -68,6 +83,7 @@ export function TopNavigation() {
   
   return (
     <div
+      ref={barRef}
       role="banner"
       data-app-header="true"
       className={cn(
@@ -76,7 +92,7 @@ export function TopNavigation() {
         'transition-[box-shadow] duration-base ease-snap motion-reduce:transition-none'
       )}
       style={{
-        height: 'clamp(40px, var(--chrome-h, 56px), 120px)'
+        height: 'clamp(44px, var(--toolbar-h, 56px), 72px)'
       }}
     >
       <TenantSwitcher />
