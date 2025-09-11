@@ -31,6 +31,7 @@ export function CatalogGrid({
       gap={16}
       onNearEnd={onNearEnd}
       className="px-4 py-2"
+      style={{ minHeight: '100vh' }}
     />
   )
 }
