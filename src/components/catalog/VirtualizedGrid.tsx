@@ -84,6 +84,16 @@ export function VirtualizedGrid<T>({
 
   const { width } = useContainerSize(scrollerRef)
 
+  // Debug logging
+  React.useEffect(() => {
+    console.log('VirtualizedGrid render:', { 
+      itemsLength: items.length, 
+      width,
+      minCardWidth,
+      gap 
+    })
+  }, [items.length, width, minCardWidth, gap])
+
   // Derive column count from width.
   const getCols = React.useCallback(() => {
     if (!width) return 1
@@ -114,6 +124,7 @@ export function VirtualizedGrid<T>({
     getScrollElement: () => null, // Use window scroll
     estimateSize: () => rowHeight,
     overscan: 3,
+    scrollMargin: scrollerRef.current?.offsetTop ?? 0,
     // measure element for precise size only if you let rowHeight vary
     // measureElement: (el) => el.getBoundingClientRect().height,
   })
@@ -145,6 +156,7 @@ export function VirtualizedGrid<T>({
       style={{
         position: 'relative',
         willChange: 'transform',
+        minHeight: '100vh',
         ...style,
       }}
     >
