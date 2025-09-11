@@ -46,7 +46,7 @@ const Sidebar = React.forwardRef<
       return (
         <div
           className={cn(
-            "flex h-full w-[--sidebar-width] flex-col bg-sidebar text-sidebar-foreground overflow-x-hidden",
+            "flex h-full w-[--sidebar-w] flex-col bg-sidebar text-sidebar-foreground overflow-x-hidden",
             className
           )}
           ref={ref}
@@ -63,10 +63,10 @@ const Sidebar = React.forwardRef<
           <SheetContent
             data-sidebar="sidebar"
             data-mobile="true"
-            className="w-[--sidebar-width] overflow-x-hidden bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
+            className="w-[--sidebar-w] overflow-x-hidden bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
             style={
               {
-                "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
+                "--sidebar-w": SIDEBAR_WIDTH_MOBILE,
               } as React.CSSProperties
             }
             side={side}
@@ -93,27 +93,27 @@ const Sidebar = React.forwardRef<
             // Ensure width is truly 0 when collapsed in offcanvas mode
             state === "collapsed" && collapsible === "offcanvas" 
               ? "w-0 min-w-0" 
-              : "w-[--sidebar-width]",
+              : "w-[--sidebar-w]",
             "group-data-[side=right]:rotate-180",
             variant === "floating" || variant === "inset"
-              ? "group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)_+_theme(spacing.4))]"
-              : "group-data-[collapsible=icon]:w-[--sidebar-width-icon]"
+              ? "group-data-[collapsible=icon]:w-[calc(var(--sidebar-rail-w)_+_theme(spacing.4))]"
+              : "group-data-[collapsible=icon]:w-[--sidebar-rail-w]"
           )}
         />
         <div
           className={cn(
-            "fixed inset-y-0 z-10 hidden h-svh overflow-x-hidden md:flex will-change-[transform,opacity] transition-[left,right,width,opacity,transform,box-shadow] duration-300 ease-in-out motion-reduce:transition-none motion-reduce:transform-none",
+            "fixed top-0 z-[80] hidden h-svh overflow-x-hidden md:flex rounded-none border-t-0 will-change-[width] transition-[left,right,width,opacity,transform,box-shadow] duration-300 ease-in-out motion-reduce:transition-none motion-reduce:transform-none",
             // CRITICAL FIX: Ensure complete hide when collapsed
               state === "collapsed" && collapsible === "offcanvas"
                 ? "w-0 opacity-0 pointer-events-none -translate-x-full overflow-hidden shadow-none"
-                : "w-[--sidebar-width] opacity-100 translate-x-0 shadow-lg",
+                : "w-[--sidebar-w] opacity-100 translate-x-0 shadow-lg",
             side === "left"
               ? "left-0"
               : "right-0",
             // Adjust the padding for floating and inset variants.
             variant === "floating" || variant === "inset"
-              ? "p-2 group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)_+_theme(spacing.4)_+2px)]"
-              : "group-data-[collapsible=icon]:w-[--sidebar-width-icon] group-data-[side=left]:border-r group-data-[side=right]:border-l border-sidebar-border",
+              ? "p-2 group-data-[collapsible=icon]:w-[calc(var(--sidebar-rail-w)_+_theme(spacing.4)_+2px)]"
+              : "group-data-[collapsible=icon]:w-[--sidebar-rail-w] group-data-[side=left]:border-r group-data-[side=right]:border-l border-sidebar-border",
             className
           )}
           {...props}
