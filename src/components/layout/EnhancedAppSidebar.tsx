@@ -119,7 +119,7 @@ export function EnhancedAppSidebar() {
             <HeildaLogo className="h-7 w-auto" />
           </NavLink>
         </SidebarHeader>
-        <SidebarContent className="pt-[clamp(20px,9vh,84px)] data-[collapsible=icon]:pt-[clamp(12px,7vh,56px)]">
+        <SidebarContent>
           <SidebarGroup className="p-2 pb-0">
             <SidebarGroupContent>
               <SidebarMenu className="gap-2">
