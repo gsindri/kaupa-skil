@@ -1,4 +1,4 @@
-# Topbar ChatPack 2025-09-11T13:27:49.926Z
+# Topbar ChatPack 2025-09-11T15:37:16.735Z
 
 _Contains 11 file(s)._
 
@@ -191,8 +191,12 @@ export function AppChrome() {
       
       {/* Chrome gradient background - scoped to right column */}
       <div
-        className="absolute top-0 left-0 right-0 z-[var(--z-chrome,20)] pointer-events-none overflow-hidden"
-        style={{ height: 'clamp(44px, var(--toolbar-h, 56px), 72px)' }}
+        className="fixed top-0 left-0 right-0 z-[var(--z-chrome,20)] pointer-events-none overflow-hidden"
+        style={{
+          height: 'clamp(44px, var(--toolbar-h, 56px), 72px)',
+          transform:
+            'translateY(calc(-1 * var(--hdr-p, 0) * var(--header-h, 56px)))',
+        }}
         aria-hidden
       >
         {/* gradient */}
@@ -1158,6 +1162,41 @@ html { scrollbar-gutter: stable; }
 @media (prefers-reduced-motion: reduce){
   #catalogHeader{ transition:none; }
 }
+
+/* 1) Ensure header is to the right of the sidebar */
+[data-app-header="true"],
+.app-header,
+#catalogHeader {
+  position: sticky;
+  top: 0;
+  left: var(--header-left, 0px);
+  width: calc(100% - var(--header-left, 0px));
+  z-index: 40;
+}
+
+/* 2) Sidebar should touch the very top and contain no internal stripe */
+[data-sidebar="sidebar"] {
+  top: 0 !important;
+  border-top: 0 !important;
+  box-shadow: none !important;
+}
+
+/* hide stray decorative stripe elements if present */
+[data-sidebar="sidebar"]::before,
+[data-sidebar="sidebar"]::after,
+[data-sidebar="sidebar"] .top-stripe,
+[data-sidebar="sidebar"] [data-top-stripe] {
+  display: none !important;
+  content: none !important;
+}
+
+/* 3) fallback offsets (mirrors SidebarContent class) */
+:root {
+  --sidebar-offset: clamp(20px, 9vh, 84px);
+  --sidebar-offset-rail: clamp(12px, 7vh, 56px);
+}
+[data-sidebar="content"] { padding-top: var(--sidebar-offset); }
+[data-collapsible="icon"] [data-sidebar="content"] { padding-top: var(--sidebar-offset-rail); }
 
 ```
 

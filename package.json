@@ -20,7 +20,8 @@
     "chat:pack:sidebar": "tsx tools/make-chatpack.ts --preset sidebar",
     "chat:pack:cart": "tsx tools/make-chatpack.ts --preset cart",
     "chat:pack:topbar": "tsx tools/make-chatpack.ts --preset topbar",
-    "chat:pack:suppliers": "tsx tools/make-chatpack.ts --preset suppliers"
+    "chat:pack:suppliers": "tsx tools/make-chatpack.ts --preset suppliers",
+    "chat:pack:all": "pnpm run chat:pack && pnpm run chat:pack:sidebar && pnpm run chat:pack:cart && pnpm run chat:pack:topbar && pnpm run chat:pack:suppliers"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

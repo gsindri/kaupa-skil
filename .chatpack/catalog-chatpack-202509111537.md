@@ -1,4 +1,4 @@
-# Catalog ChatPack 2025-09-11T13:27:46.952Z
+# Catalog ChatPack 2025-09-11T15:37:13.683Z
 
 _Contains 37 file(s)._
 
@@ -519,6 +519,14 @@ vi.mock('@/hooks/useVendors', () => ({
   useVendors: () => ({ vendors: [] }),
 }))
 
+vi.mock('@/hooks/useSuppliers', () => ({
+  useSuppliers: () => ({ suppliers: [] })
+}))
+
+vi.mock('@/hooks/useSupplierConnections', () => ({
+  useSupplierConnections: () => ({ suppliers: [] })
+}))
+
 describe('CatalogTable', () => {
   beforeEach(() => {
     cartState.items = []
@@ -740,11 +748,14 @@ import { formatCurrency } from '@/lib/format'
 import type { FacetFilters } from '@/services/catalog'
 import ProductThumb from '@/components/catalog/ProductThumb'
 import SupplierLogo from './SupplierLogo'
+import SupplierChips from './SupplierChips'
 import { resolveImage } from '@/lib/images'
 import type { CartItem } from '@/lib/types'
 import { Lock } from 'lucide-react'
 import { toast } from '@/hooks/use-toast'
 import { cn } from '@/lib/utils'
+import { useSupplierConnections } from '@/hooks/useSupplierConnections'
+import { useSuppliers } from '@/hooks/useSuppliers'
 
 interface CatalogTableProps {
   products: any[]
@@ -772,6 +783,8 @@ export function CatalogTable({
   const rowRefs = useRef<Array<HTMLTableRowElement | null>>([])
 
   const { vendors } = useVendors()
+  const { suppliers: allSuppliers } = useSuppliers()
+  const { suppliers: connectedSuppliers } = useSupplierConnections()
   const brandValues = filters.brand ?? []
   const brandOptions = Array.from(
     new Set(products.map(p => p.brand).filter(Boolean) as string[]),
@@ -959,62 +972,55 @@ export function CatalogTable({
               </TableCell>
               <TableCell className="w-[220px] min-w-[180px] max-w-[220px] px-3 py-2">
                 {(() => {
-                  let supplierName = ''
-                  let supplierLogo: string | null = null
-
-                  if (p.supplier_products?.length) {
-                    const s = p.supplier_products[0]
-                    supplierName = s.supplier_name || s.name || ''
-                    supplierLogo =
-                      s.supplier_logo_url ||
-                      s.logo_url ||
-                      s.logoUrl ||
-                      null
-                  } else if (p.supplier_ids && p.supplier_names) {
-                    supplierName = p.supplier_names[0] || ''
-                    supplierLogo =
-                      p.supplier_logo_urls?.[0] ||
-                      vendors.find(v => v.name === supplierName)?.logo_url ||
-                      null
-                  } else if (Array.isArray(p.suppliers) && p.suppliers.length) {
-                    const s = p.suppliers[0]
-                    if (typeof s === 'string') {
-                      supplierName = s
-                      supplierLogo = vendors.find(v => v.name === s)?.logo_url || null
-                    } else {
-                      supplierName = s.supplier_name || s.name || ''
-                      supplierLogo =
-                        s.supplier_logo_url ||
-                        s.logo_url ||
-                        s.logoUrl ||
-                        vendors.find(v => v.name === supplierName)?.logo_url ||
-                        null
-                    }
+                  // Map supplier IDs to SupplierChips format
+                  const supplierIds = p.supplier_ids ?? []
+                  if (supplierIds.length === 0) {
+                    return (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="flex justify-center text-muted-foreground">—</div>
+                        </TooltipTrigger>
+                        <TooltipContent>No supplier data</TooltipContent>
+                      </Tooltip>
+                    )
                   }
 
-                  const supplierCount =
-                    p.suppliers_count ??
-                    p.supplier_names?.length ??
-                    (Array.isArray(p.suppliers) ? p.suppliers.length : 0)
-                  const supplierLabel = `${supplierCount} supplier${
-                    supplierCount === 1 ? '' : 's'
-                  }`
-
-                  return supplierName ? (
-                    <div className="flex items-center gap-2">
-                      <SupplierLogo name={supplierName} logoUrl={supplierLogo} />
-                      <span className="truncate text-sm">
-                        {supplierLabel} / {supplierName}
-                      </span>
-                    </div>
-                  ) : (
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div className="flex justify-center text-muted-foreground">—</div>
-                      </TooltipTrigger>
-                      <TooltipContent>No supplier data</TooltipContent>
-                    </Tooltip>
+                  // Create connected supplier ID set for is_connected lookup
+                  const connectedSupplierIds = new Set(
+                    connectedSuppliers?.map(cs => cs.supplier_id) ?? []
                   )
+
+                  // Map to SupplierChips format
+                  const suppliers = supplierIds.map((id: string, i: number) => {
+                    // Try to get supplier name from multiple sources
+                    let supplierName = p.supplier_names?.[i] || id
+                    let supplierLogoUrl = p.supplier_logo_urls?.[i] || null
+
+                    // Fallback to allSuppliers lookup if name is missing
+                    if (!supplierName || supplierName === id) {
+                      const supplierData = allSuppliers?.find(s => s.id === id)
+                      if (supplierData) {
+                        supplierName = supplierData.name
+                        supplierLogoUrl = supplierData.logo_url || supplierLogoUrl
+                      }
+                    }
+
+                    // Fallback to vendors lookup (localStorage-based)
+                    if (!supplierLogoUrl) {
+                      const vendor = vendors.find(v => v.name === supplierName || v.id === id)
+                      supplierLogoUrl = vendor?.logo_url || vendor?.logoUrl || null
+                    }
+
+                    return {
+                      supplier_id: id,
+                      supplier_name: supplierName,
+                      supplier_logo_url: supplierLogoUrl,
+                      is_connected: connectedSupplierIds.has(id),
+                      availability_state: p.availability_status as any,
+                    }
+                  })
+
+                  return <SupplierChips suppliers={suppliers} />
                 })()}
               </TableCell>
             </TableRow>
@@ -1541,7 +1547,7 @@ export const ProductCard = memo(function ProductCard({
           alt={product.name}
           loading="lazy"
           decoding="async"
-          fetchpriority="low"
+          fetchPriority="low"
           className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
         />
       </div>
@@ -3470,16 +3476,16 @@ export function useCatalogProducts(filters: PublicCatalogFilters, sort: SortOrde
   const query = useQuery({
     queryKey: ['catalog', stateHash],
     queryFn: () => fetchPublicCatalogItems(filters, sort),
-    keepPreviousData: true,
+    placeholderData: (previousData) => previousData,
     staleTime: 30_000,
     gcTime: 900_000,
   });
 
   return {
     ...query,
-    data: query.data?.items,
-    nextCursor: query.data?.nextCursor,
-    total: query.data?.total,
+    data: (query.data as any)?.items,
+    nextCursor: (query.data as any)?.nextCursor,
+    total: (query.data as any)?.total,
   };
 }
 
@@ -4155,11 +4161,16 @@ export default function CatalogPage() {
     if (!el) return
 
     el.style.setProperty('--hdr-p', '0')
+    document.documentElement.style.setProperty('--hdr-p', '0')
 
     requestAnimationFrame(() => {
       const H = Math.round(el.getBoundingClientRect().height)
       document.documentElement.style.setProperty('--header-h', `${H}px`)
     })
+
+    return () => {
+      document.documentElement.style.setProperty('--hdr-p', '0')
+    }
   }, [view])
 
   const unconnectedPercentage = useMemo(() => {
@@ -4666,7 +4677,9 @@ export default function CatalogPage() {
       // snap near extremes to avoid micro "reload"
       const v = p < 0.02 ? 0 : p > 0.98 ? 1 : p
       if (v !== prevP) {
-        el.style.setProperty('--hdr-p', v.toFixed(3))
+        const val = v.toFixed(3)
+        el.style.setProperty('--hdr-p', val)
+        document.documentElement.style.setProperty('--hdr-p', val)
         prevP = v
       }
     }
@@ -4802,6 +4815,7 @@ export default function CatalogPage() {
     listener()
 
     return () => {
+      document.documentElement.style.setProperty('--hdr-p', '0')
       window.removeEventListener('scroll', listener)
       window.removeEventListener('wheel', wheel)
       window.removeEventListener('resize', setHeaderVars)
@@ -4813,6 +4827,7 @@ export default function CatalogPage() {
   useEffect(() => {
     if (headerLocked) {
       headerRef.current?.style.setProperty('--hdr-p', '0')
+      document.documentElement.style.setProperty('--hdr-p', '0')
     }
   }, [headerLocked])
 
@@ -5025,7 +5040,7 @@ function FiltersBar({
             <ViewToggle
               value={view}
               onChange={v => {
-                rememberScroll(viewKey)
+                rememberScroll(`catalog:${view}`)
                 setView(v)
               }}
             />
