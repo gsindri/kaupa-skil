@@ -1,7 +1,12 @@
 :root {
   --layout-rail: 72px;     /* nav rail width */
-  --layout-header-h: 56px; /* fallback; JS already updates --header-h */
-  --chrome-h: clamp(40px, var(--header-h, var(--layout-header-h,56px)), 120px);
+  --layout-header-h: 56px; /* base header height */
+  /* total sticky header (wrapper): Top bar + page-level bars */
+  --header-h: var(--layout-header-h);
+  /* dedicated toolbar height: just the TopNavigation */
+  --toolbar-h: 56px;
+  /* chrome follows the toolbar, not the whole header */
+  --chrome-h: var(--toolbar-h);
   --header-left: var(--sidebar-w);
 
   --z-rail: 40;
