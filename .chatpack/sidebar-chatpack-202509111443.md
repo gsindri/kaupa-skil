@@ -1,4 +1,4 @@
-# Sidebar ChatPack 2025-09-11T13:27:47.942Z
+# Sidebar ChatPack 2025-09-11T14:43:09.294Z
 
 _Contains 13 file(s)._
 
@@ -128,7 +128,7 @@ export function EnhancedAppSidebar() {
             <HeildaLogo className="h-7 w-auto" />
           </NavLink>
         </SidebarHeader>
-        <SidebarContent className="pt-[var(--sidebar-offset)] data-[collapsible=icon]:pt-[var(--sidebar-offset-rail)]">
+        <SidebarContent className="pt-[clamp(20px,9vh,84px)] data-[collapsible=icon]:pt-[clamp(12px,7vh,56px)]">
           <SidebarGroup className="p-2 pb-0">
             <SidebarGroupContent>
               <SidebarMenu className="gap-2">
@@ -483,9 +483,12 @@ export function SidebarProvider({
   }, [])
 
   React.useEffect(() => {
-    const expanded = open && !isMobile
-    const v = expanded ? 'var(--sidebar-w)' : 'var(--sidebar-rail-w)'
-    document.documentElement.style.setProperty('--header-left', v)
+    const headerLeft = isMobile
+      ? '0px'
+      : open
+        ? 'var(--sidebar-w)'
+        : 'var(--sidebar-rail-w)'
+    document.documentElement.style.setProperty('--header-left', headerLeft)
   }, [open, isMobile])
 
   const toggleSidebar = React.useCallback(() => {
@@ -513,12 +516,13 @@ export function SidebarProvider({
       <div
           style={
             {
-              "--sidebar-width": isMobile
-                ? SIDEBAR_WIDTH_ICON
+              "--sidebar-w": SIDEBAR_WIDTH,
+              "--sidebar-rail-w": SIDEBAR_WIDTH_ICON,
+              "--header-left": isMobile
+                ? '0px'
                 : open
                   ? SIDEBAR_WIDTH
                   : SIDEBAR_WIDTH_ICON,
-              "--sidebar-width-icon": SIDEBAR_WIDTH_ICON,
               ...style,
             } as React.CSSProperties
           }
@@ -587,7 +591,7 @@ const Sidebar = React.forwardRef<
       return (
         <div
           className={cn(
-            "flex h-full w-[--sidebar-width] flex-col bg-sidebar text-sidebar-foreground overflow-x-hidden",
+            "flex h-full w-[--sidebar-w] flex-col bg-sidebar text-sidebar-foreground overflow-x-hidden",
             className
           )}
           ref={ref}
@@ -604,10 +608,10 @@ const Sidebar = React.forwardRef<
           <SheetContent
             data-sidebar="sidebar"
             data-mobile="true"
-            className="w-[--sidebar-width] overflow-x-hidden bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
+            className="w-[--sidebar-w] overflow-x-hidden bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
             style={
               {
-                "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
+                "--sidebar-w": SIDEBAR_WIDTH_MOBILE,
               } as React.CSSProperties
             }
             side={side}
@@ -634,27 +638,27 @@ const Sidebar = React.forwardRef<
             // Ensure width is truly 0 when collapsed in offcanvas mode
             state === "collapsed" && collapsible === "offcanvas" 
               ? "w-0 min-w-0" 
-              : "w-[--sidebar-width]",
+              : "w-[--sidebar-w]",
             "group-data-[side=right]:rotate-180",
             variant === "floating" || variant === "inset"
-              ? "group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)_+_theme(spacing.4))]"
-              : "group-data-[collapsible=icon]:w-[--sidebar-width-icon]"
+              ? "group-data-[collapsible=icon]:w-[calc(var(--sidebar-rail-w)_+_theme(spacing.4))]"
+              : "group-data-[collapsible=icon]:w-[--sidebar-rail-w]"
           )}
         />
         <div
           className={cn(
-            "fixed inset-y-0 z-10 hidden h-svh overflow-x-hidden md:flex will-change-[transform,opacity] transition-[left,right,width,opacity,transform,box-shadow] duration-300 ease-in-out motion-reduce:transition-none motion-reduce:transform-none",
+            "fixed top-0 z-[80] hidden h-svh overflow-x-hidden md:flex rounded-none border-t-0 will-change-[width] transition-[left,right,width,opacity,transform,box-shadow] duration-300 ease-in-out motion-reduce:transition-none motion-reduce:transform-none",
             // CRITICAL FIX: Ensure complete hide when collapsed
               state === "collapsed" && collapsible === "offcanvas"
                 ? "w-0 opacity-0 pointer-events-none -translate-x-full overflow-hidden shadow-none"
-                : "w-[--sidebar-width] opacity-100 translate-x-0 shadow-lg",
+                : "w-[--sidebar-w] opacity-100 translate-x-0 shadow-lg",
             side === "left"
               ? "left-0"
               : "right-0",
             // Adjust the padding for floating and inset variants.
             variant === "floating" || variant === "inset"
-              ? "p-2 group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)_+_theme(spacing.4)_+2px)]"
-              : "group-data-[collapsible=icon]:w-[--sidebar-width-icon] group-data-[side=left]:border-r group-data-[side=right]:border-l border-sidebar-border",
+              ? "p-2 group-data-[collapsible=icon]:w-[calc(var(--sidebar-rail-w)_+_theme(spacing.4)_+2px)]"
+              : "group-data-[collapsible=icon]:w-[--sidebar-rail-w] group-data-[side=left]:border-r group-data-[side=right]:border-l border-sidebar-border",
             className
           )}
           {...props}
@@ -1353,6 +1357,41 @@ html { scrollbar-gutter: stable; }
 @media (prefers-reduced-motion: reduce){
   #catalogHeader{ transition:none; }
 }
+
+/* 1) Ensure header is to the right of the sidebar */
+[data-app-header="true"],
+.app-header,
+#catalogHeader {
+  position: sticky;
+  top: 0;
+  left: var(--header-left, 0px);
+  width: calc(100% - var(--header-left, 0px));
+  z-index: 40;
+}
+
+/* 2) Sidebar should touch the very top and contain no internal stripe */
+[data-sidebar="sidebar"] {
+  top: 0 !important;
+  border-top: 0 !important;
+  box-shadow: none !important;
+}
+
+/* hide stray decorative stripe elements if present */
+[data-sidebar="sidebar"]::before,
+[data-sidebar="sidebar"]::after,
+[data-sidebar="sidebar"] .top-stripe,
+[data-sidebar="sidebar"] [data-top-stripe] {
+  display: none !important;
+  content: none !important;
+}
+
+/* 3) fallback offsets (mirrors SidebarContent class) */
+:root {
+  --sidebar-offset: clamp(20px, 9vh, 84px);
+  --sidebar-offset-rail: clamp(12px, 7vh, 56px);
+}
+[data-sidebar="content"] { padding-top: var(--sidebar-offset); }
+[data-collapsible="icon"] [data-sidebar="content"] { padding-top: var(--sidebar-offset-rail); }
 
 ```
 
