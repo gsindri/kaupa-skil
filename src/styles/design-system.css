@@ -312,7 +312,7 @@
 /* Start the menu lower for visual balance (rail + full modes) */
 :root {
   --sidebar-offset: clamp(20px, 9vh, 84px);      /* expanded */
-  --sidebar-offset-rail: clamp(12px, 8vh, 64px); /* collapsed (icon-only) */
+  --sidebar-offset-rail: clamp(12px, 7vh, 56px); /* collapsed (icon-only) */
 }
 
 [data-sidebar="content"] {
