@@ -91,11 +91,10 @@ export function AppLayout({
           {header}
         </div>
 
-        {/* Content */}
+        {/* Content; if header overlays, pad with the measured height */}
         <main
           id="main-content"
-          className="overflow-auto"
-          style={{ height: 'calc(100vh - var(--header-h, 56px))' }}
+          style={{ paddingTop: 'var(--header-h, var(--layout-header-h,56px))' }}
         >
           <div className="mx-auto max-w-[1280px] px-4 sm:px-6 lg:px-8">
             {children ?? <Outlet />}
