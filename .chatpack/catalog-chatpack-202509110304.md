@@ -1,9 +1,140 @@
-# Catalog ChatPack 2025-09-11T02:45:11.396Z
+# Catalog ChatPack 2025-09-11T03:04:13.977Z
+
+_Contains 37 file(s)._
+
+---
+
+## src\components\catalog\__tests__\SupplierChips.test.tsx
+
+```tsx
+import { render, screen } from '@testing-library/react'
+import { TooltipProvider } from '@/components/ui/tooltip'
+import SupplierChips from '../SupplierChips'
+import { useVendors } from '@/hooks/useVendors'
+
+describe('SupplierChips', () => {
+  it('renders logo when supplier_logo_url provided', () => {
+    const suppliers = [
+      {
+        supplier_id: '1',
+        supplier_name: 'Logo Supplier',
+        supplier_logo_url: 'https://example.com/logo.png',
+        is_connected: true,
+      },
+    ]
+    render(
+      <TooltipProvider>
+        <SupplierChips suppliers={suppliers} />
+      </TooltipProvider>
+    )
+    expect(screen.queryByText('LS')).toBeNull()
+  })
+
+  it('falls back to initials when no logo', () => {
+    const suppliers = [
+      {
+        supplier_id: '2',
+        supplier_name: 'No Logo',
+        is_connected: true,
+      },
+    ]
+    render(
+      <TooltipProvider>
+        <SupplierChips suppliers={suppliers} />
+      </TooltipProvider>
+    )
+    expect(screen.getByText('NL')).toBeInTheDocument()
+  })
+
+  it('renders logo when derived from useVendors', () => {
+    localStorage.setItem(
+      'connected-vendors',
+      JSON.stringify([
+        {
+          id: '3',
+          name: 'Vendor With Logo',
+          logo_url: 'https://example.com/vendor-logo.png',
+        },
+      ]),
+    )
+
+    function Wrapper() {
+      const { vendors } = useVendors()
+      const suppliers = [
+        {
+          supplier_id: '3',
+          supplier_name: 'Vendor With Logo',
+          supplier_logo_url:
+            vendors.find(v => v.name === 'Vendor With Logo')?.logo_url || null,
+          is_connected: true,
+        },
+      ]
+      return (
+        <TooltipProvider>
+          <SupplierChips suppliers={suppliers} />
+        </TooltipProvider>
+      )
+    }
+
+    render(<Wrapper />)
+    expect(screen.queryByText('VL')).toBeNull()
+    localStorage.removeItem('connected-vendors')
+  })
+})
+
+```
 
 
 ---
 
-## src/components/catalog/AvailabilityBadge.tsx
+## src\components\catalog\__tests__\SupplierList.test.tsx
+
+```tsx
+import { render, screen, fireEvent } from '@testing-library/react'
+import { SupplierList } from '@/components/suppliers/SupplierList'
+import { vi } from 'vitest'
+
+vi.mock('@/hooks/useSuppliers', () => ({
+  useSuppliers: () => ({
+    createSupplier: { mutateAsync: vi.fn(), isPending: false },
+  }),
+}))
+
+describe('SupplierList', () => {
+  it('renders suppliers and handles selection', () => {
+    const suppliers = [
+      { id: '1', name: 'Supplier A', connector_type: 'generic', logo_url: '', created_at: '2023-01-01', updated_at: '2023-01-01' },
+      { id: '2', name: 'Supplier B', connector_type: 'api', logo_url: '', created_at: '2023-01-01', updated_at: '2023-01-01' },
+    ]
+    const credentials: any[] = []
+    const handleSelect = vi.fn()
+    const handleRun = vi.fn()
+
+    render(
+      <SupplierList
+        suppliers={suppliers}
+        credentials={credentials}
+        selectedSupplier={null}
+        onSelectSupplier={handleSelect}
+        onRunConnector={handleRun}
+      />
+    )
+
+    expect(screen.getByText('Supplier A')).toBeInTheDocument()
+    expect(screen.getByText('Supplier B')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByText('Supplier A'))
+    expect(handleSelect).toHaveBeenCalledWith('1')
+  })
+})
+
+
+```
+
+
+---
+
+## src\components\catalog\AvailabilityBadge.tsx
 
 ```tsx
 import { timeAgo } from '@/lib/timeAgo'
@@ -96,9 +227,10 @@ export default AvailabilityBadge
 
 ```
 
+
 ---
 
-## src/components/catalog/CatalogCommandPalette.tsx
+## src\components\catalog\CatalogCommandPalette.tsx
 
 ```tsx
 import React from 'react'
@@ -169,9 +301,10 @@ export default CatalogCommandPalette
 
 ```
 
+
 ---
 
-## src/components/catalog/CatalogFiltersPanel.tsx
+## src\components\catalog\CatalogFiltersPanel.tsx
 
 ```tsx
 import React from 'react'
@@ -317,9 +450,10 @@ export default CatalogFiltersPanel
 
 ```
 
+
 ---
 
-## src/components/catalog/CatalogGrid.tsx
+## src\components\catalog\CatalogGrid.tsx
 
 ```tsx
 import * as React from 'react'
@@ -363,9 +497,10 @@ export function CatalogGrid({
 
 ```
 
+
 ---
 
-## src/components/catalog/CatalogTable.test.tsx
+## src\components\catalog\CatalogTable.test.tsx
 
 ```tsx
 import { render, screen } from '@testing-library/react'
@@ -570,9 +705,10 @@ describe('CatalogTable', () => {
 
 ```
 
+
 ---
 
-## src/components/catalog/CatalogTable.tsx
+## src\components\catalog\CatalogTable.tsx
 
 ```tsx
 import { useRef, useState } from 'react'
@@ -1180,9 +1316,10 @@ function PriceCell({
 
 ```
 
+
 ---
 
-## src/components/catalog/FacetPanel.tsx
+## src\components\catalog\FacetPanel.tsx
 
 ```tsx
 import { useQuery } from '@tanstack/react-query'
@@ -1291,9 +1428,10 @@ export default FacetPanel
 
 ```
 
+
 ---
 
-## src/components/catalog/ProductCard.tsx
+## src\components\catalog\ProductCard.tsx
 
 ```tsx
 import { memo, useState } from "react";
@@ -1501,9 +1639,10 @@ export const ProductCard = memo(function ProductCard({
 
 ```
 
+
 ---
 
-## src/components/catalog/ProductCardSkeleton.tsx
+## src\components\catalog\ProductCardSkeleton.tsx
 
 ```tsx
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
@@ -1543,9 +1682,10 @@ export function ProductCardSkeleton({ className }: ProductCardSkeletonProps) {
 
 ```
 
+
 ---
 
-## src/components/catalog/ProductThumb.tsx
+## src\components\catalog\ProductThumb.tsx
 
 ```tsx
 import { useState } from 'react'
@@ -1621,9 +1761,10 @@ export default function ProductThumb({
 
 ```
 
+
 ---
 
-## src/components/catalog/SortDropdown.tsx
+## src\components\catalog\SortDropdown.tsx
 
 ```tsx
 import React from 'react'
@@ -1736,9 +1877,10 @@ export default SortDropdown
 
 ```
 
+
 ---
 
-## src/components/catalog/SupplierChip.tsx
+## src\components\catalog\SupplierChip.tsx
 
 ```tsx
 
@@ -1845,9 +1987,10 @@ export default function SupplierChip({
 
 ```
 
+
 ---
 
-## src/components/catalog/SupplierChips.tsx
+## src\components\catalog\SupplierChips.tsx
 
 ```tsx
 import { useState } from 'react'
@@ -1996,9 +2139,10 @@ export default function SupplierChips({ suppliers }: SupplierChipsProps) {
 
 ```
 
+
 ---
 
-## src/components/catalog/SupplierLogo.tsx
+## src\components\catalog\SupplierLogo.tsx
 
 ```tsx
 import { useState } from "react";
@@ -2049,137 +2193,58 @@ export default SupplierLogo;
 
 ```
 
----
-
-## src/components/catalog/__tests__/SupplierChips.test.tsx
-
-```tsx
-import { render, screen } from '@testing-library/react'
-import { TooltipProvider } from '@/components/ui/tooltip'
-import SupplierChips from '../SupplierChips'
-import { useVendors } from '@/hooks/useVendors'
-
-describe('SupplierChips', () => {
-  it('renders logo when supplier_logo_url provided', () => {
-    const suppliers = [
-      {
-        supplier_id: '1',
-        supplier_name: 'Logo Supplier',
-        supplier_logo_url: 'https://example.com/logo.png',
-        is_connected: true,
-      },
-    ]
-    render(
-      <TooltipProvider>
-        <SupplierChips suppliers={suppliers} />
-      </TooltipProvider>
-    )
-    expect(screen.queryByText('LS')).toBeNull()
-  })
-
-  it('falls back to initials when no logo', () => {
-    const suppliers = [
-      {
-        supplier_id: '2',
-        supplier_name: 'No Logo',
-        is_connected: true,
-      },
-    ]
-    render(
-      <TooltipProvider>
-        <SupplierChips suppliers={suppliers} />
-      </TooltipProvider>
-    )
-    expect(screen.getByText('NL')).toBeInTheDocument()
-  })
-
-  it('renders logo when derived from useVendors', () => {
-    localStorage.setItem(
-      'connected-vendors',
-      JSON.stringify([
-        {
-          id: '3',
-          name: 'Vendor With Logo',
-          logo_url: 'https://example.com/vendor-logo.png',
-        },
-      ]),
-    )
-
-    function Wrapper() {
-      const { vendors } = useVendors()
-      const suppliers = [
-        {
-          supplier_id: '3',
-          supplier_name: 'Vendor With Logo',
-          supplier_logo_url:
-            vendors.find(v => v.name === 'Vendor With Logo')?.logo_url || null,
-          is_connected: true,
-        },
-      ]
-      return (
-        <TooltipProvider>
-          <SupplierChips suppliers={suppliers} />
-        </TooltipProvider>
-      )
-    }
-
-    render(<Wrapper />)
-    expect(screen.queryByText('VL')).toBeNull()
-    localStorage.removeItem('connected-vendors')
-  })
-})
-
-```
 
 ---
 
-## src/components/catalog/__tests__/SupplierList.test.tsx
+## src\components\dashboard\__tests__\SuppliersPanel.test.tsx
 
 ```tsx
-import { render, screen, fireEvent } from '@testing-library/react'
-import { SupplierList } from '@/components/suppliers/SupplierList'
-import { vi } from 'vitest'
+import { render } from '@testing-library/react'
+import { screen } from '@testing-library/dom'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { vi, type Mock } from 'vitest'
 
-vi.mock('@/hooks/useSuppliers', () => ({
-  useSuppliers: () => ({
-    createSupplier: { mutateAsync: vi.fn(), isPending: false },
-  }),
+vi.mock('@/hooks/useSupplierConnections', () => ({
+  useSupplierConnections: vi.fn(),
 }))
 
-describe('SupplierList', () => {
-  it('renders suppliers and handles selection', () => {
-    const suppliers = [
-      { id: '1', name: 'Supplier A', connector_type: 'generic', logo_url: '', created_at: '2023-01-01', updated_at: '2023-01-01' },
-      { id: '2', name: 'Supplier B', connector_type: 'api', logo_url: '', created_at: '2023-01-01', updated_at: '2023-01-01' },
-    ]
-    const credentials: any[] = []
-    const handleSelect = vi.fn()
-    const handleRun = vi.fn()
+import { useSupplierConnections } from '@/hooks/useSupplierConnections'
+import { SuppliersPanel } from '../SuppliersPanel'
 
-    render(
-      <SupplierList
-        suppliers={suppliers}
-        credentials={credentials}
-        selectedSupplier={null}
-        onSelectSupplier={handleSelect}
-        onRunConnector={handleRun}
-      />
-    )
+const mockUseSupplierConnections = useSupplierConnections as unknown as Mock
 
-    expect(screen.getByText('Supplier A')).toBeInTheDocument()
-    expect(screen.getByText('Supplier B')).toBeInTheDocument()
+function renderComponent() {
+  const queryClient = new QueryClient()
+  return render(
+    <QueryClientProvider client={queryClient}>
+      <SuppliersPanel />
+    </QueryClientProvider>
+  )
+}
 
-    fireEvent.click(screen.getByText('Supplier A'))
-    expect(handleSelect).toHaveBeenCalledWith('1')
-  })
+test('shows empty state', () => {
+  mockUseSupplierConnections.mockReturnValue({ suppliers: [], isLoading: false })
+  renderComponent()
+  expect(screen.getByText(/No suppliers connected/i)).toBeInTheDocument()
 })
 
+test('shows suppliers', () => {
+  mockUseSupplierConnections.mockReturnValue({
+    suppliers: [
+      { id: '1', name: 'Supp', status: 'connected', last_sync: null, next_run: null },
+    ],
+    isLoading: false,
+  })
+  renderComponent()
+  expect(screen.getByText('Supp')).toBeInTheDocument()
+})
 
 ```
 
+
 ---
 
-## src/components/dashboard/SuppliersPanel.tsx
+## src\components\dashboard\SuppliersPanel.tsx
 
 ```tsx
 import React from 'react'
@@ -2245,56 +2310,10 @@ export default SuppliersPanel
 
 ```
 
----
-
-## src/components/dashboard/__tests__/SuppliersPanel.test.tsx
-
-```tsx
-import { render } from '@testing-library/react'
-import { screen } from '@testing-library/dom'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { vi, type Mock } from 'vitest'
-
-vi.mock('@/hooks/useSupplierConnections', () => ({
-  useSupplierConnections: vi.fn(),
-}))
-
-import { useSupplierConnections } from '@/hooks/useSupplierConnections'
-import { SuppliersPanel } from '../SuppliersPanel'
-
-const mockUseSupplierConnections = useSupplierConnections as unknown as Mock
-
-function renderComponent() {
-  const queryClient = new QueryClient()
-  return render(
-    <QueryClientProvider client={queryClient}>
-      <SuppliersPanel />
-    </QueryClientProvider>
-  )
-}
-
-test('shows empty state', () => {
-  mockUseSupplierConnections.mockReturnValue({ suppliers: [], isLoading: false })
-  renderComponent()
-  expect(screen.getByText(/No suppliers connected/i)).toBeInTheDocument()
-})
-
-test('shows suppliers', () => {
-  mockUseSupplierConnections.mockReturnValue({
-    suppliers: [
-      { id: '1', name: 'Supp', status: 'connected', last_sync: null, next_run: null },
-    ],
-    isLoading: false,
-  })
-  renderComponent()
-  expect(screen.getByText('Supp')).toBeInTheDocument()
-})
-
-```
 
 ---
 
-## src/components/layout/CatalogLayout.tsx
+## src\components\layout\CatalogLayout.tsx
 
 ```tsx
 import React from 'react'
@@ -2316,9 +2335,10 @@ export function CatalogLayout() {
 
 ```
 
+
 ---
 
-## src/components/onboarding/steps/SupplierConnectionStep.tsx
+## src\components\onboarding\steps\SupplierConnectionStep.tsx
 
 ```tsx
 import React, { useState } from 'react'
@@ -2508,9 +2528,10 @@ export function SupplierConnectionStep({ onComplete, onBack, initialData }: Supp
 
 ```
 
+
 ---
 
-## src/components/orders/SupplierOrderCard.tsx
+## src\components\orders\SupplierOrderCard.tsx
 
 ```tsx
 
@@ -2647,9 +2668,10 @@ export function SupplierOrderCard({
 
 ```
 
+
 ---
 
-## src/components/place-order/CatalogFilters.tsx
+## src\components\place-order\CatalogFilters.tsx
 
 ```tsx
 import { memo } from 'react'
@@ -2710,9 +2732,10 @@ export const CatalogFilters = memo(function CatalogFilters({
 
 ```
 
+
 ---
 
-## src/components/place-order/SupplierFilter.tsx
+## src\components\place-order\SupplierFilter.tsx
 
 ```tsx
 import { memo } from 'react'
@@ -2752,9 +2775,10 @@ export const SupplierFilter = memo(function SupplierFilter({
 
 ```
 
+
 ---
 
-## src/components/suppliers/SupplierCredentialsForm.tsx
+## src\components\suppliers\SupplierCredentialsForm.tsx
 
 ```tsx
 import React, { useState } from 'react'
@@ -2950,9 +2974,10 @@ export function SupplierCredentialsForm() {
 }
 ```
 
+
 ---
 
-## src/components/suppliers/SupplierItemsWithHarInfo.tsx
+## src\components\suppliers\SupplierItemsWithHarInfo.tsx
 
 ```tsx
 
@@ -3065,9 +3090,10 @@ export function SupplierItemsWithHarInfo({ items, supplierId }: SupplierItemsWit
 
 ```
 
+
 ---
 
-## src/components/suppliers/SupplierList.tsx
+## src\components\suppliers\SupplierList.tsx
 
 ```tsx
 
@@ -3290,9 +3316,10 @@ export function SupplierList({
 
 ```
 
+
 ---
 
-## src/components/suppliers/SupplierManagement.tsx
+## src\components\suppliers\SupplierManagement.tsx
 
 ```tsx
 
@@ -3393,9 +3420,10 @@ export function SupplierManagement() {
 
 ```
 
+
 ---
 
-## src/hooks/useCatalogProducts.ts
+## src\hooks\useCatalogProducts.ts
 
 ```ts
 import { useEffect } from 'react';
@@ -3458,9 +3486,10 @@ export function useCatalogProducts(filters: PublicCatalogFilters, sort: SortOrde
 
 ```
 
+
 ---
 
-## src/hooks/useCatalogSearchSuggestions.ts
+## src\hooks\useCatalogSearchSuggestions.ts
 
 ```ts
 import { useQuery } from '@tanstack/react-query'
@@ -3476,9 +3505,10 @@ export function useCatalogSearchSuggestions(search: string, orgId?: string) {
 
 ```
 
+
 ---
 
-## src/hooks/useOrgCatalog.ts
+## src\hooks\useOrgCatalog.ts
 
 ```ts
 import { useEffect } from 'react'
@@ -3538,9 +3568,10 @@ export function useOrgCatalog(
 
 ```
 
+
 ---
 
-## src/lib/__tests__/catalogFilters.test.ts
+## src\lib\__tests__\catalogFilters.test.ts
 
 ```ts
 import { describe, it, expect } from 'vitest'
@@ -3576,9 +3607,10 @@ describe('catalogFilters helpers', () => {
 
 ```
 
+
 ---
 
-## src/lib/catalogFilters.ts
+## src\lib\catalogFilters.ts
 
 ```ts
 export type Tri = -1 | 0 | 1 // exclude, neutral, include
@@ -3626,9 +3658,10 @@ export function triStockToAvailability(tri: TriState): string[] | undefined {
 
 ```
 
+
 ---
 
-## src/lib/catalogState.ts
+## src\lib\catalogState.ts
 
 ```ts
 export type CatalogView = 'grid' | 'table';
@@ -3685,9 +3718,10 @@ export function stateKeyFragment(state: CatalogState): string {
 
 ```
 
+
 ---
 
-## src/pages/catalog/CatalogPage.test.tsx
+## src\pages\catalog\CatalogPage.test.tsx
 
 ```tsx
 import React from 'react'
@@ -3900,9 +3934,10 @@ describe('CatalogPage', () => {
 
 ```
 
+
 ---
 
-## src/pages/catalog/CatalogPage.tsx
+## src\pages\catalog\CatalogPage.tsx
 
 ```tsx
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
@@ -5088,46 +5123,10 @@ function FiltersBar({
 
 ```
 
----
-
-## src/pages/catalog/ZeroResultsRescue.tsx
-
-```tsx
-import * as React from 'react'
-import type { CatalogFilters } from '@/lib/catalogFilters'
-
-export function ZeroResultsRescue({
-  filters,
-  suggestions,
-}: {
-  filters: CatalogFilters
-  suggestions: Array<{ facet: string; label: string; count?: number; action: () => void }>
-}) {
-  return (
-    <div className="mx-auto max-w-2xl rounded-lg border p-4 text-sm">
-      <h3 className="mb-2 text-base font-medium">No matches</h3>
-      <p className="mb-3 text-muted-foreground">Try relaxing one of these filters:</p>
-      <div className="flex flex-wrap gap-2">
-        {suggestions.map((s, i) => (
-          <button
-            key={i}
-            className="rounded-full bg-muted px-3 py-1 hover:bg-muted/80"
-            onClick={s.action}
-            title="Temporarily ignore this facet"
-          >
-            {s.label}{s.count != null ? ` (→ ${s.count})` : ''}
-          </button>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-```
 
 ---
 
-## src/pages/catalog/useCatalogState.ts
+## src\pages\catalog\useCatalogState.ts
 
 ```ts
 import { useEffect, useMemo } from 'react';
@@ -5220,6 +5219,44 @@ export function useCatalogState(): [
   }, [state]);
 
   return [state, update];
+}
+
+```
+
+
+---
+
+## src\pages\catalog\ZeroResultsRescue.tsx
+
+```tsx
+import * as React from 'react'
+import type { CatalogFilters } from '@/lib/catalogFilters'
+
+export function ZeroResultsRescue({
+  filters,
+  suggestions,
+}: {
+  filters: CatalogFilters
+  suggestions: Array<{ facet: string; label: string; count?: number; action: () => void }>
+}) {
+  return (
+    <div className="mx-auto max-w-2xl rounded-lg border p-4 text-sm">
+      <h3 className="mb-2 text-base font-medium">No matches</h3>
+      <p className="mb-3 text-muted-foreground">Try relaxing one of these filters:</p>
+      <div className="flex flex-wrap gap-2">
+        {suggestions.map((s, i) => (
+          <button
+            key={i}
+            className="rounded-full bg-muted px-3 py-1 hover:bg-muted/80"
+            onClick={s.action}
+            title="Temporarily ignore this facet"
+          >
+            {s.label}{s.count != null ? ` (→ ${s.count})` : ''}
+          </button>
+        ))}
+      </div>
+    </div>
+  )
 }
 
 ```
