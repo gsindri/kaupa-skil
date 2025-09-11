@@ -118,22 +118,25 @@ export function VirtualizedGrid<T>({
     // measureElement: (el) => el.getBoundingClientRect().height,
   })
 
+  // Grab the current set of virtual rows once per render so it can be
+  // referenced both for rendering and in effects without re-reading the
+  // virtualizer state multiple times.
+  const virtualRows = rowVirtualizer.getVirtualItems()
+
   // Prefetch when near the end (observe the last virtual row)
   React.useEffect(() => {
     if (!onNearEnd) return
-    const v = rowVirtualizer.getVirtualItems()
-    if (!v.length) return
-    const last = v[v.length - 1]
+    if (!virtualRows.length) return
+    const last = virtualRows[virtualRows.length - 1]
     const rowsLeft = rowCount - 1 - last.index
     if (rowsLeft < 5) {
       onNearEnd()
     }
-  }, [rowVirtualizer.getVirtualItems(), rowCount, onNearEnd])
+  }, [virtualRows, rowCount, onNearEnd])
 
   // Grid CSS sizes
   const cardWidth = Math.floor((width - gap * (cols - 1)) / cols)
   const totalHeight = rowVirtualizer.getTotalSize()
-  const virtualRows = rowVirtualizer.getVirtualItems()
 
   return (
     <div
