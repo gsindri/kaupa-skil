@@ -1,16 +1,15 @@
 import React from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Home, Boxes, Shuffle, Building2, Refrigerator, LineChart, Compass } from 'lucide-react'
 import clsx from 'clsx'
 
 const items = [
-  { to: '/', icon: Home, label: 'Dashboard' },
-  { to: '/catalog', icon: Boxes, label: 'Catalog' },
-  { to: '/compare', icon: Shuffle, label: 'Compare' },
-  { to: '/suppliers', icon: Building2, label: 'Suppliers' },
-  { to: '/pantry', icon: Refrigerator, label: 'Pantry' },
-  { to: '/price-history', icon: LineChart, label: 'Price' },
-  { to: '/discovery', icon: Compass, label: 'Discover' },
+  { to: '/', image: '/nav-dashboard.png', label: 'Dashboard' },
+  { to: '/catalog', image: '/nav-catalog.png', label: 'Catalog' },
+  { to: '/compare', image: '/nav-compare.png', label: 'Compare' },
+  { to: '/suppliers', image: '/nav-suppliers.png', label: 'Suppliers' },
+  { to: '/pantry', image: '/nav-pantry.png', label: 'Pantry' },
+  { to: '/price-history', image: '/nav-price.png', label: 'Price' },
+  { to: '/discovery', image: '/nav-discover.png', label: 'Discover' },
 ]
 
 export function PrimaryNavRail() {
@@ -28,7 +27,7 @@ export function PrimaryNavRail() {
       />
 
       <nav className="flex w-full flex-col items-center gap-1">
-      {items.map(({ to, icon: Icon, label }) => {
+      {items.map(({ to, image, label }) => {
         const active = pathname === to || pathname.startsWith(to + '/')
         return (
           <Link
@@ -41,7 +40,11 @@ export function PrimaryNavRail() {
               active && 'bg-white/15 ring-1 ring-white/10 text-white'
             )}
           >
-            <Icon className="h-5 w-5 stroke-[1.75]" />
+            <img 
+              src={image} 
+              alt={label}
+              className="h-5 w-5 brightness-0 invert opacity-80 group-hover:opacity-100"
+            />
             <span className="mt-1 text-[10px] leading-3">{label}</span>
           </Link>
         )
