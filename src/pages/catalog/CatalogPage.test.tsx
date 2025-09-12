@@ -63,11 +63,17 @@ const orgCatalogResult = {
 }
 const useCatalogProductsMock = vi.fn(() => catalogProductsResult)
 vi.mock('@/hooks/useCatalogProducts', () => ({
-  useCatalogProducts: () => useCatalogProductsMock(),
+  useCatalogProducts: (...args: any) => {
+    useCatalogProductsMock(...args)
+    return catalogProductsResult
+  },
 }))
 const useOrgCatalogMock = vi.fn(() => orgCatalogResult)
 vi.mock('@/hooks/useOrgCatalog', () => ({
-  useOrgCatalog: () => useOrgCatalogMock(),
+  useOrgCatalog: (...args: any) => {
+    useOrgCatalogMock(...args)
+    return orgCatalogResult
+  },
 }))
 vi.mock('@/hooks/useDebounce', () => ({ useDebounce: (v: any) => v }))
 vi.mock('@/components/catalog/CatalogTable', () => ({

@@ -9,6 +9,7 @@ import { rememberScroll, restoreScroll } from '@/lib/scrollMemory'
 import { useDebounce } from '@/hooks/useDebounce'
 import { CatalogTable } from '@/components/catalog/CatalogTable'
 import { CatalogGrid } from '@/components/catalog/CatalogGrid'
+import { InfiniteSentinel } from '@/components/common/InfiniteSentinel'
 import { HeroSearchInput } from '@/components/search/HeroSearchInput'
 import { FilterChip } from '@/components/ui/filter-chip'
 import { TriStateChip } from '@/components/ui/tri-state-chip'
@@ -970,6 +971,15 @@ export default function CatalogPage() {
               onFilterChange={handleFilterChange}
               isBulkMode={bulkMode}
             />
+            <InfiniteSentinel
+              onVisible={loadMore}
+              disabled={!nextCursor || loadingMore}
+              root={null}
+              rootMargin="800px"
+            />
+            {loadingMore && (
+              <div className="py-6 text-center text-muted-foreground">Loading more…</div>
+            )}
         </>
       ) : (
         <CatalogGrid
