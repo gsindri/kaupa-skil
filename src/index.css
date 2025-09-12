@@ -85,8 +85,6 @@ html { scrollbar-gutter: stable; }
 [data-app-header="true"] {
   --hdr-h: var(--header-h, 56px);
   transform: translateY(calc(-1 * var(--hdr-p, 0) * var(--hdr-h)));
-  transition: transform 180ms ease;
-  will-change: transform;
 }
 
 #catalogHeader::before,

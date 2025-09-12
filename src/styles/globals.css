@@ -22,6 +22,8 @@
   --dur-fast:120ms;
   --dur-base:200ms;
   --ease-snap:cubic-bezier(.22,1,.36,1);
+  --hdr-ms:220ms;
+  --hdr-ease:cubic-bezier(.22,.61,.36,1);
 
   /* Header layout */
   --header-left:var(--sidebar-w);  /* set from sidebar width */
@@ -41,6 +43,17 @@
   /* Memory stripe */
   --stripe-from:#22E0E0;
   --stripe-to:#12B6C5;
+}
+
+[data-chrome-layer], #catalogHeader {
+  transition: transform var(--hdr-ms) var(--hdr-ease), opacity var(--hdr-ms) var(--hdr-ease);
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-chrome-layer], #catalogHeader {
+    transition: none;
+  }
 }
 
 /* Reusable motif */
