@@ -30,7 +30,7 @@ export function PrimaryNavRail() {
         }}
       />
 
-      <nav className="mt-2 flex w-full flex-col items-center gap-1">
+      <nav className="flex w-full flex-col items-center gap-1">
       {items.map(({ to, icon: Icon, label }) => {
         const active = pathname === to || pathname.startsWith(to + '/')
         return (
