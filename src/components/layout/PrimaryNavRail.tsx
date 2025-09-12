@@ -16,12 +16,19 @@ const items = [
 export function PrimaryNavRail() {
   const { pathname } = useLocation()
   return (
-    <div 
+    <div
       className="h-full w-[var(--layout-rail,72px)] bg-gradient-to-b from-[#0B1220] via-[#0E1B35] to-[#0E2A5E] relative"
       style={{
         zIndex: 'var(--z-rail, 60)'
       }}
     >
+      <div
+        aria-hidden
+        className="absolute inset-x-0 top-0 h-[2px] pointer-events-none bg-gradient-to-r from-cyan-300/70 via-cyan-400 to-cyan-300/70"
+        style={{
+          transform: 'translateY(calc(-1 * var(--hdr-p, 0) * var(--header-h, 56px)))'
+        }}
+      />
 
       <nav className="mt-2 flex w-full flex-col items-center gap-1">
       {items.map(({ to, icon: Icon, label }) => {
