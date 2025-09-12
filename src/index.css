@@ -3,6 +3,20 @@
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
 
+/* Aggressive browser reset to eliminate gaps */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  position: relative !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow-x: hidden;
+}
+
 @import './styles/globals.css';
 @import './styles/design-system.css';
 @import './styles/layout-vars.css';
