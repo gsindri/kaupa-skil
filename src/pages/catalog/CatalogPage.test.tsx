@@ -1,5 +1,5 @@
 import React from 'react'
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import userEvent from '@testing-library/user-event'
 import { vi, describe, it, expect } from 'vitest'
@@ -182,18 +182,20 @@ describe('CatalogPage', () => {
     // Skipped: relies on complex facet rendering not needed for basic coverage
   })
 
-  it('applies onSpecial filter when triSpecial is include', () => {
+  it('applies onSpecial filter when triSpecial is include', async () => {
     catalogFiltersStore.setState({ triSpecial: 'include' })
     renderCatalogPage()
-    expect(useCatalogProductsMock).toHaveBeenCalledWith(
-      expect.objectContaining({ onSpecial: true }),
-      'relevance',
-    )
-    expect(useOrgCatalogMock).toHaveBeenCalledWith(
-      'org1',
-      expect.objectContaining({ onSpecial: true }),
-      'relevance',
-    )
+    await waitFor(() => {
+      expect(useCatalogProductsMock).toHaveBeenCalledWith(
+        expect.objectContaining({ onSpecial: true }),
+        'relevance',
+      )
+      expect(useOrgCatalogMock).toHaveBeenCalledWith(
+        'org1',
+        expect.objectContaining({ onSpecial: true }),
+        'relevance',
+      )
+    })
   })
 
   it.skip('cycles triStock filter through all states and forwards availability filters', async () => {
