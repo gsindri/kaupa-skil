@@ -25,9 +25,6 @@ export function PrimaryNavRail() {
       <div
         aria-hidden
         className="absolute inset-x-0 top-0 h-[2px] pointer-events-none bg-gradient-to-r from-cyan-300/70 via-cyan-400 to-cyan-300/70"
-        style={{
-          transform: 'translateY(calc(-1 * var(--hdr-p, 0) * var(--header-h, 56px)))'
-        }}
       />
 
       <nav className="flex w-full flex-col items-center gap-1">

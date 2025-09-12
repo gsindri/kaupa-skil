@@ -5,7 +5,7 @@ export function AppChrome() {
     <>
       {/* Cyan stripe - moves with the chrome */}
       <div
-        className="fixed top-0 z-[var(--z-chrome,30)] h-[2px] pointer-events-none bg-gradient-to-r from-cyan-300/70 via-cyan-400 to-cyan-300/70"
+        className="fixed top-0 z-[var(--z-stripe,56)] h-[2px] pointer-events-none bg-gradient-to-r from-cyan-300/70 via-cyan-400 to-cyan-300/70"
         style={{
           left: 'var(--header-left, 0px)',
           right: 'var(--header-right, 0px)',
