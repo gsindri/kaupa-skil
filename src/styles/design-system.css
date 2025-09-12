@@ -311,8 +311,8 @@
 
 /* Start the menu lower for visual balance (rail + full modes) */
 :root {
-  --sidebar-offset: clamp(36px, 11vh, 112px);        /* expanded */
-  --sidebar-offset-rail: clamp(24px, 9vh, 88px);     /* icon-only */
+  --sidebar-offset: clamp(72px, 18vh, 160px);        /* expanded */
+  --sidebar-offset-rail: clamp(56px, 16vh, 136px);   /* icon-only */
 }
 
 [data-sidebar="content"] {
@@ -321,4 +321,11 @@
 
 [data-collapsible="icon"] [data-sidebar="content"] {
   padding-top: var(--sidebar-offset-rail);
+}
+
+@media (max-height: 700px) {
+  :root {
+    --sidebar-offset: clamp(48px, 12vh, 112px);
+    --sidebar-offset-rail: clamp(40px, 10vh, 96px);
+  }
 }
