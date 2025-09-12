@@ -81,20 +81,25 @@ main > *:first-child {
 
 html { scrollbar-gutter: stable; }
 
-#catalogHeader {
+#catalogHeader,
+[data-app-header="true"] {
   --hdr-h: var(--header-h, 56px);
   transform: translateY(calc(-1 * var(--hdr-p, 0) * var(--hdr-h)));
   transition: transform 180ms ease;
   will-change: transform;
 }
 
-#catalogHeader::before {
+#catalogHeader::before,
+[data-app-header="true"]::before {
   /* Remove pseudo-element overlay that obscured the page */
   content: none !important;
 }
 
 @media (prefers-reduced-motion: reduce){
-  #catalogHeader{ transition:none; }
+  #catalogHeader,
+  [data-app-header="true"]{
+    transition:none;
+  }
 }
 
 /* 1) Ensure header is to the right of the sidebar */

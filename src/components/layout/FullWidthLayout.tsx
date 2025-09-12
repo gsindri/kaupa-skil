@@ -1,9 +1,10 @@
-import React, { useLayoutEffect, useRef } from 'react'
+import React, { useRef, useCallback, ReactElement } from 'react'
 import { TopNavigation } from './TopNavigation'
 import { CartDrawer } from '@/components/cart/CartDrawer'
 import { cn } from '@/lib/utils'
 import { AppChrome } from './AppChrome'
 import { PrimaryNavRail } from './PrimaryNavRail'
+import useHeaderScrollHide from './useHeaderScrollHide'
 
 interface FullWidthLayoutProps {
   children: React.ReactNode
@@ -22,24 +23,29 @@ export function FullWidthLayout({
 }: FullWidthLayoutProps) {
   const { className: contentClassName, style: contentStyle, ...restContentProps } = contentProps || {}
   const internalHeaderRef = useRef<HTMLDivElement>(null)
-  useLayoutEffect(() => {
+  const isPinned = useCallback(() => {
     const el = internalHeaderRef.current
-    if (!el) return
-    const update = () => {
-      const h = el.getBoundingClientRect().height || 56
-      const clamped = Math.min(120, Math.max(40, Math.round(h)))
-      document.documentElement.style.setProperty('--header-h', `${clamped}px`)
-    }
-    update()
-    const ro = new ResizeObserver(update)
-    ro.observe(el)
-    return () => ro.disconnect()
+    const ae = document.activeElement
+    const menuOpen = el?.querySelector('[data-open="true"]')
+    const isTypeable = (node: Element | null) =>
+      !!node &&
+      ((node instanceof HTMLInputElement) ||
+        (node instanceof HTMLTextAreaElement) ||
+        (node as HTMLElement).isContentEditable ||
+        node.getAttribute('role') === 'combobox')
+    return window.scrollY < 1 || !!menuOpen || isTypeable(ae)
   }, [])
+  const handleLockChange = useHeaderScrollHide(internalHeaderRef, { isPinned })
   const setHeaderRef = (node: HTMLDivElement | null) => {
     internalHeaderRef.current = node as HTMLDivElement
     if (typeof headerRef === 'function') headerRef(node as HTMLDivElement)
     else if (headerRef && 'current' in (headerRef as any)) (headerRef as any).current = node
   }
+
+  const headerNode =
+    header && React.isValidElement(header)
+      ? React.cloneElement(header as ReactElement<any>, { onLockChange: handleLockChange })
+      : header
 
   return (
     <div
@@ -60,13 +66,14 @@ export function FullWidthLayout({
         {/* Header is now scoped to the right column only */}
         <div
           id="catalogHeader"
+          data-app-header="true"
           ref={setHeaderRef}
           className={cn(headerClassName)}
           style={{ position: 'sticky', top: 0, zIndex: 'var(--z-header,30)' }}
         >
           <TopNavigation />
-          {header && (
-            <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">{header}</div>
+          {headerNode && (
+            <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">{headerNode}</div>
           )}
         </div>
 
