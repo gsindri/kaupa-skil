@@ -30,136 +30,272 @@ type PresetConfig = {
 }
 
 const PRESETS: Record<string, PresetConfig> = {
+  // ——————————————————————————————————————————————————————————
+  // SUPPLIERS
+  // ——————————————————————————————————————————————————————————
   suppliers: {
     requested: [
-      // Database schema
-      'supabase/migrations/20250812165208_79d75377-0718-46c4-ae46-a086b1a517a6.sql',
-      'supabase/migrations/20250830130000_create_supplier_connections.sql',
-      'src/integrations/supabase/types.ts',
-
-      // Supabase edge functions & ingestion pipeline
-      'supabase/functions/ingest-supplier/index.ts',
-      'supabase/functions/ingest-supplier-products/index.ts',
-      'supabase/functions/schedule-supplier-ingestion/index.ts',
-      'supabase/functions/match-supplier-item/index.ts',
-      'ingestion/adapters/api-foo.ts',
-
-      // Frontend hooks and data access
-      'src/hooks/useSuppliers.tsx',
-      'src/hooks/useSupplierCredentials.tsx',
-      'src/hooks/useSupplierConnections.ts',
-      'src/hooks/useSupplierItems.tsx',
-      'src/hooks/useConnectorRuns.tsx',
-
-      // UI components and pages
-      'src/components/suppliers/EnhancedSupplierManagement.tsx',
-      'src/components/suppliers/SupplierList.tsx',
-      'src/components/dashboard/SuppliersPanel.tsx',
+      // Key pages & routing
       'src/pages/Suppliers.tsx',
+      'src/router.tsx',
+      'src/router.test.ts',
 
-      // Documentation
+      // Supplier components (core)
+      'src/components/suppliers/EnhancedSupplierManagement.tsx',
+      'src/components/suppliers/SupplierManagement.tsx',
+      'src/components/suppliers/SupplierList.tsx',
+      'src/components/suppliers/SupplierCredentialsForm.tsx',
+      'src/components/suppliers/IngestionRunsList.tsx',
+      'src/components/suppliers/BookmarkletSync.tsx',
+      'src/components/suppliers/SupplierItemsWithHarInfo.tsx',
+      'src/components/suppliers/HarUploadModal.tsx',
+      'src/components/suppliers/HarSyncStatus.tsx',
+      'src/components/suppliers/HarAnalyticsPreview.tsx',
+      'src/components/suppliers/HarProcessingPreview.tsx',
+
+      // Docs
       'docs/CONNECTORS.md',
 
-      // Helpful fallbacks by basename
-      'create_supplier_connections.sql',
-      'types.ts',
-      'EnhancedSupplierManagement.tsx',
-      'SupplierList.tsx',
-      'SuppliersPanel.tsx',
-      'Suppliers.tsx',
-      'CONNECTORS.md',
+      // Ingestion entry points commonly referenced in prompts
+      'ingestion/pipelines/innnes-upsert.ts',
+      'ingestion/runner.ts',
+      'ingestion/types.ts',
+
+      // Seeds & scripts
+      'scripts/seedCatalog.ts',
+      'supabase/scripts/seedCatalog.js',
+      'supabase/seed/dev_seed.sql',
     ],
     patterns: [
-      // DB migrations (catch renamed files)
-      'supabase/migrations/**/*supplier*.sql',
-      // Edge functions
-      'supabase/functions/{ingest-supplier,ingest-supplier-products,schedule-supplier-ingestion,match-supplier-item}/**/*.{ts,tsx,js}',
-      // Ingestion adapters
-      'ingestion/adapters/**/*.{ts,tsx}',
-      // Hooks
+      // Components referencing supplier data outside suppliers/
+      'src/components/catalog/*Supplier*.tsx',
+      'src/components/catalog/**/__tests__/*Supplier*.test.tsx',
+      'src/components/catalog/Supplier*.tsx',
+      'src/components/catalog/CatalogTable.tsx',
+      'src/components/catalog/CatalogTable.test.tsx',
+      'src/components/catalog/CatalogFiltersPanel.tsx',
+      'src/components/catalog/FacetPanel.tsx',
+
+      'src/components/cart/**/*.{ts,tsx}',
+      'src/components/compare/**/*.{ts,tsx}',
+      'src/components/dashboard/**/*{Supplier*,Connector*,Anomaly*,Health*}.{ts,tsx}',
+      'src/components/orders/**/*{Supplier*,Order*}.{ts,tsx}',
+      'src/components/onboarding/steps/*Supplier*.tsx',
+      'src/components/search/*{HeaderSearch,SearchResultsPopover,SearchInput}*.tsx',
+
+      // Hooks, contexts, services, state, lib, utils
+      'src/contexts/**/BasketProvider.tsx',
+      'src/contexts/**/BasketProvider.test.tsx',
       'src/hooks/**/useSupplier*.ts*',
-      'src/hooks/**/useConnectorRuns.ts*',
-      // Components/pages
-      'src/components/**/suppliers/**/*.tsx',
-      'src/components/**/Supplier*.tsx',
-      'src/components/dashboard/*Supplier*.tsx',
-      'src/pages/**/Suppliers.tsx',
-      // Docs
-      'docs/**/CONNECTORS.md',
+      'src/hooks/**/useEnhancedSupplier*.ts*',
+      'src/hooks/**/useOptimizedSupplier*.ts*',
+      'src/hooks/**/useDeliveryAnalytics.tsx',
+      'src/hooks/**/useOrderingSuggestions.tsx',
+      'src/services/**/{DeliveryCalculator,DeliveryRules,OrderingSuggestions}.ts',
+      'src/services/**/{DeliveryCalculator,OrderingSuggestions}.test.ts',
+      'src/state/{catalogFiltersStore,userPrefs}.ts*',
+      'src/lib/{catalogFilters,catalogState,queryKeys,landedCost,normalization}.ts',
+      'src/utils/{harAnalytics,harDataExtractor,harRecommendations}.ts',
+
+      // Ingestion adapters/extractors
+      'ingestion/extractors/innnes-cheerio.ts',
+      'ingestion/adapters/**/*.{ts,tsx}',
+      'ingestion/adapters/{csv-bar.ts,sitemap-baz.ts,api-foo.ts}',
+
+      // E2E tests
+      'e2e/navigation.spec.ts',
+      'e2e/header-stability.spec.ts',
+
+      // Supabase Edge Functions
+      'supabase/functions/{ingest-supplier,ingest-supplier-products,match-supplier-item,schedule-supplier-ingestion,job-processor,ingest_har,stale-sweep}/**/*.{ts,tsx,js,json}',
+      'supabase/functions/ingest-supplier/availability.test.ts',
+
+      // Supabase migrations (many supplier-related)
+      'supabase/migrations/**/*supplier*.sql',
+      'supabase/migrations/**/*ingest*.sql',
+      'supabase/migrations/**/*supplier*_*.sql',
+
+      // Docs with supplier mentions
+      'docs/**/{README,SECURITY,hardcode-inventory,dashboard-pantry-mock-inventory,duplication-audit}.md',
+
+      // Top-level refs
+      'package.json',
+      'README.md',
+      'AUDIT/**/*',
+      'tools/make-chatpack.ts',
     ],
   },
 
+  // ——————————————————————————————————————————————————————————
+  // CATALOG
+  // ——————————————————————————————————————————————————————————
   catalog: {
+    requested: [
+      // Page entry & state
+      'src/pages/catalog/CatalogPage.tsx',
+      'src/pages/catalog/useCatalogState.ts',
+      'src/pages/catalog/ZeroResultsRescue.tsx',
+      'src/pages/catalog/CatalogPage.test.tsx',
+
+      // Supporting layout/UI pieces explicitly called out
+      'src/components/layout/CatalogLayout.tsx',
+      'src/components/ui/filter-chip.tsx',
+      'src/components/ui/tri-state-chip.tsx',
+      'src/components/ui/tri-state-chip.test.tsx',
+      'src/components/search/HeroSearchInput.tsx',
+      'src/components/common/InfiniteSentinel.tsx',
+      'src/components/place-order/ViewToggle.tsx',
+
+      // Hooks & state
+      'src/hooks/useCatalogProducts.ts',
+      'src/hooks/useOrgCatalog.ts',
+      'src/hooks/useCatalogSearchSuggestions.ts',
+      'src/state/catalogFiltersStore.ts',
+      'src/state/catalogFiltersStore.test.ts',
+
+      // Lib modules
+      'src/lib/catalogFilters.ts',
+      'src/lib/catalogState.ts',
+      'src/lib/scrollMemory.ts',
+      'src/lib/analytics.ts',
+      'src/lib/images.ts',
+
+      // Service layer
+      'src/services/catalog.ts',
+      'src/services/__tests__/Catalog.test.ts',
+    ],
     patterns: [
+      // Catalog components
+      'src/components/catalog/**/*.{ts,tsx,css}',
+      'src/components/catalog/**/__tests__/**/*.{ts,tsx}',
+
+      // Page dir
       'src/pages/catalog/**/*.{ts,tsx,css}',
-      'src/pages/**/Catalog*.tsx',
-      'src/components/**/{Catalog*,ProductCard*,ProductThumb*,AvailabilityBadge*,Supplier*,Facet*,SortDropdown*}.{ts,tsx}',
+
+      // Hooks & lib (catch moved/renamed)
       'src/hooks/**/useCatalog*.ts*',
       'src/hooks/**/useOrgCatalog*.ts*',
       'src/lib/**/catalog*.ts*',
+
+      // Shared helpers that catalog uses
+      'src/components/ui/{filter-chip,tri-state-chip}.ts*',
+      'src/components/common/InfiniteSentinel.tsx',
+      'src/components/place-order/ViewToggle.tsx',
+
+      // Virtualization
+      'src/components/catalog/VirtualizedGrid.tsx',
     ],
   },
 
+  // ——————————————————————————————————————————————————————————
+  // SIDEBAR
+  // ——————————————————————————————————————————————————————————
   sidebar: {
     requested: [
-      '/mnt/data/sidebar.tsx',
-      '/mnt/data/sidebar-provider.tsx',
-      '/mnt/data/use-sidebar.ts',
-      '/mnt/data/sidebar-constants.ts',
-      '/mnt/data/EnhancedAppSidebar.tsx',
-      '/mnt/data/SmartCartSidebar.tsx',
-      '/mnt/data/design-system.css',
-      '/mnt/data/globals.css',
-      '/mnt/data/index.css',
-      '/mnt/data/tailwind.config.ts',
-      '/mnt/data/useBasket.ts',
-      '/mnt/data/useAuth.ts',
-      '/mnt/data/OrderingSuggestions.ts',
-      'sidebar.tsx',
-      'sidebar-provider.tsx',
-      'use-sidebar.ts',
-      'sidebar-constants.ts',
-      'EnhancedAppSidebar.tsx',
-      'SmartCartSidebar.tsx',
-      'design-system.css',
-      'globals.css',
-      'index.css',
+      // Core UI building blocks
+      'src/components/ui/sidebar.tsx',
+      'src/components/ui/sidebar-provider.tsx',
+      'src/components/ui/use-sidebar.ts',
+      'src/components/ui/sidebar-constants.ts',
+
+      // Layout / specialized sidebars
+      'src/components/layout/EnhancedAppSidebar.tsx',
+      'src/components/quick/SmartCartSidebar.tsx',
+
+      // Styling & configuration
+      'src/index.css',
+      'src/styles/design-system.css',
+      'src/styles/globals.css',
+      'src/styles/layout-vars.css',
       'tailwind.config.ts',
-      'useBasket.ts',
-      'useAuth.ts',
-      'OrderingSuggestions.ts',
+
+      // Tests / routing
+      'e2e/navigation.spec.ts',
+      'src/router.test.ts',
+
+      // Tooling
+      'tools/make-chatpack.ts',
+      'package.json',
+    ],
+    patterns: [
+      // Any sidebar-related UI files
+      'src/components/ui/*sidebar*.{ts,tsx}',
+      'src/components/ui/sidebar*.{ts,tsx}',
+      'src/components/layout/*Sidebar*.tsx',
+      'src/components/quick/*Sidebar*.tsx',
+
+      // Styles affecting sidebar layout/tokens
+      'src/styles/*{design-system,globals,layout-vars}*.css',
+      'src/**/*.css',
+
+      // Navigation tests & router
+      'e2e/**/navigation.spec.ts',
+      'src/**/router*.{ts,tsx,test.tsx}',
     ],
   },
 
+  // ——————————————————————————————————————————————————————————
+  // CART (kept minimal; updated to common current filenames)
+  // ——————————————————————————————————————————————————————————
   cart: {
     requested: [
-      'BasketProvider.tsx',
-      'useBasket.ts',
-      'AddToCartButton.tsx',
-      'CartDrawer.tsx',
-      'QuantityStepper.tsx',
-      'flyToCart.ts',
-      'OrderComposer.tsx',
-      'useOrderingSuggestions.tsx',
-      'useDeliveryOptimization.tsx',
-      'DeliveryCalculator.ts',
-      'index.css',
+      'src/contexts/BasketProvider.tsx',
+      'src/hooks/useBasket.ts',
+      'src/components/cart/AddToCartButton.tsx',
+      'src/components/cart/CartDrawer.tsx',
+      'src/components/cart/QuantityStepper.tsx',
+      'src/components/cart/flyToCart.ts',
+      'src/components/orders/OrderComposer.tsx',
+      'src/hooks/useOrderingSuggestions.tsx',
+      'src/hooks/useDeliveryOptimization.tsx',
+      'src/services/DeliveryCalculator.ts',
+      'src/index.css',
+    ],
+    patterns: [
+      'src/components/cart/**/*.{ts,tsx}',
+      'src/components/orders/**/*{Order*,Composer*}.{ts,tsx}',
+      'src/hooks/**/use*Cart*.ts*',
+      'src/hooks/**/useOrderingSuggestions.tsx',
+      'src/hooks/**/useDeliveryOptimization.tsx',
+      'src/services/**/DeliveryCalculator.ts',
     ],
   },
 
+  // ——————————————————————————————————————————————————————————
+  // TOP BAR / HEADER
+  // ——————————————————————————————————————————————————————————
   topbar: {
     requested: [
-      'TopNavigation.tsx',
-      'AppLayout.tsx',
-      'FullWidthLayout.tsx',
-      'AppChrome.tsx',
-      'TenantSwitcher.tsx',
-      'LanguageSwitcher.tsx',
-      'HeaderSearch.tsx',
-      'CartDrawer.tsx',
-      'layout-vars.css',
-      'globals.css',
-      'index.css',
+      // Docs / manifest
+      'TOPBAR_MANIFEST.md',
+
+      // Core components
+      'src/components/layout/TopNavigation.tsx',
+      'src/components/layout/AppChrome.tsx',
+      'src/components/layout/AppLayout.tsx',
+      'src/components/layout/FullWidthLayout.tsx',
+      'src/components/layout/ElevationBanner.tsx',
+
+      // Switchers & search
+      'src/components/layout/TenantSwitcher.tsx',
+      'src/components/layout/LanguageSwitcher.tsx',
+      'src/components/search/HeaderSearch.tsx',
+
+      // Scroll-hide behavior (+test)
+      'src/components/layout/useHeaderScrollHide.ts',
+      'src/components/layout/useHeaderScrollHide.test.tsx',
+
+      // Styling / globals
+      'src/styles/layout-vars.css',
+      'src/styles/globals.css',
+      'src/index.css',
+    ],
+    patterns: [
+      'src/components/layout/*{TopNavigation,AppChrome,AppLayout,FullWidthLayout,ElevationBanner}*.tsx',
+      'src/components/layout/*Header*.ts*',
+      'src/components/search/*HeaderSearch*.tsx',
+      'src/styles/*{layout-vars,globals}*.css',
+      'src/**/*catalogHeader*', // catch/remove legacy overlay refs if still present
     ],
   },
 }
@@ -173,11 +309,16 @@ const IGNORE = [
   '**/build/**',
   '**/.next/**',
   '**/coverage/**',
+  '**/.turbo/**',
+  '**/.vercel/**',
 ]
 
 // when multiple files share a basename, prefer these roots
 const PREFER = [
   'src/pages/**',
+  'src/components/layout/**',
+  'src/components/ui/**',
+  'src/components/quick/**',
   'src/components/**',
   'src/contexts/**',
   'src/hooks/**',
@@ -204,6 +345,7 @@ function langFor(p: string) {
   if (lower.endsWith('.tsx')) return 'tsx'
   if (lower.endsWith('.ts')) return 'ts'
   if (lower.endsWith('.js')) return 'js'
+  if (lower.endsWith('.json')) return 'json'
   if (lower.endsWith('.sql')) return 'sql'
   if (lower.endsWith('.md') || lower.endsWith('.mdx')) return 'md'
   return ''
