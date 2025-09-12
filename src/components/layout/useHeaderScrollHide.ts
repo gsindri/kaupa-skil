@@ -80,7 +80,6 @@ export function useHeaderScrollHide(
     let acc = 0
     let lastDir: -1 | 0 | 1 = 0
     let lock: 'none' | 'visible' | 'hidden' = 'none'
-    let prevP = -1
     let lastSnapDir: -1 | 0 | 1 = 0
     let lastSnapTime = 0
     let lastSnapY = 0
