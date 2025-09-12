@@ -1,4 +1,4 @@
-# Catalog ChatPack 2025-09-11T15:37:13.683Z
+# Catalog ChatPack 2025-09-12T11:42:14.574Z
 
 _Contains 37 file(s)._
 
@@ -480,6 +480,11 @@ export function CatalogGrid({
     [onAddToCart, showPrice],
   )
 
+  // Debug logging
+  React.useEffect(() => {
+    console.log('CatalogGrid products:', products.length)
+  }, [products.length])
+
   return (
     <VirtualizedGrid
       items={products}
@@ -489,7 +494,6 @@ export function CatalogGrid({
       gap={16}
       onNearEnd={onNearEnd}
       className="px-4 py-2"
-      style={{ height: 'calc(100vh - var(--chrome-h))' }}
     />
   )
 }
@@ -3795,11 +3799,11 @@ const orgCatalogResult = {
 }
 const useCatalogProductsMock = vi.fn(() => catalogProductsResult)
 vi.mock('@/hooks/useCatalogProducts', () => ({
-  useCatalogProducts: (...args: any[]) => useCatalogProductsMock(...args),
+  useCatalogProducts: () => useCatalogProductsMock(),
 }))
 const useOrgCatalogMock = vi.fn(() => orgCatalogResult)
 vi.mock('@/hooks/useOrgCatalog', () => ({
-  useOrgCatalog: (...args: any[]) => useOrgCatalogMock(...args),
+  useOrgCatalog: () => useOrgCatalogMock(),
 }))
 vi.mock('@/hooks/useDebounce', () => ({ useDebounce: (v: any) => v }))
 vi.mock('@/components/catalog/CatalogTable', () => ({

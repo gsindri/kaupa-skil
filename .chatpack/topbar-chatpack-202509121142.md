@@ -1,4 +1,4 @@
-# Topbar ChatPack 2025-09-11T15:37:16.735Z
+# Topbar ChatPack 2025-09-12T11:42:17.763Z
 
 _Contains 11 file(s)._
 
@@ -186,16 +186,24 @@ import React from 'react'
 export function AppChrome() {
   return (
     <>
-      {/* Cyan stripe - positioned absolutely within the right column */}
-      <div className="absolute inset-x-0 top-0 z-[60] h-[2px] bg-gradient-to-r from-cyan-300/70 via-cyan-400 to-cyan-300/70 pointer-events-none" />
-      
-      {/* Chrome gradient background - scoped to right column */}
+      {/* Cyan stripe - moves with the chrome */}
       <div
-        className="fixed top-0 left-0 right-0 z-[var(--z-chrome,20)] pointer-events-none overflow-hidden"
+        className="fixed top-0 z-[var(--z-stripe,56)] h-[2px] pointer-events-none bg-gradient-to-r from-cyan-300/70 via-cyan-400 to-cyan-300/70"
         style={{
+          left: 'var(--header-left, 0px)',
+          right: 'var(--header-right, 0px)',
+          transform: 'translateY(calc(-1 * var(--hdr-p, 0) * var(--header-h, 56px)))',
+        }}
+      />
+      
+      {/* Chrome gradient background - confined to content area */}
+      <div
+        className="fixed top-0 z-[var(--z-chrome,20)] overflow-hidden pointer-events-none"
+        style={{
+          left: 'var(--header-left, 0px)',
+          right: 'var(--header-right, 0px)',
           height: 'clamp(44px, var(--toolbar-h, 56px), 72px)',
-          transform:
-            'translateY(calc(-1 * var(--hdr-p, 0) * var(--header-h, 56px)))',
+          transform: 'translateY(calc(-1 * var(--hdr-p, 0) * var(--header-h, 56px)))',
         }}
         aria-hidden
       >
@@ -277,30 +285,29 @@ export function AppLayout({
   }, [])
 
   return (
-    <div
-      className="relative min-h-dvh grid"
-      style={{ gridTemplateColumns: 'var(--layout-rail,72px) 1fr' }}
-    >
-      <a
-        href="#main-content"
-        className="sr-only focus:not-sr-only absolute left-2 top-2 z-[var(--z-header,50)] px-3 py-2 rounded bg-[var(--button-primary)] text-white"
-      >
-        Skip to content
-      </a>
-      <AppChrome />
-
-      {/* Left rail */}
+    <div className="relative min-h-screen">
+      {/* Left rail - fixed position */}
       <aside
         data-rail
-        className="sticky top-0 h-dvh"
-        style={{ zIndex: 'var(--z-rail,40)' }}
+        className="fixed top-0 left-0 h-screen"
+        style={{ 
+          width: 'var(--layout-rail,72px)',
+          zIndex: 'var(--z-rail, 60)'
+        }}
       >
         <PrimaryNavRail />
       </aside>
 
-      {/* Right column: header + page */}
-      <div className="relative">
-        {/* Header is now scoped to the right column only */}
+      {/* Right content area */}
+      <div style={{ marginLeft: 'var(--layout-rail,72px)' }}>
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only absolute left-2 top-2 z-[var(--z-header,50)] px-3 py-2 rounded bg-[var(--button-primary)] text-white"
+        >
+          Skip to content
+        </a>
+        <AppChrome />
+        {/* Header */}
         <div
           id="catalogHeader"
           ref={combinedHeaderRef}
@@ -311,14 +318,16 @@ export function AppLayout({
           {header}
         </div>
 
-        {/* Content; if header overlays, pad with the measured height */}
-        <main
-          id="main-content"
-          style={{ paddingTop: 'var(--header-h, var(--layout-header-h,56px))' }}
+        {/* Main content */}
+        <main 
+          id="main-content" 
+          className="mx-auto max-w-[1280px] px-4 sm:px-6 lg:px-8"
+          style={{ 
+            minHeight: 'calc(100vh - var(--header-h, 56px))',
+            paddingTop: '1rem'
+          }}
         >
-          <div className="mx-auto max-w-[1280px] px-4 sm:px-6 lg:px-8">
-            {children ?? <Outlet />}
-          </div>
+          {children ?? <Outlet />}
         </main>
       </div>
       <CartDrawer />
@@ -1107,7 +1116,6 @@ html, body, #root {
 :root {
   --sidebar-w: 256px; /* expanded width */
   --sidebar-rail-w: 48px; /* collapsed rail width */
-  --header-left: var(--sidebar-w); /* computed from sidebar width */
   --header-right: 0px; /* reserved for symmetry */
 }
 
@@ -1174,29 +1182,6 @@ html { scrollbar-gutter: stable; }
   z-index: 40;
 }
 
-/* 2) Sidebar should touch the very top and contain no internal stripe */
-[data-sidebar="sidebar"] {
-  top: 0 !important;
-  border-top: 0 !important;
-  box-shadow: none !important;
-}
-
-/* hide stray decorative stripe elements if present */
-[data-sidebar="sidebar"]::before,
-[data-sidebar="sidebar"]::after,
-[data-sidebar="sidebar"] .top-stripe,
-[data-sidebar="sidebar"] [data-top-stripe] {
-  display: none !important;
-  content: none !important;
-}
-
-/* 3) fallback offsets (mirrors SidebarContent class) */
-:root {
-  --sidebar-offset: clamp(20px, 9vh, 84px);
-  --sidebar-offset-rail: clamp(12px, 7vh, 56px);
-}
-[data-sidebar="content"] { padding-top: var(--sidebar-offset); }
-[data-collapsible="icon"] [data-sidebar="content"] { padding-top: var(--sidebar-offset-rail); }
 
 ```
 
@@ -1282,18 +1267,15 @@ svg.lucide{ stroke-width:1.75; }
 ```css
 :root {
   --layout-rail: 72px;     /* nav rail width */
-  --layout-header-h: 56px; /* base header height */
-  /* total sticky header (wrapper): Top bar + page-level bars */
-  --header-h: var(--layout-header-h);
-  /* dedicated toolbar height: just the TopNavigation */
-  --toolbar-h: 56px;
-  /* chrome follows the toolbar, not the whole header */
-  --chrome-h: var(--toolbar-h);
-  --header-left: var(--sidebar-w);
+  --header-h: 56px;        /* unified header height */
+  --toolbar-h: var(--header-h); /* toolbar follows header */
+  --chrome-h: var(--header-h);  /* chrome follows header */
+  --header-left: var(--layout-rail);
 
-  --z-rail: 40;
-  --z-header: 45;  /* header above chrome */
-  --z-chrome: 20;  /* gradient below header */
+  --z-rail: 60;   /* highest - sidebar always on top */
+  --z-stripe: 56; /* cyan stripe above header */
+  --z-header: 55;  /* header content on top */
+  --z-chrome: 50;  /* chrome background below header */
 }
 
 ```
