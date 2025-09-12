@@ -26,7 +26,7 @@ export function PrimaryNavRail() {
         className="absolute inset-x-0 top-0 h-[2px] pointer-events-none bg-gradient-to-r from-cyan-300/70 via-cyan-400 to-cyan-300/70"
       />
 
-      <nav className="flex w-full flex-col items-center gap-1">
+      <nav className="flex w-full flex-col items-center gap-1 pt-[var(--sidebar-offset-rail)]">
       {items.map(({ to, image, label }) => {
         const active = pathname === to || pathname.startsWith(to + '/')
         return (
