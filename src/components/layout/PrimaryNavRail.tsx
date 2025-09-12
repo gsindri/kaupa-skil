@@ -43,7 +43,7 @@ export function PrimaryNavRail() {
             <img 
               src={image} 
               alt={label}
-              className="h-5 w-5 brightness-0 invert opacity-80 group-hover:opacity-100"
+              className="h-5 w-5 filter invert opacity-80 group-hover:opacity-100"
             />
             <span className="mt-1 text-[10px] leading-3">{label}</span>
           </Link>
