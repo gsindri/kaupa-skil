@@ -1,180 +1,6 @@
-# Topbar ChatPack 2025-09-12T11:42:17.763Z
+# Topbar ChatPack 2025-09-12T13:12:42.480Z
 
-_Contains 11 file(s)._
-
----
-
-## src\components\cart\CartDrawer.tsx
-
-```tsx
-import * as React from "react"
-import { Sheet, SheetContent, SheetClose } from "@/components/ui/sheet"
-import { Button } from "@/components/ui/button"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Badge } from "@/components/ui/badge"
-import { Trash2, X } from "lucide-react"
-import { useCart } from "@/contexts/useBasket"
-import { useSettings } from "@/contexts/useSettings"
-import { QuantityStepper } from "./QuantityStepper"
-
-export function CartDrawer() {
-  const {
-    items,
-    updateQuantity,
-    removeItem,
-    getTotalPrice,
-    getMissingPriceCount,
-    isDrawerOpen,
-    setIsDrawerOpen,
-  } = useCart()
-  const { includeVat, setIncludeVat } = useSettings()
-
-  const subtotal = getTotalPrice(includeVat)
-  const missingPriceCount = getMissingPriceCount()
-  const formatCurrency = (n: number) =>
-    new Intl.NumberFormat(undefined, {
-      style: "currency",
-      currency: "ISK",
-      maximumFractionDigits: 0,
-    }).format(n || 0)
-
-  return (
-    <Sheet open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
-      <SheetContent
-        side="right"
-        className="w-[380px] max-w-[92vw] p-0 flex flex-col [&>button:last-child]:hidden"
-        aria-label="Shopping cart"
-        id="cart-drawer"
-      >
-        <div className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b">
-          <div className="flex items-center justify-between px-4 py-3">
-            <div className="text-sm leading-tight">
-              <span aria-live="polite" className="sr-only">
-                Cart subtotal {formatCurrency(subtotal)}
-              </span>
-              <div className="text-muted-foreground">Subtotal</div>
-              <div className="font-semibold text-base">{formatCurrency(subtotal)}</div>
-            </div>
-            <div className="flex items-center gap-2">
-              {missingPriceCount > 0 && (
-                <Badge variant="destructive" className="text-xs">
-                  Some prices unavailable
-                </Badge>
-              )}
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => {
-                  setIsDrawerOpen(false)
-                  location.assign("/cart")
-                }}
-              >
-                Go to Cart
-              </Button>
-              <SheetClose asChild>
-                <Button variant="ghost" size="icon" aria-label="Close cart">
-                  <X className="h-5 w-5" />
-                </Button>
-              </SheetClose>
-            </div>
-          </div>
-        </div>
-
-        <ScrollArea className="flex-1">
-          <div className="px-3 py-2 space-y-3">
-            {items.length === 0 && (
-              <div className="p-6 text-center text-sm text-muted-foreground">
-                Your cart is empty.
-              </div>
-            )}
-
-            {items.map(it => (
-              <div key={it.supplierItemId} className="rounded-lg border p-3">
-                <div className="flex gap-3">
-                  <div className="h-20 w-20 shrink-0 overflow-hidden rounded-md bg-muted">
-                    {it.image ? (
-                      <img src={it.image} alt="" className="h-full w-full object-contain" />
-                    ) : null}
-                  </div>
-
-                  <div className="min-w-0 flex-1">
-                    <div className="truncate font-medium">{it.displayName || it.itemName}</div>
-                    {it.packSize ? (
-                      <div className="text-xs text-muted-foreground">{it.packSize}</div>
-                    ) : null}
-                    {it.supplierName ? (
-                      <div className="mt-0.5 text-xs text-muted-foreground">{it.supplierName}</div>
-                    ) : null}
-
-                    <div className="mt-2 text-sm font-semibold">
-                      {formatCurrency(
-                        includeVat
-                          ? it.unitPriceIncVat ?? it.packPrice ?? 0
-                          : it.unitPriceExVat ?? it.packPrice ?? 0,
-                      )}
-                    </div>
-
-                    <div className="mt-2 inline-flex items-center gap-2">
-                      <QuantityStepper
-                        quantity={it.quantity}
-                        onChange={qty =>
-                          qty === 0
-                            ? removeItem(it.supplierItemId)
-                            : updateQuantity(it.supplierItemId, qty)
-                        }
-                        label={it.displayName || it.itemName}
-                      />
-
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        aria-label={`Remove ${it.displayName || "item"}`}
-                        className="ml-1 text-destructive hover:text-destructive"
-                        onClick={() => removeItem(it.supplierItemId)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </ScrollArea>
-
-        <div className="sticky bottom-0 z-10 border-t bg-background/95 backdrop-blur">
-          <div className="flex items-center justify-between px-4 py-3">
-            <div className="flex items-center gap-2 text-xs">
-              <Button
-                variant={!includeVat ? "default" : "outline"}
-                size="sm"
-                onClick={() => setIncludeVat(false)}
-              >
-                Ex VAT
-              </Button>
-              <Button
-                variant={includeVat ? "default" : "outline"}
-                size="sm"
-                onClick={() => setIncludeVat(true)}
-              >
-                Inc VAT
-              </Button>
-            </div>
-            <Button size="lg" className="min-w-[140px]" onClick={() => location.assign("/checkout")}>
-              Checkout
-            </Button>
-          </div>
-        </div>
-      </SheetContent>
-    </Sheet>
-  )
-}
-
-export default CartDrawer
-
-
-```
-
+_Contains 14 file(s)._
 
 ---
 
@@ -188,6 +14,7 @@ export function AppChrome() {
     <>
       {/* Cyan stripe - moves with the chrome */}
       <div
+        data-chrome-layer
         className="fixed top-0 z-[var(--z-stripe,56)] h-[2px] pointer-events-none bg-gradient-to-r from-cyan-300/70 via-cyan-400 to-cyan-300/70"
         style={{
           left: 'var(--header-left, 0px)',
@@ -198,12 +25,14 @@ export function AppChrome() {
       
       {/* Chrome gradient background - confined to content area */}
       <div
+        data-chrome-layer
         className="fixed top-0 z-[var(--z-chrome,20)] overflow-hidden pointer-events-none"
         style={{
           left: 'var(--header-left, 0px)',
           right: 'var(--header-right, 0px)',
           height: 'clamp(44px, var(--toolbar-h, 56px), 72px)',
           transform: 'translateY(calc(-1 * var(--hdr-p, 0) * var(--header-h, 56px)))',
+          opacity: 'calc(1 - (0.05 * var(--hdr-p, 0)))',
         }}
         aria-hidden
       >
@@ -231,13 +60,15 @@ import React, {
   useCallback,
   useLayoutEffect,
   useRef,
-  MutableRefObject
+  MutableRefObject,
+  ReactElement
 } from 'react'
 import { Outlet } from 'react-router-dom'
 import { TopNavigation } from './TopNavigation'
 import { PrimaryNavRail } from './PrimaryNavRail'
 import { AppChrome } from './AppChrome'
 import { CartDrawer } from '@/components/cart/CartDrawer'
+import useHeaderScrollHide from './useHeaderScrollHide'
 
 interface AppLayoutProps {
   header?: ReactNode
@@ -265,24 +96,32 @@ export function AppLayout({
     [headerRef]
   )
 
-  useLayoutEffect(() => {
+  const isPinned = useCallback(() => {
     const el = internalHeaderRef.current
-    if (!el) return
-    const update = () => {
-      const h = Math.round(el.getBoundingClientRect().height || 56)
-      document.documentElement.style.setProperty('--header-h', `${h}px`)
-    }
-    update()
-    const ro = new ResizeObserver(update)
-    ro.observe(el)
+    const ae = document.activeElement
+    const menuOpen = el?.querySelector('[data-open="true"]')
+    const isTypeable = (node: Element | null) =>
+      !!node &&
+      ((node instanceof HTMLInputElement) ||
+        (node instanceof HTMLTextAreaElement) ||
+        (node as HTMLElement).isContentEditable ||
+        node.getAttribute('role') === 'combobox')
+    return window.scrollY < 1 || !!menuOpen || isTypeable(ae)
+  }, [])
 
+  const handleLockChange = useHeaderScrollHide(internalHeaderRef, { isPinned })
+
+  useLayoutEffect(() => {
     const rail = document.querySelector('[data-rail]')
     if (rail instanceof HTMLElement) {
       document.documentElement.style.setProperty('--header-left', `${rail.offsetWidth}px`)
     }
-
-    return () => ro.disconnect()
   }, [])
+
+  const headerNode =
+    header && React.isValidElement(header)
+      ? React.cloneElement(header as ReactElement<any>, { onLockChange: handleLockChange })
+      : header
 
   return (
     <div className="relative min-h-screen">
@@ -310,12 +149,14 @@ export function AppLayout({
         {/* Header */}
         <div
           id="catalogHeader"
+          data-app-header="true"
+          data-chrome-layer
           ref={combinedHeaderRef}
           className={headerClassName}
           style={{ position: 'sticky', top: 0, zIndex: 'var(--z-header,50)' }}
         >
           <TopNavigation />
-          {header}
+          {headerNode}
         </div>
 
         {/* Main content */}
@@ -342,15 +183,69 @@ export default AppLayout
 
 ---
 
+## src\components\layout\ElevationBanner.tsx
+
+```tsx
+
+import React from 'react'
+import { Shield, X } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { useSearchParams } from 'react-router-dom'
+
+export function ElevationBanner() {
+  const [searchParams, setSearchParams] = useSearchParams()
+  const isElevated = searchParams.get('elevated') === 'true'
+
+  if (!isElevated) return null
+
+  const handleDismiss = () => {
+    const newParams = new URLSearchParams(searchParams)
+    newParams.delete('elevated')
+    setSearchParams(newParams)
+  }
+
+  return (
+    <div className="bg-orange-50 border-l-4 border-orange-400 p-4 mb-4">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center">
+          <Shield className="h-5 w-5 text-orange-400 mr-3" />
+          <div>
+            <p className="text-sm font-medium text-orange-800">
+              Elevated Session Active
+            </p>
+            <p className="text-sm text-orange-700">
+              You are currently operating with elevated privileges. Use with caution.
+            </p>
+          </div>
+        </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleDismiss}
+          className="text-orange-600 hover:text-orange-800"
+        >
+          <X className="h-4 w-4" />
+        </Button>
+      </div>
+    </div>
+  )
+}
+
+```
+
+
+---
+
 ## src\components\layout\FullWidthLayout.tsx
 
 ```tsx
-import React, { useLayoutEffect, useRef } from 'react'
+import React, { useRef, useCallback, ReactElement } from 'react'
 import { TopNavigation } from './TopNavigation'
 import { CartDrawer } from '@/components/cart/CartDrawer'
 import { cn } from '@/lib/utils'
 import { AppChrome } from './AppChrome'
 import { PrimaryNavRail } from './PrimaryNavRail'
+import useHeaderScrollHide from './useHeaderScrollHide'
 
 interface FullWidthLayoutProps {
   children: React.ReactNode
@@ -369,24 +264,29 @@ export function FullWidthLayout({
 }: FullWidthLayoutProps) {
   const { className: contentClassName, style: contentStyle, ...restContentProps } = contentProps || {}
   const internalHeaderRef = useRef<HTMLDivElement>(null)
-  useLayoutEffect(() => {
+  const isPinned = useCallback(() => {
     const el = internalHeaderRef.current
-    if (!el) return
-    const update = () => {
-      const h = el.getBoundingClientRect().height || 56
-      const clamped = Math.min(120, Math.max(40, Math.round(h)))
-      document.documentElement.style.setProperty('--header-h', `${clamped}px`)
-    }
-    update()
-    const ro = new ResizeObserver(update)
-    ro.observe(el)
-    return () => ro.disconnect()
+    const ae = document.activeElement
+    const menuOpen = el?.querySelector('[data-open="true"]')
+    const isTypeable = (node: Element | null) =>
+      !!node &&
+      ((node instanceof HTMLInputElement) ||
+        (node instanceof HTMLTextAreaElement) ||
+        (node as HTMLElement).isContentEditable ||
+        node.getAttribute('role') === 'combobox')
+    return window.scrollY < 1 || !!menuOpen || isTypeable(ae)
   }, [])
+  const handleLockChange = useHeaderScrollHide(internalHeaderRef, { isPinned })
   const setHeaderRef = (node: HTMLDivElement | null) => {
     internalHeaderRef.current = node as HTMLDivElement
     if (typeof headerRef === 'function') headerRef(node as HTMLDivElement)
     else if (headerRef && 'current' in (headerRef as any)) (headerRef as any).current = node
   }
+
+  const headerNode =
+    header && React.isValidElement(header)
+      ? React.cloneElement(header as ReactElement<any>, { onLockChange: handleLockChange })
+      : header
 
   return (
     <div
@@ -407,13 +307,14 @@ export function FullWidthLayout({
         {/* Header is now scoped to the right column only */}
         <div
           id="catalogHeader"
+          data-app-header="true"
           ref={setHeaderRef}
           className={cn(headerClassName)}
           style={{ position: 'sticky', top: 0, zIndex: 'var(--z-header,30)' }}
         >
           <TopNavigation />
-          {header && (
-            <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">{header}</div>
+          {headerNode && (
+            <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">{headerNode}</div>
           )}
         </div>
 
@@ -943,6 +844,300 @@ export function TopNavigation() {
 
 ---
 
+## src\components\layout\useHeaderScrollHide.test.tsx
+
+```tsx
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import React, { useRef, useLayoutEffect } from 'react'
+import { render } from '@testing-library/react'
+import useHeaderScrollHide from './useHeaderScrollHide'
+
+class RO {
+  observe() {}
+  disconnect() {}
+}
+
+beforeEach(() => {
+  vi.useFakeTimers()
+  ;(global as any).ResizeObserver = RO as any
+  Object.defineProperty(window, 'matchMedia', {
+    writable: true,
+    value: vi.fn().mockReturnValue({ matches: false, addEventListener: () => {}, removeEventListener: () => {} })
+  })
+})
+
+afterEach(() => {
+  vi.useRealTimers()
+})
+
+function TestComponent() {
+  const ref = useRef<HTMLDivElement>(null)
+  useLayoutEffect(() => {
+    if (ref.current) {
+      ;(ref.current as any).getBoundingClientRect = () => ({ height: 56 })
+    }
+  }, [])
+  useHeaderScrollHide(ref)
+  return <div ref={ref}></div>
+}
+
+describe('useHeaderScrollHide', () => {
+  it('updates --hdr-p with scroll hysteresis', () => {
+    const { container } = render(<TestComponent />)
+    const header = container.firstChild as HTMLDivElement
+    vi.runAllTimers()
+    expect(header.style.getPropertyValue('--hdr-p')).toBe('0.000')
+
+    Object.defineProperty(window, 'scrollY', { writable: true, value: 200 })
+    window.dispatchEvent(new Event('scroll'))
+    vi.runAllTimers()
+    expect(header.style.getPropertyValue('--hdr-p')).toBe('1.000')
+
+    vi.advanceTimersByTime(250)
+    Object.defineProperty(window, 'scrollY', { writable: true, value: 180 })
+    window.dispatchEvent(new Event('scroll'))
+    vi.runAllTimers()
+    expect(header.style.getPropertyValue('--hdr-p')).toBe('1.000')
+
+    Object.defineProperty(window, 'scrollY', { writable: true, value: 150 })
+    window.dispatchEvent(new Event('scroll'))
+    vi.runAllTimers()
+    expect(header.style.getPropertyValue('--hdr-p')).toBe('0.000')
+  })
+})
+
+```
+
+
+---
+
+## src\components\layout\useHeaderScrollHide.ts
+
+```ts
+import { useCallback, useEffect, useRef } from 'react'
+
+interface Options {
+  /**
+   * Return true when header should remain pinned (always visible)
+   */
+  isPinned?: () => boolean
+  /**
+   * Optional callback notified when lock state changes
+   */
+  onLockChange?: (locked: boolean) => void
+}
+
+/**
+ * Auto-hides the header on downward scroll and reveals on upward scroll.
+ * Updates `--hdr-p` CSS variable on both the header element and documentElement
+ * and maintains `--header-h` via ResizeObserver.
+ */
+export function useHeaderScrollHide(
+  ref: React.RefObject<HTMLElement>,
+  { isPinned, onLockChange }: Options = {}
+) {
+  const lockCount = useRef(0)
+  const handleLockChange = useCallback(
+    (locked: boolean) => {
+      lockCount.current += locked ? 1 : -1
+      if (lockCount.current < 0) lockCount.current = 0
+      onLockChange?.(lockCount.current > 0)
+    },
+    [onLockChange]
+  )
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+
+    // Respect reduced motion
+    const reduceMotion =
+      typeof window !== 'undefined' &&
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+    const setP = (p: number) => {
+      const v = p < 0.02 ? 0 : p > 0.98 ? 1 : p
+      const val = v.toFixed(3)
+      el.style.setProperty('--hdr-p', val)
+      document.documentElement.style.setProperty('--hdr-p', val)
+    }
+
+    let H = Math.round(el.getBoundingClientRect().height)
+    const setHeaderVars = () => {
+      H = Math.round(el.getBoundingClientRect().height)
+      document.documentElement.style.setProperty('--header-h', `${H}px`)
+    }
+    setHeaderVars()
+    const ro =
+      typeof ResizeObserver !== 'undefined'
+        ? new ResizeObserver(setHeaderVars)
+        : null
+    ro?.observe(el)
+    window.addEventListener('resize', setHeaderVars)
+
+    let interactionLockUntil = 0
+    const lockFor = (ms: number) => {
+      interactionLockUntil = performance.now() + ms
+    }
+    const handlePointerDown = () => lockFor(180)
+    el.addEventListener('pointerdown', handlePointerDown, { passive: true })
+
+    // Tunables
+    const PROGRESS_START = 10
+    const GAP = 24
+    const MIN_DY = 0.25
+    const SNAP_THRESHOLD = 3
+    const SNAP_COOLDOWN_MS = 200
+    const REVEAL_DIST = 32
+    const REHIDE_DIST = 32
+
+    let lastY = window.scrollY
+    let acc = 0
+    let lastDir: -1 | 0 | 1 = 0
+    let lock: 'none' | 'visible' | 'hidden' = 'none'
+    let prevP = -1
+    let lastSnapDir: -1 | 0 | 1 = 0
+    let lastSnapTime = 0
+    let lastSnapY = 0
+
+    const pinned = () =>
+      (isPinned?.() ?? false) || lockCount.current > 0 || performance.now() < interactionLockUntil
+
+    const onScroll = () => {
+      const y = Math.max(0, window.scrollY)
+      const dy = y - lastY
+      lastY = y
+
+      if (reduceMotion) {
+        setP(0)
+        return
+      }
+
+      if (pinned()) {
+        lock = 'none'
+        acc = 0
+        lastDir = 0
+        setP(0)
+        return
+      }
+
+      if (lock === 'visible' && y <= H - GAP) lock = 'none'
+      if (lock === 'hidden' && y >= H + GAP) lock = 'none'
+
+      if (y < H) {
+        const dir: -1 | 0 | 1 = Math.abs(dy) < MIN_DY ? 0 : dy > 0 ? 1 : -1
+        if (lock === 'visible' || dir <= 0) {
+          acc = 0
+          lastDir = dir
+          setP(0)
+          return
+        }
+        const span = Math.max(1, H - PROGRESS_START)
+        const t = Math.max(0, y - PROGRESS_START) / span
+        const p = 1 - Math.pow(1 - t, 3)
+        acc = 0
+        lastDir = dir
+        setP(p)
+        return
+      }
+
+      if (lock === 'hidden') {
+        setP(1)
+        return
+      }
+
+      const dir: -1 | 0 | 1 = Math.abs(dy) < MIN_DY ? 0 : dy > 0 ? 1 : -1
+      if (dir !== 0) {
+        if (dir !== lastDir) acc = 0
+        acc += dy
+        lastDir = dir
+        const now = performance.now()
+        if (acc >= SNAP_THRESHOLD) {
+          if (
+            lastSnapDir === -1 &&
+            (now - lastSnapTime < SNAP_COOLDOWN_MS || y - lastSnapY < REHIDE_DIST)
+          ) {
+            // keep visible
+          } else {
+            setP(1)
+            lock = 'hidden'
+            acc = 0
+            lastSnapDir = 1
+            lastSnapTime = now
+            lastSnapY = y
+            return
+          }
+        }
+        if (acc <= -SNAP_THRESHOLD) {
+          if (
+            lastSnapDir === 1 &&
+            (now - lastSnapTime < SNAP_COOLDOWN_MS || lastSnapY - y < REVEAL_DIST)
+          ) {
+            // keep hidden
+          } else {
+            setP(0)
+            lock = 'visible'
+            acc = 0
+            lastSnapDir = -1
+            lastSnapTime = now
+            lastSnapY = y
+            return
+          }
+        }
+      }
+    }
+
+    const listener = () => requestAnimationFrame(onScroll)
+    window.addEventListener('scroll', listener, { passive: true })
+
+    const wheel = (e: WheelEvent) => {
+      if (window.scrollY >= H + GAP) {
+        const now = performance.now()
+        if (e.deltaY > 0) {
+          if (!(lastSnapDir === -1 && now - lastSnapTime < SNAP_COOLDOWN_MS)) {
+            setP(1)
+            lock = 'hidden'
+            lastSnapDir = 1
+            lastSnapTime = now
+            lastSnapY = window.scrollY
+          }
+        } else if (e.deltaY < 0) {
+          if (!(lastSnapDir === 1 && now - lastSnapTime < SNAP_COOLDOWN_MS)) {
+            setP(0)
+            lock = 'visible'
+            lastSnapDir = -1
+            lastSnapTime = now
+            lastSnapY = window.scrollY
+          }
+        }
+      }
+    }
+    window.addEventListener('wheel', wheel, { passive: true })
+
+    // Initial apply
+    listener()
+
+    return () => {
+      document.documentElement.style.setProperty('--hdr-p', '0')
+      window.removeEventListener('scroll', listener)
+      window.removeEventListener('wheel', wheel)
+      window.removeEventListener('resize', setHeaderVars)
+      el.removeEventListener('pointerdown', handlePointerDown)
+      ro?.disconnect()
+    }
+  }, [ref, isPinned])
+
+  return handleLockChange
+}
+
+export default useHeaderScrollHide
+
+```
+
+
+---
+
 ## src\components\search\HeaderSearch.tsx
 
 ```tsx
@@ -1155,20 +1350,23 @@ main > *:first-child {
 
 html { scrollbar-gutter: stable; }
 
-#catalogHeader {
+#catalogHeader,
+[data-app-header="true"] {
   --hdr-h: var(--header-h, 56px);
   transform: translateY(calc(-1 * var(--hdr-p, 0) * var(--hdr-h)));
-  transition: transform 180ms ease;
-  will-change: transform;
 }
 
-#catalogHeader::before {
+#catalogHeader::before,
+[data-app-header="true"]::before {
   /* Remove pseudo-element overlay that obscured the page */
   content: none !important;
 }
 
 @media (prefers-reduced-motion: reduce){
-  #catalogHeader{ transition:none; }
+  #catalogHeader,
+  [data-app-header="true"]{
+    transition:none;
+  }
 }
 
 /* 1) Ensure header is to the right of the sidebar */
@@ -1215,6 +1413,8 @@ html { scrollbar-gutter: stable; }
   --dur-fast:120ms;
   --dur-base:200ms;
   --ease-snap:cubic-bezier(.22,1,.36,1);
+  --hdr-ms:220ms;
+  --hdr-ease:cubic-bezier(.22,.61,.36,1);
 
   /* Header layout */
   --header-left:var(--sidebar-w);  /* set from sidebar width */
@@ -1234,6 +1434,17 @@ html { scrollbar-gutter: stable; }
   /* Memory stripe */
   --stripe-from:#22E0E0;
   --stripe-to:#12B6C5;
+}
+
+[data-chrome-layer], #catalogHeader {
+  transition: transform var(--hdr-ms) var(--hdr-ease), opacity var(--hdr-ms) var(--hdr-ease);
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-chrome-layer], #catalogHeader {
+    transition: none;
+  }
 }
 
 /* Reusable motif */
@@ -1277,5 +1488,22 @@ svg.lucide{ stroke-width:1.75; }
   --z-header: 55;  /* header content on top */
   --z-chrome: 50;  /* chrome background below header */
 }
+
+```
+
+
+---
+
+## TOPBAR_MANIFEST.md
+
+```md
+# Top Bar Manifest
+
+- **src/components/layout/AppChrome.tsx** – renders the decorative chrome gradient behind the header; height follows `--toolbar-h`.
+- **src/components/layout/TopNavigation.tsx** – main header navigation; measures itself to set `--toolbar-h` and sits above chrome.
+- **src/styles/layout-vars.css** – global layout tokens including `--toolbar-h` and z-index variables.
+- **src/index.css** – global styles establishing `--header-h`, mapping `--hdr-p` to a translate, and removing the `#catalogHeader` pseudo-element overlay.
+
+Known quirk: `--header-h` is updated via JavaScript to match measured header height.
 
 ```

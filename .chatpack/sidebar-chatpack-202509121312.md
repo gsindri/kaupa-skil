@@ -1,6 +1,205 @@
-# Sidebar ChatPack 2025-09-12T11:42:15.706Z
+# Sidebar ChatPack 2025-09-12T13:12:40.921Z
 
-_Contains 12 file(s)._
+_Contains 16 file(s)._
+
+---
+
+## e2e\navigation.spec.ts
+
+```ts
+import { test, expect } from '@playwright/test';
+
+// Already authenticated via global-setup storageState.
+
+test('sidebar links route correctly', async ({ page }) => {
+  await page.goto('/');
+
+  const links = [
+    { label: 'Dashboard', path: '/' },
+    { label: 'Catalog', path: '/catalog' },
+    { label: 'Compare', path: '/compare' },
+    { label: 'Suppliers', path: '/suppliers' },
+  ];
+
+  for (const { label, path } of links) {
+    await page.getByRole('link', { name: label }).click();
+    if (path === '/') {
+      await expect(page).toHaveURL(/\/$/);
+    } else {
+      await expect(page).toHaveURL(new RegExp(path));
+    }
+  }
+});
+
+test('catalog search flow', async ({ page }) => {
+  await page.goto('/');
+
+  await page.getByRole('link', { name: 'Catalog' }).click();
+  await expect(page).toHaveURL(/catalog/);
+
+  const searchBox = page.getByPlaceholder('Search products');
+  await searchBox.fill('test');
+  await expect(page.getByTestId('product-card').first()).toBeVisible();
+});
+
+```
+
+
+---
+
+## package.json
+
+```json
+{
+  "name": "vite_react_shadcn_ts",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "npm run build:extension && vite build",
+    "build:dev": "npm run build:extension && vite build --mode development",
+    "build:extension": "npm --prefix extension run build",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "test": "node --max-old-space-size=4096 ./node_modules/vitest/vitest.mjs run --maxWorkers=2",
+    "test:e2e": "playwright test",
+    "merge:mock-items": "node supabase/scripts/mergeMockItems.js",
+    "db:seed:catalog": "node supabase/scripts/seedCatalog.js",
+    "cache:images": "node supabase/scripts/cacheImages.js",
+    "check:dupes": "tsx scripts/check-duplicates.ts",
+    "chat:pack": "tsx tools/make-chatpack.ts --preset catalog",
+    "chat:pack:sidebar": "tsx tools/make-chatpack.ts --preset sidebar",
+    "chat:pack:cart": "tsx tools/make-chatpack.ts --preset cart",
+    "chat:pack:topbar": "tsx tools/make-chatpack.ts --preset topbar",
+    "chat:pack:suppliers": "tsx tools/make-chatpack.ts --preset suppliers",
+    "chat:pack:all": "pnpm run chat:pack && pnpm run chat:pack:sidebar && pnpm run chat:pack:cart && pnpm run chat:pack:topbar && pnpm run chat:pack:suppliers"
+  },
+  "dependencies": {
+    "@hookform/resolvers": "^3.10.0",
+    "@radix-ui/react-accordion": "^1.2.11",
+    "@radix-ui/react-alert-dialog": "^1.1.14",
+    "@radix-ui/react-aspect-ratio": "^1.1.7",
+    "@radix-ui/react-avatar": "^1.1.10",
+    "@radix-ui/react-checkbox": "^1.3.2",
+    "@radix-ui/react-collapsible": "^1.1.11",
+    "@radix-ui/react-context-menu": "^2.2.15",
+    "@radix-ui/react-dialog": "^1.1.14",
+    "@radix-ui/react-dropdown-menu": "^2.1.15",
+    "@radix-ui/react-hover-card": "^1.1.14",
+    "@radix-ui/react-label": "^2.1.7",
+    "@radix-ui/react-menubar": "^1.1.15",
+    "@radix-ui/react-navigation-menu": "^1.2.13",
+    "@radix-ui/react-popover": "^1.1.14",
+    "@radix-ui/react-progress": "^1.1.7",
+    "@radix-ui/react-radio-group": "^1.3.7",
+    "@radix-ui/react-scroll-area": "^1.2.9",
+    "@radix-ui/react-select": "^2.2.5",
+    "@radix-ui/react-separator": "^1.1.7",
+    "@radix-ui/react-slider": "^1.3.5",
+    "@radix-ui/react-slot": "^1.2.3",
+    "@radix-ui/react-switch": "^1.2.5",
+    "@radix-ui/react-tabs": "^1.1.12",
+    "@radix-ui/react-toast": "^1.2.14",
+    "@radix-ui/react-toggle": "^1.1.9",
+    "@radix-ui/react-toggle-group": "^1.1.10",
+    "@radix-ui/react-tooltip": "^1.2.7",
+    "@supabase/supabase-js": "^2.55.0",
+    "@tanstack/react-query": "^5.83.0",
+    "@tanstack/react-virtual": "^3.13.12",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "cmdk": "^1.1.1",
+    "csv-parse": "^6.1.0",
+    "date-fns": "^3.6.0",
+    "dotenv": "^17.2.1",
+    "embla-carousel-react": "^8.6.0",
+    "input-otp": "^1.4.2",
+    "lucide-react": "^0.462.0",
+    "next-themes": "^0.3.0",
+    "react": "^18.3.1",
+    "react-day-picker": "^8.10.1",
+    "react-dom": "^18.3.1",
+    "react-hook-form": "^7.61.1",
+    "react-resizable-panels": "^2.1.9",
+    "react-router-dom": "^6.30.1",
+    "react-window": "^1.8.11",
+    "recharts": "^2.15.4",
+    "sharp": "^0.33.5",
+    "sonner": "^1.7.4",
+    "tailwind-merge": "^2.6.0",
+    "tailwindcss-animate": "^1.0.7",
+    "use-sync-external-store": "^1.5.0",
+    "vaul": "^0.9.9",
+    "zod": "^3.25.76",
+    "zustand": "^5.0.8"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.32.0",
+    "@playwright/test": "^1.54.2",
+    "@tailwindcss/typography": "^0.5.16",
+    "@tanstack/react-query-devtools": "^5.85.3",
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/jest-dom": "^6.7.0",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/node": "^22.16.5",
+    "@types/react": "^18.3.23",
+    "@types/react-dom": "^18.3.7",
+    "@vitejs/plugin-react-swc": "^3.11.0",
+    "@vitest/coverage-v8": "^3.2.4",
+    "autoprefixer": "^10.4.21",
+    "cheerio": "^1.1.2",
+    "esbuild": "^0.25.9",
+    "eslint": "^9.32.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.20",
+    "fast-glob": "^3.3.3",
+    "globals": "^15.15.0",
+    "jsdom": "^26.1.0",
+    "lovable-tagger": "^1.1.9",
+    "pg-mem": "^3.0.5",
+    "playwright": "^1.55.0",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^3.4.17",
+    "tsx": "^4.20.4",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.38.0",
+    "undici": "^7.15.0",
+    "vite": "^5.4.19",
+    "vitest": "^3.2.4"
+  },
+  "packageManager": "pnpm@10.14.0"
+}
+
+```
+
+
+---
+
+## src\components\layout\EnhancedAppSidebar.tsx
+
+```tsx
+import React from 'react'
+import { Sidebar, SidebarContent } from '@/components/ui/sidebar'
+
+type EnhancedAppSidebarProps = React.ComponentProps<typeof Sidebar>
+
+export function EnhancedAppSidebar({ children, ...props }: EnhancedAppSidebarProps) {
+  return (
+    <Sidebar {...props}>
+      <SidebarContent className="pt-[var(--sidebar-offset)] data-[collapsible=icon]:pt-[var(--sidebar-offset-rail)]">
+        {children}
+      </SidebarContent>
+    </Sidebar>
+  )
+}
+
+export default EnhancedAppSidebar
+
+
+```
+
 
 ---
 
@@ -1007,46 +1206,6 @@ export { useSidebar, SidebarContext }
 
 ---
 
-## src\contexts\useAuth.ts
-
-```ts
-import { useContext } from 'react'
-import { AuthContext } from './AuthProviderUtils'
-
-export function useAuth() {
-  const context = useContext(AuthContext)
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider')
-  }
-  return context
-}
-
-```
-
-
----
-
-## src\contexts\useBasket.ts
-
-```ts
-import { useContext } from 'react'
-import { BasketContext } from './BasketProviderUtils'
-
-export function useBasket() {
-  const context = useContext(BasketContext)
-  if (context === undefined) {
-    throw new Error('useBasket must be used within a BasketProvider')
-  }
-  return context
-}
-
-export const useCart = useBasket
-
-```
-
-
----
-
 ## src\index.css
 
 ```css
@@ -1133,20 +1292,23 @@ main > *:first-child {
 
 html { scrollbar-gutter: stable; }
 
-#catalogHeader {
+#catalogHeader,
+[data-app-header="true"] {
   --hdr-h: var(--header-h, 56px);
   transform: translateY(calc(-1 * var(--hdr-p, 0) * var(--hdr-h)));
-  transition: transform 180ms ease;
-  will-change: transform;
 }
 
-#catalogHeader::before {
+#catalogHeader::before,
+[data-app-header="true"]::before {
   /* Remove pseudo-element overlay that obscured the page */
   content: none !important;
 }
 
 @media (prefers-reduced-motion: reduce){
-  #catalogHeader{ transition:none; }
+  #catalogHeader,
+  [data-app-header="true"]{
+    transition:none;
+  }
 }
 
 /* 1) Ensure header is to the right of the sidebar */
@@ -1166,207 +1328,188 @@ html { scrollbar-gutter: stable; }
 
 ---
 
-## src\services\OrderingSuggestions.ts
+## src\router.test.ts
 
 ```ts
+import { describe, it, expect } from 'vitest'
+import { routes } from './router'
 
-import { supabase } from '@/integrations/supabase/client'
-import type { CartItem } from '@/lib/types'
-import type { DeliveryCalculation } from '@/lib/types/delivery'
-import { deliveryCalculator } from './DeliveryCalculator'
-
-export interface OrderingSuggestion {
-  id: string
-  type: 'threshold_optimization' | 'consolidation' | 'timing_optimization'
-  title: string
-  description: string
-  potential_savings: number
-  confidence: number
-  actions: SuggestionAction[]
-  metadata: Record<string, any>
+const appRoute = routes.find(r => r.path === '/')
+if (!appRoute) {
+  throw new Error('Root route not found')
 }
 
-export interface SuggestionAction {
-  type: 'add_item' | 'increase_quantity' | 'delay_order' | 'merge_suppliers'
-  item_id?: string
-  supplier_id?: string
-  quantity_change?: number
-  description: string
-}
+const childPaths = new Set(
+  (appRoute.children ?? []).map(r => (r.index ? '' : r.path))
+)
 
-export class OrderingSuggestionsService {
-  async generateSuggestions(cartItems: CartItem[]): Promise<OrderingSuggestion[]> {
-    const suggestions: OrderingSuggestion[] = []
-    
-    // Get current delivery calculations
-    const deliveryCalculations = await deliveryCalculator.calculateOrderDelivery(cartItems)
-    
-    // Generate threshold optimization suggestions
-    const thresholdSuggestions = await this.generateThresholdSuggestions(deliveryCalculations, cartItems)
-    suggestions.push(...thresholdSuggestions)
-    
-    // Generate consolidation suggestions
-    const consolidationSuggestions = await this.generateConsolidationSuggestions(cartItems)
-    suggestions.push(...consolidationSuggestions)
-    
-    // Generate timing optimization suggestions
-    const timingSuggestions = await this.generateTimingSuggestions(deliveryCalculations)
-    suggestions.push(...timingSuggestions)
-    
-    return suggestions.sort((a, b) => b.potential_savings - a.potential_savings)
-  }
+const expectedPaths = ['', 'cart', 'compare', 'suppliers', 'pantry', 'price-history', 'discovery', 'admin']
 
-  private async generateThresholdSuggestions(
-    calculations: DeliveryCalculation[], 
-    cartItems: CartItem[]
-  ): Promise<OrderingSuggestion[]> {
-    const suggestions: OrderingSuggestion[] = []
-    
-    for (const calc of calculations) {
-      if (calc.is_under_threshold && calc.amount_to_free_delivery) {
-        // Get frequently ordered items from this supplier
-        const frequentItems = await this.getFrequentlyOrderedItems(calc.supplier_id)
-        
-        if (frequentItems.length > 0) {
-          suggestions.push({
-            id: `threshold_${calc.supplier_id}`,
-            type: 'threshold_optimization',
-            title: `Reach free delivery from ${calc.supplier_name}`,
-            description: `Add ISK${Math.ceil(calc.amount_to_free_delivery).toLocaleString()} more to save ISK${Math.ceil(calc.delivery_fee).toLocaleString()} in delivery fees`,
-            potential_savings: calc.delivery_fee,
-            confidence: 0.85,
-            actions: [{
-              type: 'add_item',
-              supplier_id: calc.supplier_id,
-              description: `Add items worth ISK${Math.ceil(calc.amount_to_free_delivery).toLocaleString()}`
-            }],
-            metadata: {
-              supplier_id: calc.supplier_id,
-              threshold_amount: calc.threshold_amount,
-              current_amount: calc.subtotal_ex_vat,
-              suggested_items: frequentItems.slice(0, 3)
-            }
-          })
-        }
-      }
-    }
-    
-    return suggestions
-  }
-
-  private async generateConsolidationSuggestions(cartItems: CartItem[]): Promise<OrderingSuggestion[]> {
-    const suggestions: OrderingSuggestion[] = []
-    
-    // Group by supplier and find opportunities to consolidate
-    const supplierGroups = cartItems.reduce((groups, item) => {
-      if (!groups[item.supplierId]) {
-        groups[item.supplierId] = []
-      }
-      groups[item.supplierId].push(item)
-      return groups
-    }, {} as Record<string, CartItem[]>)
-    
-    // If we have multiple suppliers with small orders, suggest consolidation
-    const smallOrders = Object.entries(supplierGroups).filter(([_, items]) => {
-      const total = items.reduce((sum, item) => sum + (item.unitPriceExVat * item.quantity), 0)
-      return total < 50000 // Less than ISK 50,000
+describe('sidebar route definitions', () => {
+  for (const p of expectedPaths) {
+    it(`includes path "${p || '/'}"`, () => {
+      expect(childPaths.has(p)).toBe(true)
     })
-    
-    if (smallOrders.length >= 2) {
-      const totalSavings = smallOrders.length * 2000 // Estimate ISK 2,000 per supplier delivery fee
-      
-      suggestions.push({
-        id: 'consolidate_suppliers',
-        type: 'consolidation',
-        title: 'Consolidate suppliers to reduce delivery fees',
-        description: `Consider sourcing from fewer suppliers to reduce delivery costs`,
-        potential_savings: totalSavings,
-        confidence: 0.7,
-        actions: [{
-          type: 'merge_suppliers',
-          description: `Review if items from ${smallOrders.length} suppliers can be sourced elsewhere`
-        }],
-        metadata: {
-          small_order_suppliers: smallOrders.map(([supplierId]) => supplierId),
-          estimated_fees: totalSavings
-        }
-      })
-    }
-    
-    return suggestions
   }
+  it('defines catalog route separately', () => {
+    expect(routes.some(r => r.path === '/catalog')).toBe(true)
+  })
+})
 
-  private async generateTimingSuggestions(calculations: DeliveryCalculation[]): Promise<OrderingSuggestion[]> {
-    const suggestions: OrderingSuggestion[] = []
-    
-    // Check for suppliers with different delivery schedules
-    const deliverySchedules = calculations
-      .filter(calc => calc.next_delivery_day)
-      .map(calc => ({
-        supplier: calc.supplier_name,
-        next_delivery: calc.next_delivery_day,
-        supplier_id: calc.supplier_id
-      }))
-    
-    if (deliverySchedules.length > 1) {
-      const uniqueDates = [...new Set(deliverySchedules.map(s => s.next_delivery))]
-      
-      if (uniqueDates.length > 1) {
-        suggestions.push({
-          id: 'timing_optimization',
-          type: 'timing_optimization',
-          title: 'Optimize delivery timing',
-          description: `Some suppliers have different delivery schedules. Consider timing orders for maximum efficiency.`,
-          potential_savings: 0, // More about convenience than cost
-          confidence: 0.6,
-          actions: [{
-            type: 'delay_order',
-            description: 'Align order timing with delivery schedules'
-          }],
-          metadata: {
-            delivery_schedules: deliverySchedules
-          }
-        })
-      }
-    }
-    
-    return suggestions
-  }
+describe('public auth routes', () => {
+  it('does not gate reset-password route', () => {
+    expect(childPaths.has('reset-password')).toBe(false)
+  })
+  it('does not gate forgot-password route', () => {
+    expect(childPaths.has('forgot-password')).toBe(false)
+  })
+  it('defines reset-password route', () => {
+    expect(routes.some(r => r.path === '/reset-password')).toBe(true)
+  })
+})
 
-  private async getFrequentlyOrderedItems(supplierId: string): Promise<any[]> {
-    try {
-      // Fixed: Removed .group() and used proper aggregation in the select
-      const { data } = await (supabase as any)
-        .rpc('get_frequent_items_by_supplier', {
-          supplier_id_param: supplierId,
-          days_back: 90
-        })
+```
 
-      return (data as any[]) || []
-    } catch (error) {
-      console.error('Failed to fetch frequently ordered items:', error)
-      // Fallback to a simpler query without grouping
-      try {
-        const { data } = await (supabase as any)
-          .from('order_lines')
-          .select(`
-            supplier_item_id,
-            supplier_items(name, pack_size, unit_price_ex_vat, unit_price_inc_vat)
-          `)
-          .eq('supplier_id', supplierId)
-          .gte('created_at', new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString())
-          .limit(5)
 
-        return (data as any[]) || []
-      } catch (fallbackError) {
-        console.error('Fallback query also failed:', fallbackError)
-        return []
-      }
-    }
-  }
-}
+---
 
-export const orderingSuggestions = new OrderingSuggestionsService()
+## src\router.tsx
+
+```tsx
+
+import { createBrowserRouter } from "react-router-dom";
+import { AuthGate } from "@/components/auth/AuthGate";
+import { AppLayout } from "@/components/layout/AppLayout";
+import Dashboard from "@/pages/Dashboard";
+import Compare from "@/pages/Compare";
+import Orders from "@/pages/Orders";
+import Suppliers from "@/pages/Suppliers";
+import Pantry from "@/pages/Pantry";
+import Settings from "@/pages/Settings";
+import PriceHistory from "@/pages/PriceHistory";
+import Delivery from "@/pages/Delivery";
+import Admin from "@/pages/Admin";
+import Discovery from "@/pages/Discovery";
+import CatalogPage from "@/pages/catalog/CatalogPage";
+import LoginPage from "@/pages/auth/LoginPage";
+import SignupPage from "@/pages/auth/SignupPage";
+import ForgotPassword from "@/pages/auth/ForgotPassword";
+import ResetPassword from "@/pages/auth/ResetPassword";
+import ErrorPage from "@/pages/ErrorPage";
+import NotFound from "@/pages/NotFound";
+import { ExistingUserOnboarding } from "@/components/onboarding/ExistingUserOnboarding";
+import { OnboardingWizard } from "@/components/onboarding/OnboardingWizard";
+
+export const routes = [
+  {
+    path: "/",
+    element: (
+      <AuthGate>
+        <AppLayout />
+      </AuthGate>
+    ),
+    errorElement: <ErrorPage />,
+    children: [
+      {
+        index: true,
+        element: <Dashboard />,
+      },
+      {
+        path: "cart",
+        element: <Orders />,
+      },
+      {
+        path: "compare",
+        element: <Compare />,
+      },
+      {
+        path: "suppliers",
+        element: <Suppliers />,
+      },
+      {
+        path: "pantry",
+        element: <Pantry />,
+      },
+      {
+        path: "price-history",
+        element: <PriceHistory />,
+      },
+      {
+        path: "discovery",
+        element: <Discovery />,
+      },
+      {
+        path: "admin",
+        element: <Admin />,
+      },
+      {
+        path: "settings",
+        element: <Settings />,
+      },
+      {
+        path: "delivery",
+        element: <Delivery />,
+      },
+    ],
+  },
+  {
+    path: "/catalog",
+    element: (
+      <AuthGate>
+        <CatalogPage />
+      </AuthGate>
+    ),
+    errorElement: <ErrorPage />,
+  },
+  {
+    path: "/login",
+    element: <LoginPage />,
+  },
+  {
+    path: "/signup",
+    element: <SignupPage />,
+  },
+  {
+    path: "/forgot-password",
+    element: <ForgotPassword />,
+  },
+  {
+    path: "/reset-password",
+    element: <ResetPassword />,
+  },
+  {
+    path: "/onboarding",
+    element: (
+      <AuthGate>
+        <ExistingUserOnboarding />
+      </AuthGate>
+    ),
+  },
+  {
+    path: "/settings/organization/create",
+    element: (
+      <AuthGate>
+        <OnboardingWizard />
+      </AuthGate>
+    ),
+  },
+  {
+    path: "/settings/organization/join",
+    element: (
+      <AuthGate>
+        <ExistingUserOnboarding />
+      </AuthGate>
+    ),
+  },
+  {
+    path: "*",
+    element: <NotFound />,
+  },
+];
+
+export const router = createBrowserRouter(routes, {
+  basename: import.meta.env.BASE_URL,
+});
 
 ```
 
@@ -1689,8 +1832,8 @@ export const orderingSuggestions = new OrderingSuggestionsService()
 
 /* Start the menu lower for visual balance (rail + full modes) */
 :root {
-  --sidebar-offset: clamp(20px, 9vh, 84px);      /* expanded */
-  --sidebar-offset-rail: clamp(12px, 7vh, 56px); /* collapsed (icon-only) */
+  --sidebar-offset: clamp(36px, 11vh, 112px);        /* expanded */
+  --sidebar-offset-rail: clamp(24px, 9vh, 88px);     /* icon-only */
 }
 
 [data-sidebar="content"] {
@@ -1733,6 +1876,8 @@ export const orderingSuggestions = new OrderingSuggestionsService()
   --dur-fast:120ms;
   --dur-base:200ms;
   --ease-snap:cubic-bezier(.22,1,.36,1);
+  --hdr-ms:220ms;
+  --hdr-ease:cubic-bezier(.22,.61,.36,1);
 
   /* Header layout */
   --header-left:var(--sidebar-w);  /* set from sidebar width */
@@ -1752,6 +1897,17 @@ export const orderingSuggestions = new OrderingSuggestionsService()
   /* Memory stripe */
   --stripe-from:#22E0E0;
   --stripe-to:#12B6C5;
+}
+
+[data-chrome-layer], #catalogHeader {
+  transition: transform var(--hdr-ms) var(--hdr-ease), opacity var(--hdr-ms) var(--hdr-ease);
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-chrome-layer], #catalogHeader {
+    transition: none;
+  }
 }
 
 /* Reusable motif */
@@ -1774,6 +1930,27 @@ svg.lucide{ stroke-width:1.75; }
 .badge--in{ background:var(--badge-in-bg); color:var(--badge-in-text); }
 .badge--out{ background:var(--badge-out-bg); color:var(--badge-out-text); }
 .badge--unknown{ background:var(--badge-unknown-bg); color:var(--badge-unknown-text); }
+
+```
+
+
+---
+
+## src\styles\layout-vars.css
+
+```css
+:root {
+  --layout-rail: 72px;     /* nav rail width */
+  --header-h: 56px;        /* unified header height */
+  --toolbar-h: var(--header-h); /* toolbar follows header */
+  --chrome-h: var(--header-h);  /* chrome follows header */
+  --header-left: var(--layout-rail);
+
+  --z-rail: 60;   /* highest - sidebar always on top */
+  --z-stripe: 56; /* cyan stripe above header */
+  --z-header: 55;  /* header content on top */
+  --z-chrome: 50;  /* chrome background below header */
+}
 
 ```
 
@@ -2022,5 +2199,491 @@ export default {
 	},
         plugins: [animatePlugin],
 } satisfies Config;
+
+```
+
+
+---
+
+## tools\make-chatpack.ts
+
+```ts
+// tools/make-chatpack.ts
+import fg from 'fast-glob'
+import { promises as fs } from 'fs'
+import path from 'path'
+
+/**
+ * Usage (examples):
+ *   pnpm dlx tsx tools/make-chatpack.ts --preset suppliers
+ *   pnpm dlx tsx tools/make-chatpack.ts --preset topbar
+ *   pnpm dlx tsx tools/make-chatpack.ts --preset sidebar
+ *   pnpm dlx tsx tools/make-chatpack.ts --preset cart
+ *   pnpm dlx tsx tools/make-chatpack.ts --preset catalog
+ *
+ * Optional flags:
+ *   --keep 2   # keep the last 2 old packs for this preset (default 0 = delete all old)
+ *
+ * (optional) package.json scripts:
+ *   "chat:pack:suppliers": "tsx tools/make-chatpack.ts --preset suppliers",
+ *   "chat:pack:topbar":    "tsx tools/make-chatpack.ts --preset topbar",
+ *   "chat:pack:sidebar":   "tsx tools/make-chatpack.ts --preset sidebar",
+ *   "chat:pack:cart":      "tsx tools/make-chatpack.ts --preset cart",
+ *   "chat:pack:catalog":   "tsx tools/make-chatpack.ts --preset catalog"
+ */
+
+type PresetConfig = {
+  /** explicit file names or paths to include (exact path first, else basename search) */
+  requested?: string[]
+  /** glob patterns to include (to catch moved/renamed helpers) */
+  patterns?: string[]
+}
+
+const PRESETS: Record<string, PresetConfig> = {
+  // ——————————————————————————————————————————————————————————
+  // SUPPLIERS
+  // ——————————————————————————————————————————————————————————
+  suppliers: {
+    requested: [
+      // Key pages & routing
+      'src/pages/Suppliers.tsx',
+      'src/router.tsx',
+      'src/router.test.ts',
+
+      // Supplier components (core)
+      'src/components/suppliers/EnhancedSupplierManagement.tsx',
+      'src/components/suppliers/SupplierManagement.tsx',
+      'src/components/suppliers/SupplierList.tsx',
+      'src/components/suppliers/SupplierCredentialsForm.tsx',
+      'src/components/suppliers/IngestionRunsList.tsx',
+      'src/components/suppliers/BookmarkletSync.tsx',
+      'src/components/suppliers/SupplierItemsWithHarInfo.tsx',
+      'src/components/suppliers/HarUploadModal.tsx',
+      'src/components/suppliers/HarSyncStatus.tsx',
+      'src/components/suppliers/HarAnalyticsPreview.tsx',
+      'src/components/suppliers/HarProcessingPreview.tsx',
+
+      // Docs
+      'docs/CONNECTORS.md',
+
+      // Ingestion entry points commonly referenced in prompts
+      'ingestion/pipelines/innnes-upsert.ts',
+      'ingestion/runner.ts',
+      'ingestion/types.ts',
+
+      // Seeds & scripts
+      'scripts/seedCatalog.ts',
+      'supabase/scripts/seedCatalog.js',
+      'supabase/seed/dev_seed.sql',
+    ],
+    patterns: [
+      // Components referencing supplier data outside suppliers/
+      'src/components/catalog/*Supplier*.tsx',
+      'src/components/catalog/**/__tests__/*Supplier*.test.tsx',
+      'src/components/catalog/Supplier*.tsx',
+      'src/components/catalog/CatalogTable.tsx',
+      'src/components/catalog/CatalogTable.test.tsx',
+      'src/components/catalog/CatalogFiltersPanel.tsx',
+      'src/components/catalog/FacetPanel.tsx',
+
+      'src/components/cart/**/*.{ts,tsx}',
+      'src/components/compare/**/*.{ts,tsx}',
+      'src/components/dashboard/**/*{Supplier*,Connector*,Anomaly*,Health*}.{ts,tsx}',
+      'src/components/orders/**/*{Supplier*,Order*}.{ts,tsx}',
+      'src/components/onboarding/steps/*Supplier*.tsx',
+      'src/components/search/*{HeaderSearch,SearchResultsPopover,SearchInput}*.tsx',
+
+      // Hooks, contexts, services, state, lib, utils
+      'src/contexts/**/BasketProvider.tsx',
+      'src/contexts/**/BasketProvider.test.tsx',
+      'src/hooks/**/useSupplier*.ts*',
+      'src/hooks/**/useEnhancedSupplier*.ts*',
+      'src/hooks/**/useOptimizedSupplier*.ts*',
+      'src/hooks/**/useDeliveryAnalytics.tsx',
+      'src/hooks/**/useOrderingSuggestions.tsx',
+      'src/services/**/{DeliveryCalculator,DeliveryRules,OrderingSuggestions}.ts',
+      'src/services/**/{DeliveryCalculator,OrderingSuggestions}.test.ts',
+      'src/state/{catalogFiltersStore,userPrefs}.ts*',
+      'src/lib/{catalogFilters,catalogState,queryKeys,landedCost,normalization}.ts',
+      'src/utils/{harAnalytics,harDataExtractor,harRecommendations}.ts',
+
+      // Ingestion adapters/extractors
+      'ingestion/extractors/innnes-cheerio.ts',
+      'ingestion/adapters/**/*.{ts,tsx}',
+      'ingestion/adapters/{csv-bar.ts,sitemap-baz.ts,api-foo.ts}',
+
+      // E2E tests
+      'e2e/navigation.spec.ts',
+      'e2e/header-stability.spec.ts',
+
+      // Supabase Edge Functions
+      'supabase/functions/{ingest-supplier,ingest-supplier-products,match-supplier-item,schedule-supplier-ingestion,job-processor,ingest_har,stale-sweep}/**/*.{ts,tsx,js,json}',
+      'supabase/functions/ingest-supplier/availability.test.ts',
+
+      // Supabase migrations (many supplier-related)
+      'supabase/migrations/**/*supplier*.sql',
+      'supabase/migrations/**/*ingest*.sql',
+      'supabase/migrations/**/*supplier*_*.sql',
+
+      // Docs with supplier mentions
+      'docs/**/{README,SECURITY,hardcode-inventory,dashboard-pantry-mock-inventory,duplication-audit}.md',
+
+      // Top-level refs
+      'package.json',
+      'README.md',
+      'AUDIT/**/*',
+      'tools/make-chatpack.ts',
+    ],
+  },
+
+  // ——————————————————————————————————————————————————————————
+  // CATALOG
+  // ——————————————————————————————————————————————————————————
+  catalog: {
+    requested: [
+      // Page entry & state
+      'src/pages/catalog/CatalogPage.tsx',
+      'src/pages/catalog/useCatalogState.ts',
+      'src/pages/catalog/ZeroResultsRescue.tsx',
+      'src/pages/catalog/CatalogPage.test.tsx',
+
+      // Supporting layout/UI pieces explicitly called out
+      'src/components/layout/CatalogLayout.tsx',
+      'src/components/ui/filter-chip.tsx',
+      'src/components/ui/tri-state-chip.tsx',
+      'src/components/ui/tri-state-chip.test.tsx',
+      'src/components/search/HeroSearchInput.tsx',
+      'src/components/common/InfiniteSentinel.tsx',
+      'src/components/place-order/ViewToggle.tsx',
+
+      // Hooks & state
+      'src/hooks/useCatalogProducts.ts',
+      'src/hooks/useOrgCatalog.ts',
+      'src/hooks/useCatalogSearchSuggestions.ts',
+      'src/state/catalogFiltersStore.ts',
+      'src/state/catalogFiltersStore.test.ts',
+
+      // Lib modules
+      'src/lib/catalogFilters.ts',
+      'src/lib/catalogState.ts',
+      'src/lib/scrollMemory.ts',
+      'src/lib/analytics.ts',
+      'src/lib/images.ts',
+
+      // Service layer
+      'src/services/catalog.ts',
+      'src/services/__tests__/Catalog.test.ts',
+    ],
+    patterns: [
+      // Catalog components
+      'src/components/catalog/**/*.{ts,tsx,css}',
+      'src/components/catalog/**/__tests__/**/*.{ts,tsx}',
+
+      // Page dir
+      'src/pages/catalog/**/*.{ts,tsx,css}',
+
+      // Hooks & lib (catch moved/renamed)
+      'src/hooks/**/useCatalog*.ts*',
+      'src/hooks/**/useOrgCatalog*.ts*',
+      'src/lib/**/catalog*.ts*',
+
+      // Shared helpers that catalog uses
+      'src/components/ui/{filter-chip,tri-state-chip}.ts*',
+      'src/components/common/InfiniteSentinel.tsx',
+      'src/components/place-order/ViewToggle.tsx',
+
+      // Virtualization
+      'src/components/catalog/VirtualizedGrid.tsx',
+    ],
+  },
+
+  // ——————————————————————————————————————————————————————————
+  // SIDEBAR
+  // ——————————————————————————————————————————————————————————
+  sidebar: {
+    requested: [
+      // Core UI building blocks
+      'src/components/ui/sidebar.tsx',
+      'src/components/ui/sidebar-provider.tsx',
+      'src/components/ui/use-sidebar.ts',
+      'src/components/ui/sidebar-constants.ts',
+
+      // Layout / specialized sidebars
+      'src/components/layout/EnhancedAppSidebar.tsx',
+      'src/components/quick/SmartCartSidebar.tsx',
+
+      // Styling & configuration
+      'src/index.css',
+      'src/styles/design-system.css',
+      'src/styles/globals.css',
+      'src/styles/layout-vars.css',
+      'tailwind.config.ts',
+
+      // Tests / routing
+      'e2e/navigation.spec.ts',
+      'src/router.test.ts',
+
+      // Tooling
+      'tools/make-chatpack.ts',
+      'package.json',
+    ],
+    patterns: [
+      // Any sidebar-related UI files
+      'src/components/ui/*sidebar*.{ts,tsx}',
+      'src/components/ui/sidebar*.{ts,tsx}',
+      'src/components/layout/*Sidebar*.tsx',
+      'src/components/quick/*Sidebar*.tsx',
+
+      // Styles affecting sidebar layout/tokens
+      'src/styles/*{design-system,globals,layout-vars}*.css',
+      'src/**/*.css',
+
+      // Navigation tests & router
+      'e2e/**/navigation.spec.ts',
+      'src/**/router*.{ts,tsx,test.tsx}',
+    ],
+  },
+
+  // ——————————————————————————————————————————————————————————
+  // CART (kept minimal; updated to common current filenames)
+  // ——————————————————————————————————————————————————————————
+  cart: {
+    requested: [
+      'src/contexts/BasketProvider.tsx',
+      'src/hooks/useBasket.ts',
+      'src/components/cart/AddToCartButton.tsx',
+      'src/components/cart/CartDrawer.tsx',
+      'src/components/cart/QuantityStepper.tsx',
+      'src/components/cart/flyToCart.ts',
+      'src/components/orders/OrderComposer.tsx',
+      'src/hooks/useOrderingSuggestions.tsx',
+      'src/hooks/useDeliveryOptimization.tsx',
+      'src/services/DeliveryCalculator.ts',
+      'src/index.css',
+    ],
+    patterns: [
+      'src/components/cart/**/*.{ts,tsx}',
+      'src/components/orders/**/*{Order*,Composer*}.{ts,tsx}',
+      'src/hooks/**/use*Cart*.ts*',
+      'src/hooks/**/useOrderingSuggestions.tsx',
+      'src/hooks/**/useDeliveryOptimization.tsx',
+      'src/services/**/DeliveryCalculator.ts',
+    ],
+  },
+
+  // ——————————————————————————————————————————————————————————
+  // TOP BAR / HEADER
+  // ——————————————————————————————————————————————————————————
+  topbar: {
+    requested: [
+      // Docs / manifest
+      'TOPBAR_MANIFEST.md',
+
+      // Core components
+      'src/components/layout/TopNavigation.tsx',
+      'src/components/layout/AppChrome.tsx',
+      'src/components/layout/AppLayout.tsx',
+      'src/components/layout/FullWidthLayout.tsx',
+      'src/components/layout/ElevationBanner.tsx',
+
+      // Switchers & search
+      'src/components/layout/TenantSwitcher.tsx',
+      'src/components/layout/LanguageSwitcher.tsx',
+      'src/components/search/HeaderSearch.tsx',
+
+      // Scroll-hide behavior (+test)
+      'src/components/layout/useHeaderScrollHide.ts',
+      'src/components/layout/useHeaderScrollHide.test.tsx',
+
+      // Styling / globals
+      'src/styles/layout-vars.css',
+      'src/styles/globals.css',
+      'src/index.css',
+    ],
+    patterns: [
+      'src/components/layout/*{TopNavigation,AppChrome,AppLayout,FullWidthLayout,ElevationBanner}*.tsx',
+      'src/components/layout/*Header*.ts*',
+      'src/components/search/*HeaderSearch*.tsx',
+      'src/styles/*{layout-vars,globals}*.css',
+      'src/**/*catalogHeader*', // catch/remove legacy overlay refs if still present
+    ],
+  },
+}
+
+// folders to ignore while searching
+const IGNORE = [
+  '**/node_modules/**',
+  '**/.git/**',
+  '**/.chatpack/**',
+  '**/dist/**',
+  '**/build/**',
+  '**/.next/**',
+  '**/coverage/**',
+  '**/.turbo/**',
+  '**/.vercel/**',
+]
+
+// when multiple files share a basename, prefer these roots
+const PREFER = [
+  'src/pages/**',
+  'src/components/layout/**',
+  'src/components/ui/**',
+  'src/components/quick/**',
+  'src/components/**',
+  'src/contexts/**',
+  'src/hooks/**',
+  'src/layout/**',
+  'src/services/**',
+  'src/lib/**',
+  'src/styles/**',
+  'components/**',
+  'pages/**',
+  'app/**',
+  'styles/**',
+  '**', // fallback
+]
+
+function parseArg(name: string, fallback?: string) {
+  const i = process.argv.findIndex(a => a === `--${name}`)
+  if (i >= 0 && i + 1 < process.argv.length) return process.argv[i + 1]
+  return fallback
+}
+
+function langFor(p: string) {
+  const lower = p.toLowerCase()
+  if (lower.endsWith('.css')) return 'css'
+  if (lower.endsWith('.tsx')) return 'tsx'
+  if (lower.endsWith('.ts')) return 'ts'
+  if (lower.endsWith('.js')) return 'js'
+  if (lower.endsWith('.json')) return 'json'
+  if (lower.endsWith('.sql')) return 'sql'
+  if (lower.endsWith('.md') || lower.endsWith('.mdx')) return 'md'
+  return ''
+}
+
+async function exists(p: string) {
+  try {
+    await fs.stat(p)
+    return true
+  } catch {
+    return false
+  }
+}
+
+function rank(p: string): number {
+  const norm = p.replace(/\\/g, '/')
+  for (let i = 0; i < PREFER.length; i++) {
+    const pat = PREFER[i].replace('/**', '')
+    if (norm.includes(pat.replace('**', ''))) return i
+  }
+  return 999
+}
+
+async function findByRequested(request: string): Promise<string[]> {
+  // 1) exact hit
+  if (await exists(request)) return [path.normalize(request)]
+
+  // 2) basename search
+  const base = path.basename(request)
+  if (!base) return []
+  const matches = await fg([`**/${base}`], { ignore: IGNORE, dot: false })
+  if (matches.length === 0) return []
+
+  const sorted = matches.sort((a, b) => rank(a) - rank(b))
+  const seen = new Set<string>()
+  const uniq: string[] = []
+  for (const m of sorted) {
+    const abs = path.normalize(m)
+    if (!seen.has(abs)) {
+      seen.add(abs)
+      uniq.push(abs)
+    }
+  }
+  return uniq
+}
+
+async function collectFiles(preset: PresetConfig): Promise<string[]> {
+  const files: string[] = []
+
+  if (preset.patterns && preset.patterns.length) {
+    const patFiles = await fg(preset.patterns, { ignore: IGNORE, dot: false })
+    files.push(...patFiles.map(p => path.normalize(p)))
+  }
+
+  if (preset.requested && preset.requested.length) {
+    for (const req of preset.requested) {
+      const found = await findByRequested(req)
+      if (found.length === 0) {
+        console.warn('⚠️  Not found:', req)
+        continue
+      }
+      files.push(...found)
+    }
+  }
+
+  // de-dup + sort
+  return Array.from(new Set(files)).sort((a, b) => a.localeCompare(b))
+}
+
+function timestamp() {
+  // YYYYMMDDHHMM (windows-safe)
+  return new Date().toISOString().replace(/[-:T]/g, '').slice(0, 12)
+}
+
+async function cleanOldPacks(outDir: string, presetName: string, keep = 0) {
+  const pattern = `${outDir}/${presetName}-chatpack-*.md`
+  const matches = (await fg([pattern], { dot: false })).sort()
+  if (matches.length === 0) return []
+
+  const toDelete = keep > 0 ? matches.slice(0, Math.max(0, matches.length - keep)) : matches
+  await Promise.allSettled(toDelete.map(p => fs.unlink(p)))
+  return toDelete
+}
+
+function capitalize(s: string) {
+  return s.charAt(0).toUpperCase() + s.slice(1)
+}
+
+async function run() {
+  const presetName = parseArg('preset', 'catalog') ?? 'catalog'
+  const keepStr = parseArg('keep', '0') ?? '0'
+  const keep = Math.max(0, Number.isFinite(Number(keepStr)) ? Number(keepStr) : 0)
+
+  const cfg = PRESETS[presetName]
+  if (!cfg) {
+    console.error(`Unknown preset "${presetName}". Available: ${Object.keys(PRESETS).join(', ')}`)
+    process.exit(1)
+  }
+
+  const files = await collectFiles(cfg)
+
+  const outDir = '.chatpack'
+  await fs.mkdir(outDir, { recursive: true })
+
+  // delete older packs for this preset (keep N if requested)
+  const deleted = await cleanOldPacks(outDir, presetName, keep)
+  if (deleted.length) {
+    console.log(`Deleted ${deleted.length} old pack(s) for "${presetName}".`)
+  }
+
+  const stamp = timestamp()
+  const outPath = `${outDir}/${presetName}-chatpack-${stamp}.md`
+
+  let out = `# ${capitalize(presetName)} ChatPack ${new Date().toISOString()}\n\n_Contains ${files.length} file(s)._`
+
+  for (const p of files) {
+    const code = await fs.readFile(p, 'utf8').catch(() => `/* ERROR: Could not read ${p} */`)
+    const fence = langFor(p)
+    out += `\n\n---\n\n## ${p}\n\n\`\`\`${fence}\n${code}\n\`\`\`\n`
+  }
+
+  await fs.writeFile(outPath, out, 'utf8')
+  console.log(`Wrote ${outPath} with ${files.length} file(s)`)
+}
+
+run().catch(e => {
+  console.error(e)
+  process.exit(1)
+})
 
 ```
