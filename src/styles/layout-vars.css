@@ -6,6 +6,6 @@
   --header-left: var(--layout-rail);
 
   --z-rail: 60;   /* highest - sidebar always on top */
-  --z-header: 50;  /* header above chrome */
-  --z-chrome: 30;  /* gradient below header but above content */
+  --z-header: 50;  /* header below chrome */
+  --z-chrome: 55;  /* chrome and stripe above header */
 }
