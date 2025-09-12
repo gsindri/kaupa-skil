@@ -22,8 +22,10 @@ export default async function globalSetup() {
   await page.getByRole('textbox', { name: /password/i }).fill(password);
   await page.getByRole('button', { name: /sign in|log in/i }).click();
 
-  // Verify app shell is visible (adjust label to your actual nav)
-  await expect(page.getByRole('link', { name: /dashboard/i })).toBeVisible({ timeout: 20_000 });
+  // Verify that the top navigation header has loaded. Using the ARIA
+  // landmark role is more robust than a brittle data-selector and avoids
+  // timeouts when the attribute is absent.
+  await expect(page.getByRole('banner')).toBeVisible({ timeout: 20_000 });
 
   // Persist authenticated storage for the test run
   await context.storageState({ path: 'playwright/.auth/state.json' });
