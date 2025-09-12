@@ -1,0 +1,218 @@
+import { useCallback, useEffect, useRef } from 'react'
+
+interface Options {
+  /**
+   * Return true when header should remain pinned (always visible)
+   */
+  isPinned?: () => boolean
+  /**
+   * Optional callback notified when lock state changes
+   */
+  onLockChange?: (locked: boolean) => void
+}
+
+/**
+ * Auto-hides the header on downward scroll and reveals on upward scroll.
+ * Updates `--hdr-p` CSS variable on both the header element and documentElement
+ * and maintains `--header-h` via ResizeObserver.
+ */
+export function useHeaderScrollHide(
+  ref: React.RefObject<HTMLElement>,
+  { isPinned, onLockChange }: Options = {}
+) {
+  const lockCount = useRef(0)
+  const handleLockChange = useCallback(
+    (locked: boolean) => {
+      lockCount.current += locked ? 1 : -1
+      if (lockCount.current < 0) lockCount.current = 0
+      onLockChange?.(lockCount.current > 0)
+    },
+    [onLockChange]
+  )
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+
+    // Respect reduced motion
+    const reduceMotion =
+      typeof window !== 'undefined' &&
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+    const setP = (p: number) => {
+      const v = p < 0.02 ? 0 : p > 0.98 ? 1 : p
+      const val = v.toFixed(3)
+      el.style.setProperty('--hdr-p', val)
+      document.documentElement.style.setProperty('--hdr-p', val)
+    }
+
+    let H = Math.round(el.getBoundingClientRect().height)
+    const setHeaderVars = () => {
+      H = Math.round(el.getBoundingClientRect().height)
+      document.documentElement.style.setProperty('--header-h', `${H}px`)
+    }
+    setHeaderVars()
+    const ro =
+      typeof ResizeObserver !== 'undefined'
+        ? new ResizeObserver(setHeaderVars)
+        : null
+    ro?.observe(el)
+    window.addEventListener('resize', setHeaderVars)
+
+    let interactionLockUntil = 0
+    const lockFor = (ms: number) => {
+      interactionLockUntil = performance.now() + ms
+    }
+    const handlePointerDown = () => lockFor(180)
+    el.addEventListener('pointerdown', handlePointerDown, { passive: true })
+
+    // Tunables
+    const PROGRESS_START = 10
+    const GAP = 24
+    const MIN_DY = 0.25
+    const SNAP_THRESHOLD = 3
+    const SNAP_COOLDOWN_MS = 200
+    const REVEAL_DIST = 32
+    const REHIDE_DIST = 32
+
+    let lastY = window.scrollY
+    let acc = 0
+    let lastDir: -1 | 0 | 1 = 0
+    let lock: 'none' | 'visible' | 'hidden' = 'none'
+    let prevP = -1
+    let lastSnapDir: -1 | 0 | 1 = 0
+    let lastSnapTime = 0
+    let lastSnapY = 0
+
+    const pinned = () =>
+      (isPinned?.() ?? false) || lockCount.current > 0 || performance.now() < interactionLockUntil
+
+    const onScroll = () => {
+      const y = Math.max(0, window.scrollY)
+      const dy = y - lastY
+      lastY = y
+
+      if (reduceMotion) {
+        setP(0)
+        return
+      }
+
+      if (pinned()) {
+        lock = 'none'
+        acc = 0
+        lastDir = 0
+        setP(0)
+        return
+      }
+
+      if (lock === 'visible' && y <= H - GAP) lock = 'none'
+      if (lock === 'hidden' && y >= H + GAP) lock = 'none'
+
+      if (y < H) {
+        const dir: -1 | 0 | 1 = Math.abs(dy) < MIN_DY ? 0 : dy > 0 ? 1 : -1
+        if (lock === 'visible' || dir <= 0) {
+          acc = 0
+          lastDir = dir
+          setP(0)
+          return
+        }
+        const span = Math.max(1, H - PROGRESS_START)
+        const t = Math.max(0, y - PROGRESS_START) / span
+        const p = 1 - Math.pow(1 - t, 3)
+        acc = 0
+        lastDir = dir
+        setP(p)
+        return
+      }
+
+      if (lock === 'hidden') {
+        setP(1)
+        return
+      }
+
+      const dir: -1 | 0 | 1 = Math.abs(dy) < MIN_DY ? 0 : dy > 0 ? 1 : -1
+      if (dir !== 0) {
+        if (dir !== lastDir) acc = 0
+        acc += dy
+        lastDir = dir
+        const now = performance.now()
+        if (acc >= SNAP_THRESHOLD) {
+          if (
+            lastSnapDir === -1 &&
+            (now - lastSnapTime < SNAP_COOLDOWN_MS || y - lastSnapY < REHIDE_DIST)
+          ) {
+            // keep visible
+          } else {
+            setP(1)
+            lock = 'hidden'
+            acc = 0
+            lastSnapDir = 1
+            lastSnapTime = now
+            lastSnapY = y
+            return
+          }
+        }
+        if (acc <= -SNAP_THRESHOLD) {
+          if (
+            lastSnapDir === 1 &&
+            (now - lastSnapTime < SNAP_COOLDOWN_MS || lastSnapY - y < REVEAL_DIST)
+          ) {
+            // keep hidden
+          } else {
+            setP(0)
+            lock = 'visible'
+            acc = 0
+            lastSnapDir = -1
+            lastSnapTime = now
+            lastSnapY = y
+            return
+          }
+        }
+      }
+    }
+
+    const listener = () => requestAnimationFrame(onScroll)
+    window.addEventListener('scroll', listener, { passive: true })
+
+    const wheel = (e: WheelEvent) => {
+      if (window.scrollY >= H + GAP) {
+        const now = performance.now()
+        if (e.deltaY > 0) {
+          if (!(lastSnapDir === -1 && now - lastSnapTime < SNAP_COOLDOWN_MS)) {
+            setP(1)
+            lock = 'hidden'
+            lastSnapDir = 1
+            lastSnapTime = now
+            lastSnapY = window.scrollY
+          }
+        } else if (e.deltaY < 0) {
+          if (!(lastSnapDir === 1 && now - lastSnapTime < SNAP_COOLDOWN_MS)) {
+            setP(0)
+            lock = 'visible'
+            lastSnapDir = -1
+            lastSnapTime = now
+            lastSnapY = window.scrollY
+          }
+        }
+      }
+    }
+    window.addEventListener('wheel', wheel, { passive: true })
+
+    // Initial apply
+    listener()
+
+    return () => {
+      document.documentElement.style.setProperty('--hdr-p', '0')
+      window.removeEventListener('scroll', listener)
+      window.removeEventListener('wheel', wheel)
+      window.removeEventListener('resize', setHeaderVars)
+      el.removeEventListener('pointerdown', handlePointerDown)
+      ro?.disconnect()
+    }
+  }, [ref, isPinned])
+
+  return handleLockChange
+}
+
+export default useHeaderScrollHide

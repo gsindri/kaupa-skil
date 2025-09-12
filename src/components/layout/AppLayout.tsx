@@ -3,13 +3,15 @@ import React, {
   useCallback,
   useLayoutEffect,
   useRef,
-  MutableRefObject
+  MutableRefObject,
+  ReactElement
 } from 'react'
 import { Outlet } from 'react-router-dom'
 import { TopNavigation } from './TopNavigation'
 import { PrimaryNavRail } from './PrimaryNavRail'
 import { AppChrome } from './AppChrome'
 import { CartDrawer } from '@/components/cart/CartDrawer'
+import useHeaderScrollHide from './useHeaderScrollHide'
 
 interface AppLayoutProps {
   header?: ReactNode
@@ -37,24 +39,32 @@ export function AppLayout({
     [headerRef]
   )
 
-  useLayoutEffect(() => {
+  const isPinned = useCallback(() => {
     const el = internalHeaderRef.current
-    if (!el) return
-    const update = () => {
-      const h = Math.round(el.getBoundingClientRect().height || 56)
-      document.documentElement.style.setProperty('--header-h', `${h}px`)
-    }
-    update()
-    const ro = new ResizeObserver(update)
-    ro.observe(el)
+    const ae = document.activeElement
+    const menuOpen = el?.querySelector('[data-open="true"]')
+    const isTypeable = (node: Element | null) =>
+      !!node &&
+      ((node instanceof HTMLInputElement) ||
+        (node instanceof HTMLTextAreaElement) ||
+        (node as HTMLElement).isContentEditable ||
+        node.getAttribute('role') === 'combobox')
+    return window.scrollY < 1 || !!menuOpen || isTypeable(ae)
+  }, [])
 
+  const handleLockChange = useHeaderScrollHide(internalHeaderRef, { isPinned })
+
+  useLayoutEffect(() => {
     const rail = document.querySelector('[data-rail]')
     if (rail instanceof HTMLElement) {
       document.documentElement.style.setProperty('--header-left', `${rail.offsetWidth}px`)
     }
-
-    return () => ro.disconnect()
   }, [])
+
+  const headerNode =
+    header && React.isValidElement(header)
+      ? React.cloneElement(header as ReactElement<any>, { onLockChange: handleLockChange })
+      : header
 
   return (
     <div className="relative min-h-screen">
@@ -82,12 +92,13 @@ export function AppLayout({
         {/* Header */}
         <div
           id="catalogHeader"
+          data-app-header="true"
           ref={combinedHeaderRef}
           className={headerClassName}
           style={{ position: 'sticky', top: 0, zIndex: 'var(--z-header,50)' }}
         >
           <TopNavigation />
-          {header}
+          {headerNode}
         </div>
 
         {/* Main content */}
