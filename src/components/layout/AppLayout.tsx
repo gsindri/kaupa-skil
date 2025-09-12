@@ -57,14 +57,24 @@ export function AppLayout({
   }, [])
 
   return (
-    <div className="relative min-h-screen">
+    <div 
+      className="relative"
+      style={{ 
+        minHeight: '100vh',
+        margin: 0,
+        padding: 0 
+      }}
+    >
       {/* Left rail - fixed position */}
       <aside
         data-rail
-        className="fixed top-0 left-0 h-screen"
+        className="fixed left-0 h-screen"
         style={{ 
+          top: 0,
           width: 'var(--layout-rail,72px)',
-          zIndex: 'var(--z-rail, 60)'
+          zIndex: 'var(--z-rail, 60)',
+          margin: 0,
+          padding: 0
         }}
       >
         <PrimaryNavRail />
