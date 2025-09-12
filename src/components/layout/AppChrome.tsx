@@ -5,7 +5,7 @@ export function AppChrome() {
     <>
       {/* Cyan stripe - moves with the chrome */}
       <div
-        className="fixed left-[var(--layout-rail)] right-0 top-0 z-[var(--z-chrome,30)] h-[2px] pointer-events-none bg-gradient-to-r from-cyan-300/70 via-cyan-400 to-cyan-300/70"
+        className="fixed left-0 right-0 top-0 z-[var(--z-chrome,30)] h-[2px] pointer-events-none bg-gradient-to-r from-cyan-300/70 via-cyan-400 to-cyan-300/70"
         style={{
           transform: 'translateY(calc(-1 * var(--hdr-p, 0) * var(--header-h, 56px)))',
         }}
@@ -13,7 +13,7 @@ export function AppChrome() {
       
       {/* Chrome gradient background - spans over rail and content */}
       <div
-        className="fixed left-[var(--layout-rail)] right-0 top-0 z-[var(--z-chrome,20)] overflow-hidden pointer-events-none"
+        className="fixed left-0 right-0 top-0 z-[var(--z-chrome,20)] overflow-hidden pointer-events-none"
         style={{
           height: 'clamp(44px, var(--toolbar-h, 56px), 72px)',
           transform: 'translateY(calc(-1 * var(--hdr-p, 0) * var(--header-h, 56px)))',
