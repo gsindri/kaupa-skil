@@ -93,6 +93,7 @@ export function AppLayout({
         <div
           id="catalogHeader"
           data-app-header="true"
+          data-chrome-layer
           ref={combinedHeaderRef}
           className={headerClassName}
           style={{ position: 'sticky', top: 0, zIndex: 'var(--z-header,50)' }}
