@@ -43,7 +43,7 @@ export function PrimaryNavRail() {
             <img 
               src={image} 
               alt={label}
-              className="h-10 w-10 opacity-100 drop-shadow-sm"
+              className="h-12 w-12 opacity-100 drop-shadow-sm"
             />
             <span className="mt-1 text-[10px] leading-3">{label}</span>
           </Link>
