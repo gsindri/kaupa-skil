@@ -1,6 +1,226 @@
-<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect x="3" y="4" width="18" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="2"/>
-  <circle cx="9" cy="10" r="2" fill="currentColor"/>
-  <path d="M21 15.5c-1.5-1.5-4-1.5-6 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-  <path d="M3 15.5c1.5-1.5 4-1.5 6 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+<!-- Circular Supply Flow — Optimized for Navigation -->
+<svg width="24" height="24" viewBox="0 0 600 600" role="img" aria-labelledby="t d"
+     xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <title id="t">Animated circular supply flow</title>
+  <desc id="d">Four rounded containers orbit a dashed circular path with pixel trails and a pulse when passing the top.</desc>
+
+  <defs>
+    <style>
+      :root{
+        --ink:#eaf0f7;      /* light stroke */
+        --line:#0e2032;     /* dark outline */
+        --dash:#cfe0ef;     /* dashed orbit */
+        --dot:#a4c7de;      /* subtle accent */
+        --teal:#78f5ff;     /* circuit */
+        --tealD:#35d6e9;
+        --green:#7cffb0;    /* globe */
+        --greenD:#33f083;
+        --orange:#ffb36b;   /* particle cube */
+        --gray:#cfd7e4;     /* neutral cube accent */
+      }
+
+      .cap{ stroke-linecap:round; stroke-linejoin:round; }
+      .ns{ vector-effect: non-scaling-stroke; }
+      .nofill{ fill:none }
+
+      /* Orbit dash sweep */
+      .orbit-stroke{
+        stroke-dasharray:8 12;
+        animation: orbitSweep 8s linear infinite;
+      }
+      @keyframes orbitSweep { to { stroke-dashoffset:-240 } }
+
+      /* Gentle entrance */
+      .enter{ animation: enter .6s ease-out both }
+      @keyframes enter{ from{opacity:0; transform:scale(.96)} to{opacity:1; transform:scale(1)} }
+
+      /* Pulse when at top (12s loop => quarter every 3s) - removed glow filters */
+      .pulse{
+        opacity:0; transform:scale(1);
+        animation: pulse 12s ease-in-out infinite;
+      }
+      .p0{ animation-delay:0s } .p1{ animation-delay:3s } .p2{ animation-delay:6s } .p3{ animation-delay:9s }
+      @keyframes pulse{
+        0% { opacity:0; transform:scale(.92) }
+        18% { opacity:.45; transform:scale(1.12) }
+        30% { opacity:.1;  transform:scale(1) }
+        100%{ opacity:0; }
+      }
+
+      /* Pixel trails, oriented by the package group (rotate=auto) */
+      .trail rect{
+        opacity:0; transform:translate(0,0) scale(.8);
+        animation: trail 1.8s ease-out infinite;
+      }
+      .trail rect:nth-child(2){ animation-delay:.25s }
+      .trail rect:nth-child(3){ animation-delay:.5s }
+      .trail rect:nth-child(4){ animation-delay:.75s }
+      .trail rect:nth-child(5){ animation-delay:1s }
+      @keyframes trail{
+        0%   { opacity:0;   transform:translate(0,0) scale(.8) }
+        18%  { opacity:.9; }
+        70%  { opacity:.7; }
+        100% { opacity:0;   transform:translate(-22px,0) scale(1.05) } /* -X = behind path direction */
+      }
+
+      /* Subtle internal shimmers */
+      .shimmer{ stroke-dasharray:3 6; animation: shim 3.6s linear infinite }
+      @keyframes shim{ to { stroke-dashoffset:-36 } }
+      .ringSpin{ stroke-dasharray:10 8; animation: ring 4s linear infinite }
+      @keyframes ring{ to { stroke-dashoffset:-36 } }
+
+      /* Hover micro-lift - reduced scale for navigation context */
+      .pkg{ transition:transform .18s ease; }
+      svg:hover .pkg{ transform:translateY(-1px) scale(1.01) }
+
+      /* Reduced motion */
+      @media (prefers-reduced-motion:reduce){
+        .orbit-stroke,.pulse,.trail rect,.shimmer,.ringSpin{ animation:none !important }
+      }
+    </style>
+
+    <!-- Orbit path (center 300,300 r=200) -->
+    <path id="orbitPath"
+          d="M300,100
+             a200,200 0 1,1 0,400
+             a200,200 0 1,1 0,-400" />
+
+    <!-- Base rounded cube (64×64 box) -->
+    <symbol id="cubeBase" viewBox="-32 -32 64 64">
+      <rect x="-26" y="-26" width="52" height="52" rx="12"
+            fill="rgba(255,255,255,.06)" stroke="var(--ink)" stroke-width="2"/>
+      <rect x="-26" y="-26" width="52" height="52" rx="12"
+            fill="none" stroke="var(--dot)" stroke-width="1" opacity=".65"/>
+    </symbol>
+
+    <!-- Circuit cube -->
+    <symbol id="cubeCircuit" viewBox="-32 -32 64 64">
+      <use href="#cubeBase"/>
+      <g stroke="var(--teal)" opacity=".95" fill="none" stroke-width="2">
+        <rect x="-18" y="-18" width="36" height="24" rx="4"/>
+        <path class="shimmer" d="M-14 -10h8v6m6 -6v12m6 -12h8m-22 -8v4m-10 0h8m16 16h8"/>
+        <path d="M-20 8h40" stroke="var(--tealD)"/>
+      </g>
+    </symbol>
+
+    <!-- Globe cube -->
+    <symbol id="cubeGlobe" viewBox="-32 -32 64 64">
+      <use href="#cubeBase"/>
+      <g stroke="var(--green)" stroke-width="1.8" fill="none" opacity=".95">
+        <circle cx="0" cy="0" r="16"/>
+        <ellipse cx="0" cy="0" rx="16" ry="6"/>
+        <ellipse cx="0" cy="0" rx="16" ry="10"/>
+        <path d="M-16 0a16 16 0 0 0 32 0"/>
+        <path d="M-8 -16c-3 4-5 9-5 16s2 12 5 16M8 -16c3 4 5 9 5 16s-2 12-5 16"/>
+        <circle class="ringSpin" cx="0" cy="0" r="20"/>
+      </g>
+    </symbol>
+
+    <!-- Neutral cube -->
+    <symbol id="cubeNeutral" viewBox="-32 -32 64 64">
+      <use href="#cubeBase"/>
+      <rect x="-12" y="-12" width="24" height="24" rx="6"
+            fill="rgba(255,255,255,.12)" stroke="var(--gray)" stroke-width="2"/>
+    </symbol>
+
+    <!-- Bits cube -->
+    <symbol id="cubeBits" viewBox="-32 -32 64 64">
+      <use href="#cubeBase"/>
+      <g>
+        <rect x="-10" y="-10" width="20" height="20" rx="5"
+              fill="rgba(255,255,255,.08)" stroke="var(--orange)" stroke-width="2"/>
+        <g fill="var(--orange)">
+          <rect x="-6" y="-2" width="3" height="3" rx=".6"/>
+          <rect x="-2" y="1" width="3" height="3" rx=".6"/>
+          <rect x="3"  y="-4" width="3" height="3" rx=".6"/>
+          <rect x="6"  y="0"  width="3" height="3" rx=".6"/>
+          <rect x="-8" y="4"  width="3" height="3" rx=".6"/>
+        </g>
+        <path class="shimmer" d="M-16 8h32" stroke="var(--orange)"/>
+      </g>
+    </symbol>
+  </defs>
+
+  <!-- Orbit (dashed) + three arrowheads -->
+  <g class="cap nofill enter">
+    <use href="#orbitPath" class="orbit-stroke ns" stroke="var(--dash)" stroke-width="4"/>
+    <!-- arrows at ~50°, 190°, 300° -->
+    <g fill="var(--dot)">
+      <g transform="translate(461,129) rotate(50)">
+        <path d="M0 0 l10 -6 v12z"/>
+      </g>
+      <g transform="translate(110,422) rotate(190)">
+        <path d="M0 0 l10 -6 v12z"/>
+      </g>
+      <g transform="translate(309,514) rotate(300)">
+        <path d="M0 0 l10 -6 v12z"/>
+      </g>
+    </g>
+  </g>
+
+  <!-- ===== PACKAGES (each: static start + animateMotion) ===== -->
+
+  <!-- TOP (starts at 12 o'clock): Globe -->
+  <g class="pkg enter" transform="translate(300,100)">
+    <circle class="pulse p0" r="28" stroke="var(--green)" stroke-width="4" fill="none"/>
+    <g class="trail" fill="var(--green)">
+      <rect x="14" y="-2" width="4" height="4" rx="1"/>
+      <rect x="18" y="2"  width="3" height="3" rx=".8"/>
+      <rect x="22" y="-6" width="5" height="5" rx="1.2"/>
+      <rect x="26" y="0"  width="4" height="4" rx="1"/>
+      <rect x="30" y="-3" width="3" height="3" rx=".7"/>
+    </g>
+    <use href="#cubeGlobe" width="64" height="64" x="-32" y="-32"/>
+    <animateMotion dur="12s" repeatCount="indefinite" rotate="auto">
+      <mpath xlink:href="#orbitPath" href="#orbitPath"/>
+    </animateMotion>
+  </g>
+
+  <!-- RIGHT (3 o'clock): Bits -->
+  <g class="pkg enter" transform="translate(500,300)">
+    <circle class="pulse p1" r="28" stroke="var(--orange)" stroke-width="4" fill="none"/>
+    <g class="trail" fill="var(--orange)">
+      <rect x="14" y="-2" width="4" height="4" rx="1"/>
+      <rect x="18" y="2"  width="3" height="3" rx=".8"/>
+      <rect x="22" y="-6" width="5" height="5" rx="1.2"/>
+      <rect x="26" y="0"  width="4" height="4" rx="1"/>
+      <rect x="30" y="-3" width="3" height="3" rx=".7"/>
+    </g>
+    <use href="#cubeBits" width="64" height="64" x="-32" y="-32"/>
+    <animateMotion dur="12s" repeatCount="indefinite" rotate="auto" begin="-3s">
+      <mpath xlink:href="#orbitPath" href="#orbitPath"/>
+    </animateMotion>
+  </g>
+
+  <!-- BOTTOM (6 o'clock): Neutral -->
+  <g class="pkg enter" transform="translate(300,500)">
+    <circle class="pulse p2" r="28" stroke="var(--gray)" stroke-width="4" fill="none"/>
+    <g class="trail" fill="var(--dot)">
+      <rect x="14" y="-2" width="4" height="4" rx="1"/>
+      <rect x="18" y="2"  width="3" height="3" rx=".8"/>
+      <rect x="22" y="-6" width="5" height="5" rx="1.2"/>
+      <rect x="26" y="0"  width="4" height="4" rx="1"/>
+      <rect x="30" y="-3" width="3" height="3" rx=".7"/>
+    </g>
+    <use href="#cubeNeutral" width="64" height="64" x="-32" y="-32"/>
+    <animateMotion dur="12s" repeatCount="indefinite" rotate="auto" begin="-6s">
+      <mpath xlink:href="#orbitPath" href="#orbitPath"/>
+    </animateMotion>
+  </g>
+
+  <!-- LEFT (9 o'clock): Circuit -->
+  <g class="pkg enter" transform="translate(100,300)">
+    <circle class="pulse p3" r="28" stroke="var(--teal)" stroke-width="4" fill="none"/>
+    <g class="trail" fill="var(--teal)">
+      <rect x="14" y="-2" width="4" height="4" rx="1"/>
+      <rect x="18" y="2"  width="3" height="3" rx=".8"/>
+      <rect x="22" y="-6" width="5" height="5" rx="1.2"/>
+      <rect x="26" y="0"  width="4" height="4" rx="1"/>
+      <rect x="30" y="-3" width="3" height="3" rx=".7"/>
+    </g>
+    <use href="#cubeCircuit" width="64" height="64" x="-32" y="-32"/>
+    <animateMotion dur="12s" repeatCount="indefinite" rotate="auto" begin="-9s">
+      <mpath xlink:href="#orbitPath" href="#orbitPath"/>
+    </animateMotion>
+  </g>
 </svg>
