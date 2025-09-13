@@ -54,6 +54,7 @@ export function PrimaryNavRail() {
               Icon={Icon}
               active={active}
               label={label}
+              sizePercent={label === 'Pantry' ? '68%' : undefined}
             />
             <span className="mt-1 text-[10px] leading-3">{label}</span>
           </Link>
