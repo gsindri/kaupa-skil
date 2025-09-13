@@ -82,8 +82,8 @@
       }
 
       /* Item spotlight on hover - removed glow filters */
-      svg:hover .left-item { transform: translateY(-1px) scale(1.04); }
-      svg:hover .right-item{ transform: translateY(-1px) scale(1.04); }
+      svg:hover .left-item { transform: translateY(-1px) scale(1.02); }
+      svg:hover .right-item{ transform: translateY(-1px) scale(1.02); }
       .left-item,.right-item{ transition: transform .25s ease; will-change: transform; }
 
       /* Pivot tick and halo "calibration" pulse */
