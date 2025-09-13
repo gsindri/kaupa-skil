@@ -1,284 +1,216 @@
-<!-- Rich Animated Pantry Icon -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" role="img" aria-label="Animated pantry shelves with inventory items">
+<!-- White-wood 3D Shelf — Fixed for Navigation -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" role="img" aria-label="Two-tier white-wood shelf with animated items">
 
   <!-- ===== defs ===== -->
   <defs>
-    <!-- wood grain gradients -->
+    <!-- wood -->
     <linearGradient id="woodTop" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#fdfeff"/>
-      <stop offset="0.3" stop-color="#f8fbff"/>
-      <stop offset="0.7" stop-color="#f2f5ff"/>
-      <stop offset="1" stop-color="#e6eeff"/>
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#f2f5ff"/>
     </linearGradient>
-    
     <linearGradient id="woodFace" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0" stop-color="#eef2ff"/>
-      <stop offset="0.5" stop-color="#e3e9ff"/>
-      <stop offset="1" stop-color="#d7defc"/>
+      <stop offset="1" stop-color="#dfe6fb"/>
     </linearGradient>
+    <pattern id="grain" width="120" height="40" patternUnits="userSpaceOnUse">
+      <path d="M6 28c8-6 18-6 26 0M40 30c10-7 22-7 32 0M86 26c6-4 14-4 20 0
+               M0 10c12-8 26-8 38 0M50 12c10-7 22-7 32 0M98 8c8-6 16-6 22 0"
+            fill="none" stroke="#e9edf8" stroke-width="1.2" opacity=".55"/>
+    </pattern>
 
-    <!-- metal gradients -->
+    <!-- screws -->
     <radialGradient id="brass" cx="30%" cy="30%">
-      <stop offset="0" stop-color="#ffd37a"/>
-      <stop offset="0.7" stop-color="#e6c066"/>
-      <stop offset="1" stop-color="#c89d3a"/>
+      <stop offset="0" stop-color="#ffd37a"/><stop offset="1" stop-color="#c89d3a"/>
     </radialGradient>
 
-    <radialGradient id="silverMetal" cx="30%" cy="30%">
-      <stop offset="0" stop-color="#f0f4ff"/>
-      <stop offset="1" stop-color="#b8c4e6"/>
-    </radialGradient>
+    <!-- effects -->
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="2" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="3"/>
+    </filter>
 
-    <!-- glass and liquid gradients -->
-    <linearGradient id="glassJar" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#fdfdff" stop-opacity="0.9"/>
-      <stop offset="0.5" stop-color="#f0f8ff" stop-opacity="0.7"/>
-      <stop offset="1" stop-color="#e6f2ff" stop-opacity="0.8"/>
+    <!-- LED under-shelf pulse -->
+    <linearGradient id="led" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#aef2ff" stop-opacity="1"/>
+      <stop offset="1" stop-color="#aef2ff" stop-opacity="0"/>
     </linearGradient>
-
-    <linearGradient id="liquidBlue" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#87ceeb" stop-opacity="0.8"/>
-      <stop offset="0.5" stop-color="#4fa8d8" stop-opacity="0.9"/>
-      <stop offset="1" stop-color="#2e8bc0" stop-opacity="1"/>
-    </linearGradient>
-
-    <!-- paper and document gradients -->
-    <linearGradient id="paperWhite" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#ffffff"/>
-      <stop offset="1" stop-color="#f8f9fb"/>
-    </linearGradient>
-
-    <!-- animated gradients -->
-    <linearGradient id="ledPulse" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#7df79a" stop-opacity="0.8">
-        <animate attributeName="stop-opacity" values="0.3;1;0.3" dur="2s" repeatCount="indefinite"/>
-      </stop>
-      <stop offset="50%" stop-color="#4ade80" stop-opacity="1">
-        <animate attributeName="stop-opacity" values="0.5;1;0.5" dur="2s" repeatCount="indefinite"/>
-      </stop>
-      <stop offset="100%" stop-color="#22c55e" stop-opacity="0.6">
-        <animate attributeName="stop-opacity" values="0.2;0.8;0.2" dur="2s" repeatCount="indefinite"/>
-      </stop>
-    </linearGradient>
-
-    <!-- contact shadow -->
-    <ellipse id="contactShadow" cx="0" cy="0" rx="8" ry="2" fill="#000000" opacity="0.15"/>
   </defs>
 
-  <!-- ===== SHELF POSTS ===== -->
-  <g id="posts">
-    <!-- left post with wood grain -->
-    <rect x="50" y="120" width="12" height="160" rx="6" fill="url(#woodTop)" stroke="#e6eeff" stroke-width="0.5"/>
-    <rect x="51" y="125" width="10" height="150" rx="5" fill="none" stroke="#f8fbff" stroke-width="0.5" opacity="0.6"/>
-    
-    <!-- right post with wood grain -->
-    <rect x="338" y="120" width="12" height="160" rx="6" fill="url(#woodTop)" stroke="#e6eeff" stroke-width="0.5"/>
-    <rect x="339" y="125" width="10" height="150" rx="5" fill="none" stroke="#f8fbff" stroke-width="0.5" opacity="0.6"/>
-    
-    <!-- brass screws with shine -->
-    <g fill="url(#brass)" stroke="#9b8031" stroke-width="0.3">
-      <circle cx="56" cy="140" r="2.2"/>
-      <circle cx="56" cy="140" r="1" fill="#ffeb9c" opacity="0.7"/>
-      <circle cx="56" cy="180" r="2.2"/>
-      <circle cx="56" cy="180" r="1" fill="#ffeb9c" opacity="0.7"/>
-      <circle cx="56" cy="220" r="2.2"/>
-      <circle cx="56" cy="220" r="1" fill="#ffeb9c" opacity="0.7"/>
-      <circle cx="56" cy="260" r="2.2"/>
-      <circle cx="56" cy="260" r="1" fill="#ffeb9c" opacity="0.7"/>
-      
-      <circle cx="344" cy="140" r="2.2"/>
-      <circle cx="344" cy="140" r="1" fill="#ffeb9c" opacity="0.7"/>
-      <circle cx="344" cy="180" r="2.2"/>
-      <circle cx="344" cy="180" r="1" fill="#ffeb9c" opacity="0.7"/>
-      <circle cx="344" cy="220" r="2.2"/>
-      <circle cx="344" cy="220" r="1" fill="#ffeb9c" opacity="0.7"/>
-      <circle cx="344" cy="260" r="2.2"/>
-      <circle cx="344" cy="260" r="1" fill="#ffeb9c" opacity="0.7"/>
+  <!-- ===== POSTS ===== -->
+  <g transform="translate(0,80)">
+    <rect x="156" y="238" width="24" height="332" rx="12" fill="url(#woodTop)" stroke="#ffffff" stroke-width="2"/>
+    <rect x="460" y="238" width="24" height="332" rx="12" fill="url(#woodTop)" stroke="#ffffff" stroke-width="2"/>
+    <g fill="url(#brass)" stroke="#9b8031" stroke-width="1">
+      <circle cx="168" cy="272" r="3.6"/><circle cx="168" cy="340" r="3.6"/><circle cx="168" cy="408" r="3.6"/><circle cx="168" cy="476" r="3.6"/><circle cx="168" cy="544" r="3.6"/>
+      <circle cx="472" cy="272" r="3.6"/><circle cx="472" cy="340" r="3.6"/><circle cx="472" cy="408" r="3.6"/><circle cx="472" cy="476" r="3.6"/><circle cx="472" cy="544" r="3.6"/>
     </g>
   </g>
 
-  <!-- ===== TOP SHELF ===== -->
-  <g id="topShelf">
-    <!-- shelf top with subtle 3D perspective -->
-    <polygon points="80,160 320,160 340,180 60,180" fill="url(#woodTop)" stroke="#e6eeff" stroke-width="0.5"/>
-    <polygon points="82,162 318,162 336,178 64,178" fill="none" stroke="#f8fbff" stroke-width="0.3" opacity="0.6"/>
-    
-    <!-- LED strip under shelf -->
-    <rect x="65" y="178" width="270" height="2" fill="url(#ledPulse)" rx="1"/>
-    
-    <!-- TOP SHELF ITEMS -->
-    
-    <!-- ANIMATED CAN with data visualization -->
-    <g transform="translate(90,120)">
-      <!-- contact shadow -->
-      <use href="#contactShadow" transform="translate(20,50)"/>
-      
-      <!-- can body -->
-      <rect x="0" y="0" width="40" height="50" rx="6" fill="url(#silverMetal)" stroke="#9fb5d9" stroke-width="1"/>
-      
-      <!-- data visualization bars (animated) -->
-      <rect x="6" y="35" width="3" height="10" fill="#4ade80">
-        <animate attributeName="height" values="10;25;10" dur="3s" repeatCount="indefinite" begin="0s"/>
-        <animate attributeName="y" values="35;20;35" dur="3s" repeatCount="indefinite" begin="0s"/>
-      </rect>
-      <rect x="11" y="30" width="3" height="15" fill="#22c55e">
-        <animate attributeName="height" values="15;30;15" dur="3s" repeatCount="indefinite" begin="0.5s"/>
-        <animate attributeName="y" values="30;15;30" dur="3s" repeatCount="indefinite" begin="0.5s"/>
-      </rect>
-      <rect x="16" y="32" width="3" height="13" fill="#16a34a">
-        <animate attributeName="height" values="13;28;13" dur="3s" repeatCount="indefinite" begin="1s"/>
-        <animate attributeName="y" values="32;17;32" dur="3s" repeatCount="indefinite" begin="1s"/>
-      </rect>
-      <rect x="21" y="28" width="3" height="17" fill="#15803d">
-        <animate attributeName="height" values="17;32;17" dur="3s" repeatCount="indefinite" begin="1.5s"/>
-        <animate attributeName="y" values="28;13;28" dur="3s" repeatCount="indefinite" begin="1.5s"/>
-      </rect>
-      
-      <!-- label highlight -->
-      <rect x="4" y="8" width="32" height="15" rx="2" fill="#ffffff" opacity="0.8"/>
-      <text x="20" y="17" font-family="Arial, sans-serif" font-size="7" text-anchor="middle" fill="#2563eb" font-weight="bold">DATA</text>
+  <!-- ===== TOP SHELF (plane → shadows → items → face) ===== -->
+  <g id="topShelf" transform="translate(0,80)">
+    <!-- top plane -->
+    <polygon id="topPlane" points="190,280 450,280 480,320 160,320" fill="url(#woodTop)"/>
+    <clipPath id="clipTopPlane"><use href="#topPlane"/></clipPath>
+    <rect x="160" y="280" width="320" height="40" fill="url(#grain)" opacity=".5" clip-path="url(#clipTopPlane)"/>
+
+    <!-- contact shadows clipped to plane -->
+    <g opacity=".38" filter="url(#shadow)" clip-path="url(#clipTopPlane)">
+      <ellipse cx="240" cy="317" rx="38" ry="7" fill="#000"/>
+      <ellipse cx="332" cy="317" rx="38" ry="7" fill="#000"/>
+      <ellipse cx="424" cy="317" rx="38" ry="7" fill="#000"/>
     </g>
 
-    <!-- ANIMATED JAR with bubbling liquid -->
-    <g transform="translate(180,125)">
-      <!-- contact shadow -->
-      <use href="#contactShadow" transform="translate(15,45)"/>
-      
-      <!-- jar body -->
-      <rect x="0" y="0" width="30" height="45" rx="4" fill="url(#glassJar)" stroke="#a8c5e8" stroke-width="1"/>
-      
-      <!-- liquid inside with bubbles -->
-      <rect x="3" y="15" width="24" height="27" rx="2" fill="url(#liquidBlue)"/>
-      
-      <!-- animated bubbles -->
-      <circle cx="8" cy="35" r="1.5" fill="#87ceeb" opacity="0.7">
-        <animate attributeName="cy" values="35;20;35" dur="2.5s" repeatCount="indefinite" begin="0s"/>
-        <animate attributeName="opacity" values="0.7;0.3;0.7" dur="2.5s" repeatCount="indefinite" begin="0s"/>
-      </circle>
-      <circle cx="15" cy="38" r="1" fill="#87ceeb" opacity="0.6">
-        <animate attributeName="cy" values="38;18;38" dur="3s" repeatCount="indefinite" begin="0.8s"/>
-        <animate attributeName="opacity" values="0.6;0.2;0.6" dur="3s" repeatCount="indefinite" begin="0.8s"/>
-      </circle>
-      <circle cx="22" cy="36" r="1.2" fill="#87ceeb" opacity="0.8">
-        <animate attributeName="cy" values="36;19;36" dur="2.2s" repeatCount="indefinite" begin="1.5s"/>
-        <animate attributeName="opacity" values="0.8;0.4;0.8" dur="2.2s" repeatCount="indefinite" begin="1.5s"/>
-      </circle>
-      
-      <!-- glass shine -->
-      <rect x="5" y="5" width="4" height="35" rx="2" fill="#ffffff" opacity="0.4"/>
-      
-      <!-- jar lid -->
-      <rect x="-1" y="-2" width="32" height="6" rx="3" fill="url(#brass)" stroke="#c89d3a" stroke-width="0.5"/>
-      <rect x="1" y="0" width="28" height="2" rx="1" fill="#ffd37a" opacity="0.6"/>
-    </g>
-
-    <!-- ANIMATED DOCUMENT with waving flag -->
-    <g transform="translate(250,130)">
-      <!-- contact shadow -->
-      <use href="#contactShadow" transform="translate(17,35)"/>
-      
-      <!-- document stack -->
-      <rect x="2" y="2" width="30" height="35" rx="3" fill="#f0f4fb" stroke="#cdd7f1" stroke-width="0.5" opacity="0.8"/>
-      <rect x="0" y="0" width="30" height="35" rx="3" fill="url(#paperWhite)" stroke="#cdd7f1" stroke-width="1"/>
-      
-      <!-- document content lines -->
-      <line x1="4" y1="8" x2="22" y2="8" stroke="#8b9dc3" stroke-width="0.8"/>
-      <line x1="4" y1="12" x2="20" y2="12" stroke="#8b9dc3" stroke-width="0.8"/>
-      <line x1="4" y1="16" x2="24" y2="16" stroke="#8b9dc3" stroke-width="0.8"/>
-      <line x1="4" y1="20" x2="18" y2="20" stroke="#8b9dc3" stroke-width="0.8"/>
-      
-      <!-- animated priority flag -->
-      <g>
-        <rect x="26" y="6" width="8" height="6" fill="#ef4444">
-          <animate attributeName="width" values="8;10;8" dur="2s" repeatCount="indefinite"/>
+    <!-- TOP ITEMS -->
+    <!-- CAN -->
+    <g transform="translate(205,212)">
+      <rect x="0" y="0" width="70" height="100" rx="10" fill="#dfe8f5" stroke="#c4d2ea" stroke-width="3"/>
+      <rect x="0" y="-10" width="70" height="16" rx="8" fill="#c4d2ea"/>
+      <rect x="6" y="20" width="58" height="64" rx="6" fill="#f6fbff" stroke="#c4d2ea" stroke-width="2"/>
+      <g fill="#19e07f">
+        <rect x="12" y="56" width="8" height="24" rx="2">
+          <animate attributeName="height" values="18;42;26;18" dur="3s" repeatCount="indefinite"/>
+          <animate attributeName="y"      values="62;38;54;62"  dur="3s" repeatCount="indefinite"/>
         </rect>
-        <polygon points="34,6 38,9 34,12" fill="#dc2626">
-          <animateTransform attributeName="transform" type="translate" values="0,0;2,0;0,0" dur="2s" repeatCount="indefinite"/>
-        </polygon>
+        <rect x="26" y="52" width="8" height="28" rx="2">
+          <animate attributeName="height" values="28;46;30;28" dur="3s" begin="0.25s" repeatCount="indefinite"/>
+          <animate attributeName="y"      values="52;34;50;52" dur="3s" begin="0.25s" repeatCount="indefinite"/>
+        </rect>
+        <rect x="40" y="60" width="8" height="20" rx="2">
+          <animate attributeName="height" values="22;34;26;22" dur="3s" begin="0.5s" repeatCount="indefinite"/>
+          <animate attributeName="y"      values="58;46;54;58" dur="3s" begin="0.5s" repeatCount="indefinite"/>
+        </rect>
+        <rect x="54" y="50" width="8" height="30" rx="2">
+          <animate attributeName="height" values="30;48;34;30" dur="3s" begin="0.75s" repeatCount="indefinite"/>
+          <animate attributeName="y"      values="50;32;46;50" dur="3s" begin="0.75s" repeatCount="indefinite"/>
+        </rect>
       </g>
-      
-      <!-- paper curl -->
-      <path d="M 25 0 Q 30 0 30 5 L 25 5 Z" fill="#e2e8f0" stroke="#cdd7f1" stroke-width="0.5"/>
     </g>
 
-    <!-- shelf front face with depth -->
-    <polygon points="60,180 340,180 334,190 66,190" fill="url(#woodFace)" stroke="#d7defc" stroke-width="0.5"/>
-    <polygon points="64,182 336,182 331,187 69,187" fill="none" stroke="#e3e9ff" stroke-width="0.3" opacity="0.6"/>
+    <!-- DOCUMENT -->
+    <g transform="translate(292,214)">
+      <rect x="0" y="0" width="70" height="96" rx="8" fill="#f0f4fb" stroke="#0f2740" stroke-width="2.4" opacity=".96"/>
+      <rect x="12" y="14" width="36" height="48" rx="3" fill="#ffffff" stroke="#d7deea" stroke-width="1.4"/>
+      <g stroke="#b7c3d4" stroke-linecap="round">
+        <line x1="14" y1="26" x2="46" y2="26" stroke-width="2"/>
+        <line x1="14" y1="36" x2="46" y2="36" stroke-width="2"/>
+        <line x1="14" y1="46" x2="40" y2="46" stroke-width="2"/>
+      </g>
+      <path d="M52,18 v30 l8,-6 v-24 z" fill="#e34848">
+        <animateTransform attributeName="transform" type="rotate" values="-2 56 30;3 56 30;-2 56 30" dur="4.2s" repeatCount="indefinite"/>
+      </path>
+    </g>
+
+    <!-- JAR (slightly smaller + gentle glass shine) -->
+    <g transform="translate(392,218) scale(0.92)">
+      <!-- jar body -->
+      <path id="jarOutline" d="M0,24 h84 v64 c0,16-18,34-42,34 s-42-18-42-34 z" fill="#f2fbff" stroke="#c6dff1" stroke-width="3"/>
+      <rect x="10" y="0" width="64" height="18" rx="6" fill="#d8efff"/>
+
+      <!-- liquid -->
+      <path d="M4,58 h76 v26 c0,14-16,30-38,30 s-38-16-38-30 z" fill="#58d4ff" opacity=".85"/>
+
+      <!-- bubbles -->
+      <g fill="#e9fbff" opacity=".95">
+        <circle cx="30" cy="74" r="3">
+          <animate attributeName="cy" values="82;66" dur="3s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values="0;1;0" dur="3s" repeatCount="indefinite"/>
+        </circle>
+        <circle cx="46" cy="78" r="2.6">
+          <animate attributeName="cy" values="86;70" dur="3.2s" begin="0.7s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values="0;1;0" dur="3.2s" begin="0.7s" repeatCount="indefinite"/>
+        </circle>
+      </g>
+
+      <!-- circuit pulse -->
+      <g fill="none" stroke="#16b9ff" stroke-width="2" stroke-linecap="round" opacity=".9" stroke-dasharray="3 8">
+        <path d="M20,44 h12 v-8 h12 v12 h12">
+          <animate attributeName="stroke-dashoffset" from="0" to="-11" dur="3s" repeatCount="indefinite"/>
+        </path>
+        <path d="M24,60 h18 v-6 h8 v10">
+          <animate attributeName="stroke-dashoffset" from="0" to="-11" dur="3s" begin="0.6s" repeatCount="indefinite"/>
+        </path>
+      </g>
+
+      <!-- subtle glass shine sweep (clipped to jar) -->
+      <clipPath id="jarClipLocal">
+        <use href="#jarOutline"/>
+      </clipPath>
+      <rect x="-12" y="10" width="20" height="88" fill="#ffffff" opacity=".12" clip-path="url(#jarClipLocal)">
+        <animateTransform attributeName="transform" type="translate" from="0 0" to="96 0" dur="6.5s" repeatCount="indefinite"/>
+      </rect>
+    </g>
+
+    <!-- front face (always on top) -->
+    <polygon points="160,320 480,320 468,338 172,338" fill="url(#woodFace)"/>
+    <rect x="162" y="318" width="316" height="3" fill="#aebad6" opacity=".35"/>
+
+    <!-- under-shelf LED pulse -->
+    <line x1="166" y1="318" x2="474" y2="318" stroke="url(#led)" stroke-width="4" stroke-linecap="round" filter="url(#glow)" stroke-dasharray="60 220" opacity="0.8">
+      <animate attributeName="stroke-dashoffset" from="0" to="-280" dur="5s" repeatCount="indefinite"/>
+    </line>
   </g>
 
-  <!-- ===== BOTTOM SHELF ===== -->
-  <g id="bottomShelf">
-    <!-- shelf top with 3D perspective -->
-    <polygon points="80,280 320,280 340,300 60,300" fill="url(#woodTop)" stroke="#e6eeff" stroke-width="0.5"/>
-    <polygon points="82,282 318,282 336,298 64,298" fill="none" stroke="#f8fbff" stroke-width="0.3" opacity="0.6"/>
-    
-    <!-- LED strip under shelf -->
-    <rect x="65" y="298" width="270" height="2" fill="url(#ledPulse)" rx="1"/>
-    
-    <!-- BOTTOM SHELF ITEMS -->
-    
-    <!-- ANIMATED DATABASE DRAWER with pulsing LED -->
-    <g transform="translate(90,245)">
-      <!-- contact shadow -->
-      <use href="#contactShadow" transform="translate(25,40)"/>
-      
-      <!-- drawer body -->
-      <rect x="0" y="0" width="50" height="40" rx="6" fill="#f6f8ff" stroke="#cdd7f1" stroke-width="1"/>
-      
-      <!-- drawer face with depth -->
-      <rect x="2" y="2" width="46" height="36" rx="4" fill="#e9efff" stroke="#b8c9f0" stroke-width="0.5"/>
-      
-      <!-- server components -->
-      <rect x="6" y="8" width="38" height="24" rx="2" fill="#ffffff" stroke="#d1d9f0" stroke-width="0.5"/>
-      
-      <!-- animated status LED -->
-      <circle cx="12" cy="14" r="2.5" fill="url(#ledPulse)" stroke="#22c55e" stroke-width="0.5"/>
-      
-      <!-- server slots -->
-      <rect x="20" y="10" width="20" height="2" rx="1" fill="#e2e8f0"/>
-      <rect x="20" y="14" width="20" height="2" rx="1" fill="#e2e8f0"/>
-      <rect x="20" y="18" width="20" height="2" rx="1" fill="#e2e8f0"/>
-      <rect x="20" y="22" width="20" height="2" rx="1" fill="#e2e8f0"/>
-      
-      <!-- drawer handle -->
-      <rect x="44" y="18" width="4" height="8" rx="2" fill="url(#silverMetal)" stroke="#9fb5d9" stroke-width="0.5"/>
-      
-      <!-- face shimmer -->
-      <rect x="8" y="6" width="2" height="28" rx="1" fill="#ffffff" opacity="0.3">
-        <animate attributeName="opacity" values="0.3;0.7;0.3" dur="4s" repeatCount="indefinite"/>
+  <!-- ===== BOTTOM SHELF (plane → shadows → items → face) ===== -->
+  <g id="botShelf" transform="translate(0,80)">
+    <polygon id="botPlane" points="190,510 450,510 480,550 160,550" fill="url(#woodTop)"/>
+    <clipPath id="clipBotPlane"><use href="#botPlane"/></clipPath>
+    <rect x="160" y="510" width="320" height="40" fill="url(#grain)" opacity=".5" clip-path="url(#clipBotPlane)"/>
+
+    <!-- contact shadows -->
+    <g opacity=".4" filter="url(#shadow)" clip-path="url(#clipBotPlane)">
+      <ellipse cx="262" cy="530" rx="50" ry="8" fill="#000"/>
+      <ellipse cx="420" cy="530" rx="42" ry="8" fill="#000"/>
+    </g>
+
+    <!-- DATABASE DRAWER (left) with face shimmer -->
+    <g transform="translate(210,468)">
+      <!-- chassis -->
+      <rect x="-4" y="-6" width="132" height="74" rx="12" fill="#f6f8ff" stroke="#cdd7f1" stroke-width="3"/>
+      <rect x="4" y="2" width="116" height="58" rx="9" fill="#e9efff" stroke="#cdd7f1" stroke-width="2"/>
+      <!-- face & handle -->
+      <rect id="drawerFace" x="16" y="18" width="92" height="26" rx="6" fill="#ffffff" stroke="#cdd7f1"/>
+      <rect x="44" y="24" width="36" height="6" rx="3" fill="#c7d2ee"/>
+      <rect x="40" y="34" width="44" height="4" rx="2" fill="#c7d2ee"/>
+      <!-- status LED -->
+      <circle cx="18" cy="10" r="3" fill="#7df79a">
+        <animate attributeName="opacity" values="1;0.2;1" dur="2.6s" repeatCount="indefinite"/>
+      </circle>
+      <!-- shimmer clipped to face -->
+      <clipPath id="drawerClip"><use href="#drawerFace"/></clipPath>
+      <rect x="8" y="18" width="20" height="26" fill="#ffffff" opacity=".10" clip-path="url(#drawerClip)">
+        <animateTransform attributeName="transform" type="translate" from="0 0" to="90 0" dur="5.5s" repeatCount="indefinite"/>
       </rect>
     </g>
 
-    <!-- ANIMATED SHIPPING BOX with subtle movement -->
-    <g transform="translate(230,250)">
-      <!-- contact shadow -->
-      <use href="#contactShadow" transform="translate(20,30)"/>
-      
-      <!-- box body -->
-      <rect x="0" y="0" width="40" height="30" rx="3" fill="#e7cfad" stroke="#c9ad87" stroke-width="1"/>
-      
-      <!-- box tape with slight animation -->
-      <rect x="18" y="0" width="4" height="30" fill="#f1e5cc" opacity="0.8">
-        <animate attributeName="opacity" values="0.8;1;0.8" dur="3s" repeatCount="indefinite"/>
-      </rect>
-      
-      <!-- box flap (subtle movement) -->
-      <polygon points="0,0 40,0 38,3 2,3" fill="#f5e6c8" stroke="#c9ad87" stroke-width="0.5">
-        <animateTransform attributeName="transform" type="translate" values="0,0;0,-0.5;0,0" dur="5s" repeatCount="indefinite"/>
+    <!-- SHIPPING BOX with tape (right) -->
+    <g transform="translate(380,464)">
+      <!-- sides -->
+      <polygon points="0,64 40,52 80,64 40,76" fill="#e7cfad" stroke="#c9ad87" stroke-width="2"/>
+      <polygon points="0,64 0,24 40,12 40,52" fill="#e7cfad" stroke="#c9ad87" stroke-width="2"/>
+      <polygon points="80,64 80,24 40,12 40,52" fill="#e3c7a2" stroke="#c9ad87" stroke-width="2"/>
+      <!-- top flap (subtle tilt) -->
+      <polygon points="0,24 40,12 80,24 40,36" fill="#edd7ba" stroke="#c9ad87" stroke-width="2">
+        <animateTransform attributeName="transform" type="rotate" values="0 40 24;-4 40 24;0 40 24" dur="7s" repeatCount="indefinite"/>
       </polygon>
-      
-      <!-- shipping label -->
-      <rect x="8" y="8" width="24" height="14" rx="2" fill="#ffffff" stroke="#d4d4d8" stroke-width="0.5"/>
-      <rect x="10" y="10" width="20" height="2" fill="#71717a"/>
-      <rect x="10" y="14" width="16" height="1.5" fill="#a1a1aa"/>
-      <rect x="10" y="17" width="18" height="1.5" fill="#a1a1aa"/>
-      
-      <!-- address lines -->
-      <rect x="12" y="19" width="8" height="1" fill="#d4d4d8"/>
+      <!-- tape -->
+      <rect x="38.5" y="10" width="3" height="42" fill="#f1e5cc" opacity=".9"/>
+      <!-- printed arrows -->
+      <g fill="none" stroke="#9a7b56" stroke-width="2" opacity=".7">
+        <path d="M22,44 l6,-8 l6,8"/>
+        <path d="M52,44 l6,-8 l6,8"/>
+      </g>
     </g>
 
-    <!-- shelf front face with depth -->
-    <polygon points="60,300 340,300 334,310 66,310" fill="url(#woodFace)" stroke="#d7defc" stroke-width="0.5"/>
-    <polygon points="64,302 336,302 331,307 69,307" fill="none" stroke="#e3e9ff" stroke-width="0.3" opacity="0.6"/>
+    <!-- front face -->
+    <polygon points="160,550 480,550 468,568 172,568" fill="url(#woodFace)"/>
+    <rect x="162" y="548" width="316" height="3" fill="#aebad6" opacity=".35"/>
+
+    <!-- under-shelf LED pulse -->
+    <line x1="166" y1="548" x2="474" y2="548" stroke="url(#led)" stroke-width="4" stroke-linecap="round" filter="url(#glow)" stroke-dasharray="60 220" opacity="0.8">
+      <animate attributeName="stroke-dashoffset" from="0" to="-280" dur="5s" begin="1s" repeatCount="indefinite"/>
+    </line>
   </g>
 </svg>
