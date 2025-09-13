@@ -1,11 +1,5 @@
 <svg width="320" height="240" viewBox="0 0 320 240" xmlns="http://www.w3.org/2000/svg" aria-label="Interactive book icon (transparent bg)">
   <defs>
-    <!-- Outer neon glow -->
-    <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
-      <feDropShadow dx="0" dy="0" stdDeviation="7" flood-color="#1af0ff" flood-opacity="0.6"/>
-      <feDropShadow dx="0" dy="0" stdDeviation="14" flood-color="#1af0ff" flood-opacity="0.25"/>
-    </filter>
-
     <!-- Soft inner shadow for pages -->
     <filter id="inner" x="-20%" y="-20%" width="140%" height="160%">
       <feOffset dy="1"/>
@@ -69,11 +63,7 @@
   </defs>
 
   <!-- Book -->
-  <g class="book" filter="url(#glow)" stroke-linecap="round" stroke-linejoin="round">
-    <!-- Neon outline -->
-    <path class="ns" d="M74 54h172a8 8 0 0 1 8 8v108a8 8 0 0 1-8 8H74a8 8 0 0 1-8-8V62a8 8 0 0 1 8-8z"
-          fill="none" stroke="var(--accent)" stroke-width="10" opacity=".9"/>
-
+  <g class="book" stroke-linecap="round" stroke-linejoin="round">
     <!-- Back cover -->
     <rect x="64" y="48" width="192" height="128" rx="12" fill="var(--back-cover)" stroke="var(--ink)" stroke-width="2"/>
 
@@ -85,10 +75,6 @@
       <rect x="70" y="50" width="12" height="116" rx="6" fill="var(--spine)" stroke="var(--ink)" stroke-width="2"/>
       <path d="M78 62v88M74 70v72M82 70v72" stroke="#173456" stroke-width="1" opacity=".6"/>
     </g>
-
-    <!-- Inner neon echo -->
-    <path class="ns" d="M78 58h164a6 6 0 0 1 6 6v100a6 6 0 0 1-6 6H78a6 6 0 0 1-6-6V64a6 6 0 0 1 6-6z"
-          fill="none" stroke="var(--accent)" stroke-width="3" opacity=".75"/>
 
     <!-- Pages base (left & right) -->
     <g filter="url(#inner)">
