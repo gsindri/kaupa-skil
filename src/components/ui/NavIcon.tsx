@@ -21,6 +21,7 @@ export function NavIcon({ Icon, active, size = 28, className, label }: IconProps
       <Icon
         width={size}
         height={size}
+        data-active={active}
         className={cn(
           "text-white/80 group-hover:text-white transition-all duration-200",
           // Soft glow without any square backgrounds
