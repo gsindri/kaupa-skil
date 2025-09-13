@@ -36,14 +36,14 @@ export function PrimaryNavRail() {
             aria-current={active ? 'page' : undefined}
             className={clsx(
               'group relative my-1 flex w-14 flex-col items-center rounded-2xl px-2 py-2 text-white/80',
-              'hover:bg-white/10 hover:text-white',
-              active && 'bg-white/15 ring-1 ring-white/10 text-white'
+              'hover:text-white',
+              active && 'ring-1 ring-white/10 text-white'
             )}
           >
             <img 
               src={image} 
               alt={label}
-              className="h-12 w-12 opacity-100 drop-shadow-sm"
+              className="h-12 w-12 object-contain pointer-events-none select-none"
             />
             <span className="mt-1 text-[10px] leading-3">{label}</span>
           </Link>
