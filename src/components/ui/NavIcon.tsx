@@ -22,10 +22,10 @@ export function NavIcon({ Icon, active, size = 28, className, label }: IconProps
         width={size}
         height={size}
         className={cn(
-          "text-cyan-200 transition-all duration-200",
-          // Soft neon glow without any square backgrounds
-          "[filter:drop-shadow(0_0_6px_rgba(34,211,238,0.6))]",
-          active && "[filter:drop-shadow(0_0_10px_rgba(34,211,238,0.9))]",
+          "text-white/80 group-hover:text-white transition-all duration-200",
+          // Soft glow without any square backgrounds
+          "[filter:drop-shadow(0_0_6px_rgba(255,255,255,0.6))]",
+          active && "text-white [filter:drop-shadow(0_0_10px_rgba(255,255,255,0.9))]",
           className
         )}
         role="img"
