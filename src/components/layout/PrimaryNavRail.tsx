@@ -1,15 +1,25 @@
 import React from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import clsx from 'clsx'
+import { NavIcon } from '@/components/ui/NavIcon'
+
+// Import SVG icons as React components
+import DashboardIcon from '@/icons/dashboard.svg?react'
+import CatalogIcon from '@/icons/catalog.svg?react'
+import CompareIcon from '@/icons/compare.svg?react'
+import SuppliersIcon from '@/icons/suppliers.svg?react'
+import PantryIcon from '@/icons/pantry.svg?react'
+import PriceIcon from '@/icons/price.svg?react'
+import DiscoverIcon from '@/icons/discover.svg?react'
 
 const items = [
-  { to: '/', image: '/nav-dashboard.png', label: 'Dashboard' },
-  { to: '/catalog', image: '/nav-catalog.png', label: 'Catalog' },
-  { to: '/compare', image: '/nav-compare.png', label: 'Compare' },
-  { to: '/suppliers', image: '/nav-suppliers.png', label: 'Suppliers' },
-  { to: '/pantry', image: '/nav-pantry.png', label: 'Pantry' },
-  { to: '/price-history', image: '/nav-price.png', label: 'Price' },
-  { to: '/discovery', image: '/nav-discover.png', label: 'Discover' },
+  { to: '/', Icon: DashboardIcon, label: 'Dashboard' },
+  { to: '/catalog', Icon: CatalogIcon, label: 'Catalog' },
+  { to: '/compare', Icon: CompareIcon, label: 'Compare' },
+  { to: '/suppliers', Icon: SuppliersIcon, label: 'Suppliers' },
+  { to: '/pantry', Icon: PantryIcon, label: 'Pantry' },
+  { to: '/price-history', Icon: PriceIcon, label: 'Price' },
+  { to: '/discovery', Icon: DiscoverIcon, label: 'Discover' },
 ]
 
 export function PrimaryNavRail() {
@@ -27,7 +37,7 @@ export function PrimaryNavRail() {
       />
 
       <nav className="flex w-full flex-col items-center gap-1 pt-[var(--sidebar-offset-rail)]">
-      {items.map(({ to, image, label }) => {
+      {items.map(({ to, Icon, label }) => {
         const active = pathname === to || pathname.startsWith(to + '/')
         return (
           <Link
@@ -36,14 +46,14 @@ export function PrimaryNavRail() {
             aria-current={active ? 'page' : undefined}
             className={clsx(
               'group relative my-1 flex w-14 flex-col items-center rounded-2xl px-2 py-2 text-white/80',
-              'hover:text-white',
+              'hover:text-white transition-colors duration-200',
               active && 'ring-1 ring-white/10 text-white'
             )}
           >
-            <img 
-              src={image} 
-              alt={label}
-              className="h-12 w-12 object-contain pointer-events-none select-none"
+            <NavIcon 
+              Icon={Icon}
+              active={active}
+              label={label}
             />
             <span className="mt-1 text-[10px] leading-3">{label}</span>
           </Link>
