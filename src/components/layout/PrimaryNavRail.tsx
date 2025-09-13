@@ -26,7 +26,7 @@ export function PrimaryNavRail() {
   const { pathname } = useLocation()
   return (
     <div
-      className="h-full w-[var(--layout-rail,72px)] bg-gradient-to-b from-[#0B1220] via-[#0E1B35] to-[#0E2A5E] relative"
+      className="nav-rail h-full w-[var(--layout-rail,72px)] bg-gradient-to-b from-[#0B1220] via-[#0E1B35] to-[#0E2A5E] relative"
       style={{
         zIndex: 'var(--z-rail, 60)'
       }}
@@ -54,7 +54,6 @@ export function PrimaryNavRail() {
               Icon={Icon}
               active={active}
               label={label}
-              sizePercent={label === 'Pantry' ? '68%' : undefined}
             />
             <span className="mt-1 text-[10px] leading-3">{label}</span>
           </Link>

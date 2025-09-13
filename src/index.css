@@ -38,6 +38,19 @@ html, body, #root {
   height: 100%;
 }
 
+/* Navigation rail icon sizing */
+.nav-rail {
+  --icon-size: 68%;
+  --icon-stroke: 2;
+}
+
+.nav-rail .nav-icon svg {
+  width: var(--icon-size);
+  height: var(--icon-size);
+  stroke-width: var(--icon-stroke);
+  overflow: visible;
+}
+
 /* Set a fallback header height so content can offset correctly */
 :root {
   --sidebar-w: 256px; /* expanded width */
