@@ -1,11 +1,5 @@
-<svg width="320" height="240" viewBox="0 0 320 240" xmlns="http://www.w3.org/2000/svg" aria-label="Interactive book icon">
+<svg width="320" height="240" viewBox="0 0 320 240" xmlns="http://www.w3.org/2000/svg" aria-label="Interactive book icon (transparent bg)">
   <defs>
-    <!-- Background vignette -->
-    <radialGradient id="bgGrad" cx="50%" cy="50%" r="70%">
-      <stop offset="0%" stop-color="#0e1a25"/>
-      <stop offset="100%" stop-color="#0a141c"/>
-    </radialGradient>
-
     <!-- Outer neon glow -->
     <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
       <feDropShadow dx="0" dy="0" stdDeviation="7" flood-color="#1af0ff" flood-opacity="0.6"/>
@@ -21,7 +15,7 @@
       <feComposite in2="SourceGraphic" operator="in"/>
     </filter>
 
-    <!-- Tiny star symbol -->
+    <!-- Star symbol for the flip reveal -->
     <symbol id="star16" viewBox="0 0 16 16">
       <rect x="7" y="0" width="2" height="16" rx="1"/>
       <rect x="0" y="7" width="16" height="2" rx="1"/>
@@ -30,7 +24,6 @@
     <style>
       svg {
         --cover: #1b3a5a;
-        --cover-dark: #132a41;
         --back-cover: #152a42;
         --spine: #284d76;
         --page: #f7f5ef;
@@ -58,7 +51,8 @@
 
       .icon-a { opacity: 1; transition: opacity .25s ease; }
       svg:hover .icon-a { opacity: 0; }
-      .icon-b { opacity: 0; transform: scale(.9) rotate(-8deg); transform-origin: 240px 98px; transition: opacity .35s ease .12s, transform .35s ease .12s; }
+      .icon-b { opacity: 0; transform: scale(.9) rotate(-8deg); transform-origin: 240px 98px;
+                transition: opacity .35s ease .12s, transform .35s ease .12s; }
       svg:hover .icon-b { opacity: 1; transform: scale(1) rotate(0); }
 
       .dot { transform: translateX(0); }
@@ -74,24 +68,16 @@
     </style>
   </defs>
 
-  <!-- Optional background -->
-  <rect width="320" height="240" fill="url(#bgGrad)"/>
-
-  <!-- Tiny glint -->
-  <g opacity=".35" transform="translate(292 214) rotate(28)">
-    <use href="#star16" width="16" height="16" fill="#b9e8ff"/>
-  </g>
-
   <!-- Book -->
   <g class="book" filter="url(#glow)" stroke-linecap="round" stroke-linejoin="round">
     <!-- Neon outline -->
     <path class="ns" d="M74 54h172a8 8 0 0 1 8 8v108a8 8 0 0 1-8 8H74a8 8 0 0 1-8-8V62a8 8 0 0 1 8-8z"
           fill="none" stroke="var(--accent)" stroke-width="10" opacity=".9"/>
 
-    <!-- Back cover peeking around edges -->
+    <!-- Back cover -->
     <rect x="64" y="48" width="192" height="128" rx="12" fill="var(--back-cover)" stroke="var(--ink)" stroke-width="2"/>
 
-    <!-- Main cover block -->
+    <!-- Main cover -->
     <rect x="70" y="50" width="180" height="116" rx="10" fill="var(--cover)" stroke="var(--ink)" stroke-width="2"/>
 
     <!-- Spine with ridges -->
@@ -104,7 +90,7 @@
     <path class="ns" d="M78 58h164a6 6 0 0 1 6 6v100a6 6 0 0 1-6 6H78a6 6 0 0 1-6-6V64a6 6 0 0 1 6-6z"
           fill="none" stroke="var(--accent)" stroke-width="3" opacity=".75"/>
 
-    <!-- Pages base (left & right) with inner shadow -->
+    <!-- Pages base (left & right) -->
     <g filter="url(#inner)">
       <path d="M84 64h86c6 0 10 4 10 10v68c0 6-4 10-10 10H84c-6 0-10-4-10-10V74c0-6 4-10 10-10z"
             fill="var(--page)" stroke="var(--ink)" stroke-width="2"/>
@@ -112,7 +98,7 @@
             fill="var(--page)" stroke="var(--ink)" stroke-width="2"/>
     </g>
 
-    <!-- Center stitching & gutter shading -->
+    <!-- Center stitching & gutter -->
     <g>
       <rect x="168" y="64" width="4" height="88" rx="2" fill="#d4d0c6" opacity=".6"/>
       <path d="M170 68v80" stroke="#b9b4a8" stroke-width="1" stroke-dasharray="2 4"/>
@@ -125,7 +111,7 @@
       <path d="M154 64h10" stroke="#ff98ac" stroke-width="2" opacity=".6"/>
     </g>
 
-    <!-- Bottom page stack (curved layers) -->
+    <!-- Bottom page stack -->
     <g>
       <path d="M96 160c18 6 36 9 64 9s46-3 64-9" fill="none" stroke="var(--page-edge)" stroke-width="6" stroke-linecap="round"/>
       <path d="M96 160c18 6 36 9 64 9s46-3 64-9" fill="none" stroke="#cfcabb" stroke-width="2" stroke-linecap="round" opacity=".8"/>
@@ -136,24 +122,17 @@
     <!-- Browsing dot -->
     <circle class="dot" cx="94" cy="162" r="5.5" fill="var(--dot)" stroke="#0a2a18" stroke-width="2"/>
 
-    <!-- Left-page content (image + lines) -->
+    <!-- Left-page content -->
     <g stroke="var(--ink)" stroke-width="2">
       <rect x="94" y="80" width="34" height="26" rx="3" fill="none"/>
       <path d="M96 102l8-10 8 7 6-5 8 8" fill="none"/>
       <path d="M94 116h54M94 124h50M94 132h46" opacity=".95"/>
     </g>
 
-    <!-- Right-page edge lines for "page block" detail -->
-    <g stroke="#e1dccf" stroke-width="1">
-      <path d="M260 76h8M260 84h8M260 92h8M260 100h8M260 108h8M260 116h8M260 124h8M260 132h8" opacity=".9"/>
-      <path d="M258 140h10" opacity=".7"/>
-    </g>
-
-    <!-- Right flipping page (dark) with corner curl -->
+    <!-- Right flipping page -->
     <g class="page-turn">
       <path d="M204 58h56v72c0 0-28-2-56 16V58z" fill="var(--page-turn)" stroke="var(--ink)" stroke-width="2"/>
       <path d="M204 58c20 10 42 16 56 16" fill="none" stroke="var(--reveal)" stroke-width="3" opacity=".6"/>
-      <!-- corner dog-ear highlight -->
       <path d="M260 74c-6 0-12 2-16 6" fill="none" stroke="#9fc9ff" stroke-width="1.5" opacity=".7"/>
 
       <!-- Icon swap: magnifier → star -->
