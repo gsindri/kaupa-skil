@@ -58,6 +58,14 @@ html, body, #root {
   flex-shrink: 0 !important;
 }
 
+/* Allow SVG internal animations to work by excluding animation properties from !important */
+.nav-rail .nav-icon svg *,
+.nav-rail svg * {
+  /* Let SVG internal animations control transform and animation properties */
+  transform: unset;
+  animation: unset;
+}
+
 /* Set a fallback header height so content can offset correctly */
 :root {
   --sidebar-w: 256px; /* expanded width */
