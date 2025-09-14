@@ -12,7 +12,6 @@ plugins: [
     react(), 
     svgr({
       svgrOptions: {
-        plugins: ['@svgr/plugin-svgo', '@svgr/plugin-jsx'],
         svgoConfig: {
           plugins: [
             {
