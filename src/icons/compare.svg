@@ -66,20 +66,6 @@
         to  { transform:rotate(-4.5deg); }
       }
 
-      /* Data flow & glow particles */
-      .float {
-        animation: floatUp 2.8s ease-in infinite;
-      }
-      .float.d2 { animation-delay:.4s; }
-      .float.d3 { animation-delay:.8s; }
-      .float.d4 { animation-delay:1.2s; }
-      .float.d5 { animation-delay:1.6s; }
-      @keyframes floatUp{
-        0%   { transform: translateY(10px) scale(.9); opacity:.0; }
-        20%  { opacity:.8; }
-        70%  { opacity:.9; }
-        100% { transform: translateY(-24px) scale(1.1); opacity:0; }
-      }
 
       /* Cross-over orb animations */
       .fly-left-to-right {
@@ -156,7 +142,7 @@
 
       /* Respect reduced motion */
       @media (prefers-reduced-motion: reduce){
-        .beam, .counter-left, .counter-right, .float, .pivot-halo, .tick,
+        .beam, .counter-left, .counter-right, .pivot-halo, .tick,
         .pulse-purple, .pulse-green, .fly-left-to-right, .fly-right-to-left { animation: none !important; }
       }
     </style>
@@ -247,10 +233,10 @@
           </g>
         </g>
 
-        <!-- floating and cross-over data particles -->
-        <rect class="float"  x="-38" y="-12" width="6" height="6" rx="1.2" fill="var(--purple-2)"/>
+        <!-- cross-over data particles -->
+        <rect class="fly-left-to-right"  x="-38" y="-12" width="6" height="6" rx="1.2" fill="var(--purple-2)"/>
         <rect class="fly-left-to-right" x="-6"  y="-20" width="4" height="4" rx="1"   fill="var(--purple)"/>
-        <rect class="float d3" x="30"  y="-18" width="5" height="5" rx="1.1" fill="var(--purple-2)"/>
+        <rect class="fly-left-to-right d3" x="30"  y="-18" width="5" height="5" rx="1.1" fill="var(--purple-2)"/>
         <rect class="fly-left-to-right d2" x="-26" y="-28" width="4" height="4" rx="1"   fill="var(--purple)"/>
         <rect class="fly-left-to-right d3" x="16"  y="-30" width="6" height="6" rx="1.2" fill="var(--purple-2)"/>
       </g>
@@ -296,10 +282,10 @@
           </circle>
         </g>
 
-        <!-- rising and cross-over "data" bits around the globe -->
-        <rect class="float"  x="-38" y="-22" width="5" height="5" rx="1.1" fill="var(--green-2)"/>
+        <!-- cross-over "data" bits around the globe -->
+        <rect class="fly-right-to-left"  x="-38" y="-22" width="5" height="5" rx="1.1" fill="var(--green-2)"/>
         <rect class="fly-right-to-left" x="-8"  y="-32" width="4" height="4" rx="1"   fill="var(--green)"/>
-        <rect class="float d3" x="30"  y="-26" width="6" height="6" rx="1.2" fill="var(--green-2)"/>
+        <rect class="fly-right-to-left d3" x="30"  y="-26" width="6" height="6" rx="1.2" fill="var(--green-2)"/>
         <rect class="fly-right-to-left d2" x="-22" y="-40" width="4" height="4" rx="1"   fill="var(--green)"/>
         <rect class="fly-right-to-left d3" x="16"  y="-36" width="5" height="5" rx="1.1" fill="var(--green-2)"/>
       </g>
