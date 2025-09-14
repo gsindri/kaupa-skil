@@ -140,10 +140,11 @@
       /* Hover: slightly stronger tilt and brighter pan rings */
       svg:hover .ring-purple, svg:hover .ring-green { stroke-width:5; }
 
-      /* Respect reduced motion */
+      /* Respect reduced motion - but keep cross-over orbs active */
       @media (prefers-reduced-motion: reduce){
         .beam, .counter-left, .counter-right, .pivot-halo, .tick,
-        .pulse-purple, .pulse-green, .fly-left-to-right, .fly-right-to-left { animation: none !important; }
+        .pulse-purple, .pulse-green { animation: none !important; }
+        /* Cross-over orbs (.fly-left-to-right, .fly-right-to-left) always run for comparison effect */
       }
     </style>
 
