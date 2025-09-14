@@ -1,6 +1,205 @@
-<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/>
-  <path d="M15 8.5c-.8-.8-2-.8-3 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-  <path d="M12 7v10m0-10v2m0 6v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-  <path d="M9 15.5c.8.8 2 .8 3 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+<!-- Layered Coin Stack — hover to animate (movement > glow) -->
+<svg id="coin-stack" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" role="img" aria-label="Layered coin stack with hover animations">
+  <title>Layered Coin Stack</title>
+
+  <style>
+    /* ---------- Theme tokens ---------- */
+    :root {
+      --bg1:#0d1324; --bg2:#0f1a33;
+      --metal-face:#ffffff; --metal-face-2:#f2f6ff;
+      --metal-edge-1:#f9fbff; --metal-edge-2:#e7ecf6;
+      --edge-stroke:#dfe6f3; --rim:#e7ecf6;
+
+      --cyan:#7ae6ff; --green:#79f3b8; --peach:#ffc6a3; --lilac:#d8b6ff;
+      --ui:#d9e5ff;
+    }
+
+    /* ---------- Global ---------- */
+    svg#coin-stack { background: linear-gradient(var(--bg1), var(--bg2)); }
+    .nope { pointer-events:none; }
+
+    /* ---------- Build/settle via transitions on hover ---------- */
+    .layer { transform: translateY(12px); transition: transform .55s cubic-bezier(.2,.8,.25,1); }
+    #coin-stack:hover .layer { transform: translateY(0); }
+    .l2 { transition-delay:.05s } .l3 { transition-delay:.1s } .l4 { transition-delay:.15s } .l5 { transition-delay:.2s }
+
+    /* Slight horizontal shimmy while hovered (movement without glow) */
+    .shimmy { animation: shimmy 6s ease-in-out infinite; animation-play-state: paused; }
+    #coin-stack:hover .shimmy { animation-play-state: running; }
+    @keyframes shimmy { 0%,100%{transform:translateX(0)} 50%{transform:translateX(2px)} }
+
+    /* Top coin lift + micro-tilt on hover */
+    .lift { transform-origin: 400px 352px; animation: lift 7s ease-in-out infinite; animation-play-state: paused; }
+    #coin-stack:hover .lift { animation-play-state: running; }
+    @keyframes lift { 0%,100%{ transform: translateY(0) rotate(.0deg) } 40%{ transform: translateY(-8px) rotate(-.4deg)} 60%{ transform: translateY(-4px) rotate(.2deg)} }
+
+    /* Scanline across top surface */
+    .scan { animation: scan 8s linear infinite; animation-play-state: paused; }
+    #coin-stack:hover .scan { animation-play-state: running; }
+    @keyframes scan { from { transform: translateX(-220px) } to { transform: translateX(220px) } }
+
+    /* Rising pixel particles (square dots) */
+    .particle { animation: rise 4.6s linear infinite; animation-play-state: paused; }
+    #coin-stack:hover .particle { animation-play-state: running; }
+    @keyframes rise {
+      0%   { transform: translateY(0) scale(.9); opacity:0 }
+      15%  { opacity:1 }
+      80%  { opacity:1 }
+      100% { transform: translateY(-125px) scale(1); opacity:0 }
+    }
+
+    /* Swivel arrow burst (brief when hovered) */
+    .burst { opacity:0; transition: opacity .25s ease; }
+    #coin-stack:hover .burst { opacity:1; }
+    .burst rect { animation: shimmer 2.2s ease-in-out infinite; animation-play-state: paused; }
+    #coin-stack:hover .burst rect { animation-play-state: running; }
+    @keyframes shimmer { 0%,100%{opacity:0} 20%,60%{opacity:1} }
+
+    /* Soft shadow helper */
+    .shadow { filter:url(#blur8); opacity:.32 }
+    .shadow.top { opacity:.22 }
+
+    /* Respect reduced motion */
+    @media (prefers-reduced-motion: reduce){
+      .shimmy,.lift,.scan,.particle,.burst rect { animation: none !important }
+      .layer { transition: none !important }
+    }
+  </style>
+
+  <!-- ========== defs ========== -->
+  <defs>
+    <filter id="blur8" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="8"/>
+    </filter>
+
+    <!-- Metal fills -->
+    <linearGradient id="face" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="var(--metal-face)"/>
+      <stop offset="1" stop-color="var(--metal-face-2)"/>
+    </linearGradient>
+    <linearGradient id="edge" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="var(--metal-edge-1)"/>
+      <stop offset="1" stop-color="var(--metal-edge-2)"/>
+    </linearGradient>
+
+    <!-- Top disc clip for scanline -->
+    <clipPath id="topClip">
+      <ellipse cx="400" cy="352" rx="170" ry="50"/>
+    </clipPath>
+
+    <!-- Subtle circuit lines texture -->
+    <pattern id="rings" width="320" height="100" patternUnits="userSpaceOnUse">
+      <g opacity=".55" stroke="#c3cee2" fill="none">
+        <ellipse cx="160" cy="50" rx="140" ry="42"/>
+        <ellipse cx="160" cy="50" rx="120" ry="36" stroke-dasharray="4 6"/>
+        <ellipse cx="160" cy="50" rx="98"  ry="30"/>
+        <ellipse cx="160" cy="50" rx="76"  ry="24" stroke-dasharray="2 6"/>
+        <path d="M160,10 v80" stroke-dasharray="3 7"/>
+        <path d="M122,16 v68"  stroke-dasharray="3 9"/>
+        <path d="M198,16 v68"  stroke-dasharray="3 9"/>
+      </g>
+    </pattern>
+  </defs>
+
+  <!-- ========== Static UI lines (minimal) ========== -->
+  <g stroke="var(--ui)" stroke-width="2" opacity=".35" fill="none" class="nope">
+    <path d="M620,360 v36"/>
+    <path d="M580,330 c10 10 20 10 30 0" opacity=".25"/>
+    <path d="M610,400 v28"/>
+    <circle cx="585" cy="620" r="3"/>
+  </g>
+
+  <!-- ========== Stack (bottom -> top) ========== -->
+  <!-- Helper: a function-like 'coin' drawing done inline (top ellipse + edge ellipse) -->
+  <!-- Layer positions roughly match the reference image -->
+
+  <!-- LAYER 1 (bottom; lilac accent) -->
+  <g class="layer l1" transform="translate(0,0)">
+    <ellipse class="shadow" cx="400" cy="598" rx="160" ry="22" fill="#000"/>
+    <!-- edge -->
+    <ellipse cx="400" cy="578" rx="172" ry="46" fill="url(#edge)" stroke="var(--edge-stroke)" stroke-width="1.5"/>
+    <ellipse cx="400" cy="578" rx="162" ry="40" fill="none" stroke="#cfd7e6" stroke-width="4" stroke-dasharray="6 10" opacity=".5"/>
+    <!-- face -->
+    <ellipse cx="400" cy="560" rx="170" ry="50" fill="url(#face)" stroke="var(--edge-stroke)" stroke-width="1.5"/>
+    <ellipse cx="400" cy="560" rx="156" ry="44" fill="none" stroke="var(--rim)" stroke-width="1"/>
+    <!-- thin colored accent -->
+    <ellipse cx="400" cy="566" rx="135" ry="22" fill="none" stroke="var(--lilac)" stroke-width="6" opacity=".35"/>
+  </g>
+
+  <!-- LAYER 2 (peach accent) -->
+  <g class="layer l2" transform="translate(0,0)">
+    <ellipse class="shadow" cx="400" cy="546" rx="160" ry="22" fill="#000"/>
+    <ellipse cx="400" cy="526" rx="172" ry="46" fill="url(#edge)" stroke="var(--edge-stroke)" stroke-width="1.5"/>
+    <ellipse cx="400" cy="526" rx="162" ry="40" fill="none" stroke="#cfd7e6" stroke-width="4" stroke-dasharray="6 10" opacity=".5"/>
+    <ellipse cx="400" cy="508" rx="170" ry="50" fill="url(#face)" stroke="var(--edge-stroke)" stroke-width="1.5"/>
+    <ellipse cx="400" cy="508" rx="156" ry="44" fill="none" stroke="var(--rim)" stroke-width="1"/>
+    <ellipse cx="400" cy="514" rx="135" ry="22" fill="none" stroke="var(--peach)" stroke-width="6" opacity=".35"/>
+  </g>
+
+  <!-- LAYER 3 (green accent) -->
+  <g class="layer l3" transform="translate(0,0)">
+    <ellipse class="shadow" cx="400" cy="494" rx="160" ry="22" fill="#000"/>
+    <ellipse cx="400" cy="474" rx="172" ry="46" fill="url(#edge)" stroke="var(--edge-stroke)" stroke-width="1.5"/>
+    <ellipse cx="400" cy="474" rx="162" ry="40" fill="none" stroke="#cfd7e6" stroke-width="4" stroke-dasharray="6 10" opacity=".5"/>
+    <ellipse cx="400" cy="456" rx="170" ry="50" fill="url(#face)" stroke="var(--edge-stroke)" stroke-width="1.5"/>
+    <ellipse cx="400" cy="456" rx="156" ry="44" fill="none" stroke="var(--rim)" stroke-width="1"/>
+    <ellipse cx="400" cy="462" rx="135" ry="22" fill="none" stroke="var(--green)" stroke-width="6" opacity=".35"/>
+  </g>
+
+  <!-- LAYER 4 (cyan accent) -->
+  <g class="layer l4 shimmy" transform="translate(0,0)">
+    <ellipse class="shadow" cx="400" cy="442" rx="160" ry="22" fill="#000"/>
+    <ellipse cx="400" cy="422" rx="172" ry="46" fill="url(#edge)" stroke="var(--edge-stroke)" stroke-width="1.5"/>
+    <ellipse cx="400" cy="422" rx="162" ry="40" fill="none" stroke="#cfd7e6" stroke-width="4" stroke-dasharray="6 10" opacity=".5"/>
+    <ellipse cx="400" cy="404" rx="170" ry="50" fill="url(#face)" stroke="var(--edge-stroke)" stroke-width="1.5"/>
+    <ellipse cx="400" cy="404" rx="156" ry="44" fill="none" stroke="var(--rim)" stroke-width="1"/>
+    <ellipse cx="400" cy="410" rx="135" ry="22" fill="none" stroke="var(--cyan)" stroke-width="6" opacity=".35"/>
+  </g>
+
+  <!-- LAYER 5 (top) -->
+  <g class="layer l5 lift" transform="translate(0,0)">
+    <ellipse class="shadow top" cx="400" cy="392" rx="152" ry="18" fill="#000"/>
+    <ellipse cx="400" cy="372" rx="172" ry="46" fill="url(#edge)" stroke="var(--edge-stroke)" stroke-width="1.5"/>
+    <ellipse cx="400" cy="372" rx="162" ry="40" fill="none" stroke="#cfd7e6" stroke-width="4" stroke-dasharray="6 10" opacity=".5"/>
+    <ellipse id="topDisc" cx="400" cy="352" rx="170" ry="50" fill="url(#face)" stroke="var(--edge-stroke)" stroke-width="1.5"/>
+    <ellipse cx="400" cy="352" rx="156" ry="44" fill="none" stroke="var(--rim)" stroke-width="1"/>
+    <!-- faint circuitry texture -->
+    <g clip-path="url(#topClip)" opacity=".55">
+      <rect x="240" y="302" width="320" height="100" fill="url(#rings)"/>
+      <!-- scanline (only on hover) -->
+      <rect class="scan" x="280" y="302" width="60" height="100" fill="#fff" opacity=".12"/>
+    </g>
+  </g>
+
+  <!-- ========== Data particles (rise when hovering) ========== -->
+  <g>
+    <!-- We emit a small group of squares from the top coin center with slight x jitter -->
+    <!-- Tweak x,y/dur/begin to vary the motion; they're CSS-keyframed and paused until hover -->
+    <g fill="#7ae6ff">
+      <rect class="particle" x="398" y="330" width="6" height="6" rx="1" style="animation-duration:4.4s;"></rect>
+      <rect class="particle" x="392" y="330" width="5" height="5" rx="1" style="animation-duration:4.8s; animation-delay:.25s;"></rect>
+      <rect class="particle" x="404" y="330" width="5" height="5" rx="1" style="animation-duration:5s;   animation-delay:.5s;"></rect>
+      <rect class="particle" x="386" y="330" width="4" height="4" rx="1" style="animation-duration:4.6s; animation-delay:.8s;"></rect>
+      <rect class="particle" x="410" y="330" width="4" height="4" rx="1" style="animation-duration:4.2s; animation-delay:1s;"></rect>
+    </g>
+    <g fill="#79f3b8">
+      <rect class="particle" x="370" y="330" width="5" height="5" rx="1" style="animation-duration:4.5s; animation-delay:1.2s;"></rect>
+      <rect class="particle" x="426" y="330" width="5" height="5" rx="1" style="animation-duration:4.6s; animation-delay:1.35s;"></rect>
+      <rect class="particle" x="364" y="330" width="6" height="6" rx="1" style="animation-duration:4.9s; animation-delay:1.6s;"></rect>
+      <rect class="particle" x="432" y="330" width="6" height="6" rx="1" style="animation-duration:4.9s; animation-delay:1.8s;"></rect>
+      <rect class="particle" x="352" y="330" width="5" height="5" rx="1" style="animation-duration:5.1s; animation-delay:2s;"></rect>
+    </g>
+  </g>
+
+  <!-- ========== Tiny pixel arrow burst (appears only while hovered) ========== -->
+  <g class="burst" transform="translate(400,225)">
+    <!-- Up arrow made of 7 pixels -->
+    <rect x="-6" y="8"  width="4" height="4" rx="1" fill="#7ae6ff"/>
+    <rect x="-2" y="4"  width="4" height="4" rx="1" fill="#79f3b8"/>
+    <rect x="2"  y="0"  width="4" height="4" rx="1" fill="#d8b6ff"/>
+    <rect x="6"  y="4"  width="4" height="4" rx="1" fill="#79f3b8"/>
+    <rect x="10" y="8"  width="4" height="4" rx="1" fill="#7ae6ff"/>
+    <rect x="2"  y="8"  width="4" height="4" rx="1" fill="#7ae6ff"/>
+    <rect x="2"  y="12" width="4" height="4" rx="1" fill="#7ae6ff"/>
+  </g>
 </svg>
