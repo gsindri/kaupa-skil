@@ -12,22 +12,7 @@ plugins: [
     react(), 
     svgr({
       svgrOptions: {
-        svgoConfig: {
-          plugins: [
-            {
-              name: 'preset-default',
-              params: {
-                overrides: {
-                  removeViewBox: false,
-                  cleanupIds: false,
-                  removeUselessStrokeAndFill: false,
-                  // Crucial: don't remove style elements for animations
-                  removeStyleElement: false,
-                },
-              },
-            },
-          ],
-        },
+        svgo: false, // Disable SVGO completely to preserve style blocks and animations
       },
     }),
     mode === "development" && componentTagger()
