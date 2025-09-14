@@ -56,8 +56,6 @@ html, body, #root {
   max-width: none !important;
   max-height: none !important;
   flex-shrink: 0 !important;
-  /* Temporary debugging - remove once working */
-  border: 1px solid rgba(255, 0, 0, 0.3) !important;
 }
 
 /* Set a fallback header height so content can offset correctly */
