@@ -17,6 +17,9 @@
         --green-2:#b6ffd8;
         --ring:#1df0ff;               /* cyan highlights */
         --bg-glow: rgba(29,240,255,.55);
+        --tilt-dur: 5.2s;              /* centralized timing */
+        --tilt-ease: ease-in-out;
+        shape-rendering: geometricPrecision;
       }
 
       .ns{ vector-effect: non-scaling-stroke; }
@@ -26,9 +29,10 @@
       /* Beam seesaw: runs after a short "settle" calibration. */
       .beam{
         transform-origin:256px 136px;
+        transform-box: view-box;
         animation:
           settle 1.7s cubic-bezier(.17,.85,.2,1) 0s 1 both,
-          seesaw 5.2s ease-in-out 1.7s infinite alternate;
+          seesaw var(--tilt-dur) var(--tilt-ease) 1.7s infinite alternate;
         will-change: transform;
       }
       @keyframes settle{
@@ -45,15 +49,17 @@
       /* Pans counter-rotate to stay level while beam tilts. */
       .counter-left{
         transform-origin:176px 156px;
+        transform-box: view-box;
         animation:
           counterSettle 1.7s cubic-bezier(.17,.85,.2,1) 0s 1 both,
-          counter 5.2s ease-in-out 1.7s infinite alternate;
+          counter var(--tilt-dur) var(--tilt-ease) 1.7s infinite alternate;
       }
       .counter-right{
         transform-origin:336px 116px;
+        transform-box: view-box;
         animation:
           counterSettle 1.7s cubic-bezier(.17,.85,.2,1) 0s 1 both,
-          counter 5.2s ease-in-out 1.7s infinite alternate-reverse;
+          counter var(--tilt-dur) var(--tilt-ease) 1.7s infinite alternate-reverse;
       }
       @keyframes counterSettle{
         0%{ transform:rotate(8deg); }
@@ -70,12 +76,14 @@
       /* Cross-over orb animations */
       .fly-left-to-right {
         animation: flyLeftToRight 2.5s ease-in-out infinite;
+        will-change: transform, opacity;
       }
       .fly-left-to-right.d2 { animation-delay: .8s; }
       .fly-left-to-right.d3 { animation-delay: 1.6s; }
       
       .fly-right-to-left {
         animation: flyRightToLeft 2.5s ease-in-out infinite;
+        will-change: transform, opacity;
       }
       .fly-right-to-left.d2 { animation-delay: .8s; }
       .fly-right-to-left.d3 { animation-delay: 1.6s; }
@@ -103,7 +111,11 @@
       /* Item spotlight on hover - removed glow filters */
       svg:hover .left-item { transform: translateY(-1px) scale(1.02); }
       svg:hover .right-item{ transform: translateY(-1px) scale(1.02); }
-      .left-item,.right-item{ transition: transform .25s ease; will-change: transform; }
+      .left-item,.right-item{ 
+        transition: transform .25s ease; 
+        will-change: transform; 
+        transform-box: view-box;
+      }
 
       /* Pivot tick and halo "calibration" pulse */
       .pivot-halo{
@@ -150,7 +162,7 @@
 
     <!-- ====== FILTERS & GRADIENTS ====== -->
     <filter id="panelShadow" x="-40%" y="-40%" width="180%" height="200%">
-      <feDropShadow dx="0" dy="3" stdDeviation="6" flood-color="var(--shadow)" flood-opacity=".55"/>
+      <feDropShadow dx="0" dy="3" stdDeviation="6" flood-opacity=".55" style="flood-color: var(--shadow)"/>
     </filter>
 
     <radialGradient id="panGrad" cx="50%" cy="40%" r="75%">
