@@ -83,35 +83,35 @@
 
       /* Cross-over orb animations */
       .fly-left-to-right {
-        animation: flyLeftToRight 3.5s ease-in-out infinite;
+        animation: flyLeftToRight 2.5s ease-in-out infinite;
       }
-      .fly-left-to-right.d2 { animation-delay: .7s; }
-      .fly-left-to-right.d3 { animation-delay: 1.4s; }
+      .fly-left-to-right.d2 { animation-delay: .8s; }
+      .fly-left-to-right.d3 { animation-delay: 1.6s; }
       
       .fly-right-to-left {
-        animation: flyRightToLeft 3.5s ease-in-out infinite;
+        animation: flyRightToLeft 2.5s ease-in-out infinite;
       }
-      .fly-right-to-left.d2 { animation-delay: .7s; }
-      .fly-right-to-left.d3 { animation-delay: 1.4s; }
+      .fly-right-to-left.d2 { animation-delay: .8s; }
+      .fly-right-to-left.d3 { animation-delay: 1.6s; }
 
       @keyframes flyLeftToRight{
-        0%   { transform: translate(0px, 0px) scale(.8); opacity:.0; }
-        15%  { opacity:.9; }
-        25%  { transform: translate(40px, -30px) scale(1); }
-        50%  { transform: translate(120px, -45px) scale(1.1); }
-        75%  { transform: translate(160px, -20px) scale(1); }
-        85%  { opacity:.8; }
-        100% { transform: translate(160px, 4px) scale(.9); opacity:0; }
+        0%   { transform: translate(0px, 0px) scale(.9); opacity:.0; }
+        10%  { opacity:1; }
+        20%  { transform: translate(50px, -40px) scale(1.1); }
+        50%  { transform: translate(130px, -60px) scale(1.2); }
+        80%  { transform: translate(170px, -25px) scale(1.1); }
+        90%  { opacity:.9; }
+        100% { transform: translate(180px, 0px) scale(1); opacity:0; }
       }
 
       @keyframes flyRightToLeft{
-        0%   { transform: translate(0px, 0px) scale(.8); opacity:.0; }
-        15%  { opacity:.9; }
-        25%  { transform: translate(-40px, -30px) scale(1); }
-        50%  { transform: translate(-120px, -45px) scale(1.1); }
-        75%  { transform: translate(-160px, -20px) scale(1); }
-        85%  { opacity:.8; }
-        100% { transform: translate(-160px, 4px) scale(.9); opacity:0; }
+        0%   { transform: translate(0px, 0px) scale(.9); opacity:.0; }
+        10%  { opacity:1; }
+        20%  { transform: translate(-50px, -40px) scale(1.1); }
+        50%  { transform: translate(-130px, -60px) scale(1.2); }
+        80%  { transform: translate(-170px, -25px) scale(1.1); }
+        90%  { opacity:.9; }
+        100% { transform: translate(-180px, 0px) scale(1); opacity:0; }
       }
 
       /* Item spotlight on hover - removed glow filters */
@@ -157,7 +157,7 @@
       /* Respect reduced motion */
       @media (prefers-reduced-motion: reduce){
         .beam, .counter-left, .counter-right, .float, .pivot-halo, .tick,
-        .pulse-purple, .pulse-green { animation: none !important; }
+        .pulse-purple, .pulse-green, .fly-left-to-right, .fly-right-to-left { animation: none !important; }
       }
     </style>
 
