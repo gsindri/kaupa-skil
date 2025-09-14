@@ -1,7 +1,7 @@
-<!-- Neon Data-Scale — Brain for Pinky -->
+<!-- Neon Data-Scale — Cross-over Animation -->
 <svg viewBox="0 0 512 384" role="img" aria-labelledby="title desc"
      xmlns="http://www.w3.org/2000/svg">
-  <title id="title">Animated data comparison scale</title>
+  <title id="title">Animated data comparison scale with cross-over orbs</title>
   <desc id="desc">A stylized balance scale with a purple data block on the left pan and a green globe on the right pan. Subtle seesaw, data-flow particles, pivot calibration, and hover highlights.</desc>
 
   <defs>
