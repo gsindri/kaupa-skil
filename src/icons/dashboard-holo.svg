@@ -15,7 +15,7 @@
       --btn-a:#f59e0b;           /* orange */
       --btn-b:#38bdf8;           /* blue */
       --btn-c:#a78bfa;           /* violet */
-      --grid:#8aa0ff0f;          /* ultra subtle bg grid */
+      --grid:#ffffff1a;          /* subtle white bg grid */
     }
 
     /* Glow filters */
@@ -114,7 +114,7 @@
   <g class="holo glow2">
     <!-- panel body -->
     <rect x="12" y="10" width="40" height="24" rx="4"
-          fill="url(#holoGrad)" stroke="rgba(20,184,166,.55)"/>
+          fill="url(#holoGrad)" stroke="rgba(255,255,255,.75)"/>
     <!-- subtle background map/grid -->
     <rect x="12" y="10" width="40" height="24" rx="4" fill="url(#grid)"/>
 
@@ -133,7 +133,7 @@
 
     <!-- CIRCULAR NETWORK -->
     <g transform="translate(42,22)">
-      <circle r="6.5" stroke="rgba(139,92,246,.7)" stroke-width="1.2" />
+      <circle r="6.5" stroke="rgba(255,255,255,.8)" stroke-width="1.2" />
       <circle class="node" cx="0" cy="-6.5" r="1.2" fill="rgba(139,92,246,1)"/>
       <circle class="node" cx="6.5" cy="0"  r="1.2" fill="rgba(59,130,246,1)"/>
       <circle class="node" cx="0" cy="6.5"  r="1.2" fill="rgba(34,197,94,1)"/>
