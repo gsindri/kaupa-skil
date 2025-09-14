@@ -1,5 +1,5 @@
 <!-- Circular Supply Flow — Optimized for Navigation -->
-<svg width="600" height="600" viewBox="0 0 600 600" role="img" aria-labelledby="t d"
+<svg viewBox="0 0 600 600" role="img" aria-labelledby="t d"
      xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
   <title id="t">Animated circular supply flow</title>
   <desc id="d">Four rounded containers orbit a dashed circular path with pixel trails and a pulse when passing the top.</desc>
