@@ -38,19 +38,26 @@ html, body, #root {
   height: 100%;
 }
 
-/* Navigation rail icon sizing */
+/* Navigation rail icon sizing - More aggressive approach */
 .nav-rail {
-  --icon-size: 68%;
+  --icon-size: 40px; /* Fixed pixel value instead of percentage */
   --icon-stroke: 2;
 }
 
-.nav-rail .nav-icon svg {
+/* Higher specificity selector with more aggressive sizing */
+.nav-rail .nav-icon svg,
+.nav-rail svg {
   width: var(--icon-size) !important;
   height: var(--icon-size) !important;
-  stroke-width: var(--icon-stroke);
-  overflow: visible;
+  min-width: var(--icon-size) !important;
+  min-height: var(--icon-size) !important;
+  stroke-width: var(--icon-stroke) !important;
+  overflow: visible !important;
   max-width: none !important;
   max-height: none !important;
+  flex-shrink: 0 !important;
+  /* Temporary debugging - remove once working */
+  border: 1px solid rgba(255, 0, 0, 0.3) !important;
 }
 
 /* Set a fallback header height so content can offset correctly */
