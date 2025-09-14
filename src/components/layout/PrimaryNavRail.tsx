@@ -4,7 +4,8 @@ import clsx from 'clsx'
 import { NavIcon } from '@/components/ui/NavIcon'
 
 // Import SVG icons as React components
-import DashboardHoloIcon from '@/icons/dashboard-holo.svg?react'
+// dashboard-holo.svg is the primary dashboard icon
+import DashboardIcon from '@/icons/dashboard-holo.svg?react'
 import CatalogIcon from '@/icons/catalog.svg?react'
 import CompareIcon from '@/icons/compare.svg?react'
 import SuppliersIcon from '@/icons/suppliers.svg?react'
@@ -13,7 +14,7 @@ import PriceIcon from '@/icons/price.svg?react'
 import DiscoverIcon from '@/icons/discover.svg?react'
 
 const items = [
-  { to: '/', Icon: DashboardHoloIcon, label: 'Dashboard' },
+  { to: '/', Icon: DashboardIcon, label: 'Dashboard' },
   { to: '/catalog', Icon: CatalogIcon, label: 'Catalog' },
   { to: '/compare', Icon: CompareIcon, label: 'Compare' },
   { to: '/suppliers', Icon: SuppliersIcon, label: 'Suppliers' },
