@@ -11,39 +11,105 @@
 
       --cyan:#7ae6ff; --green:#79f3b8; --peach:#ffc6a3; --lilac:#d8b6ff;
       --ui:#d9e5ff;
+      
+      --shadow-soft: drop-shadow(0 4px 12px rgba(0,0,0,0.15));
+      --shadow-coin: drop-shadow(0 2px 8px rgba(0,0,0,0.2));
+      --shadow-glow: drop-shadow(0 0 8px rgba(122,230,255,0.4));
     }
 
     /* ---------- Global ---------- */
     .nope { pointer-events:none; }
 
     /* ---------- Build/settle via transitions on hover ---------- */
-    .layer { transform: translateY(8px); transition: transform .4s cubic-bezier(.2,.8,.25,1); }
+    .layer { 
+      transform: translateY(12px); 
+      transition: transform .5s cubic-bezier(.2,.8,.25,1);
+      filter: var(--shadow-coin);
+    }
     svg:hover .layer { transform: translateY(0); }
-    .l2 { transition-delay:.03s } .l3 { transition-delay:.06s } .l4 { transition-delay:.09s } .l5 { transition-delay:.12s }
+    .l2 { transition-delay:.05s } 
+    .l3 { transition-delay:.1s } 
+    .l4 { transition-delay:.15s } 
+    .l5 { transition-delay:.2s }
 
     /* Slight horizontal shimmy while hovered */
-    .shimmy { animation: shimmy 4s ease-in-out infinite; animation-play-state: paused; }
+    .shimmy { 
+      animation: shimmy 6s ease-in-out infinite; 
+      animation-play-state: paused; 
+    }
     svg:hover .shimmy { animation-play-state: running; }
-    @keyframes shimmy { 0%,100%{transform:translateX(0)} 50%{transform:translateX(1px)} }
+    @keyframes shimmy { 
+      0%,100%{transform:translateX(0)} 
+      25%{transform:translateX(1px)} 
+      75%{transform:translateX(-0.5px)} 
+    }
 
     /* Top coin lift + micro-tilt on hover */
-    .lift { transform-origin: 400px 352px; animation: lift 5s ease-in-out infinite; animation-play-state: paused; }
+    .lift { 
+      transform-origin: 400px 352px; 
+      animation: lift 8s ease-in-out infinite; 
+      animation-play-state: paused; 
+    }
     svg:hover .lift { animation-play-state: running; }
-    @keyframes lift { 0%,100%{ transform: translateY(0) rotate(.0deg) } 40%{ transform: translateY(-4px) rotate(-.2deg)} 60%{ transform: translateY(-2px) rotate(.1deg)} }
+    @keyframes lift { 
+      0%,100%{ transform: translateY(0) rotate(0deg) } 
+      30%{ transform: translateY(-6px) rotate(-0.3deg)} 
+      70%{ transform: translateY(-3px) rotate(0.2deg)} 
+    }
 
-    /* Rising pixel particles */
-    .particle { animation: rise 3s linear infinite; animation-play-state: paused; }
+    /* Enhanced particle system */
+    .particle { 
+      animation: rise 4s linear infinite; 
+      animation-play-state: paused; 
+      filter: var(--shadow-glow);
+    }
     svg:hover .particle { animation-play-state: running; }
     @keyframes rise {
-      0%   { transform: translateY(0) scale(.8); opacity:0 }
-      20%  { opacity:1 }
-      80%  { opacity:1 }
-      100% { transform: translateY(-80px) scale(1); opacity:0 }
+      0%   { transform: translateY(0) scale(0.6); opacity:0 }
+      15%  { opacity:0.8 }
+      85%  { opacity:0.6 }
+      100% { transform: translateY(-120px) scale(1.2); opacity:0 }
+    }
+
+    /* Scanline effect */
+    .scanline {
+      animation: scan 3s ease-in-out infinite;
+      animation-play-state: paused;
+    }
+    svg:hover .scanline { animation-play-state: running; }
+    @keyframes scan {
+      0%   { transform: translateY(60px); opacity: 0 }
+      20%  { opacity: 0.6 }
+      80%  { opacity: 0.4 }
+      100% { transform: translateY(-40px); opacity: 0 }
+    }
+
+    /* Arrow burst effect */
+    .arrow {
+      animation: burst 2.5s ease-out infinite;
+      animation-play-state: paused;
+    }
+    svg:hover .arrow { animation-play-state: running; }
+    @keyframes burst {
+      0%   { transform: scale(0.8); opacity: 0 }
+      30%  { transform: scale(1.1); opacity: 0.8 }
+      100% { transform: scale(1.3); opacity: 0 }
+    }
+
+    /* Circuit texture animation */
+    .circuit {
+      animation: circuit-flow 4s linear infinite;
+      animation-play-state: paused;
+    }
+    svg:hover .circuit { animation-play-state: running; }
+    @keyframes circuit-flow {
+      0%   { stroke-dashoffset: 0 }
+      100% { stroke-dashoffset: 20 }
     }
 
     /* Respect reduced motion */
     @media (prefers-reduced-motion: reduce){
-      .shimmy,.lift,.particle { animation: none !important }
+      .shimmy,.lift,.particle,.scanline,.arrow,.circuit { animation: none !important }
       .layer { transition: none !important }
     }
   </style>
@@ -59,56 +125,111 @@
       <stop offset="0" stop-color="var(--metal-edge-1)"/>
       <stop offset="1" stop-color="var(--metal-edge-2)"/>
     </linearGradient>
+    
+    <!-- Enhanced gradients -->
+    <radialGradient id="coin-highlight" cx="0.3" cy="0.3" r="0.8">
+      <stop offset="0" stop-color="rgba(255,255,255,0.4)"/>
+      <stop offset="1" stop-color="rgba(255,255,255,0.1)"/>
+    </radialGradient>
+    
+    <!-- Filters -->
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge> 
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
   </defs>
 
   <!-- ========== Stack (bottom -> top) ========== -->
-  <!-- Helper: a function-like 'coin' drawing done inline (top ellipse + edge ellipse) -->
-  <!-- Layer positions roughly match the reference image -->
 
   <!-- LAYER 1 (bottom; lilac accent) -->
   <g class="layer l1">
     <ellipse cx="400" cy="578" rx="150" ry="40" fill="url(#edge)" stroke="var(--edge-stroke)" stroke-width="1"/>
     <ellipse cx="400" cy="560" rx="148" ry="42" fill="url(#face)" stroke="var(--edge-stroke)" stroke-width="1"/>
-    <ellipse cx="400" cy="566" rx="120" ry="18" fill="none" stroke="var(--lilac)" stroke-width="4" opacity=".4"/>
+    <ellipse cx="400" cy="560" rx="148" ry="42" fill="url(#coin-highlight)" opacity="0.3"/>
+    <ellipse cx="400" cy="566" rx="120" ry="18" fill="none" stroke="var(--lilac)" stroke-width="4" opacity=".5"/>
+    <!-- Circuit texture -->
+    <ellipse cx="400" cy="566" rx="100" ry="15" fill="none" stroke="var(--lilac)" stroke-width="1" 
+             stroke-dasharray="3,2" opacity=".3" class="circuit"/>
   </g>
 
   <!-- LAYER 2 (peach accent) -->
   <g class="layer l2">
     <ellipse cx="400" cy="526" rx="150" ry="40" fill="url(#edge)" stroke="var(--edge-stroke)" stroke-width="1"/>
     <ellipse cx="400" cy="508" rx="148" ry="42" fill="url(#face)" stroke="var(--edge-stroke)" stroke-width="1"/>
-    <ellipse cx="400" cy="514" rx="120" ry="18" fill="none" stroke="var(--peach)" stroke-width="4" opacity=".4"/>
+    <ellipse cx="400" cy="508" rx="148" ry="42" fill="url(#coin-highlight)" opacity="0.3"/>
+    <ellipse cx="400" cy="514" rx="120" ry="18" fill="none" stroke="var(--peach)" stroke-width="4" opacity=".5"/>
+    <ellipse cx="400" cy="514" rx="100" ry="15" fill="none" stroke="var(--peach)" stroke-width="1" 
+             stroke-dasharray="3,2" opacity=".3" class="circuit"/>
   </g>
 
   <!-- LAYER 3 (green accent) -->
   <g class="layer l3">
     <ellipse cx="400" cy="474" rx="150" ry="40" fill="url(#edge)" stroke="var(--edge-stroke)" stroke-width="1"/>
     <ellipse cx="400" cy="456" rx="148" ry="42" fill="url(#face)" stroke="var(--edge-stroke)" stroke-width="1"/>
-    <ellipse cx="400" cy="462" rx="120" ry="18" fill="none" stroke="var(--green)" stroke-width="4" opacity=".4"/>
+    <ellipse cx="400" cy="456" rx="148" ry="42" fill="url(#coin-highlight)" opacity="0.3"/>
+    <ellipse cx="400" cy="462" rx="120" ry="18" fill="none" stroke="var(--green)" stroke-width="4" opacity=".5"/>
+    <ellipse cx="400" cy="462" rx="100" ry="15" fill="none" stroke="var(--green)" stroke-width="1" 
+             stroke-dasharray="3,2" opacity=".3" class="circuit"/>
   </g>
 
   <!-- LAYER 4 (cyan accent) -->
   <g class="layer l4 shimmy">
     <ellipse cx="400" cy="422" rx="150" ry="40" fill="url(#edge)" stroke="var(--edge-stroke)" stroke-width="1"/>
     <ellipse cx="400" cy="404" rx="148" ry="42" fill="url(#face)" stroke="var(--edge-stroke)" stroke-width="1"/>
-    <ellipse cx="400" cy="410" rx="120" ry="18" fill="none" stroke="var(--cyan)" stroke-width="4" opacity=".4"/>
+    <ellipse cx="400" cy="404" rx="148" ry="42" fill="url(#coin-highlight)" opacity="0.3"/>
+    <ellipse cx="400" cy="410" rx="120" ry="18" fill="none" stroke="var(--cyan)" stroke-width="4" opacity=".5"/>
+    <ellipse cx="400" cy="410" rx="100" ry="15" fill="none" stroke="var(--cyan)" stroke-width="1" 
+             stroke-dasharray="3,2" opacity=".3" class="circuit"/>
   </g>
 
   <!-- LAYER 5 (top) -->
   <g class="layer l5 lift">
     <ellipse cx="400" cy="370" rx="150" ry="40" fill="url(#edge)" stroke="var(--edge-stroke)" stroke-width="1"/>
     <ellipse cx="400" cy="352" rx="148" ry="42" fill="url(#face)" stroke="var(--edge-stroke)" stroke-width="1"/>
+    <ellipse cx="400" cy="352" rx="148" ry="42" fill="url(#coin-highlight)" opacity="0.4"/>
+    <!-- Top coin gets special treatment -->
+    <ellipse cx="400" cy="358" rx="110" ry="16" fill="none" stroke="var(--cyan)" stroke-width="2" opacity=".6"/>
+    <ellipse cx="400" cy="358" rx="85" ry="12" fill="none" stroke="var(--cyan)" stroke-width="1" 
+             stroke-dasharray="4,3" opacity=".4" class="circuit"/>
   </g>
 
-  <!-- ========== Data particles (rise when hovering) ========== -->
+  <!-- ========== Enhanced Effects ========== -->
+  
+  <!-- Scanline effect -->
+  <rect x="250" y="320" width="300" height="2" fill="url(#face)" opacity="0.6" class="scanline"/>
+
+  <!-- Data particles (enhanced system) -->
   <g>
-    <g fill="#7ae6ff">
-      <rect class="particle" x="398" y="340" width="4" height="4" rx="1" style="animation-duration:3s;"></rect>
-      <rect class="particle" x="392" y="340" width="3" height="3" rx="1" style="animation-duration:3.2s; animation-delay:.2s;"></rect>
-      <rect class="particle" x="404" y="340" width="3" height="3" rx="1" style="animation-duration:3.4s; animation-delay:.4s;"></rect>
+    <g fill="var(--cyan)" filter="url(#glow)">
+      <rect class="particle" x="398" y="340" width="4" height="4" rx="1" style="animation-duration:4s; animation-delay:0s;"/>
+      <rect class="particle" x="392" y="340" width="3" height="3" rx="1" style="animation-duration:4.2s; animation-delay:.3s;"/>
+      <rect class="particle" x="404" y="340" width="3" height="3" rx="1" style="animation-duration:4.4s; animation-delay:.6s;"/>
+      <rect class="particle" x="386" y="340" width="2" height="2" rx="1" style="animation-duration:3.8s; animation-delay:.9s;"/>
+      <rect class="particle" x="410" y="340" width="2" height="2" rx="1" style="animation-duration:4.1s; animation-delay:1.2s;"/>
     </g>
-    <g fill="#79f3b8">
-      <rect class="particle" x="380" y="340" width="3" height="3" rx="1" style="animation-duration:3.1s; animation-delay:.6s;"></rect>
-      <rect class="particle" x="416" y="340" width="3" height="3" rx="1" style="animation-duration:3.3s; animation-delay:.8s;"></rect>
+    <g fill="var(--green)" filter="url(#glow)">
+      <rect class="particle" x="380" y="340" width="3" height="3" rx="1" style="animation-duration:4.1s; animation-delay:1.5s;"/>
+      <rect class="particle" x="416" y="340" width="3" height="3" rx="1" style="animation-duration:4.3s; animation-delay:1.8s;"/>
+      <rect class="particle" x="374" y="340" width="2" height="2" rx="1" style="animation-duration:3.9s; animation-delay:2.1s;"/>
+      <rect class="particle" x="422" y="340" width="2" height="2" rx="1" style="animation-duration:4.0s; animation-delay:2.4s;"/>
     </g>
+    <g fill="var(--peach)" filter="url(#glow)">
+      <rect class="particle" x="368" y="340" width="2" height="2" rx="1" style="animation-duration:3.7s; animation-delay:2.7s;"/>
+      <rect class="particle" x="428" y="340" width="2" height="2" rx="1" style="animation-duration:4.2s; animation-delay:3.0s;"/>
+    </g>
+  </g>
+
+  <!-- Arrow burst indicators -->
+  <g class="arrow" style="animation-delay: 1s;">
+    <polygon points="385,320 400,305 415,320 400,335" fill="var(--cyan)" opacity="0.4" filter="url(#glow)"/>
+  </g>
+  <g class="arrow" style="animation-delay: 1.8s;">
+    <polygon points="375,315 390,300 405,315 390,330" fill="var(--green)" opacity="0.3" filter="url(#glow)"/>
+  </g>
+  <g class="arrow" style="animation-delay: 2.6s;">
+    <polygon points="395,315 410,300 425,315 410,330" fill="var(--peach)" opacity="0.3" filter="url(#glow)"/>
   </g>
 </svg>
