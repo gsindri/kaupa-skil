@@ -24,42 +24,36 @@
 
     /* Holo pulse */
     .holo { opacity:.92; }
-    svg:hover .holo,
-    svg[data-active="true"] .holo { animation: holoPulse 1.6s ease-in-out infinite alternate; }
+    svg:hover .holo { animation: holoPulse 1.6s ease-in-out infinite alternate; }
 
     /* Bar rise */
     .bar    { transform-box: fill-box; transform-origin: bottom center; transform: scaleY(.25); }
-    svg:hover .bars .bar:nth-child(1),
-    svg[data-active="true"] .bars .bar:nth-child(1) { animation: rise .38s .05s ease-out forwards; }
-    svg:hover .bars .bar:nth-child(2),
-    svg[data-active="true"] .bars .bar:nth-child(2) { animation: rise .42s .12s ease-out forwards; }
-    svg:hover .bars .bar:nth-child(3),
-    svg[data-active="true"] .bars .bar:nth-child(3) { animation: rise .46s .20s ease-out forwards; }
-    svg:hover .bars .bar:nth-child(4),
-    svg[data-active="true"] .bars .bar:nth-child(4) { animation: rise .50s .28s ease-out forwards; }
+    svg:hover .bars .bar:nth-child(1) { animation: rise .38s .05s ease-out forwards; }
+    svg:hover .bars .bar:nth-child(2) { animation: rise .42s .12s ease-out forwards; }
+    svg:hover .bars .bar:nth-child(3) { animation: rise .46s .20s ease-out forwards; }
+    svg:hover .bars .bar:nth-child(4) { animation: rise .50s .28s ease-out forwards; }
 
     /* Line draw */
     .trend { stroke-dasharray:120; stroke-dashoffset:120; }
-    svg:hover .trend, svg[data-active="true"] .trend { animation: draw .7s .18s ease-out forwards; }
+    svg:hover .trend { animation: draw .7s .18s ease-out forwards; }
 
     /* Network twinkle */
     .node { opacity:.55; }
-    svg:hover .node,
-    svg[data-active="true"] .node { animation: twinkle 1.6s ease-in-out infinite alternate; }
+    svg:hover .node { animation: twinkle 1.6s ease-in-out infinite alternate; }
     .node:nth-child(odd){ animation-delay:.2s; }
     .node:nth-child(2){ animation-delay:.45s; }
     .node:nth-child(3){ animation-delay:.7s; }
 
     /* Connectivity packets (moving dashes) */
     .flow { stroke-dasharray:1 6; }
-    svg:hover .flow, svg[data-active="true"] .flow { animation: flow 1.2s linear infinite; }
+    svg:hover .flow { animation: flow 1.2s linear infinite; }
 
     /* Console subtle breathing */
-    svg:hover .console, svg[data-active="true"] .console { animation: breathe 2.2s ease-in-out infinite; }
+    svg:hover .console { animation: breathe 2.2s ease-in-out infinite; }
 
     /* Buttons brighten/press */
     .btn { transform-box: fill-box; transform-origin:center; }
-    svg:hover .btn, svg[data-active="true"] .btn { animation: press .35s ease-out; }
+    svg:hover .btn { animation: press .35s ease-out; }
 
     /* Motion safety */
     @media (prefers-reduced-motion: reduce){
