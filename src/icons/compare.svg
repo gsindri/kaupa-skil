@@ -108,9 +108,9 @@
         100% { transform: translate(-180px, 0px) scale(1); opacity:0; }
       }
 
-      /* Item spotlight on hover - removed glow filters */
-      svg:hover .left-item { transform: translateY(-1px) scale(1.02); }
-      svg:hover .right-item{ transform: translateY(-1px) scale(1.02); }
+      /* Item spotlight on hover - swap positions */
+      svg:hover .left-item { transform: translate(160px, -1px) scale(1.02); }
+      svg:hover .right-item{ transform: translate(-160px, -1px) scale(1.02); }
       .left-item,.right-item{ 
         transition: transform .25s ease; 
         will-change: transform; 
