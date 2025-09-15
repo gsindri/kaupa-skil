@@ -16,7 +16,6 @@ export function NavIcon({ Icon, active, size = 28, className, label }: IconProps
         "nav-icon grid w-12 h-12 place-items-center rounded-xl transition-all duration-200",
         "bg-transparent overflow-visible" // No background squares - let the icon shine and allow overflow
       )}
-      aria-label={label}
     >
       <Icon
         data-active={active}

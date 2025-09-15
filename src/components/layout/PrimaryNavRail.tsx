@@ -56,7 +56,7 @@ export function PrimaryNavRail() {
               active={active}
               label={label}
             />
-            <span className="mt-1 text-[10px] leading-3">{label}</span>
+            <span className="mt-1.5 text-xs leading-4">{label}</span>
           </Link>
         )
       })}
