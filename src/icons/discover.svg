@@ -1,5 +1,253 @@
-<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <circle cx="11" cy="11" r="8" fill="none" stroke="currentColor" stroke-width="2"/>
-  <path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-  <circle cx="11" cy="11" r="3" fill="currentColor"/>
+<!-- Discover — Magnifying Glass (centered wooden handle, white ring) -->
+<svg id="discover" viewBox="0 0 512 512" role="img" aria-labelledby="title desc"
+     xmlns="http://www.w3.org/2000/svg"
+     style="--ink:#eaf0f7;--ring:#ffffff;--ring2:#ffffff;--line:#0f2031;--glass:#132231;--teal:#2ee6d6;--green:#7cffb0;--orange:#ffb36b;--violet:#b79cff;--gray:#cfd7e4;--shadow:#0a1522;--dot:#6db3d9; shape-rendering:geometricPrecision;">
+  <title id="title">Discover</title>
+  <desc id="desc">A centered magnifying glass with a wooden handle performs a small sweep, wipes fog from the lens to reveal four cubes on a dotted orbit, emits a discovery pulse, then idles. All motion only on hover (or with data-active="true").</desc>
+
+  <defs>
+    <!-- soft outer glow -->
+    <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="3.5" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+
+    <!-- subtle lens inner shadow -->
+    <filter id="inset" x="-50%" y="-50%" width="200%" height="200%">
+      <feOffset dx="0" dy="1" />
+      <feGaussianBlur stdDeviation="1.2" result="g"/>
+      <feComposite in2="SourceAlpha" in="g" operator="arithmetic" k2="-1" k3="1"/>
+    </filter>
+
+    <!-- metal ferrule -->
+    <linearGradient id="metal" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f3f7fb"/>
+      <stop offset=".55" stop-color="#dfe9f3"/>
+      <stop offset="1" stop-color="#c9d6e3"/>
+    </linearGradient>
+
+    <!-- lens gloss -->
+    <linearGradient id="gloss" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fff" stop-opacity=".75"/>
+      <stop offset=".6" stop-color="#fff" stop-opacity=".05"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+    </linearGradient>
+
+    <!-- WOOD: body + subtle grain -->
+    <linearGradient id="wood" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0"  stop-color="#d9a96a"/>
+      <stop offset=".5" stop-color="#bf8a53"/>
+      <stop offset="1"  stop-color="#a9713e"/>
+    </linearGradient>
+
+    <!-- reveal mask -->
+    <mask id="wipeMask">
+      <rect width="512" height="512" fill="black"/>
+      <rect class="wipe" x="102" y="102" width="308" height="308" rx="120" ry="120" fill="white"/>
+    </mask>
+
+    <!-- tiny “spark” square -->
+    <symbol id="bit" viewBox="-2 -2 4 4"><rect x="-2" y="-2" width="4" height="4" rx=".6"/></symbol>
+
+    <!-- cube base and variants (64×64 viewBox centered) -->
+    <symbol id="cube-base" viewBox="-32 -32 64 64">
+      <rect x="-22" y="-22" width="44" height="44" rx="9" fill="rgba(255,255,255,.06)" stroke="var(--ink)" stroke-width="1.5"/>
+      <rect x="-22" y="-22" width="44" height="44" rx="9" fill="none" stroke="var(--dot)" stroke-opacity=".5" stroke-width="1"/>
+    </symbol>
+
+    <!-- Data (teal circuits) -->
+    <symbol id="cube-data" viewBox="-32 -32 64 64">
+      <use href="#cube-base"/>
+      <g stroke="var(--teal)" stroke-width="2" fill="none" opacity=".95">
+        <rect x="-14" y="-10" width="28" height="18" rx="4"/>
+        <path class="shim" d="M-12 -4h8v8m6-8v12m6-12h8m-26-8v4m-8 0h6m18 16h8"/>
+      </g>
+    </symbol>
+
+    <!-- Inventory (green grid) -->
+    <symbol id="cube-inv" viewBox="-32 -32 64 64">
+      <use href="#cube-base"/>
+      <g stroke="var(--green)" stroke-width="1.8" fill="none" opacity=".95">
+        <rect x="-14" y="-10" width="28" height="20" rx="4"/>
+        <path d="M-14 0h28M0 -10v20"/>
+        <circle cx="0" cy="0" r="10" opacity=".6"/>
+      </g>
+    </symbol>
+
+    <!-- Neutral (gray) -->
+    <symbol id="cube-neutral" viewBox="-32 -32 64 64">
+      <use href="#cube-base"/>
+      <rect x="-12" y="-12" width="24" height="24" rx="6"
+            fill="rgba(255,255,255,.12)" stroke="var(--gray)" stroke-width="2"/>
+    </symbol>
+
+    <!-- Events (violet/orange bits) -->
+    <symbol id="cube-bits" viewBox="-32 -32 64 64">
+      <use href="#cube-base"/>
+      <rect x="-14" y="-10" width="28" height="20" rx="5"
+            fill="rgba(255,255,255,.08)" stroke="var(--violet)" stroke-width="2"/>
+      <g fill="var(--orange)">
+        <use href="#bit" x="-6" y="-2"/><use href="#bit" x="-2" y="2"/>
+        <use href="#bit" x="4"  y="-3"/><use href="#bit" x="8"  y="1"/>
+        <use href="#bit" x="-9" y="4"/>
+      </g>
+    </symbol>
+
+    <style>
+      .cap{stroke-linecap:round;stroke-linejoin:round}
+      .ns{vector-effect:non-scaling-stroke}
+      .nofill{fill:none}
+      .faint{opacity:.55}
+      .hint{opacity:.3}
+
+      /* ---------- Hover gating (paused until hover) ---------- */
+      .wipe, .draw, .pulseAnim, .burst, .jig, .sweep, .hoverLock { animation: none; }
+      #discover:hover .shim, #discover[data-active="true"] .shim { animation: shim 3.6s linear infinite; }
+
+      /* Sweep: translate+rotate (always on-screen), then gentle wobble while hovered */
+      .sweep { transform-origin:256px 256px; }
+      #discover:hover .sweep,
+      #discover[data-active="true"] .sweep{
+        animation:
+          sweepOnce 0.95s ease-in-out both,
+          hoverLock 3.2s 0.95s ease-in-out infinite;
+      }
+      @keyframes sweepOnce{
+        0%   { transform: translate(-10px,-6px) rotate(-3deg); }
+        45%  { transform: translate(10px,  6px) rotate( 2deg); }
+        65%  { transform: translate( 4px,  2px) rotate(-1deg); }
+        100% { transform: translate( 0px,  0px) rotate( 0deg); }
+      }
+      @keyframes hoverLock{
+        0%   { transform: translate(0,0) rotate(0deg); }
+        50%  { transform: translate(2px,-1px) rotate(.8deg); }
+        100% { transform: translate(0,0) rotate(0deg); }
+      }
+
+      /* Wipe reveal */
+      .wipe{ transform-origin:256px 256px; transform:scale(0); }
+      #discover:hover .wipe,
+      #discover[data-active="true"] .wipe{ animation: wipeIn 1.1s .25s ease-out both; }
+      @keyframes wipeIn{ to{ transform:scale(1); } }
+
+      /* Orbit draw (dotted) */
+      .dash { stroke-dasharray:4 8; stroke-dashoffset:220; }
+      #discover:hover .draw,
+      #discover[data-active="true"] .draw{ animation: draw 1.1s .35s ease-out forwards; }
+      @keyframes draw{ to{ stroke-dashoffset:0 } }
+
+      /* Discovery pulse ring */
+      .pulse { transform-origin:256px 256px; opacity:0; }
+      #discover:hover .pulseAnim,
+      #discover[data-active="true"] .pulseAnim{ animation: pulse 1s .58s ease-out both; }
+      @keyframes pulse{
+        0%{ opacity:0; transform:scale(.6) }
+        20%{ opacity:.9; transform:scale(1) }
+        100%{ opacity:0; transform:scale(1.35) }
+      }
+
+      /* Cube jiggle as focus snaps in */
+      .cube{ transform-box:fill-box; transform-origin:center; }
+      #discover:hover .jig,
+      #discover[data-active="true"] .jig{ animation: jig .5s .58s cubic-bezier(.2,.9,.2,1) both; }
+      @keyframes jig{
+        0%{ transform:translate(0,0) scale(1) }
+        40%{ transform:translate(0,-2px) scale(1.05) }
+        100%{ transform:translate(0,0) scale(1) }
+      }
+
+      /* Bits burst from center */
+      .bits rect{ opacity:0 }
+      #discover:hover .burst,
+      #discover[data-active="true"] .burst{ animation: burst .85s .58s ease-out both; }
+      @keyframes burst{
+        0%{ opacity:0; transform:translate(0,0) scale(.9) }
+        25%{ opacity:1 }
+        100%{ opacity:0; transform:translate(var(--dx),var(--dy)) scale(1.05) }
+      }
+
+      /* shimmer (data cube detail) */
+      .shim{ stroke-dasharray:3 6; }
+      @keyframes shim{ to{ stroke-dashoffset:-36 } }
+
+      /* reduced motion */
+      @media (prefers-reduced-motion:reduce){ *{ animation: none !important } }
+    </style>
+  </defs>
+
+  <!-- background confetti (static) -->
+  <g fill="var(--dot)" opacity=".65">
+    <rect x="110" y="120" width="4" height="4" rx=".6"/>
+    <rect x="398" y="142" width="4" height="4" rx=".6"/>
+    <rect x="420" y="352" width="4" height="4" rx=".6"/>
+    <rect x="120" y="356" width="4" height="4" rx=".6"/>
+    <rect x="156" y="390" width="3" height="3" rx=".5"/>
+    <rect x="448" y="188" width="3" height="3" rx=".5"/>
+  </g>
+
+  <!-- ===== MAGNIFYING GLASS (centered, wooden handle) ===== -->
+  <g class="sweep">
+    <!-- ring (white) -->
+    <g filter="url(#glow)">
+      <circle cx="256" cy="256" r="140" fill="none" stroke="var(--ring2)" stroke-width="10" opacity=".95"/>
+      <circle cx="256" cy="256" r="132" fill="none" stroke="var(--ring)"  stroke-width="6"  opacity=".95"/>
+    </g>
+
+    <!-- glass -->
+    <circle cx="256" cy="256" r="124" fill="var(--glass)" filter="url(#inset)"/>
+    <!-- gloss arcs -->
+    <path d="M196 206a95 95 0 0 1 42-32" stroke="url(#gloss)" stroke-width="12" fill="none" opacity=".55"/>
+    <path d="M330 330a95 95 0 0 0 38-30" stroke="url(#gloss)" stroke-width="10" fill="none" opacity=".35"/>
+
+    <!-- handle: centered at 6 o'clock, vertical downward -->
+    <!-- attach point: slightly inside outer ring to feel connected -->
+    <g transform="translate(256,392)">
+      <!-- ferrule (metal collar) -->
+      <rect x="-18" y="-18" width="36" height="20" rx="10" fill="url(#metal)" stroke="#c1ccd8" stroke-width="1.5"/>
+      <rect x="-14" y="-16" width="28" height="16" rx="8" fill="none" stroke="#9fb0bf" stroke-width="1" opacity=".8"/>
+      <!-- wooden handle body -->
+      <rect x="-16" y="2" width="32" height="118" rx="16" fill="url(#wood)" stroke="#7a532f" stroke-width="1.6"/>
+      <!-- wood grain lines -->
+      <g stroke="#7a532f" stroke-opacity=".35" fill="none">
+        <path d="M-8 8 q6 8 0 16 t0 16 t0 16 t0 16"/>
+        <path d="M4 12 q-5 7 0 14 t0 14 t0 14 t0 14"/>
+        <path d="M0 10 q2 6 -2 12 t2 12 t-2 12 t2 12"/>
+      </g>
+      <!-- end cap -->
+      <ellipse cx="0" cy="120" rx="16" ry="10" fill="#9b6a3b" stroke="#7a532f" stroke-width="1.4"/>
+    </g>
+
+    <!-- contents (masked by wipe) -->
+    <g mask="url(#wipeMask)">
+      <!-- dotted orbit + small arrows -->
+      <path class="dash draw" d="M256,210 a92,92 0 1,1 0,184 a92,92 0 1,1 0,-184"
+            stroke="var(--ink)" stroke-width="2.2" fill="none" opacity=".85"/>
+      <g class="hint" fill="var(--ink)">
+        <g transform="translate(256,210) rotate(20)"><path d="M0 0 l6 -4 v8z"/></g>
+        <g transform="translate(348,302) rotate(110)"><path d="M0 0 l6 -4 v8z"/></g>
+        <g transform="translate(256,394) rotate(200)"><path d="M0 0 l6 -4 v8z"/></g>
+        <g transform="translate(164,302) rotate(290)"><path d="M0 0 l6 -4 v8z"/></g>
+      </g>
+
+      <!-- four cubes -->
+      <g>
+        <g class="cube jig" transform="translate(318,224)"><use href="#cube-inv"    width="44" height="44" x="-22" y="-22"/></g>
+        <g class="cube jig" transform="translate(318,344)"><use href="#cube-bits"   width="44" height="44" x="-22" y="-22"/></g>
+        <g class="cube jig" transform="translate(194,344)"><use href="#cube-neutral" width="44" height="44" x="-22" y="-22"/></g>
+        <g class="cube jig" transform="translate(194,224)"><use href="#cube-data"   width="44" height="44" x="-22" y="-22"/></g>
+      </g>
+    </g>
+
+    <!-- discovery pulse on lens -->
+    <circle class="pulse pulseAnim" cx="256" cy="256" r="94" stroke="var(--ring)" stroke-width="5" fill="none" opacity=".9"/>
+  </g>
+
+  <!-- outward data burst (outside lens) -->
+  <g class="bits">
+    <rect class="burst" x="256" y="256" width="4" height="4" rx=".7" fill="var(--violet)" style="--dx:-80px; --dy:-60px"/>
+    <rect class="burst" x="256" y="256" width="4" height="4" rx=".7" fill="var(--teal)"   style="--dx:96px;  --dy:-40px"/>
+    <rect class="burst" x="256" y="256" width="4" height="4" rx=".7" fill="var(--green)"  style="--dx:70px;  --dy:76px"/>
+    <rect class="burst" x="256" y="256" width="4" height="4" rx=".7" fill="var(--orange)" style="--dx:-92px; --dy:72px"/>
+    <rect class="burst" x="256" y="256" width="3" height="3" rx=".6" fill="var(--ink)"    style="--dx:-18px; --dy:-110px"/>
+  </g>
 </svg>
