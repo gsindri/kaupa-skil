@@ -23,7 +23,7 @@
       .nofill{ fill:none }
 
       /* ===== ORBIT & GLOBAL HOVER GATING ===== */
-      .orbit-stroke{ stroke-dasharray:8 12; }
+      .orbit-stroke{ stroke-dasharray:6 8; }
       svg:hover .orbit-stroke{ animation: orbitSweep 8s linear infinite; }
       @keyframes orbitSweep { to { stroke-dashoffset:-240 } }
 
@@ -133,7 +133,7 @@
     <!-- SUPPLIER FACTORY (teal) -->
     <symbol id="iconFactory" viewBox="-32 -32 64 64">
       <!-- subtle backplate ring stays within 64×64 so radius is uniform -->
-      <circle r="28" fill="rgba(255,255,255,.12)" stroke="var(--teal)" stroke-width="2" opacity=".35"/>
+      <circle r="28" fill="rgba(255,255,255,.12)" stroke="var(--teal)" stroke-width="1" opacity=".15"/>
       <!-- building -->
       <path d="M-22 10h44v14h-44z" fill="rgba(255,255,255,.06)" stroke="var(--teal)" stroke-width="2"/>
       <rect x="-22" y="-4" width="16" height="14" rx="2"
@@ -178,7 +178,7 @@
   <!-- Orbit (dashed) + arrows -->
   <g class="cap nofill">
     <path d="M300,100 a200,200 0 1,1 0,400 a200,200 0 1,1 0,-400"
-          class="orbit-stroke ns" stroke="var(--dash)" stroke-width="4"/>
+          class="orbit-stroke ns" stroke="var(--dash)" stroke-width="2"/>
     <g fill="var(--dot)">
       <g transform="translate(461,129) rotate(50)"><path d="M0 0 l10 -6 v12z"/></g>
       <g transform="translate(110,422) rotate(190)"><path d="M0 0 l10 -6 v12z"/></g>
@@ -191,7 +191,7 @@
   <!-- TOP: DELIVERY TRUCK (orange) -->
   <g class="pkg pkg--top">
     <g class="mover">
-      <circle class="pulse p0" r="28" stroke="var(--orange)" stroke-width="4" fill="none"/>
+      <circle class="pulse p0" r="26" stroke="var(--orange)" stroke-width="2" fill="none"/>
       <g class="trail" fill="var(--orange)">
         <rect x="14" y="-2" width="4" height="4" rx="1"/>
         <rect x="18" y="2"  width="3" height="3" rx=".8"/>
@@ -206,7 +206,7 @@
   <!-- RIGHT: HANDSHAKE (teal) -->
   <g class="pkg pkg--right">
     <g class="mover">
-      <circle class="pulse p1" r="28" stroke="var(--teal)" stroke-width="4" fill="none"/>
+      <circle class="pulse p1" r="26" stroke="var(--teal)" stroke-width="2" fill="none"/>
       <g class="trail" fill="var(--teal)">
         <rect x="14" y="-2" width="4" height="4" rx="1"/>
         <rect x="18" y="2"  width="3" height="3" rx=".8"/>
@@ -221,7 +221,7 @@
   <!-- BOTTOM: BOXES (green) -->
   <g class="pkg pkg--bottom">
     <g class="mover">
-      <circle class="pulse p2" r="28" stroke="var(--green)" stroke-width="4" fill="none"/>
+      <circle class="pulse p2" r="26" stroke="var(--green)" stroke-width="2" fill="none"/>
       <g class="trail" fill="var(--green)">
         <rect x="14" y="-2" width="4" height="4" rx="1"/>
         <rect x="18" y="2"  width="3" height="3" rx=".8"/>
@@ -236,7 +236,7 @@
   <!-- LEFT: SUPPLIER FACTORY (teal) -->
   <g class="pkg pkg--left">
     <g class="mover">
-      <circle class="pulse p3" r="28" stroke="var(--teal)" stroke-width="4" fill="none"/>
+      <circle class="pulse p3" r="26" stroke="var(--teal)" stroke-width="2" fill="none"/>
       <g class="trail" fill="var(--teal)">
         <rect x="14" y="-2" width="4" height="4" rx="1"/>
         <rect x="18" y="2"  width="3" height="3" rx=".8"/>
