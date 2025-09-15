@@ -17,14 +17,14 @@
 
     <style>
       svg {
-        --cover: #1b3a5a;
-        --back-cover: #152a42;
-        --spine: #284d76;
+        --cover: #c6d9f0;
+        --back-cover: #b8d0e8;
+        --spine: #a5c2e3;
         --page: #f7f5ef;
         --page-edge: #e6e2d6;
-        --page-turn: #214764;
+        --page-turn: #9bbee0;
         --reveal: #d9e6f7;
-        --ink: #0f2740;
+        --ink: #7a9bc4;
         --accent: #22d3ee;
         --dot: #33e17a;
         --ribbon: #ff5a7a;
