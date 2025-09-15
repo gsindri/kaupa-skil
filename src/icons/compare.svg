@@ -1,5 +1,5 @@
 <!-- Neon Data-Scale — hover-only arc swap via CSS motion-path (landing fixed + smooth reverse on mouseout) -->
-<svg id="scale" viewBox="0 0 512 384" aria-labelledby="title desc"
+<svg id="scale" viewBox="0 0 600 600" aria-labelledby="title desc"
      xmlns="http://www.w3.org/2000/svg"
      style="--ink:#e9eef6;--shadow:#0b1420;--stroke:#0a1b29;--purple:#a64dff;--purple-2:#d188ff;--green:#33f083;--green-2:#b6ffd8;--ring:#1df0ff;--bg-glow:rgba(29,240,255,.55);shape-rendering:geometricPrecision">
   <title id="title">Animated data comparison scale with cross-over orbs</title>
@@ -60,11 +60,11 @@
         /* transition here so mouseout reverses smoothly */
         transition: offset-distance .9s cubic-bezier(.2,.8,.2,1);
       }
-      .left-item .swap{
-        offset-path: path('M 0 0 C 80 -56 160 -56 160 0');
+  .left-item .swap{
+        offset-path: path('M 0 0 C 100 -70 200 -70 200 0');
       }
       .right-item .swap{
-        offset-path: path('M 0 0 C -80 -56 -160 -56 -160 0');
+        offset-path: path('M 0 0 C -100 -70 -200 -70 -200 0');
       }
       /* On hover, drive to 100%; on mouseout, transition back to 0% */
       svg:hover .left-item .swap,
@@ -80,98 +80,98 @@
   </defs>
 
   <!-- base shadow -->
-  <ellipse cx="256" cy="312" rx="86" ry="16" fill="var(--shadow)" opacity=".35"/>
+  <ellipse cx="300" cy="420" rx="100" ry="18" fill="var(--shadow)" opacity=".35"/>
 
   <!-- column + pivot -->
   <g class="cap" stroke="var(--stroke)">
     <g filter="url(#panelShadow)">
-      <path d="M206 300h100c6 0 10-4 10-9v-6c0-5-4-9-10-9H206c-6 0-10 4-10 9v6c0 5 4 9 10 9m16-24h68v-10c0-4-3-7-7-7h-54c-4 0-7 3-7 7z"
+      <path d="M244 408h112c7 0 12-5 12-10v-7c0-6-5-10-12-10H244c-7 0-12 4-12 10v7c0 5 5 10 12 10m18-28h76v-12c0-5-4-8-8-8h-60c-5 0-8 3-8 8z"
             fill="var(--ink)" stroke-width="2"/>
     </g>
-    <rect x="246" y="176" width="20" height="100" rx="6" fill="var(--ink)" stroke-width="2"/>
-    <rect x="242" y="168" width="28" height="16" rx="6" fill="var(--ink)" stroke-width="2"/>
-    <circle cx="256" cy="136" r="14" fill="var(--ink)" stroke-width="2"/>
-    <circle cx="256" cy="136" r="8"  fill="#a4b9cc" stroke-width="1.5"/>
+    <rect x="288" y="264" width="24" height="117" rx="7" fill="var(--ink)" stroke-width="2"/>
+    <rect x="283" y="256" width="34" height="18" rx="7" fill="var(--ink)" stroke-width="2"/>
+    <circle cx="300" cy="218" r="16" fill="var(--ink)" stroke-width="2"/>
+    <circle cx="300" cy="218" r="9"  fill="#a4b9cc" stroke-width="1.5"/>
   </g>
 
   <!-- beam + pans (drawn before items) -->
   <g>
     <g class="cap" stroke="var(--stroke)">
-      <rect x="164" y="128" width="184" height="16" rx="8" fill="var(--ink)" stroke-width="2"/>
-      <path d="M176 136h48m64 0h48" stroke="var(--ring)" stroke-width="3" opacity=".7"/>
+      <rect x="184" y="210" width="232" height="20" rx="10" fill="var(--ink)" stroke-width="2"/>
+      <path d="M200 220h60m80 0h60" stroke="var(--ring)" stroke-width="3" opacity=".7"/>
     </g>
 
     <!-- LEFT PAN -->
     <g>
       <g class="cap" stroke="var(--stroke)" stroke-width="2">
-        <circle cx="176" cy="136" r="6" fill="#a4b9cc"/>
-        <path d="M176 142l-28 46M176 142l28 46" fill="none"/>
+        <circle cx="200" cy="220" r="7" fill="#a4b9cc"/>
+        <path d="M200 227l-35 57M200 227l35 57" fill="none"/>
       </g>
-      <ellipse cx="176" cy="200" rx="56" ry="10" fill="var(--shadow)" opacity=".35"/>
+      <ellipse cx="200" cy="300" rx="68" ry="12" fill="var(--shadow)" opacity=".35"/>
       <g filter="url(#panelShadow)">
-        <ellipse cx="176" cy="194" rx="58" ry="16" fill="url(#panGrad)"/>
-        <ellipse class="ring-purple pulse-purple" cx="176" cy="194" rx="58" ry="16" fill="none"
-                 stroke="var(--purple)" stroke-width="4" opacity=".6"/>
+        <ellipse cx="200" cy="292" rx="70" ry="20" fill="url(#panGrad)"/>
+        <ellipse class="ring-purple pulse-purple" cx="200" cy="292" rx="70" ry="20" fill="none"
+                 stroke="var(--purple)" stroke-width="5" opacity=".6"/>
       </g>
     </g>
 
     <!-- RIGHT PAN -->
     <g>
       <g class="cap" stroke="var(--stroke)" stroke-width="2">
-        <circle cx="336" cy="136" r="6" fill="#a4b9cc"/>
-        <path d="M336 142l-28 46M336 142l28 46" fill="none"/>
+        <circle cx="400" cy="220" r="7" fill="#a4b9cc"/>
+        <path d="M400 227l-35 57M400 227l35 57" fill="none"/>
       </g>
-      <ellipse cx="336" cy="200" rx="56" ry="10" fill="var(--shadow)" opacity=".35"/>
+      <ellipse cx="400" cy="300" rx="68" ry="12" fill="var(--shadow)" opacity=".35"/>
       <g filter="url(#panelShadow)">
-        <ellipse cx="336" cy="194" rx="58" ry="16" fill="url(#panGrad)"/>
-        <ellipse class="ring-green pulse-green" cx="336" cy="194" rx="58" ry="16" fill="none"
-                 stroke="var(--green)" stroke-width="4" opacity=".6"/>
+        <ellipse cx="400" cy="292" rx="70" ry="20" fill="url(#panGrad)"/>
+        <ellipse class="ring-green pulse-green" cx="400" cy="292" rx="70" ry="20" fill="none"
+                 stroke="var(--green)" stroke-width="5" opacity=".6"/>
       </g>
     </g>
   </g>
 
   <!-- ITEMS (drawn last so they land ON TOP of both pans) -->
   <g>
-    <!-- LEFT ITEM at (176,190) -->
-    <g class="left-item" transform="translate(176 190)">
-      <ellipse cy="6" rx="34" ry="6" fill="var(--purple)" opacity=".2"/>
+    <!-- LEFT ITEM at (200,288) -->
+    <g class="left-item" transform="translate(200 288)">
+      <ellipse cy="8" rx="42" ry="8" fill="var(--purple)" opacity=".2"/>
       <g class="swap">
         <!-- block -->
-        <rect x="-22" y="-34" width="44" height="44" rx="6" fill="#2b1d3f" stroke="var(--purple-2)" stroke-width="2"/>
-        <rect x="-22" y="-46" width="44" height="12" rx="6" fill="#331c58" stroke="var(--purple-2)" stroke-width="2"/>
-        <rect x="-22" y="-58" width="44" height="12" rx="6" fill="#3a1e6d" stroke="var(--purple-2)" stroke-width="2"/>
-        <path d="M-11-34v44M0-34v44m11-44v44m-33-33h44m-44 11h44M-22-1h44m-44 11h44"
+        <rect x="-26" y="-42" width="52" height="52" rx="7" fill="#2b1d3f" stroke="var(--purple-2)" stroke-width="2"/>
+        <rect x="-26" y="-56" width="52" height="14" rx="7" fill="#331c58" stroke="var(--purple-2)" stroke-width="2"/>
+        <rect x="-26" y="-72" width="52" height="14" rx="7" fill="#3a1e6d" stroke="var(--purple-2)" stroke-width="2"/>
+        <path d="M-13-42v52M0-42v52m13-42v52m-39-39h52m-52 13h52M-26-1h52m-52 13h52"
               stroke="var(--purple-2)" opacity=".9"/>
       </g>
 
       <!-- particles (hover only) -->
-      <rect class="fly-left-to-right"  x="-38" y="-12" width="6" height="6" rx="1.2" fill="var(--purple-2)"/>
-      <rect class="fly-left-to-right"   x="-6" y="-20" width="4" height="4" rx="1"   fill="var(--purple)"/>
-      <rect class="fly-left-to-right d3" x="30" y="-18" width="5" height="5" rx="1.1" fill="var(--purple-2)"/>
-      <rect class="fly-left-to-right d2" x="-26" y="-28" width="4" height="4" rx="1"   fill="var(--purple)"/>
-      <rect class="fly-left-to-right d3" x="16"  y="-30" width="6" height="6" rx="1.2" fill="var(--purple-2)"/>
+      <rect class="fly-left-to-right"  x="-46" y="-14" width="7" height="7" rx="1.4" fill="var(--purple-2)"/>
+      <rect class="fly-left-to-right"   x="-7" y="-24" width="5" height="5" rx="1.2"   fill="var(--purple)"/>
+      <rect class="fly-left-to-right d3" x="36" y="-22" width="6" height="6" rx="1.3" fill="var(--purple-2)"/>
+      <rect class="fly-left-to-right d2" x="-31" y="-34" width="5" height="5" rx="1.2"   fill="var(--purple)"/>
+      <rect class="fly-left-to-right d3" x="19"  y="-36" width="7" height="7" rx="1.4" fill="var(--purple-2)"/>
     </g>
 
-    <!-- RIGHT ITEM at (336,190) -->
-    <g class="right-item" transform="translate(336 190)">
-      <ellipse cy="6" rx="34" ry="6" fill="var(--green)" opacity=".2"/>
+    <!-- RIGHT ITEM at (400,288) -->
+    <g class="right-item" transform="translate(400 288)">
+      <ellipse cy="8" rx="42" ry="8" fill="var(--green)" opacity=".2"/>
       <g class="swap">
         <!-- globe -->
-        <circle cy="-16" r="24" fill="#112e22" stroke="var(--green-2)" stroke-width="2"/>
-        <g stroke="var(--green-2)" stroke-width="1.5" fill="none" opacity=".95">
-          <ellipse cy="-16" rx="24" ry="8"/>
-          <ellipse cy="-16" rx="24" ry="16"/>
-          <path d="M-24-16a24 24 0 0 0 48 0"/>
-          <path d="M-12-40c-5 7-8 15-8 24s-3 17 8 24m24-48c5 7 8 15 8 24S17 1 12 8"/>
+        <circle cy="-20" r="28" fill="#112e22" stroke="var(--green-2)" stroke-width="2"/>
+        <g stroke="var(--green-2)" stroke-width="1.8" fill="none" opacity=".95">
+          <ellipse cy="-20" rx="28" ry="10"/>
+          <ellipse cy="-20" rx="28" ry="19"/>
+          <path d="M-28-20a28 28 0 0 0 56 0"/>
+          <path d="M-14-48c-6 8-9 18-9 28s-4 20 9 28m28-56c6 8 9 18 9 28S20 1 14 8"/>
         </g>
       </g>
 
       <!-- particles (hover only) -->
-      <rect class="fly-right-to-left"  x="-38" y="-22" width="5" height="5" rx="1.1" fill="var(--green-2)"/>
-      <rect class="fly-right-to-left"   x="-8"  y="-32" width="4" height="4" rx="1"   fill="var(--green)"/>
-      <rect class="fly-right-to-left d3" x="30"  y="-26" width="6" height="6" rx="1.2" fill="var(--green-2)"/>
-      <rect class="fly-right-to-left d2" x="-22" y="-40" width="4" height="4" rx="1"   fill="var(--green)"/>
-      <rect class="fly-right-to-left d3" x="16"  y="-36" width="5" height="5" rx="1.1" fill="var(--green-2)"/>
+      <rect class="fly-right-to-left"  x="-46" y="-26" width="6" height="6" rx="1.3" fill="var(--green-2)"/>
+      <rect class="fly-right-to-left"   x="-10"  y="-38" width="5" height="5" rx="1.2"   fill="var(--green)"/>
+      <rect class="fly-right-to-left d3" x="36"  y="-31" width="7" height="7" rx="1.4" fill="var(--green-2)"/>
+      <rect class="fly-right-to-left d2" x="-26" y="-48" width="5" height="5" rx="1.2"   fill="var(--green)"/>
+      <rect class="fly-right-to-left d3" x="19"  y="-43" width="6" height="6" rx="1.3" fill="var(--green-2)"/>
     </g>
   </g>
 </svg>

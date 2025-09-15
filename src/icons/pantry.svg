@@ -1,5 +1,5 @@
 <!-- Pantry Icon — stack from under shelves; returns on hover-out (fixed clipping) -->
-<svg id="pantryIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" role="img" aria-label="Two-tier white-wood shelf with hover-activated stacking animation">
+<svg id="pantryIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" role="img" aria-label="Two-tier white-wood shelf with hover-activated stacking animation">
   <style>
     :root{
       --floor-top: 220px; /* distance from floor to top-shelf landing */
@@ -91,7 +91,7 @@
   </defs>
 
   <!-- POSTS -->
-  <g transform="translate(0,80)">
+  <g transform="translate(0,40)">
     <rect x="156" y="238" width="24" height="332" rx="12" fill="url(#woodTop)" stroke="#ffffff" stroke-width="2"/>
     <rect x="460" y="238" width="24" height="332" rx="12" fill="url(#woodTop)" stroke="#ffffff" stroke-width="2"/>
     <g fill="url(#brass)" stroke="#9b8031" stroke-width="1">
@@ -101,7 +101,7 @@
   </g>
 
   <!-- ===== TOP SHELF ===== -->
-  <g transform="translate(0,80)">
+  <g transform="translate(0,40)">
     <!-- plane -->
     <polygon id="topPlane" points="190,280 450,280 480,320 160,320" fill="url(#woodTop)"/>
     <clipPath id="clipTopPlane"><use href="#topPlane"/></clipPath>
@@ -178,7 +178,7 @@
   </g>
 
   <!-- ===== BOTTOM SHELF ===== -->
-  <g transform="translate(0,80)">
+  <g transform="translate(0,40)">
     <polygon id="botPlane" points="190,510 450,510 480,550 160,550" fill="url(#woodTop)"/>
     <clipPath id="clipBotPlane"><use href="#botPlane"/></clipPath>
     <rect x="160" y="510" width="320" height="40" fill="url(#grain)" opacity=".5" clip-path="url(#clipBotPlane)"/>

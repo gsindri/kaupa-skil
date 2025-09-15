@@ -1,5 +1,5 @@
 <!-- Fan-to-Stack Coins — transparent bg, detailed idle, hover=movement -->
-<svg id="coins-fan-stack" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" role="img" aria-label="Exploded coin layers that assemble into a stack on hover">
+<svg id="coins-fan-stack" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" role="img" aria-label="Exploded coin layers that assemble into a stack on hover">
   <title>Exploded → Stacked Coins (hover)</title>
 
   <style>
@@ -19,7 +19,7 @@
     .l2{transition-delay:.06s}.l3{transition-delay:.12s}.l4{transition-delay:.18s}.l5{transition-delay:.24s}
 
     /* Top coin micro-lift/tilt once stacked */
-    .topLift{ transform-origin:400px 352px; animation: lift 7s ease-in-out infinite; animation-play-state: paused; }
+    .topLift{ transform-origin:300px 264px; animation: lift 7s ease-in-out infinite; animation-play-state: paused; }
     #coins-fan-stack:hover .topLift{ animation-play-state: running; }
     @keyframes lift{ 0%,100%{transform:translateY(0) rotate(0)} 40%{transform:translateY(-8px) rotate(-.4deg)} 60%{transform:translateY(-4px) rotate(.18deg)} }
 
@@ -34,7 +34,7 @@
     @keyframes scan{ from{transform:translateX(-220px)} to{transform:translateX(220px)} }
 
     /* Orbit → drop pixels */
-    .orbit{ transform-origin:400px 300px; animation: spin 3.6s linear infinite; animation-play-state: paused; }
+    .orbit{ transform-origin:300px 225px; animation: spin 3.6s linear infinite; animation-play-state: paused; }
     #coins-fan-stack:hover .orbit{ animation-play-state: running; }
     @keyframes spin{ to{ transform: rotate(360deg) } }
     .drop{ animation: drop 1.2s ease-in forwards; animation-play-state: paused; }
@@ -63,7 +63,7 @@
       <stop offset="0" stop-color="var(--edge1)"/><stop offset="1" stop-color="var(--edge2)"/>
     </linearGradient>
     <!-- top-disc clip for scanline & texture -->
-    <clipPath id="topClip"><ellipse cx="400" cy="352" rx="170" ry="50"/></clipPath>
+    <clipPath id="topClip"><ellipse cx="300" cy="264" rx="128" ry="38"/></clipPath>
 
     <!-- etched circuitry texture (more detail) -->
     <pattern id="rings" width="320" height="100" patternUnits="userSpaceOnUse">
@@ -88,90 +88,90 @@
 
   <!-- ===== UI doodles (static, for fun/detail) ===== -->
   <g stroke="var(--ui)" stroke-width="2" opacity=".45" fill="none">
-    <path d="M610,400 v28"/>
-    <path d="M585,330 c10 10 20 10 30 0"/>
-    <path d="M210,470 q-30 20 -30 54" opacity=".4"/>
-    <circle cx="585" cy="620" r="3" opacity=".4"/>
-    <path d="M250,630 h-80" opacity=".35"/>
-    <path d="M620,360 v36" opacity=".5"/>
+    <path d="M458,300 v21"/>
+    <path d="M439,248 c8 8 15 8 23 0"/>
+    <path d="M158,353 q-23 15 -23 41" opacity=".4"/>
+    <circle cx="439" cy="465" r="2" opacity=".4"/>
+    <path d="M188,473 h-60" opacity=".35"/>
+    <path d="M465,270 v27" opacity=".5"/>
   </g>
   <!-- swoosh arcs around the stack -->
   <g stroke="var(--ui)" stroke-width="2" opacity=".35" fill="none">
-    <path d="M520,448 q50 30 0 60"/>
-    <path d="M285,520 q-48 28 0 56"/>
-    <path d="M270,600 q-40 24 0 44"/>
+    <path d="M390,336 q38 23 0 45"/>
+    <path d="M214,390 q-36 21 0 42"/>
+    <path d="M203,450 q-30 18 0 33"/>
   </g>
 
   <!-- ===== LAYERS (bottom → top). Idle = fanned/exploded with rotation/offset.
        The prospective top coin starts up-left and ABOVE, not blocking others. ===== -->
 
   <!-- LAYER 1 (bottom; lilac accent) -->
-  <g class="layer l1" style="--idle: translate(-120px,40px) rotate(-8deg); --stack: translate(0,0) rotate(0);">
-    <ellipse class="shadow" cx="400" cy="598" rx="160" ry="22" fill="#000"/>
-    <ellipse cx="400" cy="578" rx="172" ry="46" fill="url(#edge)" stroke="var(--edgeStroke)"/>
-    <ellipse cx="400" cy="578" rx="162" ry="40" fill="none" stroke="#cfd7e6" stroke-width="4" stroke-dasharray="6 10" opacity=".5"/>
-    <ellipse cx="400" cy="560" rx="170" ry="50" fill="url(#face)" stroke="var(--edgeStroke)"/>
-    <ellipse cx="400" cy="560" rx="156" ry="44" fill="none" stroke="var(--rim)" stroke-width="1"/>
-    <ellipse cx="400" cy="566" rx="135" ry="22" fill="none" stroke="var(--lilac)" stroke-width="6" opacity=".22"/>
+  <g class="layer l1" style="--idle: translate(-90px,30px) rotate(-8deg); --stack: translate(0,0) rotate(0);">
+    <ellipse class="shadow" cx="300" cy="449" rx="120" ry="17" fill="#000"/>
+    <ellipse cx="300" cy="434" rx="129" ry="35" fill="url(#edge)" stroke="var(--edgeStroke)"/>
+    <ellipse cx="300" cy="434" rx="122" ry="30" fill="none" stroke="#cfd7e6" stroke-width="3" stroke-dasharray="5 8" opacity=".5"/>
+    <ellipse cx="300" cy="420" rx="128" ry="38" fill="url(#face)" stroke="var(--edgeStroke)"/>
+    <ellipse cx="300" cy="420" rx="117" ry="33" fill="none" stroke="var(--rim)" stroke-width="1"/>
+    <ellipse cx="300" cy="425" rx="101" ry="17" fill="none" stroke="var(--lilac)" stroke-width="5" opacity=".22"/>
   </g>
 
   <!-- LAYER 2 (peach) -->
-  <g class="layer l2" style="--idle: translate(110px,10px) rotate(9deg); --stack: translate(0,0) rotate(0);">
-    <ellipse class="shadow" cx="400" cy="546" rx="160" ry="22" fill="#000"/>
-    <ellipse cx="400" cy="526" rx="172" ry="46" fill="url(#edge)" stroke="var(--edgeStroke)"/>
-    <ellipse cx="400" cy="526" rx="162" ry="40" fill="none" stroke="#cfd7e6" stroke-width="4" stroke-dasharray="6 10" opacity=".5"/>
-    <ellipse cx="400" cy="508" rx="170" ry="50" fill="url(#face)" stroke="var(--edgeStroke)"/>
-    <ellipse cx="400" cy="508" rx="156" ry="44" fill="none" stroke="var(--rim)" stroke-width="1"/>
-    <ellipse cx="400" cy="514" rx="135" ry="22" fill="none" stroke="var(--peach)" stroke-width="6" opacity=".22"/>
+  <g class="layer l2" style="--idle: translate(83px,8px) rotate(9deg); --stack: translate(0,0) rotate(0);">
+    <ellipse class="shadow" cx="300" cy="410" rx="120" ry="17" fill="#000"/>
+    <ellipse cx="300" cy="395" rx="129" ry="35" fill="url(#edge)" stroke="var(--edgeStroke)"/>
+    <ellipse cx="300" cy="395" rx="122" ry="30" fill="none" stroke="#cfd7e6" stroke-width="3" stroke-dasharray="5 8" opacity=".5"/>
+    <ellipse cx="300" cy="381" rx="128" ry="38" fill="url(#face)" stroke="var(--edgeStroke)"/>
+    <ellipse cx="300" cy="381" rx="117" ry="33" fill="none" stroke="var(--rim)" stroke-width="1"/>
+    <ellipse cx="300" cy="386" rx="101" ry="17" fill="none" stroke="var(--peach)" stroke-width="5" opacity=".22"/>
   </g>
 
   <!-- LAYER 3 (green) -->
-  <g class="layer l3" style="--idle: translate(-90px,-18px) rotate(6deg); --stack: translate(0,0) rotate(0);">
-    <ellipse class="shadow" cx="400" cy="494" rx="160" ry="22" fill="#000"/>
-    <ellipse cx="400" cy="474" rx="172" ry="46" fill="url(#edge)" stroke="var(--edgeStroke)"/>
-    <ellipse cx="400" cy="474" rx="162" ry="40" fill="none" stroke="#cfd7e6" stroke-width="4" stroke-dasharray="6 10" opacity=".5"/>
-    <ellipse cx="400" cy="456" rx="170" ry="50" fill="url(#face)" stroke="var(--edgeStroke)"/>
-    <ellipse cx="400" cy="456" rx="156" ry="44" fill="none" stroke="var(--rim)" stroke-width="1"/>
-    <ellipse cx="400" cy="462" rx="135" ry="22" fill="none" stroke="var(--green)" stroke-width="6" opacity=".22"/>
+  <g class="layer l3" style="--idle: translate(-68px,-14px) rotate(6deg); --stack: translate(0,0) rotate(0);">
+    <ellipse class="shadow" cx="300" cy="371" rx="120" ry="17" fill="#000"/>
+    <ellipse cx="300" cy="356" rx="129" ry="35" fill="url(#edge)" stroke="var(--edgeStroke)"/>
+    <ellipse cx="300" cy="356" rx="122" ry="30" fill="none" stroke="#cfd7e6" stroke-width="3" stroke-dasharray="5 8" opacity=".5"/>
+    <ellipse cx="300" cy="342" rx="128" ry="38" fill="url(#face)" stroke="var(--edgeStroke)"/>
+    <ellipse cx="300" cy="342" rx="117" ry="33" fill="none" stroke="var(--rim)" stroke-width="1"/>
+    <ellipse cx="300" cy="347" rx="101" ry="17" fill="none" stroke="var(--green)" stroke-width="5" opacity=".22"/>
   </g>
 
   <!-- LAYER 4 (cyan) with gear-milling drift -->
-  <g class="layer l4" style="--idle: translate(88px,-36px) rotate(-10deg); --stack: translate(0,0) rotate(0);">
-    <ellipse class="shadow" cx="400" cy="442" rx="160" ry="22" fill="#000"/>
-    <ellipse cx="400" cy="422" rx="172" ry="46" fill="url(#edge)" stroke="var(--edgeStroke)"/>
-    <ellipse class="gear" cx="400" cy="422" rx="162" ry="40" fill="none" stroke="#cfd7e6" stroke-width="4" opacity=".55"/>
-    <ellipse cx="400" cy="404" rx="170" ry="50" fill="url(#face)" stroke="var(--edgeStroke)"/>
-    <ellipse cx="400" cy="404" rx="156" ry="44" fill="none" stroke="var(--rim)" stroke-width="1"/>
-    <ellipse cx="400" cy="410" rx="135" ry="22" fill="none" stroke="var(--cyan)" stroke-width="6" opacity=".22"/>
+  <g class="layer l4" style="--idle: translate(66px,-27px) rotate(-10deg); --stack: translate(0,0) rotate(0);">
+    <ellipse class="shadow" cx="300" cy="332" rx="120" ry="17" fill="#000"/>
+    <ellipse cx="300" cy="317" rx="129" ry="35" fill="url(#edge)" stroke="var(--edgeStroke)"/>
+    <ellipse class="gear" cx="300" cy="317" rx="122" ry="30" fill="none" stroke="#cfd7e6" stroke-width="3" opacity=".55"/>
+    <ellipse cx="300" cy="303" rx="128" ry="38" fill="url(#face)" stroke="var(--edgeStroke)"/>
+    <ellipse cx="300" cy="303" rx="117" ry="33" fill="none" stroke="var(--rim)" stroke-width="1"/>
+    <ellipse cx="300" cy="308" rx="101" ry="17" fill="none" stroke="var(--cyan)" stroke-width="5" opacity=".22"/>
   </g>
 
   <!-- LAYER 5 (top) — starts up-left ABOVE others (not blocking) -->
-  <g class="layer l5 topLift" style="--idle: translate(-140px,-90px) rotate(12deg); --stack: translate(0,0) rotate(0);">
-    <ellipse class="shadow top" cx="400" cy="392" rx="152" ry="18" fill="#000"/>
-    <ellipse cx="400" cy="372" rx="172" ry="46" fill="url(#edge)" stroke="var(--edgeStroke)"/>
-    <ellipse cx="400" cy="372" rx="162" ry="40" fill="none" stroke="#cfd7e6" stroke-width="4" stroke-dasharray="6 10" opacity=".5"/>
-    <ellipse id="topDisc" cx="400" cy="352" rx="170" ry="50" fill="url(#face)" stroke="var(--edgeStroke)"/>
-    <ellipse cx="400" cy="352" rx="156" ry="44" fill="none" stroke="var(--rim)" stroke-width="1"/>
+  <g class="layer l5 topLift" style="--idle: translate(-105px,-68px) rotate(12deg); --stack: translate(0,0) rotate(0);">
+    <ellipse class="shadow top" cx="300" cy="294" rx="114" ry="14" fill="#000"/>
+    <ellipse cx="300" cy="279" rx="129" ry="35" fill="url(#edge)" stroke="var(--edgeStroke)"/>
+    <ellipse cx="300" cy="279" rx="122" ry="30" fill="none" stroke="#cfd7e6" stroke-width="3" stroke-dasharray="5 8" opacity=".5"/>
+    <ellipse id="topDisc" cx="300" cy="264" rx="128" ry="38" fill="url(#face)" stroke="var(--edgeStroke)"/>
+    <ellipse cx="300" cy="264" rx="117" ry="33" fill="none" stroke="var(--rim)" stroke-width="1"/>
     <!-- detailed etched texture + scanline -->
     <g clip-path="url(#topClip)" opacity=".6">
-      <rect x="240" y="302" width="320" height="100" fill="url(#rings)"/>
-      <rect class="scan" x="370" y="302" width="60" height="100" fill="#fff"/>
+      <rect x="180" y="227" width="240" height="75" fill="url(#rings)"/>
+      <rect class="scan" x="278" y="227" width="45" height="75" fill="#fff"/>
     </g>
   </g>
 
   <!-- ===== Particles: orbit while hovered, then drop into center ===== -->
   <g>
     <g class="orbit" fill="#7ae6ff" opacity=".75">
-      <rect x="520" y="280" width="6" height="6" rx="1"/>
-      <rect x="280" y="320" width="5" height="5" rx="1"/>
-      <rect x="460" y="230" width="4" height="4" rx="1"/>
-      <rect x="340" y="240" width="5" height="5" rx="1"/>
+      <rect x="390" y="210" width="5" height="5" rx="1"/>
+      <rect x="210" y="240" width="4" height="4" rx="1"/>
+      <rect x="345" y="173" width="3" height="3" rx="1"/>
+      <rect x="255" y="180" width="4" height="4" rx="1"/>
     </g>
     <!-- three quick drops triggered on hover -->
     <g fill="#79f3b8">
-      <rect class="drop" x="400" y="250" width="5" height="5" rx="1" style="animation-delay:.2s"/>
-      <rect class="drop" x="390" y="245" width="5" height="5" rx="1" style="animation-delay:.5s"/>
-      <rect class="drop" x="410" y="248" width="5" height="5" rx="1" style="animation-delay:.8s"/>
+      <rect class="drop" x="300" y="188" width="4" height="4" rx="1" style="animation-delay:.2s"/>
+      <rect class="drop" x="293" y="184" width="4" height="4" rx="1" style="animation-delay:.5s"/>
+      <rect class="drop" x="308" y="186" width="4" height="4" rx="1" style="animation-delay:.8s"/>
     </g>
   </g>
 </svg>
