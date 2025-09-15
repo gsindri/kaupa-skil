@@ -1,307 +1,175 @@
-<!-- Neon Data-Scale — Cross-over Animation -->
-<svg viewBox="0 0 512 384" role="img" aria-labelledby="title desc"
-     xmlns="http://www.w3.org/2000/svg">
+<!-- Neon Data-Scale — hover-only arc swap via CSS motion-path (landing fixed by drawing items last) -->
+<svg id="scale" viewBox="0 0 512 384" aria-labelledby="title desc"
+     xmlns="http://www.w3.org/2000/svg"
+     style="--ink:#e9eef6;--shadow:#0b1420;--stroke:#0a1b29;--purple:#a64dff;--purple-2:#d188ff;--green:#33f083;--green-2:#b6ffd8;--ring:#1df0ff;--bg-glow:rgba(29,240,255,.55);shape-rendering:geometricPrecision">
   <title id="title">Animated data comparison scale with cross-over orbs</title>
-  <desc id="desc">A stylized balance scale with a purple data block on the left pan and a green globe on the right pan. Subtle seesaw, data-flow particles, pivot calibration, and hover highlights.</desc>
+  <desc id="desc">On hover: the purple data block arcs to the right pan and the green globe arcs to the left pan. Particles/rings animate. No motion at rest.</desc>
 
   <defs>
-    <!-- ====== THEME TOKENS ====== -->
-    <style>
-      svg{
-        --ink:#e9eef6;                 /* scale body */
-        --shadow:#0b1420;
-        --stroke:#0a1b29;
-        --purple:#a64dff;
-        --purple-2:#d188ff;
-        --green:#33f083;
-        --green-2:#b6ffd8;
-        --ring:#1df0ff;               /* cyan highlights */
-        --bg-glow: rgba(29,240,255,.55);
-        --tilt-dur: 5.2s;              /* centralized timing */
-        --tilt-ease: ease-in-out;
-        shape-rendering: geometricPrecision;
-      }
-
-      .ns{ vector-effect: non-scaling-stroke; }
-      .cap{ stroke-linecap:round; stroke-linejoin:round; }
-
-      /* ====== MOTION ====== */
-      /* Beam seesaw: runs after a short "settle" calibration. */
-      .beam{
-        transform-origin:256px 136px;
-        transform-box: view-box;
-        animation:
-          settle 1.7s cubic-bezier(.17,.85,.2,1) 0s 1 both,
-          seesaw var(--tilt-dur) var(--tilt-ease) 1.7s infinite alternate;
-        will-change: transform;
-      }
-      @keyframes settle{
-        0%{ transform:rotate(-8deg); }
-        55%{ transform:rotate(3deg); }
-        80%{ transform:rotate(-1.2deg); }
-        100%{ transform:rotate(.6deg); }
-      }
-      @keyframes seesaw{
-        from{ transform:rotate(-4.5deg); }
-        to  { transform:rotate(4.5deg);  }
-      }
-
-      /* Pans counter-rotate to stay level while beam tilts. */
-      .counter-left{
-        transform-origin:176px 156px;
-        transform-box: view-box;
-        animation:
-          counterSettle 1.7s cubic-bezier(.17,.85,.2,1) 0s 1 both,
-          counter var(--tilt-dur) var(--tilt-ease) 1.7s infinite alternate;
-      }
-      .counter-right{
-        transform-origin:336px 116px;
-        transform-box: view-box;
-        animation:
-          counterSettle 1.7s cubic-bezier(.17,.85,.2,1) 0s 1 both,
-          counter var(--tilt-dur) var(--tilt-ease) 1.7s infinite alternate-reverse;
-      }
-      @keyframes counterSettle{
-        0%{ transform:rotate(8deg); }
-        55%{ transform:rotate(-3deg); }
-        80%{ transform:rotate(1.2deg); }
-        100%{ transform:rotate(-.6deg); }
-      }
-      @keyframes counter{
-        from{ transform:rotate(4.5deg); }
-        to  { transform:rotate(-4.5deg); }
-      }
-
-
-      /* Cross-over orb animations */
-      .fly-left-to-right {
-        animation: flyLeftToRight 2.5s ease-in-out infinite;
-        will-change: transform, opacity;
-      }
-      .fly-left-to-right.d2 { animation-delay: .8s; }
-      .fly-left-to-right.d3 { animation-delay: 1.6s; }
-      
-      .fly-right-to-left {
-        animation: flyRightToLeft 2.5s ease-in-out infinite;
-        will-change: transform, opacity;
-      }
-      .fly-right-to-left.d2 { animation-delay: .8s; }
-      .fly-right-to-left.d3 { animation-delay: 1.6s; }
-
-      @keyframes flyLeftToRight{
-        0%   { transform: translate(0px, 0px) scale(.9); opacity:.0; }
-        10%  { opacity:1; }
-        20%  { transform: translate(50px, -40px) scale(1.1); }
-        50%  { transform: translate(130px, -60px) scale(1.2); }
-        80%  { transform: translate(170px, -25px) scale(1.1); }
-        90%  { opacity:.9; }
-        100% { transform: translate(180px, 0px) scale(1); opacity:0; }
-      }
-
-      @keyframes flyRightToLeft{
-        0%   { transform: translate(0px, 0px) scale(.9); opacity:.0; }
-        10%  { opacity:1; }
-        20%  { transform: translate(-50px, -40px) scale(1.1); }
-        50%  { transform: translate(-130px, -60px) scale(1.2); }
-        80%  { transform: translate(-170px, -25px) scale(1.1); }
-        90%  { opacity:.9; }
-        100% { transform: translate(-180px, 0px) scale(1); opacity:0; }
-      }
-
-      /* Item spotlight on hover - swap positions */
-      svg:hover .left-item { transform: translate(160px, -1px) scale(1.02); }
-      svg:hover .right-item{ transform: translate(-160px, -1px) scale(1.02); }
-      .left-item,.right-item{ 
-        transition: transform .25s ease; 
-        will-change: transform; 
-        transform-box: view-box;
-      }
-
-      /* Pivot tick and halo "calibration" pulse */
-      .pivot-halo{
-        transform-origin:256px 136px;
-        animation: halo 1.7s ease-out 0s 1 both;
-      }
-      @keyframes halo{
-        0%{ opacity:0; transform: scale(.6); }
-        30%{ opacity:.9; transform: scale(1.15); }
-        100%{ opacity:0; transform: scale(1.4); }
-      }
-      .tick{
-        transform-origin:256px 136px;
-        animation: tick 1.7s ease-out 0s 1 both;
-      }
-      @keyframes tick{
-        0%{ transform: rotate(-20deg); opacity:0; }
-        30%{ transform: rotate(0deg);   opacity:1; }
-        100%{ opacity:0; }
-      }
-
-      /* Continuous subtle glows */
-      .pulse-purple{ animation: pPulse 2.4s ease-in-out infinite; }
-      .pulse-green { animation: gPulse 2.4s ease-in-out infinite .6s; }
-      @keyframes pPulse{
-        0%,100%{ opacity:.45; }
-        50%    { opacity:.85; }
-      }
-      @keyframes gPulse{
-        0%,100%{ opacity:.45; }
-        50%    { opacity:.95; }
-      }
-
-      /* Hover: slightly stronger tilt and brighter pan rings */
-      svg:hover .ring-purple, svg:hover .ring-green { stroke-width:5; }
-
-      /* Respect reduced motion - but keep cross-over orbs active */
-      @media (prefers-reduced-motion: reduce){
-        .beam, .counter-left, .counter-right, .pivot-halo, .tick,
-        .pulse-purple, .pulse-green { animation: none !important; }
-        /* Cross-over orbs (.fly-left-to-right, .fly-right-to-left) always run for comparison effect */
-      }
-    </style>
-
-    <!-- ====== FILTERS & GRADIENTS ====== -->
-    <filter id="panelShadow" x="-40%" y="-40%" width="180%" height="200%">
-      <feDropShadow dx="0" dy="3" stdDeviation="6" flood-opacity=".55" style="flood-color: var(--shadow)"/>
-    </filter>
-
     <radialGradient id="panGrad" cx="50%" cy="40%" r="75%">
-      <stop offset="0%" stop-color="#ffffff" stop-opacity=".9"/>
+      <stop offset="0%" stop-color="#fff" stop-opacity=".9"/>
       <stop offset="100%" stop-color="#cfd6e2" stop-opacity=".95"/>
     </radialGradient>
-
     <radialGradient id="glowCyan" cx="50%" cy="50%" r="70%">
       <stop offset="0%" stop-color="var(--bg-glow)"/>
       <stop offset="100%" stop-color="transparent"/>
     </radialGradient>
+    <filter id="panelShadow" x="-40%" y="-40%" width="180%" height="200%">
+      <feDropShadow dx="0" dy="3" stdDeviation="6" flood-opacity=".55" style="flood-color:var(--shadow)"/>
+    </filter>
+
+    <style>
+      .cap{ stroke-linecap:round; stroke-linejoin:round; }
+      .fly-left-to-right,.fly-right-to-left{ will-change: transform, opacity; }
+
+      /* ===== particles (hover only) ===== */
+      @keyframes L2R{
+        0%{transform:translate(0,0) scale(.9);opacity:0}10%{opacity:1}
+        20%{transform:translate(50px,-40px) scale(1.1)}
+        50%{transform:translate(130px,-60px) scale(1.2)}
+        80%{transform:translate(170px,-25px) scale(1.1)}90%{opacity:.9}
+        100%{transform:translate(180px,0) scale(1);opacity:0}
+      }
+      @keyframes R2L{
+        0%{transform:translate(0,0) scale(.9);opacity:0}10%{opacity:1}
+        20%{transform:translate(-50px,-40px) scale(1.1)}
+        50%{transform:translate(-130px,-60px) scale(1.2)}
+        80%{transform:translate(-170px,-25px) scale(1.1)}90%{opacity:.9}
+        100%{transform:translate(-180px,0) scale(1);opacity:0}
+      }
+      @keyframes pPulse{0%,100%{opacity:.45}50%{opacity:.85}}
+      @keyframes gPulse{0%,100%{opacity:.45}50%{opacity:.95}}
+
+      svg:hover .fly-left-to-right{ animation: L2R 2.5s ease-in-out infinite; }
+      svg:hover .fly-right-to-left{ animation: R2L 2.5s ease-in-out infinite; }
+      svg:hover .fly-left-to-right.d2, svg:hover .fly-right-to-left.d2{ animation-delay:.8s }
+      svg:hover .fly-left-to-right.d3, svg:hover .fly-right-to-left.d3{ animation-delay:1.6s }
+      svg:hover .ring-green, svg:hover .ring-purple{ stroke-width:5; }
+      svg:hover .pulse-purple{ animation: pPulse 2.4s ease-in-out infinite; }
+      svg:hover .pulse-green { animation: gPulse 2.4s ease-in-out infinite .6s; }
+
+      /* ===== ITEM ARC SWAPS (CSS motion-path) =====
+         Start positions: left(176,190) / right(336,190).
+         Paths are defined in local (item) coords, so they start at 0,0.
+      */
+      .left-item .swap,
+      .right-item .swap{
+        offset-rotate: 0deg;          /* no auto rotation */
+        offset-distance: 0%;
+        will-change: offset-distance;
+      }
+      .left-item .swap{
+        offset-path: path('M 0 0 C 80 -56 160 -56 160 0');
+      }
+      .right-item .swap{
+        offset-path: path('M 0 0 C -80 -56 -160 -56 -160 0');
+      }
+      svg:hover .left-item .swap,
+      svg:hover .right-item .swap{
+        transition: offset-distance .9s cubic-bezier(.2,.8,.2,1);
+        offset-distance: 100%;
+      }
+
+      @media (prefers-reduced-motion:reduce){
+        *{ animation:none !important; }
+        .left-item .swap, .right-item .swap{ transition:none !important; }
+      }
+    </style>
   </defs>
 
-  <!-- ====== BASE / SHADOW ====== -->
+  <!-- base shadow -->
   <ellipse cx="256" cy="312" rx="86" ry="16" fill="var(--shadow)" opacity=".35"/>
 
-  <!-- ====== SCALE COLUMN ====== -->
+  <!-- column + pivot -->
   <g class="cap" stroke="var(--stroke)">
-    <!-- pedestal -->
     <g filter="url(#panelShadow)">
-      <path d="M206 300h100c6 0 10-4 10-9v-6c0-5-4-9-10-9h-100c-6 0-10 4-10 9v6c0 5 4 9 10 9z"
+      <path d="M206 300h100c6 0 10-4 10-9v-6c0-5-4-9-10-9H206c-6 0-10 4-10 9v6c0 5 4 9 10 9m16-24h68v-10c0-4-3-7-7-7h-54c-4 0-7 3-7 7z"
             fill="var(--ink)" stroke-width="2"/>
-      <path d="M222 276h68v-10c0-4-3-7-7-7h-54c-4 0-7 3-7 7v10z" fill="var(--ink)" stroke-width="2"/>
     </g>
-
-    <!-- mast -->
     <rect x="246" y="176" width="20" height="100" rx="6" fill="var(--ink)" stroke-width="2"/>
     <rect x="242" y="168" width="28" height="16" rx="6" fill="var(--ink)" stroke-width="2"/>
-
-    <!-- pivot joint -->
-    <g>
-      <circle cx="256" cy="136" r="14" fill="var(--ink)" stroke-width="2"/>
-      <circle cx="256" cy="136" r="8"  fill="#a4b9cc" stroke-width="1.5"/>
-      <!-- calibration halo + tick -->
-      <circle class="pivot-halo" cx="256" cy="136" r="22" fill="url(#glowCyan)" opacity=".0"/>
-      <path class="tick" d="M256 114v-10" stroke="var(--ring)" stroke-width="3" stroke-linecap="round"/>
-    </g>
+    <circle cx="256" cy="136" r="14" fill="var(--ink)" stroke-width="2"/>
+    <circle cx="256" cy="136" r="8"  fill="#a4b9cc" stroke-width="1.5"/>
   </g>
 
-  <!-- ====== BEAM + PANS (ANIMATED) ====== -->
-  <g class="beam">
-    <!-- beam -->
+  <!-- beam + pans (drawn before items) -->
+  <g>
     <g class="cap" stroke="var(--stroke)">
       <rect x="164" y="128" width="184" height="16" rx="8" fill="var(--ink)" stroke-width="2"/>
-      <!-- cyan accents -->
-      <path d="M176 136h48" stroke="var(--ring)" stroke-width="3" opacity=".7"/>
-      <path d="M288 136h48" stroke="var(--ring)" stroke-width="3" opacity=".7"/>
+      <path d="M176 136h48m64 0h48" stroke="var(--ring)" stroke-width="3" opacity=".7"/>
     </g>
 
-    <!-- LEFT HANGER + PAN (counter-rotating) -->
-    <g class="counter-left">
-      <!-- hanger wires -->
+    <!-- LEFT PAN -->
+    <g>
       <g class="cap" stroke="var(--stroke)" stroke-width="2">
         <circle cx="176" cy="136" r="6" fill="#a4b9cc"/>
         <path d="M176 142l-28 46M176 142l28 46" fill="none"/>
       </g>
-
-      <!-- pan -->
-      <g>
-        <ellipse cx="176" cy="200" rx="56" ry="10" fill="var(--shadow)" opacity=".35"/>
-        <g filter="url(#panelShadow)">
-          <ellipse cx="176" cy="194" rx="58" ry="16" fill="url(#panGrad)"/>
-          <ellipse class="ring-purple pulse-purple" cx="176" cy="194" rx="58" ry="16" fill="none"
-                   stroke="var(--purple)" stroke-width="4" opacity=".6"/>
-        </g>
-      </g>
-
-      <!-- LEFT ITEM: DATA BLOCK -->
-      <g class="left-item" transform="translate(176 190)">
-        <!-- platform glow -->
-        <ellipse cx="0" cy="6" rx="34" ry="6" fill="var(--purple)" opacity=".2"/>
-        <!-- stacked block -->
-        <g>
-          <rect x="-22" y="-34" width="44" height="44" rx="6" fill="#2b1d3f" stroke="var(--purple-2)" stroke-width="2"/>
-          <rect x="-22" y="-46" width="44" height="12" rx="6" fill="#331c58" stroke="var(--purple-2)" stroke-width="2"/>
-          <rect x="-22" y="-58" width="44" height="12" rx="6" fill="#3a1e6d" stroke="var(--purple-2)" stroke-width="2"/>
-          <!-- grid lines -->
-          <g stroke="var(--purple-2)" opacity=".9">
-            <path d="M-11 -34v44M0 -34v44M11 -34v44"/>
-            <path d="M-22 -23h44M-22 -12h44M-22 -1h44M-22 10h44"/>
-          </g>
-        </g>
-
-        <!-- cross-over data particles -->
-        <rect class="fly-left-to-right"  x="-38" y="-12" width="6" height="6" rx="1.2" fill="var(--purple-2)"/>
-        <rect class="fly-left-to-right" x="-6"  y="-20" width="4" height="4" rx="1"   fill="var(--purple)"/>
-        <rect class="fly-left-to-right d3" x="30"  y="-18" width="5" height="5" rx="1.1" fill="var(--purple-2)"/>
-        <rect class="fly-left-to-right d2" x="-26" y="-28" width="4" height="4" rx="1"   fill="var(--purple)"/>
-        <rect class="fly-left-to-right d3" x="16"  y="-30" width="6" height="6" rx="1.2" fill="var(--purple-2)"/>
+      <ellipse cx="176" cy="200" rx="56" ry="10" fill="var(--shadow)" opacity=".35"/>
+      <g filter="url(#panelShadow)">
+        <ellipse cx="176" cy="194" rx="58" ry="16" fill="url(#panGrad)"/>
+        <ellipse class="ring-purple pulse-purple" cx="176" cy="194" rx="58" ry="16" fill="none"
+                 stroke="var(--purple)" stroke-width="4" opacity=".6"/>
       </g>
     </g>
 
-    <!-- RIGHT HANGER + PAN (counter-rotating) -->
-    <g class="counter-right">
-      <!-- hanger wires -->
+    <!-- RIGHT PAN -->
+    <g>
       <g class="cap" stroke="var(--stroke)" stroke-width="2">
         <circle cx="336" cy="136" r="6" fill="#a4b9cc"/>
         <path d="M336 142l-28 46M336 142l28 46" fill="none"/>
       </g>
+      <ellipse cx="336" cy="200" rx="56" ry="10" fill="var(--shadow)" opacity=".35"/>
+      <g filter="url(#panelShadow)">
+        <ellipse cx="336" cy="194" rx="58" ry="16" fill="url(#panGrad)"/>
+        <ellipse class="ring-green pulse-green" cx="336" cy="194" rx="58" ry="16" fill="none"
+                 stroke="var(--green)" stroke-width="4" opacity=".6"/>
+      </g>
+    </g>
+  </g>
 
-      <!-- pan -->
-      <g>
-        <ellipse cx="336" cy="200" rx="56" ry="10" fill="var(--shadow)" opacity=".35"/>
-        <g filter="url(#panelShadow)">
-          <ellipse cx="336" cy="194" rx="58" ry="16" fill="url(#panGrad)"/>
-          <ellipse class="ring-green pulse-green" cx="336" cy="194" rx="58" ry="16" fill="none"
-                   stroke="var(--green)" stroke-width="4" opacity=".6"/>
+  <!-- ITEMS (drawn last so they land ON TOP of both pans) -->
+  <g>
+    <!-- LEFT ITEM at (176,190) -->
+    <g class="left-item" transform="translate(176 190)">
+      <ellipse cy="6" rx="34" ry="6" fill="var(--purple)" opacity=".2"/>
+      <g class="swap">
+        <!-- block -->
+        <rect x="-22" y="-34" width="44" height="44" rx="6" fill="#2b1d3f" stroke="var(--purple-2)" stroke-width="2"/>
+        <rect x="-22" y="-46" width="44" height="12" rx="6" fill="#331c58" stroke="var(--purple-2)" stroke-width="2"/>
+        <rect x="-22" y="-58" width="44" height="12" rx="6" fill="#3a1e6d" stroke="var(--purple-2)" stroke-width="2"/>
+        <path d="M-11-34v44M0-34v44m11-44v44m-33-33h44m-44 11h44M-22-1h44m-44 11h44"
+              stroke="var(--purple-2)" opacity=".9"/>
+      </g>
+
+      <!-- particles (hover only) -->
+      <rect class="fly-left-to-right"  x="-38" y="-12" width="6" height="6" rx="1.2" fill="var(--purple-2)"/>
+      <rect class="fly-left-to-right"   x="-6" y="-20" width="4" height="4" rx="1"   fill="var(--purple)"/>
+      <rect class="fly-left-to-right d3" x="30" y="-18" width="5" height="5" rx="1.1" fill="var(--purple-2)"/>
+      <rect class="fly-left-to-right d2" x="-26" y="-28" width="4" height="4" rx="1"   fill="var(--purple)"/>
+      <rect class="fly-left-to-right d3" x="16"  y="-30" width="6" height="6" rx="1.2" fill="var(--purple-2)"/>
+    </g>
+
+    <!-- RIGHT ITEM at (336,190) -->
+    <g class="right-item" transform="translate(336 190)">
+      <ellipse cy="6" rx="34" ry="6" fill="var(--green)" opacity=".2"/>
+      <g class="swap">
+        <!-- globe -->
+        <circle cy="-16" r="24" fill="#112e22" stroke="var(--green-2)" stroke-width="2"/>
+        <g stroke="var(--green-2)" stroke-width="1.5" fill="none" opacity=".95">
+          <ellipse cy="-16" rx="24" ry="8"/>
+          <ellipse cy="-16" rx="24" ry="16"/>
+          <path d="M-24-16a24 24 0 0 0 48 0"/>
+          <path d="M-12-40c-5 7-8 15-8 24s-3 17 8 24m24-48c5 7 8 15 8 24S17 1 12 8"/>
         </g>
       </g>
 
-      <!-- RIGHT ITEM: GLOBE -->
-      <g class="right-item" transform="translate(336 190)">
-        <!-- platform glow -->
-        <ellipse cx="0" cy="6" rx="34" ry="6" fill="var(--green)" opacity=".2"/>
-
-        <!-- neon globe -->
-        <g>
-          <circle cx="0" cy="-16" r="24" fill="#112e22" stroke="var(--green-2)" stroke-width="2"/>
-          <!-- meridians & parallels -->
-          <g stroke="var(--green-2)" stroke-width="1.5" fill="none" opacity=".95">
-            <ellipse cx="0" cy="-16" rx="24" ry="8"/>
-            <ellipse cx="0" cy="-16" rx="24" ry="16"/>
-            <path d="M-24 -16a24 24 0 0 0 48 0" />
-            <path d="M-12 -40c-5 7-8 15-8 24s3 17 8 24M12 -40c5 7 8 15 8 24s-3 17-8 24"/>
-          </g>
-          <!-- rotating halo ring -->
-          <circle cx="0" cy="-16" r="28" fill="none" stroke="var(--green-2)" stroke-width="2"
-                  stroke-dasharray="10 8">
-            <animate attributeName="stroke-dashoffset" values="0; -36" dur="3.4s" repeatCount="indefinite"/>
-          </circle>
-        </g>
-
-        <!-- cross-over "data" bits around the globe -->
-        <rect class="fly-right-to-left"  x="-38" y="-22" width="5" height="5" rx="1.1" fill="var(--green-2)"/>
-        <rect class="fly-right-to-left" x="-8"  y="-32" width="4" height="4" rx="1"   fill="var(--green)"/>
-        <rect class="fly-right-to-left d3" x="30"  y="-26" width="6" height="6" rx="1.2" fill="var(--green-2)"/>
-        <rect class="fly-right-to-left d2" x="-22" y="-40" width="4" height="4" rx="1"   fill="var(--green)"/>
-        <rect class="fly-right-to-left d3" x="16"  y="-36" width="5" height="5" rx="1.1" fill="var(--green-2)"/>
-      </g>
+      <!-- particles (hover only) -->
+      <rect class="fly-right-to-left"  x="-38" y="-22" width="5" height="5" rx="1.1" fill="var(--green-2)"/>
+      <rect class="fly-right-to-left"   x="-8"  y="-32" width="4" height="4" rx="1"   fill="var(--green)"/>
+      <rect class="fly-right-to-left d3" x="30"  y="-26" width="6" height="6" rx="1.2" fill="var(--green-2)"/>
+      <rect class="fly-right-to-left d2" x="-22" y="-40" width="4" height="4" rx="1"   fill="var(--green)"/>
+      <rect class="fly-right-to-left d3" x="16"  y="-36" width="5" height="5" rx="1.1" fill="var(--green-2)"/>
     </g>
   </g>
 </svg>
