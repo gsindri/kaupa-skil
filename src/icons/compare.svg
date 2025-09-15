@@ -1,9 +1,9 @@
-<!-- Neon Data-Scale — hover-only arc swap via CSS motion-path (landing fixed by drawing items last) -->
+<!-- Neon Data-Scale — hover-only arc swap via CSS motion-path (landing fixed + smooth reverse on mouseout) -->
 <svg id="scale" viewBox="0 0 512 384" aria-labelledby="title desc"
      xmlns="http://www.w3.org/2000/svg"
      style="--ink:#e9eef6;--shadow:#0b1420;--stroke:#0a1b29;--purple:#a64dff;--purple-2:#d188ff;--green:#33f083;--green-2:#b6ffd8;--ring:#1df0ff;--bg-glow:rgba(29,240,255,.55);shape-rendering:geometricPrecision">
   <title id="title">Animated data comparison scale with cross-over orbs</title>
-  <desc id="desc">On hover: the purple data block arcs to the right pan and the green globe arcs to the left pan. Particles/rings animate. No motion at rest.</desc>
+  <desc id="desc">On hover: the purple data block arcs to the right pan and the green globe arcs to the left pan. Particles/rings animate. No motion at rest. On mouseout: items arc back smoothly.</desc>
 
   <defs>
     <radialGradient id="panGrad" cx="50%" cy="40%" r="75%">
@@ -57,6 +57,8 @@
         offset-rotate: 0deg;          /* no auto rotation */
         offset-distance: 0%;
         will-change: offset-distance;
+        /* transition here so mouseout reverses smoothly */
+        transition: offset-distance .9s cubic-bezier(.2,.8,.2,1);
       }
       .left-item .swap{
         offset-path: path('M 0 0 C 80 -56 160 -56 160 0');
@@ -64,9 +66,9 @@
       .right-item .swap{
         offset-path: path('M 0 0 C -80 -56 -160 -56 -160 0');
       }
+      /* On hover, drive to 100%; on mouseout, transition back to 0% */
       svg:hover .left-item .swap,
       svg:hover .right-item .swap{
-        transition: offset-distance .9s cubic-bezier(.2,.8,.2,1);
         offset-distance: 100%;
       }
 
