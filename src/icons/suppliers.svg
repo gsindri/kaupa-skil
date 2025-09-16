@@ -1,5 +1,5 @@
 <!-- Circular Supply Flow — Hover-only, with truck • handshake • factory • boxes (equal distance) -->
-<svg id="flow" viewBox="0 0 600 600" role="img" aria-labelledby="t d"
+<svg id="flow" viewBox="-210.5 -203.5 861 861" role="img" aria-labelledby="t d"
      xmlns="http://www.w3.org/2000/svg">
   <title id="t">Animated circular supply flow</title>
   <desc id="d">Delivery truck, handshake, supplier factory, and boxes orbit a dashed circle. Animates only on hover; all icons keep equal distance from the ring.</desc>

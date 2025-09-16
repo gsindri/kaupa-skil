@@ -1,5 +1,5 @@
 <!-- Neon Data-Scale — hover-only arc swap via CSS motion-path (landing fixed + smooth reverse on mouseout) -->
-<svg id="scale" viewBox="0 0 600 600" aria-labelledby="title desc"
+<svg id="scale" viewBox="123 143 354 354" aria-labelledby="title desc"
      xmlns="http://www.w3.org/2000/svg"
      style="--ink:#e9eef6;--shadow:#0b1420;--stroke:#0a1b29;--purple:#a64dff;--purple-2:#d188ff;--green:#33f083;--green-2:#b6ffd8;--ring:#1df0ff;--bg-glow:rgba(29,240,255,.55);shape-rendering:geometricPrecision">
   <title id="title">Animated data comparison scale with cross-over orbs</title>

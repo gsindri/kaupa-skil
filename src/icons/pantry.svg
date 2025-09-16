@@ -1,5 +1,5 @@
 <!-- Pantry Icon — stack from under shelves; returns on hover-out (fixed clipping) -->
-<svg id="pantryIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" role="img" aria-label="Two-tier white-wood shelf with hover-activated stacking animation">
+<svg id="pantryIcon" xmlns="http://www.w3.org/2000/svg" viewBox="-102.125 -5.625 738.75 738.75" role="img" aria-label="Two-tier white-wood shelf with hover-activated stacking animation">
   <style>
     :root{
       --floor-top: 220px; /* distance from floor to top-shelf landing */
