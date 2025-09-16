@@ -1,9 +1,9 @@
-<!-- Discover — Magnifying Glass (centered wooden handle, white ring) -->
-<svg id="discover" viewBox="-27.75 17.25 712.5 712.5" role="img" aria-labelledby="title desc"
+<!-- Discover — Magnifying Glass with swooping entrance + discovery -->
+<svg id="discover" viewBox="0 0 600 600" role="img" aria-labelledby="title desc"
      xmlns="http://www.w3.org/2000/svg"
-     style="--ink:#eaf0f7;--ring:#ffffff;--ring2:#ffffff;--line:#0f2031;--glass:#132231;--teal:#2ee6d6;--green:#7cffb0;--orange:#ffb36b;--violet:#b79cff;--gray:#cfd7e4;--shadow:#0a1522;--dot:#6db3d9; shape-rendering:geometricPrecision;">
+     style="--start-angle: 45deg; --ink:#eaf0f7; --ring:#ffffff; --ring2:#ffffff; --line:#0f2031; --glass:#132231; --teal:#2ee6d6; --green:#7cffb0; --orange:#ffb36b; --violet:#b79cff; --gray:#cfd7e4; --shadow:#0a1522; --dot:#6db3d9; shape-rendering:geometricPrecision;">
   <title id="title">Discover</title>
-  <desc id="desc">A centered magnifying glass with a wooden handle performs a small sweep, wipes fog from the lens to reveal four cubes on a dotted orbit, emits a discovery pulse, then idles. All motion only on hover (or with data-active="true").</desc>
+  <desc id="desc">On hover (or data-active=true) the magnifier swoops in a circling arc and settles center; rim glints, lens wipes, dotted orbit draws, cubes jiggle then slow-spin, scan band passes, supplier hints reveal, and a “kr coin” deal pops into view with shine rays. Reduced-motion disables animation.</desc>
 
   <defs>
     <!-- soft outer glow -->
@@ -14,7 +14,7 @@
 
     <!-- subtle lens inner shadow -->
     <filter id="inset" x="-50%" y="-50%" width="200%" height="200%">
-      <feOffset dx="0" dy="1" />
+      <feOffset dx="0" dy="1"/>
       <feGaussianBlur stdDeviation="1.2" result="g"/>
       <feComposite in2="SourceAlpha" in="g" operator="arithmetic" k2="-1" k3="1"/>
     </filter>
@@ -33,29 +33,46 @@
       <stop offset="1" stop-color="#fff" stop-opacity="0"/>
     </linearGradient>
 
-    <!-- WOOD: body + subtle grain -->
+    <!-- wood -->
     <linearGradient id="wood" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0"  stop-color="#d9a96a"/>
       <stop offset=".5" stop-color="#bf8a53"/>
       <stop offset="1"  stop-color="#a9713e"/>
     </linearGradient>
 
-    <!-- reveal mask -->
-    <mask id="wipeMask">
-      <rect width="600" height="600" fill="black"/>
-      <rect class="wipe" x="120" y="120" width="360" height="360" rx="140" ry="140" fill="white"/>
-    </mask>
+    <!-- scan band gradient -->
+    <linearGradient id="scanGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0"   stop-color="#fff" stop-opacity="0"/>
+      <stop offset=".45" stop-color="#fff" stop-opacity=".10"/>
+      <stop offset=".5"  stop-color="#fff" stop-opacity=".18"/>
+      <stop offset=".55" stop-color="#fff" stop-opacity=".10"/>
+      <stop offset="1"   stop-color="#fff" stop-opacity="0"/>
+    </linearGradient>
 
-    <!-- tiny “spark” square -->
+    <!-- motion trail gradient -->
+    <linearGradient id="swooshGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0"   stop-color="#fff" stop-opacity=".0"/>
+      <stop offset=".35" stop-color="#fff" stop-opacity=".25"/>
+      <stop offset=".6"  stop-color="#fff" stop-opacity=".55"/>
+      <stop offset="1"   stop-color="#fff" stop-opacity="0"/>
+    </linearGradient>
+
+    <!-- coin fill -->
+    <radialGradient id="coinGrad" cx="50%" cy="40%" r="60%">
+      <stop offset="0%"  stop-color="#fff6cc"/>
+      <stop offset="45%" stop-color="#f2d478"/>
+      <stop offset="100%" stop-color="#c9a24b"/>
+    </radialGradient>
+
+    <!-- tiny square -->
     <symbol id="bit" viewBox="-2 -2 4 4"><rect x="-2" y="-2" width="4" height="4" rx=".6"/></symbol>
 
-    <!-- cube base and variants (64×64 viewBox centered) -->
+    <!-- cube base + variants -->
     <symbol id="cube-base" viewBox="-32 -32 64 64">
       <rect x="-22" y="-22" width="44" height="44" rx="9" fill="rgba(255,255,255,.06)" stroke="var(--ink)" stroke-width="1.5"/>
       <rect x="-22" y="-22" width="44" height="44" rx="9" fill="none" stroke="var(--dot)" stroke-opacity=".5" stroke-width="1"/>
     </symbol>
 
-    <!-- Data (teal circuits) -->
     <symbol id="cube-data" viewBox="-32 -32 64 64">
       <use href="#cube-base"/>
       <g stroke="var(--teal)" stroke-width="2" fill="none" opacity=".95">
@@ -64,7 +81,6 @@
       </g>
     </symbol>
 
-    <!-- Inventory (green grid) -->
     <symbol id="cube-inv" viewBox="-32 -32 64 64">
       <use href="#cube-base"/>
       <g stroke="var(--green)" stroke-width="1.8" fill="none" opacity=".95">
@@ -74,18 +90,14 @@
       </g>
     </symbol>
 
-    <!-- Neutral (gray) -->
     <symbol id="cube-neutral" viewBox="-32 -32 64 64">
       <use href="#cube-base"/>
-      <rect x="-12" y="-12" width="24" height="24" rx="6"
-            fill="rgba(255,255,255,.12)" stroke="var(--gray)" stroke-width="2"/>
+      <rect x="-12" y="-12" width="24" height="24" rx="6" fill="rgba(255,255,255,.12)" stroke="var(--gray)" stroke-width="2"/>
     </symbol>
 
-    <!-- Events (violet/orange bits) -->
     <symbol id="cube-bits" viewBox="-32 -32 64 64">
       <use href="#cube-base"/>
-      <rect x="-14" y="-10" width="28" height="20" rx="5"
-            fill="rgba(255,255,255,.08)" stroke="var(--violet)" stroke-width="2"/>
+      <rect x="-14" y="-10" width="28" height="20" rx="5" fill="rgba(255,255,255,.08)" stroke="var(--violet)" stroke-width="2"/>
       <g fill="var(--orange)">
         <use href="#bit" x="-6" y="-2"/><use href="#bit" x="-2" y="2"/>
         <use href="#bit" x="4"  y="-3"/><use href="#bit" x="8"  y="1"/>
@@ -94,88 +106,183 @@
     </symbol>
 
     <style>
-      .cap{stroke-linecap:round;stroke-linejoin:round}
+      /* ---------- Core variables & base pose ---------- */
+      :root { --start-angle: 45deg; --settle-deg: 14deg; --breath-deg: 2.6deg; }
       .ns{vector-effect:non-scaling-stroke}
-      .nofill{fill:none}
-      .faint{opacity:.55}
-      .hint{opacity:.3}
 
-      /* ---------- Hover gating (paused until hover) ---------- */
-      .wipe, .draw, .pulseAnim, .burst, .jig, .sweep, .hoverLock { animation: none; }
-      #discover:hover .shim, #discover[data-active="true"] .shim { animation: shim 3.6s linear infinite; }
-
-      /* Sweep: translate+rotate (always on-screen), then gentle wobble while hovered */
-      .sweep { transform-origin:300px 300px; }
-      #discover:hover .sweep,
-      #discover[data-active="true"] .sweep{
-        animation:
-          sweepOnce 0.95s ease-in-out both,
-          hoverLock 3.2s 0.95s ease-in-out infinite;
+      /* the whole rig flies the swoop path; inner .sweep keeps angular settle/breath */
+      .rig{
+        transform-origin:300px 300px;
+        will-change: transform;
       }
+
+      .sweep{
+        transform-origin:300px 300px;
+        transform: rotate(var(--start-angle));
+        will-change: transform;
+      }
+
+      /* ---------- Hover triggers (or [data-active="true"]) ---------- */
+      #discover:hover .rig, #discover[data-active="true"] .rig{
+        animation:
+          swoopIn 1.05s cubic-bezier(.20,.85,.2,1) both,
+          idleBob 4s 1.05s ease-in-out infinite;
+      }
+
+      #discover:hover .sweep, #discover[data-active="true"] .sweep{
+        animation:
+          sweepOnce 1.2s .05s ease-in-out,
+          hoverLock 3.2s 1.25s ease-in-out infinite;
+      }
+
+      /* looping arc-ish path into the center */
+      @keyframes swoopIn{
+        0%   { transform: translate(-220px,-220px) rotate(-18deg) scale(.94); }
+        28%  { transform: translate(160px,-180px)  rotate(10deg)  scale(1.02); }
+        58%  { transform: translate(210px,155px)   rotate(6deg)   }
+        82%  { transform: translate(-120px,120px)  rotate(-4deg)  }
+        100% { transform: translate(0,0)           rotate(0deg)   scale(1); }
+      }
+      @keyframes idleBob{
+        0%{ transform:translate(0,0) }
+        50%{ transform:translate(0,-2px) }
+        100%{ transform:translate(0,0) }
+      }
+
       @keyframes sweepOnce{
-        0%   { transform: translate(-10px,-6px) rotate(-3deg); }
-        45%  { transform: translate(10px,  6px) rotate( 2deg); }
-        65%  { transform: translate( 4px,  2px) rotate(-1deg); }
-        100% { transform: translate( 0px,  0px) rotate( 0deg); }
+        0%   { transform: rotate(calc(var(--start-angle) - var(--settle-deg))) }
+        55%  { transform: rotate(calc(var(--start-angle) + var(--settle-deg))) }
+        100% { transform: rotate(var(--start-angle)) }
       }
       @keyframes hoverLock{
-        0%   { transform: translate(0,0) rotate(0deg); }
-        50%  { transform: translate(2px,-1px) rotate(.8deg); }
-        100% { transform: translate(0,0) rotate(0deg); }
+        0%   { transform: rotate(var(--start-angle)) }
+        25%  { transform: rotate(calc(var(--start-angle) + var(--breath-deg))) }
+        75%  { transform: rotate(calc(var(--start-angle) - var(--breath-deg))) }
+        100% { transform: rotate(var(--start-angle)) }
       }
 
-      /* Wipe reveal */
+      /* ---------- Wipe reveal ---------- */
       .wipe{ transform-origin:300px 300px; transform:scale(0); }
-      #discover:hover .wipe,
-      #discover[data-active="true"] .wipe{ animation: wipeIn 1.1s .25s ease-out both; }
+      #discover:hover .wipe, #discover[data-active="true"] .wipe{ animation:wipeIn 1.1s .30s ease-out both; }
       @keyframes wipeIn{ to{ transform:scale(1); } }
 
-      /* Orbit draw (dotted) */
-      .dash { stroke-dasharray:4 8; stroke-dashoffset:220; }
-      #discover:hover .draw,
-      #discover[data-active="true"] .draw{ animation: draw 1.1s .35s ease-out forwards; }
-      @keyframes draw{ to{ stroke-dashoffset:0 } }
+      /* ---------- Orbit draw (dotted) ---------- */
+      .dash{ stroke-dasharray:4 8; stroke-dashoffset:260; }
+      #discover:hover .draw, #discover[data-active="true"] .draw{ animation: draw 1.1s .38s ease-out forwards; }
+      @keyframes draw{ to{ stroke-dashoffset:0; } }
 
-      /* Discovery pulse ring */
-      .pulse { transform-origin:300px 300px; opacity:0; }
-      #discover:hover .pulseAnim,
-      #discover[data-active="true"] .pulseAnim{ animation: pulse 1s .58s ease-out both; }
-      @keyframes pulse{
-        0%{ opacity:0; transform:scale(.6) }
-        20%{ opacity:.9; transform:scale(1) }
-        100%{ opacity:0; transform:scale(1.35) }
+      /* ---------- Ring glint ---------- */
+      .glint{ stroke:#fff; stroke-width:10; stroke-linecap:round; stroke-dasharray:70 1000; stroke-dashoffset:0; opacity:0; }
+      #discover:hover .glint, #discover[data-active="true"] .glint{ animation: glintRun 1s .28s ease-out both; }
+      @keyframes glintRun{ 0%{opacity:.95;stroke-dashoffset:0} 100%{opacity:0;stroke-dashoffset:-520} }
+
+      /* ---------- Motion trail (during swoop) ---------- */
+      .swoosh{ opacity:0; transform-origin:300px 300px; }
+      #discover:hover .swoosh, #discover[data-active="true"] .swoosh{
+        animation: trail 1.05s cubic-bezier(.2,.85,.2,1) both;
+      }
+      @keyframes trail{
+        0%  { opacity:.85; stroke-dasharray:160 460; stroke-dashoffset:520; transform:scale(1.06) rotate(-10deg); }
+        70% { opacity:.35; stroke-dashoffset:120; }
+        100%{ opacity:0;   stroke-dashoffset:0;   transform:scale(1) rotate(0deg); }
       }
 
-      /* Cube jiggle as focus snaps in */
+      /* ---------- Ground shadow shift ---------- */
+      .ground{ transform-origin:300px 430px; opacity:.28; }
+      #discover:hover .ground, #discover[data-active="true"] .ground{ animation: shadowSweep 1.2s ease-in-out both; }
+      @keyframes shadowSweep{
+        0%{transform:scaleX(1);opacity:.28}
+        55%{transform:scaleX(1.18);opacity:.18}
+        100%{transform:scaleX(1);opacity:.28}
+      }
+
+      /* ---------- Lens parallax (subtle depth) ---------- */
+      .parallax{ transform-origin:300px 300px; }
+      #discover:hover .parallax, #discover[data-active="true"] .parallax{
+        animation: parallax 1s .10s ease-out both, parallaxBreath 3.2s 1.25s ease-in-out infinite;
+      }
+      @keyframes parallax{
+        0%{   transform:translate(-18px,-12px) }
+        80%{  transform:translate(  6px,  4px) }
+        100%{ transform:translate(  0px,  0px) }
+      }
+      @keyframes parallaxBreath{
+        0%{transform:translate(0,0)}
+        50%{transform:translate(-1px,1px)}
+        100%{transform:translate(0,0)}
+      }
+
+      /* ---------- Cubes: jiggle + arrival tick + group spin ---------- */
       .cube{ transform-box:fill-box; transform-origin:center; }
-      #discover:hover .jig,
-      #discover[data-active="true"] .jig{ animation: jig .5s .58s cubic-bezier(.2,.9,.2,1) both; }
-      @keyframes jig{
-        0%{ transform:translate(0,0) scale(1) }
-        40%{ transform:translate(0,-2px) scale(1.05) }
-        100%{ transform:translate(0,0) scale(1) }
-      }
+      #discover:hover .jig, #discover[data-active="true"] .jig{ animation:jig .5s .58s cubic-bezier(.2,.9,.2,1) both; }
+      @keyframes jig{0%{transform:translate(0,0) scale(1)}40%{transform:translate(0,-2px) scale(1.06)}100%{transform:translate(0,0) scale(1)}}
+      #discover:hover .spinKick, #discover[data-active="true"] .spinKick{ animation:kick .14s 1.08s cubic-bezier(.2,.9,.2,1) both; }
+      @keyframes kick{from{transform:scale(0.985)}to{transform:scale(1)}}
+      .cubesSpin{ transform-origin:300px 300px; }
+      #discover:hover .spin, #discover[data-active="true"] .spin{ animation: spin 16s 1.12s linear infinite; }
+      @keyframes spin{ to{ transform:rotate(360deg); } }
 
-      /* Bits burst from center */
-      .bits rect{ opacity:0 }
-      #discover:hover .burst,
-      #discover[data-active="true"] .burst{ animation: burst .85s .58s ease-out both; }
-      @keyframes burst{
-        0%{ opacity:0; transform:translate(0,0) scale(.9) }
-        25%{ opacity:1 }
-        100%{ opacity:0; transform:translate(var(--dx),var(--dy)) scale(1.05) }
-      }
+      /* ---------- Cube ping rings ---------- */
+      .ping{ fill:none; stroke:var(--ring); stroke-opacity:.55; }
+      #discover:hover .ping, #discover[data-active="true"] .ping{ animation: ping 1.6s 0.62s ease-out infinite; }
+      @keyframes ping{ 0%{opacity:0;r:18} 15%{opacity:.8;r:22} 100%{opacity:0;r:36} }
 
-      /* shimmer (data cube detail) */
+      /* ---------- Data shimmer on cube ---------- */
       .shim{ stroke-dasharray:3 6; }
+      #discover:hover .shim, #discover[data-active="true"] .shim { animation: shim 3.6s linear infinite; }
       @keyframes shim{ to{ stroke-dashoffset:-36 } }
 
-      /* reduced motion */
-      @media (prefers-reduced-motion:reduce){ *{ animation: none !important } }
+      /* ---------- Scan pass + discoverables ---------- */
+      .scanBand{ opacity:0; transform-origin:300px 300px; }
+      #discover:hover .scanBand, #discover[data-active="true"] .scanBand{
+        animation: scanPass .9s .38s ease-out both;
+      }
+      @keyframes scanPass{
+        0%  { opacity:0; transform:translateX(-160px) }
+        15% { opacity:.35; }
+        85% { opacity:.35; }
+        100%{ opacity:0; transform:translateX(160px) }
+      }
+
+      .disc{ opacity:0; transform-origin:center; }
+      #discover:hover .d1, #discover[data-active="true"] .d1{ animation: discIn .35s .50s cubic-bezier(.2,.9,.2,1) both; }
+      #discover:hover .d2, #discover[data-active="true"] .d2{ animation: discIn .35s .56s cubic-bezier(.2,.9,.2,1) both; }
+      #discover:hover .d3, #discover[data-active="true"] .d3{ animation: discIn .35s .62s cubic-bezier(.2,.9,.2,1) both; }
+      #discover:hover .d4, #discover[data-active="true"] .d4{ animation: discIn .35s .68s cubic-bezier(.2,.9,.2,1) both; }
+      @keyframes discIn{
+        0%{ opacity:0; transform:translateY(6px) scale(.96) }
+        60%{ opacity:1; transform:translateY(-1px) scale(1.04) }
+        100%{ opacity:1; transform:translateY(0) scale(1) }
+      }
+
+      /* ---------- Discovery badge (kr coin + shine) ---------- */
+      .find{ opacity:0; transform-origin:300px 300px; }
+      #discover:hover .find, #discover[data-active="true"] .find{
+        animation: popIn .42s .64s cubic-bezier(.2,.9,.2,1) both;
+      }
+      @keyframes popIn{
+        0%{ opacity:0; transform:translateY(6px) scale(.7) rotate(-6deg) }
+        80%{ opacity:1; transform:translateY(-1px) scale(1.06) rotate(0deg) }
+        100%{ opacity:1; transform:translateY(0) scale(1) }
+      }
+      .rays line{ stroke:#fff; stroke-opacity:.9; stroke-linecap:round; }
+      #discover:hover .rays line, #discover[data-active="true"] .rays line{
+        animation: ray 1.2s .68s ease-out both;
+      }
+      @keyframes ray{
+        0%{ opacity:0; transform:scale(.8); }
+        35%{ opacity:1; }
+        100%{ opacity:0; transform:scale(1.15); }
+      }
+
+      /* Motion safety */
+      @media (prefers-reduced-motion:reduce){
+        *{ animation:none !important; }
+      }
     </style>
   </defs>
 
-  <!-- background confetti (static) -->
+  <!-- confetti (static) -->
   <g fill="var(--dot)" opacity=".65">
     <rect x="129" y="140" width="4" height="4" rx=".6"/>
     <rect x="466" y="166" width="4" height="4" rx=".6"/>
@@ -185,69 +292,151 @@
     <rect x="525" y="220" width="3" height="3" rx=".5"/>
   </g>
 
-  <!-- ===== MAGNIFYING GLASS (centered, wooden handle) ===== -->
-  <g class="sweep">
-    <!-- ring (white) -->
-    <g filter="url(#glow)">
-      <circle cx="300" cy="300" r="164" fill="none" stroke="var(--ring2)" stroke-width="12" opacity=".95"/>
-      <circle cx="300" cy="300" r="155" fill="none" stroke="var(--ring)"  stroke-width="7"  opacity=".95"/>
-    </g>
+  <!-- ===== WHOLE RIG (flies in a loop) ===== -->
+  <g class="rig">
 
-    <!-- glass -->
-    <circle cx="300" cy="300" r="145" fill="var(--glass)" filter="url(#inset)"/>
-    <!-- gloss arcs -->
-    <path d="M230 240a111 111 0 0 1 49-37" stroke="url(#gloss)" stroke-width="14" fill="none" opacity=".55"/>
-    <path d="M387 387a111 111 0 0 0 44-35" stroke="url(#gloss)" stroke-width="12" fill="none" opacity=".35"/>
+    <!-- motion swoosh trail -->
+    <circle class="swoosh" cx="300" cy="300" r="188" fill="none" stroke="url(#swooshGrad)" stroke-width="10"/>
 
-    <!-- handle: centered at 6 o'clock, vertical downward -->
-    <!-- attach point: slightly inside outer ring to feel connected -->
-    <g transform="translate(300,459)">
-      <!-- ferrule (metal collar) -->
-      <rect x="-21" y="-21" width="42" height="23" rx="12" fill="url(#metal)" stroke="#c1ccd8" stroke-width="1.8"/>
-      <rect x="-16" y="-19" width="32" height="19" rx="9" fill="none" stroke="#9fb0bf" stroke-width="1.2" opacity=".8"/>
-      <!-- wooden handle body -->
-      <rect x="-19" y="2" width="38" height="138" rx="19" fill="url(#wood)" stroke="#7a532f" stroke-width="1.9"/>
-      <!-- wood grain lines -->
-      <g stroke="#7a532f" stroke-opacity=".35" fill="none">
-        <path d="M-9 9 q7 9 0 19 t0 19 t0 19 t0 19"/>
-        <path d="M5 14 q-6 8 0 16 t0 16 t0 16 t0 16"/>
-        <path d="M0 12 q2 7 -2 14 t2 14 t-2 14 t2 14"/>
-      </g>
-      <!-- end cap -->
-      <ellipse cx="0" cy="140" rx="19" ry="12" fill="#9b6a3b" stroke="#7a532f" stroke-width="1.6"/>
-    </g>
+    <!-- ground shadow (moves with rig) -->
+    <ellipse class="ground" cx="300" cy="430" rx="120" ry="24" fill="var(--shadow)"/>
 
-    <!-- contents (masked by wipe) -->
-    <g mask="url(#wipeMask)">
-      <!-- dotted orbit + small arrows -->
-      <path class="dash draw" d="M300,246 a108,108 0 1,1 0,216 a108,108 0 1,1 0,-216"
-            stroke="var(--ink)" stroke-width="2.6" fill="none" opacity=".85"/>
-      <g class="hint" fill="var(--ink)">
-        <g transform="translate(300,246) rotate(20)"><path d="M0 0 l7 -5 v10z"/></g>
-        <g transform="translate(408,354) rotate(110)"><path d="M0 0 l7 -5 v10z"/></g>
-        <g transform="translate(300,462) rotate(200)"><path d="M0 0 l7 -5 v10z"/></g>
-        <g transform="translate(192,354) rotate(290)"><path d="M0 0 l7 -5 v10z"/></g>
+    <!-- ===== MAGNIFYING GLASS (rotates as one .sweep) ===== -->
+    <g class="sweep">
+      <!-- ring -->
+      <g filter="url(#glow)">
+        <circle cx="300" cy="300" r="164" fill="none" stroke="var(--ring2)" stroke-width="12" opacity=".95"/>
+        <circle cx="300" cy="300" r="155" fill="none" stroke="var(--ring)"  stroke-width="7"  opacity=".95"/>
       </g>
 
-      <!-- four cubes -->
-      <g>
-        <g class="cube jig" transform="translate(373,262)"><use href="#cube-inv"    width="52" height="52" x="-26" y="-26"/></g>
-        <g class="cube jig" transform="translate(373,403)"><use href="#cube-bits"   width="52" height="52" x="-26" y="-26"/></g>
-        <g class="cube jig" transform="translate(227,403)"><use href="#cube-neutral" width="52" height="52" x="-26" y="-26"/></g>
-        <g class="cube jig" transform="translate(227,262)"><use href="#cube-data"   width="52" height="52" x="-26" y="-26"/></g>
+      <!-- rim glint -->
+      <circle class="glint" cx="300" cy="300" r="160" fill="none"/>
+
+      <!-- glass -->
+      <circle cx="300" cy="300" r="145" fill="var(--glass)" filter="url(#inset)"/>
+      <!-- gloss arcs -->
+      <path d="M230 240a111 111 0 0 1 49-37" stroke="url(#gloss)" stroke-width="14" fill="none" opacity=".55"/>
+      <path d="M387 387a111 111 0 0 0 44-35" stroke="url(#gloss)" stroke-width="12" fill="none" opacity=".35"/>
+
+      <!-- handle anchored at ring’s rightmost (16:30 orientation) -->
+      <g transform="translate(464,300)">
+        <!-- ferrule -->
+        <rect x="-4" y="-16" width="26" height="32" rx="10" fill="url(#metal)" stroke="#c1ccd8" stroke-width="1.6"/>
+        <rect x="-2" y="-13" width="22" height="26" rx="9" fill="none" stroke="#9fb0bf" stroke-width="1.1" opacity=".8"/>
+        <!-- wooden handle -->
+        <rect x="20" y="-14" width="150" height="28" rx="14" fill="url(#wood)" stroke="#7a532f" stroke-width="1.8"/>
+        <g stroke="#7a532f" stroke-opacity=".35" fill="none">
+          <path d="M32 -6 q10 6 0 12 t0 12 t0 12"/>
+          <path d="M60 -7 q-8 6 0 12 t0 12 t0 12"/>
+          <path d="M92 -5 q3 6 -3 12 t3 12 t-3 12"/>
+        </g>
+        <ellipse cx="170" cy="0" rx="14" ry="18" fill="#9b6a3b" stroke="#7a532f" stroke-width="1.6"/>
+      </g>
+
+      <!-- ===== LENS CONTENT (parallax, masked by wipe) ===== -->
+      <g class="parallax" mask="url(#wipeMask)">
+        <!-- dotted orbit -->
+        <path class="dash draw" d="M300,192 a108,108 0 1,1 0,216 a108,108 0 1,1 0,-216"
+              stroke="var(--ink)" stroke-width="2.6" fill="none" opacity=".85"/>
+
+        <!-- scan band (soft light sweep across the lens) -->
+        <rect class="scanBand" x="120" y="120" width="360" height="360" fill="url(#scanGrad)"/>
+
+        <!-- discoverables: supplier/wholesale hints -->
+        <g>
+          <!-- pallet -->
+          <g class="disc d1" transform="translate(245,380)">
+            <g fill="none" stroke="var(--ink)" stroke-width="2">
+              <rect x="-26" y="-16" width="52" height="20" rx="4" fill="rgba(255,255,255,.05)"/>
+              <path d="M-18 0h36M-26 8h8m10 0h10m10 0h8"/>
+            </g>
+          </g>
+          <!-- barcode -->
+          <g class="disc d2" transform="translate(345,372)">
+            <g fill="var(--ink)">
+              <rect x="-26" y="-10" width="2" height="20" opacity=".9"/>
+              <rect x="-22" y="-10" width="4" height="20" opacity=".7"/>
+              <rect x="-16" y="-10" width="3" height="20" opacity=".85"/>
+              <rect x="-10" y="-10" width="6" height="20" opacity=".6"/>
+              <rect x="-2"  y="-10" width="2" height="20" opacity=".9"/>
+              <rect x="4"   y="-10" width="5" height="20" opacity=".75"/>
+              <rect x="12"  y="-10" width="3" height="20" opacity=".88"/>
+              <rect x="18"  y="-10" width="2" height="20" opacity=".65"/>
+            </g>
+          </g>
+          <!-- price tag -->
+          <g class="disc d3" transform="translate(232,240) rotate(-20)">
+            <g fill="none" stroke="var(--ink)" stroke-width="2">
+              <path d="M-18 -6 L8 -6 L18 4 L-8 4 Z" fill="rgba(255,255,255,.06)"/>
+              <circle cx="-12" cy="-1" r="2.5" fill="var(--ink)"/>
+            </g>
+          </g>
+          <!-- small truck -->
+          <g class="disc d4" transform="translate(362,250)">
+            <g fill="none" stroke="var(--ink)" stroke-width="2">
+              <rect x="-18" y="-10" width="20" height="14" rx="2" fill="rgba(255,255,255,.05)"/>
+              <rect x="2" y="-10" width="14" height="10" rx="2"/>
+              <circle cx="-10" cy="6" r="4" fill="var(--ink)"/>
+              <circle cx="8"  cy="6" r="4" fill="var(--ink)"/>
+            </g>
+          </g>
+        </g>
+
+        <!-- four cubes (cardinals) -->
+        <g class="cubesSpin spin">
+          <g transform="translate(300,192)">
+            <circle class="ping" r="18"/>
+            <g class="cube jig spinKick"><use href="#cube-data" width="52" height="52" x="-26" y="-26"/></g>
+          </g>
+          <g transform="translate(408,300)">
+            <circle class="ping" r="18"/>
+            <g class="cube jig spinKick"><use href="#cube-inv" width="52" height="52" x="-26" y="-26"/></g>
+          </g>
+          <g transform="translate(300,408)">
+            <circle class="ping" r="18"/>
+            <g class="cube jig spinKick"><use href="#cube-bits" width="52" height="52" x="-26" y="-26"/></g>
+          </g>
+          <g transform="translate(192,300)">
+            <circle class="ping" r="18"/>
+            <g class="cube jig spinKick"><use href="#cube-neutral" width="52" height="52" x="-26" y="-26"/></g>
+          </g>
+        </g>
+
+        <!-- ===== Discovery object: "kr coin" + shine rays ===== -->
+        <g class="find">
+          <!-- coin -->
+          <g transform="translate(300,300)">
+            <circle r="30" fill="url(#coinGrad)" stroke="#8f6b2a" stroke-width="2"/>
+            <circle r="24" fill="none" stroke="#d8b35c" stroke-width="2" opacity=".8"/>
+            <!-- subtle coin texture -->
+            <g stroke="#e8c974" stroke-opacity=".45">
+              <path d="M-18 0h36M-16 -6h32M-16 6h32" />
+            </g>
+            <!-- tiny 'kr' mark (no currency sign) -->
+            <g fill="var(--line)" opacity=".85" transform="translate(-8,6) scale(1.05)">
+              <rect x="-2" y="-8" width="4" height="16" rx="1"/>
+              <path d="M4,-1 l10,-9 M4,1 l10,9" stroke="var(--line)" stroke-width="3" stroke-linecap="round" fill="none"/>
+            </g>
+          </g>
+          <!-- shine rays -->
+          <g class="rays" transform="translate(300,300)">
+            <line x1="0" y1="-44" x2="0" y2="-60" stroke-width="3"/>
+            <line x1="31" y1="-31" x2="43" y2="-43" stroke-width="3"/>
+            <line x1="44" y1="0"   x2="60" y2="0"   stroke-width="3"/>
+            <line x1="31" y1="31"  x2="43" y2="43"  stroke-width="3"/>
+            <line x1="0" y1="44"   x2="0" y2="60"   stroke-width="3"/>
+            <line x1="-31" y1="31" x2="-43" y2="43" stroke-width="3"/>
+            <line x1="-44" y1="0"  x2="-60" y2="0"  stroke-width="3"/>
+            <line x1="-31" y1="-31" x2="-43" y2="-43" stroke-width="3"/>
+          </g>
+        </g>
       </g>
     </g>
-
-    <!-- discovery pulse on lens -->
-    <circle class="pulse pulseAnim" cx="300" cy="300" r="110" stroke="var(--ring)" stroke-width="6" fill="none" opacity=".9"/>
   </g>
 
-  <!-- outward data burst (outside lens) -->
-  <g class="bits">
-    <rect class="burst" x="300" y="300" width="5" height="5" rx=".8" fill="var(--violet)" style="--dx:-94px; --dy:-70px"/>
-    <rect class="burst" x="300" y="300" width="5" height="5" rx=".8" fill="var(--teal)"   style="--dx:112px;  --dy:-47px"/>
-    <rect class="burst" x="300" y="300" width="5" height="5" rx=".8" fill="var(--green)"  style="--dx:82px;  --dy:89px"/>
-    <rect class="burst" x="300" y="300" width="5" height="5" rx=".8" fill="var(--orange)" style="--dx:-108px; --dy:84px"/>
-    <rect class="burst" x="300" y="300" width="4" height="4" rx=".7" fill="var(--ink)"    style="--dx:-21px; --dy:-129px"/>
-  </g>
+  <!-- reveal mask (kept last for clarity; uses the same rect as before) -->
+  <mask id="wipeMask">
+    <rect width="600" height="600" fill="black"/>
+    <rect class="wipe" x="120" y="120" width="360" height="360" rx="140" ry="140" fill="white"/>
+  </mask>
 </svg>
