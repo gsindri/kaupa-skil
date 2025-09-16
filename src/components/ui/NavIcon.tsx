@@ -25,13 +25,33 @@ export function NavIcon({ Icon, active, size = 44, className, label }: IconProps
     const svg = wrapper.querySelector('svg')
     if (!svg) return
 
-    const rect = svg.getBoundingClientRect()
-    if (!rect.width || !rect.height || !size) {
+    let bbox: DOMRect
+    try {
+      bbox = svg.getBBox()
+    } catch {
       return
     }
 
-    const baseWidth = rect.width / scale
-    const baseHeight = rect.height / scale
+    if (!bbox.width || !bbox.height || !size) {
+      return
+    }
+
+    const viewBox = svg.viewBox?.baseVal
+    const viewBoxWidth = viewBox?.width ?? 0
+    const viewBoxHeight = viewBox?.height ?? 0
+
+    const wrapperWidth = wrapper.clientWidth
+    const wrapperHeight = wrapper.clientHeight
+
+    const currentWidth = svg.clientWidth || wrapperWidth || viewBoxWidth || bbox.width
+    const currentHeight = svg.clientHeight || wrapperHeight || viewBoxHeight || bbox.height
+
+    const widthRatio = viewBoxWidth > 0 ? bbox.width / viewBoxWidth : 1
+    const heightRatio = viewBoxHeight > 0 ? bbox.height / viewBoxHeight : 1
+
+    const baseWidth = currentWidth * widthRatio
+    const baseHeight = currentHeight * heightRatio
+
     if (!baseWidth || !baseHeight) {
       return
     }
