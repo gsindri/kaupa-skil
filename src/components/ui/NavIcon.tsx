@@ -85,6 +85,7 @@ export function NavIcon({ Icon, active, size = 44, className, label }: IconProps
             active && "text-white [filter:drop-shadow(0_0_6px_rgba(255,255,255,0.7))]",
             className
           )}
+          style={{ pointerEvents: 'auto' }}
           role="img"
           aria-hidden={false}
         />
