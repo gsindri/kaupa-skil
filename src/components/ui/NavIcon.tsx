@@ -53,7 +53,7 @@ export function NavIcon({ Icon, active, size = 44, className, label }: IconProps
     >
       <span
         ref={iconWrapperRef}
-        className="pointer-events-none flex h-full w-full items-center justify-center"
+        className="flex h-full w-full items-center justify-center"
         style={{ transform: `scale(${scale})`, transformOrigin: 'center' }}
       >
         <Icon
