@@ -37,7 +37,7 @@ export function NavIcon({ Icon, active, size = 44, className, label }: IconProps
     }
 
     const desiredScale = Math.min(size / baseWidth, size / baseHeight)
-    const nextScale = Math.max(1, desiredScale)
+    const nextScale = Math.max(Number.EPSILON, desiredScale)
 
     if (Number.isFinite(nextScale) && nextScale > 0 && Math.abs(nextScale - scale) > 0.01) {
       setScale(nextScale)
