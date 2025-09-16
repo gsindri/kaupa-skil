@@ -38,6 +38,7 @@ type ViewBoxDimensions = {
 }
 
 let intrinsicDimensions: ViewBoxDimensions = { width: 0, height: 0 }
+let viewBoxDimensions: ViewBoxDimensions = { width: 0, height: 0 }
 
 const parseViewBoxDimensions = (contents: string): ViewBoxDimensions => {
   const match = contents.match(/viewBox="([^"]+)"/)
@@ -69,16 +70,16 @@ const getViewBoxDimensions = (svgPath: string): ViewBoxDimensions => {
   return parseViewBoxDimensions(svgContents)
 }
 
-const createRect = (width: number, height: number): DOMRect =>
+const createBBox = (width: number, height: number): DOMRect =>
   ({
     width,
     height,
+    x: 0,
+    y: 0,
     top: 0,
     left: 0,
     right: width,
     bottom: height,
-    x: 0,
-    y: 0,
     toJSON: () => ({
       width,
       height,
@@ -91,26 +92,57 @@ const extractScale = (transform: string): number => {
 }
 
 describe('NavIcon scaling', () => {
-  const originalGetBoundingClientRect = SVGElement.prototype.getBoundingClientRect
+  const svgPrototype = SVGElement.prototype as {
+    getBBox?: (this: SVGElement) => DOMRect
+  }
+  const originalGetBBox = svgPrototype.getBBox
+  const originalClientWidth = Object.getOwnPropertyDescriptor(
+    SVGElement.prototype,
+    'clientWidth'
+  )
+  const originalClientHeight = Object.getOwnPropertyDescriptor(
+    SVGElement.prototype,
+    'clientHeight'
+  )
 
   beforeAll(() => {
-    SVGElement.prototype.getBoundingClientRect = vi.fn(function (this: SVGGraphicsElement) {
-      const wrapper = this.closest('span[style]') as HTMLSpanElement | null
-      let currentScale = 1
+    svgPrototype.getBBox = vi.fn(function (this: SVGElement) {
+      return createBBox(intrinsicDimensions.width, intrinsicDimensions.height)
+    })
 
-      if (wrapper) {
-        currentScale = extractScale(wrapper.style.transform) || 1
-      }
+    Object.defineProperty(SVGElement.prototype, 'clientWidth', {
+      configurable: true,
+      get() {
+        return viewBoxDimensions.width
+      },
+    })
 
-      return createRect(
-        intrinsicDimensions.width * currentScale,
-        intrinsicDimensions.height * currentScale
-      )
+    Object.defineProperty(SVGElement.prototype, 'clientHeight', {
+      configurable: true,
+      get() {
+        return viewBoxDimensions.height
+      },
     })
   })
 
   afterAll(() => {
-    SVGElement.prototype.getBoundingClientRect = originalGetBoundingClientRect
+    if (originalGetBBox) {
+      svgPrototype.getBBox = originalGetBBox
+    } else {
+      delete svgPrototype.getBBox
+    }
+
+    if (originalClientWidth) {
+      Object.defineProperty(SVGElement.prototype, 'clientWidth', originalClientWidth)
+    } else {
+      delete (SVGElement.prototype as { clientWidth?: number }).clientWidth
+    }
+
+    if (originalClientHeight) {
+      Object.defineProperty(SVGElement.prototype, 'clientHeight', originalClientHeight)
+    } else {
+      delete (SVGElement.prototype as { clientHeight?: number }).clientHeight
+    }
   })
 
   const targetSize = 44
@@ -120,9 +152,10 @@ describe('NavIcon scaling', () => {
     async ({ label, Icon, svgPath }) => {
       const dimensions = getViewBoxDimensions(svgPath)
       intrinsicDimensions = dimensions
+      viewBoxDimensions = dimensions
 
       const { container } = render(<NavIcon Icon={Icon} label={label} size={targetSize} />)
-      const wrapper = container.querySelector('.pointer-events-none') as HTMLSpanElement | null
+      const wrapper = container.querySelector('span[style*="transform"]') as HTMLSpanElement | null
 
       expect(wrapper).not.toBeNull()
 
@@ -148,9 +181,10 @@ describe('NavIcon scaling', () => {
 
   it('scales up smaller artwork to fill the requested size', async () => {
     intrinsicDimensions = { width: 16, height: 12 }
+    viewBoxDimensions = getViewBoxDimensions('../../icons/catalog.svg')
 
     const { container } = render(<NavIcon Icon={CatalogIcon} label="Tiny Catalog" size={targetSize} />)
-    const wrapper = container.querySelector('.pointer-events-none') as HTMLSpanElement | null
+    const wrapper = container.querySelector('span[style*="transform"]') as HTMLSpanElement | null
 
     expect(wrapper).not.toBeNull()
 
