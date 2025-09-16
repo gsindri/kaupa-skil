@@ -8,12 +8,25 @@ import { NavIcon } from './NavIcon'
 
 import CatalogIcon from '@/icons/catalog.svg?react'
 import CompareIcon from '@/icons/compare.svg?react'
-import DashboardIcon from '@/icons/dashboard.svg?react'
-import DashboardHoloIcon from '@/icons/dashboard-holo.svg?react'
+import DashboardIcon from '@/icons/dashboard-holo.svg?react'
 import DiscoverIcon from '@/icons/discover.svg?react'
 import PantryIcon from '@/icons/pantry.svg?react'
 import PriceIcon from '@/icons/price.svg?react'
 import SuppliersIcon from '@/icons/suppliers.svg?react'
+
+const BasicIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg data-testid="nav-icon" {...props} />
+)
+
+describe('NavIcon pointer interactions', () => {
+  it('enables pointer events on the rendered SVG', () => {
+    const { container } = render(<NavIcon Icon={BasicIcon} label="Test icon" />)
+    const svg = container.querySelector('svg')
+
+    expect(svg).not.toBeNull()
+    expect(svg?.style.pointerEvents).toBe('auto')
+  })
+})
 
 type IconTestCase = {
   label: string
@@ -24,8 +37,7 @@ type IconTestCase = {
 const iconTestCases: IconTestCase[] = [
   { label: 'Catalog', Icon: CatalogIcon, svgPath: '../../icons/catalog.svg' },
   { label: 'Compare', Icon: CompareIcon, svgPath: '../../icons/compare.svg' },
-  { label: 'Dashboard', Icon: DashboardIcon, svgPath: '../../icons/dashboard.svg' },
-  { label: 'Dashboard Holo', Icon: DashboardHoloIcon, svgPath: '../../icons/dashboard-holo.svg' },
+  { label: 'Dashboard', Icon: DashboardIcon, svgPath: '../../icons/dashboard-holo.svg' },
   { label: 'Discover', Icon: DiscoverIcon, svgPath: '../../icons/discover.svg' },
   { label: 'Pantry', Icon: PantryIcon, svgPath: '../../icons/pantry.svg' },
   { label: 'Price', Icon: PriceIcon, svgPath: '../../icons/price.svg' },
