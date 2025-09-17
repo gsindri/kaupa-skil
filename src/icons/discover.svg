@@ -287,7 +287,8 @@
         transition: none !important;
       }
       #discover[data-nav-measuring] .rig{
-        transform: translate(-48px,-48px) !important;
+        /* Shift the idle lens + handle mass left so the measured bbox centers on 300 */
+        transform: translate(-80px,0) !important;
       }
       #discover[data-nav-measuring] .sweep{
         transform: rotate(var(--start-angle)) !important;
