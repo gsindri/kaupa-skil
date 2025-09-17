@@ -41,24 +41,22 @@
               transition:opacity .35s ease .12s, transform .35s ease .12s}
       #catalogIcon:is(:hover,[data-hovered="true"]) .reveal{opacity:1; transform:translateY(0)}
 
-      #catalogIcon[data-nav-measuring] .reveal{
-        display:none;
-        opacity:0;
-        transform:none;
-      }
-      #catalogIcon[data-nav-measuring] .book,
-      #catalogIcon[data-nav-measuring] .page-turn,
-      #catalogIcon[data-nav-measuring] .icon-a,
-      #catalogIcon[data-nav-measuring] .dot{
+      #catalogIcon[data-nav-measuring] *{
+        animation:none!important;
         transition:none!important;
       }
+      #catalogIcon[data-nav-measuring] .reveal{
+        display:none!important;
+        opacity:0 !important;
+        transform:none!important;
+      }
       #catalogIcon[data-nav-measuring] .book,
       #catalogIcon[data-nav-measuring] .page-turn,
       #catalogIcon[data-nav-measuring] .dot{
-        transform:none;
+        transform:none!important;
       }
       #catalogIcon[data-nav-measuring] .page-turn{
-        filter:none;
+        filter:none!important;
       }
 
       /* Bottom dot now transitions (so it returns smoothly) */

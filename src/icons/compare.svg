@@ -72,16 +72,18 @@
         offset-distance: 100%;
       }
 
-      #scale[data-nav-measuring] .fly-left-to-right,
-      #scale[data-nav-measuring] .fly-right-to-left{
-        opacity:0;
-        transform:none;
+      #scale[data-nav-measuring] *{
         animation:none!important;
         transition:none!important;
+      }
+      #scale[data-nav-measuring] .fly-left-to-right,
+      #scale[data-nav-measuring] .fly-right-to-left{
+        opacity:0 !important;
+        transform:none!important;
         display:none!important;
       }
       #scale[data-nav-measuring] .swap{
-        offset-distance: 0%;
+        offset-distance: 0% !important;
         transition: none!important;
         animation: none!important;
       }

@@ -287,13 +287,14 @@
         transition: none !important;
       }
       #discover[data-nav-measuring] .rig{
-        transform: translate(0,0);
+        transform: translate(0,0) !important;
       }
       #discover[data-nav-measuring] .sweep{
-        transform: rotate(var(--start-angle));
+        transform: rotate(var(--start-angle)) !important;
       }
-      #discover[data-nav-measuring] .parallax{
-        transform: none;
+      #discover[data-nav-measuring] .parallax,
+      #discover[data-nav-measuring] .ground{
+        transform: none !important;
       }
       #discover[data-nav-measuring] .glint,
       #discover[data-nav-measuring] .swoosh,
@@ -306,15 +307,7 @@
         transform: none;
         animation: none !important;
         transition: none !important;
-      }
-      #discover[data-nav-measuring] .glint,
-      #discover[data-nav-measuring] .swoosh,
-      #discover[data-nav-measuring] .ping,
-      #discover[data-nav-measuring] .scanBand,
-      #discover[data-nav-measuring] .disc,
-      #discover[data-nav-measuring] .find,
-      #discover[data-nav-measuring] .rays{
-        display: none;
+        display: none !important;
       }
 
       /* Motion safety */

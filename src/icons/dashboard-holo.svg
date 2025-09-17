@@ -60,19 +60,19 @@
       transition: none !important;
     }
     #dashboardHolo[data-nav-measuring] .bars .bar{
-      transform: scaleY(.25);
+      transform: scaleY(.25) !important;
     }
     #dashboardHolo[data-nav-measuring] .trend{
-      stroke-dashoffset:120;
+      stroke-dashoffset:120 !important;
     }
     #dashboardHolo[data-nav-measuring] .flow{
-      stroke-dashoffset:0;
+      stroke-dashoffset:0 !important;
     }
     #dashboardHolo[data-nav-measuring] .console{
-      filter:none;
+      filter:none !important;
     }
     #dashboardHolo[data-nav-measuring] .btn{
-      transform:none;
+      transform:none !important;
     }
 
     /* Motion safety */

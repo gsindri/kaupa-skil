@@ -79,20 +79,24 @@
       .pkg--left   .mover{ animation-delay:  -9s; }
       svg:is(:hover, [data-hovered="true"]) .mover{ animation-play-state: running; }
 
+      #flow[data-nav-measuring] *{
+        animation: none!important;
+        transition: none!important;
+      }
       #flow[data-nav-measuring] .pulse,
       #flow[data-nav-measuring] .trail{
-        display: none;
-        opacity: 0;
-        transform: none;
-        animation: none!important;
+        display: none!important;
+        opacity: 0 !important;
+        transform: none!important;
       }
       #flow[data-nav-measuring] .mover{
-        animation: none;
+        animation: none!important;
+        transform: translate(-32px,-32px) !important;
       }
-      #flow[data-nav-measuring] .pkg--top .mover{ offset-distance:   0%; }
-      #flow[data-nav-measuring] .pkg--right .mover{ offset-distance: 25%; }
-      #flow[data-nav-measuring] .pkg--bottom .mover{ offset-distance: 50%; }
-      #flow[data-nav-measuring] .pkg--left .mover{ offset-distance: 75%; }
+      #flow[data-nav-measuring] .pkg--top .mover{ offset-distance:   0% !important; }
+      #flow[data-nav-measuring] .pkg--right .mover{ offset-distance: 25% !important; }
+      #flow[data-nav-measuring] .pkg--bottom .mover{ offset-distance: 50% !important; }
+      #flow[data-nav-measuring] .pkg--left .mover{ offset-distance: 75% !important; }
 
       /* Reduced motion */
       @media (prefers-reduced-motion:reduce){

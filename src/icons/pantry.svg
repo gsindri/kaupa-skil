@@ -10,20 +10,20 @@
     /* Items start hidden below shelf; base transition enables animated return */
     .item.top{ transform: translateY(var(--floor-top)); transition: transform .9s cubic-bezier(.2,.7,.2,1); }
     .item.bot{ transform: translateY(var(--floor-bot)); transition: transform .85s cubic-bezier(.2,.7,.2,1); }
+    #pantryIcon[data-nav-measuring] *{
+      animation: none!important;
+      transition: none!important;
+    }
     #pantryIcon[data-nav-measuring] .item.top,
     #pantryIcon[data-nav-measuring] .item.bot{
-      display: none;
-      transform: none;
-      transition: none;
+      display: none!important;
+      transform: none!important;
+      opacity: 0 !important;
     }
     #pantryIcon[data-nav-measuring] .contact-shadow{
-      display: none;
-      opacity: 0;
-      transform: none;
-      transition: none;
-    }
-    #pantryIcon[data-nav-measuring] .led{
-      animation: none!important;
+      display: none!important;
+      opacity: 0 !important;
+      transform: none!important;
     }
     /* Per-item durations (keeps original feel) */
     #item-can{ transition-duration:.9s; }
