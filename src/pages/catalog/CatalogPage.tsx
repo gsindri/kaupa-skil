@@ -963,19 +963,21 @@ export default function CatalogPage() {
       {view === 'list' ? (
         <>
             {hideConnectPill && !bannerDismissed && (
-              <Alert className="mb-4">
-                <AlertDescription className="flex items-center justify-between">
-                  Connect suppliers to unlock prices.
-                  <button
-                    type="button"
-                    aria-label="Dismiss"
-                    onClick={() => setBannerDismissed(true)}
-                    className="ml-2"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                </AlertDescription>
-              </Alert>
+              <div
+                role="status"
+                data-testid="alert"
+                className="mb-4 flex items-center justify-between rounded-[var(--ctrl-r,12px)] bg-white/12 px-4 py-3 text-sm text-[color:var(--ink)] ring-1 ring-inset ring-white/15 shadow-[0_18px_40px_rgba(3,10,26,0.4)] backdrop-blur-xl"
+              >
+                <span>Connect suppliers to unlock prices.</span>
+                <button
+                  type="button"
+                  aria-label="Dismiss notice"
+                  onClick={() => setBannerDismissed(true)}
+                  className="ml-3 inline-flex h-7 w-7 items-center justify-center rounded-full text-[color:var(--ink-dim)]/80 transition duration-150 ease-out hover:bg-white/10 hover:text-[color:var(--ink)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent motion-reduce:transition-none"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
             )}
             {bulkMode && (
               <div className="sticky top-0 z-20 flex items-center justify-between border-b bg-background px-4 py-2 text-sm">
@@ -1217,13 +1219,16 @@ function FiltersBar({
   return (
     <section
       className={cn(
-        'relative border-b border-white/5 bg-[var(--toolbar-bg)] backdrop-blur-xl shadow-[var(--toolbar-shadow)] ring-1 ring-inset ring-white/10',
-        scrolled && 'before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-white/10 before:content-[""]',
+        'relative bg-[color:var(--toolbar-bg)] backdrop-blur-xl shadow-[var(--toolbar-shadow)] ring-1 ring-inset ring-white/12 after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-white/12 after:content-[""]',
+        scrolled && 'before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-white/16 before:opacity-70 before:content-[""]',
       )}
     >
       {(publicError || orgError) && (
         <div className={cn(containerClass, 'py-3')}>
-          <Alert variant="destructive" className="border-white/20 bg-white/10 text-[color:var(--ink)]">
+          <Alert
+            variant="destructive"
+            className="rounded-[var(--ctrl-r,12px)] bg-white/12 text-[color:var(--ink)] ring-1 ring-inset ring-white/15 shadow-[0_16px_36px_rgba(3,10,22,0.45)] backdrop-blur-xl"
+          >
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>{String(publicError || orgError)}</AlertDescription>
           </Alert>
@@ -1250,12 +1255,12 @@ function FiltersBar({
                     onKeyDown={handleSearchKeyDown}
                     onFocus={() => onLockChange(true)}
                     onBlur={() => onLockChange(false)}
-                    className="h-[var(--ctrl-h,40px)] w-full rounded-[var(--ctrl-r,12px)] bg-white/5 pl-10 pr-12 text-sm text-[color:var(--ink)] placeholder:text-[color:var(--ink)]/65 ring-1 ring-inset ring-white/10 transition duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-4 focus-visible:ring-offset-[var(--toolbar-bg)] hover:-translate-y-[0.5px] hover:bg-white/10 hover:ring-white/20 motion-reduce:transform-none motion-reduce:transition-none"
+                    className="h-[var(--ctrl-h,40px)] w-full rounded-[var(--ctrl-r,12px)] bg-white/8 pl-10 pr-12 text-sm text-[color:var(--ink)] placeholder:text-[color:var(--ink)]/65 ring-1 ring-inset ring-white/12 transition duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-4 focus-visible:ring-offset-[color:var(--toolbar-bg)] hover:bg-white/12 hover:ring-white/20 motion-reduce:transition-none"
                   />
                 </TooltipTrigger>
                 <TooltipContent sideOffset={8}>Search (Ctrl/⌘+K)</TooltipContent>
               </Tooltip>
-              <span className="pointer-events-none absolute left-3 top-1/2 grid -translate-y-1/2 place-items-center text-[color:var(--ink-dim)]/80">
+              <span className="pointer-events-none absolute left-3 top-1/2 grid -translate-y-1/2 place-items-center text-[color:var(--ink-dim)]/75">
                 <MagnifyingGlass size={18} weight="duotone" aria-hidden="true" />
               </span>
               {showClear && (
@@ -1263,14 +1268,14 @@ function FiltersBar({
                   type="button"
                   onClick={handleClearSearch}
                   aria-label="Clear search"
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-full p-1 text-[color:var(--ink-dim)]/80 transition duration-150 ease-out hover:text-[color:var(--ink)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent motion-reduce:transition-none"
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-full p-1 text-[color:var(--ink-dim)]/80 transition duration-150 ease-out hover:bg-white/10 hover:text-[color:var(--ink)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent motion-reduce:transition-none"
                 >
                   <XCircle size={18} weight="duotone" />
                 </button>
               )}
             </div>
             {formattedTotal && (
-              <span className="hidden flex-none items-center text-xs font-medium leading-none text-[color:var(--ink-dim)]/75 tabular-nums sm:inline-flex sm:gap-2 sm:-translate-y-px">
+              <span className="hidden flex-none items-center gap-1.5 text-xs font-medium leading-none text-[color:var(--ink-dim)]/70 tabular-nums sm:inline-flex">
                 {formattedTotal}
                 <span className="text-[color:var(--ink-dim)]/70">results</span>
               </span>
@@ -1288,8 +1293,8 @@ function FiltersBar({
                   aria-controls="catalog-filters-panel"
                   aria-keyshortcuts="f"
                   className={cn(
-                    'inline-flex h-[var(--ctrl-h,40px)] items-center gap-2 rounded-[var(--ctrl-r,12px)] bg-white/5 px-3 text-sm font-medium text-[color:var(--ink-dim)]/80 ring-1 ring-inset ring-white/10 transition duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-4 focus-visible:ring-offset-[var(--toolbar-bg)] hover:-translate-y-[0.5px] hover:bg-white/12 hover:text-[color:var(--ink)] hover:ring-white/20 motion-reduce:transform-none motion-reduce:transition-none',
-                    showFilters && 'bg-white/12 text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.2)] ring-white/20',
+                    'inline-flex h-[var(--ctrl-h,40px)] items-center gap-2 rounded-[var(--ctrl-r,12px)] bg-white/8 px-3 text-sm font-medium text-[color:var(--ink-dim)]/80 ring-1 ring-inset ring-white/12 transition duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-4 focus-visible:ring-offset-[color:var(--toolbar-bg)] hover:bg-white/12 hover:text-[color:var(--ink)] hover:ring-white/20 motion-reduce:transition-none',
+                    showFilters && 'bg-white/18 text-white shadow-[0_0_0_1px_rgba(255,255,255,0.28)_inset] ring-white/20',
                   )}
                 >
                   <FunnelSimple size={18} weight={showFilters ? 'fill' : 'duotone'} />
@@ -1329,8 +1334,8 @@ function FiltersBar({
               offLabel="All stock"
               includeAriaLabel="Filter: only in stock"
               excludeAriaLabel="Filter: out of stock"
-              includeClassName="bg-emerald-400/30 text-emerald-50 border-emerald-300/60 hover:bg-emerald-400/40"
-              excludeClassName="bg-rose-400/30 text-rose-50 border-rose-300/60 hover:bg-rose-400/40"
+              includeClassName="bg-emerald-400/25 text-emerald-50 ring-emerald-300/60 hover:bg-emerald-400/35"
+              excludeClassName="bg-rose-400/25 text-rose-50 ring-rose-300/60 hover:bg-rose-400/35"
               className="shrink-0"
             />
             <TriStateChip
@@ -1341,8 +1346,8 @@ function FiltersBar({
               offLabel="All suppliers"
               includeAriaLabel="Filter: my suppliers only"
               excludeAriaLabel="Filter: not my suppliers"
-              includeClassName="bg-sky-400/30 text-sky-50 border-sky-300/60 hover:bg-sky-400/40"
-              excludeClassName="bg-indigo-400/30 text-indigo-50 border-indigo-300/60 hover:bg-indigo-400/40"
+              includeClassName="bg-sky-400/25 text-sky-50 ring-sky-300/60 hover:bg-sky-400/35"
+              excludeClassName="bg-indigo-400/25 text-indigo-50 ring-indigo-300/60 hover:bg-indigo-400/35"
               className="shrink-0"
             />
             <TriStateChip
@@ -1353,8 +1358,8 @@ function FiltersBar({
               offLabel="All specials"
               includeAriaLabel="Filter: on special only"
               excludeAriaLabel="Filter: not on special"
-              includeClassName="bg-amber-400/30 text-amber-50 border-amber-300/60 hover:bg-amber-400/40"
-              excludeClassName="bg-slate-500/30 text-slate-100 border-slate-400/60 hover:bg-slate-500/40"
+              includeClassName="bg-amber-400/25 text-amber-50 ring-amber-300/60 hover:bg-amber-400/35"
+              excludeClassName="bg-slate-500/30 text-slate-100 ring-slate-300/60 hover:bg-slate-500/40"
               className="shrink-0"
             />
             {chips.map(chip => (
@@ -1372,7 +1377,7 @@ function FiltersBar({
               <button
                 type="button"
                 onClick={clearAll}
-                className="shrink-0 whitespace-nowrap text-sm font-medium text-[color:var(--ink-dim)] underline decoration-white/20 underline-offset-4 transition-colors hover:text-[color:var(--ink)]"
+                className="shrink-0 whitespace-nowrap text-sm font-medium text-[color:var(--ink-dim)]/80 underline decoration-white/20 underline-offset-4 transition-colors hover:text-[color:var(--ink)]"
               >
                 Clear all
               </button>

@@ -74,11 +74,14 @@ export function TriStateChip({
         ? excludeAriaLabel
         : offAriaLabel ?? `${offLabel} filter off`
 
-  const baseStyles = 'border-white/12 text-[color:var(--ink-dim)] bg-transparent hover:bg-white/6'
-  const includeStyles = includeClassName ??
-    'bg-emerald-400/25 text-emerald-50 border-emerald-300/50 hover:bg-emerald-400/30'
-  const excludeStyles = excludeClassName ??
-    'bg-rose-400/25 text-rose-50 border-rose-300/50 hover:bg-rose-400/30'
+  const baseStyles =
+    'bg-transparent text-[color:var(--ink-dim)]/85 ring-1 ring-inset ring-white/12 hover:bg-white/8 hover:ring-white/20'
+  const includeStyles =
+    includeClassName ??
+    'bg-emerald-400/25 text-emerald-50 ring-emerald-300/60 hover:bg-emerald-400/35 hover:ring-emerald-200/70'
+  const excludeStyles =
+    excludeClassName ??
+    'bg-rose-400/25 text-rose-50 ring-rose-300/60 hover:bg-rose-400/35 hover:ring-rose-200/70'
   const styles =
     state === 'include'
       ? cn(baseStyles, includeStyles)
@@ -95,7 +98,7 @@ export function TriStateChip({
       onKeyDown={handleKeyDown}
       onContextMenu={handleContextMenu}
       className={cn(
-        'inline-flex h-[var(--ctrl-h,40px)] w-auto items-center justify-center whitespace-nowrap rounded-[var(--ctrl-r,12px)] border px-3 text-sm font-medium transition-colors duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent motion-reduce:transition-none',
+        'inline-flex h-[var(--ctrl-h,40px)] w-auto items-center justify-center whitespace-nowrap rounded-[var(--ctrl-r,12px)] px-3 text-sm font-medium transition duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-4 focus-visible:ring-offset-[color:var(--toolbar-bg)] motion-reduce:transition-none',
         styles,
         className,
       )}

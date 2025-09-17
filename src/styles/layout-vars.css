@@ -26,9 +26,14 @@
   --z-chrome: 50;  /* chrome background below header */
 
   /* Catalog toolbar tokens */
-  --toolbar-bg: rgba(9, 18, 31, 0.6);
-  --toolbar-ring: 0 0 0 1px rgba(255, 255, 255, 0.08) inset;
-  --toolbar-shadow: 0 8px 20px rgba(0, 0, 0, 0.22);
+  --toolbar-bg: rgba(7, 18, 32, 0.82);
+  --toolbar-ring: 0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+  --toolbar-shadow: 0 28px 60px rgba(3, 10, 22, 0.55);
+
+  /* Elevated surfaces */
+  --surface-raised: rgba(10, 22, 36, 0.78);
+  --surface-raised-strong: rgba(14, 30, 50, 0.92);
+  --r-card: 20px;
 
   --ctrl-h: 40px;
   --ctrl-r: 12px;

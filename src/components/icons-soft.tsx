@@ -100,3 +100,44 @@ export function QuestionSoft({ tone = 0.12, className, ...props }: SvgProps) {
     </svg>
   )
 }
+
+export function GridSoft({ tone = 0.12, className, ...props }: SvgProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      {...props}
+      className={cn(baseStrokeClass, className)}
+    >
+      <rect x="4.25" y="4.25" width="6.5" height="6.5" rx="2.2" fill="currentColor" opacity={tone} />
+      <rect x="4.25" y="4.25" width="6.5" height="6.5" rx="2.2" {...baseStrokeProps} />
+      <rect x="13.25" y="4.25" width="6.5" height="6.5" rx="2.2" fill="currentColor" opacity={tone} />
+      <rect x="13.25" y="4.25" width="6.5" height="6.5" rx="2.2" {...baseStrokeProps} />
+      <rect x="4.25" y="13.25" width="6.5" height="6.5" rx="2.2" fill="currentColor" opacity={tone} />
+      <rect x="4.25" y="13.25" width="6.5" height="6.5" rx="2.2" {...baseStrokeProps} />
+      <rect x="13.25" y="13.25" width="6.5" height="6.5" rx="2.2" fill="currentColor" opacity={tone} />
+      <rect x="13.25" y="13.25" width="6.5" height="6.5" rx="2.2" {...baseStrokeProps} />
+    </svg>
+  )
+}
+
+export function ListSoft({ tone = 0.12, className, ...props }: SvgProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      {...props}
+      className={cn(baseStrokeClass, className)}
+    >
+      <rect x="7.75" y="5.25" width="11" height="3.5" rx="1.8" fill="currentColor" opacity={tone} />
+      <rect x="7.75" y="10.25" width="11" height="3.5" rx="1.8" fill="currentColor" opacity={tone} />
+      <rect x="7.75" y="15.25" width="11" height="3.5" rx="1.8" fill="currentColor" opacity={tone} />
+      <rect x="7.75" y="5.25" width="11" height="3.5" rx="1.8" {...baseStrokeProps} />
+      <rect x="7.75" y="10.25" width="11" height="3.5" rx="1.8" {...baseStrokeProps} />
+      <rect x="7.75" y="15.25" width="11" height="3.5" rx="1.8" {...baseStrokeProps} />
+      <circle cx="5.25" cy="7" r="1.1" fill="currentColor" />
+      <circle cx="5.25" cy="12" r="1.1" fill="currentColor" />
+      <circle cx="5.25" cy="17" r="1.1" fill="currentColor" />
+    </svg>
+  )
+}
