@@ -5,8 +5,8 @@ import { useCart } from '@/contexts/useBasket'
 import { useSettings } from '@/contexts/useSettings'
 import { cn } from '@/lib/utils'
 import { formatCurrency } from '@/lib/format'
-import { ShoppingCartSimple } from '@phosphor-icons/react'
-import { Icon } from '@/components/ui/Icon'
+import { CartSoft } from '@/components/icons-soft'
+import { IconButton } from '@/components/ui/IconButton'
 
 const MAX_SUPPLIERS_IN_PREVIEW = 5
 
@@ -96,10 +96,10 @@ export function CartButton({
   const clampedCount = clampCount(totalItems)
   const countLabel = clampedCount > 0 ? clampedLabel(clampedCount) : null
   const hasItems = totalItems > 0
-  const iconSize = size === 'sm' ? 20 : 22
   const ariaLabel = hasItems
     ? `${label} with ${totalItems} ${totalItems === 1 ? 'item' : 'items'} totaling ${formatCurrency(subtotal)}`
     : `${label} is empty`
+  const tooltipLabel = hasItems ? 'Cart (C)' : 'Cart (C) – empty'
 
   const topSuppliers = suppliers.slice(0, MAX_SUPPLIERS_IN_PREVIEW)
   const remainingSupplierCount = Math.max(0, suppliers.length - topSuppliers.length)
@@ -108,46 +108,92 @@ export function CartButton({
     setIsDrawerOpen(true)
   }, [setIsDrawerOpen])
 
+  const accessibilityProps = {
+    'aria-haspopup': 'dialog' as const,
+    'aria-expanded': isDrawerOpen,
+    'aria-controls': 'cart-drawer'
+  }
+
+  const iconTone = hasItems ? 0.18 : 0.12
+  const toolbarTone = hasItems ? 1 : iconTone
+  const iconSize = size === 'sm' ? 20 : 22
+  const toolbarIcon = (
+    <CartSoft
+      width={hasItems ? 22 : 24}
+      height={hasItems ? 22 : 24}
+      tone={toolbarTone}
+      className={cn('shrink-0', hasItems ? 'text-white' : undefined)}
+    />
+  )
+
+  const standardIcon = (
+    <CartSoft width={iconSize} height={iconSize} tone={iconTone} className="shrink-0" />
+  )
+
+  const trigger =
+    variant === 'toolbar' && !hasItems ? (
+      <IconButton
+        label={label}
+        aria-label={ariaLabel}
+        onClick={handleOpenCart}
+        title={tooltipLabel}
+        aria-keyshortcuts="c"
+        className={cn('text-white/80', className)}
+        {...accessibilityProps}
+      >
+        {toolbarIcon}
+      </IconButton>
+    ) : (
+      <button
+        type="button"
+        onClick={handleOpenCart}
+        className={cn(
+          'relative inline-flex items-center gap-2 font-semibold leading-tight ui-numeric transition-[background-color,color,transform,box-shadow] duration-fast ease-snap motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-4 focus-visible:ring-offset-transparent motion-safe:hover:-translate-y-[0.5px] motion-reduce:hover:translate-y-0',
+          variant === 'toolbar'
+            ? cn(
+                'h-[var(--chip-h,2.5rem)] rounded-full px-3 shadow-sm ring-1 ring-white/15 hover:ring-white/25',
+                hasItems
+                  ? 'bg-[linear-gradient(135deg,#3473ff,#2cc6ff)] text-white hover:bg-[linear-gradient(135deg,#3c7dff,#39d4ff)]'
+                  : 'bg-white/5 text-white/90 hover:bg-white/8'
+              )
+            : size === 'sm'
+            ? 'h-9 px-3 text-sm rounded-xl'
+            : 'h-10 px-3.5 text-sm rounded-2xl',
+          variant === 'primary' &&
+            'bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2',
+          variant === 'ghost' &&
+            'bg-transparent hover:bg-muted/70 text-foreground focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2',
+          className
+        )}
+        aria-label={ariaLabel}
+        title={tooltipLabel}
+        aria-keyshortcuts="c"
+        {...accessibilityProps}
+      >
+        {variant === 'toolbar' ? toolbarIcon : standardIcon}
+        {!hideLabel && <span>{label}</span>}
+        {countLabel ? (
+          <span
+            aria-live="polite"
+            className={cn(
+              variant === 'toolbar'
+                ? 'grid h-5 min-w-[1.25rem] place-items-center rounded-full bg-black/20 px-1 text-xs font-medium text-white translate-y-[1px]'
+                : 'ml-2 inline-flex min-w-[1.5rem] items-center justify-center rounded-full px-1.5 text-xs font-semibold leading-none',
+              variant === 'toolbar' && !hideLabel ? 'ml-1' : null,
+              variant === 'primary' && 'bg-primary-foreground/15 text-primary-foreground',
+              variant === 'ghost' && 'bg-foreground/10 text-foreground'
+            )}
+          >
+            {countLabel}
+          </span>
+        ) : null}
+      </button>
+    )
+
   return (
     <HoverCard openDelay={150} closeDelay={150}>
       <HoverCardTrigger asChild>
-        <button
-          type="button"
-          onClick={handleOpenCart}
-          className={cn(
-            'relative inline-flex items-center font-semibold leading-tight ui-numeric transition-colors duration-fast ease-snap motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-0',
-            size === 'sm' ? 'h-9 px-3 text-sm rounded-xl' : 'h-10 px-3.5 text-sm rounded-2xl',
-            variant === 'toolbar' &&
-              'bg-[var(--button-primary)] hover:bg-[var(--button-primary-hover)] text-white shadow-sm focus-visible:ring-[#21D4D6]',
-            variant === 'primary' &&
-              'bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-primary/50 focus-visible:ring-offset-2',
-            variant === 'ghost' &&
-              'bg-transparent hover:bg-muted/70 text-foreground focus-visible:ring-primary/40 focus-visible:ring-offset-2',
-            className
-          )}
-          aria-haspopup="dialog"
-          aria-expanded={isDrawerOpen}
-          aria-controls="cart-drawer"
-          aria-label={ariaLabel}
-        >
-          <Icon size={iconSize} className="shrink-0" aria-hidden="true">
-            <ShoppingCartSimple weight={hasItems ? 'fill' : 'duotone'} />
-          </Icon>
-          {!hideLabel && <span className="ml-2">{label}</span>}
-          {countLabel ? (
-            <span
-              aria-live="polite"
-              className={cn(
-                'ml-2 inline-flex min-w-[1.5rem] items-center justify-center rounded-full px-1.5 text-xs font-semibold leading-none',
-                variant === 'toolbar' && 'bg-[var(--brand-accent)] text-slate-900',
-                variant === 'primary' && 'bg-primary-foreground/15 text-primary-foreground',
-                variant === 'ghost' && 'bg-foreground/10 text-foreground'
-              )}
-            >
-              {countLabel}
-            </span>
-          ) : null}
-        </button>
+        {trigger}
       </HoverCardTrigger>
       <HoverCardContent align="end" sideOffset={12} className="w-80 p-4">
         <div className="space-y-4">

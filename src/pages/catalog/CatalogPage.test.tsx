@@ -44,11 +44,6 @@ vi.mock('@/components/ui/alert', () => ({
   Alert: ({ children }: any) => <div data-testid="alert">{children}</div>,
   AlertDescription: ({ children }: any) => <div>{children}</div>,
 }))
-vi.mock('lucide-react', () => ({
-  AlertCircle: () => <div />,
-  Mic: () => <div />,
-  SlidersHorizontal: () => <div />,
-  X: () => <div />,
 }))
 vi.mock('@/contexts/useAuth', () => ({ useAuth: () => ({ profile: { tenant_id: 'org1' } }) }))
 // Use stable results for catalog hooks to avoid re-renders
@@ -88,9 +83,13 @@ vi.mock('@/components/catalog/CatalogTable', () => ({
 }))
 vi.mock('@/components/catalog/ProductCard', () => ({ ProductCard: () => <div /> }))
 vi.mock('@/components/catalog/ProductCardSkeleton', () => ({ ProductCardSkeleton: () => <div /> }))
-vi.mock('@/components/search/HeroSearchInput', () => ({ HeroSearchInput: () => <div /> }))
 vi.mock('@/components/ui/filter-chip', () => ({
   FilterChip: ({ children }: any) => <div>{children}</div>,
+}))
+vi.mock('@/components/ui/tooltip', () => ({
+  Tooltip: ({ children }: any) => <>{children}</>,
+  TooltipTrigger: ({ children }: any) => <>{children}</>,
+  TooltipContent: ({ children }: any) => <>{children}</>,
 }))
 vi.mock('@/components/catalog/CatalogFiltersPanel', () => ({ CatalogFiltersPanel: () => <div /> }))
 vi.mock('@/components/layout/AppLayout', () => ({

@@ -74,12 +74,17 @@ export function TriStateChip({
         ? excludeAriaLabel
         : offAriaLabel ?? `${offLabel} filter off`
 
+  const baseStyles = 'border-white/12 text-[color:var(--ink-dim)] bg-transparent hover:bg-white/6'
+  const includeStyles = includeClassName ??
+    'bg-emerald-400/25 text-emerald-50 border-emerald-300/50 hover:bg-emerald-400/30'
+  const excludeStyles = excludeClassName ??
+    'bg-rose-400/25 text-rose-50 border-rose-300/50 hover:bg-rose-400/30'
   const styles =
     state === 'include'
-      ? includeClassName ?? 'bg-green-500 text-white border-green-500'
+      ? cn(baseStyles, includeStyles)
       : state === 'exclude'
-        ? excludeClassName ?? 'bg-red-500 text-white border-red-500'
-        : 'border-input text-foreground'
+        ? cn(baseStyles, excludeStyles)
+        : baseStyles
 
   return (
     <button
@@ -90,8 +95,7 @@ export function TriStateChip({
       onKeyDown={handleKeyDown}
       onContextMenu={handleContextMenu}
       className={cn(
-        // Responsive width and no wrapping to keep chip labels on a single line
-        'inline-flex h-8 w-auto whitespace-nowrap items-center justify-center rounded-pill border px-3 text-sm font-medium transition-colors duration-fast ease-snap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)] motion-reduce:transition-none',
+        'inline-flex h-[var(--ctrl-h,40px)] w-auto items-center justify-center whitespace-nowrap rounded-[var(--ctrl-r,12px)] border px-3 text-sm font-medium transition-colors duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent motion-reduce:transition-none',
         styles,
         className,
       )}

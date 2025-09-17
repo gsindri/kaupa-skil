@@ -1,12 +1,43 @@
 :root {
   --layout-rail: 72px;     /* nav rail width */
   --header-h: 56px;        /* unified header height */
-  --toolbar-h: var(--header-h); /* toolbar follows header */
+  --toolbar-h: var(--header-h, 56px); /* toolbar follows header */
   --chrome-h: var(--header-h);  /* chrome follows header */
   --header-left: var(--layout-rail);
+
+  /* top bar sizing + radii */
+  --icon-btn: 40px;
+  --chip-h: 40px;
+  --r-chip: 12px;
+  --r-pill: 9999px;
+  --gap: 12px;
+  --icon: 24px;
+
+  /* ink + ring tokens */
+  --ink: #eaf0f7;
+  --ink-dim: #cfd7e4;
+  --focus: #28d7ff;
+  --ring: #ffffff1a;
+  --ring-hi: #ffffff33;
 
   --z-rail: 60;   /* highest - sidebar always on top */
   --z-stripe: 56; /* cyan stripe above header */
   --z-header: 55;  /* header content on top */
   --z-chrome: 50;  /* chrome background below header */
+
+  /* Catalog toolbar tokens */
+  --toolbar-bg: rgba(9, 18, 31, 0.6);
+  --toolbar-ring: 0 0 0 1px rgba(255, 255, 255, 0.08) inset;
+  --toolbar-shadow: 0 8px 20px rgba(0, 0, 0, 0.22);
+
+  --ctrl-h: 40px;
+  --ctrl-r: 12px;
+  --icon-btn: 40px;
+
+  --ink: #eaf0f7;
+  --ink-dim: #cfd7e4;
+  --field-bg: #0f1b28;
+  --field-bg-elev: #112133;
+  --field-ring: rgba(255, 255, 255, 0.1);
+  --focus: #28d7ff;
 }

@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { SortDropdown } from '@/components/catalog/SortDropdown'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { AlertCircle, Mic, SlidersHorizontal, X } from 'lucide-react'
 import { useAuth } from '@/contexts/useAuth'
 import { useCatalogProducts } from '@/hooks/useCatalogProducts'
 import { useOrgCatalog } from '@/hooks/useOrgCatalog'
@@ -10,7 +9,6 @@ import { useDebounce } from '@/hooks/useDebounce'
 import { CatalogTable } from '@/components/catalog/CatalogTable'
 import { CatalogGrid } from '@/components/catalog/CatalogGrid'
 import { InfiniteSentinel } from '@/components/common/InfiniteSentinel'
-import { HeroSearchInput } from '@/components/search/HeroSearchInput'
 import { CatalogFiltersPanel } from '@/components/catalog/CatalogFiltersPanel'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -32,6 +30,9 @@ import { useCart } from '@/contexts/useBasket'
 import type { CartItem } from '@/lib/types'
 import { resolveImage } from '@/lib/images'
 import { useSearchParams } from 'react-router-dom'
+import { MagnifyingGlass, FunnelSimple, XCircle } from '@phosphor-icons/react'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { cn } from '@/lib/utils'
 
 export default function CatalogPage() {
   const { profile } = useAuth()
@@ -828,6 +829,8 @@ export default function CatalogPage() {
           focusedFacet={focusedFacet}
           setFocusedFacet={setFocusedFacet}
           onLockChange={handleLockChange}
+          total={total}
+          scrolled={scrolled}
         />
       }
       secondary={
@@ -922,6 +925,8 @@ interface FiltersBarProps {
   focusedFacet: keyof FacetFilters | null
   setFocusedFacet: (f: keyof FacetFilters | null) => void
   onLockChange: (locked: boolean) => void
+  total: number | null
+  scrolled: boolean
 }
 
 function FiltersBar({
@@ -941,23 +946,10 @@ function FiltersBar({
   focusedFacet,
   setFocusedFacet,
   onLockChange,
+  total,
+  scrolled,
 }: FiltersBarProps) {
   const { search: _search, ...facetFilters } = filters
-  const countFacetSelections = (value: unknown): number => {
-    if (value == null) return 0
-    if (Array.isArray(value)) return value.length
-    if (typeof value === 'object') {
-      return Object.values(value as Record<string, unknown>).some(
-        v => v !== undefined && v !== null && v !== '',
-      )
-        ? 1
-        : 0
-    }
-    return 1
-  }
-  const activeFacetCount = Object.values(facetFilters).reduce(
-    (total, value) => total + countFacetSelections(value),
-    0,
   )
   const activeCount =
     (triStock !== 'off' ? 1 : 0) +
@@ -965,37 +957,193 @@ function FiltersBar({
     (triSpecial !== 'off' ? 1 : 0) +
     activeFacetCount
 
+  const searchRef = useRef<HTMLInputElement>(null)
+  const searchValue = filters.search ?? ''
+  const showClear = searchValue.length > 0
+
+  const formattedTotal = useMemo(() => {
+    if (typeof total === 'number' && Number.isFinite(total)) {
+      try {
+        return new Intl.NumberFormat().format(total)
+      } catch {
+        return String(total)
+      }
+    }
+    return null
+  }, [total])
+
+  const handleSearchChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      setFilters({ search: event.target.value })
+    },
+    [setFilters],
+  )
+
+  const handleSearchKeyDown = useCallback(
+    (event: React.KeyboardEvent<HTMLInputElement>) => {
+      if (event.key === 'Escape' && searchValue) {
+        event.preventDefault()
+        setFilters({ search: '' })
+        return
+      }
+      if (
+        (event.metaKey || event.ctrlKey) &&
+        (event.key === 'Backspace' || event.key === 'Delete')
+      ) {
+        event.preventDefault()
+        if (searchValue) {
+          setFilters({ search: '' })
+        }
+      }
+    },
+    [searchValue, setFilters],
+  )
+
+  const handleClearSearch = useCallback(() => {
+    setFilters({ search: '' })
+    requestAnimationFrame(() => searchRef.current?.focus())
+  }, [setFilters])
+
+  const toggleFilters = useCallback(() => {
+    const next = !showFilters
+    if (next) {
+      const first = Object.entries(facetFilters).find(([, v]) =>
+        Array.isArray(v) ? v.length > 0 : Boolean(v),
+      )?.[0] as keyof FacetFilters | undefined
+      setFocusedFacet(first ?? null)
+    } else {
+      setFocusedFacet(null)
+    }
+    setShowFilters(next)
+    onLockChange(next)
+  }, [showFilters, facetFilters, setFocusedFacet, setShowFilters, onLockChange])
+
+  const isEditableElement = (el: Element | null) => {
+    if (!el) return false
+    return (
+      el instanceof HTMLInputElement ||
+      el instanceof HTMLTextAreaElement ||
+      el instanceof HTMLSelectElement ||
+      (el as HTMLElement).isContentEditable
+    )
+  }
+
+  useEffect(() => {
+    const handleShortcuts = (event: KeyboardEvent) => {
+      if (event.defaultPrevented) return
+      if (event.altKey || event.metaKey || event.ctrlKey) return
+      const active = document.activeElement
+      if (isEditableElement(active)) return
+
+      const key = event.key.toLowerCase()
+      if (key === 'f') {
+        event.preventDefault()
+        toggleFilters()
+        return
+      }
+      if (key === 'g') {
+        event.preventDefault()
+        if (view !== 'grid') setView('grid')
+        return
+      }
+      if (key === 'l') {
+        event.preventDefault()
+        if (view !== 'list') setView('list')
+      }
+    }
+
+    window.addEventListener('keydown', handleShortcuts)
+    return () => window.removeEventListener('keydown', handleShortcuts)
+  }, [toggleFilters, setView, view])
+
   return (
-    <div className="border-b border-white/10 bg-transparent">
-      <div className="py-3 space-y-3">
-        {(publicError || orgError) && (
-          <Alert variant="destructive">
+    <section
+      className={cn(
+        'relative border-b border-white/10 bg-[var(--toolbar-bg)] backdrop-blur-xl shadow-[var(--toolbar-shadow)] ring-1 ring-inset ring-white/10',
+        scrolled && 'before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-white/10 before:content-[""]',
+      )}
+    >
+      {(publicError || orgError) && (
+        <div className="mx-auto max-w-[1280px] px-4 py-3">
+          <Alert variant="destructive" className="border-white/20 bg-white/10 text-[color:var(--ink)]">
             <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
-              {String(publicError || orgError)}
-            </AlertDescription>
+            <AlertDescription>{String(publicError || orgError)}</AlertDescription>
           </Alert>
-        )}
-        <div className="header-row search-row">
-          <div className="grid grid-cols-[1fr,auto,auto] gap-3 items-center">
-            <HeroSearchInput
-              placeholder="Search products"
-              value={filters.search ?? ''}
-              onChange={e => setFilters({ search: e.target.value })}
-              onFocus={() => onLockChange(true)}
-              onBlur={() => onLockChange(false)}
-              rightSlot={
+        </div>
+      )}
+
+      <div className="mx-auto max-w-[1280px]">
+        <div className="flex h-[var(--toolbar-h,56px)] flex-wrap items-center gap-3 px-4">
+          <div className="flex min-w-0 flex-1 items-center gap-3">
+            <div className="relative min-w-0 flex-1">
+              <label className="sr-only" htmlFor="catalog-search">
+                Search products
+              </label>
+              <input
+                id="catalog-search"
+                ref={searchRef}
+                type="search"
+                placeholder="Search products"
+                value={searchValue}
+                onChange={handleSearchChange}
+                onKeyDown={handleSearchKeyDown}
+                onFocus={() => onLockChange(true)}
+                onBlur={() => onLockChange(false)}
+                className="h-[var(--ctrl-h,40px)] w-full rounded-[var(--ctrl-r,12px)] border border-white/12 bg-[var(--field-bg)] pl-10 pr-12 text-sm text-[color:var(--ink)] placeholder:text-[color:var(--ink-dim)]/70 shadow-[0_0_0_1px_rgba(255,255,255,0.04)] transition-colors duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent hover:bg-[var(--field-bg-elev)] motion-reduce:transition-none"
+              />
+              <span className="pointer-events-none absolute left-3 top-1/2 grid -translate-y-1/2 place-items-center text-[color:var(--ink-dim)]">
+                <MagnifyingGlass size={18} weight="duotone" aria-hidden="true" />
+              </span>
+              {showClear && (
                 <button
                   type="button"
-                  aria-label="Voice search"
-                  onClick={() => console.log('voice search')}
-                  className="text-muted-foreground hover:text-foreground"
+                  onClick={handleClearSearch}
+                  aria-label="Clear search"
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-full p-1 text-[color:var(--ink-dim)] transition-colors duration-150 hover:text-[color:var(--ink)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent motion-reduce:transition-none"
                 >
-                  <Mic className="h-5 w-5" />
+                  <XCircle size={18} weight="duotone" />
                 </button>
-              }
+              )}
+            </div>
+            {formattedTotal && (
+              <span className="hidden text-xs font-semibold uppercase tracking-[0.18em] text-[color:var(--ink-dim)]/80 sm:block">
+                {formattedTotal} results
+              </span>
+            )}
+          </div>
+
+          <div className="flex flex-shrink-0 items-center gap-2">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  onClick={toggleFilters}
+                  aria-pressed={showFilters}
+                  aria-expanded={showFilters}
+                  aria-controls="catalog-filters-panel"
+                  aria-keyshortcuts="f"
+                  className={cn(
+                    'inline-flex h-[var(--ctrl-h,40px)] items-center gap-2 rounded-[var(--ctrl-r,12px)] border border-white/12 bg-white/0 px-3 text-sm font-medium text-[color:var(--ink)] transition-colors duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent hover:bg-white/10 motion-reduce:transition-none',
+                    showFilters && 'bg-white/16 text-[color:var(--ink)] shadow-inner shadow-black/20',
+                  )}
+                >
+                  <FunnelSimple size={18} weight={showFilters ? 'fill' : 'duotone'} />
+                  <span className="hidden sm:inline">
+                    {activeCount ? `Filters (${activeCount})` : 'Filters'}
+                  </span>
+                  <span className="sm:hidden">Filters</span>
+                </button>
+              </TooltipTrigger>
+              <TooltipContent sideOffset={8}>Filters (F)</TooltipContent>
+            </Tooltip>
+
+            <SortDropdown
+              value={sortOrder}
+              onChange={setSortOrder}
+              onOpenChange={onLockChange}
+              className="whitespace-nowrap"
             />
-            <SortDropdown value={sortOrder} onChange={setSortOrder} onOpenChange={onLockChange} />
+
             <ViewToggle
               value={view}
               onChange={v => {
@@ -1005,36 +1153,12 @@ function FiltersBar({
             />
           </div>
         </div>
-        <div className="header-row chips-row">
+
+        <div className="border-t border-white/10 px-4 py-3">
           <div className="flex flex-nowrap items-center gap-2 overflow-x-auto">
-            <Button
-              type="button"
-              variant="outline"
-              aria-controls="catalog-filters-panel"
-              aria-expanded={showFilters}
-              onClick={() => {
-                if (!showFilters) {
-                  const first = Object.entries(facetFilters).find(([, v]) =>
-                    countFacetSelections(v) > 0,
-                  )?.[0] as keyof FacetFilters | undefined
-                  setFocusedFacet(first ?? null)
-                }
-                const next = !showFilters
-                setShowFilters(next)
-                onLockChange(next)
-              }}
-              className={cn(
-                'h-9 rounded-pill border-primary px-4 py-2 text-primary hover:bg-primary/10',
-                (showFilters || activeCount > 0) &&
-                  'bg-primary text-primary-foreground hover:bg-primary/90',
-              )}
-            >
-              <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
-              <span>{activeCount ? `Filters (${activeCount})` : 'Filters'}</span>
-            </Button>
           </div>
         </div>
       </div>
-    </div>
+    </section>
   )
 }

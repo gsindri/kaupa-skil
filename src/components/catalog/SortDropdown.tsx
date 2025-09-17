@@ -8,14 +8,14 @@ import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
 } from '@/components/ui/dropdown-menu'
-import { Button } from '@/components/ui/button'
 import {
-  Sparkles,
-  ArrowDown01,
-  ArrowUp01,
-  ArrowDownAZ,
-  History,
-} from 'lucide-react'
+  CaretDown,
+  Sparkle,
+  ArrowDown,
+  ArrowUp,
+  TextAa,
+  ClockClockwise,
+} from '@phosphor-icons/react'
 import { cn } from '@/lib/utils'
 import type { SortOrder } from '@/state/catalogFiltersStore'
 
@@ -40,62 +40,67 @@ export function SortDropdown({ value, onChange, className, onOpenChange }: SortD
   return (
     <DropdownMenu onOpenChange={onOpenChange}>
       <DropdownMenuTrigger asChild>
-        <Button
-          variant="outline"
-          className={cn('h-9 rounded-xl px-3', className)}
+        <button
+          type="button"
+          className={cn(
+            'inline-flex h-[var(--ctrl-h,40px)] items-center gap-2 rounded-[var(--ctrl-r,12px)] border border-white/12 bg-white/0 px-3 text-sm font-medium text-[color:var(--ink)] transition-colors duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent hover:bg-white/8 motion-reduce:transition-none',
+            className,
+          )}
+          aria-label={`Sort by ${label}`}
         >
-          {label}
-        </Button>
+          <span className="truncate">{label}</span>
+          <CaretDown size={16} weight="bold" className="text-[color:var(--ink-dim)]" aria-hidden="true" />
+        </button>
       </DropdownMenuTrigger>
 
       <DropdownMenuContent
         align="start"
-        sideOffset={8}
-        className="w-[220px] rounded-xl shadow-lg border p-2"
+        sideOffset={12}
+        className="w-[240px] rounded-[16px] border border-white/10 bg-[var(--field-bg-elev)]/95 p-2 text-[color:var(--ink)] shadow-[0_16px_40px_rgba(0,0,0,0.35)] backdrop-blur-xl"
       >
-        <DropdownMenuLabel className="px-2 pb-1 text-xs text-muted-foreground">
+        <DropdownMenuLabel className="px-2 pb-1 text-xs font-semibold uppercase tracking-wide text-[color:var(--ink-dim)]/80">
           Sort items
         </DropdownMenuLabel>
 
-        <DropdownMenuRadioGroup value={value} onValueChange={(v) => onChange(v as SortOrder)}>
-          <DropdownMenuRadioItem value="relevance" className="rounded-lg py-2 pl-8 pr-2 flex items-start">
-            <Sparkles className="mr-2 h-4 w-4 mt-0.5" />
+        <DropdownMenuRadioGroup value={value} onValueChange={v => onChange(v as SortOrder)}>
+          <DropdownMenuRadioItem value="relevance" className="group flex items-start gap-3 rounded-[var(--ctrl-r,12px)] px-3 py-2 text-sm text-[color:var(--ink)] data-[state=checked]:bg-white/10">
+            <Sparkle size={18} weight="duotone" className="mt-0.5 shrink-0 text-[color:var(--ink)]/80" />
             <div className="min-w-0">
-              <div className="text-sm">Relevance</div>
-              <div className="text-xs text-muted-foreground">Best match for your search</div>
+              <div className="font-medium">Relevance</div>
+              <div className="text-xs text-[color:var(--ink-dim)]/80">Best match for your search</div>
             </div>
           </DropdownMenuRadioItem>
 
-          <DropdownMenuSeparator className="my-2" />
-          <DropdownMenuLabel className="px-2 py-1 text-[10px] uppercase tracking-wide text-muted-foreground">
+          <DropdownMenuSeparator className="my-2 border-white/10" />
+          <DropdownMenuLabel className="px-2 py-1 text-[10px] uppercase tracking-wide text-[color:var(--ink-dim)]/70">
             By price
           </DropdownMenuLabel>
 
-          <DropdownMenuRadioItem value="price_asc" className="rounded-lg py-2 pl-8 pr-2 flex items-center">
-            <ArrowDown01 className="mr-2 h-4 w-4" />
-            <div className="text-sm">Price: Low → High</div>
+          <DropdownMenuRadioItem value="price_asc" className="flex items-center gap-3 rounded-[var(--ctrl-r,12px)] px-3 py-2 text-sm data-[state=checked]:bg-white/10">
+            <ArrowDown size={18} weight="duotone" className="shrink-0 text-[color:var(--ink)]/80" />
+            <span>Price: Low → High</span>
           </DropdownMenuRadioItem>
-          <DropdownMenuRadioItem value="price_desc" className="rounded-lg py-2 pl-8 pr-2 flex items-center">
-            <ArrowUp01 className="mr-2 h-4 w-4" />
-            <div className="text-sm">Price: High → Low</div>
+          <DropdownMenuRadioItem value="price_desc" className="flex items-center gap-3 rounded-[var(--ctrl-r,12px)] px-3 py-2 text-sm data-[state=checked]:bg-white/10">
+            <ArrowUp size={18} weight="duotone" className="shrink-0 text-[color:var(--ink)]/80" />
+            <span>Price: High → Low</span>
           </DropdownMenuRadioItem>
 
-          <DropdownMenuSeparator className="my-2" />
-          <DropdownMenuLabel className="px-2 py-1 text-[10px] uppercase tracking-wide text-muted-foreground">
+          <DropdownMenuSeparator className="my-2 border-white/10" />
+          <DropdownMenuLabel className="px-2 py-1 text-[10px] uppercase tracking-wide text-[color:var(--ink-dim)]/70">
             Other
           </DropdownMenuLabel>
 
-          <DropdownMenuRadioItem value="az" className="rounded-lg py-2 pl-8 pr-2 flex items-center">
-            <ArrowDownAZ className="mr-2 h-4 w-4" />
-            <div className="text-sm">A–Z</div>
+          <DropdownMenuRadioItem value="az" className="flex items-center gap-3 rounded-[var(--ctrl-r,12px)] px-3 py-2 text-sm data-[state=checked]:bg-white/10">
+            <TextAa size={18} weight="duotone" className="shrink-0 text-[color:var(--ink)]/80" />
+            <span>A–Z</span>
           </DropdownMenuRadioItem>
-          <DropdownMenuRadioItem value="recent" className="rounded-lg py-2 pl-8 pr-2 flex items-center">
-            <History className="mr-2 h-4 w-4" />
-            <div className="text-sm">Recently ordered</div>
+          <DropdownMenuRadioItem value="recent" className="flex items-center gap-3 rounded-[var(--ctrl-r,12px)] px-3 py-2 text-sm data-[state=checked]:bg-white/10">
+            <ClockClockwise size={18} weight="duotone" className="shrink-0 text-[color:var(--ink)]/80" />
+            <span>Recently ordered</span>
           </DropdownMenuRadioItem>
         </DropdownMenuRadioGroup>
 
-        <div className="mt-2 px-2 pt-1 text-[10px] text-muted-foreground">
+        <div className="mt-2 px-2 pt-1 text-[10px] text-[color:var(--ink-dim)]/70">
           Tip: use ↑ ↓ and Enter
         </div>
       </DropdownMenuContent>
