@@ -134,12 +134,11 @@ export function NavIcon({ Icon, active, size = 44, className, label, hovered }: 
             data-active={active}
             data-hovered={hovered ? 'true' : undefined}
             className={cn(
-              "text-white/80 group-hover:text-white transition-all duration-200",
+              "pointer-events-auto text-white/80 group-hover:text-white transition-all duration-200",
               "[filter:drop-shadow(0_0_4px_rgba(255,255,255,0.4))]",
               active && "text-white [filter:drop-shadow(0_0_6px_rgba(255,255,255,0.7))]",
               className
             )}
-            style={{ pointerEvents: 'auto' }}
             role="img"
             aria-hidden={false}
           />

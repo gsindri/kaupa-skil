@@ -24,7 +24,7 @@ describe('NavIcon pointer interactions', () => {
     const svg = container.querySelector('svg')
 
     expect(svg).not.toBeNull()
-    expect(svg?.style.pointerEvents).toBe('auto')
+    expect(svg).toHaveClass('pointer-events-auto')
   })
 
   it('passes a data-hovered attribute to the SVG when hovered', () => {
@@ -35,6 +35,16 @@ describe('NavIcon pointer interactions', () => {
 
     expect(svg).not.toBeNull()
     expect(svg?.getAttribute('data-hovered')).toBe('true')
+  })
+
+  it('preserves inline styles defined by the source SVG', () => {
+    const { container } = render(
+      <NavIcon Icon={DiscoverIcon} label="Discover icon" />
+    )
+    const svg = container.querySelector('svg')
+
+    expect(svg).not.toBeNull()
+    expect(svg?.getAttribute('style')).toContain('--ink')
   })
 })
 
