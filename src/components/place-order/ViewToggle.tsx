@@ -16,13 +16,13 @@ export const ViewToggle = memo(function ViewToggle({ value, onChange }: ViewTogg
   }
 
   const baseButton =
-    'grid size-[var(--icon-btn,40px)] place-items-center rounded-full text-[color:var(--ink-dim)] transition-colors duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent hover:text-[color:var(--ink)] motion-reduce:transition-none'
+    'relative inline-flex h-full min-w-[var(--ctrl-h,40px)] items-center justify-center rounded-[var(--ctrl-r,12px)] px-3 text-sm font-medium text-[color:var(--ink-dim)]/80 transition-all duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-0 focus-visible:ring-offset-transparent hover:bg-white/6 hover:text-[color:var(--ink)] motion-reduce:transform-none motion-reduce:transition-none'
 
   return (
     <div
       role="group"
       aria-label="Change catalog view"
-      className="inline-flex items-center gap-1 rounded-full border border-white/12 bg-white/10 p-1 shadow-[var(--toolbar-ring)]"
+      className="inline-flex h-[var(--ctrl-h,40px)] items-center gap-1 rounded-[var(--ctrl-r,12px)] bg-white/5 ring-1 ring-inset ring-white/12 shadow-[var(--toolbar-ring)] transition-colors duration-150 ease-out focus-within:ring-2 focus-within:ring-[var(--focus)] focus-within:ring-offset-4 focus-within:ring-offset-[var(--toolbar-bg)] hover:ring-white/20 motion-reduce:transition-none"
     >
       <Tooltip>
         <TooltipTrigger asChild>
@@ -34,10 +34,10 @@ export const ViewToggle = memo(function ViewToggle({ value, onChange }: ViewTogg
             onClick={createHandler('grid')}
             className={cn(
               baseButton,
-              value === 'grid' && 'bg-white/20 text-[color:var(--ink)] shadow-inner shadow-black/20'
+              value === 'grid' && 'bg-white/12 text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.24)] hover:-translate-y-[0.5px] hover:bg-white/16 motion-reduce:transform-none'
             )}
           >
-            <SquaresFour size={20} weight={value === 'grid' ? 'fill' : 'duotone'} />
+            <SquaresFour size={18} weight="fill" />
           </button>
         </TooltipTrigger>
         <TooltipContent sideOffset={8}>Grid (G)</TooltipContent>
@@ -52,10 +52,10 @@ export const ViewToggle = memo(function ViewToggle({ value, onChange }: ViewTogg
             onClick={createHandler('list')}
             className={cn(
               baseButton,
-              value === 'list' && 'bg-white/20 text-[color:var(--ink)] shadow-inner shadow-black/20'
+              value === 'list' && 'bg-white/12 text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.24)] hover:-translate-y-[0.5px] hover:bg-white/16 motion-reduce:transform-none'
             )}
           >
-            <ListBullets size={20} weight={value === 'list' ? 'fill' : 'duotone'} />
+            <ListBullets size={18} weight="fill" />
           </button>
         </TooltipTrigger>
         <TooltipContent sideOffset={8}>List (L)</TooltipContent>
