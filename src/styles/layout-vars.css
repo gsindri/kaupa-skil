@@ -5,6 +5,21 @@
   --chrome-h: var(--header-h);  /* chrome follows header */
   --header-left: var(--layout-rail);
 
+  /* top bar sizing + radii */
+  --icon-btn: 40px;
+  --chip-h: 40px;
+  --r-chip: 12px;
+  --r-pill: 9999px;
+  --gap: 12px;
+  --icon: 24px;
+
+  /* ink + ring tokens */
+  --ink: #eaf0f7;
+  --ink-dim: #cfd7e4;
+  --focus: #28d7ff;
+  --ring: #ffffff1a;
+  --ring-hi: #ffffff33;
+
   --z-rail: 60;   /* highest - sidebar always on top */
   --z-stripe: 56; /* cyan stripe above header */
   --z-header: 55;  /* header content on top */

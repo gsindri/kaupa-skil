@@ -18,11 +18,13 @@ export function LanguageSwitcher({ className, triggerClassName }: LanguageSwitch
       <DropdownMenu modal={false}>
         <DropdownMenuTrigger asChild>
           <IconButton
-            label="Change language"
+            label="Language"
             aria-haspopup="menu"
-            className={cn('bg-white/5', triggerClassName)}
+            aria-label="Change language"
+            title="Language"
+            className={cn('bg-white/5 text-white/90', triggerClassName)}
           >
-            <GlobeSoft width={24} height={24} tone={0.12} />
+            <GlobeSoft width={24} height={24} tone={0.14} />
           </IconButton>
         </DropdownMenuTrigger>
         <DropdownMenuContent

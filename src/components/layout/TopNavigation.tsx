@@ -72,9 +72,11 @@ export function TopNavigation() {
       const activeElement = document.activeElement
       const editable = isEditableElement(activeElement)
 
+      const key = e.key.toLowerCase()
+
       if (
-        ((e.key === '/' && !e.metaKey && !e.ctrlKey && !e.altKey) ||
-          (e.key.toLowerCase() === 'k' && (e.metaKey || e.ctrlKey))) &&
+        ((key === '/' && !e.metaKey && !e.ctrlKey && !e.altKey) ||
+          (key === 'k' && (e.metaKey || e.ctrlKey))) &&
         !editable
       ) {
         e.preventDefault()
@@ -82,17 +84,26 @@ export function TopNavigation() {
         return
       }
 
-      if (e.key === '?' && !editable) {
+      if (key === '?' && !editable) {
         e.preventDefault()
         setUserMenuOpen(true)
         return
       }
 
-      if (lastKey.current === 'g' && e.key === 'c') {
+      if (key === 'c' && !e.metaKey && !e.ctrlKey && !e.altKey && !editable) {
         e.preventDefault()
         setIsDrawerOpen(true)
+        lastKey.current = key
+        return
       }
-      lastKey.current = e.key
+
+      if (lastKey.current === 'g' && key === 'c' && !editable) {
+        e.preventDefault()
+        setIsDrawerOpen(true)
+        lastKey.current = key
+        return
+      }
+      lastKey.current = key
     }
     window.addEventListener('keydown', handleKey)
     return () => window.removeEventListener('keydown', handleKey)
@@ -155,7 +166,7 @@ export function TopNavigation() {
         <TenantSwitcher />
       </div>
 
-      <nav aria-label="Global actions" className="ml-auto flex items-center gap-2">
+      <nav aria-label="Global actions" className="ml-auto flex items-center gap-3">
         <IconButton
           ref={searchTriggerRef}
           label="Search"
@@ -166,7 +177,7 @@ export function TopNavigation() {
           onClick={() => setSearchOpen(true)}
           title={`Search (${shortcutHint} or /)`}
         >
-          <SearchSoft width={24} height={24} tone={0.14} />
+          <SearchSoft width={24} height={24} tone={0.18} />
         </IconButton>
         <span id={searchShortcutDescriptionId} className="sr-only">
           Open search dialog. Shortcut: press / or {shortcutHint}.
@@ -177,19 +188,23 @@ export function TopNavigation() {
             <Button
               variant="ghost"
               size="sm"
-              className="h-10 px-3 rounded-2xl bg-white/8 hover:bg-white/12 ring-1 ring-white/10 flex items-center space-x-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#21D4D6]"
+              className={cn(
+                'h-[var(--chip-h,2.5rem)] px-2 rounded-full bg-white/8 text-white/90 ring-1 ring-white/10',
+                'inline-flex items-center gap-2 transition-[background-color,color,transform,box-shadow] duration-fast ease-snap motion-reduce:transition-none',
+                'hover:bg-white/10 hover:ring-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-4 focus-visible:ring-offset-transparent motion-safe:hover:-translate-y-[0.5px] motion-reduce:hover:translate-y-0'
+              )}
               disabled={isBusy}
               aria-label={accountMenuLabel}
               title={displayName || undefined}
             >
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/12 text-sm font-medium text-[var(--ink,#eaf0f7)]">
                 {isBusy ? (
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[var(--brand-accent)]" />
                 ) : (
-                  <span className="text-sm font-medium text-[var(--text-on-dark)]">{userInitial}</span>
+                  <span className="text-sm font-medium text-[inherit]">{userInitial}</span>
                 )}
               </div>
-              <ChevronSoft width={16} height={16} className="text-[var(--text-on-dark)]" />
+              <ChevronSoft width={16} height={16} className="ml-1 text-white opacity-70" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent
@@ -211,7 +226,7 @@ export function TopNavigation() {
             <div className="xl:hidden">
               <DropdownMenuSub>
                 <DropdownMenuSubTrigger>
-                  <GlobeSoft width={18} height={18} tone={0.12} className="mr-2 text-[inherit]" />
+                  <GlobeSoft width={18} height={18} tone={0.14} className="mr-2 text-[inherit]" />
                   <span>Language</span>
                 </DropdownMenuSubTrigger>
                 <DropdownMenuSubContent className="min-w-[200px]">
@@ -223,10 +238,10 @@ export function TopNavigation() {
               </DropdownMenuSub>
             </div>
             <DropdownMenuSub>
-                <DropdownMenuSubTrigger>
-                  <QuestionSoft width={18} height={18} tone={0.14} className="mr-2 text-[inherit]" />
-                  <span>Help</span>
-                </DropdownMenuSubTrigger>
+              <DropdownMenuSubTrigger>
+                <QuestionSoft width={18} height={18} tone={0.14} className="mr-2 text-[inherit]" />
+                <span>Help</span>
+              </DropdownMenuSubTrigger>
               <DropdownMenuSubContent className="min-w-[200px]">
                 <DropdownMenuItem>Keyboard Shortcuts</DropdownMenuItem>
                 <DropdownMenuItem>Support</DropdownMenuItem>
