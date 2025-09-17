@@ -209,12 +209,14 @@ export function TopNavigation() {
               aria-label={accountMenuLabel}
               title={displayName || undefined}
             >
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10">
                 {isBusy ? (
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[var(--brand-accent)]" />
                 ) : (
                   <span className="text-sm font-medium text-[var(--text-on-dark)]">{userInitial}</span>
                 )}
               </div>
+              <ChevronDown className="h-4 w-4 text-[var(--text-on-dark)]" aria-hidden="true" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent
