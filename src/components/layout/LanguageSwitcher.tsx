@@ -1,8 +1,9 @@
 import React from 'react'
 import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import { Languages } from 'lucide-react'
+import { GlobeHemisphereWest } from '@phosphor-icons/react'
 import { useLanguage } from '@/contexts/LanguageProvider'
+import { Icon } from '@/components/ui/Icon'
 
 export function LanguageSwitcher() {
   const { language, setLanguage } = useLanguage()
@@ -13,10 +14,12 @@ export function LanguageSwitcher() {
         <Button
           variant="ghost"
           size="icon"
-          className="h-10 w-10 rounded-full bg-white/8 hover:bg-white/12 ring-1 ring-white/10 text-slate-100 p-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#21D4D6]"
+          className="h-10 w-10 rounded-full ring-1 ring-white/10 bg-white/5 text-slate-200 hover:bg-white/10 hover:ring-white/20 hover:text-white p-0"
           aria-label="Change language"
         >
-          <Languages className="icon-20" strokeWidth={1.75} />
+          <Icon size={22} aria-hidden="true">
+            <GlobeHemisphereWest weight="duotone" />
+          </Icon>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent

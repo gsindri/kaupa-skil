@@ -1,6 +1,6 @@
 
 import React, { useEffect, useRef, useState, useLayoutEffect, useId } from 'react'
-import { HelpCircle, ChevronDown, Search } from 'lucide-react'
+import { MagnifyingGlass, CaretDown, Question } from '@phosphor-icons/react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,6 +20,7 @@ import { cn } from '@/lib/utils'
 import { HeaderSearch } from '@/components/search/HeaderSearch'
 import { HeildaLogo } from '@/components/branding/HeildaLogo'
 import { CartButton } from '@/components/cart/CartButton'
+import { Icon } from '@/components/ui/Icon'
 
 export function TopNavigation() {
   const { profile, user, signOut, loading, profileLoading } = useAuth()
@@ -161,7 +162,9 @@ export function TopNavigation() {
           aria-describedby={searchShortcutDescriptionId}
           title={`Search (${shortcutHint} or /)`}
         >
-          <Search className="icon-20" strokeWidth={1.75} aria-hidden="true" />
+          <Icon size={22} aria-hidden="true">
+            <MagnifyingGlass weight="duotone" />
+          </Icon>
           <span className="text-sm font-medium leading-none">Search</span>
           <kbd
             className="hidden sm:inline-flex items-center rounded-md border border-white/20 bg-white/10 px-1.5 py-0.5 text-[11px] font-medium leading-none text-white/80"
@@ -197,7 +200,9 @@ export function TopNavigation() {
                   <span className="text-sm font-medium text-[var(--text-on-dark)]">{userInitial}</span>
                 )}
               </div>
-              <ChevronDown className="h-4 w-4 text-[var(--text-on-dark)]" aria-hidden="true" />
+              <Icon size={16} className="text-[var(--text-on-dark)]" aria-hidden="true">
+                <CaretDown weight="bold" />
+              </Icon>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent
@@ -218,7 +223,9 @@ export function TopNavigation() {
             <DropdownMenuItem>Organization Settings</DropdownMenuItem>
             <DropdownMenuSub>
               <DropdownMenuSubTrigger>
-                <HelpCircle className="mr-2 h-4 w-4" strokeWidth={1.75} />
+                <Icon size={18} className="mr-2 text-[inherit]" aria-hidden="true">
+                  <Question weight="duotone" />
+                </Icon>
                 <span>Help</span>
               </DropdownMenuSubTrigger>
               <DropdownMenuSubContent className="min-w-[200px]">

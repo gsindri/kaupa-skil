@@ -5,6 +5,8 @@ import { useCart } from '@/contexts/useBasket'
 import { useSettings } from '@/contexts/useSettings'
 import { cn } from '@/lib/utils'
 import { formatCurrency } from '@/lib/format'
+import { ShoppingCartSimple } from '@phosphor-icons/react'
+import { Icon } from '@/components/ui/Icon'
 
 const MAX_SUPPLIERS_IN_PREVIEW = 5
 
@@ -94,6 +96,7 @@ export function CartButton({
   const clampedCount = clampCount(totalItems)
   const countLabel = clampedCount > 0 ? clampedLabel(clampedCount) : null
   const hasItems = totalItems > 0
+  const iconSize = size === 'sm' ? 20 : 22
   const ariaLabel = hasItems
     ? `${label} with ${totalItems} ${totalItems === 1 ? 'item' : 'items'} totaling ${formatCurrency(subtotal)}`
     : `${label} is empty`
@@ -127,7 +130,9 @@ export function CartButton({
           aria-controls="cart-drawer"
           aria-label={ariaLabel}
         >
-          <CartIcon size={size === 'sm' ? 18 : 20} className="shrink-0" />
+          <Icon size={iconSize} className="shrink-0" aria-hidden="true">
+            <ShoppingCartSimple weight={hasItems ? 'fill' : 'duotone'} />
+          </Icon>
           {!hideLabel && <span className="ml-2">{label}</span>}
           {countLabel ? (
             <span
@@ -222,28 +227,6 @@ function LogoOrInitial({ name, logoUrl }: { name: string; logoUrl?: string }) {
     <div className="size-5 rounded-sm bg-muted grid place-items-center text-[10px] font-bold text-muted-foreground">
       {initial}
     </div>
-  )
-}
-
-function CartIcon({ size = 20, className = '' }: { size?: number; className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      width={size}
-      height={size}
-      aria-hidden="true"
-      className={cn('block', className)}
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.8}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <rect x="5.2" y="7" width="12" height="7.6" rx="1.8" />
-      <path d="M5.2 7L3.8 5.2" />
-      <circle cx="8.2" cy="17" r="1.7" />
-      <circle cx="14.8" cy="17" r="1.7" />
-    </svg>
   )
 }
 
