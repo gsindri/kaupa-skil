@@ -3,7 +3,7 @@
      xmlns="http://www.w3.org/2000/svg"
      style="--start-angle: 45deg; --ink:#eaf0f7; --ring:#ffffff; --ring2:#ffffff; --line:#0f2031; --glass:#132231; --teal:#2ee6d6; --green:#7cffb0; --orange:#ffb36b; --violet:#b79cff; --gray:#cfd7e4; --shadow:#0a1522; --dot:#6db3d9; shape-rendering:geometricPrecision;">
   <title id="title">Discover</title>
-  <desc id="desc">On hover (or data-active=true) the magnifier swoops in a circling arc and settles center; rim glints, lens wipes, dotted orbit draws, cubes jiggle then slow-spin, scan band passes, supplier hints reveal, and a “kr coin” deal pops into view with shine rays. Reduced-motion disables animation.</desc>
+  <desc id="desc">On hover the magnifier swoops in a circling arc and settles center; rim glints, lens wipes, dotted orbit draws, cubes jiggle then slow-spin, scan band passes, supplier hints reveal, and a “kr coin” deal pops into view with shine rays. Reduced-motion disables animation.</desc>
 
   <defs>
     <!-- soft outer glow -->
@@ -122,14 +122,14 @@
         will-change: transform;
       }
 
-      /* ---------- Hover triggers (or [data-active="true"]) ---------- */
-      #discover:is(:hover, [data-hovered="true"]) .rig, #discover[data-active="true"] .rig{
+      /* ---------- Hover triggers ---------- */
+      #discover:is(:hover, [data-hovered="true"]) .rig{
         animation:
           swoopIn 1.05s cubic-bezier(.20,.85,.2,1) both,
           idleBob 4s 1.05s ease-in-out infinite;
       }
 
-      #discover:is(:hover, [data-hovered="true"]) .sweep, #discover[data-active="true"] .sweep{
+      #discover:is(:hover, [data-hovered="true"]) .sweep{
         animation:
           sweepOnce 1.2s .05s ease-in-out,
           hoverLock 3.2s 1.25s ease-in-out infinite;
@@ -163,22 +163,22 @@
 
       /* ---------- Wipe reveal ---------- */
       .wipe{ transform-origin:300px 300px; transform:scale(1); }
-      #discover:is(:hover, [data-hovered="true"]) .wipe, #discover[data-active="true"] .wipe{ animation:wipeIn 1.1s .30s ease-out both; }
+      #discover:is(:hover, [data-hovered="true"]) .wipe{ animation:wipeIn 1.1s .30s ease-out both; }
       @keyframes wipeIn{ from{ transform:scale(0.4); } to{ transform:scale(1); } }
 
       /* ---------- Orbit draw (dotted) ---------- */
       .dash{ stroke-dasharray:4 8; stroke-dashoffset:260; }
-      #discover:is(:hover, [data-hovered="true"]) .draw, #discover[data-active="true"] .draw{ animation: draw 1.1s .38s ease-out forwards; }
+      #discover:is(:hover, [data-hovered="true"]) .draw{ animation: draw 1.1s .38s ease-out forwards; }
       @keyframes draw{ to{ stroke-dashoffset:0; } }
 
       /* ---------- Ring glint ---------- */
       .glint{ stroke:#fff; stroke-width:10; stroke-linecap:round; stroke-dasharray:70 1000; stroke-dashoffset:0; opacity:0; }
-      #discover:is(:hover, [data-hovered="true"]) .glint, #discover[data-active="true"] .glint{ animation: glintRun 1s .28s ease-out both; }
+      #discover:is(:hover, [data-hovered="true"]) .glint{ animation: glintRun 1s .28s ease-out both; }
       @keyframes glintRun{ 0%{opacity:.95;stroke-dashoffset:0} 100%{opacity:0;stroke-dashoffset:-520} }
 
       /* ---------- Motion trail (during swoop) ---------- */
       .swoosh{ opacity:0; transform-origin:300px 300px; }
-      #discover:is(:hover, [data-hovered="true"]) .swoosh, #discover[data-active="true"] .swoosh{
+      #discover:is(:hover, [data-hovered="true"]) .swoosh{
         animation: trail 1.05s cubic-bezier(.2,.85,.2,1) both;
       }
       @keyframes trail{
@@ -189,7 +189,7 @@
 
       /* ---------- Ground shadow shift ---------- */
       .ground{ transform-origin:300px 430px; opacity:.28; }
-      #discover:is(:hover, [data-hovered="true"]) .ground, #discover[data-active="true"] .ground{ animation: shadowSweep 1.2s ease-in-out both; }
+      #discover:is(:hover, [data-hovered="true"]) .ground{ animation: shadowSweep 1.2s ease-in-out both; }
       @keyframes shadowSweep{
         0%{transform:scaleX(1);opacity:.28}
         55%{transform:scaleX(1.18);opacity:.18}
@@ -198,7 +198,7 @@
 
       /* ---------- Lens parallax (subtle depth) ---------- */
       .parallax{ transform-origin:300px 300px; opacity:1; }
-      #discover:is(:hover, [data-hovered="true"]) .parallax, #discover[data-active="true"] .parallax{
+      #discover:is(:hover, [data-hovered="true"]) .parallax{
         animation: parallax 1s .10s ease-out both,
                    parallaxBreath 3.2s 1.25s ease-in-out infinite,
                    lensReveal 1.05s cubic-bezier(.20,.85,.2,1) both;
@@ -220,27 +220,27 @@
 
       /* ---------- Cubes: jiggle + arrival tick + group spin ---------- */
       .cube{ transform-box:fill-box; transform-origin:center; }
-      #discover:is(:hover, [data-hovered="true"]) .jig, #discover[data-active="true"] .jig{ animation:jig .5s .58s cubic-bezier(.2,.9,.2,1) both; }
+      #discover:is(:hover, [data-hovered="true"]) .jig{ animation:jig .5s .58s cubic-bezier(.2,.9,.2,1) both; }
       @keyframes jig{0%{transform:translate(0,0) scale(1)}40%{transform:translate(0,-2px) scale(1.06)}100%{transform:translate(0,0) scale(1)}}
-      #discover:is(:hover, [data-hovered="true"]) .spinKick, #discover[data-active="true"] .spinKick{ animation:kick .14s 1.08s cubic-bezier(.2,.9,.2,1) both; }
+      #discover:is(:hover, [data-hovered="true"]) .spinKick{ animation:kick .14s 1.08s cubic-bezier(.2,.9,.2,1) both; }
       @keyframes kick{from{transform:scale(0.985)}to{transform:scale(1)}}
       .cubesSpin{ transform-origin:300px 300px; }
-      #discover:is(:hover, [data-hovered="true"]) .spin, #discover[data-active="true"] .spin{ animation: spin 16s 1.12s linear infinite; }
+      #discover:is(:hover, [data-hovered="true"]) .spin{ animation: spin 16s 1.12s linear infinite; }
       @keyframes spin{ to{ transform:rotate(360deg); } }
 
       /* ---------- Cube ping rings ---------- */
       .ping{ fill:none; stroke:var(--ring); stroke-opacity:.55; }
-      #discover:is(:hover, [data-hovered="true"]) .ping, #discover[data-active="true"] .ping{ animation: ping 1.6s 0.62s ease-out infinite; }
+      #discover:is(:hover, [data-hovered="true"]) .ping{ animation: ping 1.6s 0.62s ease-out infinite; }
       @keyframes ping{ 0%{opacity:0;r:18} 15%{opacity:.8;r:22} 100%{opacity:0;r:36} }
 
       /* ---------- Data shimmer on cube ---------- */
       .shim{ stroke-dasharray:3 6; }
-      #discover:is(:hover, [data-hovered="true"]) .shim, #discover[data-active="true"] .shim { animation: shim 3.6s linear infinite; }
+      #discover:is(:hover, [data-hovered="true"]) .shim { animation: shim 3.6s linear infinite; }
       @keyframes shim{ to{ stroke-dashoffset:-36 } }
 
       /* ---------- Scan pass + discoverables ---------- */
       .scanBand{ opacity:0; transform-origin:300px 300px; }
-      #discover:is(:hover, [data-hovered="true"]) .scanBand, #discover[data-active="true"] .scanBand{
+      #discover:is(:hover, [data-hovered="true"]) .scanBand{
         animation: scanPass .9s .38s ease-out both;
       }
       @keyframes scanPass{
@@ -251,10 +251,10 @@
       }
 
       .disc{ opacity:0; transform-origin:center; }
-      #discover:is(:hover, [data-hovered="true"]) .d1, #discover[data-active="true"] .d1{ animation: discIn .35s .50s cubic-bezier(.2,.9,.2,1) both; }
-      #discover:is(:hover, [data-hovered="true"]) .d2, #discover[data-active="true"] .d2{ animation: discIn .35s .56s cubic-bezier(.2,.9,.2,1) both; }
-      #discover:is(:hover, [data-hovered="true"]) .d3, #discover[data-active="true"] .d3{ animation: discIn .35s .62s cubic-bezier(.2,.9,.2,1) both; }
-      #discover:is(:hover, [data-hovered="true"]) .d4, #discover[data-active="true"] .d4{ animation: discIn .35s .68s cubic-bezier(.2,.9,.2,1) both; }
+      #discover:is(:hover, [data-hovered="true"]) .d1{ animation: discIn .35s .50s cubic-bezier(.2,.9,.2,1) both; }
+      #discover:is(:hover, [data-hovered="true"]) .d2{ animation: discIn .35s .56s cubic-bezier(.2,.9,.2,1) both; }
+      #discover:is(:hover, [data-hovered="true"]) .d3{ animation: discIn .35s .62s cubic-bezier(.2,.9,.2,1) both; }
+      #discover:is(:hover, [data-hovered="true"]) .d4{ animation: discIn .35s .68s cubic-bezier(.2,.9,.2,1) both; }
       @keyframes discIn{
         0%{ opacity:0; transform:translateY(6px) scale(.96) }
         60%{ opacity:1; transform:translateY(-1px) scale(1.04) }
@@ -263,7 +263,7 @@
 
       /* ---------- Discovery badge (kr coin + shine) ---------- */
       .find{ opacity:0; transform-origin:300px 300px; }
-      #discover:is(:hover, [data-hovered="true"]) .find, #discover[data-active="true"] .find{
+      #discover:is(:hover, [data-hovered="true"]) .find{
         animation: popIn .42s .64s cubic-bezier(.2,.9,.2,1) both;
       }
       @keyframes popIn{
@@ -272,7 +272,7 @@
         100%{ opacity:1; transform:translateY(0) scale(1) }
       }
       .rays line{ stroke:#fff; stroke-opacity:.9; stroke-linecap:round; }
-      #discover:is(:hover, [data-hovered="true"]) .rays line, #discover[data-active="true"] .rays line{
+      #discover:is(:hover, [data-hovered="true"]) .rays line{
         animation: ray 1.2s .68s ease-out both;
       }
       @keyframes ray{
