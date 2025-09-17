@@ -99,6 +99,7 @@ export function CartButton({
   const ariaLabel = hasItems
     ? `${label} with ${totalItems} ${totalItems === 1 ? 'item' : 'items'} totaling ${formatCurrency(subtotal)}`
     : `${label} is empty`
+  const tooltipLabel = hasItems ? 'Cart (C)' : 'Cart (C) – empty'
 
   const topSuppliers = suppliers.slice(0, MAX_SUPPLIERS_IN_PREVIEW)
   const remainingSupplierCount = Math.max(0, suppliers.length - topSuppliers.length)
@@ -135,8 +136,9 @@ export function CartButton({
         label={label}
         aria-label={ariaLabel}
         onClick={handleOpenCart}
-        title={ariaLabel}
-        className={className}
+        title={tooltipLabel}
+        aria-keyshortcuts="c"
+        className={cn('text-white/80', className)}
         {...accessibilityProps}
       >
         {toolbarIcon}
@@ -146,9 +148,14 @@ export function CartButton({
         type="button"
         onClick={handleOpenCart}
         className={cn(
-          'relative inline-flex items-center gap-2 font-semibold leading-tight ui-numeric transition-colors duration-fast ease-snap motion-reduce:transition-none focus-visible:outline-none',
+          'relative inline-flex items-center gap-2 font-semibold leading-tight ui-numeric transition-[background-color,color,transform,box-shadow] duration-fast ease-snap motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-4 focus-visible:ring-offset-transparent motion-safe:hover:-translate-y-[0.5px] motion-reduce:hover:translate-y-0',
           variant === 'toolbar'
-            ? 'h-10 rounded-full px-3 bg-blue-600 text-white ring-1 ring-white/10 hover:bg-blue-500 focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-0'
+            ? cn(
+                'h-[var(--chip-h,2.5rem)] rounded-full px-3 shadow-sm ring-1 ring-white/15 hover:ring-white/25',
+                hasItems
+                  ? 'bg-[linear-gradient(135deg,#3473ff,#2cc6ff)] text-white hover:bg-[linear-gradient(135deg,#3c7dff,#39d4ff)]'
+                  : 'bg-white/5 text-white/90 hover:bg-white/8'
+              )
             : size === 'sm'
             ? 'h-9 px-3 text-sm rounded-xl'
             : 'h-10 px-3.5 text-sm rounded-2xl',
@@ -156,11 +163,11 @@ export function CartButton({
             'bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2',
           variant === 'ghost' &&
             'bg-transparent hover:bg-muted/70 text-foreground focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2',
-          variant === 'toolbar' ? 'shadow-sm' : null,
           className
         )}
         aria-label={ariaLabel}
-        title={ariaLabel}
+        title={tooltipLabel}
+        aria-keyshortcuts="c"
         {...accessibilityProps}
       >
         {variant === 'toolbar' ? toolbarIcon : standardIcon}
@@ -170,7 +177,7 @@ export function CartButton({
             aria-live="polite"
             className={cn(
               variant === 'toolbar'
-                ? 'grid h-5 min-w-[1.25rem] place-items-center rounded-full bg-black/20 px-1 text-xs font-medium text-white'
+                ? 'grid h-5 min-w-[1.25rem] place-items-center rounded-full bg-black/20 px-1 text-xs font-medium text-white translate-y-[1px]'
                 : 'ml-2 inline-flex min-w-[1.5rem] items-center justify-center rounded-full px-1.5 text-xs font-semibold leading-none',
               variant === 'toolbar' && !hideLabel ? 'ml-1' : null,
               variant === 'primary' && 'bg-primary-foreground/15 text-primary-foreground',
