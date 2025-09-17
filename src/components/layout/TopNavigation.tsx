@@ -1,5 +1,5 @@
 
-import React, { useEffect, useRef, useState, useLayoutEffect } from 'react'
+import React, { useEffect, useRef, useState, useLayoutEffect, useId } from 'react'
 import { HelpCircle, ChevronDown, ShoppingCart, Search } from 'lucide-react'
 import {
   DropdownMenu,
@@ -32,12 +32,22 @@ export function TopNavigation() {
   const lastKey = useRef<string>('')
   const [searchOpen, setSearchOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
+  const [shortcutHint, setShortcutHint] = useState<'⌘K' | 'Ctrl K'>('Ctrl K')
+  const searchShortcutDescriptionId = useId()
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 0)
     onScroll()
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
+  useEffect(() => {
+    const nav = window.navigator
+    const platform = `${nav.platform ?? ''} ${nav.userAgent ?? ''}`
+    if (/mac/i.test(platform)) {
+      setShortcutHint('⌘K')
+    }
   }, [])
 
   useEffect(() => {
@@ -145,13 +155,35 @@ export function TopNavigation() {
           ref={searchTriggerRef}
           variant="ghost"
           size="sm"
-          className="h-9 w-9 rounded-full bg-white/8 hover:bg-white/12 ring-1 ring-white/10 p-0 text-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#21D4D6]"
+          className={cn(
+            'group h-9 min-w-[7.5rem] justify-start gap-2 rounded-full px-3 sm:px-4 text-left text-slate-100',
+            'bg-white/12 hover:bg-white/16 ring-1 ring-white/25 shadow-[0_1px_0_rgba(255,255,255,0.08)] hover:text-slate-100',
+            'focus-visible:ring-[#21D4D6] focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 motion-reduce:transition-none'
+          )}
           type="button"
           onClick={() => setSearchOpen(true)}
-          aria-label="Open search"
           aria-haspopup="dialog"
+          aria-keyshortcuts="/ meta+k control+k"
+          aria-describedby={searchShortcutDescriptionId}
+          title={`Search (${shortcutHint} or /)`}
         >
-          <Search className="icon-20" strokeWidth={1.75} />
+          <Search className="icon-20" strokeWidth={1.75} aria-hidden="true" />
+          <span className="text-sm font-medium leading-none">Search</span>
+          <kbd
+            className="hidden sm:inline-flex items-center rounded-md border border-white/20 bg-white/10 px-1.5 py-0.5 text-[11px] font-medium leading-none text-white/80"
+            aria-hidden="true"
+          >
+            {shortcutHint}
+          </kbd>
+          <kbd
+            className="sm:hidden inline-flex items-center rounded-md border border-white/20 bg-white/10 px-1.5 py-0.5 text-[11px] font-medium leading-none text-white/80"
+            aria-hidden="true"
+          >
+            /
+          </kbd>
+          <span id={searchShortcutDescriptionId} className="sr-only">
+            Shortcut: press / or {shortcutHint}
+          </span>
         </Button>
         <LanguageSwitcher />
         <button
