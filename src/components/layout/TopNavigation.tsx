@@ -116,6 +116,9 @@ export function TopNavigation() {
   const displayName = profile?.full_name || user?.email?.split('@')[0] || 'User'
   const displayEmail = profile?.email || user?.email || ''
   const userInitial = displayName[0]?.toUpperCase() || 'U'
+  const accountMenuLabel = displayName
+    ? `Open account menu for ${displayName}`
+    : 'Open account menu'
   const isBusy = loading || profileLoading
   
   return (
@@ -177,16 +180,20 @@ export function TopNavigation() {
               size="sm"
               className="h-9 px-2 rounded-2xl bg-white/8 hover:bg-white/12 ring-1 ring-white/10 flex items-center space-x-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#21D4D6]"
               disabled={isBusy}
+              aria-label={accountMenuLabel}
+              title={displayName || undefined}
             >
-              <div className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center">
+              <div
+                className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center"
+                aria-hidden="true"
+              >
                 {isBusy ? (
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[var(--brand-accent)]" />
                 ) : (
                   <span className="text-sm font-medium text-[var(--text-on-dark)]">{userInitial}</span>
                 )}
               </div>
-              <span className="hidden sm:inline font-medium">{displayName}</span>
-              <ChevronDown className="icon-20" strokeWidth={1.75} />
+              <ChevronDown className="icon-20" strokeWidth={1.75} aria-hidden="true" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent
