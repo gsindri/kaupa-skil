@@ -1,7 +1,6 @@
 /* Iceland B2B Design System - Professional wholesale platform styling */
 
-@layer base {
-  :root {
+:root {
     /* Primary Brand Colors - Professional blue palette inspired by Icelandic landscape */
     --primary: 212 95% 35%;
     --primary-foreground: 210 40% 98%;
@@ -117,44 +116,40 @@
     /* Softer borders and shadows */
     --border-soft: hsl(var(--foreground) / 0.15);
   }
-}
 
 /* Professional typography with tabular numbers */
-@layer base {
-  body {
-    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
-    font-variation-settings: 'opsz' 32;
-  }
-  
-  .font-mono {
-    font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
-    font-feature-settings: 'tnum' 1, 'zero' 1;
-  }
-  
-  /* Ensure tabular numbers for all price displays */
-  .price-display,
-  .currency-isk,
-  [data-price],
-  .font-mono {
-    font-feature-settings: 'tnum' 1;
-    font-variant-numeric: tabular-nums;
-  }
+body {
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  font-variation-settings: 'opsz' 32;
+}
+
+.font-mono {
+  font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+  font-feature-settings: 'tnum' 1, 'zero' 1;
+}
+
+/* Ensure tabular numbers for all price displays */
+.price-display,
+.currency-isk,
+[data-price],
+.font-mono {
+  font-feature-settings: 'tnum' 1;
+  font-variant-numeric: tabular-nums;
 }
 
 /* Component Variants */
-@layer components {
   .btn-primary {
     @apply bg-primary text-primary-foreground hover:bg-primary-hover;
     @apply px-4 py-2 rounded-md font-medium transition-colors;
     @apply focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2;
-    @apply border border-foreground/10 shadow-soft;
+    @apply border border-foreground/10 shadow-sm;
   }
   
   .btn-secondary {
     @apply bg-secondary text-secondary-foreground hover:bg-secondary-hover;
     @apply px-4 py-2 rounded-md font-medium transition-colors;
     @apply focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2;
-    @apply border border-foreground/10 shadow-soft;
+    @apply border border-foreground/10 shadow-sm;
   }
   
   .btn-accent {
@@ -219,7 +214,7 @@
   
   /* Softer table styling */
   .data-table {
-    @apply w-full border-collapse border border-foreground/10 shadow-soft;
+    @apply w-full border-collapse border border-foreground/10 shadow-sm;
   }
   
   .data-table th {
@@ -230,10 +225,8 @@
   .data-table td {
     @apply p-3 border-b border-foreground/10;
   }
-}
 
 /* Animations for professional feel */
-@layer utilities {
   .animate-slide-up {
     animation: slideUp 0.2s ease-out;
   }
@@ -245,7 +238,6 @@
   .animate-scale-in {
     animation: scaleIn 0.2s ease-out;
   }
-}
 
 @keyframes slideUp {
   from {
