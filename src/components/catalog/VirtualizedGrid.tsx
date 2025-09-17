@@ -139,20 +139,23 @@ export function VirtualizedGrid<T>({
     const card = innerRef.current.querySelector('[data-grid-card]')
     if (!card) return
     const node = card as HTMLElement
-    const observer = new ResizeObserver(entries => {
-      for (const entry of entries) {
-        const borderBox = Array.isArray(entry.borderBoxSize)
-          ? entry.borderBoxSize[0]
-          : (entry.borderBoxSize as ResizeObserverSize | undefined)
-        const measured = borderBox?.blockSize ?? entry.contentRect.height
-        if (!Number.isFinite(measured)) continue
-        setDynamicRowHeight(prev => {
-          const next = Math.ceil(measured + gap)
-          return Math.abs(prev - next) > 1 ? next : prev
-        })
-      }
+
+    const measure = () => {
+      const measured = node.scrollHeight
+      if (!Number.isFinite(measured) || measured <= 0) return
+      setDynamicRowHeight(prev => {
+        const next = Math.ceil(measured + gap)
+        return Math.abs(prev - next) > 1 ? next : prev
+      })
+    }
+
+    const observer = new ResizeObserver(() => {
+      measure()
     })
+
     observer.observe(node)
+    measure()
+
     return () => observer.disconnect()
   }, [items.length, gap])
 
