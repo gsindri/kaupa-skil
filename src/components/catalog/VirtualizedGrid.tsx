@@ -96,9 +96,64 @@ export function VirtualizedGrid<T>({
     if (typeof window === 'undefined') return
     const node = scrollerRef.current
     if (!node) return
-    const rect = node.getBoundingClientRect()
-    setScrollMargin(rect.top + window.scrollY)
-  }, [])
+
+    const updateImmediately = () => {
+      const rect = node.getBoundingClientRect()
+      const next = Math.round(rect.top + window.scrollY)
+      if (!Number.isFinite(next)) return
+      setScrollMargin(prev => (Math.abs(prev - next) > 0.5 ? next : prev))
+    }
+
+    let rafId = 0
+    const scheduleUpdate = () => {
+      if (rafId) window.cancelAnimationFrame(rafId)
+      rafId = window.requestAnimationFrame(() => {
+        rafId = 0
+        updateImmediately()
+      })
+    }
+
+    updateImmediately()
+
+    window.addEventListener('resize', scheduleUpdate)
+
+    let resizeObserver: ResizeObserver | undefined
+    if (typeof ResizeObserver !== 'undefined') {
+      resizeObserver = new ResizeObserver(scheduleUpdate)
+      resizeObserver.observe(node)
+      if (node.parentElement) resizeObserver.observe(node.parentElement)
+    }
+
+    let lastHeaderHeight: number | null = null
+    let mutationObserver: MutationObserver | undefined
+    if (typeof MutationObserver !== 'undefined') {
+      const docEl = document.documentElement
+      const readHeaderHeight = () => {
+        const raw = getComputedStyle(docEl).getPropertyValue('--header-h')
+        const parsed = Number.parseFloat(raw)
+        return Number.isFinite(parsed) ? parsed : 0
+      }
+      lastHeaderHeight = readHeaderHeight()
+      mutationObserver = new MutationObserver(records => {
+        for (const record of records) {
+          if (record.attributeName !== 'style') continue
+          const next = readHeaderHeight()
+          if (Math.abs(next - (lastHeaderHeight ?? 0)) > 0.5) {
+            lastHeaderHeight = next
+            scheduleUpdate()
+          }
+        }
+      })
+      mutationObserver.observe(docEl, { attributes: true, attributeFilter: ['style'] })
+    }
+
+    return () => {
+      window.removeEventListener('resize', scheduleUpdate)
+      if (rafId) window.cancelAnimationFrame(rafId)
+      resizeObserver?.disconnect()
+      mutationObserver?.disconnect()
+    }
+  }, [width])
 
   // Derive column count from width.
   const getCols = React.useCallback(() => {
