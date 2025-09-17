@@ -40,13 +40,13 @@
       @keyframes pPulse{0%,100%{opacity:.45}50%{opacity:.85}}
       @keyframes gPulse{0%,100%{opacity:.45}50%{opacity:.95}}
 
-      svg:hover .fly-left-to-right{ animation: L2R 2.5s ease-in-out infinite; }
-      svg:hover .fly-right-to-left{ animation: R2L 2.5s ease-in-out infinite; }
-      svg:hover .fly-left-to-right.d2, svg:hover .fly-right-to-left.d2{ animation-delay:.8s }
-      svg:hover .fly-left-to-right.d3, svg:hover .fly-right-to-left.d3{ animation-delay:1.6s }
-      svg:hover .ring-green, svg:hover .ring-purple{ stroke-width:5; }
-      svg:hover .pulse-purple{ animation: pPulse 2.4s ease-in-out infinite; }
-      svg:hover .pulse-green { animation: gPulse 2.4s ease-in-out infinite .6s; }
+      svg:is(:hover, [data-hovered="true"]) .fly-left-to-right{ animation: L2R 2.5s ease-in-out infinite; }
+      svg:is(:hover, [data-hovered="true"]) .fly-right-to-left{ animation: R2L 2.5s ease-in-out infinite; }
+      svg:is(:hover, [data-hovered="true"]) .fly-left-to-right.d2, svg:is(:hover, [data-hovered="true"]) .fly-right-to-left.d2{ animation-delay:.8s }
+      svg:is(:hover, [data-hovered="true"]) .fly-left-to-right.d3, svg:is(:hover, [data-hovered="true"]) .fly-right-to-left.d3{ animation-delay:1.6s }
+      svg:is(:hover, [data-hovered="true"]) .ring-green, svg:is(:hover, [data-hovered="true"]) .ring-purple{ stroke-width:5; }
+      svg:is(:hover, [data-hovered="true"]) .pulse-purple{ animation: pPulse 2.4s ease-in-out infinite; }
+      svg:is(:hover, [data-hovered="true"]) .pulse-green { animation: gPulse 2.4s ease-in-out infinite .6s; }
 
       /* ===== ITEM ARC SWAPS (CSS motion-path) =====
          Start positions: left(176,190) / right(336,190).
@@ -67,8 +67,8 @@
         offset-path: path('M 0 0 C -100 -70 -200 -70 -200 0');
       }
       /* On hover, drive to 100%; on mouseout, transition back to 0% */
-      svg:hover .left-item .swap,
-      svg:hover .right-item .swap{
+      svg:is(:hover, [data-hovered="true"]) .left-item .swap,
+      svg:is(:hover, [data-hovered="true"]) .right-item .swap{
         offset-distance: 100%;
       }
 

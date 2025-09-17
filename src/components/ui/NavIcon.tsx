@@ -12,12 +12,13 @@ type IconProps = {
   size?: number
   className?: string
   label: string
+  hovered?: boolean
 }
 
 const SCALE_EPSILON = 0.001
 const TRANSLATE_EPSILON = 0.1
 
-export function NavIcon({ Icon, active, size = 44, className, label }: IconProps) {
+export function NavIcon({ Icon, active, size = 44, className, label, hovered }: IconProps) {
   const translateWrapperRef = React.useRef<HTMLSpanElement>(null)
   const scaleWrapperRef = React.useRef<HTMLSpanElement>(null)
   const [scale, setScale] = React.useState(1)
@@ -131,6 +132,7 @@ export function NavIcon({ Icon, active, size = 44, className, label }: IconProps
         >
           <Icon
             data-active={active}
+            data-hovered={hovered ? 'true' : undefined}
             className={cn(
               "text-white/80 group-hover:text-white transition-all duration-200",
               "[filter:drop-shadow(0_0_4px_rgba(255,255,255,0.4))]",
