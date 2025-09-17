@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { SortDropdown } from '@/components/catalog/SortDropdown'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { AlertCircle, Mic, X } from 'lucide-react'
+import { AlertCircle, Mic, SlidersHorizontal, X } from 'lucide-react'
 import { useAuth } from '@/contexts/useAuth'
 import { useCatalogProducts } from '@/hooks/useCatalogProducts'
 import { useOrgCatalog } from '@/hooks/useOrgCatalog'
@@ -11,10 +11,9 @@ import { CatalogTable } from '@/components/catalog/CatalogTable'
 import { CatalogGrid } from '@/components/catalog/CatalogGrid'
 import { InfiniteSentinel } from '@/components/common/InfiniteSentinel'
 import { HeroSearchInput } from '@/components/search/HeroSearchInput'
-import { FilterChip } from '@/components/ui/filter-chip'
-import { TriStateChip } from '@/components/ui/tri-state-chip'
 import { CatalogFiltersPanel } from '@/components/catalog/CatalogFiltersPanel'
 import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 import type { FacetFilters, PublicCatalogFilters, OrgCatalogFilters } from '@/services/catalog'
 import {
   logFilter,
@@ -33,110 +32,6 @@ import { useCart } from '@/contexts/useBasket'
 import type { CartItem } from '@/lib/types'
 import { resolveImage } from '@/lib/images'
 import { useSearchParams } from 'react-router-dom'
-
-interface DerivedChip {
-  key: string
-  label: string
-  onRemove: () => void
-  onEdit: () => void
-}
-
-function deriveChipsFromFilters(
-  filters: FacetFilters,
-  setFilters: (f: Partial<FacetFilters>) => void,
-  openFacet: (facet: keyof FacetFilters) => void,
-): DerivedChip[] {
-  const chips: DerivedChip[] = []
-
-  if (filters.category && filters.category.length) {
-    if (filters.category.length <= 2) {
-      filters.category.forEach(id => {
-        chips.push({
-          key: `category-${id}`,
-          label: id,
-          onRemove: () =>
-            setFilters({ category: filters.category!.filter(c => c !== id) }),
-          onEdit: () => openFacet('category'),
-        })
-      })
-    } else {
-      chips.push({
-        key: 'category',
-        label: `Categories (${filters.category.length})`,
-        onRemove: () => setFilters({ category: undefined }),
-        onEdit: () => openFacet('category'),
-      })
-    }
-  }
-
-  if (filters.supplier && filters.supplier.length) {
-    if (filters.supplier.length <= 2) {
-      filters.supplier.forEach(id => {
-        chips.push({
-          key: `supplier-${id}`,
-          label: id,
-          onRemove: () =>
-            setFilters({ supplier: filters.supplier!.filter(s => s !== id) }),
-          onEdit: () => openFacet('supplier'),
-        })
-      })
-    } else {
-      const [first, second, ...rest] = filters.supplier
-      ;[first, second].forEach(id => {
-        chips.push({
-          key: `supplier-${id}`,
-          label: id,
-          onRemove: () =>
-            setFilters({ supplier: filters.supplier!.filter(s => s !== id) }),
-          onEdit: () => openFacet('supplier'),
-        })
-      })
-      chips.push({
-        key: 'supplier-extra',
-        label: `Suppliers (+${rest.length})`,
-        onRemove: () => setFilters({ supplier: undefined }),
-        onEdit: () => openFacet('supplier'),
-      })
-    }
-  }
-
-  if (filters.brand && filters.brand.length) {
-    if (filters.brand.length <= 2) {
-      filters.brand.forEach(id => {
-        chips.push({
-          key: `brand-${id}`,
-          label: id,
-          onRemove: () =>
-            setFilters({ brand: filters.brand!.filter(b => b !== id) }),
-          onEdit: () => openFacet('brand'),
-        })
-      })
-    } else {
-      chips.push({
-        key: 'brand',
-        label: `Brands (${filters.brand.length})`,
-        onRemove: () => setFilters({ brand: undefined }),
-        onEdit: () => openFacet('brand'),
-      })
-    }
-  }
-
-  if (filters.packSizeRange) {
-    const { min, max } = filters.packSizeRange
-    let label = 'Pack'
-    if (min != null && max != null) label += ` ${min}-${max}`
-    else if (min != null) label += ` ≥ ${min}`
-    else if (max != null) label += ` ≤ ${max}`
-    chips.push({
-      key: 'packSizeRange',
-      label,
-      onRemove: () => setFilters({ packSizeRange: undefined }),
-      onEdit: () => openFacet('packSizeRange'),
-    })
-  }
-
-  return chips
-}
 
 export default function CatalogPage() {
   const { profile } = useAuth()
@@ -185,6 +80,27 @@ export default function CatalogPage() {
   const debouncedSearch = useDebounce(filters.search ?? '', 300)
   const [showFilters, setShowFilters] = useState(true)
   const [focusedFacet, setFocusedFacet] = useState<keyof FacetFilters | null>(null)
+  const clearAllFilters = useCallback(() => {
+    setTriStock('off')
+    setTriSuppliers('off')
+    setTriSpecial('off')
+    setOnlyWithPrice(false)
+    setFilters({
+      brand: undefined,
+      category: undefined,
+      supplier: undefined,
+      packSizeRange: undefined,
+      availability: undefined,
+    })
+    setFocusedFacet(null)
+  }, [
+    setFilters,
+    setFocusedFacet,
+    setOnlyWithPrice,
+    setTriSpecial,
+    setTriStock,
+    setTriSuppliers,
+  ])
   const stringifiedFilters = useMemo(() => JSON.stringify(filters), [filters])
   const [bannerDismissed, setBannerDismissed] = useState(false)
   const headerRef = useRef<HTMLDivElement>(null)
@@ -898,14 +814,9 @@ export default function CatalogPage() {
         <FiltersBar
           filters={filters}
           setFilters={setFilters}
-          onlyWithPrice={onlyWithPrice}
-          setOnlyWithPrice={setOnlyWithPrice}
           triStock={triStock}
-          setTriStock={setTriStock}
           triSpecial={triSpecial}
-          setTriSpecial={setTriSpecial}
           triSuppliers={triSuppliers}
-          setTriSuppliers={setTriSuppliers}
           sortOrder={sortOrder}
           setSortOrder={setSortOrder}
           view={view}
@@ -926,6 +837,7 @@ export default function CatalogPage() {
               filters={filters}
               onChange={setFilters}
               focusedFacet={focusedFacet}
+              onClearFilters={clearAllFilters}
             />
           </div>
         ) : null
@@ -996,14 +908,9 @@ export default function CatalogPage() {
 interface FiltersBarProps {
   filters: FacetFilters
   setFilters: (f: Partial<FacetFilters>) => void
-  onlyWithPrice: boolean
-  setOnlyWithPrice: (v: boolean) => void
   triStock: TriState
-  setTriStock: (v: TriState) => void
   triSpecial: TriState
-  setTriSpecial: (v: TriState) => void
   triSuppliers: TriState
-  setTriSuppliers: (v: TriState) => void
   sortOrder: SortOrder
   setSortOrder: (v: SortOrder) => void
   view: 'grid' | 'list'
@@ -1020,14 +927,9 @@ interface FiltersBarProps {
 function FiltersBar({
   filters,
   setFilters,
-  onlyWithPrice,
-  setOnlyWithPrice,
   triStock,
-  setTriStock,
   triSpecial,
-  setTriSpecial,
   triSuppliers,
-  setTriSuppliers,
   sortOrder,
   setSortOrder,
   view,
@@ -1041,32 +943,27 @@ function FiltersBar({
   onLockChange,
 }: FiltersBarProps) {
   const { search: _search, ...facetFilters } = filters
-  const chips = deriveChipsFromFilters(
-    filters,
-    setFilters,
-    facet => {
-      setFocusedFacet(facet)
-      setShowFilters(true)
-    },
+  const countFacetSelections = (value: unknown): number => {
+    if (value == null) return 0
+    if (Array.isArray(value)) return value.length
+    if (typeof value === 'object') {
+      return Object.values(value as Record<string, unknown>).some(
+        v => v !== undefined && v !== null && v !== '',
+      )
+        ? 1
+        : 0
+    }
+    return 1
+  }
+  const activeFacetCount = Object.values(facetFilters).reduce(
+    (total, value) => total + countFacetSelections(value),
+    0,
   )
-  const activeFacetCount = chips.length
   const activeCount =
     (triStock !== 'off' ? 1 : 0) +
     (triSuppliers !== 'off' ? 1 : 0) +
     (triSpecial !== 'off' ? 1 : 0) +
     activeFacetCount
-  const clearAll = () => {
-    setTriStock('off')
-    setTriSuppliers('off')
-    setTriSpecial('off')
-    setOnlyWithPrice(false)
-    setFilters({
-      brand: undefined,
-      category: undefined,
-      supplier: undefined,
-      packSizeRange: undefined,
-    })
-  }
 
   return (
     <div className="border-b border-white/10 bg-transparent">
@@ -1110,69 +1007,15 @@ function FiltersBar({
         </div>
         <div className="header-row chips-row">
           <div className="flex flex-nowrap items-center gap-2 overflow-x-auto">
-            {/* Disable pricing filter until pricing data is available */}
-            {/* <FilterChip selected={onlyWithPrice} onSelectedChange={setOnlyWithPrice}>
-               Only with price
-             </FilterChip> */}
-            <TriStateChip
-              state={triStock}
-              onStateChange={setTriStock}
-              includeLabel="In stock"
-              excludeLabel="Out of stock"
-              offLabel="All stock"
-              includeAriaLabel="Filter: only in stock"
-              excludeAriaLabel="Filter: out of stock"
-              includeClassName="bg-green-500 text-white border-green-500"
-              excludeClassName="bg-red-500 text-white border-red-500"
-            />
-            <TriStateChip
-              state={triSuppliers}
-              onStateChange={setTriSuppliers}
-              includeLabel="My suppliers"
-              excludeLabel="Not my suppliers"
-              offLabel="All suppliers"
-              includeAriaLabel="Filter: my suppliers only"
-              excludeAriaLabel="Filter: not my suppliers"
-            />
-            <TriStateChip
-              state={triSpecial}
-              onStateChange={setTriSpecial}
-              includeLabel="On special"
-              excludeLabel="Not on special"
-              offLabel="All specials"
-              includeAriaLabel="Filter: on special only"
-              excludeAriaLabel="Filter: not on special"
-            />
-            {chips.map(chip => (
-              <div
-                key={chip.key}
-                className="flex items-center rounded-full border border-primary bg-primary px-3 py-1 text-sm text-primary-foreground"
-              >
-                <button
-                  type="button"
-                  onClick={chip.onEdit}
-                  aria-description={`Edit filter: ${chip.key}`}
-                  className="flex items-center"
-                >
-                  {chip.label}
-                </button>
-                <button
-                  type="button"
-                  onClick={chip.onRemove}
-                  aria-label={`Remove filter: ${chip.label}`}
-                  className="ml-1 text-primary-foreground/70 hover:text-primary-foreground"
-                >
-                  <X className="h-3 w-3" />
-                </button>
-              </div>
-            ))}
-            <FilterChip
-              selected={showFilters}
+            <Button
+              type="button"
+              variant="outline"
               aria-controls="catalog-filters-panel"
+              aria-expanded={showFilters}
               onClick={() => {
                 if (!showFilters) {
                   const first = Object.entries(facetFilters).find(([, v]) =>
-                    Array.isArray(v) ? v.length > 0 : Boolean(v),
+                    countFacetSelections(v) > 0,
                   )?.[0] as keyof FacetFilters | undefined
                   setFocusedFacet(first ?? null)
                 }
@@ -1180,18 +1023,15 @@ function FiltersBar({
                 setShowFilters(next)
                 onLockChange(next)
               }}
+              className={cn(
+                'h-9 rounded-pill border-primary px-4 py-2 text-primary hover:bg-primary/10',
+                (showFilters || activeCount > 0) &&
+                  'bg-primary text-primary-foreground hover:bg-primary/90',
+              )}
             >
-              {activeFacetCount ? `Filters (${activeFacetCount})` : 'More filters'}
-            </FilterChip>
-            {activeCount > 0 && (
-              <button
-                type="button"
-                className="text-sm underline whitespace-nowrap"
-                onClick={clearAll}
-              >
-                Clear all
-              </button>
-            )}
+              <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
+              <span>{activeCount ? `Filters (${activeCount})` : 'Filters'}</span>
+            </Button>
           </div>
         </div>
       </div>

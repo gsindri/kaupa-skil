@@ -44,7 +44,12 @@ vi.mock('@/components/ui/alert', () => ({
   Alert: ({ children }: any) => <div data-testid="alert">{children}</div>,
   AlertDescription: ({ children }: any) => <div>{children}</div>,
 }))
-vi.mock('lucide-react', () => ({ AlertCircle: () => <div />, Mic: () => <div />, X: () => <div /> }))
+vi.mock('lucide-react', () => ({
+  AlertCircle: () => <div />,
+  Mic: () => <div />,
+  SlidersHorizontal: () => <div />,
+  X: () => <div />,
+}))
 vi.mock('@/contexts/useAuth', () => ({ useAuth: () => ({ profile: { tenant_id: 'org1' } }) }))
 // Use stable results for catalog hooks to avoid re-renders
 const catalogProductsResult = {
