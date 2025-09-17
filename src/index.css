@@ -51,7 +51,6 @@ html, body, #root {
   height: var(--icon-size) !important;
   min-width: var(--icon-size) !important;
   min-height: var(--icon-size) !important;
-  stroke-width: var(--icon-stroke) !important;
   overflow: visible !important;
   max-width: none !important;
   max-height: none !important;
