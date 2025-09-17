@@ -50,7 +50,7 @@ export function PrimaryNavRail() {
             to={to}
             aria-current={active ? 'page' : undefined}
             className={clsx(
-              'group relative my-1 flex w-14 flex-col items-center rounded-2xl px-2 py-2 text-white/80',
+              'group relative my-1 flex w-20 flex-col items-center rounded-2xl px-2.5 py-2 text-white/80',
               'hover:text-white transition-colors duration-200',
               active &&
                 'bg-white/5 text-white ring-2 ring-white/40 ring-offset-2 ring-offset-white/10'
@@ -75,7 +75,7 @@ export function PrimaryNavRail() {
               label={label}
               hovered={isHovered || isKeyboardFocused}
             />
-            <span className="mt-1.5 text-xs leading-4">{label}</span>
+            <span className="mt-1.5 text-[11px] leading-[14px] text-center whitespace-nowrap">{label}</span>
           </Link>
         )
       })}
