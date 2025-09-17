@@ -79,6 +79,13 @@
       .pkg--left   .mover{ animation-delay:  -9s; }
       svg:is(:hover, [data-hovered="true"]) .mover{ animation-play-state: running; }
 
+      #flow[data-nav-measuring] .pulse,
+      #flow[data-nav-measuring] .trail{
+        display: none;
+        opacity: 0;
+        transform: none;
+        animation: none!important;
+      }
       #flow[data-nav-measuring] .mover{
         animation: none;
       }
