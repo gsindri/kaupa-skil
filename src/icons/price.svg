@@ -41,7 +41,8 @@
       transition: none!important;
     }
     #coins-fan-stack[data-nav-measuring] .layer{
-      transform: translate(0,0) rotate(0deg) !important;
+      /* Center the stacked pose so nav measurement matches the viewBox midpoint */
+      transform: translate(-3.5px,-19.5px) rotate(0deg) !important;
     }
     #coins-fan-stack[data-nav-measuring] .ui-decor{
       opacity: 0 !important;
