@@ -28,8 +28,6 @@ export function PrimaryNavRail() {
   const [hoveredItem, setHoveredItem] = React.useState<string | null>(null)
   const [keyboardFocusedItem, setKeyboardFocusedItem] = React.useState<string | null>(null)
 
-  const clearKeyboardHover = React.useCallback(() => setKeyboardFocusedItem(null), [])
-
   React.useEffect(() => {
     setKeyboardFocusedItem(null)
   }, [pathname])
@@ -54,6 +52,7 @@ export function PrimaryNavRail() {
         const active = pathname === to || pathname.startsWith(to + '/')
         const isHovered = hoveredItem === to
         const isKeyboardFocused = keyboardFocusedItem === to
+        const isHoveredOrFocused = isHovered || isKeyboardFocused
         return (
           <Link
             key={to}
@@ -69,11 +68,11 @@ export function PrimaryNavRail() {
             onPointerLeave={() =>
               setHoveredItem((current) => (current === to ? null : current))
             }
-            onPointerDown={clearKeyboardHover}
-            onClick={clearKeyboardHover}
+            onPointerDown={() => setKeyboardFocusedItem(null)}
+            onClick={() => setKeyboardFocusedItem(null)}
             onKeyDown={(event) => {
               if (event.key === 'Enter' || event.key === ' ') {
-                clearKeyboardHover()
+                setKeyboardFocusedItem(null)
               }
             }}
             onFocus={(event) => {
@@ -89,7 +88,7 @@ export function PrimaryNavRail() {
               Icon={Icon}
               active={active}
               label={label}
-              hovered={isHovered || isKeyboardFocused}
+              hovered={isHoveredOrFocused}
             />
             <span className="mt-1.5 text-[11px] leading-[14px] text-center whitespace-nowrap">{label}</span>
           </Link>
