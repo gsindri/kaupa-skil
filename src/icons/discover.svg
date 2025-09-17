@@ -162,9 +162,9 @@
       }
 
       /* ---------- Wipe reveal ---------- */
-      .wipe{ transform-origin:300px 300px; transform:scale(0.4); }
+      .wipe{ transform-origin:300px 300px; transform:scale(1); }
       #discover:hover .wipe, #discover[data-active="true"] .wipe{ animation:wipeIn 1.1s .30s ease-out both; }
-      @keyframes wipeIn{ to{ transform:scale(1); } }
+      @keyframes wipeIn{ from{ transform:scale(0.4); } to{ transform:scale(1); } }
 
       /* ---------- Orbit draw (dotted) ---------- */
       .dash{ stroke-dasharray:4 8; stroke-dashoffset:260; }
