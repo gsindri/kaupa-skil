@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { SortDropdown } from '@/components/catalog/SortDropdown'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { AlertCircle, X } from 'lucide-react'
 import { useAuth } from '@/contexts/useAuth'
 import { useCatalogProducts } from '@/hooks/useCatalogProducts'
 import { useOrgCatalog } from '@/hooks/useOrgCatalog'
@@ -9,6 +10,8 @@ import { useDebounce } from '@/hooks/useDebounce'
 import { CatalogTable } from '@/components/catalog/CatalogTable'
 import { CatalogGrid } from '@/components/catalog/CatalogGrid'
 import { InfiniteSentinel } from '@/components/common/InfiniteSentinel'
+import { FilterChip } from '@/components/ui/filter-chip'
+import { TriStateChip } from '@/components/ui/tri-state-chip'
 import { CatalogFiltersPanel } from '@/components/catalog/CatalogFiltersPanel'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -32,7 +35,109 @@ import { resolveImage } from '@/lib/images'
 import { useSearchParams } from 'react-router-dom'
 import { MagnifyingGlass, FunnelSimple, XCircle } from '@phosphor-icons/react'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { cn } from '@/lib/utils'
+
+interface DerivedChip {
+  key: string
+  label: string
+  onRemove: () => void
+  onEdit: () => void
+}
+
+function deriveChipsFromFilters(
+  filters: FacetFilters,
+  setFilters: (f: Partial<FacetFilters>) => void,
+  openFacet: (facet: keyof FacetFilters) => void,
+): DerivedChip[] {
+  const chips: DerivedChip[] = []
+
+  if (filters.category && filters.category.length) {
+    if (filters.category.length <= 2) {
+      filters.category.forEach(id => {
+        chips.push({
+          key: `category-${id}`,
+          label: id,
+          onRemove: () =>
+            setFilters({ category: filters.category!.filter(categoryId => categoryId !== id) }),
+          onEdit: () => openFacet('category'),
+        })
+      })
+    } else {
+      chips.push({
+        key: 'category',
+        label: `Categories (${filters.category.length})`,
+        onRemove: () => setFilters({ category: undefined }),
+        onEdit: () => openFacet('category'),
+      })
+    }
+  }
+
+  if (filters.supplier && filters.supplier.length) {
+    if (filters.supplier.length <= 2) {
+      filters.supplier.forEach(id => {
+        chips.push({
+          key: `supplier-${id}`,
+          label: id,
+          onRemove: () =>
+            setFilters({ supplier: filters.supplier!.filter(supplierId => supplierId !== id) }),
+          onEdit: () => openFacet('supplier'),
+        })
+      })
+    } else {
+      const [first, second, ...rest] = filters.supplier
+      ;[first, second].forEach(id => {
+        chips.push({
+          key: `supplier-${id}`,
+          label: id,
+          onRemove: () =>
+            setFilters({ supplier: filters.supplier!.filter(supplierId => supplierId !== id) }),
+          onEdit: () => openFacet('supplier'),
+        })
+      })
+      chips.push({
+        key: 'supplier-extra',
+        label: `Suppliers (+${rest.length})`,
+        onRemove: () => setFilters({ supplier: undefined }),
+        onEdit: () => openFacet('supplier'),
+      })
+    }
+  }
+
+  if (filters.brand && filters.brand.length) {
+    if (filters.brand.length <= 2) {
+      filters.brand.forEach(id => {
+        chips.push({
+          key: `brand-${id}`,
+          label: id,
+          onRemove: () => setFilters({ brand: filters.brand!.filter(brandId => brandId !== id) }),
+          onEdit: () => openFacet('brand'),
+        })
+      })
+    } else {
+      chips.push({
+        key: 'brand',
+        label: `Brands (${filters.brand.length})`,
+        onRemove: () => setFilters({ brand: undefined }),
+        onEdit: () => openFacet('brand'),
+      })
+    }
+  }
+
+  if (filters.packSizeRange) {
+    const { min, max } = filters.packSizeRange
+    let label = 'Pack'
+    if (min != null && max != null) label += ` ${min}-${max}`
+    else if (min != null) label += ` ≥ ${min}`
+    else if (max != null) label += ` ≤ ${max}`
+    chips.push({
+      key: 'packSizeRange',
+      label,
+      onRemove: () => setFilters({ packSizeRange: undefined }),
+      onEdit: () => openFacet('packSizeRange'),
+    })
+  }
+
+  return chips
+}
 
 export default function CatalogPage() {
   const { profile } = useAuth()
@@ -815,9 +920,14 @@ export default function CatalogPage() {
         <FiltersBar
           filters={filters}
           setFilters={setFilters}
+          onlyWithPrice={onlyWithPrice}
+          setOnlyWithPrice={setOnlyWithPrice}
           triStock={triStock}
+          setTriStock={setTriStock}
           triSpecial={triSpecial}
+          setTriSpecial={setTriSpecial}
           triSuppliers={triSuppliers}
+          setTriSuppliers={setTriSuppliers}
           sortOrder={sortOrder}
           setSortOrder={setSortOrder}
           view={view}
@@ -911,9 +1021,14 @@ export default function CatalogPage() {
 interface FiltersBarProps {
   filters: FacetFilters
   setFilters: (f: Partial<FacetFilters>) => void
+  onlyWithPrice: boolean
+  setOnlyWithPrice: (v: boolean) => void
   triStock: TriState
+  setTriStock: (v: TriState) => void
   triSpecial: TriState
+  setTriSpecial: (v: TriState) => void
   triSuppliers: TriState
+  setTriSuppliers: (v: TriState) => void
   sortOrder: SortOrder
   setSortOrder: (v: SortOrder) => void
   view: 'grid' | 'list'
@@ -932,9 +1047,14 @@ interface FiltersBarProps {
 function FiltersBar({
   filters,
   setFilters,
+  onlyWithPrice: _onlyWithPrice,
+  setOnlyWithPrice,
   triStock,
+  setTriStock,
   triSpecial,
+  setTriSpecial,
   triSuppliers,
+  setTriSuppliers,
   sortOrder,
   setSortOrder,
   view,
@@ -950,12 +1070,35 @@ function FiltersBar({
   scrolled,
 }: FiltersBarProps) {
   const { search: _search, ...facetFilters } = filters
+  const chips = deriveChipsFromFilters(
+    filters,
+    setFilters,
+    facet => {
+      setFocusedFacet(facet)
+      setShowFilters(true)
+      onLockChange(true)
+    },
   )
+  const activeFacetCount = chips.length
   const activeCount =
     (triStock !== 'off' ? 1 : 0) +
     (triSuppliers !== 'off' ? 1 : 0) +
     (triSpecial !== 'off' ? 1 : 0) +
     activeFacetCount
+
+  const clearAll = useCallback(() => {
+    setTriStock('off')
+    setTriSuppliers('off')
+    setTriSpecial('off')
+    setOnlyWithPrice(false)
+    setFilters({
+      brand: undefined,
+      category: undefined,
+      supplier: undefined,
+      packSizeRange: undefined,
+      availability: undefined,
+    })
+  }, [setTriStock, setTriSuppliers, setTriSpecial, setOnlyWithPrice, setFilters])
 
   const searchRef = useRef<HTMLInputElement>(null)
   const searchValue = filters.search ?? ''
@@ -1156,6 +1299,62 @@ function FiltersBar({
 
         <div className="border-t border-white/10 px-4 py-3">
           <div className="flex flex-nowrap items-center gap-2 overflow-x-auto">
+            <TriStateChip
+              state={triStock}
+              onStateChange={setTriStock}
+              includeLabel="In stock"
+              excludeLabel="Out of stock"
+              offLabel="All stock"
+              includeAriaLabel="Filter: only in stock"
+              excludeAriaLabel="Filter: out of stock"
+              includeClassName="bg-emerald-400/30 text-emerald-50 border-emerald-300/60 hover:bg-emerald-400/40"
+              excludeClassName="bg-rose-400/30 text-rose-50 border-rose-300/60 hover:bg-rose-400/40"
+              className="shrink-0"
+            />
+            <TriStateChip
+              state={triSuppliers}
+              onStateChange={setTriSuppliers}
+              includeLabel="My suppliers"
+              excludeLabel="Not my suppliers"
+              offLabel="All suppliers"
+              includeAriaLabel="Filter: my suppliers only"
+              excludeAriaLabel="Filter: not my suppliers"
+              includeClassName="bg-sky-400/30 text-sky-50 border-sky-300/60 hover:bg-sky-400/40"
+              excludeClassName="bg-indigo-400/30 text-indigo-50 border-indigo-300/60 hover:bg-indigo-400/40"
+              className="shrink-0"
+            />
+            <TriStateChip
+              state={triSpecial}
+              onStateChange={setTriSpecial}
+              includeLabel="On special"
+              excludeLabel="Not on special"
+              offLabel="All specials"
+              includeAriaLabel="Filter: on special only"
+              excludeAriaLabel="Filter: not on special"
+              includeClassName="bg-amber-400/30 text-amber-50 border-amber-300/60 hover:bg-amber-400/40"
+              excludeClassName="bg-slate-500/30 text-slate-100 border-slate-400/60 hover:bg-slate-500/40"
+              className="shrink-0"
+            />
+            {chips.map(chip => (
+              <FilterChip
+                key={chip.key}
+                selected
+                onClick={chip.onEdit}
+                onRemove={chip.onRemove}
+                className="shrink-0"
+              >
+                {chip.label}
+              </FilterChip>
+            ))}
+            {activeCount > 0 && (
+              <button
+                type="button"
+                onClick={clearAll}
+                className="shrink-0 whitespace-nowrap text-sm font-medium text-[color:var(--ink-dim)] underline decoration-white/20 underline-offset-4 transition-colors hover:text-[color:var(--ink)]"
+              >
+                Clear all
+              </button>
+            )}
           </div>
         </div>
       </div>
