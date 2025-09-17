@@ -52,7 +52,8 @@ export function PrimaryNavRail() {
             className={clsx(
               'group relative my-1 flex w-14 flex-col items-center rounded-2xl px-2 py-2 text-white/80',
               'hover:text-white transition-colors duration-200',
-              active && 'ring-1 ring-white/10 text-white'
+              active &&
+                'bg-white/5 text-white ring-2 ring-white/40 ring-offset-2 ring-offset-white/10'
             )}
             onPointerEnter={() => setHoveredItem(to)}
             onPointerLeave={() =>
