@@ -1,4 +1,4 @@
-import { memo, useState } from "react";
+import { memo, useMemo, useState } from "react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import SupplierLogo from "./SupplierLogo";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import type { PublicCatalogItem } from "@/services/catalog";
 import { resolveImage } from "@/lib/images";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { useCart } from "@/contexts/useBasket";
+import { HelpCircle, Loader2, Plus } from "lucide-react";
 
 interface ProductCardProps {
   product: PublicCatalogItem;
@@ -43,6 +44,7 @@ export const ProductCard = memo(function ProductCard({
   const primarySupplierLogo = product.supplier_logo_urls?.[0] ?? null;
   const packInfo =
     product.canonical_pack ?? product.pack_sizes?.join(", ") ?? "";
+  const brand = product.brand ?? "";
   const supplierIds = product.supplier_ids ?? [];
   const supplierNames = product.supplier_names ?? [];
   const hasMultipleSuppliers = supplierIds.length > 1;
@@ -52,6 +54,23 @@ export const ProductCard = memo(function ProductCard({
     id,
     name: supplierNames[idx] ?? id,
   }));
+  const overflowSupplierCount = Math.max(0, supplierIds.length - 1);
+
+  const metaLine = useMemo(() => {
+    const parts: string[] = [];
+    if (packInfo) parts.push(packInfo);
+    if (brand) parts.push(brand);
+    return parts.join(" • ");
+  }, [packInfo, brand]);
+
+  const bestSupplierLabel = useMemo(() => {
+    if (hasMultipleSuppliers) {
+      return primarySupplierName
+        ? `Best from ${primarySupplierName}`
+        : `Best option · ${supplierLabel}`;
+    }
+    return primarySupplierName || supplierLabel;
+  }, [hasMultipleSuppliers, primarySupplierName, supplierLabel]);
 
   const handleAdd = (supplierId: string, supplierName: string) => {
     if (onAdd) {
@@ -92,109 +111,130 @@ export const ProductCard = memo(function ProductCard({
       }
     : { href: "#" };
 
+  const priceDisplay = showPrice && product.best_price != null;
+
   return (
     <Card
+      data-grid-card
       className={cn(
-        "group flex h-full w-full max-w-[340px] flex-col overflow-hidden rounded-2xl border shadow-md transition-shadow duration-300 hover:shadow-lg",
+        "catalog-card group isolate flex h-full w-full flex-col overflow-hidden border border-transparent bg-card/95",
+        "rounded-[20px] shadow-sm transition-[box-shadow,transform] duration-[var(--dur-base)] ease-[var(--ease-snap)]",
+        "hover:-translate-y-[1px] hover:shadow-md focus-within:-translate-y-[1px]",
+        "motion-reduce:transition-none motion-reduce:hover:translate-y-0 motion-reduce:focus-within:translate-y-0",
         className,
       )}
     >
-      <div className="w-full aspect-[4/3] overflow-hidden bg-muted">
-        <img
-          src={img}
-          alt={product.name}
-          loading="lazy"
-          decoding="async"
-          fetchPriority="low"
-          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
-        />
+      <div className="relative">
+        <div className="catalog-card__surface aspect-[4/3] w-full bg-muted/60">
+          <div className="flex h-full w-full items-center justify-center p-3 sm:p-4">
+            <img
+              src={img}
+              alt={product.name}
+              loading="lazy"
+              decoding="async"
+              fetchPriority="low"
+              className="max-h-full max-w-full object-contain transition-transform duration-300 ease-out group-hover:scale-[1.02] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+            />
+          </div>
+        </div>
+        <div className="catalog-card__glint" aria-hidden="true" />
       </div>
-      <CardContent className="flex flex-1 flex-col p-4">
+      <CardContent className="flex flex-1 flex-col px-5 pb-0 pt-5">
         <a
           {...linkProps}
-          className="text-sm font-medium line-clamp-2 min-h-[2.6em] hover:underline"
+          className="text-[15px] font-semibold leading-snug text-foreground line-clamp-2"
         >
           {product.name}
         </a>
-        <div className="mt-1 min-h-[1rem] text-xs text-muted-foreground">
-          {packInfo}
+        <div className="mt-1 min-h-[1rem] text-[12px] font-medium text-muted-foreground/85">
+          {metaLine}
         </div>
-        <div className="mt-2 flex flex-wrap items-center gap-1 min-h-[24px]">
+        <div className="mt-auto" />
+      </CardContent>
+      <CardFooter className="flex items-center gap-3 px-5 pb-5 pt-3">
+        <div className="flex min-w-0 items-center gap-2 overflow-hidden text-xs">
           <AvailabilityBadge
             status={availability}
             updatedAt={product.availability_updated_at}
+            className="flex-shrink-0"
           />
           {product.suppliers_count > 0 && (
-            <div className="flex items-center gap-1">
+            <span className="catalog-chip flex min-w-0 items-center gap-2 text-[12px]">
               <SupplierLogo
                 name={primarySupplierName || supplierLabel}
                 logoUrl={primarySupplierLogo}
+                className="h-6 w-6 rounded-full bg-white/70"
               />
-              <span className="inline-flex items-center rounded-full bg-secondary px-2 py-0.5 text-[11px] font-medium text-secondary-foreground">
-                {primarySupplierName
-                  ? `${supplierLabel} / ${primarySupplierName}`
-                  : supplierLabel}
+              <span className="truncate font-medium text-secondary-foreground/90">
+                {bestSupplierLabel}
               </span>
-            </div>
+            </span>
+          )}
+          {overflowSupplierCount > 0 && (
+            <span className="catalog-chip catalog-chip--quiet flex-shrink-0 text-[12px] font-semibold">
+              +{overflowSupplierCount}
+            </span>
           )}
           {product.active_supplier_count === 0 && (
-            <span className="inline-flex items-center rounded-full border border-muted-foreground/30 px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+            <span className="catalog-chip catalog-chip--quiet flex-shrink-0 text-[12px]">
               Not seen recently
             </span>
           )}
         </div>
-        <div className="mt-auto" />
-      </CardContent>
-      <CardFooter className="flex flex-col p-4 pt-0">
-        {showPrice && product.best_price != null ? (
-          <div className="mb-2 text-sm font-medium">
-            {formatCurrency(product.best_price)}
-          </div>
-        ) : (
-          <div className="mb-2 text-xs text-muted-foreground">
-            Connect supplier to see price
-          </div>
-        )}
-        {hasMultipleSuppliers ? (
-          <Popover open={open} onOpenChange={setOpen}>
-            <PopoverTrigger asChild>
-              <Button
-                size="lg"
-                className="w-full rounded-xl"
-                disabled={isAdding || isUnavailable}
-                aria-label={`Add ${product.name}`}
-              >
-                {isAdding ? "Adding…" : "Add to cart"}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-2 flex flex-col gap-2">
-              {orderedSuppliers.map(supplier => (
-                <Button
-                  key={supplier.id}
-                  variant={
-                    supplier.id === defaultSupplierId ? "default" : "outline"
-                  }
-                  onClick={() => {
-                    handleAdd(supplier.id, supplier.name);
-                    setOpen(false);
-                  }}
-                >
-                  {supplier.name} - {packInfo}
-                </Button>
-              ))}
-            </PopoverContent>
-          </Popover>
-        ) : (
-          <Button
-            size="lg"
-            className="w-full rounded-xl"
-            onClick={() => handleAdd(defaultSupplierId, defaultSupplierName)}
-            disabled={isAdding || isUnavailable}
-            aria-label={`Add ${product.name}`}
+        <div className="ml-auto flex items-center gap-3 pl-2">
+          <div className={cn("whitespace-nowrap text-sm font-semibold text-foreground", !priceDisplay && "text-xs font-medium text-muted-foreground")}
+            aria-live="polite"
           >
-            {isAdding ? "Adding…" : "Add to cart"}
-          </Button>
-        )}
+            {priceDisplay ? formatCurrency(product.best_price) : "See price"}
+          </div>
+          {hasMultipleSuppliers ? (
+            <Popover open={open} onOpenChange={setOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  size="icon"
+                  className="catalog-card__cta"
+                  disabled={isAdding || isUnavailable}
+                  aria-label={`Choose supplier for ${product.name}`}
+                >
+                  {isAdding ? (
+                    <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" />
+                  ) : (
+                    <HelpCircle className="h-5 w-5" aria-hidden="true" />
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-56 space-y-2 p-2" align="end">
+                {orderedSuppliers.map(supplier => (
+                  <Button
+                    key={supplier.id}
+                    variant={supplier.id === defaultSupplierId ? "default" : "outline"}
+                    onClick={() => {
+                      handleAdd(supplier.id, supplier.name);
+                      setOpen(false);
+                    }}
+                    className="justify-start"
+                  >
+                    {supplier.name}
+                  </Button>
+                ))}
+              </PopoverContent>
+            </Popover>
+          ) : (
+            <Button
+              size="icon"
+              className="catalog-card__cta"
+              onClick={() => handleAdd(defaultSupplierId, defaultSupplierName)}
+              disabled={isAdding || isUnavailable}
+              aria-label={`Add ${product.name}`}
+            >
+              {isAdding ? (
+                <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" />
+              ) : (
+                <Plus className="h-5 w-5" aria-hidden="true" />
+              )}
+            </Button>
+          )}
+        </div>
       </CardFooter>
     </Card>
   );

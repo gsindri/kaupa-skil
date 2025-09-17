@@ -26,11 +26,11 @@ export function CatalogGrid({
     <VirtualizedGrid
       items={products}
       renderItem={renderItem}
-      minCardWidth={260}
-      rowHeight={320}
-      gap={16}
+      minCardWidth={280}
+      rowHeight={368}
+      gap={24}
       onNearEnd={onNearEnd}
-      className="px-4 py-2"
+      className="px-6 py-4"
     />
   )
 }

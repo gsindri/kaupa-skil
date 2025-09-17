@@ -84,6 +84,11 @@ export function VirtualizedGrid<T>({
 
   const { width } = useContainerSize(scrollerRef)
 
+  const [dynamicRowHeight, setDynamicRowHeight] = React.useState(rowHeight)
+  React.useEffect(() => {
+    setDynamicRowHeight(rowHeight)
+  }, [rowHeight])
+
   // Distance from the top of the document to the grid. Used so the
   // window virtualizer knows where our grid begins.
   const [scrollMargin, setScrollMargin] = React.useState(0)
@@ -105,7 +110,7 @@ export function VirtualizedGrid<T>({
   // Keep anchored when cols change
   const { beforeColsChange, afterColsChange } = useAnchoredGridScroll({
     scrollerRef,
-    rowHeight,
+    rowHeight: dynamicRowHeight,
     getCols,
   })
 
@@ -122,12 +127,38 @@ export function VirtualizedGrid<T>({
 
   const rowVirtualizer = useWindowVirtualizer({
     count: rowCount,
-    estimateSize: () => rowHeight,
+    estimateSize: () => dynamicRowHeight,
     overscan: 3,
     scrollMargin,
     // measure element for precise size only if you let rowHeight vary
     // measureElement: (el) => el.getBoundingClientRect().height,
   })
+
+  React.useEffect(() => {
+    if (!innerRef.current) return
+    const card = innerRef.current.querySelector('[data-grid-card]')
+    if (!card) return
+    const node = card as HTMLElement
+    const observer = new ResizeObserver(entries => {
+      for (const entry of entries) {
+        const borderBox = Array.isArray(entry.borderBoxSize)
+          ? entry.borderBoxSize[0]
+          : (entry.borderBoxSize as ResizeObserverSize | undefined)
+        const measured = borderBox?.blockSize ?? entry.contentRect.height
+        if (!Number.isFinite(measured)) continue
+        setDynamicRowHeight(prev => {
+          const next = Math.ceil(measured + gap)
+          return Math.abs(prev - next) > 1 ? next : prev
+        })
+      }
+    })
+    observer.observe(node)
+    return () => observer.disconnect()
+  }, [items.length, gap])
+
+  React.useEffect(() => {
+    rowVirtualizer.measure()
+  }, [dynamicRowHeight, rowVirtualizer])
 
   const virtualRows = rowVirtualizer.getVirtualItems()
 
@@ -176,7 +207,7 @@ export function VirtualizedGrid<T>({
                 left: 0,
                 width: '100%',
                 transform: `translate3d(0, ${vr.start}px, 0)`,
-                height: rowHeight,
+                height: dynamicRowHeight,
                 display: 'grid',
                 gridTemplateColumns: `repeat(${cols}, ${cardWidth}px)`,
                 gap,
