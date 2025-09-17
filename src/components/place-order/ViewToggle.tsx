@@ -1,6 +1,7 @@
 import { memo } from 'react'
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
+import { SquaresFour, ListBullets } from '@phosphor-icons/react'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { cn } from '@/lib/utils'
 
 interface ViewToggleProps {
   value: 'grid' | 'list'
@@ -8,45 +9,57 @@ interface ViewToggleProps {
 }
 
 export const ViewToggle = memo(function ViewToggle({ value, onChange }: ViewToggleProps) {
+  const createHandler = (next: 'grid' | 'list') => () => {
+    if (value !== next) {
+      onChange(next)
+    }
+  }
+
+  const baseButton =
+    'grid size-[var(--icon-btn,40px)] place-items-center rounded-full text-[color:var(--ink-dim)] transition-colors duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent hover:text-[color:var(--ink)] motion-reduce:transition-none'
+
   return (
-    <ToggleGroup
-      type="single"
-      value={value}
-      onValueChange={v => v && onChange(v as 'grid' | 'list')}
+    <div
+      role="group"
+      aria-label="Change catalog view"
+      className="inline-flex items-center gap-1 rounded-full border border-white/12 bg-white/10 p-1 shadow-[var(--toolbar-ring)]"
     >
       <Tooltip>
         <TooltipTrigger asChild>
-          <ToggleGroupItem
-            value="grid"
+          <button
+            type="button"
+            aria-pressed={value === 'grid'}
             aria-label="Grid view"
-            className="group text-muted-foreground transition-all duration-200 data-[state=on]:bg-muted data-[state=on]:text-primary data-[state=on]:shadow-inner"
+            aria-keyshortcuts="g"
+            onClick={createHandler('grid')}
+            className={cn(
+              baseButton,
+              value === 'grid' && 'bg-white/20 text-[color:var(--ink)] shadow-inner shadow-black/20'
+            )}
           >
-            <div className="grid h-4 w-4 grid-cols-2 gap-0.5 transition-transform group-hover:scale-110">
-              <span className="h-1.5 w-1.5 rounded-sm bg-current" />
-              <span className="h-1.5 w-1.5 rounded-sm bg-current" />
-              <span className="h-1.5 w-1.5 rounded-sm bg-current" />
-              <span className="h-1.5 w-1.5 rounded-sm bg-current" />
-            </div>
-          </ToggleGroupItem>
+            <SquaresFour size={20} weight={value === 'grid' ? 'fill' : 'duotone'} />
+          </button>
         </TooltipTrigger>
-        <TooltipContent>Grid view</TooltipContent>
+        <TooltipContent sideOffset={8}>Grid (G)</TooltipContent>
       </Tooltip>
       <Tooltip>
         <TooltipTrigger asChild>
-          <ToggleGroupItem
-            value="list"
-            aria-label="Compact list"
-            className="group text-muted-foreground transition-all duration-200 data-[state=on]:bg-muted data-[state=on]:text-primary data-[state=on]:shadow-inner"
+          <button
+            type="button"
+            aria-pressed={value === 'list'}
+            aria-label="List view"
+            aria-keyshortcuts="l"
+            onClick={createHandler('list')}
+            className={cn(
+              baseButton,
+              value === 'list' && 'bg-white/20 text-[color:var(--ink)] shadow-inner shadow-black/20'
+            )}
           >
-            <div className="flex h-4 w-4 flex-col gap-0.5 transition-transform group-hover:scale-110">
-              <span className="h-0.5 w-3 rounded-sm bg-current" />
-              <span className="h-0.5 w-3 rounded-sm bg-current" />
-              <span className="h-0.5 w-3 rounded-sm bg-current" />
-            </div>
-          </ToggleGroupItem>
+            <ListBullets size={20} weight={value === 'list' ? 'fill' : 'duotone'} />
+          </button>
         </TooltipTrigger>
-        <TooltipContent>Compact list</TooltipContent>
+        <TooltipContent sideOffset={8}>List (L)</TooltipContent>
       </Tooltip>
-    </ToggleGroup>
+    </div>
   )
 })
