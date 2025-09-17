@@ -9,55 +9,44 @@
       <feComposite in2="SourceGraphic" operator="in"/>
     </filter>
 
-    <!-- Star symbol for the flip reveal -->
-    <symbol id="star16" viewBox="0 0 16 16">
-      <rect x="7" y="0" width="2" height="16" rx="1"/>
-      <rect x="0" y="7" width="16" height="2" rx="1"/>
-    </symbol>
-
     <style>
       svg {
-        --cover: #c6d9f0;
-        --back-cover: #b8d0e8;
-        --spine: #a5c2e3;
-        --page: #f7f5ef;
-        --page-edge: #e6e2d6;
-        --page-turn: #9bbee0;
-        --reveal: #d9e6f7;
-        --ink: #7a9bc4;
-        --accent: #22d3ee;
-        --dot: #33e17a;
-        --ribbon: #ff5a7a;
+        --cover:#c6d9f0; --back-cover:#b8d0e8; --spine:#a5c2e3;
+        --page:#f7f5ef; --page-edge:#e6e2d6; --page-turn:#9bbee0; --reveal:#d9e6f7;
+        --ink:#7a9bc4; --dot:#33e17a;
+        --logo-gray:#96a2b6;   /* 'D' was gray; overridden to black below */
+        --logo-orange:#ffb36b; /* eilda + swoosh */
       }
-      .ns { vector-effect: non-scaling-stroke; }
-      .book { transition: transform .28s ease; }
-      svg:is(:hover, [data-hovered="true"]) .book { transform: translateY(-2px) scale(1.03); }
+      .ns{vector-effect:non-scaling-stroke}
+      .book{transition:transform .28s ease}
+      svg:is(:hover,[data-hovered="true"]) .book{transform:translateY(-2px) scale(1.03)}
 
-      .page-turn {
-        transform-origin: 206px 56px;
-        transition: transform .6s cubic-bezier(.18,.72,.24,1), filter .6s ease;
-        will-change: transform;
+      /* Page turn (opens & closes smoothly) */
+      .page-turn{
+        transform-origin:206px 56px;
+        transition:transform .6s cubic-bezier(.18,.72,.24,1), filter .6s ease;
+        will-change:transform;
       }
-      svg:is(:hover, [data-hovered="true"]) .page-turn {
-        transform: rotate(-12deg) translate(0,6px);
-        filter: drop-shadow(0 2px 4px rgba(15,39,64,.35));
+      svg:is(:hover,[data-hovered="true"]) .page-turn{
+        transform:rotate(-12deg) translate(0,6px);
+        filter:drop-shadow(0 2px 4px rgba(15,39,64,.35));
       }
 
-      .icon-a { opacity: 1; transition: opacity .25s ease; }
-      svg:is(:hover, [data-hovered="true"]) .icon-a { opacity: 0; }
-      .icon-b { opacity: 0; transform: scale(.9) rotate(-8deg); transform-origin: 240px 98px;
-                transition: opacity .35s ease .12s, transform .35s ease .12s; }
-      svg:is(:hover, [data-hovered="true"]) .icon-b { opacity: 1; transform: scale(1) rotate(0); }
+      /* small magnifier on page fades away */
+      .icon-a{opacity:1;transition:opacity .25s ease}
+      svg:is(:hover,[data-hovered="true"]) .icon-a{opacity:0}
 
-      .dot { transform: translateX(0); }
-      svg:is(:hover, [data-hovered="true"]) .dot { animation: dot-run 1.4s ease-in-out infinite alternate; }
-      @keyframes dot-run {
-        from { transform: translateX(0); }
-        to   { transform: translateX(132px); }
-      }
+      /* reveal (letters + swoosh) — clipped to the page, eases both ways */
+      .reveal{opacity:0; transform:translateY(4px);
+              transition:opacity .35s ease .12s, transform .35s ease .12s}
+      svg:is(:hover,[data-hovered="true"]) .reveal{opacity:1; transform:translateY(0)}
 
-      @media (prefers-reduced-motion: reduce) {
-        .book, .page-turn, .icon-a, .icon-b, .dot { transition: none !important; animation: none !important; }
+      /* Bottom dot now transitions (so it returns smoothly) */
+      .dot{transform:translateX(0); transition:transform .6s ease-in-out}
+      svg:is(:hover,[data-hovered="true"]) .dot{transform:translateX(132px)}
+
+      @media (prefers-reduced-motion:reduce){
+        .book,.page-turn,.icon-a,.reveal,.dot{transition:none!important}
       }
     </style>
   </defs>
@@ -70,13 +59,13 @@
     <!-- Main cover -->
     <rect x="70" y="50" width="180" height="116" rx="10" fill="var(--cover)" stroke="var(--ink)" stroke-width="2"/>
 
-    <!-- Spine with ridges -->
+    <!-- Spine -->
     <g>
       <rect x="70" y="50" width="12" height="116" rx="6" fill="var(--spine)" stroke="var(--ink)" stroke-width="2"/>
       <path d="M78 62v88M74 70v72M82 70v72" stroke="#173456" stroke-width="1" opacity=".6"/>
     </g>
 
-    <!-- Pages base (left & right) -->
+    <!-- Pages -->
     <g filter="url(#inner)">
       <path d="M84 64h86c6 0 10 4 10 10v68c0 6-4 10-10 10H84c-6 0-10-4-10-10V74c0-6 4-10 10-10z"
             fill="var(--page)" stroke="var(--ink)" stroke-width="2"/>
@@ -84,16 +73,16 @@
             fill="var(--page)" stroke="var(--ink)" stroke-width="2"/>
     </g>
 
-    <!-- Center stitching & gutter -->
+    <!-- Center stitching -->
     <g>
       <rect x="168" y="64" width="4" height="88" rx="2" fill="#d4d0c6" opacity=".6"/>
       <path d="M170 68v80" stroke="#b9b4a8" stroke-width="1" stroke-dasharray="2 4"/>
       <path d="M164 64h2v88h-2M174 64h2v88h-2" fill="none" stroke="#c7c1b5" stroke-width="1" opacity=".5"/>
     </g>
 
-    <!-- Bookmark ribbon -->
+    <!-- Bookmark -->
     <g>
-      <path d="M154 64h10v36l-5-5-5 5z" fill="var(--ribbon)" stroke="#aa2742" stroke-width="1.5"/>
+      <path d="M154 64h10v36l-5-5-5 5z" fill="#ff5a7a" stroke="#aa2742" stroke-width="1.5"/>
       <path d="M154 64h10" stroke="#ff98ac" stroke-width="2" opacity=".6"/>
     </g>
 
@@ -105,8 +94,8 @@
       <path d="M104 164c14 4 30 6 56 6s42-2 56-6" fill="none" stroke="#d9d4c8" stroke-width="1" opacity=".8"/>
     </g>
 
-    <!-- Browsing dot -->
-    <circle class="dot" cx="94" cy="162" r="5.5" fill="var(--dot)" stroke="#0a2a18" stroke-width="2"/>
+    <!-- Browsing dot (smooth return) -->
+    <circle class="dot" cx="94" cy="162" r="5.5" fill="#33e17a" stroke="#0a2a18" stroke-width="2"/>
 
     <!-- Left-page content -->
     <g stroke="var(--ink)" stroke-width="2">
@@ -117,17 +106,36 @@
 
     <!-- Right flipping page -->
     <g class="page-turn">
-      <path d="M204 58h56v72c0 0-28-2-56 16V58z" fill="var(--page-turn)" stroke="var(--ink)" stroke-width="2"/>
+      <!-- page shape -->
+      <path id="pageShape" d="M204 58h56v72c0 0-28-2-56 16V58z"
+            fill="var(--page-turn)" stroke="var(--ink)" stroke-width="2"/>
       <path d="M204 58c20 10 42 16 56 16" fill="none" stroke="var(--reveal)" stroke-width="3" opacity=".6"/>
       <path d="M260 74c-6 0-12 2-16 6" fill="none" stroke="#9fc9ff" stroke-width="1.5" opacity=".7"/>
 
-      <!-- Icon swap: magnifier → star -->
+      <!-- Clip everything to the flipping page area -->
+      <clipPath id="pageClip" clipPathUnits="userSpaceOnUse">
+        <use href="#pageShape"/>
+      </clipPath>
+
+      <!-- small magnifier that fades away -->
       <g class="icon-a" transform="translate(228 92)">
         <circle cx="0" cy="0" r="12" fill="none" stroke="#a9d9ff" stroke-width="3"/>
         <path d="M8 8l10 10" stroke="#a9d9ff" stroke-width="3"/>
       </g>
-      <g class="icon-b" transform="translate(228 92)">
-        <use href="#star16" width="18" height="18" x="-9" y="-9" fill="#a9d9ff"/>
+
+      <!-- LOGO-STYLE REVEAL (fully inside the clip) -->
+      <g class="reveal" clip-path="url(#pageClip)">
+        <!-- orange swoosh arc (kept well inside page bounds) -->
+        <path d="M216 84 C222 78, 232 76, 238 79"
+              fill="none" stroke="var(--logo-orange)" stroke-width="5.5" stroke-linecap="round" opacity="0.95"/>
+
+        <!-- 'Deilda' with black D and orange 'eilda', constrained width so it never overflows -->
+        <text x="214" y="100"
+              font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial"
+              font-size="15" font-weight="800" dominant-baseline="middle"
+              textLength="42" lengthAdjust="spacingAndGlyphs">
+          <tspan fill="#000000">D</tspan><tspan fill="var(--logo-orange)">eilda</tspan>
+        </text>
       </g>
     </g>
   </g>
