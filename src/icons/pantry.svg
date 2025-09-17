@@ -12,8 +12,18 @@
     .item.bot{ transform: translateY(var(--floor-bot)); transition: transform .85s cubic-bezier(.2,.7,.2,1); }
     #pantryIcon[data-nav-measuring] .item.top,
     #pantryIcon[data-nav-measuring] .item.bot{
-      transform: translateY(0);
+      display: none;
+      transform: none;
       transition: none;
+    }
+    #pantryIcon[data-nav-measuring] .contact-shadow{
+      display: none;
+      opacity: 0;
+      transform: none;
+      transition: none;
+    }
+    #pantryIcon[data-nav-measuring] .led{
+      animation: none!important;
     }
     /* Per-item durations (keeps original feel) */
     #item-can{ transition-duration:.9s; }
