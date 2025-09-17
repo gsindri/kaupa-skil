@@ -22,6 +22,24 @@ interface PriceAlert {
   data: PriceUpdate
 }
 
+export function derivePriceChangeMetrics(
+  oldPriceValue: number | null | undefined,
+  newPriceValue: number | null | undefined
+) {
+  const oldPrice = Number(oldPriceValue ?? 0)
+  const newPrice = Number(newPriceValue ?? 0)
+  const priceChange = newPrice - oldPrice
+  const hasValidBaseline = Number.isFinite(oldPrice) && oldPrice !== 0
+  const hasValidPriceChange = Number.isFinite(priceChange)
+  const changePercentage = hasValidBaseline
+    ? (priceChange / oldPrice) * 100
+    : hasValidPriceChange && priceChange !== 0
+      ? Math.sign(priceChange) * 100
+      : 0
+
+  return { oldPrice, newPrice, priceChange, changePercentage }
+}
+
 // Connection manager to prevent rapid reconnections
 class RealtimeConnectionManager {
   private static instance: RealtimeConnectionManager
@@ -141,13 +159,15 @@ export function useRealTimePrices() {
     
     if (!newRecord || !oldRecord) return
 
-    const priceChange = newRecord.price_ex_vat - oldRecord.price_ex_vat
-    const changePercentage = ((priceChange / oldRecord.price_ex_vat) * 100)
+    const { oldPrice, newPrice, priceChange, changePercentage } = derivePriceChangeMetrics(
+      oldRecord.price_ex_vat,
+      newRecord.price_ex_vat
+    )
     
     const update: PriceUpdate = {
       supplier_item_id: newRecord.id,
-      old_price: oldRecord.price_ex_vat,
-      new_price: newRecord.price_ex_vat,
+      old_price: oldPrice,
+      new_price: newPrice,
       supplier_name: newRecord.supplier_name || 'Unknown Supplier',
       item_name: newRecord.name || 'Unknown Item',
       change_percentage: changePercentage,
@@ -157,7 +177,8 @@ export function useRealTimePrices() {
     setRecentUpdates(prev => [update, ...prev.slice(0, 19)])
 
     // Only create alerts for significant changes (>5%)
-    if (Math.abs(changePercentage) > 5) {
+    const isFiniteChange = Number.isFinite(changePercentage)
+    if (isFiniteChange && Math.abs(changePercentage) > 5) {
       const alert: PriceAlert = {
         id: `price-${newRecord.id}-${Date.now()}`,
         type: priceChange > 0 ? 'price_increase' : 'price_drop',
@@ -170,7 +191,7 @@ export function useRealTimePrices() {
 
       // Show toast notifications only for significant changes
       toast(alert.message, {
-        description: `${newRecord.supplier_name}: ${oldRecord.price_ex_vat.toLocaleString()} ISK → ${newRecord.price_ex_vat.toLocaleString()} ISK`,
+        description: `${newRecord.supplier_name}: ${oldPrice.toLocaleString()} ISK → ${newPrice.toLocaleString()} ISK`,
         duration: 3000,
       })
     }
