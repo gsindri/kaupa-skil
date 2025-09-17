@@ -128,20 +128,37 @@ export function VirtualizedGrid<T>({
     let mutationObserver: MutationObserver | undefined
     if (typeof MutationObserver !== 'undefined') {
       const docEl = document.documentElement
-      const readHeaderHeight = () => {
-        const raw = getComputedStyle(docEl).getPropertyValue('--header-h')
-        const parsed = Number.parseFloat(raw)
-        return Number.isFinite(parsed) ? parsed : 0
+      const parseHeaderHeight = (value: string | null | undefined) => {
+        if (!value) return null
+        const trimmed = value.trim()
+        if (!trimmed) return null
+        const parsed = Number.parseFloat(trimmed)
+        return Number.isFinite(parsed) ? parsed : null
       }
-      lastHeaderHeight = readHeaderHeight()
+      const readInitialHeaderHeight = () => {
+        const inline = parseHeaderHeight(docEl.style.getPropertyValue('--header-h'))
+        if (inline != null) return inline
+        const computed = parseHeaderHeight(
+          getComputedStyle(docEl).getPropertyValue('--header-h')
+        )
+        return computed ?? 0
+      }
+      lastHeaderHeight = readInitialHeaderHeight()
       mutationObserver = new MutationObserver(records => {
         for (const record of records) {
           if (record.attributeName !== 'style') continue
-          const next = readHeaderHeight()
-          if (Math.abs(next - (lastHeaderHeight ?? 0)) > 0.5) {
-            lastHeaderHeight = next
-            scheduleUpdate()
+          if (!(record.target instanceof HTMLElement)) continue
+          const inline = parseHeaderHeight(
+            record.target.style.getPropertyValue('--header-h')
+          )
+          if (inline == null) continue
+          const prev = lastHeaderHeight ?? inline
+          if (Math.abs(inline - prev) <= 0.5) {
+            lastHeaderHeight = inline
+            continue
           }
+          lastHeaderHeight = inline
+          scheduleUpdate()
         }
       })
       mutationObserver.observe(docEl, { attributes: true, attributeFilter: ['style'] })
