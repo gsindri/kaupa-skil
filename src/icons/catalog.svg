@@ -41,6 +41,12 @@
               transition:opacity .35s ease .12s, transform .35s ease .12s}
       svg:is(:hover,[data-hovered="true"]) .reveal{opacity:1; transform:translateY(0)}
 
+      svg[data-nav-measuring] .reveal{
+        display:none;
+        opacity:0;
+        transform:none;
+      }
+
       /* Bottom dot now transitions (so it returns smoothly) */
       .dot{transform:translateX(0); transition:transform .6s ease-in-out}
       svg:is(:hover,[data-hovered="true"]) .dot{transform:translateX(132px)}
