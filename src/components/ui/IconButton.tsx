@@ -28,15 +28,15 @@ export const IconButton = React.forwardRef<HTMLButtonElement, IconButtonProps>(
         title={title ?? label}
         className={cn(
           'group inline-grid h-[var(--icon-btn,2.5rem)] w-[var(--icon-btn,2.5rem)] place-items-center rounded-full ring-1 ring-white/10',
-          'bg-transparent text-white/80 transition-[background-color,color,transform,box-shadow] duration-150 ease-out motion-reduce:transition-none',
-          'hover:bg-white/5 hover:text-white hover:ring-white/20',
+          'bg-transparent text-[color:var(--ink-dim,#cfd7e4)] transition-[background-color,color,transform,box-shadow] duration-fast ease-snap motion-reduce:transition-none',
+          'hover:bg-white/5 hover:text-[color:var(--ink,#eaf0f7)] hover:ring-white/20',
           'focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-4 focus-visible:ring-offset-transparent',
           'motion-safe:hover:-translate-y-[0.5px] motion-reduce:transform-none motion-reduce:hover:translate-y-0',
           className
         )}
         {...props}
       >
-        <span className="text-inherit transition-colors duration-150 ease-out group-hover:text-white">
+        <span className="text-inherit transition-colors duration-fast ease-snap group-hover:text-[color:var(--ink,#eaf0f7)]">
           {children}
         </span>
       </button>

@@ -1,11 +1,5 @@
 import React from 'react'
-import {
-  Check,
-  ChevronDown,
-  House,
-  LogIn,
-  Plus
-} from 'lucide-react'
+import { Check, House, LogIn, Plus } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 
@@ -24,6 +18,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { useAuth } from '@/contexts/useAuth'
 import { supabase } from '@/integrations/supabase/client'
 import { cn } from '@/lib/utils'
+import { ChevronSoft } from '@/components/icons-soft'
 
 type Membership = {
   id: string
@@ -97,12 +92,19 @@ export function TenantSwitcher() {
           role="combobox"
           aria-expanded={open}
           aria-label="Switch workspace"
-          className="flex w-52 items-center justify-between px-3.5 h-10 rounded-3 bg-white/5 hover:bg-white/10 ring-1 ring-white/10 text-slate-100 focus-visible:outline-none focus-visible:ring-0 focus-visible:shadow-[0_0_0_2px_var(--brand-accent)]"
+          className={cn(
+            'flex h-[var(--chip-h,2.5rem)] w-52 items-center justify-between rounded-[var(--r-chip,0.75rem)] px-3.5',
+            'bg-white/8 text-white/90 ring-1 ring-white/10 transition-[background-color,color,transform,box-shadow] duration-fast ease-snap motion-reduce:transition-none',
+            'hover:bg-white/12 hover:text-white hover:ring-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-4 focus-visible:ring-offset-transparent motion-safe:hover:-translate-y-[0.5px] motion-reduce:hover:translate-y-0'
+          )}
         >
-          <span className="truncate display font-semibold leading-tight" title={displayName}>
+          <span
+            className="truncate text-left font-semibold leading-tight text-[color:var(--ink,#eaf0f7)] display"
+            title={displayName}
+          >
             {displayName}
           </span>
-          <ChevronDown className="icon-20 shrink-0" strokeWidth={1.75} />
+          <ChevronSoft width={18} height={18} className="ml-2 text-white opacity-70" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[280px] p-2">

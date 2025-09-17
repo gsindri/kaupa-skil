@@ -99,7 +99,7 @@ export function CartButton({
   const ariaLabel = hasItems
     ? `${label} with ${totalItems} ${totalItems === 1 ? 'item' : 'items'} totaling ${formatCurrency(subtotal)}`
     : `${label} is empty`
-  const tooltipLabel = hasItems ? 'Cart (C)' : 'Cart (C) – empty'
+  const tooltipLabel = 'Cart (C)'
 
   const topSuppliers = suppliers.slice(0, MAX_SUPPLIERS_IN_PREVIEW)
   const remainingSupplierCount = Math.max(0, suppliers.length - topSuppliers.length)
@@ -138,7 +138,7 @@ export function CartButton({
         onClick={handleOpenCart}
         title={tooltipLabel}
         aria-keyshortcuts="c"
-        className={cn('text-white/80', className)}
+        className={cn('text-[color:var(--ink-dim,#cfd7e4)]', className)}
         {...accessibilityProps}
       >
         {toolbarIcon}
@@ -151,7 +151,7 @@ export function CartButton({
           'relative inline-flex items-center gap-2 font-semibold leading-tight ui-numeric transition-[background-color,color,transform,box-shadow] duration-fast ease-snap motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-4 focus-visible:ring-offset-transparent motion-safe:hover:-translate-y-[0.5px] motion-reduce:hover:translate-y-0',
           variant === 'toolbar'
             ? cn(
-                'h-[var(--chip-h,2.5rem)] rounded-full px-3 shadow-sm ring-1 ring-white/15 hover:ring-white/25',
+                'h-[var(--chip-h,2.5rem)] rounded-full px-3 shadow-sm ring-1 ring-white/10 hover:ring-white/20',
                 hasItems
                   ? 'bg-[linear-gradient(135deg,#3473ff,#2cc6ff)] text-white hover:bg-[linear-gradient(135deg,#3c7dff,#39d4ff)]'
                   : 'bg-white/5 text-white/90 hover:bg-white/8'
@@ -177,7 +177,7 @@ export function CartButton({
             aria-live="polite"
             className={cn(
               variant === 'toolbar'
-                ? 'grid h-5 min-w-[1.25rem] place-items-center rounded-full bg-black/20 px-1 text-xs font-medium text-white translate-y-[1px]'
+                ? 'grid h-5 min-w-5 place-items-center rounded-full bg-black/20 px-1 text-xs font-medium text-white translate-y-[1px]'
                 : 'ml-2 inline-flex min-w-[1.5rem] items-center justify-center rounded-full px-1.5 text-xs font-semibold leading-none',
               variant === 'toolbar' && !hideLabel ? 'ml-1' : null,
               variant === 'primary' && 'bg-primary-foreground/15 text-primary-foreground',
