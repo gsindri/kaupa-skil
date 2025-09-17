@@ -55,6 +55,11 @@
     .btn { transform-box: fill-box; transform-origin:center; }
     svg:is(:hover, [data-hovered="true"]) .btn { animation: press .35s ease-out; }
 
+    svg[data-nav-measuring] *{
+      animation: none !important;
+      transition: none !important;
+    }
+
     /* Motion safety */
     @media (prefers-reduced-motion: reduce){
       *{ animation: none !important; }

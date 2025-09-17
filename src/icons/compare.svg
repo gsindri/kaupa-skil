@@ -72,6 +72,16 @@
         offset-distance: 100%;
       }
 
+      #scale[data-nav-measuring] .fly-left-to-right,
+      #scale[data-nav-measuring] .fly-right-to-left{
+        display:none;
+      }
+      #scale[data-nav-measuring] .swap{
+        offset-path: none;
+        offset-distance: 0%;
+        transition: none;
+      }
+
       @media (prefers-reduced-motion:reduce){
         *{ animation:none !important; }
         .left-item .swap, .right-item .swap{ transition:none !important; }
