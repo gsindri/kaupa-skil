@@ -37,78 +37,71 @@ export function NavIcon({ Icon, active, size = 44, className, label, hovered }: 
 
     translateWrapper.style.transform = 'none'
     scaleWrapper.style.transform = 'none'
+    svg.setAttribute('data-nav-measuring', 'true')
 
-    let bbox: DOMRect
     try {
-      bbox = svg.getBBox()
+      const bbox = svg.getBBox()
+
+      if (!bbox.width || !bbox.height || !size) {
+        return
+      }
+
+      const viewBox = svg.viewBox?.baseVal
+      const viewBoxWidth = viewBox?.width ?? bbox.width
+      const viewBoxHeight = viewBox?.height ?? bbox.height
+      const viewBoxX = viewBox?.x ?? bbox.x
+      const viewBoxY = viewBox?.y ?? bbox.y
+
+      const svgWidth = svg.clientWidth || translateWrapper.clientWidth || viewBoxWidth
+      const svgHeight = svg.clientHeight || translateWrapper.clientHeight || viewBoxHeight
+
+      const unitsToPxX = viewBoxWidth > 0 ? svgWidth / viewBoxWidth : svgWidth / bbox.width
+      const unitsToPxY = viewBoxHeight > 0 ? svgHeight / viewBoxHeight : svgHeight / bbox.height
+
+      if (
+        !Number.isFinite(unitsToPxX) ||
+        !Number.isFinite(unitsToPxY) ||
+        unitsToPxX <= 0 ||
+        unitsToPxY <= 0
+      ) {
+        return
+      }
+
+      const bboxWidthPx = bbox.width * unitsToPxX
+      const bboxHeightPx = bbox.height * unitsToPxY
+
+      if (!bboxWidthPx || !bboxHeightPx) {
+        return
+      }
+
+      const desiredScale = Math.min(size / bboxWidthPx, size / bboxHeightPx)
+      const nextScale = Number.isFinite(desiredScale) && desiredScale > 0 ? desiredScale : 1
+
+      const viewBoxCenterX = viewBoxX + viewBoxWidth / 2
+      const viewBoxCenterY = viewBoxY + viewBoxHeight / 2
+      const bboxCenterX = bbox.x + bbox.width / 2
+      const bboxCenterY = bbox.y + bbox.height / 2
+
+      const deltaXUnits = viewBoxCenterX - bboxCenterX
+      const deltaYUnits = viewBoxCenterY - bboxCenterY
+
+      const nextTranslateX = deltaXUnits * unitsToPxX * nextScale
+      const nextTranslateY = deltaYUnits * unitsToPxY * nextScale
+
+      setScale((prev) => (Math.abs(prev - nextScale) > SCALE_EPSILON ? nextScale : prev))
+      setTranslate((prev) =>
+        Math.abs(prev.x - nextTranslateX) > TRANSLATE_EPSILON ||
+        Math.abs(prev.y - nextTranslateY) > TRANSLATE_EPSILON
+          ? { x: nextTranslateX, y: nextTranslateY }
+          : prev
+      )
     } catch {
+      return
+    } finally {
+      svg.removeAttribute('data-nav-measuring')
       translateWrapper.style.transform = previousTranslateTransform
       scaleWrapper.style.transform = previousScaleTransform
-      return
     }
-
-    if (!bbox.width || !bbox.height || !size) {
-      translateWrapper.style.transform = previousTranslateTransform
-      scaleWrapper.style.transform = previousScaleTransform
-      return
-    }
-
-    const viewBox = svg.viewBox?.baseVal
-    const viewBoxWidth = viewBox?.width ?? bbox.width
-    const viewBoxHeight = viewBox?.height ?? bbox.height
-    const viewBoxX = viewBox?.x ?? bbox.x
-    const viewBoxY = viewBox?.y ?? bbox.y
-
-    const svgWidth = svg.clientWidth || translateWrapper.clientWidth || viewBoxWidth
-    const svgHeight = svg.clientHeight || translateWrapper.clientHeight || viewBoxHeight
-
-    const unitsToPxX = viewBoxWidth > 0 ? svgWidth / viewBoxWidth : svgWidth / bbox.width
-    const unitsToPxY = viewBoxHeight > 0 ? svgHeight / viewBoxHeight : svgHeight / bbox.height
-
-    if (
-      !Number.isFinite(unitsToPxX) ||
-      !Number.isFinite(unitsToPxY) ||
-      unitsToPxX <= 0 ||
-      unitsToPxY <= 0
-    ) {
-      translateWrapper.style.transform = previousTranslateTransform
-      scaleWrapper.style.transform = previousScaleTransform
-      return
-    }
-
-    const bboxWidthPx = bbox.width * unitsToPxX
-    const bboxHeightPx = bbox.height * unitsToPxY
-
-    if (!bboxWidthPx || !bboxHeightPx) {
-      translateWrapper.style.transform = previousTranslateTransform
-      scaleWrapper.style.transform = previousScaleTransform
-      return
-    }
-
-    const desiredScale = Math.min(size / bboxWidthPx, size / bboxHeightPx)
-    const nextScale = Number.isFinite(desiredScale) && desiredScale > 0 ? desiredScale : 1
-
-    const viewBoxCenterX = viewBoxX + viewBoxWidth / 2
-    const viewBoxCenterY = viewBoxY + viewBoxHeight / 2
-    const bboxCenterX = bbox.x + bbox.width / 2
-    const bboxCenterY = bbox.y + bbox.height / 2
-
-    const deltaXUnits = viewBoxCenterX - bboxCenterX
-    const deltaYUnits = viewBoxCenterY - bboxCenterY
-
-    const nextTranslateX = deltaXUnits * unitsToPxX * nextScale
-    const nextTranslateY = deltaYUnits * unitsToPxY * nextScale
-
-    translateWrapper.style.transform = previousTranslateTransform
-    scaleWrapper.style.transform = previousScaleTransform
-
-    setScale((prev) => (Math.abs(prev - nextScale) > SCALE_EPSILON ? nextScale : prev))
-    setTranslate((prev) =>
-      Math.abs(prev.x - nextTranslateX) > TRANSLATE_EPSILON ||
-      Math.abs(prev.y - nextTranslateY) > TRANSLATE_EPSILON
-        ? { x: nextTranslateX, y: nextTranslateY }
-        : prev
-    )
   }, [Icon, size])
 
   return (

@@ -10,6 +10,11 @@
     /* Items start hidden below shelf; base transition enables animated return */
     .item.top{ transform: translateY(var(--floor-top)); transition: transform .9s cubic-bezier(.2,.7,.2,1); }
     .item.bot{ transform: translateY(var(--floor-bot)); transition: transform .85s cubic-bezier(.2,.7,.2,1); }
+    #pantryIcon[data-nav-measuring] .item.top,
+    #pantryIcon[data-nav-measuring] .item.bot{
+      transform: translateY(0);
+      transition: none;
+    }
     /* Per-item durations (keeps original feel) */
     #item-can{ transition-duration:.9s; }
     #item-doc{ transition-duration:.9s; }
