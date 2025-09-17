@@ -1,5 +1,5 @@
 <!-- dashboard-holo.svg: primary dashboard icon -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="-6.5 -10 78 78"
+<svg id="dashboardHolo" xmlns="http://www.w3.org/2000/svg" viewBox="-6.5 -10 78 78"
      role="img" aria-label="Dashboard"
      fill="none" stroke-linecap="round" stroke-linejoin="round">
   <title>Dashboard</title>
@@ -24,40 +24,55 @@
 
     /* Holo pulse */
     .holo { opacity:.92; }
-    svg:is(:hover, [data-hovered="true"]) .holo { animation: holoPulse 1.6s ease-in-out infinite alternate; }
+    #dashboardHolo:is(:hover, [data-hovered="true"]) .holo { animation: holoPulse 1.6s ease-in-out infinite alternate; }
 
     /* Bar rise */
     .bar    { transform-box: fill-box; transform-origin: bottom center; transform: scaleY(.25); }
-    svg:is(:hover, [data-hovered="true"]) .bars .bar:nth-child(1) { animation: rise .38s .05s ease-out forwards; }
-    svg:is(:hover, [data-hovered="true"]) .bars .bar:nth-child(2) { animation: rise .42s .12s ease-out forwards; }
-    svg:is(:hover, [data-hovered="true"]) .bars .bar:nth-child(3) { animation: rise .46s .20s ease-out forwards; }
-    svg:is(:hover, [data-hovered="true"]) .bars .bar:nth-child(4) { animation: rise .50s .28s ease-out forwards; }
+    #dashboardHolo:is(:hover, [data-hovered="true"]) .bars .bar:nth-child(1) { animation: rise .38s .05s ease-out forwards; }
+    #dashboardHolo:is(:hover, [data-hovered="true"]) .bars .bar:nth-child(2) { animation: rise .42s .12s ease-out forwards; }
+    #dashboardHolo:is(:hover, [data-hovered="true"]) .bars .bar:nth-child(3) { animation: rise .46s .20s ease-out forwards; }
+    #dashboardHolo:is(:hover, [data-hovered="true"]) .bars .bar:nth-child(4) { animation: rise .50s .28s ease-out forwards; }
 
     /* Line draw */
     .trend { stroke-dasharray:120; stroke-dashoffset:120; }
-    svg:is(:hover, [data-hovered="true"]) .trend { animation: draw .7s .18s ease-out forwards; }
+    #dashboardHolo:is(:hover, [data-hovered="true"]) .trend { animation: draw .7s .18s ease-out forwards; }
 
     /* Network twinkle */
     .node { opacity:.55; }
-    svg:is(:hover, [data-hovered="true"]) .node { animation: twinkle 1.6s ease-in-out infinite alternate; }
+    #dashboardHolo:is(:hover, [data-hovered="true"]) .node { animation: twinkle 1.6s ease-in-out infinite alternate; }
     .node:nth-child(odd){ animation-delay:.2s; }
     .node:nth-child(2){ animation-delay:.45s; }
     .node:nth-child(3){ animation-delay:.7s; }
 
     /* Connectivity packets (moving dashes) */
     .flow { stroke-dasharray:1 6; }
-    svg:is(:hover, [data-hovered="true"]) .flow { animation: flow 1.2s linear infinite; }
+    #dashboardHolo:is(:hover, [data-hovered="true"]) .flow { animation: flow 1.2s linear infinite; }
 
     /* Console subtle breathing */
-    svg:is(:hover, [data-hovered="true"]) .console { animation: breathe 2.2s ease-in-out infinite; }
+    #dashboardHolo:is(:hover, [data-hovered="true"]) .console { animation: breathe 2.2s ease-in-out infinite; }
 
     /* Buttons brighten/press */
     .btn { transform-box: fill-box; transform-origin:center; }
-    svg:is(:hover, [data-hovered="true"]) .btn { animation: press .35s ease-out; }
+    #dashboardHolo:is(:hover, [data-hovered="true"]) .btn { animation: press .35s ease-out; }
 
-    svg[data-nav-measuring] *{
+    #dashboardHolo[data-nav-measuring] *{
       animation: none !important;
       transition: none !important;
+    }
+    #dashboardHolo[data-nav-measuring] .bars .bar{
+      transform: scaleY(.25);
+    }
+    #dashboardHolo[data-nav-measuring] .trend{
+      stroke-dashoffset:120;
+    }
+    #dashboardHolo[data-nav-measuring] .flow{
+      stroke-dashoffset:0;
+    }
+    #dashboardHolo[data-nav-measuring] .console{
+      filter:none;
+    }
+    #dashboardHolo[data-nav-measuring] .btn{
+      transform:none;
     }
 
     /* Motion safety */
