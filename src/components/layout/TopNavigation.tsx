@@ -154,12 +154,6 @@ export function TopNavigation() {
         <Button
           ref={searchTriggerRef}
           variant="ghost"
-          size="sm"
-          className={cn(
-            'group h-9 min-w-[7.5rem] justify-start gap-2 rounded-full px-3 sm:px-4 text-left text-slate-100',
-            'bg-white/12 hover:bg-white/16 ring-1 ring-white/25 shadow-[0_1px_0_rgba(255,255,255,0.08)] hover:text-slate-100',
-            'focus-visible:ring-[#21D4D6] focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 motion-reduce:transition-none'
-          )}
           type="button"
           onClick={() => setSearchOpen(true)}
           aria-haspopup="dialog"
@@ -189,13 +183,13 @@ export function TopNavigation() {
         <button
           type="button"
           onClick={() => setIsDrawerOpen(true)}
-          className="relative inline-flex items-center gap-2 h-9 px-3 rounded-2xl bg-[var(--button-primary)] hover:bg-[var(--button-primary-hover)] text-white shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#21D4D6] ui-numeric duration-fast ease-snap motion-reduce:transition-none"
+          className="relative inline-flex items-center gap-2 h-10 px-3.5 rounded-2xl bg-[var(--button-primary)] hover:bg-[var(--button-primary-hover)] text-white shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#21D4D6] ui-numeric duration-fast ease-snap motion-reduce:transition-none"
           aria-haspopup="dialog"
           aria-expanded={isDrawerOpen}
           aria-controls="cart-drawer"
         >
           <ShoppingCart className="icon-20" strokeWidth={1.75} />
-          <span className="font-semibold">Cart</span>
+          <span className="font-semibold leading-tight">Cart</span>
           {cartCount > 0 && (
             <span
               aria-live="polite"
@@ -210,22 +204,17 @@ export function TopNavigation() {
             <Button
               variant="ghost"
               size="sm"
-              className="h-9 px-2 rounded-2xl bg-white/8 hover:bg-white/12 ring-1 ring-white/10 flex items-center space-x-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#21D4D6]"
+              className="h-10 px-3 rounded-2xl bg-white/8 hover:bg-white/12 ring-1 ring-white/10 flex items-center space-x-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#21D4D6]"
               disabled={isBusy}
               aria-label={accountMenuLabel}
               title={displayName || undefined}
             >
-              <div
-                className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center"
-                aria-hidden="true"
-              >
                 {isBusy ? (
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[var(--brand-accent)]" />
                 ) : (
                   <span className="text-sm font-medium text-[var(--text-on-dark)]">{userInitial}</span>
                 )}
               </div>
-              <ChevronDown className="icon-20" strokeWidth={1.75} aria-hidden="true" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent
