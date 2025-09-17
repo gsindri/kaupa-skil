@@ -1,6 +1,6 @@
 
 import React, { useEffect, useRef, useState, useLayoutEffect, useId } from 'react'
-import { HelpCircle, ChevronDown, ShoppingCart, Search } from 'lucide-react'
+import { HelpCircle, ChevronDown, Search } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,11 +19,11 @@ import { LanguageSwitcher } from './LanguageSwitcher'
 import { cn } from '@/lib/utils'
 import { HeaderSearch } from '@/components/search/HeaderSearch'
 import { HeildaLogo } from '@/components/branding/HeildaLogo'
+import { CartButton } from '@/components/cart/CartButton'
 
 export function TopNavigation() {
   const { profile, user, signOut, loading, profileLoading } = useAuth()
-  const { setIsDrawerOpen, getTotalItems, isDrawerOpen } = useCart()
-  const cartCount = getTotalItems()
+  const { setIsDrawerOpen } = useCart()
 
   const searchRef = useRef<HTMLInputElement>(null)
   const searchTriggerRef = useRef<HTMLButtonElement>(null)
@@ -230,25 +230,7 @@ export function TopNavigation() {
             <DropdownMenuItem onClick={handleSignOut}>Sign Out</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-        <button
-          type="button"
-          onClick={() => setIsDrawerOpen(true)}
-          className="relative inline-flex items-center gap-2 h-10 px-3.5 rounded-2xl bg-[var(--button-primary)] hover:bg-[var(--button-primary-hover)] text-white shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#21D4D6] ui-numeric duration-fast ease-snap motion-reduce:transition-none"
-          aria-haspopup="dialog"
-          aria-expanded={isDrawerOpen}
-          aria-controls="cart-drawer"
-        >
-          <ShoppingCart className="icon-20" strokeWidth={1.75} />
-          <span className="font-semibold leading-tight">Cart</span>
-          {cartCount > 0 && (
-            <span
-              aria-live="polite"
-              className="ml-1 rounded-pill bg-[var(--brand-accent)] text-slate-900 text-xs px-2 py-0.5 min-w-[1.25rem] text-center ui-numeric"
-            >
-              {cartCount}
-            </span>
-          )}
-        </button>
+        <CartButton />
       </nav>
       <HeaderSearch ref={searchRef} mode="dialog" open={searchOpen} onOpenChange={setSearchOpen} />
     </div>

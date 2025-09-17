@@ -1,26 +1,24 @@
 
 import React from 'react'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { 
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { ShoppingCart, User, Settings, LogOut, Menu } from 'lucide-react'
+import { Settings, LogOut, Menu } from 'lucide-react'
 import { useAuth } from '@/contexts/useAuth'
 import { useNavigate } from 'react-router-dom'
 import { CartDrawer } from '@/components/cart/CartDrawer'
 import { HeildaLogo } from '@/components/branding/HeildaLogo'
-import { useCart } from '@/contexts/useBasket'
+import { CartButton } from '@/components/cart/CartButton'
 
 export function QuickOrderNavigation() {
   const { user, profile, signOut } = useAuth()
   const navigate = useNavigate()
-  const { setIsDrawerOpen } = useCart()
 
   const handleSignOut = async () => {
     await signOut()
@@ -44,16 +42,7 @@ export function QuickOrderNavigation() {
         </div>
 
         <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="gap-2"
-            onClick={() => setIsDrawerOpen(true)}
-          >
-            <ShoppingCart className="h-4 w-4" />
-            Cart
-            <Badge variant="secondary" className="ml-1">0</Badge>
-          </Button>
+          <CartButton variant="ghost" size="sm" />
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
