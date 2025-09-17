@@ -281,26 +281,31 @@
         100%{ opacity:0; transform:scale(1.15); }
       }
 
-      /* Measurement mode: hide hover-only layers before getBBox */
+      /* Measurement mode: freeze idle pose & hide hover-only reveals */
       #discover[data-nav-measuring] *{
+        animation: none !important;
+        transition: none !important;
+      }
+      #discover[data-nav-measuring] .rig{
+        transform: translate(0,0);
+      }
+      #discover[data-nav-measuring] .sweep{
+        transform: rotate(var(--start-angle));
+      }
+      #discover[data-nav-measuring] .scanBand,
+      #discover[data-nav-measuring] .disc,
+      #discover[data-nav-measuring] .find,
+      #discover[data-nav-measuring] .rays{
+        opacity: 0;
+        transform: none;
         animation: none !important;
         transition: none !important;
       }
       #discover[data-nav-measuring] .scanBand,
       #discover[data-nav-measuring] .disc,
       #discover[data-nav-measuring] .find,
-      #discover[data-nav-measuring] .rays,
-      #discover[data-nav-measuring] .glint,
-      #discover[data-nav-measuring] .swoosh,
-      #discover[data-nav-measuring] .cubesSpin,
-      #discover[data-nav-measuring] .cube,
-      #discover[data-nav-measuring] .ping,
-      #discover[data-nav-measuring] .dash,
-      #discover[data-nav-measuring] .draw,
-      #discover[data-nav-measuring] .ground{
+      #discover[data-nav-measuring] .rays{
         display: none;
-        opacity: 0;
-        transform: none;
       }
 
       /* Motion safety */
