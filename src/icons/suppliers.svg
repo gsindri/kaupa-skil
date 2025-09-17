@@ -24,15 +24,15 @@
 
       /* ===== ORBIT & GLOBAL HOVER GATING ===== */
       .orbit-stroke{ stroke-dasharray:6 8; }
-      svg:hover .orbit-stroke{ animation: orbitSweep 8s linear infinite; }
+      svg:is(:hover, [data-hovered="true"]) .orbit-stroke{ animation: orbitSweep 8s linear infinite; }
       @keyframes orbitSweep { to { stroke-dashoffset:-240 } }
 
       /* pulse/trails/shimmers => hover only */
       .pulse{ opacity:0; transform:scale(1); }
-      svg:hover .pulse.p0{ animation: pulse 12s ease-in-out infinite; }
-      svg:hover .pulse.p1{ animation: pulse 12s ease-in-out infinite 3s; }
-      svg:hover .pulse.p2{ animation: pulse 12s ease-in-out infinite 6s; }
-      svg:hover .pulse.p3{ animation: pulse 12s ease-in-out infinite 9s; }
+      svg:is(:hover, [data-hovered="true"]) .pulse.p0{ animation: pulse 12s ease-in-out infinite; }
+      svg:is(:hover, [data-hovered="true"]) .pulse.p1{ animation: pulse 12s ease-in-out infinite 3s; }
+      svg:is(:hover, [data-hovered="true"]) .pulse.p2{ animation: pulse 12s ease-in-out infinite 6s; }
+      svg:is(:hover, [data-hovered="true"]) .pulse.p3{ animation: pulse 12s ease-in-out infinite 9s; }
       @keyframes pulse{
         0% { opacity:0; transform:scale(.92) }
         18%{ opacity:.45; transform:scale(1.12) }
@@ -41,7 +41,7 @@
       }
 
       .trail rect{ opacity:0; transform:translate(0,0) scale(.8); }
-      svg:hover .trail rect{ animation: trail 1.8s ease-out infinite; }
+      svg:is(:hover, [data-hovered="true"]) .trail rect{ animation: trail 1.8s ease-out infinite; }
       .trail rect:nth-child(2){ animation-delay:.25s }
       .trail rect:nth-child(3){ animation-delay:.5s }
       .trail rect:nth-child(4){ animation-delay:.75s }
@@ -54,12 +54,12 @@
       }
 
       .shimmer{ stroke-dasharray:3 6; }
-      svg:hover .shimmer{ animation: shim 3.6s linear infinite; }
+      svg:is(:hover, [data-hovered="true"]) .shimmer{ animation: shim 3.6s linear infinite; }
       @keyframes shim{ to { stroke-dashoffset:-36 } }
 
       /* Hover micro-lift */
       .pkg{ transition:transform .18s ease; }
-      svg:hover .pkg{ transform:translateY(-1px) scale(1.01) }
+      svg:is(:hover, [data-hovered="true"]) .pkg{ transform:translateY(-1px) scale(1.01) }
 
       /* ===== HOVER-ONLY ORBIT USING CSS MOTION-PATH =====
          All icons are 64×64, centered with translate(-32,-32) so
@@ -77,7 +77,7 @@
       .pkg--right  .mover{ animation-delay:  -3s; }
       .pkg--bottom .mover{ animation-delay:  -6s; }
       .pkg--left   .mover{ animation-delay:  -9s; }
-      svg:hover .mover{ animation-play-state: running; }
+      svg:is(:hover, [data-hovered="true"]) .mover{ animation-play-state: running; }
 
       /* Reduced motion */
       @media (prefers-reduced-motion:reduce){

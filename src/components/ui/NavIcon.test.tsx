@@ -26,6 +26,16 @@ describe('NavIcon pointer interactions', () => {
     expect(svg).not.toBeNull()
     expect(svg?.style.pointerEvents).toBe('auto')
   })
+
+  it('passes a data-hovered attribute to the SVG when hovered', () => {
+    const { container } = render(
+      <NavIcon Icon={BasicIcon} label="Hovered icon" hovered />
+    )
+    const svg = container.querySelector('svg')
+
+    expect(svg).not.toBeNull()
+    expect(svg?.getAttribute('data-hovered')).toBe('true')
+  })
 })
 
 type IconTestCase = {

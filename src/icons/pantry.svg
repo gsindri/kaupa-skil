@@ -18,41 +18,41 @@
     #item-box{ transition-duration:.85s; }
 
     /* Rise on hover with stagger; fall back on hover-out */
-    #pantryIcon:hover #item-can   { transform: translateY(0);    transition-delay:0s; }
-    #pantryIcon:hover #item-doc   { transform: translateY(0);    transition-delay:.12s; }
-    #pantryIcon:hover #item-jar   { transform: translateY(0);    transition-delay:.26s; }
-    #pantryIcon:hover #item-drawer{ transform: translateY(0);    transition-delay:.40s; }
-    #pantryIcon:hover #item-box   { transform: translateY(0);    transition-delay:.52s; }
+    #pantryIcon:is(:hover, [data-hovered="true"]) #item-can   { transform: translateY(0);    transition-delay:0s; }
+    #pantryIcon:is(:hover, [data-hovered="true"]) #item-doc   { transform: translateY(0);    transition-delay:.12s; }
+    #pantryIcon:is(:hover, [data-hovered="true"]) #item-jar   { transform: translateY(0);    transition-delay:.26s; }
+    #pantryIcon:is(:hover, [data-hovered="true"]) #item-drawer{ transform: translateY(0);    transition-delay:.40s; }
+    #pantryIcon:is(:hover, [data-hovered="true"]) #item-box   { transform: translateY(0);    transition-delay:.52s; }
 
     /* Tiny settle bounce (hover-in only) */
     @keyframes settle { 0%{transform:translateY(0) rotate(0)} 35%{transform:translateY(-6px) rotate(.6deg)} 100%{transform:translateY(0) rotate(0)} }
-    #pantryIcon:hover .wobble.can    { animation: settle .5s ease-out .72s 1 both; }
-    #pantryIcon:hover .wobble.doc    { animation: settle .5s ease-out .86s 1 both; }
-    #pantryIcon:hover .wobble.jar    { animation: settle .55s ease-out .98s 1 both; }
-    #pantryIcon:hover .wobble.drawer { animation: settle .45s ease-out .96s 1 both; }
-    #pantryIcon:hover .wobble.box    { animation: settle .55s ease-out 1.04s 1 both; }
+    #pantryIcon:is(:hover, [data-hovered="true"]) .wobble.can    { animation: settle .5s ease-out .72s 1 both; }
+    #pantryIcon:is(:hover, [data-hovered="true"]) .wobble.doc    { animation: settle .5s ease-out .86s 1 both; }
+    #pantryIcon:is(:hover, [data-hovered="true"]) .wobble.jar    { animation: settle .55s ease-out .98s 1 both; }
+    #pantryIcon:is(:hover, [data-hovered="true"]) .wobble.drawer { animation: settle .45s ease-out .96s 1 both; }
+    #pantryIcon:is(:hover, [data-hovered="true"]) .wobble.box    { animation: settle .55s ease-out 1.04s 1 both; }
 
     /* Contact shadows: off until land; fade out on exit */
     .contact-shadow{ opacity:0; transform:scale(.25); transition: opacity .25s ease, transform .25s ease; }
-    #pantryIcon:hover #shadow-can   { transition-delay:.70s; opacity:.42; transform:scale(1); }
-    #pantryIcon:hover #shadow-doc   { transition-delay:.84s; opacity:.42; transform:scale(1); }
-    #pantryIcon:hover #shadow-jar   { transition-delay:.96s; opacity:.42; transform:scale(1); }
-    #pantryIcon:hover #shadow-drawer{ transition-delay:.94s; opacity:.42; transform:scale(1); }
-    #pantryIcon:hover #shadow-box   { transition-delay:1.02s;opacity:.42; transform:scale(1); }
+    #pantryIcon:is(:hover, [data-hovered="true"]) #shadow-can   { transition-delay:.70s; opacity:.42; transform:scale(1); }
+    #pantryIcon:is(:hover, [data-hovered="true"]) #shadow-doc   { transition-delay:.84s; opacity:.42; transform:scale(1); }
+    #pantryIcon:is(:hover, [data-hovered="true"]) #shadow-jar   { transition-delay:.96s; opacity:.42; transform:scale(1); }
+    #pantryIcon:is(:hover, [data-hovered="true"]) #shadow-drawer{ transition-delay:.94s; opacity:.42; transform:scale(1); }
+    #pantryIcon:is(:hover, [data-hovered="true"]) #shadow-box   { transition-delay:1.02s;opacity:.42; transform:scale(1); }
 
     /* Micro FX only while hovered */
     @keyframes sweep { from{stroke-dashoffset:0} to{stroke-dashoffset:-280} }
-    #pantryIcon:hover .led { animation: sweep 5s linear infinite; }
+    #pantryIcon:is(:hover, [data-hovered="true"]) .led { animation: sweep 5s linear infinite; }
 
     @keyframes driftUp { 0%{transform:translateY(8px); opacity:0} 20%{opacity:1} 100%{transform:translateY(-10px); opacity:0} }
-    #pantryIcon:hover .bub1{ animation:driftUp 3s ease-in-out infinite; }
-    #pantryIcon:hover .bub2{ animation:driftUp 3.2s .6s ease-in-out infinite; }
+    #pantryIcon:is(:hover, [data-hovered="true"]) .bub1{ animation:driftUp 3s ease-in-out infinite; }
+    #pantryIcon:is(:hover, [data-hovered="true"]) .bub2{ animation:driftUp 3.2s .6s ease-in-out infinite; }
 
     @keyframes shimmer { from{transform:translateX(0)} to{transform:translateX(90px)} }
-    #pantryIcon:hover #drawerShine{ animation: shimmer 5.5s linear infinite; }
+    #pantryIcon:is(:hover, [data-hovered="true"]) #drawerShine{ animation: shimmer 5.5s linear infinite; }
 
     @keyframes wiggle { 0%{transform:rotate(0)} 40%{transform:rotate(-4deg)} 100%{transform:rotate(0)} }
-    #pantryIcon:hover #boxFlap{ animation: wiggle 7s ease-in-out infinite; transform-origin: 40px 24px; }
+    #pantryIcon:is(:hover, [data-hovered="true"]) #boxFlap{ animation: wiggle 7s ease-in-out infinite; transform-origin: 40px 24px; }
 
     @media (prefers-reduced-motion: reduce){
       #pantryIcon *{ animation:none!important; transition-duration:.01ms!important; }

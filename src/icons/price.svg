@@ -15,30 +15,30 @@
 
     /* ------- Fan → Stack ------- */
     .layer{ transform: var(--idle); transition: transform .65s cubic-bezier(.2,.8,.2,1); will-change: transform; }
-    #coins-fan-stack:hover .layer{ transform: var(--stack); }
+    #coins-fan-stack:is(:hover, [data-hovered="true"]) .layer{ transform: var(--stack); }
     .l2{transition-delay:.06s}.l3{transition-delay:.12s}.l4{transition-delay:.18s}.l5{transition-delay:.24s}
 
     /* Top coin micro-lift/tilt once stacked */
     .topLift{ transform-origin:300px 264px; animation: lift 7s ease-in-out infinite; animation-play-state: paused; }
-    #coins-fan-stack:hover .topLift{ animation-play-state: running; }
+    #coins-fan-stack:is(:hover, [data-hovered="true"]) .topLift{ animation-play-state: running; }
     @keyframes lift{ 0%,100%{transform:translateY(0) rotate(0)} 40%{transform:translateY(-8px) rotate(-.4deg)} 60%{transform:translateY(-4px) rotate(.18deg)} }
 
     /* Edge gear turn (cyan layer only) */
     .gear{ stroke-dasharray:6 10; animation: gear 14s linear infinite; animation-play-state: paused; }
-    #coins-fan-stack:hover .gear{ animation-play-state: running; }
+    #coins-fan-stack:is(:hover, [data-hovered="true"]) .gear{ animation-play-state: running; }
     @keyframes gear{ from{ stroke-dashoffset:0 } to{ stroke-dashoffset:16 } }
 
     /* Scanline on top face */
     .scan{ opacity:0; transform:translateX(-220px); transition:opacity .2s ease; }
-    #coins-fan-stack:hover .scan{ opacity:.12; animation: scan 8s linear infinite; }
+    #coins-fan-stack:is(:hover, [data-hovered="true"]) .scan{ opacity:.12; animation: scan 8s linear infinite; }
     @keyframes scan{ from{transform:translateX(-220px)} to{transform:translateX(220px)} }
 
     /* Orbit → drop pixels */
     .orbit{ transform-origin:300px 225px; animation: spin 3.6s linear infinite; animation-play-state: paused; }
-    #coins-fan-stack:hover .orbit{ animation-play-state: running; }
+    #coins-fan-stack:is(:hover, [data-hovered="true"]) .orbit{ animation-play-state: running; }
     @keyframes spin{ to{ transform: rotate(360deg) } }
     .drop{ animation: drop 1.2s ease-in forwards; animation-play-state: paused; }
-    #coins-fan-stack:hover .drop{ animation-play-state: running; }
+    #coins-fan-stack:is(:hover, [data-hovered="true"]) .drop{ animation-play-state: running; }
     @keyframes drop{ from{ transform: translate(0,-18px); opacity:1 } to{ transform: translate(0,50px); opacity:0 } }
 
     /* Soft static shadows for depth */
