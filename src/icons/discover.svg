@@ -310,14 +310,14 @@
       <path d="M230 240a111 111 0 0 1 49-37" stroke="url(#gloss)" stroke-width="14" fill="none" opacity=".55"/>
       <path d="M387 387a111 111 0 0 0 44-35" stroke="url(#gloss)" stroke-width="12" fill="none" opacity=".35"/>
 
-      <!-- ring MOVED ABOVE the glass and made non-scaling -->
+      <!-- ring -->
       <g filter="url(#glow)">
-        <circle class="ns" cx="300" cy="300" r="164" fill="none" stroke="var(--ring2)" stroke-width="12" opacity="1"/>
-        <circle class="ns" cx="300" cy="300" r="155" fill="none" stroke="var(--ring)"  stroke-width="7"  opacity="1"/>
+        <circle cx="300" cy="300" r="164" fill="none" stroke="var(--ring2)" stroke-width="12" opacity="1"/>
+        <circle cx="300" cy="300" r="155" fill="none" stroke="var(--ring)"  stroke-width="7"  opacity="1"/>
       </g>
 
-      <!-- rim glint (also non-scaling so it's visible small) -->
-      <circle class="glint ns" cx="300" cy="300" r="160" fill="none"/>
+      <!-- rim glint -->
+      <circle class="glint" cx="300" cy="300" r="160" fill="none"/>
 
       <!-- handle anchored at ring’s rightmost (16:30 orientation) -->
       <g transform="translate(464,300)">
