@@ -36,7 +36,11 @@ export function PrimaryNavRail() {
     >
       <div
         aria-hidden
-        className="absolute inset-x-0 top-0 h-[2px] pointer-events-none bg-gradient-to-r from-cyan-300/70 via-cyan-400 to-cyan-300/70"
+        className="absolute inset-x-0 top-0 h-[2px] pointer-events-none"
+        style={{
+          background:
+            'linear-gradient(90deg, rgba(165, 243, 252, 0.63) 0%, rgba(34, 211, 238, 0.9) 50%, rgba(165, 243, 252, 0.63) 100%)',
+        }}
       />
 
       <nav className="flex w-full flex-col items-center gap-1 pt-[var(--sidebar-offset-rail)]">
