@@ -153,7 +153,7 @@ export function CartButton({
             ? cn(
                 'h-[var(--chip-h,2.5rem)] rounded-full px-3 shadow-sm ring-1 ring-white/10 hover:ring-white/20',
                 hasItems
-                  ? 'bg-[linear-gradient(135deg,#3473ff,#2cc6ff)] text-white hover:bg-[linear-gradient(135deg,#3c7dff,#39d4ff)]'
+                  ? 'bg-blue-600 bg-[linear-gradient(135deg,#3473ff,#2cc6ff)] text-white hover:bg-[linear-gradient(135deg,#3c7dff,#39d4ff)]'
                   : 'bg-white/5 text-white/90 hover:bg-white/8'
               )
             : size === 'sm'
