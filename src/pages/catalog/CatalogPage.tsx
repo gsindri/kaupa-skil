@@ -1179,11 +1179,21 @@ function FiltersBar({
   useEffect(() => {
     const handleShortcuts = (event: KeyboardEvent) => {
       if (event.defaultPrevented) return
-      if (event.altKey || event.metaKey || event.ctrlKey) return
-      const active = document.activeElement
-      if (isEditableElement(active)) return
 
       const key = event.key.toLowerCase()
+      const active = document.activeElement
+
+      if ((event.metaKey || event.ctrlKey) && key === 'k') {
+        if (isEditableElement(active)) return
+        event.preventDefault()
+        onLockChange(true)
+        searchRef.current?.focus()
+        return
+      }
+
+      if (event.altKey || event.metaKey || event.ctrlKey) return
+      if (isEditableElement(active)) return
+
       if (key === 'f') {
         event.preventDefault()
         toggleFilters()
@@ -1202,7 +1212,7 @@ function FiltersBar({
 
     window.addEventListener('keydown', handleShortcuts)
     return () => window.removeEventListener('keydown', handleShortcuts)
-  }, [toggleFilters, setView, view])
+  }, [toggleFilters, setView, view, onLockChange])
 
   return (
     <section
@@ -1220,26 +1230,29 @@ function FiltersBar({
         </div>
       )}
 
-      <div className={containerClass}>
-        <div className="flex h-[var(--toolbar-h,56px)] flex-wrap items-center gap-5">
-          <div className="flex min-w-0 flex-1 items-center gap-4">
             <div className="relative min-w-0 flex-1">
               <label className="sr-only" htmlFor="catalog-search">
                 Search products
               </label>
-              <input
-                id="catalog-search"
-                ref={searchRef}
-                type="search"
-                placeholder="Search products"
-                value={searchValue}
-                onChange={handleSearchChange}
-                onKeyDown={handleSearchKeyDown}
-                onFocus={() => onLockChange(true)}
-                onBlur={() => onLockChange(false)}
-                className="h-[var(--ctrl-h,40px)] w-full rounded-[var(--ctrl-r,12px)] bg-[var(--field-bg)] pl-10 pr-12 text-sm text-[color:var(--ink)] placeholder:text-[color:var(--ink-dim)]/70 shadow-[0_0_0_0.5px_rgba(255,255,255,0.06)] ring-1 ring-inset ring-white/12 transition-colors duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-4 focus-visible:ring-offset-[var(--toolbar-bg)] hover:bg-[var(--field-bg-elev)] hover:ring-white/20 motion-reduce:transition-none"
-              />
-              <span className="pointer-events-none absolute left-3 top-1/2 grid -translate-y-1/2 place-items-center text-[color:var(--ink-dim)]">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <input
+                    id="catalog-search"
+                    ref={searchRef}
+                    type="search"
+                    placeholder="Search products"
+                    aria-keyshortcuts="Control+K Meta+K"
+                    value={searchValue}
+                    onChange={handleSearchChange}
+                    onKeyDown={handleSearchKeyDown}
+                    onFocus={() => onLockChange(true)}
+                    onBlur={() => onLockChange(false)}
+                    className="h-[var(--ctrl-h,40px)] w-full rounded-[var(--ctrl-r,12px)] bg-white/5 pl-10 pr-12 text-sm text-[color:var(--ink)] placeholder:text-[color:var(--ink)]/65 ring-1 ring-inset ring-white/10 transition duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-4 focus-visible:ring-offset-[var(--toolbar-bg)] hover:-translate-y-[0.5px] hover:bg-white/10 hover:ring-white/20 motion-reduce:transform-none motion-reduce:transition-none"
+                  />
+                </TooltipTrigger>
+                <TooltipContent sideOffset={8}>Search (Ctrl/⌘+K)</TooltipContent>
+              </Tooltip>
+              <span className="pointer-events-none absolute left-3 top-1/2 grid -translate-y-1/2 place-items-center text-[color:var(--ink-dim)]/80">
                 <MagnifyingGlass size={18} weight="duotone" aria-hidden="true" />
               </span>
               {showClear && (
@@ -1247,14 +1260,14 @@ function FiltersBar({
                   type="button"
                   onClick={handleClearSearch}
                   aria-label="Clear search"
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-full p-1 text-[color:var(--ink-dim)] transition-colors duration-150 hover:text-[color:var(--ink)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent motion-reduce:transition-none"
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-full p-1 text-[color:var(--ink-dim)]/80 transition duration-150 ease-out hover:text-[color:var(--ink)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent motion-reduce:transition-none"
                 >
                   <XCircle size={18} weight="duotone" />
                 </button>
               )}
             </div>
             {formattedTotal && (
-              <span className="hidden flex-none items-center text-xs font-medium leading-none text-[color:var(--ink-dim)]/85 tabular-nums sm:inline-flex sm:gap-2">
+              <span className="hidden flex-none items-center text-xs font-medium leading-none text-[color:var(--ink-dim)]/75 tabular-nums sm:inline-flex sm:gap-2 sm:-translate-y-px">
                 {formattedTotal}
                 <span className="text-[color:var(--ink-dim)]/70">results</span>
               </span>
@@ -1272,7 +1285,7 @@ function FiltersBar({
                   aria-controls="catalog-filters-panel"
                   aria-keyshortcuts="f"
                   className={cn(
-                    'inline-flex h-[var(--ctrl-h,40px)] items-center gap-2 rounded-[var(--ctrl-r,12px)] px-3 text-sm font-medium text-[color:var(--ink-dim)] ring-1 ring-inset ring-white/12 transition-colors duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-4 focus-visible:ring-offset-[var(--toolbar-bg)] hover:bg-white/10 hover:text-[color:var(--ink)] hover:ring-white/20 motion-reduce:transition-none',
+                    'inline-flex h-[var(--ctrl-h,40px)] items-center gap-2 rounded-[var(--ctrl-r,12px)] bg-white/5 px-3 text-sm font-medium text-[color:var(--ink-dim)]/80 ring-1 ring-inset ring-white/10 transition duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-4 focus-visible:ring-offset-[var(--toolbar-bg)] hover:-translate-y-[0.5px] hover:bg-white/12 hover:text-[color:var(--ink)] hover:ring-white/20 motion-reduce:transform-none motion-reduce:transition-none',
                     showFilters && 'bg-white/12 text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.2)] ring-white/20',
                   )}
                 >
