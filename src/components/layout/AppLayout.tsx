@@ -6,6 +6,7 @@ import React, {
   MutableRefObject,
   ReactElement
 } from 'react'
+import clsx from 'clsx'
 import { Outlet } from 'react-router-dom'
 import { TopNavigation } from './TopNavigation'
 import { PrimaryNavRail } from './PrimaryNavRail'
@@ -26,7 +27,9 @@ export function AppLayout({
   header,
   children,
   headerRef,
-  headerClassName
+  headerClassName,
+  secondary,
+  panelOpen = true
 }: AppLayoutProps) {
   const internalHeaderRef = useRef<HTMLDivElement>(null)
   const combinedHeaderRef = useCallback(
@@ -66,13 +69,16 @@ export function AppLayout({
       ? React.cloneElement(header as ReactElement<any>, { onLockChange: handleLockChange })
       : header
 
+  const hasSecondary = !!secondary
+  const showSecondary = hasSecondary && panelOpen
+
   return (
     <div className="relative min-h-screen">
       {/* Left rail - fixed position */}
       <aside
         data-rail
         className="fixed top-0 left-0 h-screen"
-        style={{ 
+        style={{
           width: 'var(--layout-rail,72px)',
           zIndex: 'var(--z-rail, 60)'
         }}
@@ -81,7 +87,10 @@ export function AppLayout({
       </aside>
 
       {/* Right content area */}
-      <div style={{ marginLeft: 'var(--layout-rail,72px)' }}>
+      <div
+        className="flex min-h-screen flex-col"
+        style={{ marginLeft: 'var(--layout-rail,72px)' }}
+      >
         <a
           href="#main-content"
           className="sr-only focus:not-sr-only absolute left-2 top-2 z-[var(--z-header,50)] px-3 py-2 rounded bg-[var(--button-primary)] text-white"
@@ -103,16 +112,32 @@ export function AppLayout({
         </div>
 
         {/* Main content */}
-        <main 
-          id="main-content" 
-          className="mx-auto max-w-[1280px] px-4 sm:px-6 lg:px-8"
-          style={{ 
-            minHeight: 'calc(100vh - var(--header-h, 56px))',
-            paddingTop: '1rem'
-          }}
-        >
-          {children ?? <Outlet />}
-        </main>
+        <div className="px-4 pb-8 pt-4 sm:px-6 lg:px-8">
+          <div
+            className={clsx(
+              'mx-auto grid w-full items-start gap-6 max-w-none',
+              showSecondary
+                ? 'lg:max-w-[1600px] lg:grid-cols-[minmax(0,1fr)_minmax(280px,360px)]'
+                : 'lg:grid-cols-1'
+            )}
+          >
+            <main
+              id="main-content"
+              className="w-full min-w-0"
+              style={{ minHeight: 'calc(100vh - var(--header-h, 56px))' }}
+            >
+              {children ?? <Outlet />}
+            </main>
+            {hasSecondary && (
+              <aside
+                className={clsx('min-w-0', showSecondary ? 'block' : 'hidden')}
+                aria-hidden={!showSecondary}
+              >
+                {secondary}
+              </aside>
+            )}
+          </div>
+        </div>
       </div>
       <CartDrawer />
     </div>
