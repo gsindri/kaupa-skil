@@ -31,8 +31,8 @@ export function PrimaryNavRail() {
   const clearKeyboardFocus = React.useCallback(() => setKeyboardFocusedItem(null), [])
 
   React.useEffect(() => {
-    setKeyboardFocusedItem(null)
-  }, [pathname])
+    clearKeyboardHover()
+  }, [clearKeyboardHover, pathname])
   return (
     <div
       className="nav-rail h-full w-[var(--layout-rail,72px)] bg-gradient-to-b from-[#0B1220] via-[#0E1B35] to-[#0E2A5E] relative"
@@ -54,6 +54,7 @@ export function PrimaryNavRail() {
         const active = pathname === to || pathname.startsWith(to + '/')
         const isHovered = hoveredItem === to
         const isKeyboardFocused = keyboardFocusedItem === to
+        const isHoveredOrFocused = isHovered || isKeyboardFocused
         return (
           <Link
             key={to}
@@ -89,7 +90,7 @@ export function PrimaryNavRail() {
               Icon={Icon}
               active={active}
               label={label}
-              hovered={isHovered || isKeyboardFocused}
+              hovered={isHoveredOrFocused}
             />
             <span className="mt-1.5 text-[11px] leading-[14px] text-center whitespace-nowrap">{label}</span>
           </Link>
