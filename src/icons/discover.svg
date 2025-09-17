@@ -303,8 +303,8 @@
       #discover[data-nav-measuring] .disc,
       #discover[data-nav-measuring] .find,
       #discover[data-nav-measuring] .rays{
-        opacity: 0;
-        transform: none;
+        opacity: 0 !important;
+        transform: none !important;
         animation: none !important;
         transition: none !important;
         display: none !important;

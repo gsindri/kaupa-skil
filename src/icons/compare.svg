@@ -78,12 +78,14 @@
       }
       #scale[data-nav-measuring] .fly-left-to-right,
       #scale[data-nav-measuring] .fly-right-to-left{
+        animation: none!important;
         opacity:0 !important;
         transform:none!important;
         display:none!important;
       }
       #scale[data-nav-measuring] .swap{
         offset-distance: 0% !important;
+        transform: none!important;
         transition: none!important;
         animation: none!important;
       }
