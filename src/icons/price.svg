@@ -41,7 +41,11 @@
       transition: none!important;
     }
     #coins-fan-stack[data-nav-measuring] .layer{
-      transform: var(--idle) !important;
+      transform: translate(0,0) rotate(0deg) !important;
+    }
+    #coins-fan-stack[data-nav-measuring] .ui-decor{
+      opacity: 0 !important;
+      display: none !important;
     }
     #coins-fan-stack[data-nav-measuring] .topLift,
     #coins-fan-stack[data-nav-measuring] .gear,
@@ -122,7 +126,7 @@
   </defs>
 
   <!-- ===== UI doodles (static, for fun/detail) ===== -->
-  <g stroke="var(--ui)" stroke-width="2" opacity=".45" fill="none">
+  <g class="ui-decor" stroke="var(--ui)" stroke-width="2" opacity=".45" fill="none">
     <path d="M458,300 v21"/>
     <path d="M439,248 c8 8 15 8 23 0"/>
     <path d="M158,353 q-23 15 -23 41" opacity=".4"/>
@@ -131,7 +135,7 @@
     <path d="M465,270 v27" opacity=".5"/>
   </g>
   <!-- swoosh arcs around the stack -->
-  <g stroke="var(--ui)" stroke-width="2" opacity=".35" fill="none">
+  <g class="ui-decor" stroke="var(--ui)" stroke-width="2" opacity=".35" fill="none">
     <path d="M390,336 q38 23 0 45"/>
     <path d="M214,390 q-36 21 0 42"/>
     <path d="M203,450 q-30 18 0 33"/>

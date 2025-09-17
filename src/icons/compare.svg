@@ -83,11 +83,21 @@
         transform:none!important;
         display:none!important;
       }
+      #scale[data-nav-measuring] .left-item,
+      #scale[data-nav-measuring] .right-item{
+        --item-pos: translate(300px,288px);
+      }
       #scale[data-nav-measuring] .swap{
         offset-distance: 0% !important;
         transform: none!important;
         transition: none!important;
         animation: none!important;
+      }
+      #scale[data-nav-measuring] .ring-purple,
+      #scale[data-nav-measuring] .ring-green{
+        opacity:0 !important;
+        stroke-width:0 !important;
+        display:none !important;
       }
 
       @media (prefers-reduced-motion:reduce){
@@ -151,7 +161,7 @@
   <!-- ITEMS (drawn last so they land ON TOP of both pans) -->
   <g>
     <!-- LEFT ITEM at (200,288) -->
-    <g class="left-item" transform="translate(200 288)">
+    <g class="left-item" style="--item-pos: translate(200px,288px); transform: var(--item-pos);">
       <ellipse cy="8" rx="42" ry="8" fill="var(--purple)" opacity=".2"/>
       <g class="swap">
         <!-- block -->
@@ -171,7 +181,7 @@
     </g>
 
     <!-- RIGHT ITEM at (400,288) -->
-    <g class="right-item" transform="translate(400 288)">
+    <g class="right-item" style="--item-pos: translate(400px,288px); transform: var(--item-pos);">
       <ellipse cy="8" rx="42" ry="8" fill="var(--green)" opacity=".2"/>
       <g class="swap">
         <!-- globe -->
