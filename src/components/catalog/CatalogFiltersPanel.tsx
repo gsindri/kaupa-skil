@@ -3,19 +3,54 @@ import { useQuery } from '@tanstack/react-query'
 import { fetchCatalogFacets, FacetFilters } from '@/services/catalog'
 import { cn } from '@/lib/utils'
 import { useCatalogFilters } from '@/state/catalogFiltersStore'
-import { triStockToAvailability } from '@/lib/catalogFilters'
+import { triStockToAvailability, type TriState } from '@/lib/catalogFilters'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
+import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
 interface CatalogFiltersPanelProps {
   filters: FacetFilters
   onChange: (f: Partial<FacetFilters>) => void
   focusedFacet?: keyof FacetFilters | null
+  onClearFilters: () => void
 }
 
-export function CatalogFiltersPanel({ filters, onChange, focusedFacet }: CatalogFiltersPanelProps) {
+export function CatalogFiltersPanel({ filters, onChange, focusedFacet, onClearFilters }: CatalogFiltersPanelProps) {
   const triStock = useCatalogFilters(s => s.triStock)
+  const setTriStock = useCatalogFilters(s => s.setTriStock)
+  const triSuppliers = useCatalogFilters(s => s.triSuppliers)
+  const setTriSuppliers = useCatalogFilters(s => s.setTriSuppliers)
+  const triSpecial = useCatalogFilters(s => s.triSpecial)
+  const setTriSpecial = useCatalogFilters(s => s.setTriSpecial)
   const availability = triStockToAvailability(triStock)
+
+  const hasFacetFilters = React.useMemo(() => {
+    return Object.entries(filters).some(([key, value]) => {
+      if (key === 'search') return false
+      if (value == null) return false
+      if (Array.isArray(value)) return value.length > 0
+      if (typeof value === 'object') {
+        return Object.values(value as Record<string, unknown>).some(
+          v => v !== undefined && v !== null && v !== '',
+        )
+      }
+      return Boolean(value)
+    })
+  }, [filters])
+
+  const hasActiveFilters =
+    hasFacetFilters ||
+    triStock !== 'off' ||
+    triSuppliers !== 'off' ||
+    triSpecial !== 'off'
 
   const facetRefs = React.useMemo(
     () =>
@@ -88,7 +123,79 @@ export function CatalogFiltersPanel({ filters, onChange, focusedFacet }: Catalog
   )
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-base font-semibold">Filters</h2>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={onClearFilters}
+          disabled={!hasActiveFilters}
+        >
+          Clear all
+        </Button>
+      </div>
+
+      <div className="space-y-4">
+        <div className="space-y-1.5">
+          <Label htmlFor="catalog-filter-stock" className="text-sm font-medium">
+            Stock
+          </Label>
+          <Select
+            value={triStock}
+            onValueChange={value => setTriStock(value as TriState)}
+          >
+            <SelectTrigger id="catalog-filter-stock" className="h-9">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="off">All stock</SelectItem>
+              <SelectItem value="include">In stock only</SelectItem>
+              <SelectItem value="exclude">Out of stock only</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-1.5">
+          <Label htmlFor="catalog-filter-suppliers" className="text-sm font-medium">
+            Suppliers
+          </Label>
+          <Select
+            value={triSuppliers}
+            onValueChange={value => setTriSuppliers(value as TriState)}
+          >
+            <SelectTrigger id="catalog-filter-suppliers" className="h-9">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="off">All suppliers</SelectItem>
+              <SelectItem value="include">My suppliers</SelectItem>
+              <SelectItem value="exclude">Not my suppliers</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-1.5">
+          <Label htmlFor="catalog-filter-specials" className="text-sm font-medium">
+            Specials
+          </Label>
+          <Select
+            value={triSpecial}
+            onValueChange={value => setTriSpecial(value as TriState)}
+          >
+            <SelectTrigger id="catalog-filter-specials" className="h-9">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="off">All specials</SelectItem>
+              <SelectItem value="include">On special</SelectItem>
+              <SelectItem value="exclude">Not on special</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
       {data && (
         <div className="space-y-4">
           {renderFacet('Categories', data.categories, 'category')}
