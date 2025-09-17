@@ -1230,6 +1230,9 @@ function FiltersBar({
         </div>
       )}
 
+      <div className={containerClass}>
+        <div className="flex h-[var(--toolbar-h,56px)] flex-wrap items-center gap-5">
+          <div className="flex min-w-0 flex-1 items-center gap-4">
             <div className="relative min-w-0 flex-1">
               <label className="sr-only" htmlFor="catalog-search">
                 Search products
