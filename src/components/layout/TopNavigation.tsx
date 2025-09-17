@@ -1,6 +1,5 @@
 
 import React, { useEffect, useRef, useState, useLayoutEffect, useId } from 'react'
-import { MagnifyingGlass, CaretDown, Question } from '@phosphor-icons/react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,6 +9,8 @@ import {
   DropdownMenuSub,
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem
 } from '@/components/ui/dropdown-menu'
 import { Button } from '@/components/ui/button'
 import { TenantSwitcher } from './TenantSwitcher'
@@ -20,11 +21,14 @@ import { cn } from '@/lib/utils'
 import { HeaderSearch } from '@/components/search/HeaderSearch'
 import { HeildaLogo } from '@/components/branding/HeildaLogo'
 import { CartButton } from '@/components/cart/CartButton'
-import { Icon } from '@/components/ui/Icon'
+import { IconButton } from '@/components/ui/IconButton'
+import { SearchSoft, ChevronSoft, GlobeSoft, QuestionSoft } from '@/components/icons-soft'
+import { useLanguage } from '@/contexts/LanguageProvider'
 
 export function TopNavigation() {
   const { profile, user, signOut, loading, profileLoading } = useAuth()
   const { setIsDrawerOpen } = useCart()
+  const { language, setLanguage } = useLanguage()
 
   const searchRef = useRef<HTMLInputElement>(null)
   const searchTriggerRef = useRef<HTMLButtonElement>(null)
@@ -152,37 +156,22 @@ export function TopNavigation() {
       </div>
 
       <nav aria-label="Global actions" className="ml-auto flex items-center gap-2">
-        <Button
+        <IconButton
           ref={searchTriggerRef}
-          variant="ghost"
-          type="button"
-          onClick={() => setSearchOpen(true)}
+          label="Search"
+          aria-label={`Search (${shortcutHint} or /)`}
           aria-haspopup="dialog"
           aria-keyshortcuts="/ meta+k control+k"
           aria-describedby={searchShortcutDescriptionId}
+          onClick={() => setSearchOpen(true)}
           title={`Search (${shortcutHint} or /)`}
         >
-          <Icon size={22} aria-hidden="true">
-            <MagnifyingGlass weight="duotone" />
-          </Icon>
-          <span className="text-sm font-medium leading-none">Search</span>
-          <kbd
-            className="hidden sm:inline-flex items-center rounded-md border border-white/20 bg-white/10 px-1.5 py-0.5 text-[11px] font-medium leading-none text-white/80"
-            aria-hidden="true"
-          >
-            {shortcutHint}
-          </kbd>
-          <kbd
-            className="sm:hidden inline-flex items-center rounded-md border border-white/20 bg-white/10 px-1.5 py-0.5 text-[11px] font-medium leading-none text-white/80"
-            aria-hidden="true"
-          >
-            /
-          </kbd>
-          <span id={searchShortcutDescriptionId} className="sr-only">
-            Shortcut: press / or {shortcutHint}
-          </span>
-        </Button>
-        <LanguageSwitcher />
+          <SearchSoft width={24} height={24} tone={0.14} />
+        </IconButton>
+        <span id={searchShortcutDescriptionId} className="sr-only">
+          Open search dialog. Shortcut: press / or {shortcutHint}.
+        </span>
+        <LanguageSwitcher className="hidden xl:block" />
         <DropdownMenu open={userMenuOpen} onOpenChange={setUserMenuOpen} modal={false}>
           <DropdownMenuTrigger asChild>
             <Button
@@ -200,9 +189,7 @@ export function TopNavigation() {
                   <span className="text-sm font-medium text-[var(--text-on-dark)]">{userInitial}</span>
                 )}
               </div>
-              <Icon size={16} className="text-[var(--text-on-dark)]" aria-hidden="true">
-                <CaretDown weight="bold" />
-              </Icon>
+              <ChevronSoft width={16} height={16} className="text-[var(--text-on-dark)]" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent
@@ -221,13 +208,25 @@ export function TopNavigation() {
             <DropdownMenuSeparator />
             <DropdownMenuItem>Profile Settings</DropdownMenuItem>
             <DropdownMenuItem>Organization Settings</DropdownMenuItem>
+            <div className="xl:hidden">
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger>
+                  <GlobeSoft width={18} height={18} tone={0.12} className="mr-2 text-[inherit]" />
+                  <span>Language</span>
+                </DropdownMenuSubTrigger>
+                <DropdownMenuSubContent className="min-w-[200px]">
+                  <DropdownMenuRadioGroup value={language} onValueChange={(value) => setLanguage(value as any)}>
+                    <DropdownMenuRadioItem value="is">Icelandic</DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="en">English</DropdownMenuRadioItem>
+                  </DropdownMenuRadioGroup>
+                </DropdownMenuSubContent>
+              </DropdownMenuSub>
+            </div>
             <DropdownMenuSub>
-              <DropdownMenuSubTrigger>
-                <Icon size={18} className="mr-2 text-[inherit]" aria-hidden="true">
-                  <Question weight="duotone" />
-                </Icon>
-                <span>Help</span>
-              </DropdownMenuSubTrigger>
+                <DropdownMenuSubTrigger>
+                  <QuestionSoft width={18} height={18} tone={0.14} className="mr-2 text-[inherit]" />
+                  <span>Help</span>
+                </DropdownMenuSubTrigger>
               <DropdownMenuSubContent className="min-w-[200px]">
                 <DropdownMenuItem>Keyboard Shortcuts</DropdownMenuItem>
                 <DropdownMenuItem>Support</DropdownMenuItem>
