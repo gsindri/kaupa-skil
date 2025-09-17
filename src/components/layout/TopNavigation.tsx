@@ -180,25 +180,6 @@ export function TopNavigation() {
           </span>
         </Button>
         <LanguageSwitcher />
-        <button
-          type="button"
-          onClick={() => setIsDrawerOpen(true)}
-          className="relative inline-flex items-center gap-2 h-10 px-3.5 rounded-2xl bg-[var(--button-primary)] hover:bg-[var(--button-primary-hover)] text-white shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#21D4D6] ui-numeric duration-fast ease-snap motion-reduce:transition-none"
-          aria-haspopup="dialog"
-          aria-expanded={isDrawerOpen}
-          aria-controls="cart-drawer"
-        >
-          <ShoppingCart className="icon-20" strokeWidth={1.75} />
-          <span className="font-semibold leading-tight">Cart</span>
-          {cartCount > 0 && (
-            <span
-              aria-live="polite"
-              className="ml-1 rounded-pill bg-[var(--brand-accent)] text-slate-900 text-xs px-2 py-0.5 min-w-[1.25rem] text-center ui-numeric"
-            >
-              {cartCount}
-            </span>
-          )}
-        </button>
         <DropdownMenu open={userMenuOpen} onOpenChange={setUserMenuOpen} modal={false}>
           <DropdownMenuTrigger asChild>
             <Button
@@ -249,6 +230,25 @@ export function TopNavigation() {
             <DropdownMenuItem onClick={handleSignOut}>Sign Out</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+        <button
+          type="button"
+          onClick={() => setIsDrawerOpen(true)}
+          className="relative inline-flex items-center gap-2 h-10 px-3.5 rounded-2xl bg-[var(--button-primary)] hover:bg-[var(--button-primary-hover)] text-white shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#21D4D6] ui-numeric duration-fast ease-snap motion-reduce:transition-none"
+          aria-haspopup="dialog"
+          aria-expanded={isDrawerOpen}
+          aria-controls="cart-drawer"
+        >
+          <ShoppingCart className="icon-20" strokeWidth={1.75} />
+          <span className="font-semibold leading-tight">Cart</span>
+          {cartCount > 0 && (
+            <span
+              aria-live="polite"
+              className="ml-1 rounded-pill bg-[var(--brand-accent)] text-slate-900 text-xs px-2 py-0.5 min-w-[1.25rem] text-center ui-numeric"
+            >
+              {cartCount}
+            </span>
+          )}
+        </button>
       </nav>
       <HeaderSearch ref={searchRef} mode="dialog" open={searchOpen} onOpenChange={setSearchOpen} />
     </div>
