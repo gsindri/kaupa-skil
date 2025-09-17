@@ -44,15 +44,24 @@ const iconTestCases: IconTestCase[] = [
   { label: 'Suppliers', Icon: SuppliersIcon, svgPath: '../../icons/suppliers.svg' },
 ]
 
-type ViewBoxDimensions = {
+type ViewBoxInfo = {
+  x: number
+  y: number
   width: number
   height: number
 }
 
-let intrinsicDimensions: ViewBoxDimensions = { width: 0, height: 0 }
-let viewBoxDimensions: ViewBoxDimensions = { width: 0, height: 0 }
+type BBoxInit = {
+  x: number
+  y: number
+  width: number
+  height: number
+}
 
-const parseViewBoxDimensions = (contents: string): ViewBoxDimensions => {
+let intrinsicBBox: BBoxInit = { x: 0, y: 0, width: 0, height: 0 }
+let viewBoxInfo: ViewBoxInfo = { x: 0, y: 0, width: 0, height: 0 }
+
+const parseViewBoxInfo = (contents: string): ViewBoxInfo => {
   const match = contents.match(/viewBox="([^"]+)"/)
 
   if (!match) {
@@ -68,31 +77,38 @@ const parseViewBoxDimensions = (contents: string): ViewBoxDimensions => {
     throw new Error(`viewBox should contain four numbers, received ${parts.length}`)
   }
 
-  const [, , width, height] = parts
+  const [x, y, width, height] = parts
 
   if (!Number.isFinite(width) || !Number.isFinite(height)) {
     throw new Error('Failed to parse viewBox width/height values.')
   }
 
-  return { width, height }
+  return {
+    x: Number.isFinite(x) ? x : 0,
+    y: Number.isFinite(y) ? y : 0,
+    width,
+    height,
+  }
 }
 
-const getViewBoxDimensions = (svgPath: string): ViewBoxDimensions => {
+const getViewBoxInfo = (svgPath: string): ViewBoxInfo => {
   const svgContents = fs.readFileSync(new URL(svgPath, import.meta.url), 'utf8')
-  return parseViewBoxDimensions(svgContents)
+  return parseViewBoxInfo(svgContents)
 }
 
-const createBBox = (width: number, height: number): DOMRect =>
+const createBBox = ({ x, y, width, height }: BBoxInit): DOMRect =>
   ({
     width,
     height,
-    x: 0,
-    y: 0,
-    top: 0,
-    left: 0,
-    right: width,
-    bottom: height,
+    x,
+    y,
+    top: y,
+    left: x,
+    right: x + width,
+    bottom: y + height,
     toJSON: () => ({
+      x,
+      y,
       width,
       height,
     }),
@@ -101,6 +117,26 @@ const createBBox = (width: number, height: number): DOMRect =>
 const extractScale = (transform: string): number => {
   const match = /scale\(([^)]+)\)/.exec(transform)
   return match ? Number.parseFloat(match[1]) : 1
+}
+
+const extractTranslate = (transform: string): { x: number; y: number } => {
+  const translate3d = /translate3d\(([^,]+),\s*([^,]+),/.exec(transform)
+  if (translate3d) {
+    return {
+      x: Number.parseFloat(translate3d[1]),
+      y: Number.parseFloat(translate3d[2]),
+    }
+  }
+
+  const translate2d = /translate\(([^,]+),\s*([^)]+)\)/.exec(transform)
+  if (translate2d) {
+    return {
+      x: Number.parseFloat(translate2d[1]),
+      y: Number.parseFloat(translate2d[2]),
+    }
+  }
+
+  return { x: 0, y: 0 }
 }
 
 describe('NavIcon scaling', () => {
@@ -119,20 +155,20 @@ describe('NavIcon scaling', () => {
 
   beforeAll(() => {
     svgPrototype.getBBox = vi.fn(function (this: SVGElement) {
-      return createBBox(intrinsicDimensions.width, intrinsicDimensions.height)
+      return createBBox(intrinsicBBox)
     })
 
     Object.defineProperty(SVGElement.prototype, 'clientWidth', {
       configurable: true,
       get() {
-        return viewBoxDimensions.width
+        return viewBoxInfo.width
       },
     })
 
     Object.defineProperty(SVGElement.prototype, 'clientHeight', {
       configurable: true,
       get() {
-        return viewBoxDimensions.height
+        return viewBoxInfo.height
       },
     })
   })
@@ -162,28 +198,28 @@ describe('NavIcon scaling', () => {
   it.each(iconTestCases)(
     'scales the %s icon so its visual footprint matches the target size',
     async ({ label, Icon, svgPath }) => {
-      const dimensions = getViewBoxDimensions(svgPath)
-      intrinsicDimensions = dimensions
-      viewBoxDimensions = dimensions
+      const info = getViewBoxInfo(svgPath)
+      intrinsicBBox = { x: 0, y: 0, width: info.width, height: info.height }
+      viewBoxInfo = info
 
       const { container } = render(<NavIcon Icon={Icon} label={label} size={targetSize} />)
-      const wrapper = container.querySelector('span[style*="transform"]') as HTMLSpanElement | null
+      const scaleWrapper = container.querySelector('[data-nav-icon-scale]') as HTMLSpanElement | null
 
-      expect(wrapper).not.toBeNull()
+      expect(scaleWrapper).not.toBeNull()
 
       await waitFor(() => {
-        if (!wrapper) throw new Error('Icon wrapper not found')
+        if (!scaleWrapper) throw new Error('Icon scale wrapper not found')
 
-        const actualScale = extractScale(wrapper.style.transform)
+        const actualScale = extractScale(scaleWrapper.style.transform)
         const expectedScale = Math.min(
-          targetSize / dimensions.width,
-          targetSize / dimensions.height
+          targetSize / info.width,
+          targetSize / info.height
         )
 
         expect(actualScale).toBeCloseTo(expectedScale, 6)
 
-        const scaledWidth = dimensions.width * actualScale
-        const scaledHeight = dimensions.height * actualScale
+        const scaledWidth = info.width * actualScale
+        const scaledHeight = info.height * actualScale
         const maxDimension = Math.max(scaledWidth, scaledHeight)
 
         expect(maxDimension).toBeCloseTo(targetSize, 5)
@@ -192,18 +228,19 @@ describe('NavIcon scaling', () => {
   )
 
   it('scales up smaller artwork to fill the requested size', async () => {
-    intrinsicDimensions = { width: 16, height: 12 }
-    viewBoxDimensions = getViewBoxDimensions('../../icons/catalog.svg')
+    const info = getViewBoxInfo('../../icons/catalog.svg')
+    intrinsicBBox = { x: 0, y: 0, width: 16, height: 12 }
+    viewBoxInfo = info
 
     const { container } = render(<NavIcon Icon={CatalogIcon} label="Tiny Catalog" size={targetSize} />)
-    const wrapper = container.querySelector('span[style*="transform"]') as HTMLSpanElement | null
+    const scaleWrapper = container.querySelector('[data-nav-icon-scale]') as HTMLSpanElement | null
 
-    expect(wrapper).not.toBeNull()
+    expect(scaleWrapper).not.toBeNull()
 
     await waitFor(() => {
-      if (!wrapper) throw new Error('Icon wrapper not found')
+      if (!scaleWrapper) throw new Error('Icon scale wrapper not found')
 
-      const actualScale = extractScale(wrapper.style.transform)
+      const actualScale = extractScale(scaleWrapper.style.transform)
       const expectedScale = Math.min(targetSize / 16, targetSize / 12)
 
       expect(actualScale).toBeCloseTo(expectedScale, 6)
@@ -211,6 +248,37 @@ describe('NavIcon scaling', () => {
       const maxDimension = Math.max(16 * actualScale, 12 * actualScale)
 
       expect(maxDimension).toBeCloseTo(targetSize, 5)
+    })
+  })
+
+  it('recenters icons whose artwork is offset inside the viewBox', async () => {
+    const info = getViewBoxInfo('../../icons/catalog.svg')
+    viewBoxInfo = info
+    intrinsicBBox = { x: 12, y: -8, width: info.width - 24, height: info.height - 16 }
+
+    const { container } = render(<NavIcon Icon={CatalogIcon} label="Offset Catalog" size={targetSize} />)
+    const translateWrapper = container.querySelector('[data-nav-icon-translate]') as HTMLSpanElement | null
+    const scaleWrapper = container.querySelector('[data-nav-icon-scale]') as HTMLSpanElement | null
+
+    expect(translateWrapper).not.toBeNull()
+    expect(scaleWrapper).not.toBeNull()
+
+    await waitFor(() => {
+      if (!translateWrapper || !scaleWrapper) throw new Error('Icon wrappers not found')
+
+      const actualScale = extractScale(scaleWrapper.style.transform)
+      const translate = extractTranslate(translateWrapper.style.transform)
+
+      const viewBoxCenterX = info.x + info.width / 2
+      const viewBoxCenterY = info.y + info.height / 2
+      const bboxCenterX = intrinsicBBox.x + intrinsicBBox.width / 2
+      const bboxCenterY = intrinsicBBox.y + intrinsicBBox.height / 2
+
+      const expectedTranslateX = (viewBoxCenterX - bboxCenterX) * actualScale
+      const expectedTranslateY = (viewBoxCenterY - bboxCenterY) * actualScale
+
+      expect(translate.x).toBeCloseTo(expectedTranslateX, 5)
+      expect(translate.y).toBeCloseTo(expectedTranslateY, 5)
     })
   })
 })

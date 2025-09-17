@@ -14,81 +14,134 @@ type IconProps = {
   label: string
 }
 
+const SCALE_EPSILON = 0.001
+const TRANSLATE_EPSILON = 0.1
+
 export function NavIcon({ Icon, active, size = 44, className, label }: IconProps) {
-  const iconWrapperRef = React.useRef<HTMLSpanElement>(null)
+  const translateWrapperRef = React.useRef<HTMLSpanElement>(null)
+  const scaleWrapperRef = React.useRef<HTMLSpanElement>(null)
   const [scale, setScale] = React.useState(1)
+  const [translate, setTranslate] = React.useState({ x: 0, y: 0 })
 
   React.useLayoutEffect(() => {
-    const wrapper = iconWrapperRef.current
-    if (!wrapper) return
+    const translateWrapper = translateWrapperRef.current
+    const scaleWrapper = scaleWrapperRef.current
+    if (!translateWrapper || !scaleWrapper) return
 
-    const svg = wrapper.querySelector('svg')
+    const svg = scaleWrapper.querySelector('svg')
     if (!svg) return
+
+    const previousTranslateTransform = translateWrapper.style.transform
+    const previousScaleTransform = scaleWrapper.style.transform
+
+    translateWrapper.style.transform = 'none'
+    scaleWrapper.style.transform = 'none'
 
     let bbox: DOMRect
     try {
       bbox = svg.getBBox()
     } catch {
+      translateWrapper.style.transform = previousTranslateTransform
+      scaleWrapper.style.transform = previousScaleTransform
       return
     }
 
     if (!bbox.width || !bbox.height || !size) {
+      translateWrapper.style.transform = previousTranslateTransform
+      scaleWrapper.style.transform = previousScaleTransform
       return
     }
 
     const viewBox = svg.viewBox?.baseVal
-    const viewBoxWidth = viewBox?.width ?? 0
-    const viewBoxHeight = viewBox?.height ?? 0
+    const viewBoxWidth = viewBox?.width ?? bbox.width
+    const viewBoxHeight = viewBox?.height ?? bbox.height
+    const viewBoxX = viewBox?.x ?? bbox.x
+    const viewBoxY = viewBox?.y ?? bbox.y
 
-    const wrapperWidth = wrapper.clientWidth
-    const wrapperHeight = wrapper.clientHeight
+    const svgWidth = svg.clientWidth || translateWrapper.clientWidth || viewBoxWidth
+    const svgHeight = svg.clientHeight || translateWrapper.clientHeight || viewBoxHeight
 
-    const currentWidth = svg.clientWidth || wrapperWidth || viewBoxWidth || bbox.width
-    const currentHeight = svg.clientHeight || wrapperHeight || viewBoxHeight || bbox.height
+    const unitsToPxX = viewBoxWidth > 0 ? svgWidth / viewBoxWidth : svgWidth / bbox.width
+    const unitsToPxY = viewBoxHeight > 0 ? svgHeight / viewBoxHeight : svgHeight / bbox.height
 
-    const widthRatio = viewBoxWidth > 0 ? bbox.width / viewBoxWidth : 1
-    const heightRatio = viewBoxHeight > 0 ? bbox.height / viewBoxHeight : 1
-
-    const baseWidth = currentWidth * widthRatio
-    const baseHeight = currentHeight * heightRatio
-
-    if (!baseWidth || !baseHeight) {
+    if (
+      !Number.isFinite(unitsToPxX) ||
+      !Number.isFinite(unitsToPxY) ||
+      unitsToPxX <= 0 ||
+      unitsToPxY <= 0
+    ) {
+      translateWrapper.style.transform = previousTranslateTransform
+      scaleWrapper.style.transform = previousScaleTransform
       return
     }
 
-    const desiredScale = Math.min(size / baseWidth, size / baseHeight)
-    const nextScale = Math.max(Number.EPSILON, desiredScale)
+    const bboxWidthPx = bbox.width * unitsToPxX
+    const bboxHeightPx = bbox.height * unitsToPxY
 
-    if (Number.isFinite(nextScale) && nextScale > 0 && Math.abs(nextScale - scale) > 0.01) {
-      setScale(nextScale)
+    if (!bboxWidthPx || !bboxHeightPx) {
+      translateWrapper.style.transform = previousTranslateTransform
+      scaleWrapper.style.transform = previousScaleTransform
+      return
     }
-  }, [Icon, scale, size])
+
+    const desiredScale = Math.min(size / bboxWidthPx, size / bboxHeightPx)
+    const nextScale = Number.isFinite(desiredScale) && desiredScale > 0 ? desiredScale : 1
+
+    const viewBoxCenterX = viewBoxX + viewBoxWidth / 2
+    const viewBoxCenterY = viewBoxY + viewBoxHeight / 2
+    const bboxCenterX = bbox.x + bbox.width / 2
+    const bboxCenterY = bbox.y + bbox.height / 2
+
+    const deltaXUnits = viewBoxCenterX - bboxCenterX
+    const deltaYUnits = viewBoxCenterY - bboxCenterY
+
+    const nextTranslateX = deltaXUnits * unitsToPxX * nextScale
+    const nextTranslateY = deltaYUnits * unitsToPxY * nextScale
+
+    translateWrapper.style.transform = previousTranslateTransform
+    scaleWrapper.style.transform = previousScaleTransform
+
+    setScale((prev) => (Math.abs(prev - nextScale) > SCALE_EPSILON ? nextScale : prev))
+    setTranslate((prev) =>
+      Math.abs(prev.x - nextTranslateX) > TRANSLATE_EPSILON ||
+      Math.abs(prev.y - nextTranslateY) > TRANSLATE_EPSILON
+        ? { x: nextTranslateX, y: nextTranslateY }
+        : prev
+    )
+  }, [Icon, size])
 
   return (
     <span
       className={cn(
         "nav-icon grid w-12 h-12 place-items-center rounded-xl transition-all duration-200",
-        "bg-transparent overflow-visible" // No background squares - let the icon shine and allow overflow
+        "bg-transparent overflow-visible"
       )}
     >
       <span
-        ref={iconWrapperRef}
+        ref={translateWrapperRef}
+        data-nav-icon-translate
         className="flex h-full w-full items-center justify-center"
-        style={{ transform: `scale(${scale})`, transformOrigin: 'center' }}
+        style={{ transform: `translate3d(${translate.x}px, ${translate.y}px, 0)` }}
       >
-        <Icon
-          data-active={active}
-          className={cn(
-            "text-white/80 group-hover:text-white transition-all duration-200",
-            // Soft glow without any square backgrounds
-            "[filter:drop-shadow(0_0_4px_rgba(255,255,255,0.4))]",
-            active && "text-white [filter:drop-shadow(0_0_6px_rgba(255,255,255,0.7))]",
-            className
-          )}
-          style={{ pointerEvents: 'auto' }}
-          role="img"
-          aria-hidden={false}
-        />
+        <span
+          ref={scaleWrapperRef}
+          data-nav-icon-scale
+          className="flex h-full w-full items-center justify-center"
+          style={{ transform: `scale(${scale})`, transformOrigin: 'center' }}
+        >
+          <Icon
+            data-active={active}
+            className={cn(
+              "text-white/80 group-hover:text-white transition-all duration-200",
+              "[filter:drop-shadow(0_0_4px_rgba(255,255,255,0.4))]",
+              active && "text-white [filter:drop-shadow(0_0_6px_rgba(255,255,255,0.7))]",
+              className
+            )}
+            style={{ pointerEvents: 'auto' }}
+            role="img"
+            aria-hidden={false}
+          />
+        </span>
       </span>
     </span>
   )
