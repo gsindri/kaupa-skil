@@ -30,7 +30,7 @@ export function CatalogGrid({
       rowHeight={368}
       gap={24}
       onNearEnd={onNearEnd}
-      className="px-6 py-4"
+      className="py-4"
     />
   )
 }
