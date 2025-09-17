@@ -5,7 +5,7 @@ import { X } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const filterChipVariants = cva(
-  "inline-flex h-[var(--ctrl-h,40px)] items-center justify-center rounded-[var(--ctrl-r,12px)] border border-white/10 bg-white/0 px-3 text-sm font-medium text-[color:var(--ink-dim)] transition-colors duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent cursor-pointer select-none hover:bg-white/6 hover:text-[color:var(--ink)] motion-reduce:transition-none data-[selected=true]:border-white/20 data-[selected=true]:bg-white/12 data-[selected=true]:text-[color:var(--ink)]"
+  "inline-flex h-[var(--ctrl-h,40px)] items-center justify-center rounded-[var(--ctrl-r,12px)] px-3 text-sm font-medium text-[color:var(--ink-dim)]/85 ring-1 ring-inset ring-white/12 transition duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-4 focus-visible:ring-offset-[color:var(--toolbar-bg)] cursor-pointer select-none hover:bg-white/8 hover:text-[color:var(--ink)] hover:ring-white/20 motion-reduce:transition-none data-[selected=true]:bg-white/14 data-[selected=true]:text-[color:var(--ink)] data-[selected=true]:ring-white/20"
 )
 
 export interface FilterChipProps

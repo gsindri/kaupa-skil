@@ -43,7 +43,7 @@ export function SortDropdown({ value, onChange, className, onOpenChange }: SortD
         <button
           type="button"
           className={cn(
-            'inline-flex h-[var(--ctrl-h,40px)] items-center gap-2 rounded-[var(--ctrl-r,12px)] bg-white/5 px-3 text-sm font-medium text-[color:var(--ink-dim)]/80 ring-1 ring-inset ring-white/10 transition duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-4 focus-visible:ring-offset-[var(--toolbar-bg)] hover:-translate-y-[0.5px] hover:bg-white/12 hover:text-[color:var(--ink)] hover:ring-white/20 motion-reduce:transform-none motion-reduce:transition-none',
+            'inline-flex h-[var(--ctrl-h,40px)] items-center gap-2 rounded-[var(--ctrl-r,12px)] bg-white/8 px-3 text-sm font-medium text-[color:var(--ink-dim)]/80 ring-1 ring-inset ring-white/12 transition duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-4 focus-visible:ring-offset-[color:var(--toolbar-bg)] hover:bg-white/12 hover:text-[color:var(--ink)] hover:ring-white/20 motion-reduce:transition-none',
             className,
           )}
           aria-label={`Sort by ${label}`}
@@ -57,7 +57,7 @@ export function SortDropdown({ value, onChange, className, onOpenChange }: SortD
       <DropdownMenuContent
         align="start"
         sideOffset={12}
-        className="w-[240px] rounded-[16px] border border-white/10 bg-[var(--field-bg-elev)]/95 p-2 text-[color:var(--ink)] shadow-[0_16px_40px_rgba(0,0,0,0.35)] backdrop-blur-xl"
+        className="w-[240px] rounded-[16px] bg-[color:var(--field-bg-elev)] p-2 text-[color:var(--ink)] ring-1 ring-inset ring-white/12 shadow-[0_18px_40px_rgba(3,10,26,0.45)] backdrop-blur-xl"
       >
         <DropdownMenuLabel className="px-2 pb-1 text-xs font-semibold uppercase tracking-wide text-[color:var(--ink-dim)]/80">
           Sort items

@@ -91,222 +91,222 @@ export function CatalogTable({
   }
 
   return (
-    <Table>
-      <TableHeader className="sticky top-0 z-10 bg-background">
-        <TableRow>
-          {isBulkMode && (
-            <TableHead className="w-8 px-3">
-              <Checkbox
-                aria-label="Select all products"
-                checked={isAllSelected}
-                onCheckedChange={onSelectAll}
-              />
-            </TableHead>
-          )}
-          <TableHead className="w-10 px-3">Image</TableHead>
-          <TableHead
-            className="[width:minmax(0,1fr)] cursor-pointer select-none px-3"
-            onClick={() => onSort('name')}
-          >
-            Name {sort?.key === 'name' && (sort?.direction === 'asc' ? '▲' : '▼')}
-          </TableHead>
-          <TableHead
-            className="w-[120px] px-3 text-center cursor-pointer select-none"
-            onClick={() => onSort('availability')}
-          >
-            Availability {sort?.key === 'availability' && (sort?.direction === 'asc' ? '▲' : '▼')}
-          </TableHead>
-          <TableHead
-            className="w-[136px] text-right px-3 cursor-pointer select-none border-r"
-            onClick={() => onSort('price')}
-          >
-            Price {sort?.key === 'price' && (sort?.direction === 'asc' ? '▲' : '▼')}
-          </TableHead>
-          <TableHead
-            className="w-[220px] min-w-[180px] max-w-[220px] cursor-pointer select-none px-3"
-            onClick={() => onSort('supplier')}
-          >
-            Suppliers {sort?.key === 'supplier' && (sort?.direction === 'asc' ? '▲' : '▼')}
-          </TableHead>
-        </TableRow>
-        {showFilterRow && (
+    <div className="group/catalog-table mt-4 rounded-[var(--r-card,20px)] bg-[color:var(--surface-raised)] ring-1 ring-inset ring-white/12 shadow-[0_28px_64px_rgba(3,10,26,0.5)] backdrop-blur-xl">
+      <Table className="min-w-full text-sm text-[color:var(--ink)]">
+        <TableHeader className="sticky top-0 z-10 bg-[color:var(--surface-raised-strong)] backdrop-blur-xl shadow-[0_12px_26px_rgba(3,10,26,0.45)] [&_tr]:border-0">
           <TableRow>
-            {isBulkMode && <TableHead className="px-3" />}
-            <TableHead className="px-3" />
-            <TableHead className="px-3">
-              {showBrandFilter && (
-                <Select
-                  value={brandValues[0] ?? 'all'}
-                  onValueChange={v =>
-                    onFilterChange({ brand: v === 'all' ? undefined : [v] })
-                  }
-                >
-                  <SelectTrigger className="h-8">
-                    <SelectValue placeholder="Brand" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All</SelectItem>
-                    {brandOptions.map(b => (
-                      <SelectItem key={b} value={b}>
-                        {b}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-            </TableHead>
-            <TableHead className="px-3">
-              {/* Availability filter removed */}
-            </TableHead>
-            <TableHead className="w-[136px] px-3 pl-8 border-r" />
-          </TableRow>
-        )}
-      </TableHeader>
-      <TableBody>
-        {products.map((p, i) => {
-          const id = p.catalog_id
-          const isSelected = selected.includes(id)
-          const availabilityLabel =
-            {
-              IN_STOCK: 'In',
-              LOW_STOCK: 'Low',
-              OUT_OF_STOCK: 'Out',
-              UNKNOWN: 'Unknown',
-            }[p.availability_status ?? 'UNKNOWN']
-
-          return (
-            <TableRow
-              key={id}
-              ref={el => (rowRefs.current[i] = el)}
-              tabIndex={-1}
-              data-state={isSelected ? 'selected' : undefined}
-              onKeyDown={e => handleKeyDown(e, i, id)}
-              className="group h-[52px] border-b hover:bg-muted/50 focus-visible:bg-muted/50"
+            {isBulkMode && (
+              <TableHead className="w-8 px-3 text-[color:var(--ink-dim)]/70">
+                <Checkbox
+                  aria-label="Select all products"
+                  checked={isAllSelected}
+                  onCheckedChange={onSelectAll}
+                />
+              </TableHead>
+            )}
+            <TableHead className="w-10 px-3 text-[color:var(--ink-dim)]/70">Image</TableHead>
+            <TableHead
+              className="[width:minmax(0,1fr)] cursor-pointer select-none px-3 text-[color:var(--ink-dim)]/70"
+              onClick={() => onSort('name')}
             >
-              {isBulkMode && (
-                <TableCell className="w-8 px-3 py-2">
-                  <Checkbox
-                    aria-label={`Select ${p.name}`}
-                    checked={isSelected}
-                    onCheckedChange={() => onSelect(id)}
+              Name {sort?.key === 'name' && (sort?.direction === 'asc' ? '▲' : '▼')}
+            </TableHead>
+            <TableHead
+              className="w-[120px] cursor-pointer select-none px-3 text-center text-[color:var(--ink-dim)]/70"
+              onClick={() => onSort('availability')}
+            >
+              Availability {sort?.key === 'availability' && (sort?.direction === 'asc' ? '▲' : '▼')}
+            </TableHead>
+            <TableHead
+              className="w-[136px] cursor-pointer select-none px-3 text-right text-[color:var(--ink-dim)]/70"
+              onClick={() => onSort('price')}
+            >
+              Price {sort?.key === 'price' && (sort?.direction === 'asc' ? '▲' : '▼')}
+            </TableHead>
+            <TableHead
+              className="w-[220px] min-w-[180px] max-w-[220px] cursor-pointer select-none px-3 text-[color:var(--ink-dim)]/70"
+              onClick={() => onSort('supplier')}
+            >
+              Suppliers {sort?.key === 'supplier' && (sort?.direction === 'asc' ? '▲' : '▼')}
+            </TableHead>
+          </TableRow>
+          {showFilterRow && (
+            <TableRow className="bg-white/5">
+              {isBulkMode && <TableHead className="px-3" />}
+              <TableHead className="px-3" />
+              <TableHead className="px-3">
+                {showBrandFilter && (
+                  <Select
+                    value={brandValues[0] ?? 'all'}
+                    onValueChange={v =>
+                      onFilterChange({ brand: v === 'all' ? undefined : [v] })
+                    }
+                  >
+                    <SelectTrigger className="h-8 rounded-[var(--ctrl-r,12px)] bg-white/10 text-xs text-[color:var(--ink-dim)]/80 ring-1 ring-inset ring-white/15 focus:ring-0">
+                      <SelectValue placeholder="Brand" />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-[16px] bg-[color:var(--field-bg-elev)] text-[color:var(--ink)] ring-1 ring-inset ring-white/12 backdrop-blur-xl">
+                      <SelectItem value="all">All</SelectItem>
+                      {brandOptions.map(b => (
+                        <SelectItem key={b} value={b}>
+                          {b}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              </TableHead>
+              <TableHead className="px-3" />
+              <TableHead className="w-[136px] px-3" />
+            </TableRow>
+          )}
+        </TableHeader>
+        <TableBody>
+          {products.map((p, i) => {
+            const id = p.catalog_id
+            const isSelected = selected.includes(id)
+            const availabilityLabel =
+              {
+                IN_STOCK: 'In',
+                LOW_STOCK: 'Low',
+                OUT_OF_STOCK: 'Out',
+                UNKNOWN: 'Unknown',
+              }[p.availability_status ?? 'UNKNOWN']
+
+            return (
+              <TableRow
+                key={id}
+                ref={el => (rowRefs.current[i] = el)}
+                tabIndex={-1}
+                data-state={isSelected ? 'selected' : undefined}
+                onKeyDown={e => handleKeyDown(e, i, id)}
+                className="group h-[58px] border-b border-white/10 bg-transparent transition-colors hover:bg-white/6 focus-visible:bg-white/8"
+              >
+                {isBulkMode && (
+                  <TableCell className="w-8 px-3 py-3">
+                    <Checkbox
+                      aria-label={`Select ${p.name}`}
+                      checked={isSelected}
+                      onCheckedChange={() => onSelect(id)}
+                    />
+                  </TableCell>
+                )}
+                <TableCell className="w-10 px-3 py-3">
+                  <ProductThumb
+                    className="h-10 w-10"
+                    src={resolveImage(
+                      p.sample_image_url ?? p.image_main,
+                      p.availability_status,
+                    )}
+                    name={p.name}
+                    brand={p.brand}
                   />
                 </TableCell>
-              )}
-              <TableCell className="w-10 px-3 py-2">
-                <ProductThumb
-                  className="h-10 w-10"
-                  src={resolveImage(
-                    p.sample_image_url ?? p.image_main,
-                    p.availability_status,
-                  )}
-                  name={p.name}
-                  brand={p.brand}
-                />
-              </TableCell>
-              <TableCell className="px-3 py-2">
-                <div className="flex items-center gap-2">
-                  <div className="flex min-w-0 flex-1 flex-col">
-                    <a
-                      href={`#${p.catalog_id}`}
-                      aria-label={`View details for ${p.name}`}
-                      className="truncate text-sm font-medium hover:underline"
-                    >
-                      {p.name}
-                    </a>
-                    {(p.brand || p.canonical_pack) && (
-                      <span className="truncate text-xs text-muted-foreground">
-                        {p.brand}
-                        {p.brand && p.canonical_pack && ' • '}
-                        {p.canonical_pack}
-                      </span>
-                    )}
+                <TableCell className="px-3 py-3">
+                  <div className="flex items-center gap-3">
+                    <div className="flex min-w-0 flex-1 flex-col">
+                      <a
+                        href={`#${p.catalog_id}`}
+                        aria-label={`View details for ${p.name}`}
+                        className="truncate text-sm font-medium hover:underline"
+                      >
+                        {p.name}
+                      </a>
+                      {(p.brand || p.canonical_pack) && (
+                        <span className="truncate text-xs text-muted-foreground">
+                          {p.brand}
+                          {p.brand && p.canonical_pack && ' • '}
+                          {p.canonical_pack}
+                        </span>
+                      )}
+                    </div>
+                    <AddToCartButton
+                      product={p}
+                      className="ml-auto"
+                    />
                   </div>
-                  <AddToCartButton
-                    product={p}
-                    className="ml-auto"
-                  />
-                </div>
-              </TableCell>
-              <TableCell className="w-[120px] px-3 py-2">
-                <div className="flex h-6 items-center justify-center">
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <AvailabilityBadge
-                        tabIndex={-1}
-                        status={p.availability_status}
-                        updatedAt={p.availability_updated_at}
-                      />
-                    </TooltipTrigger>
-                    <TooltipContent className="space-y-1">
-                      <div>{availabilityLabel}.</div>
-                      <div className="text-xs text-muted-foreground">
-                        Last checked {p.availability_updated_at ? timeAgo(p.availability_updated_at) : 'unknown'}. Source: {p.suppliers?.[0] || 'Unknown'}
-                      </div>
-                    </TooltipContent>
-                  </Tooltip>
-                </div>
-              </TableCell>
-              <TableCell className="w-[136px] px-3 py-2 text-right border-r whitespace-nowrap">
-                <PriceCell product={p} />
-              </TableCell>
-              <TableCell className="w-[220px] min-w-[180px] max-w-[220px] px-3 py-2">
-                {(() => {
-                  // Map supplier IDs to SupplierChips format
-                  const supplierIds = p.supplier_ids ?? []
-                  if (supplierIds.length === 0) {
-                    return (
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <div className="flex justify-center text-muted-foreground">—</div>
-                        </TooltipTrigger>
-                        <TooltipContent>No supplier data</TooltipContent>
-                      </Tooltip>
+                </TableCell>
+                <TableCell className="w-[120px] px-3 py-3">
+                  <div className="flex h-6 items-center justify-center">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <AvailabilityBadge
+                          tabIndex={-1}
+                          status={p.availability_status}
+                          updatedAt={p.availability_updated_at}
+                        />
+                      </TooltipTrigger>
+                      <TooltipContent className="space-y-1">
+                        <div>{availabilityLabel}.</div>
+                        <div className="text-xs text-muted-foreground">
+                          Last checked {p.availability_updated_at ? timeAgo(p.availability_updated_at) : 'unknown'}. Source: {p.suppliers?.[0] || 'Unknown'}
+                        </div>
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
+                </TableCell>
+                <TableCell className="w-[136px] whitespace-nowrap px-3 py-3 text-right">
+                  <PriceCell product={p} />
+                </TableCell>
+                <TableCell className="w-[220px] min-w-[180px] max-w-[220px] px-3 py-3">
+                  {(() => {
+                    // Map supplier IDs to SupplierChips format
+                    const supplierIds = p.supplier_ids ?? []
+                    if (supplierIds.length === 0) {
+                      return (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <div className="flex justify-center text-muted-foreground">—</div>
+                          </TooltipTrigger>
+                          <TooltipContent>No supplier data</TooltipContent>
+                        </Tooltip>
+                      )
+                    }
+
+                    // Create connected supplier ID set for is_connected lookup
+                    const connectedSupplierIds = new Set(
+                      connectedSuppliers?.map(cs => cs.supplier_id) ?? []
                     )
-                  }
 
-                  // Create connected supplier ID set for is_connected lookup
-                  const connectedSupplierIds = new Set(
-                    connectedSuppliers?.map(cs => cs.supplier_id) ?? []
-                  )
+                    // Map to SupplierChips format
+                    const suppliers = supplierIds.map((id: string, i: number) => {
+                      // Try to get supplier name from multiple sources
+                      let supplierName = p.supplier_names?.[i] || id
+                      let supplierLogoUrl = p.supplier_logo_urls?.[i] || null
 
-                  // Map to SupplierChips format
-                  const suppliers = supplierIds.map((id: string, i: number) => {
-                    // Try to get supplier name from multiple sources
-                    let supplierName = p.supplier_names?.[i] || id
-                    let supplierLogoUrl = p.supplier_logo_urls?.[i] || null
-
-                    // Fallback to allSuppliers lookup if name is missing
-                    if (!supplierName || supplierName === id) {
-                      const supplierData = allSuppliers?.find(s => s.id === id)
-                      if (supplierData) {
-                        supplierName = supplierData.name
-                        supplierLogoUrl = supplierData.logo_url || supplierLogoUrl
+                      // Fallback to allSuppliers lookup if name is missing
+                      if (!supplierName || supplierName === id) {
+                        const supplierData = allSuppliers?.find(s => s.id === id)
+                        if (supplierData) {
+                          supplierName = supplierData.name
+                          supplierLogoUrl = supplierData.logo_url || supplierLogoUrl
+                        }
                       }
-                    }
 
-                    // Fallback to vendors lookup (localStorage-based)
-                    if (!supplierLogoUrl) {
-                      const vendor = vendors.find(v => v.name === supplierName || v.id === id)
-                      supplierLogoUrl = vendor?.logo_url || vendor?.logoUrl || null
-                    }
+                      // Fallback to vendors lookup (localStorage-based)
+                      if (!supplierLogoUrl) {
+                        const vendor = vendors.find(v => v.name === supplierName || v.id === id)
+                        supplierLogoUrl = vendor?.logo_url || vendor?.logoUrl || null
+                      }
 
-                    return {
-                      supplier_id: id,
-                      supplier_name: supplierName,
-                      supplier_logo_url: supplierLogoUrl,
-                      is_connected: connectedSupplierIds.has(id),
-                      availability_state: p.availability_status as any,
-                    }
-                  })
+                      return {
+                        supplier_id: id,
+                        supplier_name: supplierName,
+                        supplier_logo_url: supplierLogoUrl,
+                        is_connected: connectedSupplierIds.has(id),
+                        availability_state: p.availability_status as any,
+                      }
+                    })
 
-                  return <SupplierChips suppliers={suppliers} />
-                })()}
-              </TableCell>
-            </TableRow>
-          )
-        })}
-      </TableBody>
-    </Table>
+                    return <SupplierChips suppliers={suppliers} />
+                  })()}
+                </TableCell>
+              </TableRow>
+            )
+          })}
+        </TableBody>
+      </Table>
+    </div>
   )
 }
 
