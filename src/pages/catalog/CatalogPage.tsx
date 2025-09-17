@@ -1161,6 +1161,11 @@ function FiltersBar({
     onLockChange(next)
   }, [showFilters, facetFilters, setFocusedFacet, setShowFilters, onLockChange])
 
+  const containerClass = cn(
+    'mx-auto w-full max-w-none px-4 sm:px-6 lg:px-8',
+    showFilters && 'lg:max-w-[1600px]',
+  )
+
   const isEditableElement = (el: Element | null) => {
     if (!el) return false
     return (
@@ -1217,7 +1222,7 @@ function FiltersBar({
       )}
     >
       {(publicError || orgError) && (
-        <div className="mx-auto max-w-[1280px] px-4 py-3">
+        <div className={cn(containerClass, 'py-3')}>
           <Alert variant="destructive" className="border-white/20 bg-white/10 text-[color:var(--ink)]">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>{String(publicError || orgError)}</AlertDescription>
@@ -1225,9 +1230,6 @@ function FiltersBar({
         </div>
       )}
 
-      <div className="mx-auto max-w-[1280px]">
-        <div className="flex h-[var(--toolbar-h,56px)] flex-wrap items-center gap-x-3 gap-y-3 px-4">
-          <div className="flex min-w-0 flex-1 items-center gap-3">
             <div className="relative min-w-0 flex-1">
               <label className="sr-only" htmlFor="catalog-search">
                 Search products
@@ -1314,7 +1316,7 @@ function FiltersBar({
           </div>
         </div>
 
-        <div className="px-4 py-3">
+        <div className="py-3">
           <div className="flex flex-nowrap items-center gap-2 overflow-x-auto">
             <TriStateChip
               state={triStock}
