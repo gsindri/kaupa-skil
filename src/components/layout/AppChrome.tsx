@@ -12,7 +12,7 @@ export function AppChrome() {
           right: 'var(--header-right, 0px)',
           transform: 'translateY(calc(-1 * var(--hdr-p, 0) * var(--header-h, 56px)))',
           background:
-            'linear-gradient(90deg, rgba(165, 243, 252, 0.5) 0%, rgba(34, 211, 238, 0.78) 50%, rgba(165, 243, 252, 0.5) 100%)',
+            'linear-gradient(90deg, rgba(165, 243, 252, 0.45) 0%, rgba(34, 211, 238, 0.7) 50%, rgba(165, 243, 252, 0.45) 100%)',
         }}
       />
       
@@ -34,7 +34,7 @@ export function AppChrome() {
           className="absolute inset-0"
           style={{
             background:
-              'linear-gradient(128deg, #081224 0%, #0b1629 28%, #0e213d 62%, #123860 100%)',
+              'linear-gradient(128deg, #071021 0%, #0a1628 32%, #102642 66%, #153b63 100%)',
           }}
         />
         <div
@@ -42,14 +42,14 @@ export function AppChrome() {
           style={{
             background:
               'radial-gradient(140% 120% at 48% -10%, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 65%)',
-            opacity: 0.16,
+            opacity: 0.14,
           }}
         />
         <div
           className="absolute inset-0"
           style={{
             background:
-              'linear-gradient(160deg, rgba(40, 215, 255, 0.12) 0%, rgba(40, 215, 255, 0.04) 28%, rgba(10, 27, 45, 0) 70%)',
+              'linear-gradient(160deg, rgba(40, 215, 255, 0.1) 0%, rgba(40, 215, 255, 0.04) 28%, rgba(10, 27, 45, 0) 70%)',
           }}
         />
         {/* subtle separator at chrome bottom */}

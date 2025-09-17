@@ -37,7 +37,7 @@ export function TopNavigation() {
   const lastKey = useRef<string>('')
   const [searchOpen, setSearchOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
-  const [shortcutHint, setShortcutHint] = useState<'⌘K' | 'Ctrl K'>('Ctrl K')
+  const [platformShortcut, setPlatformShortcut] = useState<'⌘ + K' | 'Ctrl + K'>('Ctrl + K')
   const searchShortcutDescriptionId = useId()
 
   useEffect(() => {
@@ -51,7 +51,7 @@ export function TopNavigation() {
     const nav = window.navigator
     const platform = `${nav.platform ?? ''} ${nav.userAgent ?? ''}`
     if (/mac/i.test(platform)) {
-      setShortcutHint('⌘K')
+      setPlatformShortcut('⌘ + K')
     }
   }, [])
 
@@ -170,17 +170,17 @@ export function TopNavigation() {
         <IconButton
           ref={searchTriggerRef}
           label="Search"
-          aria-label={`Search (${shortcutHint} or /)`}
+          aria-label={`Search (${platformShortcut} or /)`}
           aria-haspopup="dialog"
           aria-keyshortcuts="/ meta+k control+k"
           aria-describedby={searchShortcutDescriptionId}
           onClick={() => setSearchOpen(true)}
-          title={`Search (${shortcutHint} or /)`}
+          title="Search (Ctrl/⌘ + K)"
         >
           <SearchSoft width={24} height={24} tone={0.18} />
         </IconButton>
         <span id={searchShortcutDescriptionId} className="sr-only">
-          Open search dialog. Shortcut: press / or {shortcutHint}.
+          Open search dialog. Shortcut: press / or {platformShortcut}.
         </span>
         <LanguageSwitcher className="hidden xl:block" />
         <DropdownMenu open={userMenuOpen} onOpenChange={setUserMenuOpen} modal={false}>
