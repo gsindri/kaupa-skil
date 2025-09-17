@@ -43,10 +43,11 @@ export function SortDropdown({ value, onChange, className, onOpenChange }: SortD
         <button
           type="button"
           className={cn(
-            'inline-flex h-[var(--ctrl-h,40px)] items-center gap-2 rounded-[var(--ctrl-r,12px)] px-3 text-sm font-medium text-[color:var(--ink-dim)] ring-1 ring-inset ring-white/12 transition-colors duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-4 focus-visible:ring-offset-[var(--toolbar-bg)] hover:bg-white/10 hover:text-[color:var(--ink)] hover:ring-white/20 motion-reduce:transition-none',
+            'inline-flex h-[var(--ctrl-h,40px)] items-center gap-2 rounded-[var(--ctrl-r,12px)] bg-white/5 px-3 text-sm font-medium text-[color:var(--ink-dim)]/80 ring-1 ring-inset ring-white/10 transition duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-4 focus-visible:ring-offset-[var(--toolbar-bg)] hover:-translate-y-[0.5px] hover:bg-white/12 hover:text-[color:var(--ink)] hover:ring-white/20 motion-reduce:transform-none motion-reduce:transition-none',
             className,
           )}
           aria-label={`Sort by ${label}`}
+          title={label}
         >
           <span className="truncate">{label}</span>
           <CaretDown size={16} weight="bold" className="text-[color:var(--ink-dim)]/80" aria-hidden="true" />
