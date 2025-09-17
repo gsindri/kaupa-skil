@@ -36,14 +36,23 @@
 
     /* Scanline on top face */
     .scan{ opacity:0; transform:translateX(-220px); transition:opacity .2s ease; }
+    #coins-fan-stack[data-nav-measuring] .layer{
+      transform: var(--stack);
+      transition: none!important;
+    }
+    #coins-fan-stack[data-nav-measuring] .topLift,
+    #coins-fan-stack[data-nav-measuring] .gear,
     #coins-fan-stack[data-nav-measuring] .scan,
     #coins-fan-stack[data-nav-measuring] .orbit,
     #coins-fan-stack[data-nav-measuring] .drop{
-      display:none;
-      transform:none;
-      opacity:0;
-      animation:none!important;
-      transition:none!important;
+      animation: none!important;
+      transition: none!important;
+    }
+    #coins-fan-stack[data-nav-measuring] .scan,
+    #coins-fan-stack[data-nav-measuring] .orbit,
+    #coins-fan-stack[data-nav-measuring] .drop{
+      opacity: 0;
+      transform: none;
     }
     #coins-fan-stack:is(:hover, [data-hovered="true"]) .scan{ opacity:.12; animation: scan 8s linear infinite; }
     @keyframes scan{ from{transform:translateX(-220px)} to{transform:translateX(220px)} }
