@@ -84,16 +84,6 @@ export function VirtualizedGrid<T>({
 
   const { width } = useContainerSize(scrollerRef)
 
-  // Debug logging
-  React.useEffect(() => {
-    console.log('VirtualizedGrid render:', {
-      itemsLength: items.length,
-      width,
-      minCardWidth,
-      gap
-    })
-  }, [items.length, width, minCardWidth, gap])
-
   // Distance from the top of the document to the grid. Used so the
   // window virtualizer knows where our grid begins.
   const [scrollMargin, setScrollMargin] = React.useState(0)
@@ -139,20 +129,7 @@ export function VirtualizedGrid<T>({
     // measureElement: (el) => el.getBoundingClientRect().height,
   })
 
-  // Grab the current set of virtual rows once per render so it can be
-  // referenced both for rendering and in effects without re-reading the
-  // virtualizer state multiple times.
   const virtualRows = rowVirtualizer.getVirtualItems()
-
-  // Log the virtual row count to help debug empty renders
-  React.useEffect(() => {
-    console.log('VirtualizedGrid virtualRows:', {
-      virtualRowCount: virtualRows.length,
-      rowCount,
-      cols,
-      itemsLength: items.length,
-    })
-  }, [virtualRows, rowCount, cols, items.length])
 
   // Prefetch when near the end (observe the last virtual row)
   React.useEffect(() => {

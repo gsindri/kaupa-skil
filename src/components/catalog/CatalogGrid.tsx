@@ -22,11 +22,6 @@ export function CatalogGrid({
     [onAddToCart, showPrice],
   )
 
-  // Debug logging
-  React.useEffect(() => {
-    console.log('CatalogGrid products:', products.length)
-  }, [products.length])
-
   return (
     <VirtualizedGrid
       items={products}
