@@ -177,7 +177,7 @@ export function VirtualizedGrid<T>({
   }, [virtualRows, rowCount, onNearEnd])
 
   // Grid CSS sizes
-  const cardWidth = Math.floor((width - gap * (cols - 1)) / cols)
+  const cardWidth = Math.max(1, Math.floor((width - gap * (cols - 1)) / cols))
   const totalHeight = rowVirtualizer.getTotalSize()
 
   return (
@@ -212,7 +212,7 @@ export function VirtualizedGrid<T>({
                 transform: `translate3d(0, ${vr.start}px, 0)`,
                 height: dynamicRowHeight,
                 display: 'grid',
-                gridTemplateColumns: `repeat(${cols}, ${cardWidth}px)`,
+                gridTemplateColumns: `repeat(${cols}, minmax(${cardWidth}px, 1fr))`,
                 gap,
                 paddingInline: 0,
               }}
