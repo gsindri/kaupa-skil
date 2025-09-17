@@ -41,7 +41,7 @@
       transition: none!important;
     }
     #coins-fan-stack[data-nav-measuring] .layer{
-      transform: var(--stack) !important;
+      transform: var(--idle) !important;
     }
     #coins-fan-stack[data-nav-measuring] .topLift,
     #coins-fan-stack[data-nav-measuring] .gear,
