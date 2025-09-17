@@ -291,7 +291,13 @@
       #discover[data-nav-measuring] .find,
       #discover[data-nav-measuring] .rays,
       #discover[data-nav-measuring] .glint,
-      #discover[data-nav-measuring] .swoosh{
+      #discover[data-nav-measuring] .swoosh,
+      #discover[data-nav-measuring] .cubesSpin,
+      #discover[data-nav-measuring] .cube,
+      #discover[data-nav-measuring] .ping,
+      #discover[data-nav-measuring] .dash,
+      #discover[data-nav-measuring] .draw,
+      #discover[data-nav-measuring] .ground{
         display: none;
         opacity: 0;
         transform: none;

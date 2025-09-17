@@ -36,7 +36,9 @@
 
     /* Scanline on top face */
     .scan{ opacity:0; transform:translateX(-220px); transition:opacity .2s ease; }
-    #coins-fan-stack[data-nav-measuring] .scan{
+    #coins-fan-stack[data-nav-measuring] .scan,
+    #coins-fan-stack[data-nav-measuring] .orbit,
+    #coins-fan-stack[data-nav-measuring] .drop{
       display:none;
       transform:none;
       opacity:0;
