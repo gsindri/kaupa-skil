@@ -305,9 +305,13 @@
     <g class="sweep">
       <!-- ring -->
       <g filter="url(#glow)">
-        <circle cx="300" cy="300" r="164" fill="none" stroke="var(--ring2)" stroke-width="12" opacity=".95"/>
-        <circle cx="300" cy="300" r="155" fill="none" stroke="var(--ring)"  stroke-width="7"  opacity=".95"/>
+        <circle cx="300" cy="300" r="164" fill="none" stroke="var(--ring2)" stroke-width="12" opacity="1"/>
+        <circle cx="300" cy="300" r="155" fill="none" stroke="var(--ring)"  stroke-width="7"  opacity="1"/>
       </g>
+
+      <!-- dark contrast strokes (halo) -->
+      <circle cx="300" cy="300" r="168" fill="none" stroke="var(--shadow)" stroke-width="14" opacity=".8"/>
+      <circle cx="300" cy="300" r="159" fill="none" stroke="var(--shadow)" stroke-width="9" opacity=".6"/>
 
       <!-- rim glint -->
       <circle class="glint" cx="300" cy="300" r="160" fill="none"/>
