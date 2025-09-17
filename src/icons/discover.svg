@@ -287,7 +287,7 @@
         transition: none !important;
       }
       #discover[data-nav-measuring] .rig{
-        transform: translate(0,0) !important;
+        transform: translate(-48px,-48px) !important;
       }
       #discover[data-nav-measuring] .sweep{
         transform: rotate(var(--start-angle)) !important;
@@ -309,6 +309,11 @@
         transition: none !important;
         display: none !important;
       }
+      #discover[data-nav-measuring] .confetti{
+        opacity: 0 !important;
+        transform: none !important;
+        display: none !important;
+      }
 
       /* Motion safety */
       @media (prefers-reduced-motion:reduce){
@@ -319,7 +324,7 @@
   </defs>
 
   <!-- confetti (static) -->
-  <g fill="var(--dot)" opacity=".65">
+  <g class="confetti" fill="var(--dot)" opacity=".65">
     <rect x="129" y="140" width="4" height="4" rx=".6"/>
     <rect x="466" y="166" width="4" height="4" rx=".6"/>
     <rect x="492" y="412" width="4" height="4" rx=".6"/>
