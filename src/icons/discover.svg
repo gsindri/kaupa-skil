@@ -197,9 +197,11 @@
       }
 
       /* ---------- Lens parallax (subtle depth) ---------- */
-      .parallax{ transform-origin:300px 300px; }
+      .parallax{ transform-origin:300px 300px; opacity:1; }
       #discover:is(:hover, [data-hovered="true"]) .parallax, #discover[data-active="true"] .parallax{
-        animation: parallax 1s .10s ease-out both, parallaxBreath 3.2s 1.25s ease-in-out infinite;
+        animation: parallax 1s .10s ease-out both,
+                   parallaxBreath 3.2s 1.25s ease-in-out infinite,
+                   lensReveal 1.05s cubic-bezier(.20,.85,.2,1) both;
       }
       @keyframes parallax{
         0%{   transform:translate(-18px,-12px) }
@@ -210,6 +212,10 @@
         0%{transform:translate(0,0)}
         50%{transform:translate(-1px,1px)}
         100%{transform:translate(0,0)}
+      }
+      @keyframes lensReveal{
+        0%, 94%{ opacity:0; }
+        100%  { opacity:1; }
       }
 
       /* ---------- Cubes: jiggle + arrival tick + group spin ---------- */
@@ -278,6 +284,7 @@
       /* Motion safety */
       @media (prefers-reduced-motion:reduce){
         *{ animation:none !important; }
+        .parallax{ opacity:1 !important; }
       }
     </style>
   </defs>
