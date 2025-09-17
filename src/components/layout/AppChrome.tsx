@@ -6,11 +6,13 @@ export function AppChrome() {
       {/* Cyan stripe - moves with the chrome */}
       <div
         data-chrome-layer
-        className="fixed top-0 z-[var(--z-stripe,56)] h-[2px] pointer-events-none bg-gradient-to-r from-cyan-300/70 via-cyan-400 to-cyan-300/70"
+        className="fixed top-0 z-[var(--z-stripe,56)] h-[2px] pointer-events-none"
         style={{
           left: 'var(--header-left, 0px)',
           right: 'var(--header-right, 0px)',
           transform: 'translateY(calc(-1 * var(--hdr-p, 0) * var(--header-h, 56px)))',
+          background:
+            'linear-gradient(90deg, rgba(165, 243, 252, 0.63) 0%, rgba(34, 211, 238, 0.9) 50%, rgba(165, 243, 252, 0.63) 100%)',
         }}
       />
       
@@ -28,7 +30,21 @@ export function AppChrome() {
         aria-hidden
       >
         {/* gradient */}
-        <div className="absolute inset-0 bg-gradient-to-r from-[#0B1220] via-[#0E1B35] to-[#0E2A5E]" />
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              'linear-gradient(120deg, #0B1220 0%, #0C1729 32%, #0D2142 68%, #103A6B 100%)',
+          }}
+        />
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              'radial-gradient(140% 100% at 50% 0%, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0) 60%)',
+            opacity: 0.18,
+          }}
+        />
         {/* subtle separator at chrome bottom */}
         <div className="absolute inset-x-0 bottom-0 h-px bg-white/8" />
       </div>
