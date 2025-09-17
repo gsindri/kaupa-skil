@@ -4,9 +4,15 @@
 
   <style>
     :root{
-      --face:#ffffff; --face2:#f2f6ff;
-      --edge1:#f9fbff; --edge2:#e7ecf6;
-      --edgeStroke:#dfe6f3; --rim:#e7ecf6;
+      --faceHighlight:#f6f8ff;
+      --face:#e3e9f6;
+      --face2:#c7d1e3;
+      --edgeHighlight:#f2f6ff;
+      --edge1:#d9e1f2;
+      --edge2:#b0bbd1;
+      --edgeStroke:#a5b1c8;
+      --rim:#bbc6d9;
+      --rimHighlight:#e3e9f4;
       --cyan:#7ae6ff; --green:#79f3b8; --peach:#ffc6a3; --lilac:#d8b6ff;
       --ui:#d9e5ff;
     }
@@ -57,10 +63,14 @@
     </filter>
     <!-- metal fills -->
     <linearGradient id="face" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="var(--face)"/><stop offset="1" stop-color="var(--face2)"/>
+      <stop offset="0" stop-color="var(--faceHighlight)"/>
+      <stop offset=".42" stop-color="var(--face)"/>
+      <stop offset="1" stop-color="var(--face2)"/>
     </linearGradient>
     <linearGradient id="edge" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="var(--edge1)"/><stop offset="1" stop-color="var(--edge2)"/>
+      <stop offset="0" stop-color="var(--edgeHighlight)"/>
+      <stop offset=".55" stop-color="var(--edge1)"/>
+      <stop offset="1" stop-color="var(--edge2)"/>
     </linearGradient>
     <!-- top-disc clip for scanline & texture -->
     <clipPath id="topClip"><ellipse cx="300" cy="264" rx="128" ry="38"/></clipPath>
@@ -109,7 +119,7 @@
   <g class="layer l1" style="--idle: translate(-90px,30px) rotate(-8deg); --stack: translate(0,0) rotate(0);">
     <ellipse class="shadow" cx="300" cy="449" rx="120" ry="17" fill="#000"/>
     <ellipse cx="300" cy="434" rx="129" ry="35" fill="url(#edge)" stroke="var(--edgeStroke)"/>
-    <ellipse cx="300" cy="434" rx="122" ry="30" fill="none" stroke="#cfd7e6" stroke-width="3" stroke-dasharray="5 8" opacity=".5"/>
+    <ellipse cx="300" cy="434" rx="122" ry="30" fill="none" stroke="var(--rimHighlight)" stroke-width="3" stroke-dasharray="5 8" opacity=".5"/>
     <ellipse cx="300" cy="420" rx="128" ry="38" fill="url(#face)" stroke="var(--edgeStroke)"/>
     <ellipse cx="300" cy="420" rx="117" ry="33" fill="none" stroke="var(--rim)" stroke-width="1"/>
     <ellipse cx="300" cy="425" rx="101" ry="17" fill="none" stroke="var(--lilac)" stroke-width="5" opacity=".22"/>
@@ -119,7 +129,7 @@
   <g class="layer l2" style="--idle: translate(83px,8px) rotate(9deg); --stack: translate(0,0) rotate(0);">
     <ellipse class="shadow" cx="300" cy="410" rx="120" ry="17" fill="#000"/>
     <ellipse cx="300" cy="395" rx="129" ry="35" fill="url(#edge)" stroke="var(--edgeStroke)"/>
-    <ellipse cx="300" cy="395" rx="122" ry="30" fill="none" stroke="#cfd7e6" stroke-width="3" stroke-dasharray="5 8" opacity=".5"/>
+    <ellipse cx="300" cy="395" rx="122" ry="30" fill="none" stroke="var(--rimHighlight)" stroke-width="3" stroke-dasharray="5 8" opacity=".5"/>
     <ellipse cx="300" cy="381" rx="128" ry="38" fill="url(#face)" stroke="var(--edgeStroke)"/>
     <ellipse cx="300" cy="381" rx="117" ry="33" fill="none" stroke="var(--rim)" stroke-width="1"/>
     <ellipse cx="300" cy="386" rx="101" ry="17" fill="none" stroke="var(--peach)" stroke-width="5" opacity=".22"/>
@@ -129,7 +139,7 @@
   <g class="layer l3" style="--idle: translate(-68px,-14px) rotate(6deg); --stack: translate(0,0) rotate(0);">
     <ellipse class="shadow" cx="300" cy="371" rx="120" ry="17" fill="#000"/>
     <ellipse cx="300" cy="356" rx="129" ry="35" fill="url(#edge)" stroke="var(--edgeStroke)"/>
-    <ellipse cx="300" cy="356" rx="122" ry="30" fill="none" stroke="#cfd7e6" stroke-width="3" stroke-dasharray="5 8" opacity=".5"/>
+    <ellipse cx="300" cy="356" rx="122" ry="30" fill="none" stroke="var(--rimHighlight)" stroke-width="3" stroke-dasharray="5 8" opacity=".5"/>
     <ellipse cx="300" cy="342" rx="128" ry="38" fill="url(#face)" stroke="var(--edgeStroke)"/>
     <ellipse cx="300" cy="342" rx="117" ry="33" fill="none" stroke="var(--rim)" stroke-width="1"/>
     <ellipse cx="300" cy="347" rx="101" ry="17" fill="none" stroke="var(--green)" stroke-width="5" opacity=".22"/>
@@ -139,7 +149,7 @@
   <g class="layer l4" style="--idle: translate(66px,-27px) rotate(-10deg); --stack: translate(0,0) rotate(0);">
     <ellipse class="shadow" cx="300" cy="332" rx="120" ry="17" fill="#000"/>
     <ellipse cx="300" cy="317" rx="129" ry="35" fill="url(#edge)" stroke="var(--edgeStroke)"/>
-    <ellipse class="gear" cx="300" cy="317" rx="122" ry="30" fill="none" stroke="#cfd7e6" stroke-width="3" opacity=".55"/>
+    <ellipse class="gear" cx="300" cy="317" rx="122" ry="30" fill="none" stroke="var(--rimHighlight)" stroke-width="3" opacity=".55"/>
     <ellipse cx="300" cy="303" rx="128" ry="38" fill="url(#face)" stroke="var(--edgeStroke)"/>
     <ellipse cx="300" cy="303" rx="117" ry="33" fill="none" stroke="var(--rim)" stroke-width="1"/>
     <ellipse cx="300" cy="308" rx="101" ry="17" fill="none" stroke="var(--cyan)" stroke-width="5" opacity=".22"/>
@@ -149,7 +159,7 @@
   <g class="layer l5 topLift" style="--idle: translate(-105px,-68px) rotate(12deg); --stack: translate(0,0) rotate(0);">
     <ellipse class="shadow top" cx="300" cy="294" rx="114" ry="14" fill="#000"/>
     <ellipse cx="300" cy="279" rx="129" ry="35" fill="url(#edge)" stroke="var(--edgeStroke)"/>
-    <ellipse cx="300" cy="279" rx="122" ry="30" fill="none" stroke="#cfd7e6" stroke-width="3" stroke-dasharray="5 8" opacity=".5"/>
+    <ellipse cx="300" cy="279" rx="122" ry="30" fill="none" stroke="var(--rimHighlight)" stroke-width="3" stroke-dasharray="5 8" opacity=".5"/>
     <ellipse id="topDisc" cx="300" cy="264" rx="128" ry="38" fill="url(#face)" stroke="var(--edgeStroke)"/>
     <ellipse cx="300" cy="264" rx="117" ry="33" fill="none" stroke="var(--rim)" stroke-width="1"/>
     <!-- detailed etched texture + scanline -->
