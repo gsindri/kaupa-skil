@@ -28,6 +28,8 @@ export function PrimaryNavRail() {
   const [hoveredItem, setHoveredItem] = React.useState<string | null>(null)
   const [keyboardFocusedItem, setKeyboardFocusedItem] = React.useState<string | null>(null)
 
+  const clearKeyboardHover = React.useCallback(() => setKeyboardFocusedItem(null), [])
+
   React.useEffect(() => {
     setKeyboardFocusedItem(null)
   }, [pathname])
@@ -67,7 +69,13 @@ export function PrimaryNavRail() {
             onPointerLeave={() =>
               setHoveredItem((current) => (current === to ? null : current))
             }
-            onPointerDown={() => setKeyboardFocusedItem(null)}
+            onPointerDown={clearKeyboardHover}
+            onClick={clearKeyboardHover}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                clearKeyboardHover()
+              }
+            }}
             onFocus={(event) => {
               if (event.currentTarget.matches(':focus-visible')) {
                 setKeyboardFocusedItem(to)
