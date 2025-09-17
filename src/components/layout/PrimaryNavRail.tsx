@@ -27,6 +27,10 @@ export function PrimaryNavRail() {
   const { pathname } = useLocation()
   const [hoveredItem, setHoveredItem] = React.useState<string | null>(null)
   const [keyboardFocusedItem, setKeyboardFocusedItem] = React.useState<string | null>(null)
+
+  React.useEffect(() => {
+    setKeyboardFocusedItem(null)
+  }, [pathname])
   return (
     <div
       className="nav-rail h-full w-[var(--layout-rail,72px)] bg-gradient-to-b from-[#0B1220] via-[#0E1B35] to-[#0E2A5E] relative"
