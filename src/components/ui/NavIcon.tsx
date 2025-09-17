@@ -111,17 +111,11 @@ export function NavIcon({ Icon, active, size = 44, className, label, hovered }: 
     )
   }, [Icon, size])
 
-  const isLifted = hovered ?? false
-
   return (
     <span
-      data-active={active ? "true" : undefined}
-      data-hovered={hovered ? "true" : undefined}
       className={cn(
-        "nav-icon grid h-12 w-12 place-items-center rounded-xl",
-        "bg-transparent overflow-visible transition-transform duration-200 ease-out will-change-transform",
-        "motion-reduce:transform-none motion-reduce:transition-none",
-        isLifted && "-translate-y-0.5 scale-105"
+        "nav-icon grid w-12 h-12 place-items-center rounded-xl transition-all duration-200",
+        "bg-transparent overflow-visible"
       )}
     >
       <span
@@ -140,9 +134,8 @@ export function NavIcon({ Icon, active, size = 44, className, label, hovered }: 
             data-active={active}
             data-hovered={hovered ? 'true' : undefined}
             className={cn(
-              "text-white/80 group-hover:text-white transition-[color,filter] duration-200 ease-out",
+              "text-white/80 group-hover:text-white transition-all duration-200",
               "[filter:drop-shadow(0_0_4px_rgba(255,255,255,0.4))]",
-              hovered && "[filter:drop-shadow(0_6px_12px_rgba(94,211,255,0.55))]",
               active && "text-white [filter:drop-shadow(0_0_6px_rgba(255,255,255,0.7))]",
               className
             )}
