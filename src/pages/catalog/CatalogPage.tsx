@@ -36,6 +36,8 @@ import { useSearchParams } from 'react-router-dom'
 import { MagnifyingGlass, FunnelSimple, XCircle } from '@phosphor-icons/react'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 
+const FILTER_PANEL_LS_KEY = 'catalog-filters-open'
+
 interface DerivedChip {
   key: string
   label: string
@@ -181,7 +183,18 @@ export default function CatalogPage() {
     direction: 'asc' | 'desc'
   } | null>({ key: 'name', direction: 'asc' })
   const debouncedSearch = useDebounce(filters.search ?? '', 300)
-  const [showFilters, setShowFilters] = useState(true)
+  const [showFilters, setShowFilters] = useState(() => {
+    if (typeof window === 'undefined') return false
+    try {
+      const stored = localStorage.getItem(FILTER_PANEL_LS_KEY)
+      if (stored !== null) {
+        return stored === 'true'
+      }
+    } catch {
+      /* ignore */
+    }
+    return false
+  })
   const [focusedFacet, setFocusedFacet] = useState<keyof FacetFilters | null>(null)
   const clearAllFilters = useCallback(() => {
     setTriStock('off')
@@ -1079,6 +1092,14 @@ function FiltersBar({
     setFilters({ search: '' })
     requestAnimationFrame(() => searchRef.current?.focus())
   }, [setFilters])
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(FILTER_PANEL_LS_KEY, showFilters ? 'true' : 'false')
+    } catch {
+      /* ignore */
+    }
+  }, [showFilters])
 
   const toggleFilters = useCallback(() => {
     const next = !showFilters

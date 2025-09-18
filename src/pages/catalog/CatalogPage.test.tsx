@@ -54,7 +54,7 @@ const catalogProductsResult = {
   isFetched: true,
 }
 const orgCatalogResult = {
-  data: [],
+  data: productsMock,
   nextCursor: null,
   isFetching: false,
   error: null,
