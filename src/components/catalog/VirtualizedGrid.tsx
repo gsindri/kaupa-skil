@@ -9,7 +9,7 @@ export interface VirtualizedGridProps<T> {
   minCardWidth?: number
   /** Horizontal/vertical gap between cards (px). */
   gap?: number
-  /** Fixed row height (px). Keep constant to avoid jank. */
+  /** Fixed card height (px). Vertical gap is added automatically. */
   rowHeight?: number
   /** Optional: unique key field to reduce key churn (defaults to index). */
   itemKey?: (item: T, index: number) => React.Key
@@ -83,6 +83,10 @@ export function VirtualizedGrid<T>({
   const innerRef = React.useRef<HTMLDivElement>(null)
 
   const { width } = useContainerSize(scrollerRef)
+
+  const safeGap = Math.max(0, gap)
+  const cardHeight = Math.max(0, rowHeight)
+  const rowStride = Math.max(1, cardHeight + safeGap)
 
   // Use consistent fixed row height - no dynamic measurement
 
@@ -172,14 +176,14 @@ export function VirtualizedGrid<T>({
   // Derive column count from width.
   const getCols = React.useCallback(() => {
     if (!width) return 1
-    const cols = Math.max(1, Math.floor((width + gap) / (minCardWidth + gap)))
+    const cols = Math.max(1, Math.floor((width + safeGap) / (minCardWidth + safeGap)))
     return cols
-  }, [width, gap, minCardWidth])
+  }, [width, safeGap, minCardWidth])
 
   // Keep anchored when cols change
   const { beforeColsChange, afterColsChange } = useAnchoredGridScroll({
     scrollerRef,
-    rowHeight,
+    rowHeight: rowStride,
     getCols,
   })
 
@@ -196,10 +200,14 @@ export function VirtualizedGrid<T>({
 
   const rowVirtualizer = useWindowVirtualizer({
     count: rowCount,
-    estimateSize: () => rowHeight,
+    estimateSize: () => rowStride,
     overscan: 3,
     scrollMargin,
   })
+
+  React.useEffect(() => {
+    rowVirtualizer.measure()
+  }, [rowVirtualizer, rowStride])
 
   // Remove dynamic height measurement - use fixed height consistently
 
@@ -208,28 +216,34 @@ export function VirtualizedGrid<T>({
   // Debounced onNearEnd to prevent rapid-fire calls
   const lastTriggerRef = React.useRef(0)
   const hasTriggeredInitialRef = React.useRef(false)
+  const previousLengthRef = React.useRef(items.length)
+
+  React.useEffect(() => {
+    const prev = previousLengthRef.current
+    if (items.length < prev) {
+      lastTriggerRef.current = 0
+      hasTriggeredInitialRef.current = false
+    }
+    previousLengthRef.current = items.length
+  }, [items.length])
   
   // Prefetch when near the end (observe the last virtual row)
   React.useEffect(() => {
     if (!onNearEnd) return
+    if (typeof window === 'undefined') return
     if (!virtualRows.length) return
 
     const now = Date.now()
     const debounceMs = 500 // Minimum time between triggers
-    
+
     if (now - lastTriggerRef.current < debounceMs) return
     
     // For initial load, trigger onNearEnd if we have very few items and enough space (only once)
     const totalScreens = Math.ceil(
-      rowCount / Math.max(1, Math.floor(window.innerHeight / (rowHeight || 350))),
+      rowCount / Math.max(1, Math.floor(window.innerHeight / rowStride)),
     )
-    
+
     if (items.length > 0 && totalScreens <= 2 && !hasTriggeredInitialRef.current) {
-      console.log('VirtualizedGrid: Triggering onNearEnd for initial load - few items', { 
-        items: items.length, 
-        rowCount, 
-        totalScreens 
-      })
       hasTriggeredInitialRef.current = true
       lastTriggerRef.current = now
       onNearEnd()
@@ -243,26 +257,18 @@ export function VirtualizedGrid<T>({
     
     const last = virtualRows[virtualRows.length - 1]
     if (!last) return
-    
+
     const rowsLeft = rowCount - 1 - last.index
-    console.log('VirtualizedGrid: Check load more', { 
-      rowsLeft, 
-      rowCount, 
-      lastVirtualRow: last.index,
-      totalScreens,
-      items: items.length
-    })
-    
+
     // Trigger loading when we're within 3 rows of the end
     if (rowsLeft <= 3) {
-      console.log('VirtualizedGrid: Triggering onNearEnd for scroll near end')
       lastTriggerRef.current = now
       onNearEnd()
     }
-  }, [virtualRows, rowCount, onNearEnd, items.length, rowHeight])
+  }, [virtualRows, rowCount, onNearEnd, items.length, rowStride])
 
   // Grid CSS sizes
-  const cardWidth = Math.max(1, Math.floor((width - gap * (cols - 1)) / cols))
+  const cardWidth = Math.max(1, Math.floor((width - safeGap * (cols - 1)) / cols))
   const totalHeight = rowVirtualizer.getTotalSize()
 
   return (
@@ -294,10 +300,12 @@ export function VirtualizedGrid<T>({
                 left: 0,
                 width: '100%',
                 transform: `translate3d(0, ${vr.start}px, 0)`,
-                height: rowHeight,
+                height: cardHeight,
                 display: 'grid',
                 gridTemplateColumns: `repeat(${cols}, minmax(${cardWidth}px, 1fr))`,
-                gap,
+                gap: safeGap,
+                paddingBottom: safeGap,
+                alignContent: 'start',
                 paddingInline: 0,
               }}
             >
