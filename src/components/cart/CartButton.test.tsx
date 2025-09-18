@@ -79,6 +79,6 @@ describe('CartButton', () => {
     expect(button).toHaveClass('bg-blue-600')
     expect(button).toHaveTextContent(/Cart/i)
     expect(button.getAttribute('aria-label')).toMatch(/Cart with 3 items/i)
-    expect(screen.getByText('3')).toBeInTheDocument()
+    expect(screen.getByText('3', { selector: 'span' })).toBeInTheDocument()
   })
 })
