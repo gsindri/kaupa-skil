@@ -294,8 +294,14 @@ describe('NavIcon scaling', () => {
       const bboxCenterX = intrinsicBBox.x + intrinsicBBox.width / 2
       const bboxCenterY = intrinsicBBox.y + intrinsicBBox.height / 2
 
-      const expectedTranslateX = (viewBoxCenterX - bboxCenterX) * actualScale
-      const expectedTranslateY = (viewBoxCenterY - bboxCenterY) * actualScale
+      const viewBoxMaxDimension = Math.max(info.width, info.height)
+      const pixelPerViewBoxUnit =
+        viewBoxMaxDimension > 0 ? targetSize / viewBoxMaxDimension : 1
+
+      const expectedTranslateX =
+        (viewBoxCenterX - bboxCenterX) * actualScale * pixelPerViewBoxUnit
+      const expectedTranslateY =
+        (viewBoxCenterY - bboxCenterY) * actualScale * pixelPerViewBoxUnit
 
       expect(translate.x).toBeCloseTo(expectedTranslateX, 5)
       expect(translate.y).toBeCloseTo(expectedTranslateY, 5)
