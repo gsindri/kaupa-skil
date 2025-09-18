@@ -35,7 +35,7 @@ export function useSupplierConnections() {
             id: s.id,
             supplier_id: s.id,
             name: s.name,
-            status: 'connected' as SupplierStatus,
+            status: 'not_connected' as SupplierStatus,
             last_sync: null,
             next_run: null,
           })) || []
