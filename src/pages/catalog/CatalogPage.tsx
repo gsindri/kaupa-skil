@@ -171,10 +171,7 @@ export default function CatalogPage() {
     return 'grid'
   })
   const viewKey = `catalog:${view}`
-  const [cursor, setCursor] = useState<string | null>(null)
-  const [nextCursor, setNextCursor] = useState<string | null>(null)
   const [products, setProducts] = useState<any[]>([])
-  const lastCursor = useRef<string | null>(null)
   const [selected, setSelected] = useState<string[]>([])
   const [bulkMode, setBulkMode] = useState(false)
   const { addItem } = useCart()
@@ -385,11 +382,7 @@ export default function CatalogPage() {
   }, [filters, searchParams, setSearchParams])
 
   useEffect(() => {
-    setProducts([])
-    setCursor(null)
-    setNextCursor(null)
-    lastCursor.current = null
-    window.scrollTo({ top: 0, behavior: 'instant' })
+    // No longer need to reset products here - hooks handle this internally
   }, [
     debouncedSearch,
     onlyWithPrice,
@@ -420,9 +413,8 @@ export default function CatalogPage() {
         ? { onSpecial: triSpecial === 'include' }
         : {}),
       ...(availability ? { availability } : {}),
-      cursor,
     }),
-    [filters, debouncedSearch, onlyWithPrice, triSpecial, availability, cursor],
+    [filters, debouncedSearch, onlyWithPrice, triSpecial, availability],
   )
   const orgFilters: OrgCatalogFilters = useMemo(
     () => ({
@@ -434,7 +426,6 @@ export default function CatalogPage() {
         ? { onSpecial: triSpecial === 'include' }
         : {}),
       ...(availability ? { availability } : {}),
-      cursor,
     }),
     [
       filters,
@@ -443,7 +434,6 @@ export default function CatalogPage() {
       triSuppliers,
       triSpecial,
       availability,
-      cursor,
     ],
   )
 
@@ -456,6 +446,7 @@ export default function CatalogPage() {
     isFetching: publicFetching,
     error: publicError,
     total: publicTotal,
+    loadMore: publicLoadMore,
   } = publicQuery
   const {
     data: orgData,
@@ -463,6 +454,7 @@ export default function CatalogPage() {
     isFetching: orgFetching,
     error: orgError,
     total: orgTotal,
+    loadMore: orgLoadMore,
   } = orgQuery
 
   useEffect(() => {
@@ -522,46 +514,13 @@ export default function CatalogPage() {
     }
   }, [orgError])
 
+  // Use data directly from hooks (they now handle accumulation internally)
   useEffect(() => {
     const gotOrg = Array.isArray(orgData) && orgData.length > 0
     const data = gotOrg ? orgData : publicData
-    const next = gotOrg ? orgNext : publicNext
-    const fetching = gotOrg ? orgFetching : publicFetching
-    if (fetching) return
-
-    if (!data) return
-    if (cursor && cursor === lastCursor.current) return
-
-    // Merge newly fetched items while ensuring unique catalog entries
-    setProducts(prev => {
-      const merged = cursor ? [...prev, ...data] : data
-      const seen = new Set<string>()
-      return merged.filter(item => {
-        if (seen.has(item.catalog_id)) return false
-        seen.add(item.catalog_id)
-        return true
-      })
-    })
-    setNextCursor(next ?? null)
-    lastCursor.current = cursor
-  }, [
-    orgData,
-    publicData,
-    orgNext,
-    publicNext,
-    orgFetching,
-    publicFetching,
-    cursor,
-    // ensure products update when filter flags change
-    debouncedSearch,
-    onlyWithPrice,
-    triStock,
-    triSuppliers,
-    triSpecial,
-    sortOrder,
-    stringifiedFilters,
-    orgId,
-  ])
+    
+    setProducts(data || [])
+  }, [orgData, publicData])
 
   useEffect(() => {
     if (
@@ -593,11 +552,15 @@ export default function CatalogPage() {
   const gotPublic = Array.isArray(publicData) && publicData.length > 0
 
   const isLoading = gotOrg ? orgQuery.isFetching : publicQuery.isFetching
-  const loadingMore = isLoading && cursor !== null
+  const loadingMore = isLoading && (gotOrg ? orgNext : publicNext) !== null
 
   const loadMore = useCallback(() => {
-    if (nextCursor && nextCursor !== cursor && !loadingMore) setCursor(nextCursor)
-  }, [nextCursor, cursor, loadingMore])
+    const gotOrg = Array.isArray(orgData) && orgData.length > 0
+    const loadMoreFn = gotOrg ? orgLoadMore : publicLoadMore
+    if (loadMoreFn && !loadingMore) {
+      loadMoreFn()
+    }
+  }, [orgData, orgLoadMore, publicLoadMore, loadingMore])
 
   const sortedProducts = useMemo(() => {
     if (!tableSort) return products
@@ -1000,7 +963,7 @@ export default function CatalogPage() {
             />
             <InfiniteSentinel
               onVisible={loadMore}
-              disabled={!nextCursor || loadingMore}
+              disabled={!(gotOrg ? orgNext : publicNext) || loadingMore}
               root={null}
               rootMargin="800px"
             />
@@ -1012,7 +975,7 @@ export default function CatalogPage() {
         <CatalogGrid
           products={sortedProducts}
           onAddToCart={handleAdd}
-          onNearEnd={nextCursor ? loadMore : undefined}
+          onNearEnd={(gotOrg ? orgNext : publicNext) ? loadMore : undefined}
           showPrice
         />
       )}

@@ -17,7 +17,12 @@ export function CatalogGrid({
 }: CatalogGridProps) {
   const renderItem = React.useCallback(
     (p: any, _index: number) => (
-      <ProductCard product={p} onAdd={() => onAddToCart(p)} showPrice={showPrice} />
+      <ProductCard 
+        key={p.catalog_id} 
+        product={p} 
+        onAdd={() => onAddToCart(p)} 
+        showPrice={showPrice} 
+      />
     ),
     [onAddToCart, showPrice],
   )
@@ -26,6 +31,7 @@ export function CatalogGrid({
     <VirtualizedGrid
       items={products}
       renderItem={renderItem}
+      itemKey={(item) => item.catalog_id}
       minCardWidth={280}
       rowHeight={368}
       gap={24}

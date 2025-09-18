@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import {
@@ -13,6 +13,9 @@ export type { PublicCatalogItem };
 
 export function useCatalogProducts(filters: PublicCatalogFilters, sort: SortOrder) {
   const queryClient = useQueryClient();
+  const [allItems, setAllItems] = useState<PublicCatalogItem[]>([]);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [total, setTotal] = useState<number>(0);
 
   useEffect(() => {
     const channel: any = (supabase as any)?.channel?.('catalog-products');
@@ -37,21 +40,77 @@ export function useCatalogProducts(filters: PublicCatalogFilters, sort: SortOrde
     };
   }, [queryClient]);
 
-  const stateHash = stateKeyFragment({ filters, sort } as any);
+  // Create a stable key for the base query (without cursor)
+  const { cursor, ...baseFilters } = filters;
+  const baseStateHash = stateKeyFragment({ filters: baseFilters, sort } as any);
+
+  // Reset accumulated data when base filters change
+  useEffect(() => {
+    setAllItems([]);
+    setNextCursor(null);
+    setTotal(0);
+  }, [baseStateHash]);
 
   const query = useQuery({
-    queryKey: ['catalog', stateHash],
+    queryKey: ['catalog', baseStateHash, cursor || 'initial'],
     queryFn: () => fetchPublicCatalogItems(filters, sort),
     placeholderData: (previousData) => previousData,
     staleTime: 30_000,
     gcTime: 900_000,
   });
 
+  // Accumulate results when new data arrives
+  useEffect(() => {
+    if (query.data) {
+      const { items, nextCursor: newNextCursor, total: newTotal } = query.data as any;
+      console.log('useCatalogProducts: Received data - items:', items?.length, 'nextCursor:', newNextCursor, 'cursor:', cursor)
+      
+      if (cursor) {
+        // This is a "load more" request - append new items
+        setAllItems(prev => {
+          const merged = [...prev, ...items];
+          console.log('useCatalogProducts: Appending items - prev:', prev.length, 'new:', items.length, 'merged:', merged.length)
+          // Deduplicate by catalog_id
+          const seen = new Set<string>();
+          return merged.filter(item => {
+            if (seen.has(item.catalog_id)) return false;
+            seen.add(item.catalog_id);
+            return true;
+          });
+        });
+      } else {
+        // This is an initial load - replace all items
+        console.log('useCatalogProducts: Initial load - replacing with', items?.length, 'items')
+        setAllItems(items || []);
+      }
+      
+      setNextCursor(newNextCursor);
+      setTotal(newTotal || 0);
+    }
+  }, [query.data, cursor]);
+
+  const loadMore = useCallback(() => {
+    if (nextCursor && !query.isFetching) {
+      console.log('useCatalogProducts: Loading more with cursor:', nextCursor)
+      // Trigger a new query with the next cursor
+      queryClient.fetchQuery({
+        queryKey: ['catalog', baseStateHash, nextCursor],
+        queryFn: () => fetchPublicCatalogItems({ ...baseFilters, cursor: nextCursor }, sort),
+        staleTime: 30_000,
+      });
+    } else {
+      console.log('useCatalogProducts: Cannot load more - nextCursor:', nextCursor, 'isFetching:', query.isFetching)
+    }
+  }, [nextCursor, query.isFetching, queryClient, baseStateHash, baseFilters, sort]);
+
   return {
     ...query,
-    data: (query.data as any)?.items,
-    nextCursor: (query.data as any)?.nextCursor,
-    total: (query.data as any)?.total,
+    data: allItems,
+    nextCursor,
+    total,
+    loadMore,
+    hasNextPage: !!nextCursor,
+    isFetchingNextPage: query.isFetching && !!cursor,
   };
 }
 

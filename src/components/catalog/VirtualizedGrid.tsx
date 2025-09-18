@@ -241,12 +241,23 @@ export function VirtualizedGrid<T>({
   React.useEffect(() => {
     if (!onNearEnd) return
     if (!virtualRows.length) return
+    
+    // For initial load, trigger onNearEnd if we have very few items
+    if (items.length < 20) {
+      console.log('VirtualizedGrid: Triggering onNearEnd for initial load, items:', items.length)
+      onNearEnd()
+      return
+    }
+    
     const last = virtualRows[virtualRows.length - 1]
     const rowsLeft = rowCount - 1 - last.index
-    if (rowsLeft < 5) {
+    console.log('VirtualizedGrid: Check load more - rowsLeft:', rowsLeft, 'rowCount:', rowCount, 'lastVirtualRow:', last.index)
+    // Trigger loading when we're within 3 rows of the end
+    if (rowsLeft < 3) {
+      console.log('VirtualizedGrid: Triggering onNearEnd for scroll')
       onNearEnd()
     }
-  }, [virtualRows, rowCount, onNearEnd])
+  }, [virtualRows, rowCount, onNearEnd, items.length])
 
   // Grid CSS sizes
   const cardWidth = Math.max(1, Math.floor((width - gap * (cols - 1)) / cols))
@@ -293,7 +304,7 @@ export function VirtualizedGrid<T>({
                 const index = startIndex + i
                 const item = items[index]
                 return (
-                  <div key={itemKey ? itemKey(item, index) : index}>
+                  <div key={itemKey ? itemKey(item, index) : index} data-grid-card>
                     {renderItem(item, index)}
                   </div>
                 )
