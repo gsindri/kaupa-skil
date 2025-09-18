@@ -17,56 +17,71 @@ type IconProps = {
 }
 
 export function NavIcon({ Icon, active, size = 44, className, label, hovered }: IconProps) {
-  const svgRef = useRef<SVGSVGElement>(null)
+  const translateWrapperRef = useRef<HTMLSpanElement>(null)
   const [transforms, setTransforms] = useState({ scale: 1, translateX: 0, translateY: 0 })
   const [isMeasuring, setIsMeasuring] = useState(true)
 
   useEffect(() => {
-    const svg = svgRef.current
-    if (!svg) return
+    const wrapper = translateWrapperRef.current
+    if (!wrapper) {
+      return
+    }
 
     setIsMeasuring(true)
-    
-    // Use requestAnimationFrame to ensure SVG is rendered
-    const measureIcon = () => {
-      try {
-        const viewBox = svg.viewBox.baseVal
-        const viewBoxWidth = viewBox.width || size
-        const viewBoxHeight = viewBox.height || size
 
-        // Get the actual content bounds
-        const bbox = svg.getBBox()
-        
-        // Calculate scale to fit content within target size
-        const contentWidth = bbox.width || viewBoxWidth
-        const contentHeight = bbox.height || viewBoxHeight
-        const maxDimension = Math.max(contentWidth, contentHeight)
-        
-        // Scale factor to make the visual content fill the target size
-        const scale = maxDimension > 0 ? (size * 0.8) / maxDimension : 1
-        
-        // Calculate translation to center the content
-        const viewBoxCenterX = viewBoxWidth / 2
-        const viewBoxCenterY = viewBoxHeight / 2
-        const contentCenterX = bbox.x + bbox.width / 2
-        const contentCenterY = bbox.y + bbox.height / 2
-        
-        // Calculate translation in viewBox coordinates
-        const translateX = (viewBoxCenterX - contentCenterX) * (size / viewBoxWidth)
-        const translateY = (viewBoxCenterY - contentCenterY) * (size / viewBoxHeight)
-        
-        setTransforms({ scale, translateX, translateY })
-      } catch (error) {
-        // Fallback if getBBox fails
-        console.warn('NavIcon measurement failed:', error)
-        setTransforms({ scale: 1, translateX: 0, translateY: 0 })
+    const frame = requestAnimationFrame(() => {
+      const svg = wrapper.querySelector('svg')
+      if (!svg) {
+        setIsMeasuring(false)
+        return
+      }
+
+      try {
+        const viewBox = svg.viewBox?.baseVal
+        const viewBoxWidth = viewBox?.width || svg.clientWidth || size
+        const viewBoxHeight = viewBox?.height || svg.clientHeight || size
+        const viewBoxX = viewBox?.x || 0
+        const viewBoxY = viewBox?.y || 0
+
+        let bbox: DOMRect | undefined
+        try {
+          bbox = svg.getBBox()
+        } catch (error) {
+          console.warn('NavIcon measurement failed:', error)
+        }
+
+        const contentWidth = bbox?.width || viewBoxWidth
+        const contentHeight = bbox?.height || viewBoxHeight
+        const contentMaxDimension = Math.max(contentWidth, contentHeight)
+        const viewBoxMaxDimension = Math.max(viewBoxWidth, viewBoxHeight)
+
+        const scale =
+          contentMaxDimension > 0 && viewBoxMaxDimension > 0
+            ? Math.max(1, viewBoxMaxDimension / contentMaxDimension)
+            : 1
+
+        const viewBoxCenterX = viewBoxX + viewBoxWidth / 2
+        const viewBoxCenterY = viewBoxY + viewBoxHeight / 2
+        const contentCenterX = (bbox?.x ?? viewBoxX) + ((bbox?.width ?? viewBoxWidth) / 2)
+        const contentCenterY = (bbox?.y ?? viewBoxY) + ((bbox?.height ?? viewBoxHeight) / 2)
+
+        const pixelsPerUnit = viewBoxMaxDimension > 0 ? size / viewBoxMaxDimension : 1
+
+        const translateX = (viewBoxCenterX - contentCenterX) * scale * pixelsPerUnit
+        const translateY = (viewBoxCenterY - contentCenterY) * scale * pixelsPerUnit
+
+        setTransforms({
+          scale: Number.isFinite(scale) ? scale : 1,
+          translateX: Number.isFinite(translateX) ? translateX : 0,
+          translateY: Number.isFinite(translateY) ? translateY : 0,
+        })
       } finally {
         setIsMeasuring(false)
       }
-    }
+    })
 
-    requestAnimationFrame(measureIcon)
-  }, [size])
+    return () => cancelAnimationFrame(frame)
+  }, [Icon, size])
 
   return (
     <span
@@ -75,22 +90,22 @@ export function NavIcon({ Icon, active, size = 44, className, label, hovered }: 
         'bg-transparent overflow-visible'
       )}
     >
-      <span 
+      <span
         data-nav-icon-scale=""
-        style={{ 
+        style={{
           transform: `scale(${transforms.scale})`,
           transformOrigin: 'center'
         }}
       >
-        <span 
+        <span
           data-nav-icon-translate=""
-          style={{ 
+          ref={translateWrapperRef}
+          style={{
             transform: `translate(${transforms.translateX}px, ${transforms.translateY}px)`,
             display: 'block'
           }}
         >
           <Icon
-            ref={svgRef}
             data-active={active}
             data-hovered={hovered ? 'true' : undefined}
             data-nav-measuring={isMeasuring ? 'true' : undefined}
@@ -103,9 +118,6 @@ export function NavIcon({ Icon, active, size = 44, className, label, hovered }: 
               isMeasuring && 'opacity-0',
               className
             )}
-            style={{
-              transition: isMeasuring ? 'none' : undefined
-            }}
             role="img"
             aria-hidden={false}
             aria-label={label}
