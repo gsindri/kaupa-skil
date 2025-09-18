@@ -3,6 +3,11 @@ import * as React from 'react'
 import { cn } from '@/lib/utils'
 
 type SvgProps = React.SVGProps<SVGSVGElement> & { tone?: number }
+type CSSVariableStyle = React.CSSProperties & {
+  [key: `--${string}`]: string | number | undefined
+}
+
+type CartSoftProps = SvgProps & { count?: string | number }
 
 const baseStrokeClass = 'stroke-current fill-none'
 const baseStrokeProps = {
@@ -45,26 +50,82 @@ export function GlobeSoft({ tone = 0.1, className, ...props }: SvgProps) {
   )
 }
 
-export function CartSoft({ tone = 0.12, className, ...props }: SvgProps) {
+export function CartSoft({ tone = 0.12, className, count, style, ...props }: CartSoftProps) {
+  const reactId = React.useId()
+  const clipPathId = `cart-basket-${reactId.replace(/:/g, '')}`
+
+  const normalizedTone = Number.isFinite(tone) ? Math.min(Math.max(tone, 0), 1) : 0
+  const cartOpacity = normalizedTone >= 1 ? 1 : Math.max(0.35, normalizedTone * 2.4)
+
+  const countValue =
+    typeof count === 'number' || typeof count === 'string' ? String(count).trim() : ''
+  const showCount = countValue.length > 0
+  const textLength = countValue.length > 2 ? 11.6 : 9.2
+
+  const cssVariables: CSSVariableStyle = {
+    '--ink': 'currentColor',
+    '--count': 'var(--cart-count-color, #f59e0b)',
+    '--sw': 1.3,
+    '--cartOpacity': cartOpacity
+  }
+
+  const mergedStyle: CSSVariableStyle = style
+    ? {
+        ...cssVariables,
+        ...(style as CSSVariableStyle)
+      }
+    : cssVariables
+
   return (
     <svg
       viewBox="0 0 24 24"
       aria-hidden="true"
       {...props}
-      className={cn(baseStrokeClass, className)}
+      className={cn(className)}
+      style={mergedStyle}
     >
-      <path
-        d="M4.2 6.8h2.2l1.6 8.5c.1.6.6 1 1.2 1h7.2c.6 0 1.1-.4 1.2-1l.9-5.4a1 1 0 0 0-1-.9H7.3"
-        fill="currentColor"
-        opacity={tone}
-      />
-      <circle cx="9.7" cy="19.2" r="1.3" fill="currentColor" />
-      <circle cx="16.6" cy="19.2" r="1.3" fill="currentColor" />
-      <path
-        d="M3.2 5.2h2.8l1.9 9.8a1.2 1.2 0 0 0 1.2 1h7.2a1.2 1.2 0 0 0 1.2-1l.9-5.4a1 1 0 0 0-1-.9H7.1"
-        {...baseStrokeProps}
-      />
-      <path d="M9.2 19.2h7.6" {...baseStrokeProps} opacity={0.4} />
+      <defs>
+        <clipPath id={clipPathId} clipPathUnits="userSpaceOnUse">
+          <polygon points="5,9.15 14.2,9.15 13.5,12.8 6.6,12.8" />
+        </clipPath>
+      </defs>
+
+      {showCount ? (
+        <g clipPath={`url(#${clipPathId})`}>
+          <text
+            x={9.6}
+            y={10.8}
+            dominantBaseline="middle"
+            textAnchor="middle"
+            lengthAdjust="spacingAndGlyphs"
+            textLength={textLength}
+            fill="var(--count)"
+            style={{
+              font: "800 10px system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,'Apple Color Emoji','Segoe UI Emoji'"
+            }}
+          >
+            {countValue}
+          </text>
+        </g>
+      ) : null}
+
+      <g
+        fill="none"
+        stroke="var(--ink)"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="var(--sw)"
+        opacity="var(--cartOpacity)"
+        vectorEffect="non-scaling-stroke"
+        shapeRendering="geometricPrecision"
+      >
+        <path d="M4 6.2L6.2 9.1" />
+        <path d="M6.2 9.1H14.2" />
+        <path d="M6.2 9.1L8 13" />
+        <path d="M7.2 13H14.2" />
+        <circle cx="9" cy="16" r="1.35" />
+        <circle cx="14.2" cy="16" r="1.35" />
+      </g>
     </svg>
   )
 }

@@ -122,12 +122,19 @@ export function CartButton({
       width={hasItems ? 22 : 24}
       height={hasItems ? 22 : 24}
       tone={toolbarTone}
+      count={countLabel ?? undefined}
       className={cn('shrink-0', hasItems ? 'text-white' : undefined)}
     />
   )
 
   const standardIcon = (
-    <CartSoft width={iconSize} height={iconSize} tone={iconTone} className="shrink-0" />
+    <CartSoft
+      width={iconSize}
+      height={iconSize}
+      tone={iconTone}
+      count={countLabel ?? undefined}
+      className="shrink-0"
+    />
   )
 
   const trigger =
