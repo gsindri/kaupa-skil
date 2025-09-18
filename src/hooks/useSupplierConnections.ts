@@ -20,33 +20,28 @@ export function useSupplierConnections() {
     queryKey: [...queryKeys.dashboard.suppliers(), profile?.tenant_id],
     queryFn: async () => {
       try {
-        const query = supabase
-          .from('supplier_connections')
-          .select('id, supplier_id, status, last_sync, next_run, supplier:suppliers(name)')
+        const { data, error } = await supabase
+          .from('suppliers')
+          .select('id, name')
           .order('created_at', { ascending: false })
 
-        const { data, error } = profile?.tenant_id
-          ? await query.eq('tenant_id', profile.tenant_id)
-          : await query.is('tenant_id', null)
-
         if (error) {
-          // If table doesn't exist, return empty array
-          console.warn('Supplier connections table not found:', error)
+          console.warn('Error fetching suppliers:', error)
           return []
         }
 
         return (
           data?.map((s: any) => ({
             id: s.id,
-            supplier_id: s.supplier_id,
-            name: s.supplier?.name ?? '',
-            status: s.status as SupplierStatus,
-            last_sync: s.last_sync,
-            next_run: s.next_run,
+            supplier_id: s.id,
+            name: s.name,
+            status: 'connected' as SupplierStatus,
+            last_sync: null,
+            next_run: null,
           })) || []
         )
       } catch (error) {
-        console.warn('Error fetching supplier connections:', error)
+        console.warn('Error fetching suppliers:', error)
         return []
       }
     },
