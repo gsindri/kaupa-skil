@@ -1,25 +1,22 @@
-import { useEffect, useState, useCallback } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { useCallback, useEffect, useMemo } from 'react'
+import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
+import { supabase } from '@/integrations/supabase/client'
 import {
   fetchPublicCatalogItems,
   PublicCatalogFilters,
   type PublicCatalogItem,
-} from '@/services/catalog';
-import type { SortOrder } from '@/state/catalogFiltersStore';
-import { stateKeyFragment } from '@/lib/catalogState';
+} from '@/services/catalog'
+import type { SortOrder } from '@/state/catalogFiltersStore'
+import { stateKeyFragment } from '@/lib/catalogState'
 
-export type { PublicCatalogItem };
+export type { PublicCatalogItem }
 
 export function useCatalogProducts(filters: PublicCatalogFilters, sort: SortOrder) {
-  const queryClient = useQueryClient();
-  const [allItems, setAllItems] = useState<PublicCatalogItem[]>([]);
-  const [nextCursor, setNextCursor] = useState<string | null>(null);
-  const [total, setTotal] = useState<number>(0);
+  const queryClient = useQueryClient()
 
   useEffect(() => {
-    const channel: any = (supabase as any)?.channel?.('catalog-products');
-    if (!channel?.on) return;
+    const channel: any = (supabase as any)?.channel?.('catalog-products')
+    if (!channel?.on) return
 
     channel
       .on(
@@ -33,87 +30,66 @@ export function useCatalogProducts(filters: PublicCatalogFilters, sort: SortOrde
         () => queryClient.invalidateQueries({ queryKey: ['catalog'] }),
       )
 
-    channel.subscribe?.();
+    channel.subscribe?.()
 
     return () => {
-      channel.unsubscribe?.();
-    };
-  }, [queryClient]);
+      channel.unsubscribe?.()
+    }
+  }, [queryClient])
 
-  // Create a stable key for the base query (without cursor)
-  const { cursor, ...baseFilters } = filters;
-  const baseStateHash = stateKeyFragment({ filters: baseFilters, sort } as any);
+  const baseFilters = useMemo(() => {
+    const { cursor: _cursor, ...rest } = filters
+    return rest
+  }, [filters])
 
-  // Reset accumulated data when base filters change
-  useEffect(() => {
-    setAllItems([]);
-    setNextCursor(null);
-    setTotal(0);
-  }, [baseStateHash]);
+  const baseStateHash = useMemo(
+    () => stateKeyFragment({ filters: baseFilters, sort } as any),
+    [baseFilters, sort],
+  )
 
-  const query = useQuery({
-    queryKey: ['catalog', baseStateHash, cursor || 'initial'],
-    queryFn: () => fetchPublicCatalogItems(filters, sort),
-    placeholderData: (previousData) => previousData,
+  const query = useInfiniteQuery({
+    queryKey: ['catalog', baseStateHash],
+    initialPageParam: null as string | null,
+    queryFn: ({ pageParam }) =>
+      fetchPublicCatalogItems({ ...filters, cursor: pageParam ?? null }, sort),
+    getNextPageParam: lastPage => lastPage.nextCursor,
     staleTime: 30_000,
     gcTime: 900_000,
-  });
+  })
 
-  // Accumulate results when new data arrives
-  useEffect(() => {
-    if (query.data) {
-      const { items, nextCursor: newNextCursor, total: newTotal } = query.data as any;
-      console.log('useCatalogProducts: Received data - items:', items?.length, 'nextCursor:', newNextCursor, 'cursor:', cursor)
-      
-      if (cursor) {
-        // This is a "load more" request - append new items
-        setAllItems(prev => {
-          const merged = [...prev, ...items];
-          console.log('useCatalogProducts: Appending items - prev:', prev.length, 'new:', items.length, 'merged:', merged.length)
-          // Deduplicate by catalog_id
-          const seen = new Set<string>();
-          return merged.filter(item => {
-            if (seen.has(item.catalog_id)) return false;
-            seen.add(item.catalog_id);
-            return true;
-          });
-        });
-      } else {
-        // This is an initial load - replace all items
-        console.log('useCatalogProducts: Initial load - replacing with', items?.length, 'items')
-        setAllItems(items || []);
-      }
-      
-      setNextCursor(newNextCursor);
-      setTotal(newTotal || 0);
-    }
-  }, [query.data, cursor]);
+  const {
+    data: queryData,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    ...restQuery
+  } = query
+
+  const pages = queryData?.pages
+
+  const items = useMemo(() => {
+    if (!pages) return []
+    return pages.flatMap(page => page.items)
+  }, [pages])
+
+  const total = pages?.[0]?.total ?? items.length
+  const nextCursor =
+    pages && pages.length ? pages[pages.length - 1]?.nextCursor ?? null : null
 
   const loadMore = useCallback(() => {
-    if (nextCursor && !query.isFetching) {
-      console.log('useCatalogProducts: Loading more with cursor:', nextCursor)
-      // Create new filters with cursor and directly refetch
-      const newFilters = { ...filters, cursor: nextCursor }
-      const newStateHash = stateKeyFragment({ filters: newFilters, sort } as any)
-      
-      queryClient.fetchQuery({
-        queryKey: ['catalog', newStateHash, nextCursor],
-        queryFn: () => fetchPublicCatalogItems(newFilters, sort),
-        staleTime: 30_000,
-      })
-    } else {
-      console.log('useCatalogProducts: Cannot load more - nextCursor:', nextCursor, 'isFetching:', query.isFetching)
-    }
-  }, [nextCursor, query.isFetching, queryClient, filters, sort]);
+    if (!hasNextPage || isFetchingNextPage) return
+    fetchNextPage()
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage])
 
   return {
-    ...query,
-    data: allItems,
-    nextCursor,
+    ...restQuery,
+    data: items,
+    fetchNextPage,
     total,
+    nextCursor,
     loadMore,
-    hasNextPage: !!nextCursor,
-    isFetchingNextPage: query.isFetching && !!cursor,
-  };
+    hasNextPage: !!hasNextPage,
+    isFetchingNextPage,
+  }
 }
 
