@@ -216,7 +216,7 @@ describe('NavIcon scaling', () => {
   const targetSize = 44
 
   it.each(iconTestCases)(
-    'scales the %s icon so its visual footprint matches the target size',
+    'does not apply extra scaling when the %s icon fills the viewBox',
     async ({ label, Icon, svgPath }) => {
       const info = getViewBoxInfo(svgPath)
       intrinsicBBox = { x: 0, y: 0, width: info.width, height: info.height }
@@ -231,23 +231,19 @@ describe('NavIcon scaling', () => {
         if (!scaleWrapper) throw new Error('Icon scale wrapper not found')
 
         const actualScale = extractScale(scaleWrapper.style.transform)
-        const expectedScale = Math.min(
-          targetSize / info.width,
-          targetSize / info.height
+        const viewBoxMaxDimension = Math.max(info.width, info.height)
+        const scaledMaxDimension = Math.max(
+          info.width * actualScale,
+          info.height * actualScale
         )
 
-        expect(actualScale).toBeCloseTo(expectedScale, 6)
-
-        const scaledWidth = info.width * actualScale
-        const scaledHeight = info.height * actualScale
-        const maxDimension = Math.max(scaledWidth, scaledHeight)
-
-        expect(maxDimension).toBeCloseTo(targetSize, 5)
+        expect(actualScale).toBeCloseTo(1, 6)
+        expect(scaledMaxDimension).toBeCloseTo(viewBoxMaxDimension, 5)
       })
     }
   )
 
-  it('scales up smaller artwork to fill the requested size', async () => {
+  it('scales up smaller artwork to fill the viewBox', async () => {
     const info = getViewBoxInfo('../../icons/catalog.svg')
     intrinsicBBox = { x: 0, y: 0, width: 16, height: 12 }
     viewBoxInfo = info
@@ -261,13 +257,15 @@ describe('NavIcon scaling', () => {
       if (!scaleWrapper) throw new Error('Icon scale wrapper not found')
 
       const actualScale = extractScale(scaleWrapper.style.transform)
-      const expectedScale = Math.min(targetSize / 16, targetSize / 12)
+      const viewBoxMaxDimension = Math.max(info.width, info.height)
+      const contentMaxDimension = Math.max(16, 12)
+      const expectedScale = viewBoxMaxDimension / contentMaxDimension
 
       expect(actualScale).toBeCloseTo(expectedScale, 6)
 
-      const maxDimension = Math.max(16 * actualScale, 12 * actualScale)
+      const scaledMaxDimension = Math.max(16 * actualScale, 12 * actualScale)
 
-      expect(maxDimension).toBeCloseTo(targetSize, 5)
+      expect(scaledMaxDimension).toBeCloseTo(viewBoxMaxDimension, 5)
     })
   })
 

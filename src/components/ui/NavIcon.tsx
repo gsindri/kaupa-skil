@@ -83,13 +83,12 @@ export function NavIcon({ Icon, active, size = 44, className, label, hovered }: 
             ? bbox.y + contentHeight / 2
             : viewBoxY + viewBoxHeight / 2
 
-        const targetSize = size
-        const safeContentWidth = contentWidth > 0 ? contentWidth : viewBoxWidth || targetSize
-        const safeContentHeight = contentHeight > 0 ? contentHeight : viewBoxHeight || targetSize
+        const viewBoxMaxDimension = Math.max(viewBoxWidth, viewBoxHeight)
+        const contentMaxDimension = Math.max(contentWidth, contentHeight)
 
         const rawScale =
-          safeContentWidth > 0 && safeContentHeight > 0
-            ? Math.min(targetSize / safeContentWidth, targetSize / safeContentHeight)
+          viewBoxMaxDimension > 0 && contentMaxDimension > 0
+            ? viewBoxMaxDimension / contentMaxDimension
             : 1
 
         const viewBoxCenterX = viewBoxX + viewBoxWidth / 2
