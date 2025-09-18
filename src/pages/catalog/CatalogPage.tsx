@@ -438,7 +438,7 @@ export default function CatalogPage() {
 
   // Use data directly from the appropriate hook
   const currentQuery = orgId ? orgQuery : publicQuery
-  const products = currentQuery.data || []
+  const products = useMemo(() => currentQuery.data ?? [], [currentQuery.data])
   const nextCursor = currentQuery.nextCursor
   const totalCount = currentQuery.total
   const isFetching = currentQuery.isFetching

@@ -252,7 +252,9 @@ export function VirtualizedGrid<T>({
     if (now - lastTriggerRef.current < debounceMs) return
     
     // For initial load, trigger onNearEnd if we have very few items and enough space (only once)
-    const totalScreens = Math.ceil(rowCount / Math.max(1, Math.floor(window.innerHeight / (rowHeight || 350))))
+    const totalScreens = Math.ceil(
+      rowCount / Math.max(1, Math.floor(window.innerHeight / (rowHeight || 350))),
+    )
     
     if (items.length > 0 && totalScreens <= 2 && !hasTriggeredInitialRef.current) {
       console.log('VirtualizedGrid: Triggering onNearEnd for initial load - few items', { 
@@ -289,7 +291,7 @@ export function VirtualizedGrid<T>({
       lastTriggerRef.current = now
       onNearEnd()
     }
-  }, [virtualRows, rowCount, onNearEnd, items.length])
+  }, [virtualRows, rowCount, onNearEnd, items.length, rowHeight])
 
   // Grid CSS sizes
   const cardWidth = Math.max(1, Math.floor((width - gap * (cols - 1)) / cols))

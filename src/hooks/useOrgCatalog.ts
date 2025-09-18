@@ -1,11 +1,7 @@
-import { useEffect, useState, useCallback } from 'react'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useCallback, useEffect, useMemo } from 'react'
+import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
-import {
-  fetchOrgCatalogItems,
-  OrgCatalogFilters,
-  type PublicCatalogItem,
-} from '@/services/catalog'
+import { fetchOrgCatalogItems, OrgCatalogFilters } from '@/services/catalog'
 import type { SortOrder } from '@/state/catalogFiltersStore'
 
 export function useOrgCatalog(
@@ -14,9 +10,6 @@ export function useOrgCatalog(
   sort: SortOrder,
 ) {
   const queryClient = useQueryClient()
-  const [allItems, setAllItems] = useState<PublicCatalogItem[]>([]);
-  const [nextCursor, setNextCursor] = useState<string | null>(null);
-  const [total, setTotal] = useState<number>(0);
 
   useEffect(() => {
     if (!orgId) return
@@ -42,72 +35,54 @@ export function useOrgCatalog(
     }
   }, [queryClient, orgId])
 
-  // Create a stable key for the base query (without cursor)
-  const { cursor, ...baseFilters } = filters;
-  const baseKey = JSON.stringify({ orgId, filters: baseFilters, sort });
+  const baseFilters = useMemo(() => {
+    const { cursor: _cursor, ...rest } = filters
+    return rest
+  }, [filters])
 
-  // Reset accumulated data when base filters change
-  useEffect(() => {
-    setAllItems([]);
-    setNextCursor(null);
-    setTotal(0);
-  }, [baseKey]);
-
-  const query = useQuery({
-    queryKey: ['orgCatalog', orgId, baseFilters, sort, cursor || 'initial'],
-    queryFn: () => fetchOrgCatalogItems(orgId, filters, sort),
+  const query = useInfiniteQuery({
+    queryKey: ['orgCatalog', orgId, baseFilters, sort],
     enabled: !!orgId,
+    initialPageParam: null as string | null,
+    queryFn: ({ pageParam }) =>
+      fetchOrgCatalogItems(orgId, { ...filters, cursor: pageParam ?? null }, sort),
+    getNextPageParam: lastPage => lastPage.nextCursor,
+    staleTime: 30_000,
   })
 
-  // Accumulate results when new data arrives
-  useEffect(() => {
-    if (query.data) {
-      const { items, nextCursor: newNextCursor, total: newTotal } = query.data;
-      
-      if (cursor) {
-        // This is a "load more" request - append new items
-        setAllItems(prev => {
-          const merged = [...prev, ...items];
-          // Deduplicate by catalog_id
-          const seen = new Set<string>();
-          return merged.filter(item => {
-            if (seen.has(item.catalog_id)) return false;
-            seen.add(item.catalog_id);
-            return true;
-          });
-        });
-      } else {
-        // This is an initial load - replace all items
-        setAllItems(items || []);
-      }
-      
-      setNextCursor(newNextCursor);
-      setTotal(newTotal || 0);
-    }
-  }, [query.data, cursor]);
+  const {
+    data: queryData,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    ...restQuery
+  } = query
+
+  const pages = queryData?.pages
+
+  const items = useMemo(() => {
+    if (!pages) return []
+    return pages.flatMap(page => page.items)
+  }, [pages])
+
+  const total = pages?.[0]?.total ?? items.length
+  const nextCursor =
+    pages && pages.length ? pages[pages.length - 1]?.nextCursor ?? null : null
 
   const loadMore = useCallback(() => {
-    if (nextCursor && !query.isFetching) {
-      console.log('useOrgCatalog: Loading more with cursor:', nextCursor)
-      // Create new filters with cursor and directly fetch
-      const newFilters = { ...filters, cursor: nextCursor }
-      
-      queryClient.fetchQuery({
-        queryKey: ['orgCatalog', orgId, newFilters, sort, nextCursor],
-        queryFn: () => fetchOrgCatalogItems(orgId, newFilters, sort),
-        staleTime: 30_000,
-      })
-    }
-  }, [nextCursor, query.isFetching, queryClient, orgId, filters, sort]);
+    if (!hasNextPage || isFetchingNextPage) return
+    fetchNextPage()
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage])
 
   return {
-    ...query,
-    data: allItems,
-    nextCursor,
+    ...restQuery,
+    data: items,
+    fetchNextPage,
     total,
+    nextCursor,
     loadMore,
-    hasNextPage: !!nextCursor,
-    isFetchingNextPage: query.isFetching && !!cursor,
+    hasNextPage: !!hasNextPage,
+    isFetchingNextPage,
   }
 }
 
