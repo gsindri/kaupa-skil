@@ -1,5 +1,5 @@
 <!-- Fan-to-Stack Coins — transparent bg, detailed idle, hover=movement -->
-<svg id="coins-fan-stack" xmlns="http://www.w3.org/2000/svg" viewBox="64 95.5 465 465" role="img" aria-label="Exploded coin layers that assemble into a stack on hover">
+<svg id="coins-fan-stack" xmlns="http://www.w3.org/2000/svg" viewBox="-48 -48 689 689" role="img" aria-label="Exploded coin layers that assemble into a stack on hover">
   <title>Exploded → Stacked Coins (hover)</title>
 
   <style>

@@ -1,5 +1,5 @@
 <!-- Discover — Magnifying Glass with swooping entrance + discovery -->
-<svg id="discover" viewBox="0 0 600 600" role="img" aria-labelledby="title desc"
+<svg id="discover" viewBox="-48 -48 696 696" role="img" aria-labelledby="title desc"
      xmlns="http://www.w3.org/2000/svg"
      style="--start-angle: 45deg; --ink:#eaf0f7; --ring:#ffffff; --ring2:#ffffff; --line:#0f2031; --glass:#132231; --teal:#2ee6d6; --green:#7cffb0; --orange:#ffb36b; --violet:#b79cff; --gray:#cfd7e4; --shadow:#0a1522; --dot:#6db3d9; shape-rendering:geometricPrecision;">
   <title id="title">Discover</title>
