@@ -173,6 +173,9 @@ export async function fetchOrgCatalogItems(
   if (filters.availability && filters.availability.length) {
     query = query.in('availability_status', filters.availability)
   }
+  
+  // Add cursor-based pagination
+  if (filters.cursor) query = query.gt('catalog_id', filters.cursor)
 
   query = query.limit(50)
 

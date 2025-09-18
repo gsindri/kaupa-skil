@@ -251,27 +251,41 @@ export function VirtualizedGrid<T>({
     
     if (now - lastTriggerRef.current < debounceMs) return
     
-    // For initial load, trigger onNearEnd if we have very few items (only once)
-    if (items.length < 20 && !hasTriggeredInitialRef.current) {
-      console.log('VirtualizedGrid: Triggering onNearEnd for initial load, items:', items.length)
+    // For initial load, trigger onNearEnd if we have very few items and enough space (only once)
+    const totalScreens = Math.ceil(rowCount / Math.max(1, Math.floor(window.innerHeight / (rowHeight || 350))))
+    
+    if (items.length > 0 && totalScreens <= 2 && !hasTriggeredInitialRef.current) {
+      console.log('VirtualizedGrid: Triggering onNearEnd for initial load - few items', { 
+        items: items.length, 
+        rowCount, 
+        totalScreens 
+      })
       hasTriggeredInitialRef.current = true
       lastTriggerRef.current = now
       onNearEnd()
       return
     }
     
-    // Mark initial as triggered if we have enough items
-    if (items.length >= 20) {
+    // Mark initial as triggered if we have enough content
+    if (totalScreens > 2) {
       hasTriggeredInitialRef.current = true
     }
     
     const last = virtualRows[virtualRows.length - 1]
-    const rowsLeft = rowCount - 1 - last.index
-    console.log('VirtualizedGrid: Check load more - rowsLeft:', rowsLeft, 'rowCount:', rowCount, 'lastVirtualRow:', last.index)
+    if (!last) return
     
-    // Trigger loading when we're within 2 rows of the end and have scrolled
-    if (rowsLeft <= 2 && items.length >= 20) {
-      console.log('VirtualizedGrid: Triggering onNearEnd for scroll')
+    const rowsLeft = rowCount - 1 - last.index
+    console.log('VirtualizedGrid: Check load more', { 
+      rowsLeft, 
+      rowCount, 
+      lastVirtualRow: last.index,
+      totalScreens,
+      items: items.length
+    })
+    
+    // Trigger loading when we're within 3 rows of the end
+    if (rowsLeft <= 3) {
+      console.log('VirtualizedGrid: Triggering onNearEnd for scroll near end')
       lastTriggerRef.current = now
       onNearEnd()
     }
