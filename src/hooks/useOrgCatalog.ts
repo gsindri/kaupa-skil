@@ -90,8 +90,9 @@ export function useOrgCatalog(
     if (nextCursor && !query.isFetching) {
       console.log('useOrgCatalog: Loading more with cursor:', nextCursor)
       // Update the filters to include the cursor, which will trigger a new query
+      const newFilters = { ...baseFilters, cursor: nextCursor }
       queryClient.invalidateQueries({ 
-        queryKey: ['orgCatalog', orgId, { ...baseFilters, cursor: nextCursor }, sort, nextCursor] 
+        queryKey: ['orgCatalog', orgId, newFilters, sort, nextCursor] 
       })
     }
   }, [nextCursor, query.isFetching, queryClient, orgId, baseFilters, sort]);

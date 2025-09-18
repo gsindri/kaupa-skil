@@ -238,7 +238,8 @@ export function VirtualizedGrid<T>({
   const virtualRows = rowVirtualizer.getVirtualItems()
 
   // Debounced onNearEnd to prevent rapid-fire calls
-  const [lastTriggerTime, setLastTriggerTime] = React.useState(0)
+  const lastTriggerRef = React.useRef(0)
+  const hasTriggeredInitialRef = React.useRef(false)
   
   // Prefetch when near the end (observe the last virtual row)
   React.useEffect(() => {
@@ -246,28 +247,35 @@ export function VirtualizedGrid<T>({
     if (!virtualRows.length) return
 
     const now = Date.now()
-    const debounceMs = 1000 // Only trigger once per second
+    const debounceMs = 500 // Minimum time between triggers
     
-    if (now - lastTriggerTime < debounceMs) return
+    if (now - lastTriggerRef.current < debounceMs) return
     
-    // For initial load, trigger onNearEnd if we have very few items
-    if (items.length < 20) {
+    // For initial load, trigger onNearEnd if we have very few items (only once)
+    if (items.length < 20 && !hasTriggeredInitialRef.current) {
       console.log('VirtualizedGrid: Triggering onNearEnd for initial load, items:', items.length)
-      setLastTriggerTime(now)
+      hasTriggeredInitialRef.current = true
+      lastTriggerRef.current = now
       onNearEnd()
       return
+    }
+    
+    // Mark initial as triggered if we have enough items
+    if (items.length >= 20) {
+      hasTriggeredInitialRef.current = true
     }
     
     const last = virtualRows[virtualRows.length - 1]
     const rowsLeft = rowCount - 1 - last.index
     console.log('VirtualizedGrid: Check load more - rowsLeft:', rowsLeft, 'rowCount:', rowCount, 'lastVirtualRow:', last.index)
-    // Trigger loading when we're within 3 rows of the end
-    if (rowsLeft < 3) {
+    
+    // Trigger loading when we're within 2 rows of the end and have scrolled
+    if (rowsLeft <= 2 && items.length >= 20) {
       console.log('VirtualizedGrid: Triggering onNearEnd for scroll')
-      setLastTriggerTime(now)
+      lastTriggerRef.current = now
       onNearEnd()
     }
-  }, [virtualRows, rowCount, onNearEnd, items.length, lastTriggerTime])
+  }, [virtualRows, rowCount, onNearEnd, items.length])
 
   // Grid CSS sizes
   const cardWidth = Math.max(1, Math.floor((width - gap * (cols - 1)) / cols))
