@@ -118,7 +118,7 @@ export const ProductCard = memo(function ProductCard({
       data-grid-card
       className={cn(
         "catalog-card group isolate flex h-full w-full flex-col overflow-hidden border border-transparent bg-card/95",
-        "rounded-[20px] shadow-sm transition-[box-shadow,transform] duration-[var(--dur-base)] ease-[var(--ease-snap)]",
+        "rounded-[20px] shadow-sm transition-[box-shadow,transform] duration-base ease-snap",
         "hover:-translate-y-[1px] hover:shadow-md focus-within:-translate-y-[1px]",
         "motion-reduce:transition-none motion-reduce:hover:translate-y-0 motion-reduce:focus-within:translate-y-0",
         className,
