@@ -84,10 +84,7 @@ export function VirtualizedGrid<T>({
 
   const { width } = useContainerSize(scrollerRef)
 
-  const [dynamicRowHeight, setDynamicRowHeight] = React.useState(rowHeight)
-  React.useEffect(() => {
-    setDynamicRowHeight(rowHeight)
-  }, [rowHeight])
+  // Use consistent fixed row height - no dynamic measurement
 
   // Distance from the top of the document to the grid. Used so the
   // window virtualizer knows where our grid begins.
@@ -182,7 +179,7 @@ export function VirtualizedGrid<T>({
   // Keep anchored when cols change
   const { beforeColsChange, afterColsChange } = useAnchoredGridScroll({
     scrollerRef,
-    rowHeight: dynamicRowHeight,
+    rowHeight,
     getCols,
   })
 
@@ -199,41 +196,12 @@ export function VirtualizedGrid<T>({
 
   const rowVirtualizer = useWindowVirtualizer({
     count: rowCount,
-    estimateSize: () => dynamicRowHeight,
+    estimateSize: () => rowHeight,
     overscan: 3,
     scrollMargin,
-    // measure element for precise size only if you let rowHeight vary
-    // measureElement: (el) => el.getBoundingClientRect().height,
   })
 
-  React.useEffect(() => {
-    if (!innerRef.current) return
-    const card = innerRef.current.querySelector('[data-grid-card]')
-    if (!card) return
-    const node = card as HTMLElement
-
-    const measure = () => {
-      const measured = node.scrollHeight
-      if (!Number.isFinite(measured) || measured <= 0) return
-      setDynamicRowHeight(prev => {
-        const next = Math.ceil(measured + gap)
-        return Math.abs(prev - next) > 1 ? next : prev
-      })
-    }
-
-    const observer = new ResizeObserver(() => {
-      measure()
-    })
-
-    observer.observe(node)
-    measure()
-
-    return () => observer.disconnect()
-  }, [items.length, gap])
-
-  React.useEffect(() => {
-    rowVirtualizer.measure()
-  }, [dynamicRowHeight, rowVirtualizer])
+  // Remove dynamic height measurement - use fixed height consistently
 
   const virtualRows = rowVirtualizer.getVirtualItems()
 
@@ -304,7 +272,6 @@ export function VirtualizedGrid<T>({
       style={{
         position: 'relative',
         willChange: 'transform',
-        minHeight: '100vh',
         ...style,
       }}
     >
@@ -327,7 +294,7 @@ export function VirtualizedGrid<T>({
                 left: 0,
                 width: '100%',
                 transform: `translate3d(0, ${vr.start}px, 0)`,
-                height: dynamicRowHeight,
+                height: rowHeight,
                 display: 'grid',
                 gridTemplateColumns: `repeat(${cols}, minmax(${cardWidth}px, 1fr))`,
                 gap,
