@@ -94,9 +94,8 @@ export function NavIcon({ Icon, active, size = 44, className, label, hovered }: 
         const viewBoxCenterX = viewBoxX + viewBoxWidth / 2
         const viewBoxCenterY = viewBoxY + viewBoxHeight / 2
 
-        const viewBoxMaxDimension = Math.max(viewBoxWidth, viewBoxHeight)
         const pixelPerViewBoxUnit =
-          viewBoxMaxDimension > 0 ? targetSize / viewBoxMaxDimension : 1
+          viewBoxMaxDimension > 0 ? size / viewBoxMaxDimension : 1
 
         const centerOffsetX = viewBoxCenterX - contentCenterX
         const centerOffsetY = viewBoxCenterY - contentCenterY
