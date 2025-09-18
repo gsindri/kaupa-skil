@@ -16,7 +16,11 @@ export function ProductCardSkeleton({ className }: ProductCardSkeletonProps) {
       data-grid-card
       aria-hidden="true"
     >
-      <Skeleton className="aspect-[4/3] w-full bg-muted/60" />
+      <div className="catalog-card__surface aspect-[4/3] w-full" aria-hidden="true">
+        <div className="catalog-card__image-frame">
+          <Skeleton className="catalog-card__image-placeholder rounded-[12px] bg-transparent" />
+        </div>
+      </div>
       <CardContent className="flex flex-1 flex-col px-5 pb-0 pt-5">
         <Skeleton className="h-4 w-3/4" />
         <Skeleton className="mt-2 h-3.5 w-1/2" />
