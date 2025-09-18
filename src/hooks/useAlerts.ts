@@ -8,7 +8,7 @@ export interface AlertItem {
   supplier: string
   sku: string
   summary: string
-  severity: 'low' | 'medium' | 'high'
+  severity: 'high' | 'medium' | 'info'
   created_at: string
 }
 
@@ -18,21 +18,13 @@ export function useAlerts() {
   const { data: alerts, isLoading } = useQuery<AlertItem[]>({
     queryKey: [...queryKeys.dashboard.alerts(), profile?.tenant_id],
     queryFn: async () => {
-      let query = supabase
-        .from('alerts')
-        .select('id, supplier, sku, summary, severity, created_at')
-        .order('created_at', { ascending: false })
-        .limit(5)
-
-      if (profile?.tenant_id) {
-        query = query.eq('tenant_id', profile.tenant_id)
-      } else {
-        query = query.is('tenant_id', null)
+      try {
+        // Return empty array since alerts table doesn't exist yet
+        return []
+      } catch (error) {
+        console.warn('Error fetching alerts:', error)
+        return []
       }
-
-      const { data, error } = await query
-      if (error) throw error
-      return data || []
     },
     enabled: !!profile
   })

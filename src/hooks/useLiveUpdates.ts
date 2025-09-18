@@ -16,26 +16,13 @@ export function useLiveUpdates() {
   const { data: updates, isLoading } = useQuery<LiveUpdate[]>({
     queryKey: [...queryKeys.dashboard.liveUpdates(), profile?.tenant_id],
     queryFn: async () => {
-      const query = supabase
-        .from('connector_runs')
-        .select('id, status, created_at, supplier:suppliers(name)')
-        .order('created_at', { ascending: false })
-        .limit(10)
-
-      const { data, error } = profile?.tenant_id
-        ? await query.eq('tenant_id', profile.tenant_id)
-        : await query.is('tenant_id', null)
-
-      if (error) throw error
-
-      return (
-        data?.map((r: any) => ({
-          id: r.id,
-          type: 'run',
-          message: `${r.supplier?.name ?? 'Connector'} ${r.status}`,
-          created_at: r.created_at,
-        })) || []
-      )
+      try {
+        // Return empty array since connector_runs table doesn't exist yet
+        return []
+      } catch (error) {
+        console.warn('Error fetching live updates:', error)
+        return []
+      }
     },
     enabled: !!profile,
     refetchInterval: 10000,
