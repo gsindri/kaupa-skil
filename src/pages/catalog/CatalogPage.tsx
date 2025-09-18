@@ -171,7 +171,7 @@ export default function CatalogPage() {
     return 'grid'
   })
   const viewKey = `catalog:${view}`
-  const [products, setProducts] = useState<any[]>([])
+  // Removed separate products state - using data directly from hooks
   const [selected, setSelected] = useState<string[]>([])
   const [bulkMode, setBulkMode] = useState(false)
   const { addItem } = useCart()
@@ -245,12 +245,8 @@ export default function CatalogPage() {
     }
   }, [view])
 
-  const unconnectedPercentage = useMemo(() => {
-    if (!products.length) return 0
-    const missing = products.filter(p => !p.suppliers?.length).length
-    return (missing / products.length) * 100
-  }, [products])
-  const hideConnectPill = unconnectedPercentage > 70
+  // Will be calculated after products are defined
+  // hideConnectPill will be calculated after products are defined
 
   // Read initial sort from URL on mount
   useEffect(() => {
@@ -440,22 +436,21 @@ export default function CatalogPage() {
   const publicQuery = useCatalogProducts(publicFilters, sortOrder)
   const orgQuery = useOrgCatalog(orgId, orgFilters, sortOrder)
 
-  const {
-    data: publicData,
-    nextCursor: publicNext,
-    isFetching: publicFetching,
-    error: publicError,
-    total: publicTotal,
-    loadMore: publicLoadMore,
-  } = publicQuery
-  const {
-    data: orgData,
-    nextCursor: orgNext,
-    isFetching: orgFetching,
-    error: orgError,
-    total: orgTotal,
-    loadMore: orgLoadMore,
-  } = orgQuery
+  // Use data directly from the appropriate hook
+  const currentQuery = orgId ? orgQuery : publicQuery
+  const products = currentQuery.data || []
+  const nextCursor = currentQuery.nextCursor
+  const totalCount = currentQuery.total
+  const isFetching = currentQuery.isFetching
+  const error = currentQuery.error
+
+  const unconnectedPercentage = useMemo(() => {
+    if (!products.length) return 0
+    const missing = products.filter(p => !p.supplier_ids?.length).length
+    return (missing / products.length) * 100
+  }, [products])
+  
+  const hideConnectPill = unconnectedPercentage > 70
 
   useEffect(() => {
     logFilter({
@@ -497,30 +492,14 @@ export default function CatalogPage() {
   }, [sortOrder])
 
   useEffect(() => {
-    if (publicError) {
-      console.error(publicError)
-      AnalyticsTracker.track('catalog_public_error', {
-        message: String(publicError),
+    if (error) {
+      console.error(error)
+      AnalyticsTracker.track('catalog_error', {
+        message: String(error),
+        orgId: orgId || 'public',
       })
     }
-  }, [publicError])
-
-  useEffect(() => {
-    if (orgError) {
-      console.error(orgError)
-      AnalyticsTracker.track('catalog_org_error', {
-        message: String(orgError),
-      })
-    }
-  }, [orgError])
-
-  // Use data directly from hooks (they now handle accumulation internally)
-  useEffect(() => {
-    const gotOrg = Array.isArray(orgData) && orgData.length > 0
-    const data = gotOrg ? orgData : publicData
-    
-    setProducts(data || [])
-  }, [orgData, publicData])
+  }, [error, orgId])
 
   useEffect(() => {
     if (
@@ -548,19 +527,16 @@ export default function CatalogPage() {
     sortOrder,
   ])
 
-  const gotOrg = Array.isArray(orgData) && orgData.length > 0
-  const gotPublic = Array.isArray(publicData) && publicData.length > 0
+  const isLoading = isFetching
+  const loadingMore = isLoading && nextCursor !== null
 
-  const isLoading = gotOrg ? orgQuery.isFetching : publicQuery.isFetching
-  const loadingMore = isLoading && (gotOrg ? orgNext : publicNext) !== null
-
-  const loadMore = useCallback(() => {
-    const gotOrg = Array.isArray(orgData) && orgData.length > 0
-    const loadMoreFn = gotOrg ? orgLoadMore : publicLoadMore
-    if (loadMoreFn && !loadingMore) {
-      loadMoreFn()
+  const handleLoadMore = useCallback(() => {
+    console.log('CatalogPage: handleLoadMore called, nextCursor:', nextCursor)
+    if (currentQuery.hasNextPage && !currentQuery.isFetchingNextPage) {
+      console.log('CatalogPage: Calling loadMore')
+      currentQuery.loadMore()
     }
-  }, [orgData, orgLoadMore, publicLoadMore, loadingMore])
+  }, [nextCursor, currentQuery])
 
   const sortedProducts = useMemo(() => {
     if (!tableSort) return products
@@ -576,8 +552,8 @@ export default function CatalogPage() {
       let bv: any
       switch (tableSort.key) {
         case 'supplier':
-          av = (a.suppliers?.[0] || '').toLowerCase()
-          bv = (b.suppliers?.[0] || '').toLowerCase()
+          av = (a.supplier_ids?.[0] || '').toLowerCase()
+          bv = (b.supplier_ids?.[0] || '').toLowerCase()
           break
         case 'price':
           av = a.best_price ?? (tableSort.direction === 'asc' ? Infinity : -Infinity)
@@ -869,12 +845,7 @@ export default function CatalogPage() {
     }
   }, [headerLocked])
 
-  const total =
-    gotOrg && typeof orgTotal === 'number'
-      ? orgTotal
-      : gotPublic && typeof publicTotal === 'number'
-        ? publicTotal
-        : null
+  const total = totalCount
 
   return (
     <AppLayout
@@ -895,8 +866,7 @@ export default function CatalogPage() {
           setSortOrder={setSortOrder}
           view={view}
           setView={setView}
-          publicError={publicError}
-          orgError={orgError}
+          error={error}
           showFilters={showFilters}
           setShowFilters={setShowFilters}
           focusedFacet={focusedFacet}
@@ -962,8 +932,8 @@ export default function CatalogPage() {
               isBulkMode={bulkMode}
             />
             <InfiniteSentinel
-              onVisible={loadMore}
-              disabled={!(gotOrg ? orgNext : publicNext) || loadingMore}
+              onVisible={handleLoadMore}
+              disabled={!nextCursor || loadingMore}
               root={null}
               rootMargin="800px"
             />
@@ -975,7 +945,7 @@ export default function CatalogPage() {
         <CatalogGrid
           products={sortedProducts}
           onAddToCart={handleAdd}
-          onNearEnd={(gotOrg ? orgNext : publicNext) ? loadMore : undefined}
+          onNearEnd={nextCursor ? handleLoadMore : undefined}
           showPrice
         />
       )}
@@ -998,8 +968,7 @@ interface FiltersBarProps {
   setSortOrder: (v: SortOrder) => void
   view: 'grid' | 'list'
   setView: (v: 'grid' | 'list') => void
-  publicError: unknown
-  orgError: unknown
+  error: unknown
   showFilters: boolean
   setShowFilters: (v: boolean) => void
   focusedFacet: keyof FacetFilters | null
@@ -1024,8 +993,7 @@ function FiltersBar({
   setSortOrder,
   view,
   setView,
-  publicError,
-  orgError,
+  error,
   showFilters,
   setShowFilters,
   focusedFacet,
@@ -1186,14 +1154,14 @@ function FiltersBar({
         scrolled && 'before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-white/16 before:opacity-70 before:content-[""]',
       )}
     >
-      {(publicError || orgError) && (
+      {error && (
         <div className={cn(containerClass, 'py-3')}>
           <Alert
             variant="destructive"
             className="rounded-[var(--ctrl-r,12px)] bg-white/12 text-[color:var(--ink)] ring-1 ring-inset ring-white/15 shadow-[0_16px_36px_rgba(3,10,22,0.45)] backdrop-blur-xl"
           >
             <AlertCircle className="h-4 w-4" />
-            <AlertDescription>{String(publicError || orgError)}</AlertDescription>
+            <AlertDescription>{String(error)}</AlertDescription>
           </Alert>
         </div>
       )}

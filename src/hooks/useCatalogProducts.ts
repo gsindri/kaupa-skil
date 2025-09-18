@@ -92,16 +92,17 @@ export function useCatalogProducts(filters: PublicCatalogFilters, sort: SortOrde
   const loadMore = useCallback(() => {
     if (nextCursor && !query.isFetching) {
       console.log('useCatalogProducts: Loading more with cursor:', nextCursor)
-      // Trigger a new query with the next cursor
+      // Use the correct query key format and trigger a new fetch
+      const newFilters = { ...baseFilters, cursor: nextCursor }
       queryClient.fetchQuery({
-        queryKey: ['catalog', baseStateHash, nextCursor],
-        queryFn: () => fetchPublicCatalogItems({ ...baseFilters, cursor: nextCursor }, sort),
+        queryKey: ['catalog', stateKeyFragment({ filters: newFilters, sort } as any), nextCursor],
+        queryFn: () => fetchPublicCatalogItems(newFilters, sort),
         staleTime: 30_000,
       });
     } else {
       console.log('useCatalogProducts: Cannot load more - nextCursor:', nextCursor, 'isFetching:', query.isFetching)
     }
-  }, [nextCursor, query.isFetching, queryClient, baseStateHash, baseFilters, sort]);
+  }, [nextCursor, query.isFetching, queryClient, baseFilters, sort]);
 
   return {
     ...query,

@@ -88,11 +88,11 @@ export function useOrgCatalog(
 
   const loadMore = useCallback(() => {
     if (nextCursor && !query.isFetching) {
-      // Trigger a new query with the next cursor
-      queryClient.fetchQuery({
-        queryKey: ['orgCatalog', orgId, baseFilters, sort, nextCursor],
-        queryFn: () => fetchOrgCatalogItems(orgId, { ...baseFilters, cursor: nextCursor }, sort),
-      });
+      console.log('useOrgCatalog: Loading more with cursor:', nextCursor)
+      // Update the filters to include the cursor, which will trigger a new query
+      queryClient.invalidateQueries({ 
+        queryKey: ['orgCatalog', orgId, { ...baseFilters, cursor: nextCursor }, sort, nextCursor] 
+      })
     }
   }, [nextCursor, query.isFetching, queryClient, orgId, baseFilters, sort]);
 
