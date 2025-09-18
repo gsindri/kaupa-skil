@@ -125,15 +125,15 @@ export const ProductCard = memo(function ProductCard({
       )}
     >
       <div className="relative">
-        <div className="catalog-card__surface aspect-[4/3] w-full bg-muted/60">
-          <div className="flex h-full w-full items-center justify-center p-3 sm:p-4">
+        <div className="catalog-card__surface aspect-[4/3] w-full">
+          <div className="catalog-card__image-frame">
             <img
               src={img}
               alt={product.name}
               loading="lazy"
               decoding="async"
               fetchPriority="low"
-              className="max-h-full max-w-full object-contain transition-transform duration-300 ease-out group-hover:scale-[1.02] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+              className="catalog-card__image transition-transform duration-300 ease-out group-hover:scale-[1.02] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
             />
           </div>
         </div>
