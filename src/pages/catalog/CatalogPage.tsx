@@ -220,10 +220,7 @@ export default function CatalogPage() {
   const stringifiedFilters = useMemo(() => JSON.stringify(filters), [filters])
   const [bannerDismissed, setBannerDismissed] = useState(false)
   const headerRef = useRef<HTMLDivElement>(null)
-  const [headerLocked, setHeaderLocked] = useState(false)
-  const lockCount = useRef(0)
   const [scrolled, setScrolled] = useState(false)
-  const viewSwapQuietUntil = useRef(0)
 
   useEffect(() => {
     try {
@@ -238,25 +235,15 @@ export default function CatalogPage() {
   }, [viewKey])
 
   useEffect(() => {
-    viewSwapQuietUntil.current = performance.now() + 250
-  }, [view])
-
-  useEffect(() => {
-    const el = headerRef.current
-    if (!el) return
-
-    el.style.setProperty('--hdr-p', '0')
-    document.documentElement.style.setProperty('--hdr-p', '0')
-
-    requestAnimationFrame(() => {
-      const H = Math.round(el.getBoundingClientRect().height)
-      document.documentElement.style.setProperty('--header-h', `${H}px`)
-    })
-
-    return () => {
-      document.documentElement.style.setProperty('--hdr-p', '0')
+    if (typeof window === 'undefined') return
+    const updateScrolled = () => {
+      const shouldBeScrolled = window.scrollY > 0
+      setScrolled(prev => (prev === shouldBeScrolled ? prev : shouldBeScrolled))
     }
-  }, [view])
+    updateScrolled()
+    window.addEventListener('scroll', updateScrolled, { passive: true })
+    return () => window.removeEventListener('scroll', updateScrolled)
+  }, [])
 
   // Will be calculated after products are defined
   // hideConnectPill will be calculated after products are defined
@@ -642,221 +629,11 @@ export default function CatalogPage() {
     setTimeout(() => setAddingId(null), 500)
   }
 
-  const handleLockChange = (locked: boolean) => {
-    lockCount.current += locked ? 1 : -1
-    setHeaderLocked(lockCount.current > 0)
-  }
-
   useEffect(() => {
-    // Respect reduced motion
-    const reduceMotion =
-      typeof window !== 'undefined' &&
-      typeof window.matchMedia === 'function' &&
-      window.matchMedia('(prefers-reduced-motion: reduce)').matches
-
-    const el = headerRef.current
-    if (!el) return
-
-    // Single source of truth for header height.
-    let H = Math.round(el.getBoundingClientRect().height)
-    const setHeaderVars = () => {
-      H = Math.round(el.getBoundingClientRect().height)
-      document.documentElement.style.setProperty('--header-h', `${H}px`)
-    }
-    setHeaderVars()
-    const ro = new ResizeObserver(setHeaderVars)
-    ro.observe(el)
-    window.addEventListener('resize', setHeaderVars)
-
-    const isTypeable = (el: Element | null) =>
-      !!el &&
-      ((el instanceof HTMLInputElement) ||
-        (el instanceof HTMLTextAreaElement) ||
-        (el as HTMLElement).isContentEditable ||
-        el.getAttribute('role') === 'combobox')
-
-    let interactionLockUntil = 0
-    const lockFor = (ms: number) => {
-      interactionLockUntil = performance.now() + ms
-    }
-    const handlePointerDown = () => lockFor(180)
-    el.addEventListener('pointerdown', handlePointerDown, { passive: true })
-
-    // Tunables
-    const PROGRESS_START = 10      // px before progressive begins
-    const GAP             = 24      // latch hysteresis around H
-    const MIN_DY          = 0.25    // ignore micro-noise
-    const SNAP_THRESHOLD  = 3       // accumulated px to flip in snap mode
-    const SNAP_COOLDOWN_MS = 200    // minimum time between opposite snaps
-    const REVEAL_DIST     = 32      // px upward after hide before show allowed
-    const REHIDE_DIST     = 32      // px downward after show before hide allowed
-
-    let lastY  = window.scrollY
-    let acc    = 0                  // accumulator for snap sensitivity
-    let lastDir: -1|0|1 = 0
-    let lock: 'none'|'visible'|'hidden' = 'none'
-    let prevP = -1                  // last applied p (avoid redundant style writes)
-    let lastSnapDir: -1 | 0 | 1 = 0 // -1 visible, 1 hidden
-    let lastSnapTime = 0
-    let lastSnapY = 0
-
-    const setP = (p: number) => {
-      // snap near extremes to avoid micro "reload"
-      const v = p < 0.02 ? 0 : p > 0.98 ? 1 : p
-      if (v !== prevP) {
-        const val = v.toFixed(3)
-        el.style.setProperty('--hdr-p', val)
-        document.documentElement.style.setProperty('--hdr-p', val)
-        prevP = v
-      }
-    }
-
-    const isPinned = () => {
-      const now = performance.now()
-      const ae = document.activeElement
-      const menuOpen = el.querySelector('[data-open="true"]')
-      return (
-        window.scrollY < 1 ||
-        headerLocked ||
-        isTypeable(ae) ||
-        !!menuOpen ||
-        now < interactionLockUntil
-      )
-    }
-
-    const onScroll = () => {
-      const y  = Math.max(0, window.scrollY)
-      const dy = y - lastY
-      lastY = y
-      setScrolled(y > 0)
-
-      if (reduceMotion) { setP(0); return }
-
-      if (isPinned()) {
-        lock = 'none'; acc = 0; lastDir = 0; setP(0)
-        return
-      }
-
-      // Release latches only when safely past the boundary.
-      if (lock === 'visible' && y <= H - GAP) lock = 'none'
-      if (lock === 'hidden'  && y >= H + GAP) lock = 'none'
-
-      // Progressive zone with soft start and direction gating.
-      if (y < H) {
-        const dir: -1|0|1 = Math.abs(dy) < MIN_DY ? 0 : (dy > 0 ? 1 : -1)
-
-        // If we're scrolling up (or holding still), keep header fully visible.
-        if (lock === 'visible' || dir <= 0) {
-          acc = 0; lastDir = dir; setP(0)
-          return
-        }
-
-        // Only when moving down do we start progressive fade.
-        const span = Math.max(1, H - PROGRESS_START)
-        const t = Math.max(0, y - PROGRESS_START) / span // 0..1
-        const p = 1 - Math.pow(1 - t, 3) // easeOutCubic
-        acc = 0; lastDir = dir; setP(p)
-        return
-      }
-
-      // Snap zone (y >= H): sensitive but stable using cooldown + distance hysteresis.
-      if (lock === 'hidden') { setP(1); return }
-
-      const dir: -1|0|1 = Math.abs(dy) < MIN_DY ? 0 : (dy > 0 ? 1 : -1)
-      if (dir !== 0) {
-        if (dir !== lastDir) acc = 0
-        acc += dy
-        lastDir = dir
-
-        const now = performance.now()
-
-        // Try to hide (downward snap)
-        if (acc >= SNAP_THRESHOLD) {
-          if (
-            lastSnapDir === -1 &&
-            (now - lastSnapTime < SNAP_COOLDOWN_MS || (y - lastSnapY) < REHIDE_DIST)
-          ) {
-            // hold visible
-          } else {
-            setP(1)
-            lock = 'hidden'
-            acc = 0
-            lastSnapDir = 1
-            lastSnapTime = now
-            lastSnapY = y
-            return
-          }
-        }
-
-        // Try to show (upward snap)
-        if (acc <= -SNAP_THRESHOLD) {
-          if (
-            lastSnapDir === 1 &&
-            (now - lastSnapTime < SNAP_COOLDOWN_MS || (lastSnapY - y) < REVEAL_DIST)
-          ) {
-            // keep hidden
-          } else {
-            setP(0)
-            lock = 'visible'
-            acc = 0
-            lastSnapDir = -1
-            lastSnapTime = now
-            lastSnapY = y
-            return
-          }
-        }
-      }
-    }
-
-    const listener = () => requestAnimationFrame(onScroll)
-    window.addEventListener('scroll', listener, { passive: true })
-    // If you keep wheel/touch preempts, guard them so they don't fight the rAF:
-    const wheel = (e: WheelEvent) => {
-      if (performance.now() < viewSwapQuietUntil.current) return
-      if (window.scrollY >= H + GAP) {
-        const now = performance.now()
-        if (e.deltaY > 0) {
-          // down → hide
-          if (!(lastSnapDir === -1 && (now - lastSnapTime < SNAP_COOLDOWN_MS))) {
-            setP(1)
-            lock = 'hidden'
-            lastSnapDir = 1
-            lastSnapTime = now
-            lastSnapY = window.scrollY
-          }
-        } else if (e.deltaY < 0) {
-          // up → show
-          if (!(lastSnapDir === 1 && (now - lastSnapTime < SNAP_COOLDOWN_MS))) {
-            setP(0)
-            lock = 'visible'
-            lastSnapDir = -1
-            lastSnapTime = now
-            lastSnapY = window.scrollY
-          }
-        }
-      }
-    }
-    window.addEventListener('wheel', wheel, { passive: true })
-
-    // Initial apply
-    listener()
-
-    return () => {
-      document.documentElement.style.setProperty('--hdr-p', '0')
-      window.removeEventListener('scroll', listener)
-      window.removeEventListener('wheel', wheel)
-      window.removeEventListener('resize', setHeaderVars)
-      el.removeEventListener('pointerdown', handlePointerDown)
-      ro.disconnect()
-    }
-  }, [headerLocked, view])
-
-  useEffect(() => {
-    if (headerLocked) {
-      headerRef.current?.style.setProperty('--hdr-p', '0')
-      document.documentElement.style.setProperty('--hdr-p', '0')
-    }
-  }, [headerLocked])
+    if (typeof window === 'undefined') return
+    const shouldBeScrolled = window.scrollY > 0
+    setScrolled(prev => (prev === shouldBeScrolled ? prev : shouldBeScrolled))
+  }, [view])
 
   const total = totalCount
 
@@ -884,7 +661,6 @@ export default function CatalogPage() {
           setShowFilters={setShowFilters}
           focusedFacet={focusedFacet}
           setFocusedFacet={setFocusedFacet}
-          onLockChange={handleLockChange}
           total={total}
           scrolled={scrolled}
         />
@@ -986,7 +762,7 @@ interface FiltersBarProps {
   setShowFilters: (v: boolean) => void
   focusedFacet: keyof FacetFilters | null
   setFocusedFacet: (f: keyof FacetFilters | null) => void
-  onLockChange: (locked: boolean) => void
+  onLockChange?: (locked: boolean) => void
   total: number | null
   scrolled: boolean
 }
@@ -1022,7 +798,7 @@ function FiltersBar({
     facet => {
       setFocusedFacet(facet)
       setShowFilters(true)
-      onLockChange(true)
+      onLockChange?.(true)
     },
   )
   const activeFacetCount = chips.length
@@ -1112,7 +888,7 @@ function FiltersBar({
       setFocusedFacet(null)
     }
     setShowFilters(next)
-    onLockChange(next)
+    onLockChange?.(next)
   }, [showFilters, facetFilters, setFocusedFacet, setShowFilters, onLockChange])
 
   const containerClass = cn(
@@ -1140,7 +916,7 @@ function FiltersBar({
       if ((event.metaKey || event.ctrlKey) && key === 'k') {
         if (isEditableElement(active)) return
         event.preventDefault()
-        onLockChange(true)
+        onLockChange?.(true)
         searchRef.current?.focus()
         return
       }
@@ -1205,8 +981,8 @@ function FiltersBar({
                     value={searchValue}
                     onChange={handleSearchChange}
                     onKeyDown={handleSearchKeyDown}
-                    onFocus={() => onLockChange(true)}
-                    onBlur={() => onLockChange(false)}
+                    onFocus={() => onLockChange?.(true)}
+                    onBlur={() => onLockChange?.(false)}
                     className="h-[var(--ctrl-h,40px)] w-full rounded-[var(--ctrl-r,12px)] bg-white pl-12 pr-12 text-sm font-medium text-slate-900 placeholder:text-slate-500 ring-1 ring-inset ring-[color:var(--ring-idle)] shadow-[0_10px_32px_rgba(7,18,30,0.28)] transition duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent hover:ring-[color:var(--ring-hover)] motion-reduce:transition-none"
                   />
                 </TooltipTrigger>
