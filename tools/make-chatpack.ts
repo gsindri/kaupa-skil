@@ -81,7 +81,7 @@ const PRESETS: Record<string, PresetConfig> = {
       'src/components/dashboard/**/*{Supplier*,Connector*,Anomaly*,Health*}.{ts,tsx}',
       'src/components/orders/**/*{Supplier*,Order*}.{ts,tsx}',
       'src/components/onboarding/steps/*Supplier*.tsx',
-      'src/components/search/*{HeaderSearch,SearchResultsPopover,SearchInput}*.tsx',
+      'src/components/search/*HeaderSearch*.tsx',
 
       // Hooks, contexts, services, state, lib, utils
       'src/contexts/**/BasketProvider.tsx',
