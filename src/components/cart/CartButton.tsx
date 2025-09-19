@@ -110,16 +110,17 @@ export function CartButton({
     'aria-controls': 'cart-drawer'
   }
 
-  const iconSizeClass = size === 'sm' ? 'h-5 w-5' : 'h-6 w-6'
+  const iconSizeClass = size === 'sm' ? 'h-8 w-8' : 'h-10 w-10'
   const trigger = (
     <button
       type="button"
       onClick={handleOpenCart}
       className={cn(
-        'group inline-flex items-center gap-2 rounded-none border-0 bg-transparent p-0 text-sm font-medium leading-tight text-[inherit] transition-opacity duration-150 ease-out hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent',
+        'group inline-flex items-center rounded-none border-0 bg-transparent p-0 text-sm font-medium leading-tight text-[inherit] transition-opacity duration-150 ease-out hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent',
         variant === 'toolbar' && 'text-[color:var(--ink-dim,#cfd7e4)] hover:text-white',
         variant === 'ghost' && 'text-foreground hover:text-foreground/80',
         variant === 'primary' && 'text-primary hover:text-primary/80',
+        size === 'sm' ? 'gap-2' : 'gap-3',
         size === 'sm' ? 'text-sm' : 'text-base',
         className
       )}
