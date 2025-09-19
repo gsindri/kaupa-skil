@@ -49,7 +49,7 @@ export function PrimaryNavRail() {
               to={to}
               aria-current={active ? 'page' : undefined}
               className={clsx(
-                'group relative flex h-[64px] w-full flex-col items-center justify-center gap-1.5 rounded-2xl',
+                'group relative flex h-[64px] w-full flex-col items-center justify-center gap-2.5 rounded-2xl',
                 'px-2 text-center transition-colors duration-200',
                 'text-white/60 hover:text-white/90 hover:bg-white/5',
                 focusRingClass,

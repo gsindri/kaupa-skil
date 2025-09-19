@@ -86,7 +86,7 @@ export function NavIcon({ Icon, active, size = 36, className, label, hovered }: 
   return (
     <span
       className={cn(
-        'nav-icon grid h-8 w-8 place-items-center rounded-xl transition-transform duration-200',
+        'nav-icon flex h-7 w-7 items-center justify-center rounded-xl transition-transform duration-200',
         'overflow-visible',
         active ? 'scale-[1.02]' : 'group-hover:scale-[1.02]'
       )}
