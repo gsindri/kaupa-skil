@@ -63,7 +63,12 @@ export function TenantSwitcher() {
         .eq('user_id', user.id)
 
       if (error) throw error
-      return data as Membership[]
+      
+      // Transform the data to match our expected type (Supabase returns tenant as array)
+      return (data || []).map(item => ({
+        ...item,
+        tenant: Array.isArray(item.tenant) && item.tenant.length > 0 ? item.tenant[0] : null
+      })) as Membership[]
     },
     enabled: !!user?.id,
   })
