@@ -1,4 +1,4 @@
-import { Check, Languages, ChevronDown } from 'lucide-react'
+import { Check, ChevronDown } from 'lucide-react'
 
 import {
   DropdownMenu,
@@ -14,7 +14,6 @@ import {
   navTextButtonFocusRingClass,
   navTextButtonPillClass,
   navTextCaretClass,
-  navTextIconClass,
 } from './navStyles'
 
 interface LanguageSwitcherProps {
@@ -23,8 +22,8 @@ interface LanguageSwitcherProps {
 }
 
 const languageOptions = [
-  { value: 'is', label: 'Icelandic', code: 'IS' },
-  { value: 'en', label: 'English', code: 'EN' },
+  { value: 'is', label: 'Icelandic', flag: 'is' },
+  { value: 'en', label: 'English', flag: 'gb' },
 ] as const
 
 export function LanguageSwitcher({ className, triggerClassName }: LanguageSwitcherProps) {
@@ -44,7 +43,18 @@ export function LanguageSwitcher({ className, triggerClassName }: LanguageSwitch
             aria-label={`Change language (currently ${activeLanguage.label})`}
           >
             <span className={navTextButtonPillClass} aria-hidden="true" />
-            <Languages className={navTextIconClass} aria-hidden="true" />
+            <span
+              className={cn(
+                'fi',
+                `fi-${activeLanguage.flag}`,
+                'shrink-0 overflow-hidden rounded-[4px] text-[16px]',
+                'ring-1 ring-inset ring-[color:var(--surface-ring)]',
+                'transition-transform duration-150 ease-out',
+                'group-hover:translate-x-[1px] group-active:translate-x-[2px]',
+                'motion-reduce:transition-none motion-reduce:group-hover:translate-x-0 motion-reduce:group-active:translate-x-0',
+              )}
+              aria-hidden="true"
+            />
             <span className="truncate">{activeLanguage.label}</span>
             <ChevronDown className={navTextCaretClass} aria-hidden="true" />
             <span className={navTextButtonFocusRingClass} aria-hidden="true" />
@@ -65,8 +75,16 @@ export function LanguageSwitcher({ className, triggerClassName }: LanguageSwitch
                   aria-checked={language === option.value}
                   className="tw-row text-left"
                 >
-                  <span className="flex h-5 w-5 items-center justify-center rounded-full border border-[color:var(--surface-ring)] text-[11px] font-semibold text-[color:var(--text-muted)]">
-                    {option.code}
+                  <span className="flex h-5 w-5 items-center justify-center">
+                    <span
+                      aria-hidden="true"
+                      className={cn(
+                        'fi',
+                        `fi-${option.flag}`,
+                        'block shrink-0 overflow-hidden rounded-[3px] text-[15px]',
+                        'ring-1 ring-inset ring-[color:var(--surface-ring)]',
+                      )}
+                    />
                   </span>
                   <span className="truncate">{option.label}</span>
                   <Check
