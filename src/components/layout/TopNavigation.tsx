@@ -1,5 +1,5 @@
 
-import React, { useEffect, useRef, useState, useLayoutEffect, useId } from 'react'
+import React, { useEffect, useRef, useState, useLayoutEffect, useId, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { DropdownMenu, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Building2, CircleUserRound, Keyboard, LifeBuoy, LogOut, ChevronDown, Check } from 'lucide-react'
@@ -140,7 +140,21 @@ export function TopNavigation() {
     }
   }
 
-  const displayName = profile?.full_name || user?.email?.split('@')[0] || 'User'
+  const rawDisplayName = profile?.full_name ?? user?.email?.split('@')[0] ?? 'User'
+  const displayName = useMemo(() => {
+    const trimmed = rawDisplayName?.trim()
+    if (!trimmed) return 'User'
+
+    if (trimmed === trimmed.toLowerCase()) {
+      return trimmed
+        .split(/\s+/)
+        .filter(Boolean)
+        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+        .join(' ')
+    }
+
+    return trimmed
+  }, [rawDisplayName])
   const displayEmail = profile?.email || user?.email || ''
   const userInitial = displayName[0]?.toUpperCase() || 'U'
   const accountMenuLabel = displayName
@@ -174,8 +188,8 @@ export function TopNavigation() {
         <TenantSwitcher />
       </div>
 
-      <nav aria-label="Global actions" className="ml-auto flex items-center gap-3">
-        <span className="whitespace-nowrap text-[13px] font-medium text-white/80">
+      <nav aria-label="Global actions" className="ml-auto flex items-center gap-[12px] lg:gap-[14px]">
+        <span className="inline-flex h-9 items-center whitespace-nowrap text-[13px] font-medium text-white/80">
           Search here →
         </span>
         <button
@@ -187,12 +201,12 @@ export function TopNavigation() {
           aria-label="Open search dialog"
           onClick={() => setSearchOpen(true)}
           title="Search (Ctrl/⌘ + K)"
-          className="group inline-flex items-center justify-center rounded-full border border-white/10 bg-white/5 p-1 transition-[background-color,border-color,transform] duration-fast ease-snap hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-4 focus-visible:ring-offset-transparent motion-safe:hover:-translate-y-[0.5px] motion-reduce:transform-none motion-reduce:hover:translate-y-0"
+          className="group inline-flex size-9 items-center justify-center rounded-full border border-white/10 bg-white/5 transition-[background-color,border-color,transform] duration-fast ease-snap hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-4 focus-visible:ring-offset-transparent motion-safe:hover:-translate-y-[0.5px] motion-reduce:transform-none motion-reduce:hover:translate-y-0"
         >
           <span className="sr-only">Open search dialog</span>
           <span
             aria-hidden="true"
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-[color:var(--ink-dim,#cfd7e4)] transition-colors duration-fast ease-snap group-hover:bg-white/15 group-hover:text-[color:var(--ink,#eaf0f7)]"
+            className="flex size-full items-center justify-center rounded-full bg-white/10 text-[color:var(--ink-dim,#cfd7e4)] transition-colors duration-fast ease-snap group-hover:bg-white/15 group-hover:text-[color:var(--ink,#eaf0f7)]"
           >
             <SearchSoft width={24} height={24} tone={0.18} />
           </span>
