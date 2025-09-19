@@ -16,7 +16,7 @@ type IconProps = {
   hovered?: boolean
 }
 
-export function NavIcon({ Icon, active, size = 36, className, label, hovered }: IconProps) {
+export function NavIcon({ Icon, active, size = 24, className, label, hovered }: IconProps) {
   const translateWrapperRef = useRef<HTMLSpanElement>(null)
   const [transforms, setTransforms] = useState({ scale: 1, translateX: 0, translateY: 0 })
   const [isMeasuring, setIsMeasuring] = useState(true)
@@ -84,13 +84,7 @@ export function NavIcon({ Icon, active, size = 36, className, label, hovered }: 
   }, [Icon, size])
 
   return (
-    <span
-      className={cn(
-        'nav-icon grid h-10 w-10 place-items-center rounded-xl transition-transform duration-200',
-        'overflow-visible',
-        active ? 'scale-[1.02]' : 'group-hover:scale-[1.02]'
-      )}
-    >
+    <span className={cn('nav-icon grid h-8 w-8 place-items-center overflow-visible')}>
       <span
         data-nav-icon-scale=""
         style={{
@@ -113,8 +107,10 @@ export function NavIcon({ Icon, active, size = 36, className, label, hovered }: 
             width={size}
             height={size}
             className={cn(
-              'pointer-events-auto transition-opacity duration-200',
-              active ? 'opacity-100' : 'opacity-75 group-hover:opacity-100',
+              'pointer-events-auto transition-colors duration-200',
+              active
+                ? 'text-white'
+                : 'text-white/65 group-hover:text-white/80',
               isMeasuring && 'opacity-0',
               className
             )}
