@@ -116,10 +116,10 @@ export function TenantSwitcher() {
           role="combobox"
           aria-expanded={open}
           aria-label="Switch workspace"
-          className={cn(navTextButtonClass, 'w-56 justify-between text-left')}
+          className={cn(navTextButtonClass, 'w-56 text-left')}
         >
           <span className={navTextButtonPillClass} aria-hidden="true" />
-          <span className="truncate text-left">{displayName}</span>
+          <span className="min-w-0 truncate text-left">{displayName}</span>
           <ChevronDown className={navTextCaretClass} aria-hidden="true" />
           <span className={navTextButtonFocusRingClass} aria-hidden="true" />
         </button>
