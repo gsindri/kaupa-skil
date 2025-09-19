@@ -43,14 +43,14 @@ export function SortDropdown({ value, onChange, className, onOpenChange }: SortD
         <button
           type="button"
           className={cn(
-            'inline-flex h-[var(--ctrl-h,40px)] items-center gap-3 rounded-[var(--ctrl-r,12px)] bg-[color:var(--chip-bg)] px-3 text-sm font-semibold text-[color:var(--ink)] ring-1 ring-inset ring-[color:var(--ring-idle)] shadow-[0_18px_36px_rgba(2,9,20,0.24)] backdrop-blur-xl transition duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-4 focus-visible:ring-offset-[color:var(--toolbar-bg)] hover:bg-[color:var(--chip-bg-hover)] hover:text-[color:var(--ink-hi)] hover:ring-[color:var(--ring-hover)] motion-reduce:transition-none',
+            'inline-flex h-[var(--ctrl-h,40px)] items-center gap-3 rounded-[var(--ctrl-r,12px)] bg-[color:var(--chip-bg)] px-3 text-sm font-semibold text-[color:var(--ink-hi)] ring-1 ring-inset ring-[color:var(--ring-idle)] shadow-[0_14px_30px_rgba(2,9,20,0.18)] backdrop-blur-xl transition duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-4 focus-visible:ring-offset-[color:var(--toolbar-bg)] hover:bg-[color:var(--chip-bg-hover)] hover:text-[color:var(--ink-hi)] hover:ring-[color:var(--ring-hover)] motion-reduce:transition-none',
             className,
           )}
           aria-label={`Sort by ${label}`}
           title={label}
         >
           <span className="truncate">{label}</span>
-          <CaretDown size={20} weight="bold" className="text-[color:var(--ink-dim)]" aria-hidden="true" />
+          <CaretDown size={20} weight="fill" className="text-[color:var(--ink-hi)]/70" aria-hidden="true" />
         </button>
       </DropdownMenuTrigger>
 

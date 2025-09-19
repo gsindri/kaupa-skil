@@ -19,15 +19,15 @@ export const ViewToggle = memo(function ViewToggle({ value, onChange }: ViewTogg
     'inline-flex h-full min-w-[var(--ctrl-h,40px)] items-center justify-center gap-2 px-3 text-sm font-semibold whitespace-nowrap transition duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent motion-reduce:transition-none'
 
   const activeClasses =
-    'bg-[color:var(--seg-active-bg)] text-[color:var(--ink-hi)] shadow-[0_16px_36px_rgba(3,10,26,0.38)]'
+    'bg-[color:var(--seg-active-bg)] text-[color:var(--ink-hi)] shadow-[0_12px_30px_rgba(3,10,26,0.3)]'
   const inactiveClasses =
-    'text-[color:var(--ink-dim)] hover:bg-[color:var(--chip-bg-hover)] hover:text-[color:var(--ink)]'
+    'text-[color:var(--ink-hi)]/80 hover:bg-[color:var(--chip-bg-hover)] hover:text-[color:var(--ink-hi)]'
 
   return (
     <div
       role="group"
       aria-label="Change catalog view"
-      className="inline-grid h-[var(--ctrl-h,40px)] grid-cols-2 overflow-hidden rounded-[var(--ctrl-r,12px)] bg-[color:var(--chip-bg)] ring-1 ring-inset ring-[color:var(--ring-idle)] shadow-[0_20px_40px_rgba(2,9,20,0.24)] backdrop-blur-xl transition duration-200 ease-out motion-reduce:transition-none"
+      className="inline-grid h-[var(--ctrl-h,40px)] grid-cols-2 overflow-hidden rounded-[var(--ctrl-r,12px)] bg-[color:var(--chip-bg)] ring-1 ring-inset ring-[color:var(--ring-idle)] shadow-[0_14px_30px_rgba(2,9,20,0.18)] backdrop-blur-xl transition duration-200 ease-out motion-reduce:transition-none"
     >
       <Tooltip>
         <TooltipTrigger asChild>
