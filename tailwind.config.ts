@@ -20,9 +20,9 @@ export default {
                 },
                extend: {
                         fontFamily: {
-                                sans: ['Red Hat Text', 'system-ui', 'Segoe UI', 'Roboto', 'Arial', 'sans-serif'],
-                                display: ['Red Hat Display', 'Red Hat Text', 'system-ui', 'Segoe UI', 'Roboto', 'Arial', 'sans-serif'],
-                                mono: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'monospace'],
+                                sans: ['"Red Hat Text"', 'system-ui', 'Segoe UI', 'Roboto', 'Arial', 'sans-serif'],
+                                display: ['"Red Hat Display"', '"Red Hat Text"', 'system-ui', 'Segoe UI', 'Roboto', 'Arial', 'sans-serif'],
+                                mono: ['"JetBrains Mono"', 'ui-monospace', 'SFMono-Regular', 'monospace'],
                         },
                         transitionDuration: {
                                 120: '120ms',
