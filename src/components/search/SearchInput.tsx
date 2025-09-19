@@ -36,13 +36,12 @@ export const SearchInput = React.forwardRef<HTMLInputElement, SearchInputProps>(
         className="relative rounded-full focus-within:shadow-[0_0_0_2px_var(--brand-accent)]"
         style={{ contain: 'layout paint' }}
       >
-        <button
-          type="button"
+        <div
+          className="absolute left-4 top-1/2 flex -translate-y-1/2 cursor-text items-center gap-2 text-slate-400"
           onMouseDown={(e) => {
             e.preventDefault()
             inputRef.current?.focus()
           }}
-          className="absolute left-4 top-1/2 -translate-y-1/2 flex cursor-text items-center gap-2 text-slate-400"
         >
           <span className="text-xs font-medium uppercase tracking-wide text-slate-400">
             Search here →
@@ -52,7 +51,7 @@ export const SearchInput = React.forwardRef<HTMLInputElement, SearchInputProps>(
           ) : (
             <Search className="h-5 w-5" strokeWidth={1.75} />
           )}
-        </button>
+        </div>
         <input
           ref={inputRef}
           role="combobox"

@@ -175,26 +175,26 @@ export function TopNavigation() {
       </div>
 
       <nav aria-label="Global actions" className="ml-auto flex items-center gap-3">
-        <button
-          ref={searchTriggerRef}
-          type="button"
-          aria-haspopup="dialog"
-          aria-keyshortcuts="/ meta+k control+k"
-          aria-describedby={searchShortcutDescriptionId}
-          onClick={() => setSearchOpen(true)}
-          title="Search (Ctrl/⌘ + K)"
-          className="group inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/5 pl-4 pr-2 text-[13px] font-medium text-white/80 transition-[background-color,border-color,transform] duration-fast ease-snap hover:bg-white/10 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-4 focus-visible:ring-offset-transparent motion-safe:hover:-translate-y-[0.5px] motion-reduce:transform-none motion-reduce:hover:translate-y-0"
+        <div
+          className="group inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/5 pl-4 pr-2 text-[13px] transition-[background-color,border-color,transform] duration-fast ease-snap hover:bg-white/10 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-cyan-400 has-[:focus-visible]:ring-offset-4 has-[:focus-visible]:ring-offset-transparent motion-safe:hover:-translate-y-[0.5px] motion-reduce:transform-none motion-reduce:hover:translate-y-0"
         >
-          <span className="whitespace-nowrap text-[13px] font-medium text-white/80 transition-colors duration-fast ease-snap group-hover:text-white">
+          <span className="whitespace-nowrap font-medium text-white/80 transition-colors duration-fast ease-snap group-hover:text-white">
             Search here →
           </span>
-          <span
-            aria-hidden="true"
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-[color:var(--ink-dim,#cfd7e4)] transition-colors duration-fast ease-snap group-hover:bg-white/15 group-hover:text-[color:var(--ink,#eaf0f7)]"
+          <button
+            ref={searchTriggerRef}
+            type="button"
+            aria-haspopup="dialog"
+            aria-keyshortcuts="/ meta+k control+k"
+            aria-describedby={searchShortcutDescriptionId}
+            aria-label="Open search dialog"
+            onClick={() => setSearchOpen(true)}
+            title="Search (Ctrl/⌘ + K)"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-[color:var(--ink-dim,#cfd7e4)] transition-colors duration-fast ease-snap group-hover:bg-white/15 group-hover:text-[color:var(--ink,#eaf0f7)] focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-4 focus-visible:ring-offset-transparent"
           >
             <SearchSoft width={24} height={24} tone={0.18} />
-          </span>
-        </button>
+          </button>
+        </div>
         <span id={searchShortcutDescriptionId} className="sr-only">
           Open search dialog. Shortcut: press / or {platformShortcut}.
         </span>
