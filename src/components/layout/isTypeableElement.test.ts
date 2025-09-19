@@ -12,6 +12,12 @@ describe('isTypeableElement', () => {
     expect(isTypeableElement(input)).toBe(true)
   })
 
+  it('ignores non-text input controls', () => {
+    const checkbox = document.createElement('input')
+    checkbox.type = 'checkbox'
+    expect(isTypeableElement(checkbox)).toBe(false)
+  })
+
   it('detects textareas', () => {
     const textarea = document.createElement('textarea')
     expect(isTypeableElement(textarea)).toBe(true)
@@ -36,6 +42,12 @@ describe('isTypeableElement', () => {
     button.setAttribute('role', 'combobox')
     button.setAttribute('aria-autocomplete', 'list')
     expect(isTypeableElement(button)).toBe(false)
+  })
+
+  it('ignores combobox containers without text affordances', () => {
+    const div = document.createElement('div')
+    div.setAttribute('role', 'combobox')
+    expect(isTypeableElement(div)).toBe(false)
   })
 
   it('accepts combobox roles when autocomplete is advertised', () => {
