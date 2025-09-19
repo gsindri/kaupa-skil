@@ -12,7 +12,6 @@ import { cn } from '@/lib/utils'
 import { HeaderSearch } from '@/components/search/HeaderSearch'
 import { HeildaLogo } from '@/components/branding/HeildaLogo'
 import { CartButton } from '@/components/cart/CartButton'
-import { IconButton } from '@/components/ui/IconButton'
 import { SearchSoft } from '@/components/icons-soft'
 import { useLanguage } from '@/contexts/LanguageProvider'
 import { PopCard } from './PopCard'
@@ -171,18 +170,26 @@ export function TopNavigation() {
       </div>
 
       <nav aria-label="Global actions" className="ml-auto flex items-center gap-3">
-        <IconButton
+        <button
           ref={searchTriggerRef}
-          label="Search"
-          aria-label={`Search (${platformShortcut} or /)`}
+          type="button"
           aria-haspopup="dialog"
           aria-keyshortcuts="/ meta+k control+k"
           aria-describedby={searchShortcutDescriptionId}
           onClick={() => setSearchOpen(true)}
           title="Search (Ctrl/⌘ + K)"
+          className="group inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/5 pl-4 pr-2 text-[13px] font-medium text-white/80 transition-[background-color,border-color,transform] duration-fast ease-snap hover:bg-white/10 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-4 focus-visible:ring-offset-transparent motion-safe:hover:-translate-y-[0.5px] motion-reduce:transform-none motion-reduce:hover:translate-y-0"
         >
-          <SearchSoft width={24} height={24} tone={0.18} />
-        </IconButton>
+          <span className="whitespace-nowrap text-[13px] font-medium text-white/80 transition-colors duration-fast ease-snap group-hover:text-white">
+            Search here →
+          </span>
+          <span
+            aria-hidden="true"
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-[color:var(--ink-dim,#cfd7e4)] transition-colors duration-fast ease-snap group-hover:bg-white/15 group-hover:text-[color:var(--ink,#eaf0f7)]"
+          >
+            <SearchSoft width={24} height={24} tone={0.18} />
+          </span>
+        </button>
         <span id={searchShortcutDescriptionId} className="sr-only">
           Open search dialog. Shortcut: press / or {platformShortcut}.
         </span>
