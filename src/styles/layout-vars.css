@@ -32,10 +32,11 @@
   --ring: var(--ring-idle);
   --focus: #28d7ff;
 
-  --z-rail: 60;   /* highest - sidebar always on top */
-  --z-stripe: 56; /* cyan stripe above header */
-  --z-header: 55;  /* header content on top */
-  --z-chrome: 50;  /* chrome background below header */
+  --z-rail: 60;      /* highest - sidebar always on top */
+  --z-stripe: 56;    /* cyan stripe above header */
+  --z-header: 55;    /* header content on top */
+  --z-chrome: 50;    /* chrome background below header */
+  --z-popover: 70;   /* overlay surfaces (menus, popovers) */
 
   /* Catalog toolbar tokens */
   --toolbar-ring: 0 0 0 1px rgba(255, 255, 255, 0.1) inset;
