@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils'
 import { AppChrome } from './AppChrome'
 import { PrimaryNavRail } from './PrimaryNavRail'
 import useHeaderScrollHide from './useHeaderScrollHide'
+import { isTypeableElement } from './isTypeableElement'
 
 interface FullWidthLayoutProps {
   children: React.ReactNode
@@ -27,13 +28,7 @@ export function FullWidthLayout({
     const el = internalHeaderRef.current
     const ae = document.activeElement
     const menuOpen = el?.querySelector('[data-open="true"]')
-    const isTypeable = (node: Element | null) =>
-      !!node &&
-      ((node instanceof HTMLInputElement) ||
-        (node instanceof HTMLTextAreaElement) ||
-        (node as HTMLElement).isContentEditable ||
-        node.getAttribute('role') === 'combobox')
-    return window.scrollY < 1 || !!menuOpen || isTypeable(ae)
+    return window.scrollY < 1 || !!menuOpen || isTypeableElement(ae)
   }, [])
   const handleLockChange = useHeaderScrollHide(internalHeaderRef, { isPinned })
   const setHeaderRef = (node: HTMLDivElement | null) => {
