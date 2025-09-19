@@ -49,18 +49,34 @@ function useRecentSearches(orgId: string) {
     }
   }, [key])
 
-  const add = (q: string) => {
-    if (!q) return
-    const next = [q, ...items.filter((i) => i !== q)].slice(0, 10)
-    setItems(next)
+  const persist = (value: string[]) => {
     try {
-      localStorage.setItem(key, JSON.stringify(next))
+      if (value.length === 0) {
+        localStorage.removeItem(key)
+      } else {
+        localStorage.setItem(key, JSON.stringify(value))
+      }
     } catch (_e) {
       // ignore
     }
   }
 
-  return { items, add }
+  const add = (q: string) => {
+    if (!q) return
+    const next = [q, ...items.filter((i) => i !== q)].slice(0, 10)
+    setItems(next)
+    persist(next)
+  }
+
+  const remove = (q: string) => {
+    if (!q) return
+    if (!items.includes(q)) return
+    const next = items.filter((i) => i !== q)
+    setItems(next)
+    persist(next)
+  }
+
+  return { items, add, remove }
 }
 
 type HeaderSearchMode = 'inline' | 'dialog'
@@ -78,7 +94,7 @@ export const HeaderSearch = React.forwardRef<HTMLInputElement, HeaderSearchProps
     const [expanded, setExpanded] = useState(false)
     const [scope, setScope] = useState<SearchScope>('all')
     const { sections, isLoading } = useGlobalSearch(query, scope)
-    const { items: recent, add: addRecent } = useRecentSearches('default')
+    const { items: recent, add: addRecent, remove: removeRecent } = useRecentSearches('default')
     const [activeIndex, setActiveIndex] = useState(0)
     const [activeDialogIndex, setActiveDialogIndex] = useState(0)
     const [internalDialogOpen, setInternalDialogOpen] = useState(false)
@@ -366,6 +382,7 @@ export const HeaderSearch = React.forwardRef<HTMLInputElement, HeaderSearchProps
           onSelectItem={handleSelect}
           recentSearches={recent}
           onRecentSelect={handleRecentSelect}
+          onRecentRemove={removeRecent}
         />
       </div>
     )

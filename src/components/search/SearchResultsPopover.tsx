@@ -19,6 +19,7 @@ interface SearchResultsPopoverProps {
   onSelectItem: (item: { id: string; name: string; section: string }) => void
   recentSearches: string[]
   onRecentSelect: (q: string) => void
+  onRecentRemove: (q: string) => void
   scope: SearchScope
   onScopeChange: (s: SearchScope) => void
 }
@@ -32,6 +33,7 @@ export function SearchResultsPopover({
   onSelectItem,
   recentSearches,
   onRecentSelect,
+  onRecentRemove,
   scope,
   onScopeChange
 }: SearchResultsPopoverProps) {
@@ -112,7 +114,7 @@ export function SearchResultsPopover({
         <div className="px-3 py-2 text-sm text-muted-foreground">No matches for '{query}'</div>
       )}
       {!query && (
-        <RecentSearches items={recentSearches} onSelect={onRecentSelect} />
+        <RecentSearches items={recentSearches} onSelect={onRecentSelect} onRemove={onRecentRemove} />
       )}
     </div>
   )
