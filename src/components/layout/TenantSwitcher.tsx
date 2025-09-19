@@ -132,12 +132,12 @@ export function TenantSwitcher() {
             placeholder="Search workspaces..."
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            className="h-9 w-full rounded-lg border border-[color:var(--surface-ring)] bg-transparent px-3 text-[14px] text-[color:var(--text)] placeholder:text-[color:var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[color:var(--brand-accent)]"
+            className="h-11 w-full rounded-lg border border-[color:var(--surface-ring)] bg-transparent px-3 text-[14px] text-[color:var(--text)] placeholder:text-[color:var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[color:var(--brand-accent)]"
             type="search"
           />
         </div>
 
-        <div className="tw-label">WORKSPACES</div>
+        <div className="tw-label normal-case">Workspaces</div>
         <div className="flex flex-col gap-1 px-1">
           {showPersonal && (
             <DropdownMenuItem
@@ -158,8 +158,8 @@ export function TenantSwitcher() {
                 </div>
                 <Check
                   className={cn(
-                    'size-4 text-[color:var(--brand-accent)] transition-opacity',
-                    !profile?.tenant_id ? 'opacity-100' : 'opacity-0',
+                    'size-4 self-baseline text-[color:var(--brand-accent)] transition-opacity',
+                    !profile?.tenant_id ? 'opacity-80' : 'opacity-0',
                   )}
                 />
               </button>
@@ -195,8 +195,8 @@ export function TenantSwitcher() {
                   </div>
                   <Check
                     className={cn(
-                      'size-4 text-[color:var(--brand-accent)] transition-opacity',
-                      isCurrent ? 'opacity-100' : 'opacity-0',
+                      'size-4 self-baseline text-[color:var(--brand-accent)] transition-opacity',
+                      isCurrent ? 'opacity-80' : 'opacity-0',
                     )}
                   />
                 </button>
@@ -213,7 +213,7 @@ export function TenantSwitcher() {
 
         <div className="pop-div my-2" />
 
-        <div className="tw-label">ACTIONS</div>
+        <div className="tw-label normal-case">Actions</div>
         <div className="flex flex-col gap-1 px-1">
           <DropdownMenuItem
             onSelect={() => {

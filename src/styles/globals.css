@@ -146,7 +146,7 @@
   text-transform:uppercase;
 }
 .tw-label{ padding:0 0.5rem 0.25rem; }
-.pop-div{ height:1px; background:var(--surface-ring); }
+.pop-div{ height:1px; background:color-mix(in oklab, var(--surface-ring) 60%, transparent); }
 
 /* Selected row */
 .pop-item,
