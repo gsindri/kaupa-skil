@@ -2,7 +2,7 @@
 import React, { useEffect, useRef, useState, useLayoutEffect, useId, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { DropdownMenu, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import { Building2, CircleUserRound, Keyboard, LifeBuoy, LogOut, ChevronDown, Check } from 'lucide-react'
+import { Building2, CircleUserRound, Keyboard, LifeBuoy, ChevronDown, Check } from 'lucide-react'
 import { TenantSwitcher } from './TenantSwitcher'
 import { useAuth } from '@/contexts/useAuth'
 import { useCart } from '@/contexts/useBasket'
@@ -244,8 +244,8 @@ export function TopNavigation() {
           </DropdownMenuTrigger>
 
           <PopCard className="w-[320px] space-y-2" sideOffset={12} align="end">
-            <div className="px-2 pb-1">
-              <div className="flex items-center gap-3 rounded-lg border border-[color:var(--surface-ring)] bg-[color:var(--surface-pop-2)]/70 px-3 py-3">
+            <div className="px-2 pb-2">
+              <div className="flex items-center gap-3 rounded-xl bg-[color:var(--surface-pop)]/60 px-3 py-2.5">
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[color:var(--surface-pop)] text-[16px] font-semibold text-[color:var(--text)]">
                   {userInitial}
                 </div>
@@ -262,7 +262,7 @@ export function TopNavigation() {
               </div>
             </div>
 
-            <div className="tw-label">PROFILE</div>
+            <div className="tw-label normal-case opacity-70">Profile</div>
             <div className="flex flex-col gap-1 px-1">
               <DropdownMenuItem asChild onSelect={() => setUserMenuOpen(false)}>
                 <button type="button" className="tw-row text-left">
@@ -318,7 +318,7 @@ export function TopNavigation() {
 
             <div className="pop-div my-2" />
 
-            <div className="tw-label">HELP</div>
+            <div className="tw-label normal-case opacity-70">Help</div>
             <div className="flex flex-col gap-1 px-1">
               <DropdownMenuItem asChild onSelect={() => setUserMenuOpen(false)}>
                 <button type="button" className="tw-row text-left">
@@ -346,7 +346,7 @@ export function TopNavigation() {
               asChild
             >
               <button type="button" className="tw-row text-left text-red-300 hover:text-red-200">
-                <LogOut className="size-4" />
+                <span aria-hidden className="inline-block h-4 w-4" />
                 <span className="truncate">Sign out</span>
                 <span />
               </button>
