@@ -39,7 +39,7 @@ export function PrimaryNavRail() {
         zIndex: 'var(--z-rail, 60)',
       }}
     >
-      <nav className="flex flex-1 flex-col gap-1.5 px-2 pt-[var(--sidebar-offset-rail)]">
+      <nav className="flex flex-1 flex-col gap-1 px-2 pt-[var(--sidebar-offset-rail)]">
         {items.map(({ to, Icon, label }) => {
           const active = pathname === to || pathname.startsWith(to + '/')
           const isHovered = hoveredItem === to
@@ -49,7 +49,7 @@ export function PrimaryNavRail() {
               to={to}
               aria-current={active ? 'page' : undefined}
               className={clsx(
-                'group relative flex h-[68px] w-full flex-col items-center justify-center gap-1 rounded-2xl',
+                'group relative flex h-[64px] w-full flex-col items-center justify-center gap-1.5 rounded-2xl',
                 'px-2 text-center transition-colors duration-200',
                 'text-white/60 hover:text-white/90 hover:bg-white/5',
                 focusRingClass,
@@ -72,11 +72,11 @@ export function PrimaryNavRail() {
                 active={active}
                 label={label}
                 hovered={isHovered}
-                size={32}
+                size={28}
               />
               <span
                 className={clsx(
-                  'text-[13px] font-semibold tracking-wide leading-tight transition-colors duration-200',
+                  'text-[12px] font-semibold tracking-wide leading-tight transition-colors duration-200',
                   active ? 'text-white' : 'text-white/60 group-hover:text-white/90'
                 )}
               >
