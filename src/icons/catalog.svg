@@ -149,8 +149,8 @@
 
         <!-- 'Deilda' with black D and orange 'eilda', constrained width so it never overflows -->
         <text x="214" y="100"
-              font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial"
-              font-size="15" font-weight="800" dominant-baseline="middle"
+              font-family="var(--font-display)"
+              font-size="15" font-weight="600" dominant-baseline="middle"
               textLength="42" lengthAdjust="spacingAndGlyphs">
           <tspan fill="#000000">D</tspan><tspan fill="var(--logo-orange)">eilda</tspan>
         </text>

@@ -61,11 +61,11 @@ export default function CartIcon({
               y="465"
               textAnchor="middle"
               dominantBaseline="middle"
-              fontFamily="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Inter, Arial"
-              fontWeight={800}
+              fontWeight={600}
               fill="#f59e0b"
               fontSize={170}
               letterSpacing={-6}
+              style={{ fontFamily: 'var(--font-ui)', fontVariantNumeric: 'tabular-nums' }}
             >
               {display}
             </text>

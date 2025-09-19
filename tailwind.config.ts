@@ -20,8 +20,9 @@ export default {
                 },
                extend: {
                         fontFamily: {
-                                sans: ['var(--font-ui)'],
-                                display: ['var(--font-display)'],
+                                sans: ['Red Hat Text', 'system-ui', 'Segoe UI', 'Roboto', 'Arial', 'sans-serif'],
+                                display: ['Red Hat Display', 'Red Hat Text', 'system-ui', 'Segoe UI', 'Roboto', 'Arial', 'sans-serif'],
+                                mono: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'monospace'],
                         },
                         transitionDuration: {
                                 120: '120ms',
@@ -220,10 +221,6 @@ export default {
                                 'search-result-enter': 'search-result-enter 0.12s ease-out',
                                 'chip-bounce': 'chip-bounce 0.25s ease-out',
                         },
-			fontFamily: {
-				sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
-				mono: ['JetBrains Mono', 'Fira Code', 'Consolas', 'monospace'],
-			},
 			fontFeatureSettings: {
 				'tnum': '"tnum" 1',
 			},

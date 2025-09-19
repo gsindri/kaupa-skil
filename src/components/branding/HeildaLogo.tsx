@@ -37,7 +37,6 @@ export function HeildaLogo({ className = "h-[30px] w-auto" }: HeildaLogoProps) {
       <text
         x="46"
         y="42"
-        fontFamily="Inter, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
         fontWeight="500"
         fontSize="30"
         letterSpacing=".02em"
@@ -45,7 +44,11 @@ export function HeildaLogo({ className = "h-[30px] w-auto" }: HeildaLogoProps) {
         stroke="#0B1220"
         strokeWidth=".22"
         strokeOpacity=".10"
-        style={{ paintOrder: "stroke fill", strokeLinejoin: "round" }}
+        style={{
+          paintOrder: "stroke fill",
+          strokeLinejoin: "round",
+          fontFamily: "var(--font-display)",
+        }}
       >
         Deilda
       </text>
