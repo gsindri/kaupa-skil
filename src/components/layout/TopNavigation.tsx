@@ -249,7 +249,7 @@ export function TopNavigation() {
 
             <div className="xl:hidden">
               <div className="pop-div my-2" />
-              <div className="tw-label">LANGUAGE</div>
+              <div className="tw-label normal-case">Language</div>
               <div className="flex flex-col gap-1 px-1">
                 {languageOptions.map((option) => (
                   <DropdownMenuItem
@@ -266,14 +266,15 @@ export function TopNavigation() {
                       aria-checked={language === option.value}
                       className="tw-row text-left"
                     >
-                      <span className="flex h-5 w-5 items-center justify-center rounded-full border border-[color:var(--surface-ring)] text-[11px] font-semibold text-[color:var(--text-muted)]">
+                      <span className="flex size-8 items-center justify-center rounded-full border border-[color:var(--surface-ring)] text-[13px] font-semibold text-[color:var(--text-muted)]" aria-hidden="true">
                         {option.code}
                       </span>
                       <span className="truncate">{option.label}</span>
                       <Check
+                        aria-hidden="true"
                         className={cn(
-                          'size-4 text-[color:var(--brand-accent)] transition-opacity',
-                          language === option.value ? 'opacity-100' : 'opacity-0',
+                          'h-3.5 w-3.5 justify-self-end text-[color:var(--brand-accent)] transition-opacity',
+                          language === option.value ? 'opacity-80' : 'opacity-0',
                         )}
                       />
                     </button>
