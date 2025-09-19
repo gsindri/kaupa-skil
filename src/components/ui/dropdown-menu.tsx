@@ -4,6 +4,9 @@ import { Check, ChevronRight } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
+const dropdownItemStyles =
+  "relative flex cursor-pointer select-none items-center rounded-sm text-sm outline-none transition-colors focus-visible:bg-[color:var(--surface-pop-2)]/80 focus-visible:text-[color:var(--text)] data-[highlighted]:bg-[color:var(--surface-pop-2)]/80 data-[highlighted]:text-[color:var(--text)] data-[state=open]:bg-[color:var(--surface-pop-2)]/80 data-[state=open]:text-[color:var(--text)] data-[state=checked]:bg-[color:var(--surface-pop-2)]/80 data-[state=checked]:text-[color:var(--text)] data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+
 const DropdownMenu = DropdownMenuPrimitive.Root
 
 const DropdownMenuTrigger = DropdownMenuPrimitive.Trigger
@@ -25,7 +28,8 @@ const DropdownMenuSubTrigger = React.forwardRef<
   <DropdownMenuPrimitive.SubTrigger
     ref={ref}
     className={cn(
-      "flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none focus:bg-accent data-[state=open]:bg-accent",
+      "px-2 py-1.5",
+      dropdownItemStyles,
       inset && "pl-8",
       className
     )}
@@ -81,7 +85,8 @@ const DropdownMenuItem = React.forwardRef<
   <DropdownMenuPrimitive.Item
     ref={ref}
     className={cn(
-      "relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+      "px-2 py-1.5",
+      dropdownItemStyles,
       inset && "pl-8",
       className
     )}
@@ -97,7 +102,8 @@ const DropdownMenuCheckboxItem = React.forwardRef<
   <DropdownMenuPrimitive.CheckboxItem
     ref={ref}
     className={cn(
-      "relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+      "py-1.5 pl-8 pr-2",
+      dropdownItemStyles,
       className
     )}
     checked={checked}
@@ -121,7 +127,8 @@ const DropdownMenuRadioItem = React.forwardRef<
   <DropdownMenuPrimitive.RadioItem
     ref={ref}
     className={cn(
-      "relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+      "py-1.5 pl-8 pr-2",
+      dropdownItemStyles,
       className
     )}
     {...props}
