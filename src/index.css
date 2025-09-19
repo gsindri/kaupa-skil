@@ -41,7 +41,7 @@ html, body, #root {
 
 /* Navigation rail icon sizing - More aggressive approach */
 .nav-rail {
-  --icon-size: 48px; /* Fixed pixel value instead of percentage */
+  --icon-size: 36px; /* Fixed pixel value instead of percentage */
   --icon-stroke: 2;
 }
 
