@@ -129,3 +129,11 @@ html { scrollbar-gutter: stable; }
   z-index: 40;
 }
 
+/* Nested header fragments (like TopNavigation) should flow with the parent */
+[data-app-header="true"] [data-app-header="true"] {
+  position: relative;
+  top: auto;
+  left: auto;
+  transform: none;
+}
+
