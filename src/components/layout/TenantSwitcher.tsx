@@ -219,7 +219,7 @@ export function TenantSwitcher() {
             }}
             asChild
           >
-            <button type="button" className="tw-row text-left">
+            <button type="button" className="tw-row tw-row-plain text-left">
               <Plus className="size-4 text-[color:var(--text-muted)]" />
               <span className="truncate">Create workspace</span>
               <span />
@@ -232,7 +232,7 @@ export function TenantSwitcher() {
             }}
             asChild
           >
-            <button type="button" className="tw-row text-left">
+            <button type="button" className="tw-row tw-row-plain text-left">
               <LogIn className="size-4 text-[color:var(--text-muted)]" />
               <span className="truncate">Join workspace</span>
               <span />
