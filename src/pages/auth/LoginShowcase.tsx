@@ -277,7 +277,6 @@ function BrandHeader() {
         <text
           x="46"
           y="42"
-          fontFamily="Inter, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
           fontWeight="500"
           fontSize="30"
           letterSpacing=".02em"
@@ -285,7 +284,11 @@ function BrandHeader() {
           stroke="#0B1220"
           strokeWidth=".22"
           strokeOpacity=".10"
-          style={{ paintOrder: "stroke fill", strokeLinejoin: "round" }}
+          style={{
+            paintOrder: "stroke fill",
+            strokeLinejoin: "round",
+            fontFamily: "var(--font-display)",
+          }}
         >
           Heilda
         </text>
