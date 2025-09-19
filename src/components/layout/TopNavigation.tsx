@@ -171,6 +171,7 @@ export function TopNavigation() {
       </div>
 
       <nav aria-label="Global actions" className="ml-auto flex items-center gap-3">
+        <span className="text-[13px] font-medium text-white/80">Search here →</span>
         <IconButton
           ref={searchTriggerRef}
           label="Search"
