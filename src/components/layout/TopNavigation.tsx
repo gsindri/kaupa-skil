@@ -167,9 +167,9 @@ export function TopNavigation() {
           to="/"
           aria-label="Go to dashboard"
           title="Go to dashboard"
-          className="inline-flex rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
+          className="inline-flex shrink-0 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
         >
-          <HeildaLogo className="h-[26px] w-auto drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)]" />
+          <HeildaLogo className="h-8 w-auto shrink-0 drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)]" />
         </Link>
         <TenantSwitcher />
       </div>
