@@ -1,8 +1,6 @@
 import * as React from "react"
 import { type DialogProps } from "@radix-ui/react-dialog"
 import { Command as CommandPrimitive } from "cmdk"
-import { Search } from "lucide-react"
-
 import { cn } from "@/lib/utils"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 
@@ -13,7 +11,7 @@ const Command = React.forwardRef<
   <CommandPrimitive
     ref={ref}
     className={cn(
-      "flex h-full w-full flex-col overflow-hidden rounded-[var(--radius-xl)] bg-transparent text-[color:var(--text)]",
+      "flex h-full w-full flex-col overflow-hidden bg-transparent text-[color:var(--text)]",
       className
     )}
     {...props}
@@ -31,11 +29,11 @@ const CommandDialog = ({ children, contentProps, ...props }: CommandDialogProps)
       <DialogContent
         {...contentProps}
         className={cn(
-          "tw-pop w-[760px] max-w-[92vw] overflow-hidden p-0 shadow-lg",
+          "tw-pop w-[760px] max-w-[92vw] overflow-hidden rounded-[16px] border border-[color:var(--surface-ring)] bg-[color:var(--surface-pop)] p-0 shadow-[var(--elev-shadow)]",
           contentProps?.className
         )}
       >
-        <Command className="[&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:pb-1 [&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 [&_[cmdk-group]]:px-1 [&_[cmdk-input-wrapper]_svg]:h-5 [&_[cmdk-input-wrapper]_svg]:w-5 [&_[cmdk-input]]:h-12 [&_[cmdk-item]]:px-2 [&_[cmdk-item]]:py-3 [&_[cmdk-item]_svg]:h-4 [&_[cmdk-item]_svg]:w-4">
+        <Command>
           {children}
         </Command>
       </DialogContent>
@@ -47,20 +45,14 @@ const CommandInput = React.forwardRef<
   React.ElementRef<typeof CommandPrimitive.Input>,
   React.ComponentPropsWithoutRef<typeof CommandPrimitive.Input>
 >(({ className, ...props }, ref) => (
-  <div
-    className="flex items-center border-b border-[color:var(--surface-ring)] px-3"
-    cmdk-input-wrapper=""
-  >
-    <Search className="mr-2 h-4 w-4 shrink-0 text-[color:var(--text-muted)]" />
-    <CommandPrimitive.Input
-      ref={ref}
-      className={cn(
-        "flex h-11 w-full rounded-md bg-transparent py-3 text-sm text-[color:var(--text)] outline-none placeholder:text-[color:var(--text-muted)] disabled:cursor-not-allowed disabled:opacity-50",
-        className
-      )}
-      {...props}
-    />
-  </div>
+  <CommandPrimitive.Input
+    ref={ref}
+    className={cn(
+      "flex w-full bg-transparent text-[15px] text-[color:var(--text)] outline-none placeholder:text-[color:var(--text-muted)] disabled:cursor-not-allowed disabled:opacity-50",
+      className
+    )}
+    {...props}
+  />
 ))
 
 CommandInput.displayName = CommandPrimitive.Input.displayName
@@ -71,7 +63,7 @@ const CommandList = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <CommandPrimitive.List
     ref={ref}
-    className={cn("max-h-[300px] overflow-y-auto overflow-x-hidden", className)}
+    className={cn("max-h-[60vh] overflow-y-auto overflow-x-hidden", className)}
     {...props}
   />
 ))
@@ -126,7 +118,7 @@ const CommandItem = React.forwardRef<
   <CommandPrimitive.Item
     ref={ref}
     className={cn(
-      "tw-row cursor-default select-none text-left data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50",
+      "cursor-default select-none text-left data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50",
       className
     )}
     {...props}
