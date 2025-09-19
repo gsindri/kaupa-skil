@@ -151,7 +151,7 @@ export const HeaderSearch = React.forwardRef<HTMLInputElement, HeaderSearchProps
       return (
         <Dialog open={dialogOpen} onOpenChange={(value) => closeDialog(value)}>
           <DialogContent
-            className="max-w-2xl w-[min(90vw,640px)] gap-6 border-none bg-background/95 p-6 shadow-2xl backdrop-blur"
+            className="w-[min(92vw,760px)] gap-0 border-none bg-transparent p-0 shadow-none"
             onOpenAutoFocus={(event) => {
               event.preventDefault()
               requestAnimationFrame(() => {
@@ -160,7 +160,7 @@ export const HeaderSearch = React.forwardRef<HTMLInputElement, HeaderSearchProps
             }}
             onCloseAutoFocus={(event) => event.preventDefault()}
           >
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-4 p-4">
               <div className="relative">
                 <SearchInput
                   ref={setInputRef}

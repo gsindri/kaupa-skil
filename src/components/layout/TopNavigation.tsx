@@ -1,18 +1,8 @@
 
 import React, { useEffect, useRef, useState, useLayoutEffect, useId } from 'react'
 import { Link } from 'react-router-dom'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem
-} from '@/components/ui/dropdown-menu'
+import { DropdownMenu, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import { Building2, CircleUserRound, Keyboard, LifeBuoy, LogOut, ChevronDown, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { TenantSwitcher } from './TenantSwitcher'
 import { useAuth } from '@/contexts/useAuth'
@@ -23,8 +13,14 @@ import { HeaderSearch } from '@/components/search/HeaderSearch'
 import { HeildaLogo } from '@/components/branding/HeildaLogo'
 import { CartButton } from '@/components/cart/CartButton'
 import { IconButton } from '@/components/ui/IconButton'
-import { SearchSoft, ChevronSoft, GlobeSoft, QuestionSoft } from '@/components/icons-soft'
+import { SearchSoft } from '@/components/icons-soft'
 import { useLanguage } from '@/contexts/LanguageProvider'
+import { PopCard } from './PopCard'
+
+const languageOptions = [
+  { value: 'is', label: 'Icelandic', code: 'IS' },
+  { value: 'en', label: 'English', code: 'EN' },
+] as const
 
 export function TopNavigation() {
   const { profile, user, signOut, loading, profileLoading } = useAuth()
@@ -195,69 +191,133 @@ export function TopNavigation() {
           <DropdownMenuTrigger asChild>
             <Button
               variant="ghost"
-              size="sm"
               className={cn(
-                'h-[var(--chip-h,2.5rem)] px-2 rounded-full bg-white/8 text-white/90 ring-1 ring-white/10',
-                'inline-flex items-center gap-2 transition-[background-color,color,transform,box-shadow] duration-fast ease-snap motion-reduce:transition-none',
-                'hover:bg-white/10 hover:ring-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-4 focus-visible:ring-offset-transparent motion-safe:hover:-translate-y-[0.5px] motion-reduce:hover:translate-y-0'
+                'inline-flex h-9 items-center gap-2 rounded-full border border-[color:var(--surface-ring)] bg-[color:var(--surface-pop)] px-2',
+                'text-[14px] font-medium text-[color:var(--text)] shadow-sm transition-colors hover:bg-[color:var(--surface-pop-2)]/80'
               )}
               disabled={isBusy}
               aria-label={accountMenuLabel}
               title={displayName || undefined}
             >
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/12 text-sm font-medium text-[var(--ink,#eaf0f7)]">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[color:var(--surface-pop-2)]/70 text-[14px] font-semibold text-[color:var(--text)]">
                 {isBusy ? (
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[var(--brand-accent)]" />
+                  <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-[var(--brand-accent)]" />
                 ) : (
-                  <span className="text-sm font-medium text-[inherit]">{userInitial}</span>
+                  <span className="text-sm font-semibold">{userInitial}</span>
                 )}
               </div>
-              <ChevronSoft width={16} height={16} className="ml-1 text-white opacity-70" />
+              <ChevronDown className="size-4 text-[color:var(--text-muted)]" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent
-            side="bottom"
-            sideOffset={8}
-            collisionPadding={8}
-            sticky="partial"
-            className="min-w-[200px]"
-          >
-            <DropdownMenuItem>
-              <div className="flex flex-col">
-                <span className="font-medium">{displayName}</span>
-                <span className="text-sm text-muted-foreground">{displayEmail}</span>
+
+          <PopCard className="w-[320px] space-y-2" sideOffset={12} align="end">
+            <div className="px-2 pb-1">
+              <div className="flex items-center gap-3 rounded-lg border border-[color:var(--surface-ring)] bg-[color:var(--surface-pop-2)]/70 px-3 py-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[color:var(--surface-pop)] text-[16px] font-semibold text-[color:var(--text)]">
+                  {userInitial}
+                </div>
+                <div className="min-w-0">
+                  <div className="truncate text-[15px] font-semibold text-[color:var(--text)]">
+                    {displayName}
+                  </div>
+                  {displayEmail ? (
+                    <div className="truncate text-[13px] text-[color:var(--text-muted)]">
+                      {displayEmail}
+                    </div>
+                  ) : null}
+                </div>
               </div>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>Profile Settings</DropdownMenuItem>
-            <DropdownMenuItem>Organization Settings</DropdownMenuItem>
-            <div className="xl:hidden">
-              <DropdownMenuSub>
-                <DropdownMenuSubTrigger>
-                  <GlobeSoft width={18} height={18} tone={0.14} className="mr-2 text-[inherit]" />
-                  <span>Language</span>
-                </DropdownMenuSubTrigger>
-                <DropdownMenuSubContent className="min-w-[200px]">
-                  <DropdownMenuRadioGroup value={language} onValueChange={(value) => setLanguage(value as any)}>
-                    <DropdownMenuRadioItem value="is">Icelandic</DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem value="en">English</DropdownMenuRadioItem>
-                  </DropdownMenuRadioGroup>
-                </DropdownMenuSubContent>
-              </DropdownMenuSub>
             </div>
-            <DropdownMenuSub>
-              <DropdownMenuSubTrigger>
-                <QuestionSoft width={18} height={18} tone={0.14} className="mr-2 text-[inherit]" />
-                <span>Help</span>
-              </DropdownMenuSubTrigger>
-              <DropdownMenuSubContent className="min-w-[200px]">
-                <DropdownMenuItem>Keyboard Shortcuts</DropdownMenuItem>
-                <DropdownMenuItem>Support</DropdownMenuItem>
-              </DropdownMenuSubContent>
-            </DropdownMenuSub>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleSignOut}>Sign Out</DropdownMenuItem>
-          </DropdownMenuContent>
+
+            <div className="tw-label">PROFILE</div>
+            <div className="flex flex-col gap-1 px-1">
+              <DropdownMenuItem asChild onSelect={() => setUserMenuOpen(false)}>
+                <button type="button" className="tw-row text-left">
+                  <CircleUserRound className="size-4 text-[color:var(--text-muted)]" />
+                  <span className="truncate">Profile settings</span>
+                  <span />
+                </button>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild onSelect={() => setUserMenuOpen(false)}>
+                <button type="button" className="tw-row text-left">
+                  <Building2 className="size-4 text-[color:var(--text-muted)]" />
+                  <span className="truncate">Organization settings</span>
+                  <span />
+                </button>
+              </DropdownMenuItem>
+            </div>
+
+            <div className="xl:hidden">
+              <div className="pop-div my-2" />
+              <div className="tw-label">LANGUAGE</div>
+              <div className="flex flex-col gap-1 px-1">
+                {languageOptions.map((option) => (
+                  <DropdownMenuItem
+                    key={option.value}
+                    onSelect={() => {
+                      setLanguage(option.value as any)
+                      setUserMenuOpen(false)
+                    }}
+                    asChild
+                  >
+                    <button
+                      type="button"
+                      role="menuitemradio"
+                      aria-checked={language === option.value}
+                      className="tw-row text-left"
+                    >
+                      <span className="flex h-5 w-5 items-center justify-center rounded-full border border-[color:var(--surface-ring)] text-[11px] font-semibold text-[color:var(--text-muted)]">
+                        {option.code}
+                      </span>
+                      <span className="truncate">{option.label}</span>
+                      <Check
+                        className={cn(
+                          'size-4 text-[color:var(--brand-accent)] transition-opacity',
+                          language === option.value ? 'opacity-100' : 'opacity-0',
+                        )}
+                      />
+                    </button>
+                  </DropdownMenuItem>
+                ))}
+              </div>
+            </div>
+
+            <div className="pop-div my-2" />
+
+            <div className="tw-label">HELP</div>
+            <div className="flex flex-col gap-1 px-1">
+              <DropdownMenuItem asChild onSelect={() => setUserMenuOpen(false)}>
+                <button type="button" className="tw-row text-left">
+                  <Keyboard className="size-4 text-[color:var(--text-muted)]" />
+                  <span className="truncate">Keyboard shortcuts</span>
+                  <span className="tw-kbd">?</span>
+                </button>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild onSelect={() => setUserMenuOpen(false)}>
+                <button type="button" className="tw-row text-left">
+                  <LifeBuoy className="size-4 text-[color:var(--text-muted)]" />
+                  <span className="truncate">Support</span>
+                  <span />
+                </button>
+              </DropdownMenuItem>
+            </div>
+
+            <div className="pop-div my-2" />
+
+            <DropdownMenuItem
+              onSelect={() => {
+                setUserMenuOpen(false)
+                handleSignOut()
+              }}
+              asChild
+            >
+              <button type="button" className="tw-row text-left text-red-300 hover:text-red-200">
+                <LogOut className="size-4" />
+                <span className="truncate">Sign out</span>
+                <span />
+              </button>
+            </DropdownMenuItem>
+          </PopCard>
         </DropdownMenu>
         <CartButton />
       </nav>

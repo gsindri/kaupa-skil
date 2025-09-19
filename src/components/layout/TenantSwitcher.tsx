@@ -1,24 +1,20 @@
 import React from 'react'
-import { Check, House, LogIn, Plus } from 'lucide-react'
+import { Check, ChevronDown, Home, LogIn, Plus } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-  CommandSeparator
-} from '@/components/ui/command'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuItem,
+} from '@/components/ui/dropdown-menu'
 import { useAuth } from '@/contexts/useAuth'
 import { supabase } from '@/integrations/supabase/client'
 import { cn } from '@/lib/utils'
-import { ChevronSoft } from '@/components/icons-soft'
+
+import { PopCard } from './PopCard'
 
 type Membership = {
   id: string
@@ -40,8 +36,17 @@ export function TenantSwitcher() {
   const navigate = useNavigate()
 
   const [open, setOpen] = React.useState(false)
+  const [query, setQuery] = React.useState('')
+  const inputRef = React.useRef<HTMLInputElement | null>(null)
 
-  // Load memberships
+  React.useEffect(() => {
+    if (open) {
+      requestAnimationFrame(() => inputRef.current?.focus())
+    } else {
+      setQuery('')
+    }
+  }, [open])
+
   const { data: userMemberships = [] } = useQuery<Membership[]>({
     queryKey: ['user-memberships', user?.id],
     queryFn: async () => {
@@ -49,23 +54,37 @@ export function TenantSwitcher() {
 
       const { data, error } = await supabase
         .from('memberships')
-        .select(
-          `id, base_role, tenant:tenants(id, name)`
-        )
+        .select(`id, base_role, tenant:tenants(id, name)`)
         .eq('user_id', user.id)
 
       if (error) throw error
-      return (data as any) as Membership[]
+      return data as Membership[]
     },
-    enabled: !!user?.id
+    enabled: !!user?.id,
   })
 
-  // Derived tenant data
   const currentTenant = userMemberships.find(
-    (m) => m.tenant && m.tenant.id === profile?.tenant_id
+    (m) => m.tenant && m.tenant.id === profile?.tenant_id,
   )?.tenant
 
   const displayName = currentTenant?.name || 'Personal workspace'
+  const normalizedQuery = query.trim().toLowerCase()
+
+  const matchingTenants = React.useMemo(() => {
+    if (!normalizedQuery) {
+      return userMemberships.filter((membership) => membership.tenant)
+    }
+    return userMemberships.filter((membership) => {
+      const name = membership.tenant?.name?.toLowerCase() ?? ''
+      return name.includes(normalizedQuery)
+    })
+  }, [normalizedQuery, userMemberships])
+
+  const showPersonal =
+    normalizedQuery.length === 0 ||
+    'personal workspace'.includes(normalizedQuery)
+
+  const hasResults = showPersonal || matchingTenants.length > 0
 
   const handleTenantSwitch = async (tenantId: string | null) => {
     if (!user?.id) return
@@ -85,163 +104,142 @@ export function TenantSwitcher() {
   }
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
+    <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
+      <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
           role="combobox"
           aria-expanded={open}
           aria-label="Switch workspace"
           className={cn(
-            'flex h-[var(--chip-h,2.5rem)] w-52 items-center justify-between rounded-[var(--r-chip,0.75rem)] px-3.5',
-            'bg-white/8 text-white/90 ring-1 ring-white/10 transition-[background-color,color,transform,box-shadow] duration-fast ease-snap motion-reduce:transition-none',
-            'hover:bg-white/12 hover:text-white hover:ring-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-4 focus-visible:ring-offset-transparent motion-safe:hover:-translate-y-[0.5px] motion-reduce:hover:translate-y-0'
+            'inline-flex h-9 w-56 items-center justify-between gap-2 rounded-full border border-[color:var(--surface-ring)]',
+            'bg-[color:var(--surface-pop)] px-3 text-[14px] font-medium text-[color:var(--text)] shadow-sm transition-colors',
+            'hover:bg-[color:var(--surface-pop-2)]/80 hover:text-[color:var(--text)]',
           )}
         >
-          <span
-            className="truncate text-left font-semibold leading-tight text-[color:var(--ink,#eaf0f7)] display"
-            title={displayName}
-          >
-            {displayName}
-          </span>
-          <ChevronSoft width={18} height={18} className="ml-2 text-white opacity-70" />
+          <span className="truncate text-left">{displayName}</span>
+          <ChevronDown className="size-4 text-[color:var(--text-muted)]" />
         </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-[280px] p-2">
-        <Command>
-          <CommandInput
+      </DropdownMenuTrigger>
+
+      <PopCard className="w-[320px] space-y-2" sideOffset={12} align="start">
+        <div className="px-2 pb-1">
+          <input
+            ref={inputRef}
             placeholder="Search workspaces..."
-            className="h-9 text-sm pl-8 pr-2 rounded-md border"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            className="h-9 w-full rounded-lg border border-[color:var(--surface-ring)] bg-transparent px-3 text-[14px] text-[color:var(--text)] placeholder:text-[color:var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[color:var(--brand-accent)]"
+            type="search"
           />
-          <CommandSeparator className="my-2 h-px bg-border/50" />
-          <CommandList>
-            <CommandEmpty>No workspaces found.</CommandEmpty>
-            <CommandGroup
-              heading="Workspaces"
-              className="px-0 [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:pt-2 [&_[cmdk-group-heading]]:pb-1 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-wide [&_[cmdk-group-heading]]:text-foreground/60"
+        </div>
+
+        <div className="tw-label">WORKSPACES</div>
+        <div className="flex flex-col gap-1 px-1">
+          {showPersonal && (
+            <DropdownMenuItem
+              onSelect={async () => {
+                await handleTenantSwitch(null)
+                setOpen(false)
+              }}
+              asChild
             >
-              <CommandItem
-                value="personal"
-                onSelect={() => {
-                  handleTenantSwitch(null)
-                  setOpen(false)
-                }}
-                className={cn(
-                  'group relative grid grid-cols-[24px,1fr,auto,16px] items-center gap-2 px-2 py-2 rounded-md border border-transparent transition',
-                  !profile?.tenant_id
-                    ? 'border-2 border-brand-600 bg-transparent before:absolute before:left-0 before:top-0 before:bottom-0 before:w-0.5 before:bg-brand-600'
-                    : 'hover:border-border-subtle hover:bg-foreground/[0.02]',
-                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50 focus-visible:ring-offset-1'
-                )}
+              <button
+                type="button"
+                aria-selected={!profile?.tenant_id}
+                className="tw-row text-left"
               >
-                <House
-                  className={cn(
-                    'size-5',
-                    !profile?.tenant_id
-                      ? 'text-foreground'
-                      : 'text-foreground/70 group-hover:text-foreground/90'
-                  )}
-                />
-                <span
-                  className="truncate text-sm text-foreground"
-                  title="Personal workspace"
-                >
-                  Personal workspace
-                </span>
-                <span className="justify-self-end" />
+                <Home className="size-4 text-[color:var(--text-muted)]" />
+                <div className="flex w-full items-center justify-between gap-2">
+                  <span className="truncate">Personal workspace</span>
+                </div>
                 <Check
                   className={cn(
-                    'size-4 justify-self-end text-brand-600 transition-opacity',
-                    !profile?.tenant_id ? 'opacity-100' : 'opacity-0'
+                    'size-4 text-[color:var(--brand-accent)] transition-opacity',
+                    !profile?.tenant_id ? 'opacity-100' : 'opacity-0',
                   )}
                 />
-              </CommandItem>
-              {userMemberships.map((membership) => {
-                const tenant = membership.tenant
-                if (!tenant) return null
-                const isCurrent = tenant.id === profile?.tenant_id
-                return (
-                  <CommandItem
-                    key={membership.id}
-                    value={tenant.name}
-                    onSelect={() => {
-                      handleTenantSwitch(tenant.id)
-                      setOpen(false)
-                    }}
-                    className={cn(
-                      'group relative grid grid-cols-[24px,1fr,auto,16px] items-center gap-2 px-2 py-2 rounded-md border border-transparent transition',
-                      isCurrent
-                        ? 'border-2 border-brand-600 bg-transparent before:absolute before:left-0 before:top-0 before:bottom-0 before:w-0.5 before:bg-brand-600'
-                        : 'hover:border-border-subtle hover:bg-foreground/[0.02]',
-                      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50 focus-visible:ring-offset-1'
-                    )}
-                  >
-                    <Avatar
-                      className={cn(
-                        'h-6 w-6',
-                        isCurrent
-                          ? 'text-foreground'
-                          : 'text-foreground/70 group-hover:text-foreground/90'
-                      )}
-                    >
-                      <AvatarFallback>{getInitials(tenant.name)}</AvatarFallback>
-                    </Avatar>
-                    <span
-                      className="truncate text-left text-sm text-foreground"
-                      title={tenant.name}
-                    >
-                      {tenant.name}
-                    </span>
-                    <span
-                      className={cn(
-                        'ml-2 justify-self-end whitespace-nowrap text-xs px-2 py-0.5 rounded-full',
-                        isCurrent
-                          ? 'bg-brand-50 text-brand-700'
-                          : 'bg-muted text-foreground'
-                      )}
-                    >
+              </button>
+            </DropdownMenuItem>
+          )}
+
+          {matchingTenants.map((membership) => {
+            const tenant = membership.tenant
+            if (!tenant) return null
+            const isCurrent = tenant.id === profile?.tenant_id
+            return (
+              <DropdownMenuItem
+                key={membership.id}
+                onSelect={async () => {
+                  await handleTenantSwitch(tenant.id)
+                  setOpen(false)
+                }}
+                asChild
+              >
+                <button
+                  type="button"
+                  aria-selected={isCurrent}
+                  className="tw-row text-left"
+                >
+                  <Avatar className="h-6 w-6 text-[12px] text-[color:var(--text-muted)]">
+                    <AvatarFallback>{getInitials(tenant.name)}</AvatarFallback>
+                  </Avatar>
+                  <div className="flex w-full items-center justify-between gap-2">
+                    <span className="truncate">{tenant.name}</span>
+                    <span className="pop-accent px-2 py-0.5 capitalize">
                       {membership.base_role}
                     </span>
-                    <Check
-                      className={cn(
-                        'size-4 justify-self-end text-brand-600 transition-opacity',
-                        isCurrent ? 'opacity-100' : 'opacity-0'
-                      )}
-                    />
-                  </CommandItem>
-                )
-              })}
-            </CommandGroup>
-            <CommandSeparator className="my-2 h-px bg-border/50" />
-            <CommandGroup
-              heading="Actions"
-              className="px-0 [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:pt-2 [&_[cmdk-group-heading]]:pb-1 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-wide [&_[cmdk-group-heading]]:text-foreground/60"
-            >
-              <CommandItem
-                onSelect={() => {
-                  navigate('/settings/organization/create')
-                  setOpen(false)
-                }}
-                className="group grid grid-cols-[24px,1fr] items-center gap-2 px-2 py-2 rounded-md border border-transparent text-sm transition hover:border-border-subtle hover:bg-foreground/[0.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50 focus-visible:ring-offset-1"
-              >
-                <Plus className="size-5 text-foreground/70 group-hover:text-foreground/90" />
-                <span className="text-sm text-foreground">Create workspace</span>
-              </CommandItem>
-              <CommandItem
-                onSelect={() => {
-                  navigate('/settings/organization/join')
-                  setOpen(false)
-                }}
-                className="group grid grid-cols-[24px,1fr] items-center gap-2 px-2 py-2 rounded-md border border-transparent text-sm transition hover:border-border-subtle hover:bg-foreground/[0.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50 focus-visible:ring-offset-1"
-              >
-                <LogIn className="size-5 text-foreground/70 group-hover:text-foreground/90" />
-                <span className="text-sm text-foreground">Join workspace</span>
-              </CommandItem>
-            </CommandGroup>
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
+                  </div>
+                  <Check
+                    className={cn(
+                      'size-4 text-[color:var(--brand-accent)] transition-opacity',
+                      isCurrent ? 'opacity-100' : 'opacity-0',
+                    )}
+                  />
+                </button>
+              </DropdownMenuItem>
+            )
+          })}
+
+          {!hasResults && (
+            <div className="px-3 py-3 text-sm text-[color:var(--text-muted)]">
+              No workspaces found.
+            </div>
+          )}
+        </div>
+
+        <div className="pop-div my-2" />
+
+        <div className="tw-label">ACTIONS</div>
+        <div className="flex flex-col gap-1 px-1">
+          <DropdownMenuItem
+            onSelect={() => {
+              navigate('/settings/organization/create')
+              setOpen(false)
+            }}
+            asChild
+          >
+            <button type="button" className="tw-row text-left">
+              <Plus className="size-4 text-[color:var(--text-muted)]" />
+              <span className="truncate">Create workspace</span>
+              <span />
+            </button>
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onSelect={() => {
+              navigate('/settings/organization/join')
+              setOpen(false)
+            }}
+            asChild
+          >
+            <button type="button" className="tw-row text-left">
+              <LogIn className="size-4 text-[color:var(--text-muted)]" />
+              <span className="truncate">Join workspace</span>
+              <span />
+            </button>
+          </DropdownMenuItem>
+        </div>
+      </PopCard>
+    </DropdownMenu>
   )
 }
-
