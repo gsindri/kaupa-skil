@@ -1188,8 +1188,8 @@ function FiltersBar({
       )}
 
       <div className={containerClass}>
-        <div className="flex h-[var(--toolbar-h,56px)] flex-wrap items-center gap-5">
-          <div className="flex min-w-0 flex-1 items-center gap-4">
+        <div className="flex h-[var(--toolbar-h,56px)] flex-wrap items-center gap-3">
+          <div className="flex min-w-0 flex-1 items-center gap-3">
             <div className="relative min-w-0 flex-1">
               <label className="sr-only" htmlFor="catalog-search">
                 Search products
@@ -1207,29 +1207,29 @@ function FiltersBar({
                     onKeyDown={handleSearchKeyDown}
                     onFocus={() => onLockChange(true)}
                     onBlur={() => onLockChange(false)}
-                    className="h-[var(--ctrl-h,40px)] w-full rounded-[var(--ctrl-r,12px)] bg-white/8 pl-10 pr-12 text-sm text-[color:var(--ink)] placeholder:text-[color:var(--ink)]/65 ring-1 ring-inset ring-white/12 transition duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-4 focus-visible:ring-offset-[color:var(--toolbar-bg)] hover:bg-white/12 hover:ring-white/20 motion-reduce:transition-none"
+                    className="h-[var(--ctrl-h,40px)] w-full rounded-[var(--ctrl-r,12px)] bg-white pl-12 pr-12 text-sm font-medium text-slate-900 placeholder:text-slate-500 ring-1 ring-inset ring-[color:var(--ring-idle)] shadow-[0_10px_32px_rgba(7,18,30,0.28)] transition duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent hover:ring-[color:var(--ring-hover)] motion-reduce:transition-none"
                   />
                 </TooltipTrigger>
                 <TooltipContent sideOffset={8}>Search (Ctrl/⌘+K)</TooltipContent>
               </Tooltip>
-              <span className="pointer-events-none absolute left-3 top-1/2 grid -translate-y-1/2 place-items-center text-[color:var(--ink-dim)]/75">
-                <MagnifyingGlass size={18} weight="duotone" aria-hidden="true" />
+              <span className="pointer-events-none absolute left-3 top-1/2 grid -translate-y-1/2 place-items-center text-slate-500">
+                <MagnifyingGlass size={22} weight="fill" aria-hidden="true" />
               </span>
               {showClear && (
                 <button
                   type="button"
                   onClick={handleClearSearch}
                   aria-label="Clear search"
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-full p-1 text-[color:var(--ink-dim)]/80 transition duration-150 ease-out hover:bg-white/10 hover:text-[color:var(--ink)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent motion-reduce:transition-none"
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-full p-2 text-slate-500 transition duration-150 ease-out hover:bg-slate-200/70 hover:text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-0 motion-reduce:transition-none"
                 >
-                  <XCircle size={18} weight="duotone" />
+                  <XCircle size={20} weight="fill" />
                 </button>
               )}
             </div>
             {formattedTotal && (
-              <span className="hidden flex-none items-center gap-1.5 text-xs font-medium leading-none text-[color:var(--ink-dim)]/70 tabular-nums sm:inline-flex">
+              <span className="hidden flex-none items-center gap-1.5 text-xs font-medium leading-none text-[color:var(--ink-dim)] tabular-nums sm:inline-flex">
                 {formattedTotal}
-                <span className="text-[color:var(--ink-dim)]/70">results</span>
+                <span className="text-[color:var(--ink-dim)]">results</span>
               </span>
             )}
           </div>
@@ -1245,11 +1245,15 @@ function FiltersBar({
                   aria-controls="catalog-filters-panel"
                   aria-keyshortcuts="f"
                   className={cn(
-                    'inline-flex h-[var(--ctrl-h,40px)] items-center gap-2 rounded-[var(--ctrl-r,12px)] bg-white/8 px-3 text-sm font-medium text-[color:var(--ink-dim)]/80 ring-1 ring-inset ring-white/12 transition duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-4 focus-visible:ring-offset-[color:var(--toolbar-bg)] hover:bg-white/12 hover:text-[color:var(--ink)] hover:ring-white/20 motion-reduce:transition-none',
-                    showFilters && 'bg-white/18 text-white shadow-[0_0_0_1px_rgba(255,255,255,0.28)_inset] ring-white/20',
+                    'inline-flex h-[var(--ctrl-h,40px)] items-center gap-3 rounded-[var(--ctrl-r,12px)] bg-[color:var(--chip-bg)] px-3 text-sm font-semibold text-[color:var(--ink)] ring-1 ring-inset ring-[color:var(--ring-idle)] shadow-[0_18px_36px_rgba(2,9,20,0.24)] backdrop-blur-xl transition duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-4 focus-visible:ring-offset-[color:var(--toolbar-bg)] hover:bg-[color:var(--chip-bg-hover)] hover:text-[color:var(--ink-hi)] hover:ring-[color:var(--ring-hover)] motion-reduce:transition-none',
+                    showFilters && 'bg-[color:var(--seg-active-bg)] text-[color:var(--ink-hi)] shadow-[0_20px_40px_rgba(2,9,20,0.36)] ring-[color:var(--ring-hover)]',
                   )}
                 >
-                  <FunnelSimple size={18} weight={showFilters ? 'fill' : 'duotone'} />
+                  <FunnelSimple
+                    size={24}
+                    weight="fill"
+                    className={cn('transition-opacity', !showFilters && 'opacity-80')}
+                  />
                   <span className="hidden sm:inline">
                     {activeCount ? `Filters (${activeCount})` : 'Filters'}
                   </span>
@@ -1277,7 +1281,7 @@ function FiltersBar({
         </div>
 
         <div className="py-3">
-          <div className="flex flex-nowrap items-center gap-2 overflow-x-auto">
+          <div className="flex flex-nowrap items-center gap-3 overflow-x-auto">
             <TriStateChip
               state={triStock}
               onStateChange={setTriStock}
