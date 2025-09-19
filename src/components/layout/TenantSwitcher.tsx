@@ -116,7 +116,7 @@ export function TenantSwitcher() {
           role="combobox"
           aria-expanded={open}
           aria-label="Switch workspace"
-          className={cn(navTextButtonClass, 'w-56 text-left')}
+          className={cn(navTextButtonClass, 'text-left')}
         >
           <span className={navTextButtonPillClass} aria-hidden="true" />
           <span className="min-w-0 truncate text-left">{displayName}</span>
