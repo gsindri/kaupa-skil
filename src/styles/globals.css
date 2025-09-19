@@ -177,7 +177,7 @@
 :is(.pop-item:not(.pop-item-plain),.tw-row:not(.tw-row-plain))[data-highlighted],
 :is(.pop-item:not(.pop-item-plain),.tw-row:not(.tw-row-plain))[data-state="checked"],
 :is(.pop-item:not(.pop-item-plain),.tw-row:not(.tw-row-plain)):hover{
-  background:color-mix(in oklab, var(--brand-accent) 18%, transparent);
+  background-color:transparent;
   outline:1px solid color-mix(in oklab, var(--brand-accent) 45%, transparent);
 }
 
@@ -187,7 +187,7 @@
 :is(.pop-item-plain,.tw-row-plain)[data-highlighted],
 :is(.pop-item-plain,.tw-row-plain)[data-state="checked"],
 :is(.pop-item-plain,.tw-row-plain):hover{
-  background:color-mix(in oklab, var(--surface-pop-2) 75%, transparent);
+  background-color:transparent;
   outline:1px solid color-mix(in oklab, var(--surface-ring) 80%, transparent);
 }
 
