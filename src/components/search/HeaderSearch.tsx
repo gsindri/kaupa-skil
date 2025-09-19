@@ -14,17 +14,8 @@ type SearchResultItem = {
   section: SearchResultSection
 }
 
-interface Suggestion {
-  id: string
-  title: string
-  subtitle?: string
-  meta: string
-  scope: SearchScope
-}
-
 type DialogEntry =
   | { type: 'recent'; query: string }
-  | { type: 'suggestion'; suggestion: Suggestion }
   | { type: 'result'; item: SearchResultItem }
 
 const SCOPE_OPTIONS: { label: string; value: SearchScope }[] = [
@@ -32,27 +23,6 @@ const SCOPE_OPTIONS: { label: string; value: SearchScope }[] = [
   { label: 'Products', value: 'products' },
   { label: 'Suppliers', value: 'suppliers' },
   { label: 'Orders', value: 'orders' }
-]
-
-const DEFAULT_SUGGESTIONS: Suggestion[] = [
-  {
-    id: 'suggestion-eggs',
-    title: 'Eggs (12-pack, free-range)',
-    meta: 'Products',
-    scope: 'products'
-  },
-  {
-    id: 'suggestion-eimskip',
-    title: 'Eimskip Food Service',
-    meta: 'Supplier',
-    scope: 'suppliers'
-  },
-  {
-    id: 'suggestion-order-review',
-    title: 'Review pending orders',
-    meta: 'Orders',
-    scope: 'orders'
-  }
 ]
 
 const SECTION_METADATA: Record<
@@ -156,13 +126,7 @@ export const HeaderSearch = React.forwardRef<HTMLInputElement, HeaderSearchProps
       }
 
       if (!query) {
-        return [
-          ...recent.map((q) => ({ type: 'recent' as const, query: q })),
-          ...DEFAULT_SUGGESTIONS.map((suggestion) => ({
-            type: 'suggestion' as const,
-            suggestion
-          }))
-        ]
+        return recent.map((q) => ({ type: 'recent' as const, query: q }))
       }
 
       return items.map((item) => ({ type: 'result' as const, item }))
@@ -256,19 +220,7 @@ export const HeaderSearch = React.forwardRef<HTMLInputElement, HeaderSearchProps
         return
       }
 
-      if (entry.type === 'recent') {
-        handleRecentSelect(entry.query)
-        return
-      }
-
-      const suggestion = entry.suggestion
-      setScope(suggestion.scope)
-      setQuery(suggestion.title)
-      setActiveDialogIndex(0)
-      requestAnimationFrame(() => {
-        inputRef.current?.focus()
-        inputRef.current?.setSelectionRange(suggestion.title.length, suggestion.title.length)
-      })
+      handleRecentSelect(entry.query)
     }
 
     useEffect(() => {
@@ -308,10 +260,10 @@ export const HeaderSearch = React.forwardRef<HTMLInputElement, HeaderSearchProps
                     type="button"
                     aria-hidden
                     tabIndex={-1}
-                    className="flex h-9 w-9 items-center justify-center rounded-full text-[color:var(--text-muted)]"
+                    className="flex h-10 w-10 items-center justify-center rounded-full text-[color:var(--text-muted)]"
                     onMouseDown={(event) => event.preventDefault()}
                   >
-                    <Search className="h-4 w-4" strokeWidth={1.75} />
+                    <Search className="h-[18px] w-[18px]" strokeWidth={1.75} />
                   </button>
                   <input
                     ref={setInputRef}
@@ -329,22 +281,22 @@ export const HeaderSearch = React.forwardRef<HTMLInputElement, HeaderSearchProps
                     <button
                       type="button"
                       onClick={() => setQuery('')}
-                      className="flex h-9 min-w-9 items-center justify-center rounded-full text-[14px] text-[color:var(--text-muted)] transition-colors hover:text-[color:var(--text)]"
+                      className="flex h-10 w-10 items-center justify-center rounded-full text-[14px] text-[color:var(--text-muted)] transition-colors hover:text-[color:var(--text)]"
                     >
                       ✕
                     </button>
                   ) : isLoading ? (
-                    <span className="flex h-9 min-w-9 items-center justify-center text-[color:var(--text-muted)]">
+                    <span className="flex h-10 w-10 items-center justify-center text-[color:var(--text-muted)]">
                       <Loader2 className="h-4 w-4 animate-spin" strokeWidth={1.5} />
                     </span>
                   ) : (
-                    <span className="flex h-9 min-w-9 items-center justify-center text-[color:var(--text-muted)]">⌘K</span>
+                    <span className="flex items-center rounded-[6px] border border-[color:var(--surface-ring)] px-1.5 py-[0.125rem] text-[12px] text-[color:var(--text-muted)] opacity-70">⌘K</span>
                   )}
                 </div>
               </div>
 
               <div className="px-3 pb-2 pt-2">
-                <div className="grid h-11 grid-cols-4 gap-1 rounded-[12px] border border-[color:var(--surface-ring)] p-1">
+                <div className="grid grid-cols-4 gap-1 rounded-[12px] border border-[color:var(--surface-ring)] p-1">
                   {SCOPE_OPTIONS.map((option) => {
                     const selected = scope === option.value
                     return (
@@ -355,10 +307,10 @@ export const HeaderSearch = React.forwardRef<HTMLInputElement, HeaderSearchProps
                         onMouseDown={(event) => event.preventDefault()}
                         onClick={() => setScope(option.value)}
                         className={cn(
-                          'rounded-[10px] text-[14px] transition-colors',
+                          'h-10 rounded-[10px] text-[14px] font-medium text-[color:var(--text-muted)] transition-colors',
                           selected
-                            ? 'bg-white/10 text-[color:var(--text)]'
-                            : 'text-[color:var(--text-muted)] hover:bg-white/5'
+                            ? 'bg-white/[0.08] text-[color:var(--text)] font-semibold'
+                            : 'hover:bg-white/[0.04]'
                         )}
                       >
                         {option.label}
@@ -372,7 +324,7 @@ export const HeaderSearch = React.forwardRef<HTMLInputElement, HeaderSearchProps
                 <div
                   id="header-search-results"
                   role="listbox"
-                  className="max-h-[60vh] overflow-y-auto pb-3"
+                  className="max-h-[56vh] overflow-y-auto pb-3"
                 >
                   <DialogResults
                     query={query}
@@ -443,14 +395,11 @@ function DialogResults({
   const hasQuery = trimmedQuery.length > 0
 
   const recentsEntries: { entry: Extract<DialogEntry, { type: 'recent' }>; index: number }[] = []
-  const suggestionEntries: { entry: Extract<DialogEntry, { type: 'suggestion' }>; index: number }[] = []
   const resultEntries: { entry: Extract<DialogEntry, { type: 'result' }>; index: number }[] = []
 
   dialogEntries.forEach((entry, index) => {
     if (entry.type === 'recent') {
       recentsEntries.push({ entry, index })
-    } else if (entry.type === 'suggestion') {
-      suggestionEntries.push({ entry, index })
     } else {
       resultEntries.push({ entry, index })
     }
@@ -460,34 +409,14 @@ function DialogResults({
 
   if (!hasQuery && recentsEntries.length > 0) {
     sectionsContent.push(
-      <div key="recent" className="pb-1">
+      <div key="recent" className="space-y-[2px] pb-1">
         <DialogSection label="Recent searches" />
         {recentsEntries.map(({ entry, index }) => (
           <DialogRow
             key={`recent-${entry.query}-${index}`}
             title={entry.query}
             meta=""
-            icon={<DialogBadge>↺</DialogBadge>}
-            active={activeIndex === index}
-            onHover={() => onHoverIndex(index)}
-            onSelect={() => onEntrySelect(entry)}
-          />
-        ))}
-      </div>
-    )
-  }
-
-  if (!hasQuery && suggestionEntries.length > 0) {
-    sectionsContent.push(
-      <div key="suggestions" className="pb-1">
-        <DialogSection label="Suggestions" />
-        {suggestionEntries.map(({ entry, index }) => (
-          <DialogRow
-            key={entry.suggestion.id}
-            title={entry.suggestion.title}
-            subtitle={entry.suggestion.subtitle}
-            meta={entry.suggestion.meta}
-            icon={<DialogBadge>★</DialogBadge>}
+            icon={<span className="text-[12px] text-[color:var(--text-muted)] opacity-60">↺</span>}
             active={activeIndex === index}
             onHover={() => onHoverIndex(index)}
             onSelect={() => onEntrySelect(entry)}
@@ -507,7 +436,7 @@ function DialogResults({
       const metadata = SECTION_METADATA[section]
 
       sectionsContent.push(
-        <div key={section} className="pb-1">
+        <div key={section} className="space-y-[2px] pb-1">
           <DialogSection label={metadata.heading} />
           {sectionEntries.map(({ entry, index }) => (
             <DialogRow
@@ -527,9 +456,9 @@ function DialogResults({
 
   const showLoadingState = isLoading && hasQuery && resultEntries.length === 0
 
-  if (!hasQuery && recentsEntries.length === 0 && suggestionEntries.length === 0) {
+  if (!hasQuery && recentsEntries.length === 0) {
     sectionsContent.push(
-      <div key="empty-initial" className="px-4 py-6 text-[14px] text-[color:var(--text-muted)]">
+      <div key="empty-initial" className="px-3 py-6 text-[14px] text-[color:var(--text-muted)]">
         Start typing to search for products, suppliers, or orders.
       </div>
     )
@@ -537,7 +466,7 @@ function DialogResults({
 
   if (showLoadingState) {
     sectionsContent.unshift(
-      <div key="loading" className="flex items-center gap-2 px-4 py-6 text-[14px] text-[color:var(--text-muted)]">
+      <div key="loading" className="flex items-center gap-2 px-3 py-6 text-[14px] text-[color:var(--text-muted)]">
         <Loader2 className="h-4 w-4 animate-spin" strokeWidth={1.5} />
         Searching for “{trimmedQuery}”…
       </div>
@@ -546,22 +475,22 @@ function DialogResults({
 
   if (hasQuery && !isLoading && resultEntries.length === 0) {
     sectionsContent.push(
-      <div key="empty-results" className="px-4 py-6 text-[14px] text-[color:var(--text-muted)]">
+      <div key="empty-results" className="px-3 py-6 text-[14px] text-[color:var(--text-muted)]">
         No results. Try a product name or supplier.
       </div>
     )
   }
 
-  return <div className="pb-1">{sectionsContent}</div>
+  return <div className="space-y-1 pb-1">{sectionsContent}</div>
 }
 
 function DialogSection({ label }: { label: string }) {
   return (
-    <div className="px-4 pt-3">
-      <div className="mb-2 text-[12px] font-semibold tracking-[0.08em] text-[color:var(--text-muted)] uppercase">
+    <div className="px-3 pt-1">
+      <div className="mb-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-[color:var(--text-muted)] opacity-80">
         {label}
       </div>
-      <div className="h-px bg-[color:var(--surface-ring)]" />
+      <div className="h-px bg-[color:var(--surface-ring)] opacity-25" />
     </div>
   )
 }
@@ -588,9 +517,9 @@ function DialogRow({ title, subtitle, meta, icon, active, onHover, onSelect }: D
         onSelect()
       }}
       className={cn(
-        'grid w-full grid-cols-[32px,1fr,auto] items-center rounded-[12px] px-4 text-left text-[color:var(--text)] transition-colors',
-        'h-14',
-        active ? 'bg-white/12' : 'hover:bg-white/[0.06]'
+        'grid w-full grid-cols-[20px,1fr,auto] items-center gap-2.5 rounded-[10px] px-3 text-left text-[color:var(--text)] transition-colors',
+        'h-[50px]',
+        active ? 'bg-white/[0.08]' : 'hover:bg-white/[0.04]'
       )}
     >
       <div className="flex items-center justify-center">
@@ -602,14 +531,21 @@ function DialogRow({ title, subtitle, meta, icon, active, onHover, onSelect }: D
           <div className="truncate text-[13px] text-[color:var(--text-muted)]">{subtitle}</div>
         )}
       </div>
-      <div className="pl-3 text-right text-[13px] text-[color:var(--text-muted)]">{meta}</div>
+      <div
+        className={cn(
+          'text-right text-[13px] text-[color:var(--text-muted)]',
+          meta ? 'pl-3' : 'pl-0'
+        )}
+      >
+        {meta}
+      </div>
     </button>
   )
 }
 
 function DialogBadge({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex h-8 w-8 items-center justify-center rounded-md bg-white/[0.08] text-[13px] font-medium text-[color:var(--text-muted)]">
+    <div className="flex h-5 w-5 items-center justify-center rounded-[6px] bg-white/[0.08] text-[11px] font-semibold uppercase text-[color:var(--text-muted)]">
       {children}
     </div>
   )
