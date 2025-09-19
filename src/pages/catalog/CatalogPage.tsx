@@ -1171,7 +1171,7 @@ function FiltersBar({
   return (
     <section
       className={cn(
-        'relative bg-[color:var(--toolbar-bg)] backdrop-blur-xl shadow-[var(--toolbar-shadow)] ring-1 ring-inset ring-white/12 after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-white/12 after:content-[""]',
+        'relative bg-[color:var(--toolbar-bg)] backdrop-blur-xl ring-1 ring-inset ring-[color:var(--ring-idle)] after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-white/12 after:content-[""]',
         scrolled && 'before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-white/16 before:opacity-70 before:content-[""]',
       )}
     >
@@ -1227,9 +1227,8 @@ function FiltersBar({
               )}
             </div>
             {formattedTotal && (
-              <span className="hidden flex-none items-center gap-1.5 text-xs font-medium leading-none text-[color:var(--ink-dim)] tabular-nums sm:inline-flex">
-                {formattedTotal}
-                <span className="text-[color:var(--ink-dim)]">results</span>
+              <span className="flex-none text-xs font-medium leading-none text-[color:var(--ink-dim)] tabular-nums">
+                {formattedTotal} results
               </span>
             )}
           </div>
@@ -1245,8 +1244,8 @@ function FiltersBar({
                   aria-controls="catalog-filters-panel"
                   aria-keyshortcuts="f"
                   className={cn(
-                    'inline-flex h-[var(--ctrl-h,40px)] items-center gap-3 rounded-[var(--ctrl-r,12px)] bg-[color:var(--chip-bg)] px-3 text-sm font-semibold text-[color:var(--ink-hi)]/90 ring-1 ring-inset ring-[color:var(--ring-idle)] shadow-[0_14px_30px_rgba(2,9,20,0.18)] backdrop-blur-xl transition duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-4 focus-visible:ring-offset-[color:var(--toolbar-bg)] hover:bg-[color:var(--chip-bg-hover)] hover:text-[color:var(--ink-hi)] hover:ring-[color:var(--ring-hover)] motion-reduce:transition-none',
-                    showFilters && 'bg-[color:var(--seg-active-bg)] text-[color:var(--ink-hi)] shadow-[0_16px_34px_rgba(2,9,20,0.26)] ring-[color:var(--ring-hover)]',
+                    'inline-flex h-[var(--ctrl-h,40px)] items-center gap-3 rounded-[var(--ctrl-r,12px)] bg-[color:var(--chip-bg)] px-3 text-sm font-semibold text-[color:var(--ink-hi)] ring-1 ring-inset ring-[color:var(--ring-idle)] backdrop-blur-xl transition duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-4 focus-visible:ring-offset-[color:var(--toolbar-bg)] hover:bg-[color:var(--chip-bg-hover)] hover:text-[color:var(--ink-hi)] hover:ring-[color:var(--ring-hover)] motion-reduce:transition-none',
+                    showFilters && 'bg-[color:var(--seg-active-bg)] text-[color:var(--ink-hi)] ring-[color:var(--ring-hover)]',
                   )}
                 >
                   <FunnelSimple

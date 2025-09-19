@@ -15,14 +15,17 @@
 
   /* Visual tokens */
   --topbar-bg: radial-gradient(120% 80% at 0% 0%, #0f2237 0%, #0b1b2e 60%, #0a1930 100%);
-  --toolbar-bg: rgba(15, 26, 41, 0.78);
-  --chip-bg: rgba(255, 255, 255, 0.12);
-  --chip-bg-hover: rgba(255, 255, 255, 0.16);
-  --seg-active-bg: rgba(255, 255, 255, 0.14);
+  --toolbar-bg: rgba(15, 26, 41, 0.88);
+  --chip-bg: rgba(255, 255, 255, 0.14);
+  --chip-bg-hover: rgba(255, 255, 255, 0.18);
+  --seg-active-bg: rgba(255, 255, 255, 0.18);
 
-  --ink-hi: #eaf0f7;
-  --ink: rgba(234, 240, 247, 0.88);
-  --ink-dim: rgba(234, 240, 247, 0.7);
+  --ink-hi: #ecf2f8;
+  --ink: rgba(236, 242, 248, 0.88);
+  --ink-dim: rgba(236, 242, 248, 0.68);
+
+  --accent-fill: #e1c182;
+  --accent-ink: #242424;
 
   --ring-idle: rgba(255, 255, 255, 0.1);
   --ring-hover: rgba(255, 255, 255, 0.2);
