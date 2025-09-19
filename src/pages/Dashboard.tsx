@@ -6,6 +6,7 @@ import { PriceAnalyticsDashboard } from '@/components/analytics/PriceAnalyticsDa
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { usePriceAnalytics } from '@/hooks/usePriceAnalytics'
 import { usePriceAnomalies } from '@/hooks/usePriceAnomalies'
+import { PostSetupNudge } from '@/components/dashboard/PostSetupNudge'
 
 export default function Dashboard() {
   const { data: analyticsData, isLoading: analyticsLoading } = usePriceAnalytics()
@@ -26,7 +27,9 @@ export default function Dashboard() {
           Real-time overview of your wholesale procurement activity
         </p>
       </div>
-      
+
+      <PostSetupNudge />
+
       <Tabs defaultValue="overview" className="space-y-6">
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>

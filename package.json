@@ -65,6 +65,7 @@
     "embla-carousel-react": "^8.6.0",
     "flag-icons": "^7.5.0",
     "input-otp": "^1.4.2",
+    "libphonenumber-js": "^1.12.17",
     "lucide-react": "^0.462.0",
     "material-symbols": "^0.35.2",
     "next-themes": "^0.3.0",
