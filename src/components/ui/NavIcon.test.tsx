@@ -213,7 +213,7 @@ describe('NavIcon scaling', () => {
     }
   })
 
-  const targetSize = 44
+  const targetSize = 36
 
   it.each(iconTestCases)(
     'does not apply extra scaling when the %s icon fills the viewBox',
