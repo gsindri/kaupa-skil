@@ -261,7 +261,7 @@ export const ProductCard = memo(function ProductCard({
         className,
       )}
     >
-      <div className="relative">
+      <div className="relative px-4 pt-4">
         <div className="catalog-card__surface aspect-[4/3] w-full">
           <div className="catalog-card__badge-layer" data-badge-slot>
             {isInCart && (
@@ -283,55 +283,53 @@ export const ProductCard = memo(function ProductCard({
         </div>
         <div className="catalog-card__glint" aria-hidden="true" />
       </div>
-      <CardContent className="flex flex-1 flex-col px-5 pb-0 pt-6">
+      <CardContent className="flex flex-1 flex-col px-4 pb-0 pt-4">
         {detailLink ? (
           <a
             {...detailLink}
-            className="text-[15px] font-semibold leading-snug text-foreground transition-colors hover:text-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)] focus-visible:ring-offset-4"
+            className="catalog-card__title catalog-card__title-link focus-visible:outline-none"
           >
             {product.name}
           </a>
         ) : (
-          <div className="text-[15px] font-semibold leading-snug text-foreground">
-            {product.name}
-          </div>
+          <div className="catalog-card__title">{product.name}</div>
         )}
-        <div className="mt-2 min-h-[1rem] text-[12px] font-medium text-muted-foreground/85">
-          {metaLine}
+        <div className="catalog-card__meta" aria-hidden={!metaLine}>
+          {metaLine || "\u00A0"}
         </div>
         <div className="mt-auto" />
       </CardContent>
-      <CardFooter className="catalog-card__footer flex flex-nowrap items-center gap-3 px-5 pb-5 pt-4">
-        <div className="catalog-card__footer-meta flex min-w-0 items-center gap-2 overflow-hidden text-xs">
+      <CardFooter className="catalog-card__footer flex flex-nowrap items-center gap-3 px-4 pb-4 pt-4">
+        <div className="catalog-card__footer-meta flex min-w-0 flex-1 flex-nowrap items-center gap-2.5 overflow-hidden">
           <AvailabilityBadge
             status={availability}
             updatedAt={product.availability_updated_at}
             className="flex-shrink-0"
           />
           {product.suppliers_count > 0 && (
-            <span className="catalog-chip flex min-w-0 items-center gap-2 text-[12px]">
+            <span className="catalog-chip flex min-w-0 items-center gap-2">
               <SupplierLogo
                 name={primarySupplierName || supplierLabel}
                 logoUrl={primarySupplierLogo}
-                className="h-6 w-6 flex-shrink-0 rounded-full bg-white/70"
+                className="!h-7 !w-7 flex-shrink-0 !rounded-full bg-white/80 shadow-sm"
               />
-              <span className="catalog-card__supplier-label truncate font-medium text-secondary-foreground/90">
+              <span className="catalog-card__supplier-label truncate">
                 {bestSupplierLabel}
               </span>
             </span>
           )}
           {overflowSupplierCount > 0 && (
-            <span className="catalog-chip catalog-chip--quiet flex-shrink-0 text-[12px] font-semibold">
+            <span className="catalog-chip catalog-chip--quiet flex-shrink-0">
               +{overflowSupplierCount}
             </span>
           )}
           {product.active_supplier_count === 0 && (
-            <span className="catalog-chip catalog-chip--quiet flex-shrink-0 text-[12px]">
+            <span className="catalog-chip catalog-chip--quiet flex-shrink-0">
               Not seen recently
             </span>
           )}
         </div>
-        <div className="catalog-card__footer-actions ml-auto flex flex-shrink-0 items-center gap-2 pl-2">
+        <div className="catalog-card__footer-actions ml-auto flex flex-shrink-0 items-center gap-3 pl-3">
           {priceLabel && (
             <div className="catalog-card__price" aria-live="polite">
               {priceLabel}
