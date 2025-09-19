@@ -39,7 +39,7 @@ export function PrimaryNavRail() {
         zIndex: 'var(--z-rail, 60)',
       }}
     >
-      <nav className="flex flex-1 flex-col gap-1 px-2 pt-[var(--sidebar-offset-rail)]">
+      <nav className="flex flex-1 flex-col gap-2 px-2 pt-[var(--sidebar-offset-rail)]">
         {items.map(({ to, Icon, label }) => {
           const active = pathname === to || pathname.startsWith(to + '/')
           const isHovered = hoveredItem === to
@@ -60,13 +60,13 @@ export function PrimaryNavRail() {
                 setHoveredItem((current) => (current === to ? null : current))
               }
             >
-              <span
-                aria-hidden
-                className={clsx(
-                  'pointer-events-none absolute inset-y-2 left-1 w-[3px] rounded-full transition-colors duration-200',
-                  active ? 'bg-[#ff8a3d]' : 'bg-transparent group-hover:bg-white/40'
-                )}
-              />
+               <span
+                 aria-hidden
+                 className={clsx(
+                   'pointer-events-none absolute top-[14px] bottom-[24px] left-1 w-[4px] rounded-full transition-colors duration-200',
+                   active ? 'bg-[#ff8a3d]' : 'bg-transparent group-hover:bg-white/40'
+                 )}
+               />
               <NavIcon
                 Icon={Icon}
                 active={active}
