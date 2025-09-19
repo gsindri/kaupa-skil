@@ -12,13 +12,24 @@ export default function CartIcon({
   className,
   ...rest
 }: CartIconProps) {
-  const clipPathId = React.useId()
   const display = count >= 100 ? '99+' : String(count)
-  const showCount = count > 0
+  const glyphLength = display.length
+
+  const fontSize = React.useMemo(() => {
+    if (glyphLength >= 3) return 5.4
+    if (glyphLength === 2) return 6.6
+    return 7.4
+  }, [glyphLength])
+
+  const verticalPosition = React.useMemo(() => {
+    if (glyphLength >= 3) return 11.2
+    if (glyphLength === 2) return 11.5
+    return 11.8
+  }, [glyphLength])
 
   return (
     <svg
-      viewBox="0 0 768 768"
+      viewBox="0 0 24 24"
       role="img"
       aria-label={title}
       className={className}
@@ -29,59 +40,38 @@ export default function CartIcon({
       <g
         fill="none"
         stroke="currentColor"
-        strokeWidth={16}
+        strokeWidth={1.8}
         strokeLinecap="round"
         strokeLinejoin="round"
         vectorEffect="non-scaling-stroke"
-        opacity={0.75}
       >
-        <path d="M230 430 L525 410" />
-        <path d="M230 430 a56 59 0 0 0 0 112" />
-        <path d="M275 499 H560" />
-        <path d="M230 430 L195 270 L115 245" />
-        <path d="M525 410 L575 230" />
+        <path d="M6.8 17H18.5" />
+        <path d="M6.8 17L5 7.5 3.4 6.2" />
+        <path d="M3.4 6.2L2.2 5.8" />
+        <path d="M18.5 17L19.4 13 20.2 9" />
       </g>
 
-      <g stroke="currentColor" strokeWidth={16} vectorEffect="non-scaling-stroke">
-        <circle cx="340" cy="570" r="22" fill="#f59e0b" />
-        <circle cx="505" cy="570" r="22" fill="#f59e0b" />
+      <g fill="#ffffff" stroke="currentColor" strokeWidth={1.3} vectorEffect="non-scaling-stroke">
+        <circle cx="10" cy="19.2" r="0.7" />
+        <circle cx="16" cy="19.2" r="0.7" />
       </g>
 
-      {showCount && (
-        <>
-          <defs>
-            <clipPath id={clipPathId}>
-              <polygon points="250,430 520,410 560,499 275,499" />
-            </clipPath>
-          </defs>
-
-          <g clipPath={`url(#${clipPathId})`}>
-            <text
-              x="410"
-              y="465"
-              textAnchor="middle"
-              dominantBaseline="middle"
-              fontWeight={600}
-              fill="#f59e0b"
-              fontSize={170}
-              letterSpacing={-6}
-              style={{ fontFamily: 'var(--font-ui)', fontVariantNumeric: 'tabular-nums' }}
-            >
-              {display}
-            </text>
-          </g>
-
-          <path
-            d="M230 430 L525 410"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={16}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            vectorEffect="non-scaling-stroke"
-          />
-        </>
-      )}
+      <text
+        x="13"
+        y={verticalPosition}
+        textAnchor="middle"
+        dominantBaseline="middle"
+        fontWeight={800}
+        fontSize={fontSize}
+        fill="#f59e0b"
+        style={{
+          fontFamily:
+            "Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Arial",
+          fontVariantNumeric: 'tabular-nums'
+        }}
+      >
+        {display}
+      </text>
     </svg>
   )
 }
