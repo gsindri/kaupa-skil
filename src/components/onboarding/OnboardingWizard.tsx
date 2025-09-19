@@ -1,29 +1,35 @@
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useNavigate, useBlocker } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
+import { ArrowLeft, Check, Loader2 } from 'lucide-react'
 
-import React, { useState } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Progress } from '@/components/ui/progress'
-import { CheckCircle, AlertTriangle } from 'lucide-react'
-import { OrganizationSetupStep } from './steps/OrganizationSetupStep'
-import { SupplierConnectionStep } from './steps/SupplierConnectionStep'
-import { OrderGuideStep } from './steps/OrderGuideStep'
 import { useAuth } from '@/contexts/useAuth'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
-import { useNavigate } from 'react-router-dom'
+import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
+import { OrganizationStep, type OrganizationStepHandle, type OrganizationFormValues } from './steps/OrganizationStep'
+import { SupplierSelectionStep, type SupplierOption } from './steps/SupplierSelectionStep'
+import { ReviewStep, type ReviewPreferences } from './steps/ReviewStep'
+import { useLocaleDefaults } from '@/utils/locale'
+import type { Database } from '@/lib/types'
 
-interface OnboardingData {
-  organization?: {
-    name: string
-    address: string
-    phone: string
-    contactName: string
-  }
-  suppliers?: string[]
-  orderGuide?: {
-    categories: string[]
-    preferredSuppliers: string[]
-  }
+const DRAFT_STORAGE_KEY = 'workspace_setup_draft'
+const STATUS_STORAGE_KEY = 'workspace_setup_status'
+const PREFERENCES_STORAGE_KEY = 'workspace_preferences'
+const TOTAL_STEPS = 3
+
+interface DraftState {
+  organization: OrganizationFormValues
+  selectedSupplierIds: string[]
+  currentStep: number
+  preferences: ReviewPreferences
+}
+
+interface StepDefinition {
+  id: number
+  title: string
+  description: string
 }
 
 interface OnboardingWizardProps {
@@ -31,64 +37,287 @@ interface OnboardingWizardProps {
   onComplete?: () => void
 }
 
-export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) {
-  const [currentStep, setCurrentStep] = useState(1)
-  const [data, setData] = useState<OnboardingData>({})
-  const [isCompleting, setIsCompleting] = useState(false)
-  const [setupError, setSetupError] = useState<string | null>(null)
-  const { user, profile, refetch } = useAuth()
-  const { toast } = useToast()
-  const navigate = useNavigate()
+const EMPTY_ORGANIZATION: OrganizationFormValues = {
+  name: '',
+  contactName: '',
+  phone: '',
+  address: '',
+  vat: ''
+}
 
-  const steps = [
-    { id: 1, title: 'Organization Setup', description: 'Set up your organization details' },
-    { id: 2, title: 'Connect Suppliers', description: 'Connect to your first suppliers' },
-    { id: 3, title: 'Order Guide', description: 'Configure your ordering preferences' }
-  ]
+type SupplierRow = Database['public']['Tables']['suppliers']['Row']
 
-  const progress = (currentStep / steps.length) * 100
-
-  const handleStepComplete = (stepData: any) => {
-    setData(prev => ({ ...prev, ...stepData }))
-    
-    if (currentStep < steps.length) {
-      setCurrentStep(prev => prev + 1)
-    } else {
-      completeOnboarding()
-    }
+function mapConnectorType(connectorType?: string | null) {
+  switch (connectorType) {
+    case 'api':
+      return 'API-connected partner'
+    case 'portal':
+      return 'Portal upload ready'
+    case 'email':
+      return 'Email order flow'
+    default:
+      return 'Marketplace supplier'
   }
+}
 
-  const completeOnboarding = async () => {
-    if (!data.organization || !user) return
+export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) {
+  const navigate = useNavigate()
+  const { toast } = useToast()
+  const { user, profile, profileLoading, refetch } = useAuth()
+  const { language: defaultLanguage, currency: defaultCurrency } = useLocaleDefaults()
 
-    // Check if user already has a tenant_id (setup was already completed)
+  const [currentStep, setCurrentStep] = useState(1)
+  const [organization, setOrganization] = useState<OrganizationFormValues>(EMPTY_ORGANIZATION)
+  const [selectedSupplierIds, setSelectedSupplierIds] = useState<string[]>([])
+  const [preferences, setPreferences] = useState<ReviewPreferences>({
+    language: defaultLanguage,
+    currency: defaultCurrency
+  })
+  const [setupError, setSetupError] = useState<string | null>(null)
+  const [isCompleting, setIsCompleting] = useState(false)
+  const [draftLoaded, setDraftLoaded] = useState(false)
+  const [allowNavigation, setAllowNavigation] = useState(false)
+
+  const organizationStepRef = useRef<OrganizationStepHandle>(null)
+
+  const steps = useMemo<StepDefinition[]>(
+    () => [
+      {
+        id: 1,
+        title: 'Organization',
+        description: 'Used for orders and supplier communications.'
+      },
+      {
+        id: 2,
+        title: 'Connect suppliers',
+        description: 'Select suppliers to connect now. You can add more later.'
+      },
+      {
+        id: 3,
+        title: 'Review & finish',
+        description: 'Confirm details before you start.'
+      }
+    ],
+    []
+  )
+
+  useEffect(() => {
+    if (profileLoading) return
     if (profile?.tenant_id) {
-      console.log('User already has tenant_id, refreshing auth state')
       toast({
         title: 'Setup already complete!',
-        description: 'Your organization is ready to use.'
+        description: 'Your workspace is ready to use.'
       })
-      await refetch()
-      localStorage.removeItem('onboardingSkipped')
-      if (onComplete) {
-        onComplete()
-      } else {
-        navigate('/settings')
+      navigate('/')
+    }
+  }, [profile, profileLoading, navigate, toast])
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || draftLoaded) return
+    const raw = window.localStorage.getItem(DRAFT_STORAGE_KEY)
+    if (raw) {
+      try {
+        const parsed = JSON.parse(raw) as Partial<DraftState>
+        if (parsed.organization) {
+          setOrganization({ ...EMPTY_ORGANIZATION, ...parsed.organization })
+        }
+        if (Array.isArray(parsed.selectedSupplierIds)) {
+          setSelectedSupplierIds(Array.from(new Set(parsed.selectedSupplierIds)))
+        }
+        if (parsed.preferences) {
+          setPreferences(prev => ({
+            language: parsed.preferences?.language || prev.language,
+            currency: parsed.preferences?.currency || prev.currency
+          }))
+        }
+        if (parsed.currentStep) {
+          setCurrentStep(Math.min(Math.max(1, parsed.currentStep), TOTAL_STEPS))
+        }
+      } catch (error) {
+        console.warn('Unable to load onboarding draft:', error)
       }
+    }
+    setDraftLoaded(true)
+  }, [draftLoaded])
+
+  useEffect(() => {
+    if (!draftLoaded || typeof window === 'undefined') return
+    const draft: DraftState = {
+      organization,
+      selectedSupplierIds,
+      currentStep,
+      preferences
+    }
+    window.localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(draft))
+  }, [organization, selectedSupplierIds, preferences, currentStep, draftLoaded])
+
+  const {
+    data: marketplaceSuppliers = [],
+    isLoading: suppliersLoading,
+    error: suppliersError
+  } = useQuery<SupplierOption[]>({
+    queryKey: ['onboarding', 'suppliers'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('suppliers')
+        .select('id, name, logo_url, connector_type')
+        .order('name')
+
+      if (error) {
+        throw error
+      }
+
+      return (
+        (data ?? []).map(item => {
+          const typed = item as Pick<SupplierRow, 'id' | 'name' | 'logo_url' | 'connector_type'>
+          return {
+            id: typed.id,
+            name: typed.name,
+            logo_url: typed.logo_url,
+            subtitle: mapConnectorType(typed.connector_type),
+            is_verified: true,
+            status: 'active'
+          }
+        }) || []
+      )
+    },
+    staleTime: 1000 * 60 * 5
+  })
+
+  useEffect(() => {
+    if (suppliersError instanceof Error) {
+      toast({
+        title: 'Supplier directory unavailable',
+        description: suppliersError.message,
+        variant: 'destructive'
+      })
+    }
+  }, [suppliersError, toast])
+
+  const hasOrganizationDetails = useMemo(() => {
+    return (
+      Boolean(organization.name) ||
+      Boolean(organization.contactName) ||
+      Boolean(organization.phone) ||
+      Boolean(organization.address) ||
+      Boolean(organization.vat)
+    )
+  }, [organization])
+
+  const hasDraft = hasOrganizationDetails || selectedSupplierIds.length > 0 || currentStep > 1
+  const shouldBlockNavigation = !allowNavigation && !isCompleting && hasDraft
+  const blocker = useBlocker(shouldBlockNavigation)
+
+  useEffect(() => {
+    if (blocker.state === 'blocked') {
+      const confirmLeave = window.confirm('Progress saved. Leave setup?')
+      if (confirmLeave) {
+        setAllowNavigation(true)
+        blocker.proceed()
+      } else {
+        blocker.reset()
+      }
+    }
+  }, [blocker])
+
+  useEffect(() => {
+    if (!shouldBlockNavigation) return
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault()
+      event.returnValue = 'Progress saved. Leave setup?'
+    }
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+  }, [shouldBlockNavigation])
+
+  const progress = (currentStep / TOTAL_STEPS) * 100
+
+  const handleOrganizationUpdate = useCallback((values: OrganizationFormValues) => {
+    setOrganization(values)
+    if (setupError) {
+      setSetupError(null)
+    }
+  }, [setupError])
+
+  const handleOrganizationComplete = useCallback(
+    (values: OrganizationFormValues) => {
+      setOrganization(values)
+      setCurrentStep(2)
+    },
+    []
+  )
+
+  const handleSupplierToggle = useCallback((supplierId: string) => {
+    setSelectedSupplierIds(prev =>
+      prev.includes(supplierId)
+        ? prev.filter(id => id !== supplierId)
+        : [...prev, supplierId]
+    )
+  }, [])
+
+  const handleSupplierContinue = useCallback(() => {
+    if (selectedSupplierIds.length === 0) {
+      toast({
+        title: 'No suppliers selected',
+        description: 'You haven’t connected any suppliers yet.',
+        duration: 4000
+      })
+    }
+    setCurrentStep(3)
+  }, [selectedSupplierIds.length, toast])
+
+  const handleBack = useCallback(() => {
+    setCurrentStep(prev => Math.max(1, prev - 1))
+  }, [])
+
+  const handlePreferencesChange = useCallback((prefs: ReviewPreferences) => {
+    setPreferences(prefs)
+  }, [])
+
+  const handleInviteSupplier = useCallback(() => {
+    if (typeof window !== 'undefined') {
+      window.open('/suppliers', '_blank', 'noopener')
+    }
+    toast({
+      title: 'Invite suppliers',
+      description: 'We opened the suppliers workspace in a new tab.',
+      duration: 3500
+    })
+  }, [toast])
+
+  const handleSkip = useCallback(() => {
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem('onboardingSkipped', 'true')
+    }
+    toast({
+      title: 'Setup saved for later',
+      description: 'You can complete organization setup whenever you’re ready.'
+    })
+    setAllowNavigation(true)
+    if (onSkip) {
+      onSkip()
+    } else {
+      navigate('/')
+    }
+  }, [navigate, onSkip, toast])
+
+  const completeOnboarding = useCallback(async () => {
+    if (!user) return
+    if (!organization.name.trim()) {
+      setCurrentStep(1)
+      setSetupError('Add your organization name before finishing setup.')
       return
     }
 
     setIsCompleting(true)
     setSetupError(null)
-    
+
     try {
-      console.log('Creating tenant for user:', user.id)
-      
-      // First check if a tenant with this name already exists
+      const trimmedName = organization.name.trim()
       const { data: existingTenant, error: checkError } = await supabase
         .from('tenants')
         .select('id, name, created_by')
-        .eq('name', data.organization.name)
+        .eq('name', trimmedName)
         .maybeSingle()
 
       if (checkError && checkError.code !== 'PGRST116') {
@@ -97,31 +326,22 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
 
       let tenant = existingTenant
 
-      // If tenant exists and user created it, just associate the user
-      if (existingTenant && existingTenant.created_by === user.id) {
-        console.log('Found existing tenant created by user:', existingTenant.id)
-        tenant = existingTenant
-      } 
-      // If tenant exists but was created by someone else, suggest different name
-      else if (existingTenant) {
-        setSetupError(`An organization named "${data.organization.name}" already exists. Please choose a different name.`)
-        setCurrentStep(1) // Go back to organization setup
+      if (existingTenant && existingTenant.created_by !== user.id) {
+        setSetupError(`An organization named "${trimmedName}" already exists. Try another name.`)
+        setCurrentStep(1)
         return
       }
-      // Create new tenant
-      else {
+
+      if (!tenant) {
         const { data: newTenant, error: tenantError } = await supabase
           .from('tenants')
-          .insert({
-            name: data.organization.name,
-            created_by: user.id
-          })
+          .insert({ name: trimmedName, created_by: user.id })
           .select()
           .single()
 
         if (tenantError) {
-          if (tenantError.code === '23505') { // Unique constraint violation
-            setSetupError(`An organization named "${data.organization.name}" already exists. Please choose a different name.`)
+          if ((tenantError as any).code === '23505') {
+            setSetupError(`An organization named "${trimmedName}" already exists. Try another name.`)
             setCurrentStep(1)
             return
           }
@@ -129,200 +349,242 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
         }
 
         tenant = newTenant
-        console.log('New tenant created:', tenant)
       }
 
-      // Update the user's profile with the tenant_id
       const { error: profileError } = await supabase
         .from('profiles')
         .update({ tenant_id: tenant.id })
         .eq('id', user.id)
 
-      if (profileError) throw profileError
+      if (profileError) {
+        throw profileError
+      }
 
-      console.log('Profile updated with tenant_id:', tenant.id)
+      if (selectedSupplierIds.length > 0) {
+        const { error: connectionsError } = await supabase
+          .from('supplier_connections')
+          .upsert(
+            selectedSupplierIds.map(id => ({
+              tenant_id: tenant.id,
+              supplier_id: id,
+              status: 'connected'
+            })),
+            { onConflict: 'tenant_id,supplier_id' }
+          )
+
+        if (connectionsError) {
+          throw connectionsError
+        }
+      }
+
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem(STATUS_STORAGE_KEY, 'complete')
+        window.localStorage.setItem(PREFERENCES_STORAGE_KEY, JSON.stringify(preferences))
+        window.localStorage.removeItem(DRAFT_STORAGE_KEY)
+        window.localStorage.removeItem('onboardingSkipped')
+      }
 
       toast({
-        title: 'Setup complete!',
-        description: `Welcome to ${tenant.name}. Your procurement console is ready to use.`
+        title: 'Workspace ready.',
+        description: 'You can tweak settings anytime.'
       })
 
-      // Refresh auth to update the user's profile
       await refetch()
-      localStorage.removeItem('onboardingSkipped')
+      setAllowNavigation(true)
+
       if (onComplete) {
         onComplete()
       } else {
-        navigate('/settings')
+        navigate('/')
       }
-    } catch (error: any) {
-      console.error('Failed to complete onboarding:', error)
-      setSetupError(error.message || 'Failed to complete setup. Please try again.')
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to complete setup. Please try again.'
+      setSetupError(message)
+      setCurrentStep(1)
       toast({
         title: 'Setup failed',
-        description: error.message,
+        description: message,
         variant: 'destructive'
       })
     } finally {
       setIsCompleting(false)
     }
-  }
+  }, [navigate, onComplete, organization, preferences, refetch, selectedSupplierIds, toast, user])
 
-  const goBack = () => {
-    if (currentStep > 1) {
-      setCurrentStep(prev => prev - 1)
-      setSetupError(null) // Clear any errors when going back
-    }
-  }
-
-  const retrySetup = () => {
-    setSetupError(null)
-    setCurrentStep(1) // Go back to organization setup to change name
-  }
-
-  const handleSkip = () => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('onboardingSkipped', 'true')
-    }
-    toast({
-      title: 'Setup skipped',
-      description: 'You can complete organization setup later in Settings.'
-    })
-    if (onSkip) {
-      onSkip()
-    } else {
-      navigate('/settings')
-    }
-  }
-
-  if (isCompleting) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Card className="w-full max-w-md">
-          <CardContent className="pt-6">
-            <div className="text-center space-y-4">
-              <CheckCircle className="h-16 w-16 text-primary mx-auto animate-spin" />
-              <h2 className="text-xl font-semibold">Setting up your account...</h2>
-              <p className="text-muted-foreground">This will just take a moment.</p>
-            </div>
-          </CardContent>
-        </Card>
+  const organizationFooter = (
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <Button variant="outline" size="lg" className="justify-center sm:w-auto" disabled>
+        <ArrowLeft className="mr-2 h-4 w-4" /> Back
+      </Button>
+      <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center">
+        <Button
+          variant="ghost"
+          className="justify-center text-[13px] text-[color:var(--text-muted)] hover:text-[color:var(--text)]"
+          onClick={handleSkip}
+        >
+          Skip for now
+        </Button>
+        <Button
+          size="lg"
+          className="justify-center"
+          onClick={() => organizationStepRef.current?.submit()}
+          disabled={isCompleting}
+        >
+          Continue
+        </Button>
       </div>
-    )
-  }
+    </div>
+  )
 
-  // Show error state if there's a setup error
-  if (setupError) {
-    return (
-      <div className="min-h-screen bg-background p-4">
-        <div className="max-w-2xl mx-auto">
-          <div className="text-center mb-8">
-            <AlertTriangle className="h-16 w-16 text-destructive mx-auto mb-4" />
-            <h1 className="text-3xl font-bold mb-2">Setup Issue</h1>
-            <p className="text-muted-foreground">
-              There was an issue completing your setup.
-            </p>
-          </div>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Setup Error</CardTitle>
-              <CardDescription>Please resolve this issue to continue</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
-                  <p className="text-destructive">{setupError}</p>
-                </div>
-                <div className="flex gap-3">
-                  <Button onClick={retrySetup} className="flex-1">
-                    Choose Different Name
-                  </Button>
-                  <Button variant="outline" onClick={() => setSetupError(null)}>
-                    Try Again
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+  const supplierFooter = (
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <Button
+        variant="ghost"
+        size="lg"
+        className="justify-center sm:w-auto"
+        onClick={handleBack}
+        disabled={isCompleting}
+      >
+        <ArrowLeft className="mr-2 h-4 w-4" /> Back
+      </Button>
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+        <span className="text-center text-[13px] text-[color:var(--text-muted)]">
+          {selectedSupplierIds.length} selected
+        </span>
+        <Button size="lg" className="justify-center" onClick={handleSupplierContinue} disabled={isCompleting}>
+          Continue
+        </Button>
       </div>
-    )
-  }
+    </div>
+  )
+
+  const reviewFooter = (
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <Button
+        variant="ghost"
+        size="lg"
+        className="justify-center sm:w-auto"
+        onClick={handleBack}
+        disabled={isCompleting}
+      >
+        <ArrowLeft className="mr-2 h-4 w-4" /> Back
+      </Button>
+      <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center">
+        <Button
+          variant="ghost"
+          className="justify-center text-[13px] text-[color:var(--text-muted)] hover:text-[color:var(--text)]"
+          onClick={handleSkip}
+          disabled={isCompleting}
+        >
+          Skip for now
+        </Button>
+        <Button size="lg" className="justify-center" onClick={completeOnboarding} disabled={isCompleting}>
+          {isCompleting ? (
+            <span className="flex items-center gap-2">
+              <Loader2 className="h-4 w-4 animate-spin" /> Finishing…
+            </span>
+          ) : (
+            'Finish setup'
+          )}
+        </Button>
+      </div>
+    </div>
+  )
 
   return (
-    <div className="min-h-screen bg-background p-4">
-      <div className="max-w-4xl mx-auto">
-        <div className="flex justify-end mb-4">
-          <Button variant="ghost" onClick={handleSkip}>
-            Skip for now
-          </Button>
-        </div>
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold mb-2">Welcome to ProcureWise</h1>
-          <p className="text-muted-foreground">Let's get your account set up in just a few steps</p>
-        </div>
+    <div className="min-h-screen bg-[color:var(--brand-bg)]/6 py-10 sm:py-16">
+      <div className="mx-auto w-full max-w-4xl px-4">
+        <header className="mb-8 space-y-2 text-center">
+          <h1 className="text-3xl font-semibold text-[color:var(--text)]">Welcome to ProcureWise</h1>
+          <p className="text-[15px] text-[color:var(--text-muted)]">Let’s get you set up in a few steps.</p>
+        </header>
 
-        {/* Progress */}
-        <div className="mb-8">
-          <div className="flex justify-between items-center mb-4">
-            {steps.map((step, index) => (
-              <div key={step.id} className="flex items-center">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                  currentStep > step.id 
-                    ? 'bg-primary text-primary-foreground' 
-                    : currentStep === step.id 
-                      ? 'bg-primary text-primary-foreground' 
-                      : 'bg-muted text-muted-foreground'
-                }`}>
-                  {currentStep > step.id ? <CheckCircle className="w-5 h-5" /> : step.id}
-                </div>
-                {index < steps.length - 1 && (
-                  <div className={`w-16 h-0.5 mx-2 ${
-                    currentStep > step.id ? 'bg-primary' : 'bg-muted'
-                  }`} />
-                )}
-              </div>
-            ))}
+        <div className="relative overflow-hidden rounded-[16px] border border-[color:var(--surface-ring)] bg-[color:var(--surface-pop)] shadow-[var(--elev-shadow)]">
+          <div className="absolute inset-x-0 top-0 h-[3px] bg-[color:var(--surface-ring)]/40">
+            <div
+              className="h-full bg-[var(--brand-accent)] transition-all duration-500"
+              style={{ width: `${progress}%` }}
+            />
           </div>
-          <Progress value={progress} className="mb-2" />
-          <p className="text-center text-sm text-muted-foreground">
-            Step {currentStep} of {steps.length}: {steps[currentStep - 1]?.title}
-          </p>
-        </div>
 
-        {/* Step Content */}
-        <Card>
-          <CardHeader>
-            <CardTitle>{steps[currentStep - 1]?.title}</CardTitle>
-            <CardDescription>{steps[currentStep - 1]?.description}</CardDescription>
-          </CardHeader>
-          <CardContent>
+          <div className="flex flex-col gap-8 px-6 py-8 sm:px-10 sm:py-10">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div className="space-y-1">
+                <p className="text-[12px] uppercase tracking-wide text-[color:var(--text-muted)]">
+                  Step {currentStep} of {TOTAL_STEPS}
+                </p>
+                <h2 className="text-2xl font-semibold text-[color:var(--text)]">{steps[currentStep - 1]?.title}</h2>
+                <p className="text-[14px] text-[color:var(--text-muted)]">{steps[currentStep - 1]?.description}</p>
+              </div>
+              <ol className="flex items-center justify-center gap-3 text-[12px] text-[color:var(--text-muted)] sm:flex-col sm:items-end">
+                {steps.map(step => {
+                  const status =
+                    currentStep === step.id ? 'current' : currentStep > step.id ? 'complete' : 'upcoming'
+                  return (
+                    <li
+                      key={step.id}
+                      className={cn(
+                        'flex items-center gap-2',
+                        status === 'current' && 'text-[color:var(--text)] font-medium',
+                        status === 'complete' && 'text-[var(--brand-accent)]'
+                      )}
+                    >
+                      <span
+                        className={cn(
+                          'flex h-7 w-7 items-center justify-center rounded-full border text-[12px]',
+                          status === 'complete' &&
+                            'border-[var(--brand-accent)] bg-[var(--brand-accent)] text-[color:var(--brand-accent-fg)]',
+                          status === 'current' &&
+                            'border-[var(--brand-accent)] text-[var(--brand-accent)]',
+                          status === 'upcoming' && 'border-[color:var(--surface-ring)]'
+                        )}
+                      >
+                        {status === 'complete' ? <Check className="h-4 w-4" /> : step.id}
+                      </span>
+                      <span className="hidden sm:inline">{step.title}</span>
+                    </li>
+                  )
+                })}
+              </ol>
+            </div>
+
             {currentStep === 1 && (
-              <OrganizationSetupStep 
-                onComplete={handleStepComplete}
-                initialData={data.organization}
-                error={setupError}
+              <OrganizationStep
+                ref={organizationStepRef}
+                value={organization}
+                onUpdate={handleOrganizationUpdate}
+                onComplete={handleOrganizationComplete}
+                footer={organizationFooter}
+                setupError={setupError}
               />
             )}
+
             {currentStep === 2 && (
-              <SupplierConnectionStep 
-                onComplete={handleStepComplete}
-                onBack={goBack}
-                initialData={data.suppliers}
+              <SupplierSelectionStep
+                suppliers={marketplaceSuppliers}
+                selectedIds={selectedSupplierIds}
+                onToggle={handleSupplierToggle}
+                onInviteSupplier={handleInviteSupplier}
+                isLoading={suppliersLoading}
+                error={suppliersError instanceof Error ? suppliersError.message : null}
+                footer={supplierFooter}
               />
             )}
+
             {currentStep === 3 && (
-              <OrderGuideStep 
-                onComplete={handleStepComplete}
-                onBack={goBack}
-                initialData={data.orderGuide}
-                organizationData={data.organization}
+              <ReviewStep
+                organization={organization}
+                suppliers={marketplaceSuppliers}
+                selectedSupplierIds={selectedSupplierIds}
+                preferences={preferences}
+                onPreferencesChange={handlePreferencesChange}
+                onEditOrganization={() => setCurrentStep(1)}
+                onEditSuppliers={() => setCurrentStep(2)}
+                footer={reviewFooter}
               />
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </div>
   )
