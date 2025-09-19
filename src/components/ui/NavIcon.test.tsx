@@ -38,13 +38,19 @@ describe('NavIcon pointer interactions', () => {
   })
 
   it('preserves inline styles defined by the source SVG', () => {
+    const sourceStyleTokens = extractRootStyleTokens('../../icons/discover.svg')
     const { container } = render(
       <NavIcon Icon={DiscoverIcon} label="Discover icon" />
     )
     const svg = container.querySelector('svg')
 
     expect(svg).not.toBeNull()
-    expect(svg?.getAttribute('style')).toContain('--ink')
+    const renderedTokens = extractStyleTokens(svg?.getAttribute('style') ?? null)
+
+    expect(renderedTokens.length).toBeGreaterThanOrEqual(sourceStyleTokens.length)
+    sourceStyleTokens.forEach((token) => {
+      expect(renderedTokens).toContain(token)
+    })
   })
 })
 
@@ -76,6 +82,33 @@ type BBoxInit = {
   y: number
   width: number
   height: number
+}
+
+const extractRootStyleTokens = (svgPath: string): string[] => {
+  const svgContents = fs.readFileSync(new URL(svgPath, import.meta.url), 'utf8')
+  const match = svgContents.match(/<svg[^>]*style="([^"]*)"/i)
+
+  if (!match) {
+    return []
+  }
+
+  return match[1]
+    .split(';')
+    .map((token) => token.trim())
+    .filter(Boolean)
+    .map((token) => token.replace(/\s*:\s*/g, ':'))
+}
+
+const extractStyleTokens = (style: string | null): string[] => {
+  if (!style) {
+    return []
+  }
+
+  return style
+    .split(';')
+    .map((token) => token.trim())
+    .filter(Boolean)
+    .map((token) => token.replace(/\s*:\s*/g, ':'))
 }
 
 let intrinsicBBox: BBoxInit = { x: 0, y: 0, width: 0, height: 0 }

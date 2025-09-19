@@ -86,15 +86,16 @@ export function NavIcon({ Icon, active, size = 36, className, label, hovered }: 
   return (
     <span
       className={cn(
-        'nav-icon grid h-11 w-11 place-items-center rounded-xl transition-all duration-200',
-        'bg-transparent overflow-visible'
+        'nav-icon grid h-10 w-10 place-items-center rounded-xl transition-transform duration-200',
+        'overflow-visible',
+        active ? 'scale-[1.02]' : 'group-hover:scale-[1.02]'
       )}
     >
       <span
         data-nav-icon-scale=""
         style={{
           transform: `scale(${transforms.scale})`,
-          transformOrigin: 'center'
+          transformOrigin: 'center',
         }}
       >
         <span
@@ -112,9 +113,8 @@ export function NavIcon({ Icon, active, size = 36, className, label, hovered }: 
             width={size}
             height={size}
             className={cn(
-              'pointer-events-auto text-white/80 group-hover:text-white transition-all duration-200',
-              '[filter:drop-shadow(0_0_4px_rgba(255,255,255,0.4))]',
-              active && 'text-white [filter:drop-shadow(0_0_6px_rgba(255,255,255,0.7))]',
+              'pointer-events-auto transition-opacity duration-200',
+              active ? 'opacity-100' : 'opacity-75 group-hover:opacity-100',
               isMeasuring && 'opacity-0',
               className
             )}

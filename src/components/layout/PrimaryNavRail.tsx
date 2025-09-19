@@ -23,29 +23,23 @@ const items = [
   { to: '/discovery', Icon: DiscoverIcon, label: 'Discover' },
 ]
 
+const focusRingClass =
+  'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ff8a3d]/70'
+
 export function PrimaryNavRail() {
   const { pathname } = useLocation()
   const [hoveredItem, setHoveredItem] = React.useState<string | null>(null)
   return (
     <div
       className={clsx(
-        'nav-rail h-full w-[var(--layout-rail,72px)] bg-gradient-to-b',
-        'from-[#0B1220] via-[#0E1B35] to-[#0E2A5E] relative'
+        'nav-rail relative flex h-full w-[var(--layout-rail,72px)] flex-col border-r border-white/5',
+        'bg-[linear-gradient(180deg,#070d18_0%,#0c1423_45%,#101c32_100%)]'
       )}
       style={{
         zIndex: 'var(--z-rail, 60)',
       }}
     >
-      <div
-        aria-hidden
-        className="absolute inset-x-0 top-0 h-[2px] pointer-events-none"
-        style={{
-          background:
-            'linear-gradient(90deg, rgba(165, 243, 252, 0.63) 0%, rgba(34, 211, 238, 0.9) 50%, rgba(165, 243, 252, 0.63) 100%)',
-        }}
-      />
-
-      <nav className="flex w-full flex-col items-center gap-1 pt-[var(--sidebar-offset-rail)]">
+      <nav className="flex flex-1 flex-col gap-1.5 px-2 pt-[var(--sidebar-offset-rail)]">
         {items.map(({ to, Icon, label }) => {
           const active = pathname === to || pathname.startsWith(to + '/')
           const isHovered = hoveredItem === to
@@ -55,23 +49,39 @@ export function PrimaryNavRail() {
               to={to}
               aria-current={active ? 'page' : undefined}
               className={clsx(
-                'group relative my-1 flex w-20 flex-col items-center rounded-2xl px-2.5 py-2 text-white/80',
-                'hover:text-white transition-colors duration-200',
-                active &&
-                  'bg-white/5 text-white ring-2 ring-white/40 ring-offset-2 ring-offset-white/10'
+                'group relative flex h-16 w-full flex-col items-center justify-center gap-1.5 rounded-2xl',
+                'px-2 text-center transition-colors duration-200',
+                'text-white/60 hover:text-white/90 hover:bg-white/5',
+                focusRingClass,
+                active && 'bg-white/10 text-white shadow-[0_0_0_1px_rgba(255,255,255,0.08)]'
               )}
               onPointerEnter={() => setHoveredItem(to)}
               onPointerLeave={() =>
                 setHoveredItem((current) => (current === to ? null : current))
               }
             >
+              <span
+                aria-hidden
+                className={clsx(
+                  'pointer-events-none absolute inset-y-2 left-1 w-[3px] rounded-full transition-colors duration-200',
+                  active ? 'bg-[#ff8a3d]' : 'bg-transparent group-hover:bg-white/40'
+                )}
+              />
               <NavIcon
                 Icon={Icon}
                 active={active}
                 label={label}
                 hovered={isHovered}
+                size={28}
               />
-              <span className="mt-1.5 text-[11px] leading-[14px] text-center whitespace-nowrap">{label}</span>
+              <span
+                className={clsx(
+                  'text-[12px] font-semibold tracking-wide transition-colors duration-200',
+                  active ? 'text-white' : 'text-white/60 group-hover:text-white/90'
+                )}
+              >
+                {label}
+              </span>
             </Link>
           )
         })}
