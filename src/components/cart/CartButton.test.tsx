@@ -64,21 +64,21 @@ function renderWithProviders(items: CartItem[]) {
 }
 
 describe('CartButton', () => {
-  it('renders an icon-only trigger when the cart is empty', () => {
+  it('renders a transparent trigger with no count when the cart is empty', () => {
     renderWithProviders([])
 
-    const button = screen.getByRole('button', { name: /cart is empty/i })
-    expect(button).toHaveClass('w-10', 'h-10')
-    expect(button).not.toHaveTextContent(/Cart/i)
+    const button = screen.getByRole('button', { name: /cart, 0 items/i })
+    expect(button).toHaveClass('bg-transparent')
+    expect(button).toHaveTextContent(/Cart/i)
+    expect(screen.queryByText('0', { selector: 'text' })).not.toBeInTheDocument()
   })
 
-  it('renders a filled pill when the cart has items', () => {
+  it('renders the count inside the basket when the cart has items', () => {
     renderWithProviders([createCartItem({ quantity: 3 })])
 
-    const button = screen.getByRole('button', { name: /cart with 3 items/i })
-    expect(button).toHaveClass('bg-blue-600')
-    expect(button).toHaveTextContent(/Cart/i)
-    expect(button.getAttribute('aria-label')).toMatch(/Cart with 3 items/i)
-    expect(screen.getByText('3', { selector: 'span' })).toBeInTheDocument()
+    const button = screen.getByRole('button', { name: /cart, 3 items/i })
+    expect(button).not.toHaveClass('bg-blue-600')
+    expect(button.getAttribute('aria-label')).toMatch(/Cart, 3 items/i)
+    expect(screen.getByText('3', { selector: 'text' })).toBeInTheDocument()
   })
 })
