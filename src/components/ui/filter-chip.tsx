@@ -5,7 +5,7 @@ import { X } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const filterChipVariants = cva(
-  "inline-flex h-[var(--ctrl-h,40px)] items-center justify-center rounded-[var(--ctrl-r,12px)] px-3 text-sm font-medium text-[color:var(--ink-dim)]/85 ring-1 ring-inset ring-white/12 transition duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-4 focus-visible:ring-offset-[color:var(--toolbar-bg)] cursor-pointer select-none hover:bg-white/8 hover:text-[color:var(--ink)] hover:ring-white/20 motion-reduce:transition-none data-[selected=true]:bg-white/14 data-[selected=true]:text-[color:var(--ink)] data-[selected=true]:ring-white/20"
+  "inline-flex h-[var(--ctrl-h,40px)] items-center justify-center whitespace-nowrap rounded-[var(--ctrl-r,12px)] px-3 text-sm font-semibold text-[color:var(--ink)] ring-1 ring-inset ring-[color:var(--ring-idle)] bg-[color:var(--chip-bg)] transition duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-4 focus-visible:ring-offset-[color:var(--toolbar-bg)] cursor-pointer select-none hover:bg-[color:var(--chip-bg-hover)] hover:text-[color:var(--ink-hi)] hover:ring-[color:var(--ring-hover)] motion-reduce:transition-none data-[selected=true]:bg-[color:var(--seg-active-bg)] data-[selected=true]:text-[color:var(--ink-hi)] data-[selected=true]:ring-[color:var(--ring-hover)]"
 )
 
 export interface FilterChipProps
@@ -68,7 +68,7 @@ const FilterChip = React.forwardRef<HTMLButtonElement, FilterChipProps>(
             role="button"
             tabIndex={0}
             aria-label={removeLabel}
-            className="ml-1 rounded-full p-1 text-[color:var(--ink-dim)] transition-colors hover:bg-white/10 hover:text-[color:var(--ink)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
+            className="ml-1 rounded-full p-1 text-[color:var(--ink)]/80 transition-colors hover:bg-[color:var(--chip-bg-hover)] hover:text-[color:var(--ink-hi)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
             onClick={handleRemove as any}
             onKeyDown={handleRemoveKeyDown}
           >

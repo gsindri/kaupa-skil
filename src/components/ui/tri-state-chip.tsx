@@ -75,7 +75,9 @@ export function TriStateChip({
         : offAriaLabel ?? `${offLabel} filter off`
 
   const baseStyles =
-    'bg-transparent text-[color:var(--ink-dim)]/85 ring-1 ring-inset ring-white/12 hover:bg-white/8 hover:ring-white/20'
+    'inline-flex h-[var(--ctrl-h,40px)] w-auto items-center justify-center whitespace-nowrap rounded-[var(--ctrl-r,12px)] px-3 text-sm font-semibold transition duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-4 focus-visible:ring-offset-[color:var(--toolbar-bg)] ring-1 ring-inset cursor-pointer select-none motion-reduce:transition-none'
+  const offStyles =
+    'bg-[color:var(--chip-bg)] text-[color:var(--ink-dim)] ring-[color:var(--ring-idle)] hover:bg-[color:var(--chip-bg-hover)] hover:text-[color:var(--ink)] hover:ring-[color:var(--ring-hover)]'
   const includeStyles =
     includeClassName ??
     'bg-emerald-400/25 text-emerald-50 ring-emerald-300/60 hover:bg-emerald-400/35 hover:ring-emerald-200/70'
@@ -87,7 +89,7 @@ export function TriStateChip({
       ? cn(baseStyles, includeStyles)
       : state === 'exclude'
         ? cn(baseStyles, excludeStyles)
-        : baseStyles
+        : cn(baseStyles, offStyles)
 
   return (
     <button
@@ -97,11 +99,7 @@ export function TriStateChip({
       onClick={handleClick}
       onKeyDown={handleKeyDown}
       onContextMenu={handleContextMenu}
-      className={cn(
-        'inline-flex h-[var(--ctrl-h,40px)] w-auto items-center justify-center whitespace-nowrap rounded-[var(--ctrl-r,12px)] px-3 text-sm font-medium transition duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-4 focus-visible:ring-offset-[color:var(--toolbar-bg)] motion-reduce:transition-none',
-        styles,
-        className,
-      )}
+      className={cn(styles, className)}
       {...props}
     >
       {label}

@@ -34,7 +34,7 @@ export function AppChrome() {
           className="absolute inset-0"
           style={{
             background:
-              'linear-gradient(128deg, #071021 0%, #0a1628 32%, #102642 66%, #153b63 100%)',
+              'var(--topbar-bg, linear-gradient(128deg, #071021 0%, #0a1628 32%, #102642 66%, #153b63 100%))',
           }}
         />
         <div
