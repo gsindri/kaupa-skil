@@ -3,7 +3,6 @@ import React, { useEffect, useRef, useState, useLayoutEffect, useId } from 'reac
 import { Link } from 'react-router-dom'
 import { DropdownMenu, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Building2, CircleUserRound, Keyboard, LifeBuoy, LogOut, ChevronDown, Check } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import { TenantSwitcher } from './TenantSwitcher'
 import { useAuth } from '@/contexts/useAuth'
 import { useCart } from '@/contexts/useBasket'
@@ -12,10 +11,15 @@ import { cn } from '@/lib/utils'
 import { HeaderSearch } from '@/components/search/HeaderSearch'
 import { HeildaLogo } from '@/components/branding/HeildaLogo'
 import { CartButton } from '@/components/cart/CartButton'
-import { IconButton } from '@/components/ui/IconButton'
 import { SearchSoft } from '@/components/icons-soft'
 import { useLanguage } from '@/contexts/LanguageProvider'
 import { PopCard } from './PopCard'
+import {
+  navTextButtonClass,
+  navTextButtonFocusRingClass,
+  navTextButtonPillClass,
+  navTextCaretClass,
+} from './navStyles'
 
 const languageOptions = [
   { value: 'is', label: 'Icelandic', code: 'IS' },
@@ -171,47 +175,55 @@ export function TopNavigation() {
       </div>
 
       <nav aria-label="Global actions" className="ml-auto flex items-center gap-3">
-        <span className="inline-flex items-center gap-1 text-[13px] font-medium text-white/80">
-          <span>Search here</span>
-          <span aria-hidden="true">→</span>
-        </span>
-        <IconButton
           ref={searchTriggerRef}
-          label="Search"
-          aria-label={`Search (${platformShortcut} or /)`}
+          type="button"
           aria-haspopup="dialog"
           aria-keyshortcuts="/ meta+k control+k"
           aria-describedby={searchShortcutDescriptionId}
           onClick={() => setSearchOpen(true)}
           title="Search (Ctrl/⌘ + K)"
+          className="group inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/5 pl-4 pr-2 text-[13px] font-medium text-white/80 transition-[background-color,border-color,transform] duration-fast ease-snap hover:bg-white/10 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-4 focus-visible:ring-offset-transparent motion-safe:hover:-translate-y-[0.5px] motion-reduce:transform-none motion-reduce:hover:translate-y-0"
         >
-          <SearchSoft width={24} height={24} tone={0.18} />
-        </IconButton>
+          <span className="whitespace-nowrap text-[13px] font-medium text-white/80 transition-colors duration-fast ease-snap group-hover:text-white">
+            Search here →
+          </span>
+          <span
+            aria-hidden="true"
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-[color:var(--ink-dim,#cfd7e4)] transition-colors duration-fast ease-snap group-hover:bg-white/15 group-hover:text-[color:var(--ink,#eaf0f7)]"
+          >
+            <SearchSoft width={24} height={24} tone={0.18} />
+          </span>
+        </button>
         <span id={searchShortcutDescriptionId} className="sr-only">
           Open search dialog. Shortcut: press / or {platformShortcut}.
         </span>
         <LanguageSwitcher className="hidden xl:block" />
         <DropdownMenu open={userMenuOpen} onOpenChange={setUserMenuOpen} modal={false}>
           <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
+            <button
+              type="button"
               className={cn(
-                'inline-flex h-9 items-center gap-2 rounded-full border border-[color:var(--surface-ring)] bg-[color:var(--surface-pop)] px-2',
-                'text-[14px] font-medium text-[color:var(--text)] shadow-sm transition-colors hover:bg-[color:var(--surface-pop-2)]/80'
+                navTextButtonClass,
+                'min-w-0 max-w-[240px] text-left',
+                'disabled:cursor-wait disabled:opacity-80'
               )}
               disabled={isBusy}
+              aria-busy={isBusy || undefined}
               aria-label={accountMenuLabel}
+              aria-haspopup="menu"
               title={displayName || undefined}
             >
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[color:var(--surface-pop-2)]/70 text-[14px] font-semibold text-[color:var(--text)]">
-                {isBusy ? (
-                  <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-[var(--brand-accent)]" />
-                ) : (
-                  <span className="text-sm font-semibold">{userInitial}</span>
-                )}
-              </div>
-              <ChevronDown className="size-4 text-[color:var(--text-muted)]" />
-            </Button>
+              <span className={navTextButtonPillClass} aria-hidden="true" />
+              {isBusy ? (
+                <span
+                  aria-hidden="true"
+                  className="size-4 shrink-0 animate-spin rounded-full border-2 border-[color:var(--ink,#eaf0f7)] border-b-transparent"
+                />
+              ) : null}
+              <span className="min-w-0 truncate">{displayName}</span>
+              <ChevronDown className={navTextCaretClass} aria-hidden="true" />
+              <span className={navTextButtonFocusRingClass} aria-hidden="true" />
+            </button>
           </DropdownMenuTrigger>
 
           <PopCard className="w-[320px] space-y-2" sideOffset={12} align="end">

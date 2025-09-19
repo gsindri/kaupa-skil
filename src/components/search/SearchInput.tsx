@@ -42,8 +42,11 @@ export const SearchInput = React.forwardRef<HTMLInputElement, SearchInputProps>(
             e.preventDefault()
             inputRef.current?.focus()
           }}
-          className="absolute left-4 top-1/2 -translate-y-1/2 cursor-text text-slate-400"
+          className="absolute left-4 top-1/2 -translate-y-1/2 flex cursor-text items-center gap-2 text-slate-400"
         >
+          <span className="text-xs font-medium uppercase tracking-wide text-slate-400">
+            Search here →
+          </span>
           {isLoading ? (
             <div className="h-5 w-5 animate-spin rounded-full border-2 border-muted border-t-primary" />
           ) : (
@@ -62,7 +65,7 @@ export const SearchInput = React.forwardRef<HTMLInputElement, SearchInputProps>(
           onKeyDown={onKeyDown}
           placeholder="Search products, suppliers, orders..."
           className={cn(
-            'h-11 w-full rounded-full bg-white/95 text-slate-800 ring-1 ring-white/10 pl-11 pr-10 text-sm placeholder:text-slate-400 focus:outline-none',
+            'h-11 w-full rounded-full bg-white/95 text-slate-800 ring-1 ring-white/10 pl-36 pr-10 text-sm placeholder:text-slate-400 focus:outline-none',
             expanded && 'shadow-md'
           )}
         />
