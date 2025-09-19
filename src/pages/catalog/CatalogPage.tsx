@@ -1234,7 +1234,7 @@ function FiltersBar({
             )}
           </div>
 
-          <div className="flex flex-shrink-0 items-center gap-3">
+          <div className="flex flex-shrink-0 items-center gap-3 sm:pl-3">
             <Tooltip>
               <TooltipTrigger asChild>
                 <button
@@ -1245,14 +1245,14 @@ function FiltersBar({
                   aria-controls="catalog-filters-panel"
                   aria-keyshortcuts="f"
                   className={cn(
-                    'inline-flex h-[var(--ctrl-h,40px)] items-center gap-3 rounded-[var(--ctrl-r,12px)] bg-[color:var(--chip-bg)] px-3 text-sm font-semibold text-[color:var(--ink)] ring-1 ring-inset ring-[color:var(--ring-idle)] shadow-[0_18px_36px_rgba(2,9,20,0.24)] backdrop-blur-xl transition duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-4 focus-visible:ring-offset-[color:var(--toolbar-bg)] hover:bg-[color:var(--chip-bg-hover)] hover:text-[color:var(--ink-hi)] hover:ring-[color:var(--ring-hover)] motion-reduce:transition-none',
-                    showFilters && 'bg-[color:var(--seg-active-bg)] text-[color:var(--ink-hi)] shadow-[0_20px_40px_rgba(2,9,20,0.36)] ring-[color:var(--ring-hover)]',
+                    'inline-flex h-[var(--ctrl-h,40px)] items-center gap-3 rounded-[var(--ctrl-r,12px)] bg-[color:var(--chip-bg)] px-3 text-sm font-semibold text-[color:var(--ink-hi)]/90 ring-1 ring-inset ring-[color:var(--ring-idle)] shadow-[0_14px_30px_rgba(2,9,20,0.18)] backdrop-blur-xl transition duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-4 focus-visible:ring-offset-[color:var(--toolbar-bg)] hover:bg-[color:var(--chip-bg-hover)] hover:text-[color:var(--ink-hi)] hover:ring-[color:var(--ring-hover)] motion-reduce:transition-none',
+                    showFilters && 'bg-[color:var(--seg-active-bg)] text-[color:var(--ink-hi)] shadow-[0_16px_34px_rgba(2,9,20,0.26)] ring-[color:var(--ring-hover)]',
                   )}
                 >
                   <FunnelSimple
                     size={24}
                     weight="fill"
-                    className={cn('transition-opacity', !showFilters && 'opacity-80')}
+                    className={cn('transition-opacity text-[color:var(--ink-hi)]', !showFilters && 'opacity-80')}
                   />
                   <span className="hidden sm:inline">
                     {activeCount ? `Filters (${activeCount})` : 'Filters'}
