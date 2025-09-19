@@ -163,6 +163,7 @@
   line-height:1.2;
   color:var(--text);
   outline:1px solid transparent;
+  cursor:pointer;
   transition:background var(--enter), outline var(--enter), box-shadow var(--enter), color var(--enter);
 }
 .pop-item>*:not(svg),
@@ -170,14 +171,24 @@
   min-width:0;
 }
 
-:is(.pop-item,.tw-row)[aria-selected="true"],
-:is(.pop-item,.tw-row)[data-state="open"],
-:is(.pop-item,.tw-row)[data-selected="true"],
-:is(.pop-item,.tw-row)[data-highlighted],
-:is(.pop-item,.tw-row)[data-state="checked"],
-:is(.pop-item,.tw-row):hover{
+:is(.pop-item:not(.pop-item-plain),.tw-row:not(.tw-row-plain))[aria-selected="true"],
+:is(.pop-item:not(.pop-item-plain),.tw-row:not(.tw-row-plain))[data-state="open"],
+:is(.pop-item:not(.pop-item-plain),.tw-row:not(.tw-row-plain))[data-selected="true"],
+:is(.pop-item:not(.pop-item-plain),.tw-row:not(.tw-row-plain))[data-highlighted],
+:is(.pop-item:not(.pop-item-plain),.tw-row:not(.tw-row-plain))[data-state="checked"],
+:is(.pop-item:not(.pop-item-plain),.tw-row:not(.tw-row-plain)):hover{
   background:color-mix(in oklab, var(--brand-accent) 18%, transparent);
   outline:1px solid color-mix(in oklab, var(--brand-accent) 45%, transparent);
+}
+
+:is(.pop-item-plain,.tw-row-plain)[aria-selected="true"],
+:is(.pop-item-plain,.tw-row-plain)[data-state="open"],
+:is(.pop-item-plain,.tw-row-plain)[data-selected="true"],
+:is(.pop-item-plain,.tw-row-plain)[data-highlighted],
+:is(.pop-item-plain,.tw-row-plain)[data-state="checked"],
+:is(.pop-item-plain,.tw-row-plain):hover{
+  background:color-mix(in oklab, var(--surface-pop-2) 75%, transparent);
+  outline:1px solid color-mix(in oklab, var(--surface-ring) 80%, transparent);
 }
 
 /* Accent pill */
