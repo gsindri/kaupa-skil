@@ -175,6 +175,7 @@ export function TopNavigation() {
       </div>
 
       <nav aria-label="Global actions" className="ml-auto flex items-center gap-3">
+        <button
           ref={searchTriggerRef}
           type="button"
           aria-haspopup="dialog"
