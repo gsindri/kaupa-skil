@@ -70,7 +70,7 @@ describe('CartButton', () => {
     const button = screen.getByRole('button', { name: /cart, 0 items/i })
     expect(button).toHaveClass('bg-transparent')
     expect(button).toHaveTextContent(/Cart/i)
-    expect(screen.queryByText('0', { selector: 'text' })).not.toBeInTheDocument()
+    expect(screen.getByText('0', { selector: 'text' })).toBeInTheDocument()
   })
 
   it('renders the count inside the basket when the cart has items', () => {
