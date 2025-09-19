@@ -3,7 +3,7 @@ import { SearchInput } from './SearchInput'
 import { SearchResultsPopover } from './SearchResultsPopover'
 import { useGlobalSearch, SearchScope } from '@/hooks/useGlobalSearch'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
-import { Loader2, Search } from 'lucide-react'
+import { Loader2, Search, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 type SearchResultSection = 'products' | 'suppliers' | 'orders'
@@ -49,32 +49,64 @@ function useRecentSearches(orgId: string) {
     }
   }, [key])
 
-  const persist = (value: string[]) => {
-    try {
-      if (value.length === 0) {
-        localStorage.removeItem(key)
-      } else {
-        localStorage.setItem(key, JSON.stringify(value))
+  const persist = React.useCallback(
+    (value: string[]) => {
+      try {
+        if (value.length === 0) {
+          localStorage.removeItem(key)
+        } else {
+          localStorage.setItem(key, JSON.stringify(value))
+        }
+      } catch (_e) {
+        // ignore
       }
-    } catch (_e) {
-      // ignore
-    }
-  }
+    },
+    [key]
+  )
 
-  const add = (q: string) => {
-    if (!q) return
-    const next = [q, ...items.filter((i) => i !== q)].slice(0, 10)
-    setItems(next)
-    persist(next)
-  }
+  const updateItems = React.useCallback(
+    (updater: (prev: string[]) => string[]) => {
+      setItems((prev) => {
+        const next = updater(prev)
+        if (
+          next === prev ||
+          (prev.length === next.length && prev.every((item, index) => item === next[index]))
+        ) {
+          return prev
+        }
+        persist(next)
+        return next
+      })
+    },
+    [persist]
+  )
 
-  const remove = (q: string) => {
-    if (!q) return
-    if (!items.includes(q)) return
-    const next = items.filter((i) => i !== q)
-    setItems(next)
-    persist(next)
-  }
+  const add = React.useCallback(
+    (q: string) => {
+      const trimmed = q.trim()
+      if (!trimmed) return
+      updateItems((prev) => {
+        const deduped = prev.filter((item) => item !== trimmed)
+        const next = [trimmed, ...deduped].slice(0, 10)
+        return next
+      })
+    },
+    [updateItems]
+  )
+
+  const remove = React.useCallback(
+    (q: string) => {
+      const trimmed = q.trim()
+      if (!trimmed) return
+      updateItems((prev) => {
+        if (!prev.includes(trimmed)) {
+          return prev
+        }
+        return prev.filter((item) => item !== trimmed)
+      })
+    },
+    [updateItems]
+  )
 
   return { items, add, remove }
 }
@@ -349,6 +381,7 @@ export const HeaderSearch = React.forwardRef<HTMLInputElement, HeaderSearchProps
                     activeIndex={activeDialogIndex}
                     onHoverIndex={setActiveDialogIndex}
                     onEntrySelect={handleDialogEntrySelect}
+                    onRecentRemove={removeRecent}
                   />
                 </div>
               </div>
@@ -398,6 +431,7 @@ interface DialogResultsProps {
   activeIndex: number
   onHoverIndex: (index: number) => void
   onEntrySelect: (entry: DialogEntry) => void
+  onRecentRemove: (query: string) => void
 }
 
 function DialogResults({
@@ -406,7 +440,8 @@ function DialogResults({
   dialogEntries,
   activeIndex,
   onHoverIndex,
-  onEntrySelect
+  onEntrySelect,
+  onRecentRemove
 }: DialogResultsProps) {
   const trimmedQuery = query.trim()
   const hasQuery = trimmedQuery.length > 0
@@ -432,11 +467,17 @@ function DialogResults({
           <DialogRow
             key={`recent-${entry.query}-${index}`}
             title={entry.query}
-            meta=""
             icon={<span className="text-[12px] text-[color:var(--text-muted)] opacity-60">↺</span>}
             active={activeIndex === index}
             onHover={() => onHoverIndex(index)}
             onSelect={() => onEntrySelect(entry)}
+            action={
+              <DialogRemoveButton
+                label={`Remove ${entry.query} from recent searches`}
+                onRemove={() => onRecentRemove(entry.query)}
+                active={activeIndex === index}
+              />
+            }
           />
         ))}
       </div>
@@ -520,21 +561,23 @@ interface DialogRowProps {
   active: boolean
   onHover: () => void
   onSelect: () => void
+  action?: React.ReactNode
 }
 
-function DialogRow({ title, subtitle, meta, icon, active, onHover, onSelect }: DialogRowProps) {
+function DialogRow({ title, subtitle, meta, icon, active, onHover, onSelect, action }: DialogRowProps) {
   return (
-    <button
-      type="button"
+    <div
       role="option"
       aria-selected={active}
+      tabIndex={-1}
+      data-active={active ? 'true' : undefined}
       onMouseEnter={onHover}
       onMouseDown={(event) => {
         event.preventDefault()
         onSelect()
       }}
       className={cn(
-        'grid w-full grid-cols-[20px,1fr,auto] items-center gap-2.5 rounded-[10px] px-3 text-left text-[color:var(--text)] transition-colors',
+        'group grid w-full cursor-pointer grid-cols-[20px,1fr,auto] items-center gap-2.5 rounded-[10px] px-3 text-left text-[color:var(--text)] transition-colors',
         'h-[50px]',
         active ? 'bg-white/[0.08]' : 'hover:bg-white/[0.04]'
       )}
@@ -550,12 +593,45 @@ function DialogRow({ title, subtitle, meta, icon, active, onHover, onSelect }: D
       </div>
       <div
         className={cn(
-          'text-right text-[13px] text-[color:var(--text-muted)]',
-          meta ? 'pl-3' : 'pl-0'
+          'min-w-0 flex items-center justify-end gap-2 text-right text-[13px] text-[color:var(--text-muted)]',
+          meta || action ? 'pl-3' : 'pl-0'
         )}
       >
-        {meta}
+        {meta && <span className="truncate">{meta}</span>}
+        {action}
       </div>
+    </div>
+  )
+}
+
+function DialogRemoveButton({
+  label,
+  onRemove,
+  active
+}: {
+  label: string
+  onRemove: () => void
+  active?: boolean
+}) {
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      className={cn(
+        'flex h-6 w-6 items-center justify-center rounded-full text-[color:var(--text-muted)] opacity-0 transition-opacity hover:bg-white/[0.08] hover:text-[color:var(--text)] hover:opacity-100 focus-visible:bg-white/[0.08] focus-visible:text-[color:var(--text)] focus-visible:opacity-100 group-hover:opacity-100',
+        active && 'opacity-100'
+      )}
+      onMouseDown={(event) => {
+        event.preventDefault()
+        event.stopPropagation()
+      }}
+      onClick={(event) => {
+        event.preventDefault()
+        event.stopPropagation()
+        onRemove()
+      }}
+    >
+      <X className="h-3.5 w-3.5" strokeWidth={1.75} />
     </button>
   )
 }

@@ -1,4 +1,5 @@
 import React from 'react'
+import { X } from 'lucide-react'
 
 interface RecentSearchesProps {
   items: string[]
@@ -15,7 +16,7 @@ export function RecentSearches({ items, onSelect, onRemove }: RecentSearchesProp
         <div key={q} className="group relative">
           <button
             type="button"
-            className="w-full cursor-pointer truncate rounded-md px-3 py-2 text-left text-sm hover:bg-muted group-hover:bg-muted pr-8"
+            className="w-full cursor-pointer truncate rounded-md px-3 py-2 pr-9 text-left text-sm hover:bg-muted group-hover:bg-muted"
             onMouseDown={() => onSelect(q)}
           >
             {q}
@@ -23,7 +24,7 @@ export function RecentSearches({ items, onSelect, onRemove }: RecentSearchesProp
           <button
             type="button"
             aria-label={`Remove ${q} from recent searches`}
-            className="absolute right-2 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:bg-muted focus-visible:text-foreground"
+            className="absolute right-2 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full text-muted-foreground opacity-0 transition-opacity hover:bg-muted hover:text-foreground focus-visible:bg-muted focus-visible:text-foreground group-hover:opacity-100 hover:opacity-100 focus-visible:opacity-100"
             onMouseDown={(event) => {
               event.preventDefault()
               event.stopPropagation()
@@ -34,7 +35,7 @@ export function RecentSearches({ items, onSelect, onRemove }: RecentSearchesProp
               onRemove(q)
             }}
           >
-            ✕
+            <X className="h-3.5 w-3.5" strokeWidth={1.75} />
           </button>
         </div>
       ))}
