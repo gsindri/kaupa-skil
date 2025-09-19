@@ -60,8 +60,8 @@ export function LanguageSwitcher({ className, triggerClassName }: LanguageSwitch
             <span className={navTextButtonFocusRingClass} aria-hidden="true" />
           </button>
         </DropdownMenuTrigger>
-        <PopCard className="w-[240px] space-y-2" sideOffset={12} align="end">
-          <div className="tw-label">LANGUAGE</div>
+        <PopCard className="w-[240px]" sideOffset={12} align="end">
+          <div className="tw-label normal-case">Language</div>
           <div className="flex flex-col gap-1 px-1">
             {languageOptions.map((option) => (
               <DropdownMenuItem
@@ -75,22 +75,22 @@ export function LanguageSwitcher({ className, triggerClassName }: LanguageSwitch
                   aria-checked={language === option.value}
                   className="tw-row text-left"
                 >
-                  <span className="flex h-5 w-5 items-center justify-center">
+                  <span className="flex size-8 items-center justify-center" aria-hidden="true">
                     <span
-                      aria-hidden="true"
                       className={cn(
                         'fi',
                         `fi-${option.flag}`,
-                        'block shrink-0 overflow-hidden rounded-[3px] text-[15px]',
+                        'block shrink-0 overflow-hidden rounded-[4px] text-[18px]',
                         'ring-1 ring-inset ring-[color:var(--surface-ring)]',
                       )}
                     />
                   </span>
                   <span className="truncate">{option.label}</span>
                   <Check
+                    aria-hidden="true"
                     className={cn(
-                      'size-4 text-[color:var(--brand-accent)] transition-opacity',
-                      language === option.value ? 'opacity-100' : 'opacity-0',
+                      'h-3.5 w-3.5 justify-self-end text-[color:var(--brand-accent)] transition-opacity',
+                      language === option.value ? 'opacity-80' : 'opacity-0',
                     )}
                   />
                 </button>
