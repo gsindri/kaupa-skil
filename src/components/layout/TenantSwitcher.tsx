@@ -4,7 +4,6 @@ import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -15,6 +14,12 @@ import { supabase } from '@/integrations/supabase/client'
 import { cn } from '@/lib/utils'
 
 import { PopCard } from './PopCard'
+import {
+  navTextButtonClass,
+  navTextButtonFocusRingClass,
+  navTextButtonPillClass,
+  navTextCaretClass,
+} from './navStyles'
 
 type Membership = {
   id: string
@@ -106,20 +111,18 @@ export function TenantSwitcher() {
   return (
     <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
       <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
+        <button
+          type="button"
           role="combobox"
           aria-expanded={open}
           aria-label="Switch workspace"
-          className={cn(
-            'inline-flex h-9 w-56 items-center justify-between gap-2 rounded-full border border-[color:var(--surface-ring)]',
-            'bg-[color:var(--surface-pop)] px-3 text-[14px] font-medium text-[color:var(--text)] shadow-sm transition-colors',
-            'hover:bg-[color:var(--surface-pop-2)]/80 hover:text-[color:var(--text)]',
-          )}
+          className={cn(navTextButtonClass, 'w-56 justify-between text-left')}
         >
+          <span className={navTextButtonPillClass} aria-hidden="true" />
           <span className="truncate text-left">{displayName}</span>
-          <ChevronDown className="size-4 text-[color:var(--text-muted)]" />
-        </Button>
+          <ChevronDown className={navTextCaretClass} aria-hidden="true" />
+          <span className={navTextButtonFocusRingClass} aria-hidden="true" />
+        </button>
       </DropdownMenuTrigger>
 
       <PopCard className="w-[320px] space-y-2" sideOffset={12} align="start">

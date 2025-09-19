@@ -1,15 +1,21 @@
-import { Check, Languages } from 'lucide-react'
+import { Check, Languages, ChevronDown } from 'lucide-react'
 
 import {
   DropdownMenu,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { IconButton } from '@/components/ui/IconButton'
 import { useLanguage } from '@/contexts/LanguageProvider'
 import { cn } from '@/lib/utils'
 
 import { PopCard } from './PopCard'
+import {
+  navTextButtonClass,
+  navTextButtonFocusRingClass,
+  navTextButtonPillClass,
+  navTextCaretClass,
+  navTextIconClass,
+} from './navStyles'
 
 interface LanguageSwitcherProps {
   className?: string
@@ -23,24 +29,26 @@ const languageOptions = [
 
 export function LanguageSwitcher({ className, triggerClassName }: LanguageSwitcherProps) {
   const { language, setLanguage } = useLanguage()
+  const activeLanguage =
+    languageOptions.find((option) => option.value === language) ?? languageOptions[0]
 
   return (
     <div className={className}>
       <DropdownMenu modal={false}>
         <DropdownMenuTrigger asChild>
-          <IconButton
-            label="Language"
+          <button
+            type="button"
+            className={cn(navTextButtonClass, 'px-3', triggerClassName)}
             aria-haspopup="menu"
-            aria-label="Change language"
             title="Language"
-            className={cn(
-              'bg-[color:var(--surface-pop)] text-[color:var(--text)]',
-              'border border-[color:var(--surface-ring)] hover:bg-[color:var(--surface-pop-2)]/80',
-              triggerClassName,
-            )}
+            aria-label={`Change language (currently ${activeLanguage.label})`}
           >
-            <Languages className="size-5" />
-          </IconButton>
+            <span className={navTextButtonPillClass} aria-hidden="true" />
+            <Languages className={navTextIconClass} aria-hidden="true" />
+            <span className="truncate">{activeLanguage.label}</span>
+            <ChevronDown className={navTextCaretClass} aria-hidden="true" />
+            <span className={navTextButtonFocusRingClass} aria-hidden="true" />
+          </button>
         </DropdownMenuTrigger>
         <PopCard className="w-[240px] space-y-2" sideOffset={12} align="end">
           <div className="tw-label">LANGUAGE</div>
