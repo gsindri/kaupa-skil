@@ -16,18 +16,18 @@ export const ViewToggle = memo(function ViewToggle({ value, onChange }: ViewTogg
   }
 
   const baseButton =
-    'inline-flex h-full min-w-[var(--ctrl-h,40px)] items-center justify-center gap-2 px-3 text-sm font-semibold whitespace-nowrap transition duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent motion-reduce:transition-none'
+    'inline-flex h-[var(--ctrl-h,40px)] min-w-[var(--ctrl-h,40px)] items-center justify-center gap-2 rounded-[var(--ctrl-r,12px)] px-3 text-sm font-semibold text-[color:var(--ink-hi)] ring-1 ring-inset ring-[color:var(--ring-idle)] backdrop-blur-xl transition duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-4 focus-visible:ring-offset-[color:var(--toolbar-bg)] motion-reduce:transition-none'
 
   const activeClasses =
-    'bg-[color:var(--seg-active-bg)] text-[color:var(--ink-hi)] shadow-[0_12px_30px_rgba(3,10,26,0.3)]'
+    'bg-[color:var(--seg-active-bg)] text-[color:var(--ink-hi)] ring-[color:var(--ring-hover)]'
   const inactiveClasses =
-    'text-[color:var(--ink-hi)]/80 hover:bg-[color:var(--chip-bg-hover)] hover:text-[color:var(--ink-hi)]'
+    'bg-transparent text-[color:var(--ink-hi)]/75 hover:bg-[color:var(--chip-bg-hover)] hover:text-[color:var(--ink-hi)] hover:ring-[color:var(--ring-hover)]'
 
   return (
     <div
       role="group"
       aria-label="Change catalog view"
-      className="inline-grid h-[var(--ctrl-h,40px)] grid-cols-2 overflow-hidden rounded-[var(--ctrl-r,12px)] bg-[color:var(--chip-bg)] ring-1 ring-inset ring-[color:var(--ring-idle)] shadow-[0_14px_30px_rgba(2,9,20,0.18)] backdrop-blur-xl transition duration-200 ease-out motion-reduce:transition-none"
+      className="flex items-center gap-3"
     >
       <Tooltip>
         <TooltipTrigger asChild>
