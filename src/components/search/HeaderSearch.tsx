@@ -47,18 +47,38 @@ function useRecentSearches(orgId: string) {
     }
   }, [key])
 
-  const add = (q: string) => {
-    if (!q) return
-    const next = [q, ...items.filter((i) => i !== q)].slice(0, 10)
-    setItems(next)
-    try {
-      localStorage.setItem(key, JSON.stringify(next))
-    } catch (_e) {
-      // ignore
-    }
-  }
+  const add = React.useCallback(
+    (q: string) => {
+      if (!q) return
+      setItems((prev) => {
+        const next = [q, ...prev.filter((i) => i !== q)].slice(0, 10)
+        try {
+          localStorage.setItem(key, JSON.stringify(next))
+        } catch (_e) {
+          // ignore
+        }
+        return next
+      })
+    },
+    [key],
+  )
 
-  return { items, add }
+  const remove = React.useCallback(
+    (q: string) => {
+      setItems((prev) => {
+        const next = prev.filter((item) => item !== q)
+        try {
+          localStorage.setItem(key, JSON.stringify(next))
+        } catch (_e) {
+          // ignore
+        }
+        return next
+      })
+    },
+    [key],
+  )
+
+  return { items, add, remove }
 }
 
 interface HeaderSearchProps {
@@ -74,7 +94,7 @@ export const HeaderSearch = React.forwardRef<HTMLInputElement, HeaderSearchProps
     const [query, setQuery] = useState('')
     const [scope, setScope] = useState<SearchScope>('all')
     const { sections, isLoading } = useGlobalSearch(query, scope)
-    const { items: recent, add: addRecent } = useRecentSearches('default')
+    const { items: recent, add: addRecent, remove: removeRecent } = useRecentSearches('default')
     const [activeDialogIndex, setActiveDialogIndex] = useState(0)
     const [internalDialogOpen, setInternalDialogOpen] = useState(false)
 
@@ -275,6 +295,7 @@ export const HeaderSearch = React.forwardRef<HTMLInputElement, HeaderSearchProps
                   activeIndex={activeDialogIndex}
                   onHoverIndex={setActiveDialogIndex}
                   onEntrySelect={handleDialogEntrySelect}
+                  onRemoveRecent={removeRecent}
                 />
               </div>
             </div>
@@ -294,6 +315,7 @@ interface DialogResultsProps {
   activeIndex: number
   onHoverIndex: (index: number) => void
   onEntrySelect: (entry: DialogEntry) => void
+  onRemoveRecent: (query: string) => void
 }
 
 function DialogResults({
@@ -302,7 +324,8 @@ function DialogResults({
   dialogEntries,
   activeIndex,
   onHoverIndex,
-  onEntrySelect
+  onEntrySelect,
+  onRemoveRecent,
 }: DialogResultsProps) {
   const trimmedQuery = query.trim()
   const hasQuery = trimmedQuery.length > 0
@@ -325,14 +348,13 @@ function DialogResults({
       <div key="recent" className="space-y-[2px] pb-1">
         <DialogSection label="Recent searches" />
         {recentsEntries.map(({ entry, index }) => (
-          <DialogRow
+          <RecentDialogRow
             key={`recent-${entry.query}-${index}`}
-            title={entry.query}
-            meta=""
-            icon={<span className="text-[12px] text-[color:var(--text-muted)] opacity-60">↺</span>}
+            query={entry.query}
             active={activeIndex === index}
             onHover={() => onHoverIndex(index)}
             onSelect={() => onEntrySelect(entry)}
+            onRemove={() => onRemoveRecent(entry.query)}
           />
         ))}
       </div>
@@ -395,6 +417,56 @@ function DialogResults({
   }
 
   return <div className="space-y-1 pb-1">{sectionsContent}</div>
+}
+
+interface RecentDialogRowProps {
+  query: string
+  active: boolean
+  onHover: () => void
+  onSelect: () => void
+  onRemove: () => void
+}
+
+function RecentDialogRow({ query, active, onHover, onSelect, onRemove }: RecentDialogRowProps) {
+  return (
+    <div
+      role="option"
+      aria-selected={active}
+      onMouseEnter={onHover}
+      onMouseDown={(event) => {
+        event.preventDefault()
+        onSelect()
+      }}
+      className={cn(
+        'grid w-full grid-cols-[20px,1fr,auto] items-center gap-2.5 rounded-[10px] px-3 text-left text-[color:var(--text)] transition-colors',
+        'h-[50px]',
+        active ? 'bg-white/[0.08]' : 'hover:bg-white/[0.04]'
+      )}
+    >
+      <div className="flex items-center justify-center">
+        <span className="text-[12px] text-[color:var(--text-muted)] opacity-60">↺</span>
+      </div>
+      <div className="min-w-0">
+        <div className="truncate text-[15px] font-medium">{query}</div>
+      </div>
+      <button
+        type="button"
+        onMouseDown={(event) => {
+          event.preventDefault()
+          event.stopPropagation()
+        }}
+        onClick={(event) => {
+          event.preventDefault()
+          event.stopPropagation()
+          onRemove()
+        }}
+        className="flex h-6 w-6 items-center justify-center rounded-full text-[11px] text-[color:var(--text-muted)] transition-colors hover:text-[color:var(--text)]"
+        aria-label={`Remove ${query} from recent searches`}
+      >
+        ✕
+      </button>
+    </div>
+  )
 }
 
 function DialogSection({ label }: { label: string }) {
