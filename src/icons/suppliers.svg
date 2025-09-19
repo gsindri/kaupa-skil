@@ -1,6 +1,42 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-  <circle cx="8" cy="8" r="3" />
-  <path d="M3 19v-1a5 5 0 0 1 5-5h0a5 5 0 0 1 5 5v1" />
-  <circle cx="17" cy="11" r="3" />
-  <path d="M14 21v-1a4 4 0 0 1 4-4h0a4 4 0 0 1 4 4v1" />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 736 736" preserveAspectRatio="xMidYMid meet"
+     fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="48"
+     style="cursor:pointer">
+  
+  <style>
+    .hub {
+      stroke: #f59e0b;
+    }
+    .orbit {
+      transform-origin: 368px 368px; /* hub center */
+    }
+    svg:hover .orbit {
+      animation: orbit 12s linear infinite;
+    }
+    @keyframes orbit {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+  </style>
+  
+  <!-- central hub -->
+  <circle class="hub" cx="368" cy="368" r="72" />
+  
+  <!-- orbiting suppliers + connections -->
+  <g class="orbit">
+    <!-- left -->
+    <circle cx="188" cy="368" r="48" stroke="#ffffff"/>
+    <line x1="188" y1="368" x2="296" y2="368" stroke="#ffffff"/>
+    
+    <!-- right -->
+    <circle cx="548" cy="368" r="48" stroke="#ffffff"/>
+    <line x1="548" y1="368" x2="440" y2="368" stroke="#ffffff"/>
+    
+    <!-- top -->
+    <circle cx="368" cy="168" r="48" stroke="#ffffff"/>
+    <line x1="368" y1="168" x2="368" y2="296" stroke="#ffffff"/>
+    
+    <!-- bottom -->
+    <circle cx="368" cy="568" r="48" stroke="#ffffff"/>
+    <line x1="368" y1="568" x2="368" y2="440" stroke="#ffffff"/>
+  </g>
 </svg>

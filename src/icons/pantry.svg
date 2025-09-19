@@ -1,6 +1,47 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M4 5h16" />
-  <path d="M4 19h16" />
-  <rect x="5" y="7" width="14" height="5" rx="1" />
-  <rect x="5" y="13" width="14" height="6" rx="1" />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 736 736" preserveAspectRatio="xMidYMid meet"
+     fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="48"
+     style="cursor:pointer">
+  
+  <style>
+    .shelf {
+      stroke: #ffffff;
+    }
+    .item {
+      opacity: 0;
+      transform: translateY(60px);
+      transition: transform 0.4s ease, opacity 0.4s ease;
+    }
+    svg:hover .item {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    /* staggered effect: items rise one after another */
+    .item:nth-child(1) { transition-delay: 0s; }
+    .item:nth-child(2) { transition-delay: 0.1s; }
+    .item:nth-child(3) { transition-delay: 0.2s; }
+    .item:nth-child(4) { transition-delay: 0.3s; }
+    .item:nth-child(5) { transition-delay: 0.4s; }
+    .item:nth-child(6) { transition-delay: 0.5s; }
+    .item:nth-child(7) { transition-delay: 0.6s; }
+    .item:nth-child(8) { transition-delay: 0.7s; }
+    .item:nth-child(9) { transition-delay: 0.8s; }
+  </style>
+  
+  <!-- shelves -->
+  <line class="shelf" x1="160" y1="248" x2="576" y2="248"/>
+  <line class="shelf" x1="160" y1="408" x2="576" y2="408"/>
+  <line class="shelf" x1="160" y1="568" x2="576" y2="568"/>
+  
+  <!-- jars/boxes -->
+  <rect class="item" x="184" y="184" width="80" height="64" stroke="#f59e0b"/>
+  <rect class="item" x="304" y="184" width="64" height="64" stroke="#ffffff"/>
+  <rect class="item" x="440" y="184" width="80" height="64" stroke="#f59e0b"/>
+  
+  <rect class="item" x="200" y="344" width="64" height="64" stroke="#ffffff"/>
+  <rect class="item" x="320" y="344" width="96" height="64" stroke="#f59e0b"/>
+  <rect class="item" x="456" y="344" width="64" height="64" stroke="#ffffff"/>
+  
+  <rect class="item" x="224" y="504" width="80" height="64" stroke="#f59e0b"/>
+  <rect class="item" x="352" y="504" width="64" height="64" stroke="#ffffff"/>
+  <rect class="item" x="472" y="504" width="80" height="64" stroke="#f59e0b"/>
 </svg>

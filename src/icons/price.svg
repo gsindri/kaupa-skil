@@ -1,6 +1,32 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M4 17V5" />
-  <path d="M4 17h16" />
-  <path d="M7 13l4-4 3 3 5-5" />
-  <circle cx="19" cy="6" r="1" />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 736 736"
+     preserveAspectRatio="xMidYMid meet" fill="none"
+     stroke-linecap="round" stroke-linejoin="round" stroke-width="48"
+     style="cursor:pointer">
+
+  <style>
+    .coin {
+      opacity: 0;
+      transform: translateY(40px);
+      transition: transform 0.4s ease, opacity 0.4s ease;
+    }
+    svg:hover .coin {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* staggered stacking effect */
+    .coin:nth-of-type(2) { transition-delay: 0.1s; }
+    .coin:nth-of-type(3) { transition-delay: 0.2s; }
+    .coin:nth-of-type(4) { transition-delay: 0.3s; }
+    .coin:nth-of-type(5) { transition-delay: 0.4s; }
+  </style>
+
+  <!-- always-visible base coin -->
+  <ellipse cx="368" cy="528" rx="120" ry="48" stroke="#f59e0b"/>
+
+  <!-- stacking coins (appear on hover) -->
+  <ellipse class="coin" cx="368" cy="464" rx="120" ry="48" stroke="#ffffff"/>
+  <ellipse class="coin" cx="368" cy="400" rx="120" ry="48" stroke="#f59e0b"/>
+  <ellipse class="coin" cx="368" cy="336" rx="120" ry="48" stroke="#ffffff"/>
+  <ellipse class="coin" cx="368" cy="272" rx="120" ry="48" stroke="#f59e0b"/>
 </svg>

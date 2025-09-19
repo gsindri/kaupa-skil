@@ -39,7 +39,7 @@ export function PrimaryNavRail() {
         zIndex: 'var(--z-rail, 60)',
       }}
     >
-      <nav className="flex flex-1 flex-col gap-1 px-2 pt-[var(--sidebar-offset-rail)]">
+      <nav className="flex flex-1 flex-col gap-1.5 px-2 pt-[var(--sidebar-offset-rail)]">
         {items.map(({ to, Icon, label }) => {
           const active = pathname === to || pathname.startsWith(to + '/')
           const isHovered = hoveredItem === to
@@ -49,9 +49,11 @@ export function PrimaryNavRail() {
               to={to}
               aria-current={active ? 'page' : undefined}
               className={clsx(
-                'group relative flex h-14 w-full flex-col items-center justify-center gap-2 px-2',
-                'text-center transition-colors duration-200',
-                focusRingClass
+                'group relative flex h-16 w-full flex-col items-center justify-center gap-1.5 rounded-2xl',
+                'px-2 text-center transition-colors duration-200',
+                'text-white/60 hover:text-white/90 hover:bg-white/5',
+                focusRingClass,
+                active && 'bg-white/10 text-white shadow-[0_0_0_1px_rgba(255,255,255,0.08)]'
               )}
               onPointerEnter={() => setHoveredItem(to)}
               onPointerLeave={() =>
@@ -61,8 +63,8 @@ export function PrimaryNavRail() {
               <span
                 aria-hidden
                 className={clsx(
-                  'pointer-events-none absolute inset-y-0 left-0 w-[3px] transition-colors duration-200',
-                  active ? 'bg-[#ff8a3d]' : 'bg-transparent'
+                  'pointer-events-none absolute inset-y-2 left-1 w-[3px] rounded-full transition-colors duration-200',
+                  active ? 'bg-[#ff8a3d]' : 'bg-transparent group-hover:bg-white/40'
                 )}
               />
               <NavIcon
@@ -70,13 +72,12 @@ export function PrimaryNavRail() {
                 active={active}
                 label={label}
                 hovered={isHovered}
-                size={24}
+                size={28}
               />
               <span
                 className={clsx(
-                  'text-[13px] font-medium tracking-wide text-white/65 transition-colors duration-200',
-                  !active && 'group-hover:text-white/80',
-                  active && 'font-semibold text-white'
+                  'text-[12px] font-semibold tracking-wide transition-colors duration-200',
+                  active ? 'text-white' : 'text-white/60 group-hover:text-white/90'
                 )}
               >
                 {label}

@@ -1,6 +1,34 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-  <path d="m6 11 3-3 3 3" />
-  <path d="M9 19V8" />
-  <path d="m18 13-3 3-3-3" />
-  <path d="M15 5v11" />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 736 736" preserveAspectRatio="xMidYMid meet"
+     fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="48"
+     style="cursor:pointer">
+  
+  <style>
+    .scale {
+      transform-origin: 368px 200px; /* pivot around beam center */
+      transition: transform 0.6s ease;
+    }
+    svg:hover .scale {
+      transform: rotate(-6deg); /* left pan dips, right pan rises */
+    }
+  </style>
+  
+  <!-- base and pillar -->
+  <line x1="368" y1="560" x2="368" y2="200" stroke="#ffffff"/>
+  <line x1="248" y1="560" x2="488" y2="560" stroke="#ffffff"/>
+  
+  <!-- animated group (beam + strings + pans) -->
+  <g class="scale">
+    <!-- beam -->
+    <line x1="208" y1="200" x2="528" y2="200" stroke="#ffffff"/>
+    
+    <!-- left pan with strings -->
+    <line x1="208" y1="200" x2="176" y2="320" stroke="#ffffff" stroke-width="24"/>
+    <line x1="208" y1="200" x2="240" y2="320" stroke="#ffffff" stroke-width="24"/>
+    <circle cx="208" cy="400" r="72" stroke="#f59e0b"/>
+    
+    <!-- right pan with strings -->
+    <line x1="528" y1="200" x2="496" y2="320" stroke="#ffffff" stroke-width="24"/>
+    <line x1="528" y1="200" x2="560" y2="320" stroke="#ffffff" stroke-width="24"/>
+    <circle cx="528" cy="400" r="72" stroke="#f59e0b"/>
+  </g>
 </svg>

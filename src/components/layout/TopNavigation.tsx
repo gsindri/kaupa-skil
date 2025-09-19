@@ -244,8 +244,8 @@ export function TopNavigation() {
           </DropdownMenuTrigger>
 
           <PopCard className="w-[320px] space-y-2" sideOffset={12} align="end">
-            <div className="px-2 pb-2">
-              <div className="flex items-center gap-3 rounded-xl bg-[color:var(--surface-pop)]/60 px-3 py-2.5">
+            <div className="px-2.5 pt-2">
+              <div className="flex items-center gap-3 rounded-[14px] bg-[color:var(--surface-pop)]/35 px-3 py-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[color:var(--surface-pop)] text-[16px] font-semibold text-[color:var(--text)]">
                   {userInitial}
                 </div>
@@ -262,17 +262,17 @@ export function TopNavigation() {
               </div>
             </div>
 
-            <div className="tw-label normal-case opacity-70">Profile</div>
+            <div className="tw-label normal-case opacity-60">Profile</div>
             <div className="flex flex-col gap-1 px-1">
               <DropdownMenuItem asChild onSelect={() => setUserMenuOpen(false)}>
-                <button type="button" className="tw-row text-left">
+                <button type="button" className="tw-row tw-row-loose text-left">
                   <CircleUserRound className="size-4 text-[color:var(--text-muted)]" />
                   <span className="truncate">Profile settings</span>
                   <span />
                 </button>
               </DropdownMenuItem>
               <DropdownMenuItem asChild onSelect={() => setUserMenuOpen(false)}>
-                <button type="button" className="tw-row text-left">
+                <button type="button" className="tw-row tw-row-loose text-left">
                   <Building2 className="size-4 text-[color:var(--text-muted)]" />
                   <span className="truncate">Organization settings</span>
                   <span />
@@ -282,7 +282,7 @@ export function TopNavigation() {
 
             <div className="xl:hidden">
               <div className="pop-div my-2" />
-              <div className="tw-label normal-case">Language</div>
+              <div className="tw-label normal-case opacity-60">Language</div>
               <div className="flex flex-col gap-1 px-1">
                 {languageOptions.map((option) => (
                   <DropdownMenuItem
@@ -297,7 +297,7 @@ export function TopNavigation() {
                       type="button"
                       role="menuitemradio"
                       aria-checked={language === option.value}
-                      className="tw-row text-left"
+                      className="tw-row tw-row-loose text-left"
                     >
                       <span className="flex size-8 items-center justify-center rounded-full border border-[color:var(--surface-ring)] text-[13px] font-semibold text-[color:var(--text-muted)]" aria-hidden="true">
                         {option.code}
@@ -318,17 +318,17 @@ export function TopNavigation() {
 
             <div className="pop-div my-2" />
 
-            <div className="tw-label normal-case opacity-70">Help</div>
+            <div className="tw-label normal-case opacity-60">Help</div>
             <div className="flex flex-col gap-1 px-1">
               <DropdownMenuItem asChild onSelect={() => setUserMenuOpen(false)}>
-                <button type="button" className="tw-row text-left">
+                <button type="button" className="tw-row tw-row-loose text-left">
                   <Keyboard className="size-4 text-[color:var(--text-muted)]" />
                   <span className="truncate">Keyboard shortcuts</span>
                   <span className="tw-kbd">?</span>
                 </button>
               </DropdownMenuItem>
               <DropdownMenuItem asChild onSelect={() => setUserMenuOpen(false)}>
-                <button type="button" className="tw-row text-left">
+                <button type="button" className="tw-row tw-row-loose text-left">
                   <LifeBuoy className="size-4 text-[color:var(--text-muted)]" />
                   <span className="truncate">Support</span>
                   <span />
@@ -345,7 +345,7 @@ export function TopNavigation() {
               }}
               asChild
             >
-              <button type="button" className="tw-row text-left text-red-300 hover:text-red-200">
+              <button type="button" className="tw-row tw-row-loose text-left text-red-300 hover:text-red-200">
                 <span aria-hidden className="inline-block h-4 w-4" />
                 <span className="truncate">Sign out</span>
                 <span />

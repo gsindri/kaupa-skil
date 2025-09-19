@@ -1,6 +1,36 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-  <rect x="3" y="3" width="8" height="8" rx="1" />
-  <rect x="13" y="3" width="8" height="5" rx="1" />
-  <rect x="13" y="10" width="8" height="11" rx="1" />
-  <rect x="3" y="13" width="8" height="8" rx="1" />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 736 736" preserveAspectRatio="xMidYMid meet"
+     fill="none" stroke-linecap="round" stroke-linejoin="round"
+     style="cursor:pointer">
+  
+  <style>
+    .orb {
+      stroke: #f59e0b;
+      stroke-width: 48;
+      opacity: 0.6;
+      transform-origin: 368px 368px;
+      transition: transform 0.4s ease, opacity 0.4s ease;
+    }
+    svg:hover .orb {
+      transform: scale(1.05);
+      opacity: 0.9;
+    }
+    .panel {
+      stroke: #ffffff;
+      stroke-width: 48;
+      transition: transform 0.3s ease;
+      transform-origin: center;
+    }
+    svg:hover .panel {
+      transform: rotate(5deg);
+    }
+  </style>
+  
+  <!-- orange orb -->
+  <circle class="orb" cx="368" cy="368" r="300" fill="none"/>
+  
+  <!-- dashboard grid -->
+  <rect class="panel" x="188" y="188" width="140" height="140" rx="16"/>
+  <rect class="panel" x="408" y="188" width="140" height="140" rx="16"/>
+  <rect class="panel" x="188" y="408" width="140" height="140" rx="16"/>
+  <rect class="panel" x="408" y="408" width="140" height="140" rx="16"/>
 </svg>
