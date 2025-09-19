@@ -1,0 +1,206 @@
+<!-- Neon Data-Scale — hover-only arc swap via CSS motion-path (landing fixed + smooth reverse on mouseout) -->
+<svg id="scale" viewBox="-48 -48 416 416" aria-labelledby="title desc"
+     xmlns="http://www.w3.org/2000/svg"
+     style="--ink:#e9eef6;--shadow:#0b1420;--stroke:#0a1b29;--purple:#a64dff;--purple-2:#d188ff;--green:#33f083;--green-2:#b6ffd8;--ring:#1df0ff;--bg-glow:rgba(29,240,255,.55);shape-rendering:geometricPrecision">
+  <title id="title">Animated data comparison scale with cross-over orbs</title>
+  <desc id="desc">On hover: the purple data block arcs to the right pan and the green globe arcs to the left pan. Particles/rings animate. No motion at rest. On mouseout: items arc back smoothly.</desc>
+
+  <defs>
+    <radialGradient id="panGrad" cx="50%" cy="40%" r="75%">
+      <stop offset="0%" stop-color="#fff" stop-opacity=".9"/>
+      <stop offset="100%" stop-color="#cfd6e2" stop-opacity=".95"/>
+    </radialGradient>
+    <radialGradient id="glowCyan" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="var(--bg-glow)"/>
+      <stop offset="100%" stop-color="transparent"/>
+    </radialGradient>
+    <filter id="panelShadow" x="-40%" y="-40%" width="180%" height="200%">
+      <feDropShadow dx="0" dy="3" stdDeviation="6" flood-opacity=".55" style="flood-color:var(--shadow)"/>
+    </filter>
+
+    <style>
+      .cap{ stroke-linecap:round; stroke-linejoin:round; }
+      .fly-left-to-right,.fly-right-to-left{ will-change: transform, opacity; }
+
+      /* ===== particles (hover only) ===== */
+      @keyframes L2R{
+        0%{transform:translate(0,0) scale(.9);opacity:0}10%{opacity:1}
+        20%{transform:translate(50px,-40px) scale(1.1)}
+        50%{transform:translate(130px,-60px) scale(1.2)}
+        80%{transform:translate(170px,-25px) scale(1.1)}90%{opacity:.9}
+        100%{transform:translate(180px,0) scale(1);opacity:0}
+      }
+      @keyframes R2L{
+        0%{transform:translate(0,0) scale(.9);opacity:0}10%{opacity:1}
+        20%{transform:translate(-50px,-40px) scale(1.1)}
+        50%{transform:translate(-130px,-60px) scale(1.2)}
+        80%{transform:translate(-170px,-25px) scale(1.1)}90%{opacity:.9}
+        100%{transform:translate(-180px,0) scale(1);opacity:0}
+      }
+      @keyframes pPulse{0%,100%{opacity:.45}50%{opacity:.85}}
+      @keyframes gPulse{0%,100%{opacity:.45}50%{opacity:.95}}
+
+      svg:is(:hover, [data-hovered="true"]) .fly-left-to-right{ animation: L2R 2.5s ease-in-out infinite; }
+      svg:is(:hover, [data-hovered="true"]) .fly-right-to-left{ animation: R2L 2.5s ease-in-out infinite; }
+      svg:is(:hover, [data-hovered="true"]) .fly-left-to-right.d2, svg:is(:hover, [data-hovered="true"]) .fly-right-to-left.d2{ animation-delay:.8s }
+      svg:is(:hover, [data-hovered="true"]) .fly-left-to-right.d3, svg:is(:hover, [data-hovered="true"]) .fly-right-to-left.d3{ animation-delay:1.6s }
+      svg:is(:hover, [data-hovered="true"]) .ring-green, svg:is(:hover, [data-hovered="true"]) .ring-purple{ stroke-width:5; }
+      svg:is(:hover, [data-hovered="true"]) .pulse-purple{ animation: pPulse 2.4s ease-in-out infinite; }
+      svg:is(:hover, [data-hovered="true"]) .pulse-green { animation: gPulse 2.4s ease-in-out infinite .6s; }
+
+      /* ===== ITEM ARC SWAPS (CSS motion-path) =====
+         Start positions: left(176,190) / right(336,190).
+         Paths are defined in local (item) coords, so they start at 0,0.
+      */
+      .left-item .swap,
+      .right-item .swap{
+        offset-rotate: 0deg;          /* no auto rotation */
+        offset-distance: 0%;
+        will-change: offset-distance;
+        /* transition here so mouseout reverses smoothly */
+        transition: offset-distance .9s cubic-bezier(.2,.8,.2,1);
+      }
+  .left-item .swap{
+        offset-path: path('M 0 0 C 100 -70 200 -70 200 0');
+      }
+      .right-item .swap{
+        offset-path: path('M 0 0 C -100 -70 -200 -70 -200 0');
+      }
+      /* On hover, drive to 100%; on mouseout, transition back to 0% */
+      svg:is(:hover, [data-hovered="true"]) .left-item .swap,
+      svg:is(:hover, [data-hovered="true"]) .right-item .swap{
+        offset-distance: 100%;
+      }
+
+      #scale[data-nav-measuring] *{
+        animation:none!important;
+        transition:none!important;
+      }
+      #scale[data-nav-measuring] .fly-left-to-right,
+      #scale[data-nav-measuring] .fly-right-to-left{
+        animation: none!important;
+        opacity:0 !important;
+        transform:none!important;
+        display:none!important;
+      }
+      #scale[data-nav-measuring] .left-item,
+      #scale[data-nav-measuring] .right-item{
+        --item-pos: translate(300px,288px);
+        transform: translate(300px,288px) !important;
+      }
+      #scale[data-nav-measuring] .swap{
+        offset-distance: 0% !important;
+        transform: none!important;
+        transition: none!important;
+        animation: none!important;
+      }
+      #scale[data-nav-measuring] .ring-purple,
+      #scale[data-nav-measuring] .ring-green{
+        opacity:0 !important;
+        stroke-width:0 !important;
+        display:none !important;
+      }
+
+      @media (prefers-reduced-motion:reduce){
+        *{ animation:none !important; }
+        .left-item .swap, .right-item .swap{ transition:none !important; }
+      }
+    </style>
+  </defs>
+
+  <!-- base shadow -->
+  <ellipse cx="300" cy="420" rx="100" ry="18" fill="var(--shadow)" opacity=".35"/>
+
+  <!-- column + pivot -->
+  <g class="cap" stroke="var(--stroke)">
+    <g filter="url(#panelShadow)">
+      <path d="M244 408h112c7 0 12-5 12-10v-7c0-6-5-10-12-10H244c-7 0-12 4-12 10v7c0 5 5 10 12 10m18-28h76v-12c0-5-4-8-8-8h-60c-5 0-8 3-8 8z"
+            fill="var(--ink)" stroke-width="2"/>
+    </g>
+    <rect x="288" y="264" width="24" height="117" rx="7" fill="var(--ink)" stroke-width="2"/>
+    <rect x="283" y="256" width="34" height="18" rx="7" fill="var(--ink)" stroke-width="2"/>
+    <circle cx="300" cy="218" r="16" fill="var(--ink)" stroke-width="2"/>
+    <circle cx="300" cy="218" r="9"  fill="#a4b9cc" stroke-width="1.5"/>
+  </g>
+
+  <!-- beam + pans (drawn before items) -->
+  <g>
+    <g class="cap" stroke="var(--stroke)">
+      <rect x="184" y="210" width="232" height="20" rx="10" fill="var(--ink)" stroke-width="2"/>
+      <path d="M200 220h60m80 0h60" stroke="var(--ring)" stroke-width="3" opacity=".7"/>
+    </g>
+
+    <!-- LEFT PAN -->
+    <g>
+      <g class="cap" stroke="var(--stroke)" stroke-width="2">
+        <circle cx="200" cy="220" r="7" fill="#a4b9cc"/>
+        <path d="M200 227l-35 57M200 227l35 57" fill="none"/>
+      </g>
+      <ellipse cx="200" cy="300" rx="68" ry="12" fill="var(--shadow)" opacity=".35"/>
+      <g filter="url(#panelShadow)">
+        <ellipse cx="200" cy="292" rx="70" ry="20" fill="url(#panGrad)"/>
+        <ellipse class="ring-purple pulse-purple" cx="200" cy="292" rx="70" ry="20" fill="none"
+                 stroke="var(--purple)" stroke-width="5" opacity=".6"/>
+      </g>
+    </g>
+
+    <!-- RIGHT PAN -->
+    <g>
+      <g class="cap" stroke="var(--stroke)" stroke-width="2">
+        <circle cx="400" cy="220" r="7" fill="#a4b9cc"/>
+        <path d="M400 227l-35 57M400 227l35 57" fill="none"/>
+      </g>
+      <ellipse cx="400" cy="300" rx="68" ry="12" fill="var(--shadow)" opacity=".35"/>
+      <g filter="url(#panelShadow)">
+        <ellipse cx="400" cy="292" rx="70" ry="20" fill="url(#panGrad)"/>
+        <ellipse class="ring-green pulse-green" cx="400" cy="292" rx="70" ry="20" fill="none"
+                 stroke="var(--green)" stroke-width="5" opacity=".6"/>
+      </g>
+    </g>
+  </g>
+
+  <!-- ITEMS (drawn last so they land ON TOP of both pans) -->
+  <g>
+    <!-- LEFT ITEM at (200,288) -->
+    <g class="left-item" style="--item-pos: translate(200px,288px); transform: var(--item-pos);">
+      <ellipse cy="8" rx="42" ry="8" fill="var(--purple)" opacity=".2"/>
+      <g class="swap">
+        <!-- block -->
+        <rect x="-26" y="-42" width="52" height="52" rx="7" fill="#2b1d3f" stroke="var(--purple-2)" stroke-width="2"/>
+        <rect x="-26" y="-56" width="52" height="14" rx="7" fill="#331c58" stroke="var(--purple-2)" stroke-width="2"/>
+        <rect x="-26" y="-72" width="52" height="14" rx="7" fill="#3a1e6d" stroke="var(--purple-2)" stroke-width="2"/>
+        <path d="M-13-42v52M0-42v52m13-42v52m-39-39h52m-52 13h52M-26-1h52m-52 13h52"
+              stroke="var(--purple-2)" opacity=".9"/>
+      </g>
+
+      <!-- particles (hover only) -->
+      <rect class="fly-left-to-right"  x="-46" y="-14" width="7" height="7" rx="1.4" fill="var(--purple-2)"/>
+      <rect class="fly-left-to-right"   x="-7" y="-24" width="5" height="5" rx="1.2"   fill="var(--purple)"/>
+      <rect class="fly-left-to-right d3" x="36" y="-22" width="6" height="6" rx="1.3" fill="var(--purple-2)"/>
+      <rect class="fly-left-to-right d2" x="-31" y="-34" width="5" height="5" rx="1.2"   fill="var(--purple)"/>
+      <rect class="fly-left-to-right d3" x="19"  y="-36" width="7" height="7" rx="1.4" fill="var(--purple-2)"/>
+    </g>
+
+    <!-- RIGHT ITEM at (400,288) -->
+    <g class="right-item" style="--item-pos: translate(400px,288px); transform: var(--item-pos);">
+      <ellipse cy="8" rx="42" ry="8" fill="var(--green)" opacity=".2"/>
+      <g class="swap">
+        <!-- globe -->
+        <circle cy="-20" r="28" fill="#112e22" stroke="var(--green-2)" stroke-width="2"/>
+        <g stroke="var(--green-2)" stroke-width="1.8" fill="none" opacity=".95">
+          <ellipse cy="-20" rx="28" ry="10"/>
+          <ellipse cy="-20" rx="28" ry="19"/>
+          <path d="M-28-20a28 28 0 0 0 56 0"/>
+          <path d="M-14-48c-6 8-9 18-9 28s-4 20 9 28m28-56c6 8 9 18 9 28S20 1 14 8"/>
+        </g>
+      </g>
+
+      <!-- particles (hover only) -->
+      <rect class="fly-right-to-left"  x="-46" y="-26" width="6" height="6" rx="1.3" fill="var(--green-2)"/>
+      <rect class="fly-right-to-left"   x="-10"  y="-38" width="5" height="5" rx="1.2"   fill="var(--green)"/>
+      <rect class="fly-right-to-left d3" x="36"  y="-31" width="7" height="7" rx="1.4" fill="var(--green-2)"/>
+      <rect class="fly-right-to-left d2" x="-26" y="-48" width="5" height="5" rx="1.2"   fill="var(--green)"/>
+      <rect class="fly-right-to-left d3" x="19"  y="-43" width="6" height="6" rx="1.3" fill="var(--green-2)"/>
+    </g>
+  </g>
+</svg>

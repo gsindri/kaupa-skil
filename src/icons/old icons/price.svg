@@ -1,0 +1,217 @@
+<!-- Fan-to-Stack Coins — transparent bg, detailed idle, hover=movement -->
+<svg id="coins-fan-stack" xmlns="http://www.w3.org/2000/svg" viewBox="-48 -48 689 689" role="img" aria-label="Exploded coin layers that assemble into a stack on hover">
+  <title>Exploded → Stacked Coins (hover)</title>
+
+  <style>
+    :root{
+      --faceHighlight:#f6f8ff;
+      --face:#e3e9f6;
+      --face2:#c7d1e3;
+      --edgeHighlight:#f2f6ff;
+      --edge1:#d9e1f2;
+      --edge2:#b0bbd1;
+      --edgeStroke:#a5b1c8;
+      --rim:#bbc6d9;
+      --rimHighlight:#e3e9f4;
+      --cyan:#7ae6ff; --green:#79f3b8; --peach:#ffc6a3; --lilac:#d8b6ff;
+      --ui:#d9e5ff;
+    }
+    /* transparent background by design */
+    svg#coins-fan-stack{ background:none; }
+
+    /* ------- Fan → Stack ------- */
+    .layer{ transform: var(--idle); transition: transform .65s cubic-bezier(.2,.8,.2,1); will-change: transform; }
+    #coins-fan-stack:is(:hover, [data-hovered="true"]) .layer{ transform: var(--stack); }
+    .l2{transition-delay:.06s}.l3{transition-delay:.12s}.l4{transition-delay:.18s}.l5{transition-delay:.24s}
+
+    /* Top coin micro-lift/tilt once stacked */
+    .topLift{ transform-origin:300px 264px; animation: lift 7s ease-in-out infinite; animation-play-state: paused; }
+    #coins-fan-stack:is(:hover, [data-hovered="true"]) .topLift{ animation-play-state: running; }
+    @keyframes lift{ 0%,100%{transform:translateY(0) rotate(0)} 40%{transform:translateY(-8px) rotate(-.4deg)} 60%{transform:translateY(-4px) rotate(.18deg)} }
+
+    /* Edge gear turn (cyan layer only) */
+    .gear{ stroke-dasharray:6 10; animation: gear 14s linear infinite; animation-play-state: paused; }
+    #coins-fan-stack:is(:hover, [data-hovered="true"]) .gear{ animation-play-state: running; }
+    @keyframes gear{ from{ stroke-dashoffset:0 } to{ stroke-dashoffset:16 } }
+
+    /* Scanline on top face */
+    .scan{ opacity:0; transform:translateX(-220px); transition:opacity .2s ease; }
+    #coins-fan-stack[data-nav-measuring] *{
+      animation: none!important;
+      transition: none!important;
+    }
+    #coins-fan-stack[data-nav-measuring] .layer{
+      /* Center the stacked pose so nav measurement matches the viewBox midpoint */
+      transform: translate(-3.5px,-19.5px) rotate(0deg) !important;
+    }
+    #coins-fan-stack[data-nav-measuring] .ui-decor{
+      opacity: 0 !important;
+      display: none !important;
+    }
+    #coins-fan-stack[data-nav-measuring] .topLift,
+    #coins-fan-stack[data-nav-measuring] .gear,
+    #coins-fan-stack[data-nav-measuring] .scan,
+    #coins-fan-stack[data-nav-measuring] .orbit,
+    #coins-fan-stack[data-nav-measuring] .drop{
+      animation: none!important;
+      transition: none!important;
+    }
+    #coins-fan-stack[data-nav-measuring] .gear{
+      stroke-dashoffset: 0 !important;
+    }
+    #coins-fan-stack[data-nav-measuring] .scan,
+    #coins-fan-stack[data-nav-measuring] .orbit,
+    #coins-fan-stack[data-nav-measuring] .drop{
+      opacity: 0 !important;
+      transform: none!important;
+      display: none!important;
+    }
+    #coins-fan-stack:is(:hover, [data-hovered="true"]) .scan{ opacity:.12; animation: scan 8s linear infinite; }
+    @keyframes scan{ from{transform:translateX(-220px)} to{transform:translateX(220px)} }
+
+    /* Orbit → drop pixels */
+    .orbit{ transform-origin:300px 225px; animation: spin 3.6s linear infinite; animation-play-state: paused; }
+    #coins-fan-stack:is(:hover, [data-hovered="true"]) .orbit{ animation-play-state: running; }
+    @keyframes spin{ to{ transform: rotate(360deg) } }
+    .drop{ animation: drop 1.2s ease-in forwards; animation-play-state: paused; }
+    #coins-fan-stack:is(:hover, [data-hovered="true"]) .drop{ animation-play-state: running; }
+    @keyframes drop{ from{ transform: translate(0,-18px); opacity:1 } to{ transform: translate(0,50px); opacity:0 } }
+
+    /* Soft static shadows for depth */
+    .shadow{ filter:url(#blur8); opacity:.18 } .shadow.top{ opacity:.12 }
+
+    /* Respect reduced motion */
+    @media (prefers-reduced-motion: reduce){
+      .layer,.topLift,.gear,.scan,.orbit,.drop{ transition:none!important; animation:none!important; }
+    }
+  </style>
+
+  <!-- ===== defs ===== -->
+  <defs>
+    <filter id="blur8" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="6"/>
+    </filter>
+    <!-- metal fills -->
+    <linearGradient id="face" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="var(--faceHighlight)"/>
+      <stop offset=".42" stop-color="var(--face)"/>
+      <stop offset="1" stop-color="var(--face2)"/>
+    </linearGradient>
+    <linearGradient id="edge" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="var(--edgeHighlight)"/>
+      <stop offset=".55" stop-color="var(--edge1)"/>
+      <stop offset="1" stop-color="var(--edge2)"/>
+    </linearGradient>
+    <!-- top-disc clip for scanline & texture -->
+    <clipPath id="topClip"><ellipse cx="300" cy="264" rx="128" ry="38"/></clipPath>
+
+    <!-- etched circuitry texture (more detail) -->
+    <pattern id="rings" width="320" height="100" patternUnits="userSpaceOnUse">
+      <g stroke="#c3cee2" fill="none" opacity=".7">
+        <ellipse cx="160" cy="50" rx="140" ry="42"/>
+        <ellipse cx="160" cy="50" rx="120" ry="36" stroke-dasharray="4 6"/>
+        <ellipse cx="160" cy="50" rx="98"  ry="30"/>
+        <ellipse cx="160" cy="50" rx="76"  ry="24" stroke-dasharray="2 6"/>
+      </g>
+      <!-- little radial tick marks -->
+      <g stroke="#cbd6ea" stroke-width="1" opacity=".55">
+        <path d="M160,10 v10"/><path d="M120,14 v8"/><path d="M200,14 v8"/>
+        <path d="M96,20 v6"/><path d="M224,20 v6"/>
+      </g>
+      <!-- pseudo microtext arcs -->
+      <g stroke="#d3def0" opacity=".6">
+        <path d="M60,46 q100,-18 200,0" stroke-dasharray="2 2"/>
+        <path d="M48,56 q112,-16 224,0" stroke-dasharray="1.5 2.5"/>
+      </g>
+    </pattern>
+  </defs>
+
+  <!-- ===== UI doodles (static, for fun/detail) ===== -->
+  <g class="ui-decor" stroke="var(--ui)" stroke-width="2" opacity=".45" fill="none">
+    <path d="M458,300 v21"/>
+    <path d="M439,248 c8 8 15 8 23 0"/>
+    <path d="M158,353 q-23 15 -23 41" opacity=".4"/>
+    <circle cx="439" cy="465" r="2" opacity=".4"/>
+    <path d="M188,473 h-60" opacity=".35"/>
+    <path d="M465,270 v27" opacity=".5"/>
+  </g>
+  <!-- swoosh arcs around the stack -->
+  <g class="ui-decor" stroke="var(--ui)" stroke-width="2" opacity=".35" fill="none">
+    <path d="M390,336 q38 23 0 45"/>
+    <path d="M214,390 q-36 21 0 42"/>
+    <path d="M203,450 q-30 18 0 33"/>
+  </g>
+
+  <!-- ===== LAYERS (bottom → top). Idle = fanned/exploded with rotation/offset.
+       The prospective top coin starts up-left and ABOVE, not blocking others. ===== -->
+
+  <!-- LAYER 1 (bottom; lilac accent) -->
+  <g class="layer l1" style="--idle: translate(-90px,30px) rotate(-8deg); --stack: translate(0,0) rotate(0);">
+    <ellipse class="shadow" cx="300" cy="449" rx="120" ry="17" fill="#000"/>
+    <ellipse cx="300" cy="434" rx="129" ry="35" fill="url(#edge)" stroke="var(--edgeStroke)"/>
+    <ellipse cx="300" cy="434" rx="122" ry="30" fill="none" stroke="var(--rimHighlight)" stroke-width="3" stroke-dasharray="5 8" opacity=".5"/>
+    <ellipse cx="300" cy="420" rx="128" ry="38" fill="url(#face)" stroke="var(--edgeStroke)"/>
+    <ellipse cx="300" cy="420" rx="117" ry="33" fill="none" stroke="var(--rim)" stroke-width="1"/>
+    <ellipse cx="300" cy="425" rx="101" ry="17" fill="none" stroke="var(--lilac)" stroke-width="5" opacity=".22"/>
+  </g>
+
+  <!-- LAYER 2 (peach) -->
+  <g class="layer l2" style="--idle: translate(83px,8px) rotate(9deg); --stack: translate(0,0) rotate(0);">
+    <ellipse class="shadow" cx="300" cy="410" rx="120" ry="17" fill="#000"/>
+    <ellipse cx="300" cy="395" rx="129" ry="35" fill="url(#edge)" stroke="var(--edgeStroke)"/>
+    <ellipse cx="300" cy="395" rx="122" ry="30" fill="none" stroke="var(--rimHighlight)" stroke-width="3" stroke-dasharray="5 8" opacity=".5"/>
+    <ellipse cx="300" cy="381" rx="128" ry="38" fill="url(#face)" stroke="var(--edgeStroke)"/>
+    <ellipse cx="300" cy="381" rx="117" ry="33" fill="none" stroke="var(--rim)" stroke-width="1"/>
+    <ellipse cx="300" cy="386" rx="101" ry="17" fill="none" stroke="var(--peach)" stroke-width="5" opacity=".22"/>
+  </g>
+
+  <!-- LAYER 3 (green) -->
+  <g class="layer l3" style="--idle: translate(-68px,-14px) rotate(6deg); --stack: translate(0,0) rotate(0);">
+    <ellipse class="shadow" cx="300" cy="371" rx="120" ry="17" fill="#000"/>
+    <ellipse cx="300" cy="356" rx="129" ry="35" fill="url(#edge)" stroke="var(--edgeStroke)"/>
+    <ellipse cx="300" cy="356" rx="122" ry="30" fill="none" stroke="var(--rimHighlight)" stroke-width="3" stroke-dasharray="5 8" opacity=".5"/>
+    <ellipse cx="300" cy="342" rx="128" ry="38" fill="url(#face)" stroke="var(--edgeStroke)"/>
+    <ellipse cx="300" cy="342" rx="117" ry="33" fill="none" stroke="var(--rim)" stroke-width="1"/>
+    <ellipse cx="300" cy="347" rx="101" ry="17" fill="none" stroke="var(--green)" stroke-width="5" opacity=".22"/>
+  </g>
+
+  <!-- LAYER 4 (cyan) with gear-milling drift -->
+  <g class="layer l4" style="--idle: translate(66px,-27px) rotate(-10deg); --stack: translate(0,0) rotate(0);">
+    <ellipse class="shadow" cx="300" cy="332" rx="120" ry="17" fill="#000"/>
+    <ellipse cx="300" cy="317" rx="129" ry="35" fill="url(#edge)" stroke="var(--edgeStroke)"/>
+    <ellipse class="gear" cx="300" cy="317" rx="122" ry="30" fill="none" stroke="var(--rimHighlight)" stroke-width="3" opacity=".55"/>
+    <ellipse cx="300" cy="303" rx="128" ry="38" fill="url(#face)" stroke="var(--edgeStroke)"/>
+    <ellipse cx="300" cy="303" rx="117" ry="33" fill="none" stroke="var(--rim)" stroke-width="1"/>
+    <ellipse cx="300" cy="308" rx="101" ry="17" fill="none" stroke="var(--cyan)" stroke-width="5" opacity=".22"/>
+  </g>
+
+  <!-- LAYER 5 (top) — starts up-left ABOVE others (not blocking) -->
+  <g class="layer l5 topLift" style="--idle: translate(-105px,-68px) rotate(12deg); --stack: translate(0,0) rotate(0);">
+    <ellipse class="shadow top" cx="300" cy="294" rx="114" ry="14" fill="#000"/>
+    <ellipse cx="300" cy="279" rx="129" ry="35" fill="url(#edge)" stroke="var(--edgeStroke)"/>
+    <ellipse cx="300" cy="279" rx="122" ry="30" fill="none" stroke="var(--rimHighlight)" stroke-width="3" stroke-dasharray="5 8" opacity=".5"/>
+    <ellipse id="topDisc" cx="300" cy="264" rx="128" ry="38" fill="url(#face)" stroke="var(--edgeStroke)"/>
+    <ellipse cx="300" cy="264" rx="117" ry="33" fill="none" stroke="var(--rim)" stroke-width="1"/>
+    <!-- detailed etched texture + scanline -->
+    <g clip-path="url(#topClip)" opacity=".6">
+      <rect x="180" y="227" width="240" height="75" fill="url(#rings)"/>
+      <rect class="scan" x="278" y="227" width="45" height="75" fill="#fff"/>
+    </g>
+  </g>
+
+  <!-- ===== Particles: orbit while hovered, then drop into center ===== -->
+  <g>
+    <g class="orbit" fill="#7ae6ff" opacity=".75">
+      <rect x="390" y="210" width="5" height="5" rx="1"/>
+      <rect x="210" y="240" width="4" height="4" rx="1"/>
+      <rect x="345" y="173" width="3" height="3" rx="1"/>
+      <rect x="255" y="180" width="4" height="4" rx="1"/>
+    </g>
+    <!-- three quick drops triggered on hover -->
+    <g fill="#79f3b8">
+      <rect class="drop" x="300" y="188" width="4" height="4" rx="1" style="animation-delay:.2s"/>
+      <rect class="drop" x="293" y="184" width="4" height="4" rx="1" style="animation-delay:.5s"/>
+      <rect class="drop" x="308" y="186" width="4" height="4" rx="1" style="animation-delay:.8s"/>
+    </g>
+  </g>
+</svg>

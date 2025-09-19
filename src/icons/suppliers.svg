@@ -1,270 +1,42 @@
-<!-- Circular Supply Flow — Hover-only, with truck • handshake • factory • boxes (equal distance) -->
-<svg id="flow" viewBox="-48 -48 736 736" role="img" aria-labelledby="t d"
-     xmlns="http://www.w3.org/2000/svg">
-  <title id="t">Animated circular supply flow</title>
-  <desc id="d">Delivery truck, handshake, supplier factory, and boxes orbit a dashed circle. Animates only on hover; all icons keep equal distance from the ring.</desc>
-
-  <defs>
-    <style>
-      :root{
-        --ink:#eaf0f7;      /* light stroke */
-        --line:#0e2032;     /* dark outline */
-        --dash:#cfe0ef;     /* dashed orbit */
-        --dot:#a4c7de;      /* subtle accent */
-        --teal:#78f5ff;     /* teal accent (handshake/factory) */
-        --tealD:#35d6e9;
-        --green:#7cffb0;    /* green accent (boxes) */
-        --orange:#ffb36b;   /* orange accent (truck) */
-        --gray:#cfd7e4;     /* neutral */
-      }
-
-      .cap{ stroke-linecap:round; stroke-linejoin:round; }
-      .ns{ vector-effect: non-scaling-stroke; }
-      .nofill{ fill:none }
-
-      /* ===== ORBIT & GLOBAL HOVER GATING ===== */
-      .orbit-stroke{ stroke-dasharray:6 8; }
-      svg:is(:hover, [data-hovered="true"]) .orbit-stroke{ animation: orbitSweep 8s linear infinite; }
-      @keyframes orbitSweep { to { stroke-dashoffset:-240 } }
-
-      /* pulse/trails/shimmers => hover only */
-      .pulse{ opacity:0; transform:scale(1); }
-      svg:is(:hover, [data-hovered="true"]) .pulse.p0{ animation: pulse 12s ease-in-out infinite; }
-      svg:is(:hover, [data-hovered="true"]) .pulse.p1{ animation: pulse 12s ease-in-out infinite 3s; }
-      svg:is(:hover, [data-hovered="true"]) .pulse.p2{ animation: pulse 12s ease-in-out infinite 6s; }
-      svg:is(:hover, [data-hovered="true"]) .pulse.p3{ animation: pulse 12s ease-in-out infinite 9s; }
-      @keyframes pulse{
-        0% { opacity:0; transform:scale(.92) }
-        18%{ opacity:.45; transform:scale(1.12) }
-        30%{ opacity:.1;  transform:scale(1) }
-        100%{ opacity:0; }
-      }
-
-      .trail rect{ opacity:0; transform:translate(0,0) scale(.8); }
-      svg:is(:hover, [data-hovered="true"]) .trail rect{ animation: trail 1.8s ease-out infinite; }
-      .trail rect:nth-child(2){ animation-delay:.25s }
-      .trail rect:nth-child(3){ animation-delay:.5s }
-      .trail rect:nth-child(4){ animation-delay:.75s }
-      .trail rect:nth-child(5){ animation-delay:1s }
-      @keyframes trail{
-        0%   { opacity:0;   transform:translate(0,0) scale(.8) }
-        18%  { opacity:.9; }
-        70%  { opacity:.7; }
-        100% { opacity:0;   transform:translate(-22px,0) scale(1.05) }
-      }
-
-      .shimmer{ stroke-dasharray:3 6; }
-      svg:is(:hover, [data-hovered="true"]) .shimmer{ animation: shim 3.6s linear infinite; }
-      @keyframes shim{ to { stroke-dashoffset:-36 } }
-
-      /* Hover micro-lift */
-      .pkg{ transition:transform .18s ease; }
-      svg:is(:hover, [data-hovered="true"]) .pkg{ transform:translateY(-1px) scale(1.01) }
-
-      /* ===== HOVER-ONLY ORBIT USING CSS MOTION-PATH =====
-         All icons are 64×64, centered with translate(-32,-32) so
-         every icon sits at the exact same radius from the ring.
-      */
-      .mover{
-        offset-path: path('M300,100 a200,200 0 1,1 0,400 a200,200 0 1,1 0,-400');
-        offset-rotate: auto;
-        transform: translate(-32px,-32px);  /* center 64×64 on path point */
-        animation: orbit 12s linear infinite;
-        animation-play-state: paused;
-      }
-      @keyframes orbit{ to{ offset-distance:100%; } }
-      .pkg--top    .mover{ animation-delay:   0s; }
-      .pkg--right  .mover{ animation-delay:  -3s; }
-      .pkg--bottom .mover{ animation-delay:  -6s; }
-      .pkg--left   .mover{ animation-delay:  -9s; }
-      svg:is(:hover, [data-hovered="true"]) .mover{ animation-play-state: running; }
-
-      #flow[data-nav-measuring] *{
-        animation: none!important;
-        transition: none!important;
-      }
-      #flow[data-nav-measuring] .pulse,
-      #flow[data-nav-measuring] .trail{
-        display: none!important;
-        opacity: 0 !important;
-        transform: none!important;
-      }
-      #flow[data-nav-measuring] .mover{
-        animation: none!important;
-        transform: translate(-32px,-32px) !important;
-      }
-      #flow[data-nav-measuring] .pkg--top .mover{ offset-distance:   0% !important; }
-      #flow[data-nav-measuring] .pkg--right .mover{ offset-distance: 25% !important; }
-      #flow[data-nav-measuring] .pkg--bottom .mover{ offset-distance: 50% !important; }
-      #flow[data-nav-measuring] .pkg--left .mover{ offset-distance: 75% !important; }
-
-      /* Reduced motion */
-      @media (prefers-reduced-motion:reduce){
-        .orbit-stroke,.pulse,.trail rect,.shimmer,.mover{
-          animation:none !important; animation-play-state:paused !important;
-        }
-      }
-    </style>
-
-    <!-- ===== ICON SYMBOLS (64×64 each; centered at 0,0) ===== -->
-
-    <!-- DELIVERY TRUCK (orange) -->
-    <symbol id="iconTruck" viewBox="-32 -32 64 64">
-      <!-- cargo -->
-      <rect x="-24" y="-8" width="28" height="18" rx="3"
-            fill="rgba(255,255,255,.08)" stroke="var(--orange)" stroke-width="2"/>
-      <!-- cab -->
-      <path d="M6 -8h12a4 4 0 0 1 4 4v10H6z"
-            fill="rgba(255,255,255,.12)" stroke="var(--orange)" stroke-width="2"/>
-      <!-- window -->
-      <rect x="10" y="-6" width="6" height="5" rx="1.2" fill="none" stroke="var(--orange)"/>
-      <!-- wheels -->
-      <g fill="none" stroke="var(--orange)" stroke-width="2">
-        <circle cx="-16" cy="10" r="4"/><circle cx="10" cy="10" r="4"/>
-      </g>
-      <!-- stripe -->
-      <path class="shimmer" d="M-22 -2h22" stroke="var(--orange)"/>
-    </symbol>
-
-    <!-- HANDSHAKE (teal) -->
-    <symbol id="iconHandshake" viewBox="-32 -32 64 64">
-      <!-- sleeves -->
-      <path d="M-26 -6h16a4 4 0 0 1 4 4v10h-20z"
-            fill="rgba(255,255,255,.08)" stroke="var(--teal)" stroke-width="2"/>
-      <path d="M26 -6h-16a4 4 0 0 0-4 4v10h20z"
-            fill="rgba(255,255,255,.08)" stroke="var(--teal)" stroke-width="2"/>
-      <!-- hands -->
-      <rect x="-10" y="0" width="20" height="10" rx="5"
-            fill="rgba(255,255,255,.12)" stroke="var(--teal)" stroke-width="2"/>
-      <!-- fingers hints -->
-      <g stroke="var(--teal)" opacity=".9">
-        <path d="M-5 2h10"/>
-        <path d="M-5 4h10"/>
-        <path d="M-5 6h10"/>
-      </g>
-      <!-- diagonal grips -->
-      <path d="M-6 -2l-6 -4" stroke="var(--teal)" stroke-width="2"/>
-      <path d="M6 -2l6 -4" stroke="var(--teal)" stroke-width="2"/>
-      <!-- shine -->
-      <path class="shimmer" d="M-14 8h28" stroke="var(--teal)"/>
-    </symbol>
-
-    <!-- SUPPLIER FACTORY (teal) -->
-    <symbol id="iconFactory" viewBox="-32 -32 64 64">
-      <!-- subtle backplate ring stays within 64×64 so radius is uniform -->
-      <circle r="28" fill="rgba(255,255,255,.12)" stroke="var(--teal)" stroke-width="1" opacity=".15"/>
-      <!-- building -->
-      <path d="M-22 10h44v14h-44z" fill="rgba(255,255,255,.06)" stroke="var(--teal)" stroke-width="2"/>
-      <rect x="-22" y="-4" width="16" height="14" rx="2"
-            fill="rgba(255,255,255,.08)" stroke="var(--teal)" stroke-width="2"/>
-      <path d="M-4 -4l9 6v8h-9z" fill="rgba(255,255,255,.12)" stroke="var(--teal)" stroke-width="2"/>
-      <!-- chimney -->
-      <rect x="12" y="-14" width="8" height="18" rx="1.5"
-            fill="rgba(255,255,255,.08)" stroke="var(--teal)" stroke-width="2"/>
-      <!-- windows -->
-      <g stroke="var(--teal)" opacity=".95">
-        <rect x="-18" y="12" width="8" height="6" rx="1.2" fill="none"/>
-        <rect x="-6"  y="12" width="8" height="6" rx="1.2" fill="none"/>
-        <rect x="6"   y="12" width="8" height="6" rx="1.2" fill="none"/>
-      </g>
-      <!-- shimmer -->
-      <path class="shimmer" d="M-20 -2h26" stroke="var(--teal)"/>
-    </symbol>
-
-    <!-- BOXES / PARCEL STACK (green) -->
-    <symbol id="iconBoxes" viewBox="-32 -32 64 64">
-      <!-- three boxes -->
-      <rect x="-22" y="-14" width="18" height="16" rx="3"
-            fill="rgba(255,255,255,.08)" stroke="var(--green)" stroke-width="2"/>
-      <rect x="4" y="-14" width="18" height="16" rx="3"
-            fill="rgba(255,255,255,.08)" stroke="var(--green)" stroke-width="2"/>
-      <rect x="-9" y="2" width="18" height="16" rx="3"
-            fill="rgba(255,255,255,.08)" stroke="var(--green)" stroke-width="2"/>
-      <!-- tapes -->
-      <rect x="-14" y="-14" width="4" height="10" fill="var(--green)" opacity=".9"/>
-      <rect x="12"  y="-14" width="4" height="10" fill="var(--green)" opacity=".9"/>
-      <rect x="-1"  y="2"   width="4" height="10" fill="var(--green)" opacity=".9"/>
-      <!-- barcode -->
-      <g stroke="var(--green)" opacity=".9">
-        <rect x="8" y="4" width="10" height="6" rx="1.2" fill="none"/>
-        <path d="M9 4v6M11 4v6M13 4v6"/>
-      </g>
-      <!-- shimmer -->
-      <path class="shimmer" d="M-18 6h22" stroke="var(--green)"/>
-    </symbol>
-  </defs>
-
-  <!-- Orbit (dashed) + arrows -->
-  <g class="cap nofill">
-    <path d="M300,100 a200,200 0 1,1 0,400 a200,200 0 1,1 0,-400"
-          class="orbit-stroke ns" stroke="var(--dash)" stroke-width="2"/>
-    <g fill="var(--dot)">
-      <g transform="translate(461,129) rotate(50)"><path d="M0 0 l10 -6 v12z"/></g>
-      <g transform="translate(110,422) rotate(190)"><path d="M0 0 l10 -6 v12z"/></g>
-      <g transform="translate(309,514) rotate(300)"><path d="M0 0 l10 -6 v12z"/></g>
-    </g>
-  </g>
-
-  <!-- ===== PACKAGES (paused until hover; equal radius via identical sizing/centering) ===== -->
-
-  <!-- TOP: DELIVERY TRUCK (orange) -->
-  <g class="pkg pkg--top">
-    <g class="mover">
-      <circle class="pulse p0" r="26" stroke="var(--orange)" stroke-width="2" fill="none"/>
-      <g class="trail" fill="var(--orange)">
-        <rect x="14" y="-2" width="4" height="4" rx="1"/>
-        <rect x="18" y="2"  width="3" height="3" rx=".8"/>
-        <rect x="22" y="-6" width="5" height="5" rx="1.2"/>
-        <rect x="26" y="0"  width="4" height="4" rx="1"/>
-        <rect x="30" y="-3" width="3" height="3" rx=".7"/>
-      </g>
-      <use href="#iconTruck" width="64" height="64" x="-32" y="-32"/>
-    </g>
-  </g>
-
-  <!-- RIGHT: HANDSHAKE (teal) -->
-  <g class="pkg pkg--right">
-    <g class="mover">
-      <circle class="pulse p1" r="26" stroke="var(--teal)" stroke-width="2" fill="none"/>
-      <g class="trail" fill="var(--teal)">
-        <rect x="14" y="-2" width="4" height="4" rx="1"/>
-        <rect x="18" y="2"  width="3" height="3" rx=".8"/>
-        <rect x="22" y="-6" width="5" height="5" rx="1.2"/>
-        <rect x="26" y="0"  width="4" height="4" rx="1"/>
-        <rect x="30" y="-3" width="3" height="3" rx=".7"/>
-      </g>
-      <use href="#iconHandshake" width="64" height="64" x="-32" y="-32"/>
-    </g>
-  </g>
-
-  <!-- BOTTOM: BOXES (green) -->
-  <g class="pkg pkg--bottom">
-    <g class="mover">
-      <circle class="pulse p2" r="26" stroke="var(--green)" stroke-width="2" fill="none"/>
-      <g class="trail" fill="var(--green)">
-        <rect x="14" y="-2" width="4" height="4" rx="1"/>
-        <rect x="18" y="2"  width="3" height="3" rx=".8"/>
-        <rect x="22" y="-6" width="5" height="5" rx="1.2"/>
-        <rect x="26" y="0"  width="4" height="4" rx="1"/>
-        <rect x="30" y="-3" width="3" height="3" rx=".7"/>
-      </g>
-      <use href="#iconBoxes" width="64" height="64" x="-32" y="-32"/>
-    </g>
-  </g>
-
-  <!-- LEFT: SUPPLIER FACTORY (teal) -->
-  <g class="pkg pkg--left">
-    <g class="mover">
-      <circle class="pulse p3" r="26" stroke="var(--teal)" stroke-width="2" fill="none"/>
-      <g class="trail" fill="var(--teal)">
-        <rect x="14" y="-2" width="4" height="4" rx="1"/>
-        <rect x="18" y="2"  width="3" height="3" rx=".8"/>
-        <rect x="22" y="-6" width="5" height="5" rx="1.2"/>
-        <rect x="26" y="0"  width="4" height="4" rx="1"/>
-        <rect x="30" y="-3" width="3" height="3" rx=".7"/>
-      </g>
-      <!-- factory kept at 64×64 + centered, so radius matches others -->
-      <use href="#iconFactory" width="64" height="64" x="-32" y="-32"/>
-    </g>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 736 736" preserveAspectRatio="xMidYMid meet"
+     fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="48"
+     style="cursor:pointer">
+  
+  <style>
+    .hub {
+      stroke: #f59e0b;
+    }
+    .orbit {
+      transform-origin: 368px 368px; /* hub center */
+    }
+    svg:hover .orbit {
+      animation: orbit 12s linear infinite;
+    }
+    @keyframes orbit {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+  </style>
+  
+  <!-- central hub -->
+  <circle class="hub" cx="368" cy="368" r="72" />
+  
+  <!-- orbiting suppliers + connections -->
+  <g class="orbit">
+    <!-- left -->
+    <circle cx="188" cy="368" r="48" stroke="#ffffff"/>
+    <line x1="188" y1="368" x2="296" y2="368" stroke="#ffffff"/>
+    
+    <!-- right -->
+    <circle cx="548" cy="368" r="48" stroke="#ffffff"/>
+    <line x1="548" y1="368" x2="440" y2="368" stroke="#ffffff"/>
+    
+    <!-- top -->
+    <circle cx="368" cy="168" r="48" stroke="#ffffff"/>
+    <line x1="368" y1="168" x2="368" y2="296" stroke="#ffffff"/>
+    
+    <!-- bottom -->
+    <circle cx="368" cy="568" r="48" stroke="#ffffff"/>
+    <line x1="368" y1="568" x2="368" y2="440" stroke="#ffffff"/>
   </g>
 </svg>
