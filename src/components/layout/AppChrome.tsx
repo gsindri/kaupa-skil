@@ -12,7 +12,7 @@ export function AppChrome() {
           right: 'var(--header-right, 0px)',
           transform: 'translateY(calc(-1 * var(--hdr-p, 0) * var(--header-h, 56px)))',
           background:
-            'linear-gradient(90deg, rgba(165, 243, 252, 0.45) 0%, rgba(34, 211, 238, 0.7) 50%, rgba(165, 243, 252, 0.45) 100%)',
+            'linear-gradient(90deg, rgba(255, 196, 148, 0.45) 0%, rgba(255, 140, 0, 0.7) 50%, rgba(255, 196, 148, 0.45) 100%)',
         }}
       />
       
