@@ -169,6 +169,7 @@ export function TopNavigation() {
           title="Go to dashboard"
           className="inline-flex rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
         >
+          <HeildaLogo className="h-[26px] w-auto drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)]" />
         </Link>
         <TenantSwitcher />
       </div>
