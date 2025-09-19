@@ -1,5 +1,6 @@
 
 import React, { useEffect, useRef, useState, useLayoutEffect, useId } from 'react'
+import { Link } from 'react-router-dom'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -162,7 +163,14 @@ export function TopNavigation() {
       }}
     >
       <div className="flex items-center gap-3 min-w-0">
-        <HeildaLogo className="h-8 w-auto shrink-0" />
+        <Link
+          to="/"
+          aria-label="Go to dashboard"
+          title="Go to dashboard"
+          className="inline-flex rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
+        >
+          <HeildaLogo className="h-8 w-auto shrink-0" />
+        </Link>
         <TenantSwitcher />
       </div>
 
