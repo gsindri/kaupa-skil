@@ -1,32 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 736 736"
-     preserveAspectRatio="xMidYMid meet" fill="none"
-     stroke-linecap="round" stroke-linejoin="round" stroke-width="24"
-     style="cursor:pointer">
-
-  <style>
-    .coin {
-      opacity: 0;
-      transform: translateY(40px);
-      transition: transform 0.4s ease, opacity 0.4s ease;
-    }
-    svg:hover .coin {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    /* staggered stacking effect */
-    .coin:nth-of-type(2) { transition-delay: 0.1s; }
-    .coin:nth-of-type(3) { transition-delay: 0.2s; }
-    .coin:nth-of-type(4) { transition-delay: 0.3s; }
-    .coin:nth-of-type(5) { transition-delay: 0.4s; }
-  </style>
-
-  <!-- always-visible base coin (now white) -->
-  <ellipse cx="368" cy="528" rx="120" ry="48" stroke="#ffffff"/>
-
-  <!-- stacking coins (now 4 instead of 5) -->
-  <ellipse class="coin" cx="368" cy="464" rx="120" ry="48" stroke="#f59e0b"/>
-  <ellipse class="coin" cx="368" cy="400" rx="120" ry="48" stroke="#ffffff"/>
-  <ellipse class="coin" cx="368" cy="336" rx="120" ry="48" stroke="#f59e0b"/>
-  <ellipse class="coin" cx="368" cy="272" rx="120" ry="48" stroke="#ffffff"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 736 736" fill="none" stroke="currentColor" stroke-width="48" stroke-linecap="round" stroke-linejoin="round">
+  <ellipse cx="368" cy="528" rx="120" ry="48" />
+  <ellipse cx="368" cy="464" rx="120" ry="48" />
+  <ellipse cx="368" cy="400" rx="120" ry="48" />
+  <ellipse cx="368" cy="336" rx="120" ry="48" />
+  <ellipse cx="368" cy="272" rx="120" ry="48" />
 </svg>
