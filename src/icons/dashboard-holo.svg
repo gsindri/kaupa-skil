@@ -5,14 +5,14 @@
   <style>
     .orb {
       stroke: #f59e0b;
-      stroke-width: 48;
-      opacity: 0.6;
+      stroke-width: 24;   /* thinner than 48 */
+      opacity: 0;
       transform-origin: 368px 368px;
-      transition: transform 0.4s ease, opacity 0.4s ease;
+      transition: opacity 0.5s ease, transform 0.5s ease;
     }
     svg:hover .orb {
+      opacity: 0.8;
       transform: scale(1.05);
-      opacity: 0.9;
     }
     .panel {
       stroke: #ffffff;
@@ -25,7 +25,7 @@
     }
   </style>
   
-  <!-- orange orb -->
+  <!-- orange orb (only visible during hover) -->
   <circle class="orb" cx="368" cy="368" r="300" fill="none"/>
   
   <!-- dashboard grid -->

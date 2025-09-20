@@ -5,6 +5,11 @@
   <style>
     .hub {
       stroke: #f59e0b;
+      opacity: 0;
+      transition: opacity 0.6s ease;
+    }
+    svg:hover .hub {
+      opacity: 1;
     }
     .orbit {
       transform-origin: 368px 368px; /* hub center */
@@ -18,7 +23,7 @@
     }
   </style>
   
-  <!-- central hub -->
+  <!-- central hub (only visible on hover) -->
   <circle class="hub" cx="368" cy="368" r="72" />
   
   <!-- orbiting suppliers + connections -->
