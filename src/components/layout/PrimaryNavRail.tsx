@@ -32,8 +32,8 @@ export function PrimaryNavRail() {
   return (
     <div
       className={clsx(
-        'nav-rail relative flex h-full w-[var(--layout-rail,72px)] flex-col border-r border-white/5',
-        'bg-[linear-gradient(180deg,#070d18_0%,#0c1423_45%,#101c32_100%)]'
+        'nav-rail relative flex h-full w-[var(--layout-rail,72px)] flex-col border-r border-white/10',
+        'bg-[#0c1524]'
       )}
       style={{
         zIndex: 'var(--z-rail, 60)',
@@ -49,35 +49,38 @@ export function PrimaryNavRail() {
               to={to}
               aria-current={active ? 'page' : undefined}
               className={clsx(
-                'group relative flex h-[64px] w-full flex-col items-center justify-center gap-3 rounded-2xl',
+                'group relative flex h-[64px] w-full flex-col items-center justify-center gap-3 rounded-xl',
                 'px-2 text-center transition-colors duration-200',
-                'text-white/60 hover:text-white/90 hover:bg-white/5',
                 focusRingClass,
-                active && 'bg-white/10 text-white shadow-[0_0_0_1px_rgba(255,255,255,0.08)]'
+                active ? 'text-white' : 'text-white/60 hover:text-white/85'
               )}
               onPointerEnter={() => setHoveredItem(to)}
               onPointerLeave={() =>
                 setHoveredItem((current) => (current === to ? null : current))
               }
             >
-               <span
-                 aria-hidden
-                 className={clsx(
-                   'pointer-events-none absolute top-[14px] bottom-[24px] left-1 w-[4px] rounded-full transition-colors duration-200',
-                   active ? 'bg-[#ff8a3d]' : 'bg-transparent group-hover:bg-white/40'
-                 )}
-               />
+              <span
+                aria-hidden
+                className={clsx(
+                  'pointer-events-none absolute top-[14px] bottom-[24px] left-1 w-[4px] rounded-full transition-colors duration-200',
+                  active ? 'bg-[#ff8a3d]' : 'bg-transparent'
+                )}
+              />
               <NavIcon
                 Icon={Icon}
                 active={active}
                 label={label}
                 hovered={isHovered}
                 size={28}
+                className={clsx(
+                  'transition-colors duration-200',
+                  active ? 'text-white' : 'text-white/60 group-hover:text-white/80'
+                )}
               />
               <span
                 className={clsx(
                   'text-[12px] font-medium leading-[14px] tracking-wide transition-colors duration-200',
-                  active ? 'text-white/80' : 'text-white/60 group-hover:text-white/80'
+                  active ? 'text-white' : 'text-white/50 group-hover:text-white/80'
                 )}
               >
                 {label}
