@@ -49,7 +49,7 @@ export function PrimaryNavRail() {
               to={to}
               aria-current={active ? 'page' : undefined}
               className={clsx(
-                'group relative flex h-[64px] w-full flex-col items-center justify-center gap-2.5 rounded-2xl',
+                'group relative flex h-[64px] w-full flex-col items-center justify-center gap-3 rounded-2xl',
                 'px-2 text-center transition-colors duration-200',
                 'text-white/60 hover:text-white/90 hover:bg-white/5',
                 focusRingClass,
@@ -76,8 +76,8 @@ export function PrimaryNavRail() {
               />
               <span
                 className={clsx(
-                  'text-[12px] font-semibold tracking-wide leading-tight transition-colors duration-200',
-                  active ? 'text-white' : 'text-white/60 group-hover:text-white/90'
+                  'text-[12px] font-medium leading-[14px] tracking-wide transition-colors duration-200',
+                  active ? 'text-white/80' : 'text-white/60 group-hover:text-white/80'
                 )}
               >
                 {label}

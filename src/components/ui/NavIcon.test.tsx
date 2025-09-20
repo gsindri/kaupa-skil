@@ -247,6 +247,7 @@ describe('NavIcon scaling', () => {
   })
 
   const targetSize = 36
+  const targetDimension = Math.max(1, targetSize - 4)
 
   it.each(iconTestCases)(
     'does not apply extra scaling when the %s icon fills the viewBox',
@@ -270,8 +271,10 @@ describe('NavIcon scaling', () => {
           info.height * actualScale
         )
 
-        expect(actualScale).toBeCloseTo(1, 6)
-        expect(scaledMaxDimension).toBeCloseTo(viewBoxMaxDimension, 5)
+        const expectedScale = targetDimension / targetSize
+
+        expect(actualScale).toBeCloseTo(expectedScale, 6)
+        expect(scaledMaxDimension).toBeCloseTo(viewBoxMaxDimension * expectedScale, 5)
       })
     }
   )
@@ -292,13 +295,17 @@ describe('NavIcon scaling', () => {
       const actualScale = extractScale(scaleWrapper.style.transform)
       const viewBoxMaxDimension = Math.max(info.width, info.height)
       const contentMaxDimension = Math.max(16, 12)
-      const expectedScale = viewBoxMaxDimension / contentMaxDimension
+      const expectedScale =
+        (targetDimension / targetSize) * (viewBoxMaxDimension / contentMaxDimension)
 
       expect(actualScale).toBeCloseTo(expectedScale, 6)
 
       const scaledMaxDimension = Math.max(16 * actualScale, 12 * actualScale)
 
-      expect(scaledMaxDimension).toBeCloseTo(viewBoxMaxDimension, 5)
+      expect(scaledMaxDimension).toBeCloseTo(
+        viewBoxMaxDimension * (targetDimension / targetSize),
+        5
+      )
     })
   })
 
