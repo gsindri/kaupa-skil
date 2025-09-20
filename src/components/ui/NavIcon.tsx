@@ -55,9 +55,10 @@ export function NavIcon({ Icon, active, size = 36, className, label, hovered }: 
         const contentMaxDimension = Math.max(contentWidth, contentHeight)
         const viewBoxMaxDimension = Math.max(viewBoxWidth, viewBoxHeight)
 
-        const scale =
-          contentMaxDimension > 0 && viewBoxMaxDimension > 0
-            ? Math.max(1, viewBoxMaxDimension / contentMaxDimension)
+        const targetDimension = Math.max(1, size - 4)
+        const computedScale =
+          contentMaxDimension > 0 && viewBoxMaxDimension > 0 && size > 0
+            ? (targetDimension / size) * (viewBoxMaxDimension / contentMaxDimension)
             : 1
 
         const viewBoxCenterX = viewBoxX + viewBoxWidth / 2
@@ -67,11 +68,11 @@ export function NavIcon({ Icon, active, size = 36, className, label, hovered }: 
 
         const pixelsPerUnit = viewBoxMaxDimension > 0 ? size / viewBoxMaxDimension : 1
 
-        const translateX = (viewBoxCenterX - contentCenterX) * scale * pixelsPerUnit
-        const translateY = (viewBoxCenterY - contentCenterY) * scale * pixelsPerUnit
+        const translateX = (viewBoxCenterX - contentCenterX) * computedScale * pixelsPerUnit
+        const translateY = (viewBoxCenterY - contentCenterY) * computedScale * pixelsPerUnit
 
         setTransforms({
-          scale: Number.isFinite(scale) ? scale : 1,
+          scale: Number.isFinite(computedScale) ? computedScale : 1,
           translateX: Number.isFinite(translateX) ? translateX : 0,
           translateY: Number.isFinite(translateY) ? translateY : 0,
         })
@@ -86,10 +87,14 @@ export function NavIcon({ Icon, active, size = 36, className, label, hovered }: 
   return (
     <span
       className={cn(
-        'nav-icon flex h-7 w-7 items-center justify-center rounded-xl transition-transform duration-200',
+        'nav-icon flex items-center justify-center rounded-xl transition-transform duration-200',
         'overflow-visible',
         active ? 'scale-[1.02]' : 'group-hover:scale-[1.02]'
       )}
+      style={{
+        height: `${size}px`,
+        width: `${size}px`,
+      }}
     >
       <span
         data-nav-icon-scale=""
@@ -103,7 +108,7 @@ export function NavIcon({ Icon, active, size = 36, className, label, hovered }: 
           ref={translateWrapperRef}
           style={{
             transform: `translate(${transforms.translateX}px, ${transforms.translateY}px)`,
-            display: 'block'
+            display: 'block',
           }}
         >
           <Icon
