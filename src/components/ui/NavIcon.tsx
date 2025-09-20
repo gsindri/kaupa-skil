@@ -55,7 +55,7 @@ export function NavIcon({ Icon, active, size = 36, className, label, hovered }: 
         const contentMaxDimension = Math.max(contentWidth, contentHeight)
         const viewBoxMaxDimension = Math.max(viewBoxWidth, viewBoxHeight)
 
-        const targetDimension = Math.max(1, size)
+        const targetDimension = Math.max(1, size - 4)
         const computedScale =
           contentMaxDimension > 0 && viewBoxMaxDimension > 0 && size > 0
             ? (targetDimension / size) * (viewBoxMaxDimension / contentMaxDimension)

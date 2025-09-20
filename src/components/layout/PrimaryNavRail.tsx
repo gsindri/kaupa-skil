@@ -49,12 +49,10 @@ export function PrimaryNavRail() {
               to={to}
               aria-current={active ? 'page' : undefined}
               className={clsx(
-                'group relative flex h-[64px] w-full flex-col items-center justify-center rounded-xl',
+                'group relative flex h-[64px] w-full flex-col items-center justify-center gap-3 rounded-xl',
                 'px-2 text-center transition-colors duration-200',
-                active
-                  ? 'bg-white/10 text-white shadow-[0_0_0_1px_rgba(255,255,255,0.12)]'
-                  : 'text-white/60 hover:bg-white/10 hover:text-white',
                 focusRingClass,
+                active ? 'text-white' : 'text-white/60 hover:text-white/85'
               )}
               onPointerEnter={() => setHoveredItem(to)}
               onPointerLeave={() =>
@@ -64,7 +62,7 @@ export function PrimaryNavRail() {
               <span
                 aria-hidden
                 className={clsx(
-                  'pointer-events-none absolute left-1 top-2 bottom-2 w-[4px] rounded-full transition-colors duration-200',
+                  'pointer-events-none absolute top-[14px] bottom-[24px] left-1 w-[4px] rounded-full transition-colors duration-200',
                   active ? 'bg-[#ff8a3d]' : 'bg-transparent'
                 )}
               />
@@ -76,13 +74,13 @@ export function PrimaryNavRail() {
                 size={28}
                 className={clsx(
                   'transition-colors duration-200',
-                  active ? 'text-white' : 'text-white/60 group-hover:text-white'
+                  active ? 'text-white' : 'text-white/60 group-hover:text-white/80'
                 )}
               />
               <span
                 className={clsx(
-                  'mt-2 text-[12px] font-medium leading-[14px] tracking-wide transition-colors duration-200',
-                  active ? 'text-white' : 'text-white/50 group-hover:text-white'
+                  'text-[12px] font-medium leading-[14px] tracking-wide transition-colors duration-200',
+                  active ? 'text-white' : 'text-white/50 group-hover:text-white/80'
                 )}
               >
                 {label}
