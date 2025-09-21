@@ -94,6 +94,7 @@ export function NavIcon({ Icon, active, size = 36, className, label, hovered }: 
       style={{
         height: `${size}px`,
         width: `${size}px`,
+        '--nav-icon-size': `${size}px`,
       }}
     >
       <span

@@ -39,19 +39,19 @@ html, body, #root {
   height: 100%;
 }
 
-/* Navigation rail icon sizing - More aggressive approach */
+/* Navigation rail icon sizing respects component-provided dimensions */
 .nav-rail {
-  --icon-size: 36px; /* Fixed pixel value instead of percentage */
+  --icon-size: 36px; /* Fallback size for legacy callers */
   --icon-stroke: 2;
 }
 
-/* Higher specificity selector with more aggressive sizing */
+/* Allow components to opt-in via --nav-icon-size to avoid overflow */
 .nav-rail .nav-icon svg,
 .nav-rail svg {
-  width: var(--icon-size) !important;
-  height: var(--icon-size) !important;
-  min-width: var(--icon-size) !important;
-  min-height: var(--icon-size) !important;
+  width: var(--nav-icon-size, var(--icon-size)) !important;
+  height: var(--nav-icon-size, var(--icon-size)) !important;
+  min-width: var(--nav-icon-size, var(--icon-size)) !important;
+  min-height: var(--nav-icon-size, var(--icon-size)) !important;
   overflow: visible !important;
   max-width: none !important;
   max-height: none !important;
