@@ -482,7 +482,7 @@ function RecentDialogRow({ query, active, onHover, onSelect, onRemove }: RecentD
         onSelect()
       }}
       className={cn(
-        'grid w-full grid-cols-[20px,1fr,auto] items-center gap-2.5 rounded-[10px] px-3 text-left text-[color:var(--text)] transition-colors',
+        'grid w-full cursor-pointer grid-cols-[20px,1fr,auto] items-center gap-2.5 rounded-[10px] px-3 text-left text-[color:var(--text)] transition-colors',
         'h-[50px]',
         active ? 'bg-white/[0.08]' : 'hover:bg-white/[0.04]'
       )}
