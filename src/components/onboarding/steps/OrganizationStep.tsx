@@ -14,28 +14,28 @@ import { getDefaultCountryCode, normalizePhoneInput, formatVat, isValidVat } fro
 
 const createOrganizationSchema = (country: CountryCode) =>
   z.object({
-    name: z.string().trim().min(1, 'Organization name is required'),
+    name: z.string().trim().min(1, '⚠ Please enter an organization name.'),
     contactName: z
       .string()
       .trim()
-      .min(2, 'Enter the primary contact name'),
+      .min(2, '⚠ Please add a primary contact name.'),
     phone: z
       .string()
       .trim()
-      .min(1, 'Phone number is required')
+      .min(1, '⚠ Please add a phone number.')
       .refine(value => normalizePhoneInput(value, country).isValid, {
-        message: 'Enter a valid phone number in international format'
+        message: '⚠ Enter a valid international phone number.'
       }),
     address: z
       .string()
       .trim()
-      .min(5, 'Add a business address so suppliers know where to deliver'),
+      .min(5, '⚠ Please add your business address.'),
     vat: z
       .string()
       .trim()
       .optional()
       .refine(value => isValidVat(value), {
-        message: 'Use format ########-####'
+        message: '⚠ Use format ########-####.'
       })
   })
 
@@ -134,14 +134,20 @@ export const OrganizationStep = forwardRef<OrganizationStepHandle, OrganizationS
                   control={form.control}
                   name="name"
                   render={({ field }) => (
-                    <FormItem>
+                    <FormItem className="group">
                       <FormLabel className="flex items-center gap-2 text-[13px] text-[color:var(--text-muted)]">
-                        <Building2 className="h-5 w-5 text-[color:var(--brand-accent)]" />
-                        Organization name
+                        <Building2 className="h-5 w-5 text-[color:var(--text-muted)] transition-colors group-focus-within:text-[var(--brand-accent)]" />
+                        <span className="flex items-center gap-1">
+                          Organization name
+                          <span aria-hidden="true" className="text-[color:var(--brand-accent)] opacity-80">
+                            *
+                          </span>
+                        </span>
                       </FormLabel>
                       <FormControl>
                         <Input
                           placeholder="e.g. Reykjavík Restaurant Group"
+                          required
                           {...field}
                           onBlur={event => {
                             field.onBlur()
@@ -158,14 +164,20 @@ export const OrganizationStep = forwardRef<OrganizationStepHandle, OrganizationS
                   control={form.control}
                   name="contactName"
                   render={({ field }) => (
-                    <FormItem>
+                    <FormItem className="group">
                       <FormLabel className="flex items-center gap-2 text-[13px] text-[color:var(--text-muted)]">
-                        <UserCircle2 className="h-5 w-5 text-[color:var(--brand-accent)]" />
-                        Primary contact name
+                        <UserCircle2 className="h-5 w-5 text-[color:var(--text-muted)] transition-colors group-focus-within:text-[var(--brand-accent)]" />
+                        <span className="flex items-center gap-1">
+                          Primary contact
+                          <span aria-hidden="true" className="text-[color:var(--brand-accent)] opacity-80">
+                            *
+                          </span>
+                        </span>
                       </FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="Who should suppliers talk to?"
+                          placeholder="Primary contact person"
+                          required
                           {...field}
                           onBlur={event => {
                             field.onBlur()
@@ -182,16 +194,22 @@ export const OrganizationStep = forwardRef<OrganizationStepHandle, OrganizationS
                   control={form.control}
                   name="phone"
                   render={({ field }) => (
-                    <FormItem>
+                    <FormItem className="group">
                       <FormLabel className="flex items-center gap-2 text-[13px] text-[color:var(--text-muted)]">
-                        <Phone className="h-5 w-5 text-[color:var(--brand-accent)]" />
-                        Phone
+                        <Phone className="h-5 w-5 text-[color:var(--text-muted)] transition-colors group-focus-within:text-[var(--brand-accent)]" />
+                        <span className="flex items-center gap-1">
+                          Phone
+                          <span aria-hidden="true" className="text-[color:var(--brand-accent)] opacity-80">
+                            *
+                          </span>
+                        </span>
                       </FormLabel>
                       <FormControl>
                         <Input
                           type="tel"
                           inputMode="tel"
                           placeholder="+354 555 1234"
+                          required
                           {...field}
                           onBlur={event => {
                             field.onBlur()
@@ -210,7 +228,7 @@ export const OrganizationStep = forwardRef<OrganizationStepHandle, OrganizationS
               </div>
             </section>
 
-            <Separator className="bg-[color:var(--surface-ring)]/70" />
+            <Separator className="bg-[color:var(--surface-ring)]/80" />
 
             <section className="space-y-4">
               <div className="space-y-1">
@@ -222,15 +240,21 @@ export const OrganizationStep = forwardRef<OrganizationStepHandle, OrganizationS
                   control={form.control}
                   name="address"
                   render={({ field }) => (
-                    <FormItem>
+                    <FormItem className="group">
                       <FormLabel className="flex items-center gap-2 text-[13px] text-[color:var(--text-muted)]">
-                        <MapPinHouse className="h-5 w-5 text-[color:var(--brand-accent)]" />
-                        Business address
+                        <MapPinHouse className="h-5 w-5 text-[color:var(--text-muted)] transition-colors group-focus-within:text-[var(--brand-accent)]" />
+                        <span className="flex items-center gap-1">
+                          Business address
+                          <span aria-hidden="true" className="text-[color:var(--brand-accent)] opacity-80">
+                            *
+                          </span>
+                        </span>
                       </FormLabel>
                       <FormControl>
                         <Textarea
                           placeholder="Street, city, postcode"
                           rows={3}
+                          required
                           {...field}
                           onBlur={event => {
                             field.onBlur()
@@ -247,9 +271,9 @@ export const OrganizationStep = forwardRef<OrganizationStepHandle, OrganizationS
                   control={form.control}
                   name="vat"
                   render={({ field }) => (
-                    <FormItem>
+                    <FormItem className="group">
                       <FormLabel className="flex items-center gap-2 text-[13px] text-[color:var(--text-muted)]">
-                        <Receipt className="h-5 w-5 text-[color:var(--brand-accent)]" />
+                        <Receipt className="h-5 w-5 text-[color:var(--text-muted)] transition-colors group-focus-within:text-[var(--brand-accent)]" />
                         VAT / Kennitala (optional)
                       </FormLabel>
                       <FormControl>
@@ -265,8 +289,8 @@ export const OrganizationStep = forwardRef<OrganizationStepHandle, OrganizationS
                         />
                       </FormControl>
                       <p className="flex items-center gap-2 text-[12px] text-[color:var(--text-muted)]">
-                        <Info className="h-4 w-4" />
-                        Helps us pre-fill invoices and tax receipts.
+                        <Info className="h-4 w-4 text-[color:var(--text-muted)]" />
+                        Used to pre-fill invoices and receipts.
                       </p>
                       <FormMessage />
                     </FormItem>
