@@ -18,16 +18,6 @@
     }
   </style>
 
-<<<<<<< HEAD
-  <!-- lens -->
-  <circle class="outline" cx="320" cy="320" r="160"/>
-  
-  <!-- handle -->
-  <line class="outline" x1="432" y1="432" x2="560" y2="560"/>
-  
-  <!-- shine (hover only) -->
-  <line class="shine" x1="260" y1="260" x2="380" y2="300"/>
-=======
   <!-- magnifying glass lens -->
   <circle class="outline" cx="320" cy="320" r="144"/>
 
@@ -40,5 +30,4 @@
   <!-- gleam / highlight -->
   <path class="accent" d="M252 236 L332 200"/>
   <path class="accent" d="M248 276 L284 240"/>
->>>>>>> abe6218ab337f7587efa009b1240ef8a25f80435
 </svg>
