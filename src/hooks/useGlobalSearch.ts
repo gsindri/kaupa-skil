@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react'
+import { supabase } from '@/integrations/supabase/client'
+import { handleQueryError } from '@/lib/queryErrorHandler'
 
 export type SearchScope = 'all' | 'products' | 'suppliers' | 'orders'
 
@@ -13,30 +15,6 @@ interface SearchSections {
   orders: SearchItem[]
 }
 
-const MOCK_DATA: SearchSections = {
-  products: [
-    { id: 'p1', name: 'Olive Oil' },
-    { id: 'p2', name: 'Organic Tomatoes' },
-    { id: 'p3', name: 'Sea Salt' },
-    { id: 'p4', name: 'Whole Wheat Flour' },
-    { id: 'p5', name: 'Dark Chocolate' }
-  ],
-  suppliers: [
-    { id: 's1', name: 'Icelandic Goods Co' },
-    { id: 's2', name: 'Nordic Foods' },
-    { id: 's3', name: 'Harbor Wholesale' },
-    { id: 's4', name: 'FreshFarm Suppliers' },
-    { id: 's5', name: 'Arctic Imports' }
-  ],
-  orders: [
-    { id: 'o1', name: 'Order #1001' },
-    { id: 'o2', name: 'Order #1002' },
-    { id: 'o3', name: 'Order #1003' },
-    { id: 'o4', name: 'Order #1004' },
-    { id: 'o5', name: 'Order #1005' }
-  ]
-}
-
 export function useGlobalSearch(q: string, scope: SearchScope) {
   const [sections, setSections] = useState<SearchSections>({
     products: [],
@@ -47,38 +25,102 @@ export function useGlobalSearch(q: string, scope: SearchScope) {
   const [error, setError] = useState<Error | null>(null)
 
   useEffect(() => {
-    if (!q) {
+    if (!q || q.trim().length < 2) {
       setSections({ products: [], suppliers: [], orders: [] })
       return
     }
 
     const controller = new AbortController()
     setIsLoading(true)
+    setError(null)
 
-    const timer = setTimeout(() => {
+    const searchData = async () => {
       try {
-        const query = q.toLowerCase()
-        const filter = (items: SearchItem[]) =>
-          items.filter((i) => i.name.toLowerCase().includes(query)).slice(0, 5)
+        const query = q.trim()
+        const results: SearchSections = {
+          products: [],
+          suppliers: [],
+          orders: []
+        }
 
-        const next: SearchSections = {
-          products: scope !== 'suppliers' && scope !== 'orders' ? filter(MOCK_DATA.products) : [],
-          suppliers: scope !== 'products' && scope !== 'orders' ? filter(MOCK_DATA.suppliers) : [],
-          orders: scope !== 'products' && scope !== 'suppliers' ? filter(MOCK_DATA.orders) : []
+        // Search products from v_public_catalog
+        if (scope === 'all' || scope === 'products') {
+          const { data: products, error: productsError } = await supabase
+            .from('v_public_catalog')
+            .select('catalog_id, name')
+            .ilike('name', `%${query}%`)
+            .not('catalog_id', 'is', null)
+            .limit(5)
+
+          if (productsError) {
+            console.warn('Products search error:', productsError)
+          } else if (products) {
+            results.products = products.map(p => ({
+              id: p.catalog_id!,
+              name: p.name!
+            }))
+          }
+        }
+
+        // Search suppliers
+        if (scope === 'all' || scope === 'suppliers') {
+          const { data: suppliers, error: suppliersError } = await supabase
+            .from('suppliers')
+            .select('id, name')
+            .ilike('name', `%${query}%`)
+            .limit(5)
+
+          if (suppliersError) {
+            console.warn('Suppliers search error:', suppliersError)
+          } else if (suppliers) {
+            results.suppliers = suppliers.map(s => ({
+              id: s.id,
+              name: s.name
+            }))
+          }
+        }
+
+        // Orders - using audit events for now since no orders table exists
+        if (scope === 'all' || scope === 'orders') {
+          const { data: orderEvents, error: ordersError } = await supabase
+            .from('audit_events')
+            .select('id, action, meta_data')
+            .in('action', ['order_created', 'order_placed', 'compose_order'])
+            .order('created_at', { ascending: false })
+            .limit(5)
+
+          if (ordersError) {
+            console.warn('Orders search error:', ordersError)
+          } else if (orderEvents) {
+            results.orders = orderEvents
+              .filter(event => {
+                const orderName = event.meta_data?.order_number || event.meta_data?.order_id || `Order ${event.id.slice(0, 8)}`
+                return orderName.toLowerCase().includes(query.toLowerCase())
+              })
+              .map(event => ({
+                id: event.id,
+                name: event.meta_data?.order_number || event.meta_data?.order_id || `Order ${event.id.slice(0, 8)}`
+              }))
+          }
         }
 
         if (!controller.signal.aborted) {
-          setSections(next)
+          setSections(results)
         }
       } catch (e) {
         if (!controller.signal.aborted) {
-          setError(e as Error)
+          const errorMessage = handleQueryError(e, 'global search')
+          setError(new Error(errorMessage))
         }
       } finally {
         if (!controller.signal.aborted) {
           setIsLoading(false)
         }
       }
+    }
+
+    const timer = setTimeout(() => {
+      searchData()
     }, 200)
 
     return () => {
