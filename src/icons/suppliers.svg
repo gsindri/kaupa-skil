@@ -1,11 +1,50 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 736 736" fill="none" stroke="currentColor" stroke-width="48" stroke-linecap="round" stroke-linejoin="round">
-  <circle cx="368" cy="368" r="72" />
-  <circle cx="188" cy="368" r="48" />
-  <line x1="188" y1="368" x2="296" y2="368" />
-  <circle cx="548" cy="368" r="48" />
-  <line x1="548" y1="368" x2="440" y2="368" />
-  <circle cx="368" cy="168" r="48" />
-  <line x1="368" y1="168" x2="368" y2="296" />
-  <circle cx="368" cy="568" r="48" />
-  <line x1="368" y1="568" x2="368" y2="440" />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 736 736"
+     preserveAspectRatio="xMidYMid meet" fill="none"
+     stroke-linecap="round" stroke-linejoin="round" stroke-width="48"
+     style="cursor:pointer">
+
+  <style>
+    .node {
+      stroke: #ffffff;
+    }
+    .hub {
+      stroke: #ffffff;
+      transition: stroke 0.6s ease;
+    }
+    svg:hover .hub {
+      stroke: #f59e0b;
+    }
+    .orbit {
+      transform-origin: 368px 368px;
+    }
+    svg:hover .orbit {
+      animation: orbit 12s linear infinite;
+    }
+    @keyframes orbit {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+  </style>
+  
+  <!-- central hub (white → orange on hover) -->
+  <circle class="hub" cx="368" cy="368" r="72"/>
+
+  <!-- orbiting suppliers -->
+  <g class="orbit">
+    <!-- left -->
+    <circle class="node" cx="188" cy="368" r="48"/>
+    <line class="node" x1="188" y1="368" x2="296" y2="368"/>
+    
+    <!-- right -->
+    <circle class="node" cx="548" cy="368" r="48"/>
+    <line class="node" x1="548" y1="368" x2="440" y2="368"/>
+    
+    <!-- top -->
+    <circle class="node" cx="368" cy="168" r="48"/>
+    <line class="node" x1="368" y1="168" x2="368" y2="296"/>
+    
+    <!-- bottom -->
+    <circle class="node" cx="368" cy="568" r="48"/>
+    <line class="node" x1="368" y1="568" x2="368" y2="440"/>
+  </g>
 </svg>

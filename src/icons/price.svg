@@ -1,7 +1,39 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 736 736" fill="none" stroke="currentColor" stroke-width="48" stroke-linecap="round" stroke-linejoin="round">
-  <ellipse cx="368" cy="528" rx="120" ry="48" />
-  <ellipse cx="368" cy="464" rx="120" ry="48" />
-  <ellipse cx="368" cy="400" rx="120" ry="48" />
-  <ellipse cx="368" cy="336" rx="120" ry="48" />
-  <ellipse cx="368" cy="272" rx="120" ry="48" />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 736 736"
+     preserveAspectRatio="xMidYMid meet" fill="none"
+     stroke-linecap="round" stroke-linejoin="round" stroke-width="32"
+     style="cursor:pointer">
+
+  <style>
+    .pig { stroke: #ffffff; }
+    .detail { stroke: #ffffff; fill: #ffffff; }
+    .coin { stroke: #f59e0b; fill: none; opacity: 0; transition: opacity 0.5s ease, transform 0.5s ease; }
+    svg:hover .coin { opacity: 1; transform: translateY(40px); }
+  </style>
+
+  <!-- pig body (oval belly with slight curve for back) -->
+  <path class="pig" d="M220 400 Q220 280 340 260 H460 Q560 280 560 400 Q560 500 460 520 H300 Q220 500 220 400 Z"/>
+
+  <!-- snout (with nostrils) -->
+  <ellipse class="pig" cx="580" cy="400" rx="40" ry="30"/>
+  <circle class="detail" cx="592" cy="400" r="6"/>
+  <circle class="detail" cx="568" cy="400" r="6"/>
+
+  <!-- ear -->
+  <path class="pig" d="M340 260 l-20 -50 l50 20 z"/>
+
+  <!-- eye -->
+  <circle class="detail" cx="480" cy="340" r="8"/>
+
+  <!-- legs -->
+  <line class="pig" x1="300" y1="520" x2="300" y2="560"/>
+  <line class="pig" x1="420" y1="520" x2="420" y2="560"/>
+
+  <!-- curly tail -->
+  <path class="pig" d="M200 400 q-30 -10 -30 15 q0 25 30 15 q25 -10 25 15"/>
+
+  <!-- coin slot -->
+  <line class="pig" x1="340" y1="300" x2="440" y2="300"/>
+
+  <!-- animated coin -->
+  <circle class="coin" cx="390" cy="220" r="28"/>
 </svg>

@@ -1,4 +1,21 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 736 736" fill="none" stroke="currentColor" stroke-width="48" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M272 480L368 240L464 480" />
-  <path d="M272 256L368 496L464 256" />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 736 736"
+     preserveAspectRatio="xMidYMid meet" fill="none"
+     stroke-linecap="round" stroke-linejoin="round" stroke-width="48"
+     style="cursor:pointer">
+
+  <style>
+    .arrow {
+      stroke: #ffffff;
+      transition: stroke 0.5s ease;
+    }
+    svg:hover .arrow.down {
+      stroke: #f59e0b;
+    }
+  </style>
+
+  <!-- up arrow (always white) -->
+  <path class="arrow up" d="M272 480 L368 240 L464 480"/>
+  
+  <!-- down arrow (turns orange smoothly on hover) -->
+  <path class="arrow down" d="M272 256 L368 496 L464 256"/>
 </svg>

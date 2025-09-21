@@ -1,11 +1,35 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 736 736" fill="none" stroke="currentColor" stroke-width="48" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M368 136L368 600" />
-  <path d="M112 184Q240 152 368 184V600Q240 568 112 600Z" />
-  <path d="M624 184Q496 152 368 184V600Q496 568 624 600Z" />
-  <line x1="176" y1="280" x2="320" y2="280" />
-  <line x1="176" y1="360" x2="320" y2="360" />
-  <line x1="176" y1="440" x2="320" y2="440" />
-  <line x1="416" y1="280" x2="560" y2="280" />
-  <line x1="416" y1="360" x2="560" y2="360" />
-  <line x1="416" y1="440" x2="560" y2="440" />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 736 736"
+     preserveAspectRatio="xMidYMid meet" fill="none"
+     stroke-linecap="round" stroke-linejoin="round"
+     style="cursor:pointer">
+
+  <style>
+    .outline {
+      stroke: #ffffff;
+      stroke-width: 48;
+    }
+    .stripe {
+      stroke: #ffffff;
+      stroke-width: 24;
+      transition: stroke 0.5s ease;
+    }
+    svg:hover .stripe {
+      stroke: #f59e0b;
+    }
+  </style>
+
+  <!-- book outline -->
+  <path class="outline" d="M368 136 L368 600"/>
+  <path class="outline" d="M112 184 Q240 152 368 184 V600 Q240 568 112 600 Z"/>
+  <path class="outline" d="M624 184 Q496 152 368 184 V600 Q496 568 624 600 Z"/>
+
+  <!-- left page stripes -->
+  <line class="stripe" x1="176" y1="260" x2="320" y2="260"/>
+  <line class="stripe" x1="176" y1="320" x2="320" y2="320"/>
+  <line class="stripe" x1="176" y1="380" x2="320" y2="380"/>
+
+  <!-- right page stripes -->
+  <line class="stripe" x1="416" y1="260" x2="560" y2="260"/>
+  <line class="stripe" x1="416" y1="320" x2="560" y2="320"/>
+  <line class="stripe" x1="416" y1="380" x2="560" y2="380"/>
 </svg>

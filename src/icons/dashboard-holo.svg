@@ -1,6 +1,32 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 736 736" fill="none" stroke="currentColor" stroke-width="48" stroke-linecap="round" stroke-linejoin="round">
-  <rect x="188" y="188" width="140" height="140" rx="24" fill="none" />
-  <rect x="408" y="188" width="140" height="140" rx="24" fill="none" />
-  <rect x="188" y="408" width="140" height="140" rx="24" fill="none" />
-  <rect x="408" y="408" width="140" height="140" rx="24" fill="none" />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 736 736"
+     preserveAspectRatio="xMidYMid meet" fill="none"
+     stroke-linecap="round" stroke-linejoin="round"
+     style="cursor:pointer">
+
+  <style>
+    .outline {
+      stroke: #ffffff;
+      stroke-width: 48;
+    }
+    .fill {
+      fill: #f59e0b;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+    svg:hover .fill {
+      opacity: 1;
+    }
+  </style>
+
+  <!-- partial orange fills (hover only, half height) -->
+  <rect class="fill" x="188" y="258" width="140" height="70" rx="8"/>
+  <rect class="fill" x="408" y="258" width="140" height="70" rx="8"/>
+  <rect class="fill" x="188" y="478" width="140" height="70" rx="8"/>
+  <rect class="fill" x="408" y="478" width="140" height="70" rx="8"/>
+
+  <!-- white outlines (always visible) -->
+  <rect class="outline" x="188" y="188" width="140" height="140" rx="16"/>
+  <rect class="outline" x="408" y="188" width="140" height="140" rx="16"/>
+  <rect class="outline" x="188" y="408" width="140" height="140" rx="16"/>
+  <rect class="outline" x="408" y="408" width="140" height="140" rx="16"/>
 </svg>

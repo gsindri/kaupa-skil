@@ -1,14 +1,23 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 736 736" fill="none" stroke="currentColor" stroke-width="48" stroke-linecap="round" stroke-linejoin="round">
-  <line x1="160" y1="248" x2="576" y2="248" />
-  <line x1="160" y1="408" x2="576" y2="408" />
-  <line x1="160" y1="568" x2="576" y2="568" />
-  <rect x="184" y="184" width="80" height="64" rx="8" fill="none" />
-  <rect x="304" y="184" width="64" height="64" rx="8" fill="none" />
-  <rect x="440" y="184" width="80" height="64" rx="8" fill="none" />
-  <rect x="200" y="344" width="64" height="64" rx="8" fill="none" />
-  <rect x="320" y="344" width="96" height="64" rx="8" fill="none" />
-  <rect x="456" y="344" width="64" height="64" rx="8" fill="none" />
-  <rect x="224" y="504" width="80" height="64" rx="8" fill="none" />
-  <rect x="352" y="504" width="64" height="64" rx="8" fill="none" />
-  <rect x="472" y="504" width="80" height="64" rx="8" fill="none" />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 736 736"
+     preserveAspectRatio="xMidYMid meet" fill="none"
+     stroke-linecap="round" stroke-linejoin="round" stroke-width="48"
+     style="cursor:pointer">
+
+  <style>
+    .shelf { stroke: #ffffff; }
+    .box { stroke: #ffffff; transition: stroke 0.4s ease; }
+    svg:hover .box.accent { stroke: #f59e0b; }
+  </style>
+  
+  <!-- top shelf -->
+  <line class="shelf" x1="176" y1="200" x2="560" y2="200"/>
+  <rect class="box" x="200" y="140" width="96" height="60" rx="8"/>
+  
+  <!-- middle shelf -->
+  <line class="shelf" x1="176" y1="360" x2="560" y2="360"/>
+  <rect class="box accent" x="440" y="300" width="96" height="60" rx="8"/>
+  
+  <!-- bottom shelf -->
+  <line class="shelf" x1="176" y1="520" x2="560" y2="520"/>
+  <rect class="box" x="320" y="460" width="96" height="60" rx="8"/>
 </svg>
