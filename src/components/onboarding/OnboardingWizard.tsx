@@ -411,20 +411,20 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
     }
   }, [navigate, onComplete, organization, preferences, refetch, selectedSupplierIds, toast, user])
 
-  const quietSkipClass =
-    'justify-center px-0 text-[13px] text-[color:var(--text-muted)] hover:bg-transparent hover:text-[color:var(--text)]'
-
   const emphasizedPrimaryClass =
     'justify-center bg-[var(--brand-accent)] text-[color:var(--brand-accent-fg)] hover:bg-[var(--brand-accent)]/90'
 
+  const backButtonClass =
+    'justify-center text-[color:var(--text-muted)] hover:bg-transparent hover:text-[color:var(--text)] sm:w-auto'
+
+  const skipLinkClass =
+    'text-[13px] text-[color:var(--text-muted)] underline-offset-4 transition-colors hover:text-[color:var(--text)] hover:underline disabled:pointer-events-none disabled:opacity-50'
+
   const organizationFooter = (
-    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-      <Button variant="outline" size="lg" className="justify-center sm:w-auto" disabled>
-        <ArrowLeft className="mr-2 h-4 w-4" /> Back
-      </Button>
-      <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center">
-        <Button variant="ghost" className={quietSkipClass} onClick={handleSkip}>
-          Skip for now
+    <div className="flex flex-col gap-2">
+      <div className="flex items-center justify-between gap-3">
+        <Button variant="ghost" size="lg" className={backButtonClass} disabled>
+          <ArrowLeft className="mr-2 h-4 w-4" /> Back
         </Button>
         <Button
           size="lg"
@@ -435,21 +435,26 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
           Continue
         </Button>
       </div>
+      <div className="flex justify-end">
+        <button type="button" className={skipLinkClass} onClick={handleSkip}>
+          Skip for now
+        </button>
+      </div>
     </div>
   )
 
   const supplierFooter = (
-    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col gap-2">
       <Button
         variant="ghost"
         size="lg"
-        className="justify-center sm:w-auto"
+        className={backButtonClass}
         onClick={handleBack}
         disabled={isCompleting}
       >
         <ArrowLeft className="mr-2 h-4 w-4" /> Back
       </Button>
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
         <span className="text-center text-[13px] text-[color:var(--text-muted)]">
           {selectedSupplierIds.length} selected
         </span>
@@ -466,20 +471,17 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
   )
 
   const reviewFooter = (
-    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col gap-2">
       <Button
         variant="ghost"
         size="lg"
-        className="justify-center sm:w-auto"
+        className={backButtonClass}
         onClick={handleBack}
         disabled={isCompleting}
       >
         <ArrowLeft className="mr-2 h-4 w-4" /> Back
       </Button>
-      <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center">
-        <Button variant="ghost" className={quietSkipClass} onClick={handleSkip} disabled={isCompleting}>
-          Skip for now
-        </Button>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
         <Button
           size="lg"
           className={emphasizedPrimaryClass}
@@ -494,6 +496,11 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
             'Finish setup'
           )}
         </Button>
+      </div>
+      <div className="flex justify-end">
+        <button type="button" className={skipLinkClass} onClick={handleSkip} disabled={isCompleting}>
+          Skip for now
+        </button>
       </div>
     </div>
   )
@@ -517,9 +524,6 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
           <div className="flex flex-col gap-8 px-6 py-8 sm:px-10 sm:py-10">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div className="space-y-1">
-                <p className="text-[13px] text-[color:var(--text-muted)]">
-                  Step {currentStep} of {TOTAL_STEPS}
-                </p>
                 <h2 className="text-2xl font-semibold text-[color:var(--text)]">{steps[currentStep - 1]?.title}</h2>
                 <p className="text-[14px] text-[color:var(--text-muted)]">{steps[currentStep - 1]?.description}</p>
               </div>
