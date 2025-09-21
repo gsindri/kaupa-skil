@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 736 736"
      preserveAspectRatio="xMidYMid meet" fill="none"
-     stroke-linecap="round" stroke-linejoin="round" stroke-width="32"
+     stroke-linecap="round" stroke-linejoin="round" stroke-width="48"
      style="cursor:pointer">
 
   <style>
@@ -12,12 +12,9 @@
   <!-- lens -->
   <circle class="outline" cx="320" cy="320" r="160"/>
   
-  <!-- handle (classic diagonal) -->
+  <!-- handle -->
   <line class="outline" x1="432" y1="432" x2="560" y2="560"/>
   
-  <!-- optional connector circle -->
-  <circle class="outline" cx="432" cy="432" r="20"/>
-  
-  <!-- shine detail (hover) -->
+  <!-- shine (hover only) -->
   <line class="shine" x1="260" y1="260" x2="380" y2="300"/>
 </svg>
