@@ -411,22 +411,24 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
     }
   }, [navigate, onComplete, organization, preferences, refetch, selectedSupplierIds, toast, user])
 
+  const quietSkipClass =
+    'justify-center px-0 text-[13px] text-[color:var(--text-muted)] hover:bg-transparent hover:text-[color:var(--text)]'
+
+  const emphasizedPrimaryClass =
+    'justify-center bg-[var(--brand-accent)] text-[color:var(--brand-accent-fg)] hover:bg-[var(--brand-accent)]/90'
+
   const organizationFooter = (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <Button variant="outline" size="lg" className="justify-center sm:w-auto" disabled>
         <ArrowLeft className="mr-2 h-4 w-4" /> Back
       </Button>
       <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center">
-        <Button
-          variant="ghost"
-          className="justify-center text-[13px] text-[color:var(--text-muted)] hover:text-[color:var(--text)]"
-          onClick={handleSkip}
-        >
+        <Button variant="ghost" className={quietSkipClass} onClick={handleSkip}>
           Skip for now
         </Button>
         <Button
           size="lg"
-          className="justify-center"
+          className={emphasizedPrimaryClass}
           onClick={() => organizationStepRef.current?.submit()}
           disabled={isCompleting}
         >
@@ -451,7 +453,12 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
         <span className="text-center text-[13px] text-[color:var(--text-muted)]">
           {selectedSupplierIds.length} selected
         </span>
-        <Button size="lg" className="justify-center" onClick={handleSupplierContinue} disabled={isCompleting}>
+        <Button
+          size="lg"
+          className={emphasizedPrimaryClass}
+          onClick={handleSupplierContinue}
+          disabled={isCompleting}
+        >
           Continue
         </Button>
       </div>
@@ -470,15 +477,15 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
         <ArrowLeft className="mr-2 h-4 w-4" /> Back
       </Button>
       <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center">
-        <Button
-          variant="ghost"
-          className="justify-center text-[13px] text-[color:var(--text-muted)] hover:text-[color:var(--text)]"
-          onClick={handleSkip}
-          disabled={isCompleting}
-        >
+        <Button variant="ghost" className={quietSkipClass} onClick={handleSkip} disabled={isCompleting}>
           Skip for now
         </Button>
-        <Button size="lg" className="justify-center" onClick={completeOnboarding} disabled={isCompleting}>
+        <Button
+          size="lg"
+          className={emphasizedPrimaryClass}
+          onClick={completeOnboarding}
+          disabled={isCompleting}
+        >
           {isCompleting ? (
             <span className="flex items-center gap-2">
               <Loader2 className="h-4 w-4 animate-spin" /> Finishing…
@@ -495,8 +502,8 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
     <div className="min-h-screen bg-[color:var(--brand-bg)]/6 py-10 sm:py-16">
       <div className="mx-auto w-full max-w-4xl px-4">
         <header className="mb-8 space-y-2 text-center">
-          <h1 className="text-3xl font-semibold text-[color:var(--text)]">Welcome to ProcureWise</h1>
-          <p className="text-[15px] text-[color:var(--text-muted)]">Let’s get you set up in a few steps.</p>
+          <h1 className="text-3xl font-semibold text-[color:var(--text)]">Welcome to Deilda</h1>
+          <p className="text-[15px] text-[color:var(--text-muted)]">Let’s get your workspace set up in a few steps.</p>
         </header>
 
         <div className="relative overflow-hidden rounded-[16px] border border-[color:var(--surface-ring)] bg-[color:var(--surface-pop)] shadow-[var(--elev-shadow)]">
@@ -510,7 +517,7 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
           <div className="flex flex-col gap-8 px-6 py-8 sm:px-10 sm:py-10">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div className="space-y-1">
-                <p className="text-[12px] uppercase tracking-wide text-[color:var(--text-muted)]">
+                <p className="text-[13px] text-[color:var(--text-muted)]">
                   Step {currentStep} of {TOTAL_STEPS}
                 </p>
                 <h2 className="text-2xl font-semibold text-[color:var(--text)]">{steps[currentStep - 1]?.title}</h2>
