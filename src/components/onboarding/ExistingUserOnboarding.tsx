@@ -90,7 +90,7 @@ export function ExistingUserOnboarding() {
       <div className="max-w-2xl mx-auto">
         <div className="text-center mb-8">
           <Building className="h-16 w-16 text-primary mx-auto mb-4" />
-          <h1 className="text-3xl font-bold mb-2">Welcome to ProcureWise</h1>
+          <h1 className="text-3xl font-bold mb-2">Welcome to Deilda</h1>
           <p className="text-muted-foreground">
             You can join or create an organization now, or skip and set it up
             later in Settings.

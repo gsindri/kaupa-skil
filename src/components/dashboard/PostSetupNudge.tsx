@@ -71,7 +71,7 @@ export function PostSetupNudge() {
         <div>
           <h2 className="text-xl font-semibold text-[color:var(--text)]">Keep momentum going</h2>
           <p className="text-[14px] text-[color:var(--text-muted)]">
-            You’re all set. A few quick touches will help your team get the most from ProcureWise.
+            You’re all set. A few quick touches will help your team get the most from Deilda.
           </p>
         </div>
         <Button variant="ghost" size="icon" onClick={handleDismiss} aria-label="Dismiss setup tips">
