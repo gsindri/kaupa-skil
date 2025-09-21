@@ -7,26 +7,42 @@ export type SearchScope = 'all' | 'products' | 'suppliers' | 'orders'
 interface SearchItem {
   id: string
   name: string
+  metadata?: {
+    subtitle?: string
+    availability?: string
+    price?: string
+    imageUrl?: string
+  }
+}
+
+interface SearchSection {
+  items: SearchItem[]
+  totalCount: number
+  hasMore: boolean
 }
 
 interface SearchSections {
-  products: SearchItem[]
-  suppliers: SearchItem[]
-  orders: SearchItem[]
+  products: SearchSection
+  suppliers: SearchSection
+  orders: SearchSection
 }
 
 export function useGlobalSearch(q: string, scope: SearchScope) {
   const [sections, setSections] = useState<SearchSections>({
-    products: [],
-    suppliers: [],
-    orders: []
+    products: { items: [], totalCount: 0, hasMore: false },
+    suppliers: { items: [], totalCount: 0, hasMore: false },
+    orders: { items: [], totalCount: 0, hasMore: false }
   })
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<Error | null>(null)
 
   useEffect(() => {
     if (!q || q.trim().length < 2) {
-      setSections({ products: [], suppliers: [], orders: [] })
+      setSections({ 
+        products: { items: [], totalCount: 0, hasMore: false },
+        suppliers: { items: [], totalCount: 0, hasMore: false },
+        orders: { items: [], totalCount: 0, hasMore: false }
+      })
       return
     }
 
@@ -37,46 +53,78 @@ export function useGlobalSearch(q: string, scope: SearchScope) {
     const searchData = async () => {
       try {
         const query = q.trim()
+        const LIMIT = 8 // Increased from 5
         const results: SearchSections = {
-          products: [],
-          suppliers: [],
-          orders: []
+          products: { items: [], totalCount: 0, hasMore: false },
+          suppliers: { items: [], totalCount: 0, hasMore: false },
+          orders: { items: [], totalCount: 0, hasMore: false }
         }
 
         // Search products from v_public_catalog
         if (scope === 'all' || scope === 'products') {
-          const { data: products, error: productsError } = await supabase
+          // Get total count first
+          const { count: totalCount } = await supabase
             .from('v_public_catalog')
-            .select('catalog_id, name')
+            .select('catalog_id', { count: 'exact', head: true })
             .ilike('name', `%${query}%`)
             .not('catalog_id', 'is', null)
-            .limit(5)
+
+          // Get limited results with more data
+          const { data: products, error: productsError } = await supabase
+            .from('v_public_catalog')
+            .select('catalog_id, name, brand, availability_status, best_price, sample_image_url')
+            .ilike('name', `%${query}%`)
+            .not('catalog_id', 'is', null)
+            .limit(LIMIT)
 
           if (productsError) {
             console.warn('Products search error:', productsError)
           } else if (products) {
-            results.products = products.map(p => ({
-              id: p.catalog_id!,
-              name: p.name!
-            }))
+            results.products = {
+              items: products.map(p => ({
+                id: p.catalog_id!,
+                name: p.name!,
+                metadata: {
+                  subtitle: p.brand || undefined,
+                  availability: p.availability_status || undefined,
+                  price: p.best_price ? `$${p.best_price}` : undefined,
+                  imageUrl: p.sample_image_url || undefined
+                }
+              })),
+              totalCount: totalCount || 0,
+              hasMore: (totalCount || 0) > LIMIT
+            }
           }
         }
 
         // Search suppliers
         if (scope === 'all' || scope === 'suppliers') {
+          // Get total count
+          const { count: totalCount } = await supabase
+            .from('suppliers')
+            .select('id', { count: 'exact', head: true })
+            .ilike('name', `%${query}%`)
+
           const { data: suppliers, error: suppliersError } = await supabase
             .from('suppliers')
-            .select('id, name')
+            .select('id, name, logo_url')
             .ilike('name', `%${query}%`)
-            .limit(5)
+            .limit(LIMIT)
 
           if (suppliersError) {
             console.warn('Suppliers search error:', suppliersError)
           } else if (suppliers) {
-            results.suppliers = suppliers.map(s => ({
-              id: s.id,
-              name: s.name
-            }))
+            results.suppliers = {
+              items: suppliers.map(s => ({
+                id: s.id,
+                name: s.name,
+                metadata: {
+                  imageUrl: s.logo_url || undefined
+                }
+              })),
+              totalCount: totalCount || 0,
+              hasMore: (totalCount || 0) > LIMIT
+            }
           }
         }
 
@@ -84,23 +132,32 @@ export function useGlobalSearch(q: string, scope: SearchScope) {
         if (scope === 'all' || scope === 'orders') {
           const { data: orderEvents, error: ordersError } = await supabase
             .from('audit_events')
-            .select('id, action, meta_data')
+            .select('id, action, meta_data, created_at')
             .in('action', ['order_created', 'order_placed', 'compose_order'])
             .order('created_at', { ascending: false })
-            .limit(5)
+            .limit(LIMIT * 2) // Get more to filter
 
           if (ordersError) {
             console.warn('Orders search error:', ordersError)
           } else if (orderEvents) {
-            results.orders = orderEvents
+            const filteredOrders = orderEvents
               .filter(event => {
                 const orderName = event.meta_data?.order_number || event.meta_data?.order_id || `Order ${event.id.slice(0, 8)}`
                 return orderName.toLowerCase().includes(query.toLowerCase())
               })
-              .map(event => ({
+              .slice(0, LIMIT)
+
+            results.orders = {
+              items: filteredOrders.map(event => ({
                 id: event.id,
-                name: event.meta_data?.order_number || event.meta_data?.order_id || `Order ${event.id.slice(0, 8)}`
-              }))
+                name: event.meta_data?.order_number || event.meta_data?.order_id || `Order ${event.id.slice(0, 8)}`,
+                metadata: {
+                  subtitle: new Date(event.created_at).toLocaleDateString()
+                }
+              })),
+              totalCount: filteredOrders.length, // This is approximate since we filter after query
+              hasMore: filteredOrders.length >= LIMIT
+            }
           }
         }
 

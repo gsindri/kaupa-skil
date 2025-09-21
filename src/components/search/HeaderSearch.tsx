@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useGlobalSearch, SearchScope } from '@/hooks/useGlobalSearch'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { Loader2, Search } from 'lucide-react'
@@ -10,6 +11,12 @@ type SearchResultItem = {
   id: string
   name: string
   section: SearchResultSection
+  metadata?: {
+    subtitle?: string
+    availability?: string
+    price?: string
+    imageUrl?: string
+  }
 }
 
 type DialogEntry =
@@ -91,6 +98,7 @@ export const HeaderSearch = React.forwardRef<HTMLInputElement, HeaderSearchProps
   (props, ref) => {
     const { mode = 'dialog', open: controlledOpen, onOpenChange } = props
     void mode
+    const navigate = useNavigate()
     const [query, setQuery] = useState('')
     const [scope, setScope] = useState<SearchScope>('all')
     const { sections, isLoading } = useGlobalSearch(query, scope)
@@ -123,9 +131,9 @@ export const HeaderSearch = React.forwardRef<HTMLInputElement, HeaderSearchProps
 
     const items: SearchResultItem[] = React.useMemo(
       () => [
-        ...sections.products.map((p) => ({ ...p, section: 'products' as const })),
-        ...sections.suppliers.map((p) => ({ ...p, section: 'suppliers' as const })),
-        ...sections.orders.map((p) => ({ ...p, section: 'orders' as const }))
+        ...sections.products.items.map((p) => ({ ...p, section: 'products' as const, metadata: p.metadata })),
+        ...sections.suppliers.items.map((p) => ({ ...p, section: 'suppliers' as const, metadata: p.metadata })),
+        ...sections.orders.items.map((p) => ({ ...p, section: 'orders' as const, metadata: p.metadata }))
       ],
       [sections]
     )
@@ -184,6 +192,24 @@ export const HeaderSearch = React.forwardRef<HTMLInputElement, HeaderSearchProps
         inputRef.current?.focus()
         inputRef.current?.setSelectionRange(q.length, q.length)
       })
+    }
+
+    const handleViewAll = (section: SearchResultSection, searchQuery: string) => {
+      addRecent(searchQuery)
+      closeDialog(false)
+      
+      // Navigate to appropriate page with search query
+      switch (section) {
+        case 'products':
+          navigate(`/catalog?search=${encodeURIComponent(searchQuery)}`)
+          break
+        case 'suppliers':
+          navigate(`/suppliers?search=${encodeURIComponent(searchQuery)}`)
+          break
+        case 'orders':
+          navigate(`/orders?search=${encodeURIComponent(searchQuery)}`)
+          break
+      }
     }
 
     const handleDialogEntrySelect = (entry: DialogEntry) => {
@@ -291,11 +317,13 @@ export const HeaderSearch = React.forwardRef<HTMLInputElement, HeaderSearchProps
                 <DialogResults
                   query={query}
                   isLoading={isLoading}
+                  sections={sections}
                   dialogEntries={dialogEntries}
                   activeIndex={activeDialogIndex}
                   onHoverIndex={setActiveDialogIndex}
                   onEntrySelect={handleDialogEntrySelect}
                   onRemoveRecent={removeRecent}
+                  onViewAll={handleViewAll}
                 />
               </div>
             </div>
@@ -311,21 +339,25 @@ HeaderSearch.displayName = 'HeaderSearch'
 interface DialogResultsProps {
   query: string
   isLoading: boolean
+  sections: any // Will be updated to proper type from useGlobalSearch
   dialogEntries: DialogEntry[]
   activeIndex: number
   onHoverIndex: (index: number) => void
   onEntrySelect: (entry: DialogEntry) => void
   onRemoveRecent: (query: string) => void
+  onViewAll: (section: SearchResultSection, searchQuery: string) => void
 }
 
 function DialogResults({
   query,
   isLoading,
+  sections,
   dialogEntries,
   activeIndex,
   onHoverIndex,
   onEntrySelect,
   onRemoveRecent,
+  onViewAll,
 }: DialogResultsProps) {
   const trimmedQuery = query.trim()
   const hasQuery = trimmedQuery.length > 0
@@ -369,14 +401,16 @@ function DialogResults({
       if (sectionEntries.length === 0) return
 
       const metadata = SECTION_METADATA[section]
+      const sectionData = sections[section]
 
       sectionsContent.push(
         <div key={section} className="space-y-[2px] pb-1">
-          <DialogSection label={metadata.heading} />
+          <DialogSection label={`${metadata.heading} (${sectionData.totalCount})`} />
           {sectionEntries.map(({ entry, index }) => (
             <DialogRow
               key={entry.item.id}
               title={entry.item.name}
+              subtitle={entry.item.metadata?.subtitle}
               meta={metadata.meta}
               icon={<DialogBadge>{metadata.badge}</DialogBadge>}
               active={activeIndex === index}
@@ -384,6 +418,16 @@ function DialogResults({
               onSelect={() => onEntrySelect(entry)}
             />
           ))}
+          {sectionData.hasMore && (
+            <div className="px-3 py-2">
+              <button
+                onClick={() => onViewAll(section, trimmedQuery)}
+                className="text-sm text-[color:var(--text-muted)] hover:text-[color:var(--text)] transition-colors"
+              >
+                View all {sectionData.totalCount} {metadata.heading.toLowerCase()}
+              </button>
+            </div>
+          )}
         </div>
       )
     })
