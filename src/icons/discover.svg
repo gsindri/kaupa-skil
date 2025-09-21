@@ -5,10 +5,20 @@
 
   <style>
     .outline { stroke: #ffffff; }
-    .shine { stroke: #f59e0b; opacity: 0; transition: opacity 0.4s ease; }
-    svg:hover .shine { opacity: 1; }
+    .accent {
+      stroke: #f59e0b;
+      stroke-width: 36;
+      stroke-linecap: round;
+      opacity: 0;
+      transition: opacity 0.28s ease;
+    }
+    svg:hover .accent,
+    svg[data-hovered="true"] .accent {
+      opacity: 1;
+    }
   </style>
 
+<<<<<<< HEAD
   <!-- lens -->
   <circle class="outline" cx="320" cy="320" r="160"/>
   
@@ -17,4 +27,18 @@
   
   <!-- shine (hover only) -->
   <line class="shine" x1="260" y1="260" x2="380" y2="300"/>
+=======
+  <!-- magnifying glass lens -->
+  <circle class="outline" cx="320" cy="320" r="144"/>
+
+  <!-- handle -->
+  <line class="outline" x1="424" y1="424" x2="552" y2="552"/>
+
+  <!-- connector joint -->
+  <circle class="outline" cx="424" cy="424" r="24"/>
+
+  <!-- gleam / highlight -->
+  <path class="accent" d="M252 236 L332 200"/>
+  <path class="accent" d="M248 276 L284 240"/>
+>>>>>>> abe6218ab337f7587efa009b1240ef8a25f80435
 </svg>
