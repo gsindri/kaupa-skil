@@ -1,33 +1,52 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 736 736"
      preserveAspectRatio="xMidYMid meet" fill="none"
-     stroke-linecap="round" stroke-linejoin="round" stroke-width="48"
-     style="cursor:pointer">
+     stroke-linecap="round" stroke-linejoin="round" style="cursor:pointer">
 
   <style>
-    .outline { stroke: #ffffff; }
-    .accent {
-      stroke: #f59e0b;
-      stroke-width: 36;
-      stroke-linecap: round;
+    .outline { stroke: #ffffff; stroke-width:48; }
+    .puzzle {
+      fill: #f59e0b;
       opacity: 0;
-      transition: opacity 0.28s ease;
+      transition: opacity 0.3s ease;
     }
-    svg:hover .accent,
-    svg[data-hovered="true"] .accent {
-      opacity: 1;
-    }
+    svg:hover .puzzle,
+    svg[data-hovered="true"] .puzzle { opacity: 1; }
   </style>
 
-  <!-- magnifying glass lens -->
+  <!-- clip so discovered thing stays inside lens -->
+  <defs>
+    <clipPath id="lens-clip">
+      <circle cx="320" cy="320" r="144"/>
+    </clipPath>
+  </defs>
+
+  <!-- lens -->
   <circle class="outline" cx="320" cy="320" r="144"/>
 
   <!-- handle -->
   <line class="outline" x1="424" y1="424" x2="552" y2="552"/>
 
-  <!-- connector joint -->
+  <!-- joint -->
   <circle class="outline" cx="424" cy="424" r="24"/>
 
-  <!-- gleam / highlight -->
-  <path class="accent" d="M252 236 L332 200"/>
-  <path class="accent" d="M248 276 L284 240"/>
+  <!-- discovered puzzle piece -->
+  <g clip-path="url(#lens-clip)">
+    <g transform="translate(320 320) scale(1.1)">
+      <!-- stylized puzzle piece -->
+      <path class="puzzle" d="
+        M -30 -20
+        h 15
+        a 8 8 0 1 1 0 16
+        h -15
+        v 15
+        a 8 8 0 1 1 -16 0
+        v -15
+        h -15
+        a 8 8 0 1 1 0 -16
+        h 15
+        v -15
+        a 8 8 0 1 1 16 0
+        z"/>
+    </g>
+  </g>
 </svg>
