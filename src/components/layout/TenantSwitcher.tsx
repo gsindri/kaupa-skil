@@ -1,7 +1,7 @@
 import React from 'react'
 import { Check, ChevronDown, Home, LogIn, Plus } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import {
@@ -39,6 +39,7 @@ function getInitials(name: string) {
 export function TenantSwitcher() {
   const { profile, user } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
 
   const [open, setOpen] = React.useState(false)
   const [query, setQuery] = React.useState('')
@@ -251,7 +252,11 @@ export function TenantSwitcher() {
           <DropdownMenuItem
             onPointerMove={handleMenuItemPointerMove}
             onSelect={() => {
-              navigate('/settings/organization/create')
+              const targetPath = '/settings/organization/create'
+              const currentPath = `${location.pathname}${location.search}${location.hash}`
+              navigate(targetPath, {
+                state: currentPath === targetPath ? undefined : { from: currentPath }
+              })
               setOpen(false)
             }}
             asChild
@@ -265,7 +270,11 @@ export function TenantSwitcher() {
           <DropdownMenuItem
             onPointerMove={handleMenuItemPointerMove}
             onSelect={() => {
-              navigate('/settings/organization/join')
+              const targetPath = '/settings/organization/join'
+              const currentPath = `${location.pathname}${location.search}${location.hash}`
+              navigate(targetPath, {
+                state: currentPath === targetPath ? undefined : { from: currentPath }
+              })
               setOpen(false)
             }}
             asChild
