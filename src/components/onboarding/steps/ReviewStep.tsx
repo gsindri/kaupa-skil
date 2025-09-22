@@ -89,7 +89,7 @@ export function ReviewStep({
         </header>
         <dl className="grid gap-4 text-[13px] text-[color:var(--text-muted)] sm:grid-cols-2">
           <div>
-            <dt className="font-medium text-[color:var(--text)]">Primary contact</dt>
+            <dt className="font-medium text-[color:var(--text)]">Main contact person</dt>
             <dd>{organization.contactName || 'Add later'}</dd>
           </div>
           <div>
@@ -97,7 +97,7 @@ export function ReviewStep({
             <dd>{organization.phone || 'Add later'}</dd>
           </div>
           <div className="sm:col-span-2">
-            <dt className="font-medium text-[color:var(--text)]">Business address</dt>
+            <dt className="font-medium text-[color:var(--text)]">Delivery &amp; invoice address</dt>
             <dd>{organization.address || 'Add later'}</dd>
           </div>
           <div>
