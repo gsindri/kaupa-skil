@@ -39,10 +39,11 @@ const DrawerContent = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Content> & {
     showBar?: boolean
     side?: 'bottom' | 'right'
+    overlayClassName?: string
   }
->(({ className, children, showBar = true, side = 'bottom', ...props }, ref) => (
+>(({ className, children, showBar = true, side = 'bottom', overlayClassName, ...props }, ref) => (
   <DrawerPortal>
-    <DrawerOverlay />
+    <DrawerOverlay className={overlayClassName} />
     <DrawerPrimitive.Content
       ref={ref}
       className={cn(

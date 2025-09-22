@@ -1,27 +1,45 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/integrations/supabase/client'
 import { handleQueryError } from '@/lib/queryErrorHandler'
+import { formatCurrency } from '@/lib/format'
+import type { AvailabilityStatus } from '@/services/catalog'
 
 export type SearchScope = 'all' | 'products' | 'suppliers' | 'orders'
 
-interface SearchItem {
-  id: string
-  name: string
-  metadata?: {
-    subtitle?: string
-    availability?: string
-    price?: string
-    imageUrl?: string
-  }
+const AVAILABILITY_LABELS: Record<AvailabilityStatus, string> = {
+  IN_STOCK: 'In stock',
+  LOW_STOCK: 'Low stock',
+  OUT_OF_STOCK: 'Out of stock',
+  UNKNOWN: 'Check availability',
 }
 
-interface SearchSection {
+export interface SearchItemMetadata {
+  subtitle?: string
+  availability?: string
+  availabilityStatus?: AvailabilityStatus | null
+  price?: string
+  priceValue?: number | null
+  imageUrl?: string
+  supplierIds?: string[]
+  supplierNames?: string[]
+  supplierCount?: number
+  canonicalPack?: string
+  packSizes?: string[]
+}
+
+export interface SearchItem {
+  id: string
+  name: string
+  metadata?: SearchItemMetadata
+}
+
+export interface SearchSection {
   items: SearchItem[]
   totalCount: number
   hasMore: boolean
 }
 
-interface SearchSections {
+export interface SearchSections {
   products: SearchSection
   suppliers: SearchSection
   orders: SearchSection
@@ -72,7 +90,9 @@ export function useGlobalSearch(q: string, scope: SearchScope) {
           // Get limited results with more data
           const { data: products, error: productsError } = await supabase
             .from('v_public_catalog')
-            .select('catalog_id, name, brand, availability_status, best_price, sample_image_url')
+            .select(
+              'catalog_id, name, brand, availability_status, availability_text, best_price, sample_image_url, supplier_ids, supplier_names, suppliers_count, canonical_pack, pack_sizes'
+            )
             .ilike('name', `%${query}%`)
             .not('catalog_id', 'is', null)
             .limit(LIMIT)
@@ -81,16 +101,42 @@ export function useGlobalSearch(q: string, scope: SearchScope) {
             console.warn('Products search error:', productsError)
           } else if (products) {
             results.products = {
-              items: products.map(p => ({
-                id: p.catalog_id!,
-                name: p.name!,
-                metadata: {
-                  subtitle: p.brand || undefined,
-                  availability: p.availability_status || undefined,
-                  price: p.best_price ? `$${p.best_price}` : undefined,
-                  imageUrl: p.sample_image_url || undefined
+              items: products.map(p => {
+                const availabilityStatus = (p.availability_status ?? null) as AvailabilityStatus | null
+                const supplierIds = Array.isArray(p.supplier_ids)
+                  ? (p.supplier_ids as string[]).filter(Boolean)
+                  : []
+                const supplierNames = Array.isArray(p.supplier_names)
+                  ? (p.supplier_names as string[]).filter(Boolean)
+                  : []
+                const packSizes = Array.isArray(p.pack_sizes)
+                  ? (p.pack_sizes as string[]).filter(Boolean)
+                  : []
+                const priceValue = typeof p.best_price === 'number' ? p.best_price : null
+
+                return {
+                  id: p.catalog_id!,
+                  name: p.name!,
+                  metadata: {
+                    subtitle: p.brand || undefined,
+                    availability:
+                      p.availability_text ||
+                      (availabilityStatus ? AVAILABILITY_LABELS[availabilityStatus] : undefined),
+                    availabilityStatus,
+                    price: priceValue != null ? formatCurrency(priceValue) : undefined,
+                    priceValue,
+                    imageUrl: p.sample_image_url || undefined,
+                    supplierIds: supplierIds.length ? supplierIds : undefined,
+                    supplierNames: supplierNames.length ? supplierNames : undefined,
+                    supplierCount:
+                      typeof p.suppliers_count === 'number'
+                        ? p.suppliers_count
+                        : supplierIds.length || undefined,
+                    canonicalPack: p.canonical_pack || undefined,
+                    packSizes: packSizes.length ? packSizes : undefined,
+                  },
                 }
-              })),
+              }),
               totalCount: totalCount || 0,
               hasMore: (totalCount || 0) > LIMIT
             }

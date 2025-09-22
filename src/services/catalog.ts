@@ -64,6 +64,43 @@ export interface PublicCatalogItem {
   best_price?: number | null
 }
 
+export async function fetchCatalogItemById(
+  catalogId: string,
+): Promise<PublicCatalogItem | null> {
+  const { data, error } = await supabase
+    .from('v_public_catalog')
+    .select(
+      'catalog_id, name, brand, canonical_pack, pack_sizes, suppliers_count, supplier_ids, supplier_names, supplier_logo_urls, active_supplier_count, sample_image_url, sample_source_url, availability_status, availability_text, availability_updated_at, best_price, category_tags',
+    )
+    .eq('catalog_id', catalogId)
+    .limit(1)
+
+  if (error) throw error
+
+  const row: any | undefined = data?.[0]
+  if (!row) return null
+
+  return {
+    catalog_id: row.catalog_id,
+    name: row.name,
+    brand: row.brand ?? null,
+    canonical_pack: row.canonical_pack ?? null,
+    pack_sizes: row.pack_sizes ?? null,
+    category_tags: row.category_tags ?? null,
+    suppliers_count: row.suppliers_count ?? row.supplier_count ?? 0,
+    supplier_ids: row.supplier_ids ?? null,
+    supplier_names: row.supplier_names ?? null,
+    supplier_logo_urls: row.supplier_logo_urls ?? null,
+    active_supplier_count: row.active_supplier_count ?? 0,
+    sample_image_url: row.sample_image_url ?? row.image_url ?? null,
+    sample_source_url: row.sample_source_url ?? null,
+    availability_status: (row.availability_status ?? null) as AvailabilityStatus | null,
+    availability_text: row.availability_text ?? null,
+    availability_updated_at: row.availability_updated_at ?? null,
+    best_price: row.best_price ?? null,
+  }
+}
+
 export async function fetchPublicCatalogItems(
   filters: PublicCatalogFilters,
   sort: SortOrder,

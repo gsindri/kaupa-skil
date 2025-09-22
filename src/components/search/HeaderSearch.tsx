@@ -1,23 +1,19 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useGlobalSearch, SearchScope } from '@/hooks/useGlobalSearch'
+import type { SearchItem, SearchSections } from '@/hooks/useGlobalSearch'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { Loader2, Search, Package, Building2, ClipboardList } from 'lucide-react'
 import { LazyImage } from '@/components/ui/LazyImage'
 import { cn } from '@/lib/utils'
+import { Button } from '@/components/ui/button'
+import { useCart } from '@/contexts/useBasket'
+import { ProductQuickPeekDrawer } from '@/components/search/ProductQuickPeekDrawer'
 
 type SearchResultSection = 'products' | 'suppliers' | 'orders'
 
-type SearchResultItem = {
-  id: string
-  name: string
+type SearchResultItem = SearchItem & {
   section: SearchResultSection
-  metadata?: {
-    subtitle?: string
-    availability?: string
-    price?: string
-    imageUrl?: string
-  }
 }
 
 type DialogEntry =
@@ -111,6 +107,8 @@ export const HeaderSearch = React.forwardRef<HTMLInputElement, HeaderSearchProps
     const { items: recent, add: addRecent, remove: removeRecent } = useRecentSearches('default')
     const [activeDialogIndex, setActiveDialogIndex] = useState(0)
     const [internalDialogOpen, setInternalDialogOpen] = useState(false)
+    const [selectedProduct, setSelectedProduct] = useState<SearchResultItem | null>(null)
+    const [productDrawerOpen, setProductDrawerOpen] = useState(false)
 
     const dialogOpen = controlledOpen ?? internalDialogOpen
 
@@ -133,6 +131,13 @@ export const HeaderSearch = React.forwardRef<HTMLInputElement, HeaderSearchProps
         setScope('all')
       }
       setActiveDialogIndex(0)
+    }, [dialogOpen])
+
+    useEffect(() => {
+      if (!dialogOpen) {
+        setProductDrawerOpen(false)
+        setSelectedProduct(null)
+      }
     }, [dialogOpen])
 
     const items: SearchResultItem[] = React.useMemo(
@@ -185,10 +190,19 @@ export const HeaderSearch = React.forwardRef<HTMLInputElement, HeaderSearchProps
     }
 
     const handleSelect = (item: SearchResultItem) => {
-      addRecent(query)
+      const trimmed = query.trim()
+      const recentValue = trimmed || item.name
+
+      if (item.section === 'products') {
+        addRecent(recentValue)
+        setSelectedProduct(item)
+        setProductDrawerOpen(true)
+        return
+      }
+
+      addRecent(recentValue)
       closeDialog(false)
       setQuery('')
-      // navigation is app-specific; omitted
     }
 
     const handleRecentSelect = (q: string) => {
@@ -227,6 +241,40 @@ export const HeaderSearch = React.forwardRef<HTMLInputElement, HeaderSearchProps
       handleRecentSelect(entry.query)
     }
 
+    const handleProductDrawerChange = (nextOpen: boolean) => {
+      if (nextOpen) {
+        setProductDrawerOpen(true)
+        return
+      }
+      setProductDrawerOpen(false)
+      setSelectedProduct(null)
+      if (dialogOpen) {
+        requestAnimationFrame(() => {
+          inputRef.current?.focus()
+        })
+      }
+    }
+
+    const handleViewDetailsFromDrawer = (productId: string) => {
+      const product = selectedProduct
+      if (!productId || !product) {
+        handleProductDrawerChange(false)
+        return
+      }
+
+      handleProductDrawerChange(false)
+      closeDialog(false)
+      setQuery('')
+
+      const params = new URLSearchParams()
+      if (product.name) {
+        params.set('search', product.name)
+      }
+      const queryString = params.toString()
+      const target = queryString ? `/catalog?${queryString}#${productId}` : `/catalog#${productId}`
+      navigate(target)
+    }
+
     useEffect(() => {
       if (dialogEntries.length === 0) {
         setActiveDialogIndex(0)
@@ -237,7 +285,8 @@ export const HeaderSearch = React.forwardRef<HTMLInputElement, HeaderSearchProps
     }, [dialogEntries])
 
     return (
-      <Dialog open={dialogOpen} onOpenChange={(value) => closeDialog(value)}>
+      <>
+        <Dialog open={dialogOpen} onOpenChange={(value) => closeDialog(value)}>
         <DialogContent
           variant="spotlight"
           hideCloseButton
@@ -339,6 +388,14 @@ export const HeaderSearch = React.forwardRef<HTMLInputElement, HeaderSearchProps
           </div>
         </DialogContent>
       </Dialog>
+      <ProductQuickPeekDrawer
+        open={productDrawerOpen && Boolean(selectedProduct)}
+        productId={selectedProduct?.id ?? null}
+        item={selectedProduct}
+        onOpenChange={handleProductDrawerChange}
+        onViewDetails={handleViewDetailsFromDrawer}
+      />
+    </>
     )
   }
 )
@@ -348,7 +405,7 @@ HeaderSearch.displayName = 'HeaderSearch'
 interface DialogResultsProps {
   query: string
   isLoading: boolean
-  sections: any // Will be updated to proper type from useGlobalSearch
+  sections: SearchSections
   dialogEntries: DialogEntry[]
   activeIndex: number
   onHoverIndex: (index: number) => void
@@ -418,19 +475,69 @@ function DialogResults({
         <div key={section} className="space-y-[2px] pb-1">
           <DialogSection label={`${metadata.heading} (${sectionData.totalCount})`} />
           {sectionEntries.map(({ entry, index }) => {
-            const thumbnailUrl = entry.item.metadata?.imageUrl
-            const metaSlot = shouldShowMeta ? (
+            const itemMetadata = entry.item.metadata
+            const thumbnailUrl = itemMetadata?.imageUrl
+            const metaIndicator = shouldShowMeta ? (
               <SectionIndicator icon={metadata.icon} label={metadata.meta} />
             ) : undefined
+
+            let subtitle: string | undefined = itemMetadata?.subtitle
+            if (entry.item.section === 'products') {
+              const parts: string[] = []
+              const packInfo =
+                itemMetadata?.canonicalPack ||
+                (itemMetadata?.packSizes && itemMetadata.packSizes.length > 0
+                  ? itemMetadata.packSizes[0]
+                  : undefined)
+              if (packInfo) parts.push(packInfo)
+              if (itemMetadata?.subtitle) parts.push(itemMetadata.subtitle)
+              subtitle = parts.length > 0 ? parts.join(' • ') : undefined
+            }
+
+            let metaContent: React.ReactNode = metaIndicator
+            if (entry.item.section === 'products') {
+              const priceLabel = itemMetadata?.price
+              const availabilityLabel = itemMetadata?.availability
+              const detailContent =
+                priceLabel || availabilityLabel ? (
+                  <div className="flex flex-col items-end text-right leading-tight">
+                    {priceLabel && (
+                      <span className="text-[13px] font-semibold text-[color:var(--text)]">{priceLabel}</span>
+                    )}
+                    {availabilityLabel && (
+                      <span className="text-[11px] uppercase tracking-[0.08em] text-[color:var(--text-muted)]">
+                        {availabilityLabel}
+                      </span>
+                    )}
+                  </div>
+                ) : null
+
+              if (metaIndicator && detailContent) {
+                metaContent = (
+                  <div className="flex items-center gap-2">
+                    {metaIndicator}
+                    {detailContent}
+                  </div>
+                )
+              } else {
+                metaContent = detailContent ?? metaIndicator
+              }
+            }
+
+            const action =
+              entry.item.section === 'products' ? (
+                <ProductQuickAddButton item={entry.item} />
+              ) : undefined
 
             return (
               <DialogRow
                 key={entry.item.id}
                 title={entry.item.name}
-                subtitle={entry.item.metadata?.subtitle}
-                meta={metaSlot}
+                subtitle={subtitle}
+                meta={metaContent}
                 thumbnailUrl={thumbnailUrl}
                 icon={!thumbnailUrl ? <DialogBadge>{metadata.badge}</DialogBadge> : undefined}
+                action={action}
                 active={activeIndex === index}
                 onHover={() => onHoverIndex(index)}
                 onSelect={() => onEntrySelect(entry)}
@@ -549,6 +656,7 @@ interface DialogRowProps {
   meta?: React.ReactNode
   icon?: React.ReactNode
   thumbnailUrl?: string
+  action?: React.ReactNode
   active: boolean
   onHover: () => void
   onSelect: () => void
@@ -560,6 +668,7 @@ function DialogRow({
   meta,
   icon,
   thumbnailUrl,
+  action,
   active,
   onHover,
   onSelect,
@@ -598,12 +707,18 @@ function DialogRow({
           <div className="truncate text-[13px] text-[color:var(--text-muted)]">{subtitle}</div>
         )}
       </div>
-      <div className={cn('flex h-full items-center justify-end', meta ? 'pl-3' : 'pl-0')}>
+      <div
+        className={cn(
+          'flex h-full items-center justify-end gap-2',
+          meta || action ? 'pl-3' : 'pl-0',
+        )}
+      >
         {typeof meta === 'string' ? (
           <span className="text-[13px] text-[color:var(--text-muted)]">{meta}</span>
         ) : (
           meta
         )}
+        {action}
       </div>
     </button>
   )
@@ -629,6 +744,71 @@ function DialogBadge({ children }: { children: React.ReactNode }) {
     <div className="flex h-12 w-12 items-center justify-center rounded-[10px] border border-[color:var(--surface-ring)] bg-white/[0.08] text-[13px] font-semibold uppercase text-[color:var(--text-muted)]">
       {children}
     </div>
+  )
+}
+
+function ProductQuickAddButton({ item }: { item: SearchResultItem }) {
+  const { addItem } = useCart()
+  const [isAdding, setIsAdding] = useState(false)
+
+  const supplierIds = item.metadata?.supplierIds ?? []
+  if (!supplierIds || supplierIds.length === 0) return null
+  const supplierNames = item.metadata?.supplierNames ?? []
+  const primarySupplierId = supplierIds[0]
+  if (!primarySupplierId) return null
+
+  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault()
+    event.stopPropagation()
+    if (isAdding) return
+    setIsAdding(true)
+
+    try {
+      const supplierName = supplierNames[0] ?? primarySupplierId
+      const packInfo =
+        item.metadata?.canonicalPack ||
+        (item.metadata?.packSizes && item.metadata.packSizes.length > 0
+          ? item.metadata.packSizes[0]
+          : 'Pack')
+      const priceValue =
+        typeof item.metadata?.priceValue === 'number' ? item.metadata.priceValue : null
+
+      addItem(
+        {
+          id: item.id,
+          supplierId: primarySupplierId,
+          supplierName,
+          itemName: item.name,
+          sku: item.id,
+          packSize: packInfo,
+          packPrice: priceValue,
+          unitPriceExVat: priceValue,
+          unitPriceIncVat: priceValue,
+          vatRate: 0,
+          unit: 'unit',
+          supplierItemId: item.id,
+          displayName: item.name,
+          packQty: 1,
+          image: item.metadata?.imageUrl ?? null,
+        },
+        1,
+      )
+    } finally {
+      setIsAdding(false)
+    }
+  }
+
+  return (
+    <Button
+      type="button"
+      size="sm"
+      variant="secondary"
+      onClick={handleClick}
+      disabled={isAdding}
+      className="h-8 rounded-full px-3 text-xs font-semibold"
+    >
+      {isAdding ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : '+ Add'}
+    </Button>
   )
 }
 
