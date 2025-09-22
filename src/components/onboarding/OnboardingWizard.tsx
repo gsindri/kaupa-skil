@@ -374,28 +374,27 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
     [steps, currentStep]
   )
 
-  const organizationStepShare = useMemo(() => {
-    if (currentStep !== 1) {
-      return 0
-    }
-    return organizationSectionProgress.total > 0
-      ? (organizationSectionProgress.index + 1) / organizationSectionProgress.total
-      : 0
-  }, [currentStep, organizationSectionProgress])
-
-  const progress =
-    currentStep === 1 ? (organizationStepShare / TOTAL_STEPS) * 100 : (currentStep / TOTAL_STEPS) * 100
+  const organizationSectionCount = ORGANIZATION_SECTION_DEFINITIONS.length
+  const additionalStepCount = Math.max(steps.length - 1, 0)
+  const totalFlowSteps = Math.max(organizationSectionCount + additionalStepCount, 1)
 
   const showingOrganizationSections = currentStep === 1
-  const stepCountLabel = showingOrganizationSections
-    ? `Step ${organizationSectionProgress.index + 1} of ${organizationSectionProgress.total}`
-    : `Step ${currentStep} of ${TOTAL_STEPS}`
   const stepTitle = showingOrganizationSections
     ? organizationSectionProgress.title
     : currentStepDefinition?.title ?? ''
   const stepDescription = showingOrganizationSections
     ? organizationSectionProgress.description
     : currentStepDefinition?.description ?? ''
+
+  const rawDisplayStepNumber = showingOrganizationSections
+    ? organizationSectionProgress.index + 1
+    : organizationSectionCount + Math.max(currentStep - 1, 0)
+  const displayStepNumber = Math.min(Math.max(rawDisplayStepNumber, 1), totalFlowSteps)
+
+  const progress =
+    totalFlowSteps <= 1
+      ? 100
+      : ((displayStepNumber - 1) / (totalFlowSteps - 1)) * 100
 
   const handleOrganizationUpdate = useCallback((values: OrganizationFormValues) => {
     setOrganization(values)
@@ -404,13 +403,10 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
     }
   }, [setupError])
 
-  const handleOrganizationComplete = useCallback(
-    (values: OrganizationFormValues) => {
-      setOrganization(values)
-      setCurrentStep(2)
-    },
-    []
-  )
+  const handleOrganizationComplete = useCallback((values: OrganizationFormValues) => {
+    setOrganization(values)
+    setCurrentStep(prev => Math.min(prev + 1, TOTAL_STEPS))
+  }, [])
 
   const handleOrganizationSectionChange = useCallback(
     (progress: OrganizationSectionProgress) => {
@@ -451,7 +447,7 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
         duration: 4000
       })
     }
-    setCurrentStep(3)
+    setCurrentStep(prev => Math.min(prev + 1, TOTAL_STEPS))
   }, [selectedSupplierIds.length, toast])
 
   const handleBack = useCallback(() => {
@@ -777,36 +773,85 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
 
           <div className="flex flex-col gap-7 px-6 py-8 sm:px-10 sm:py-10">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-              <div className="flex flex-col items-center gap-1 text-center sm:items-start sm:text-left">
-                <p className="text-[12px] font-semibold uppercase tracking-wide text-[color:var(--text-muted)]">
-                  {stepCountLabel}
-                </p>
+              <div className="flex flex-col items-center gap-2 text-center sm:items-start sm:text-left">
                 {stepTitle && (
-                  <div className="flex items-center gap-2">
-                    <h2 className="text-[20px] font-semibold text-[color:var(--text)]">{stepTitle}</h2>
-                    {currentStep === 1 && (
+                  <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-start">
+                    <h2 className="text-[20px] font-semibold text-[color:var(--text)]">
+                      {`Step ${displayStepNumber} of ${totalFlowSteps}: ${stepTitle}`}
+                    </h2>
+                    {stepDescription && (
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <button
                             type="button"
                             className="rounded-full p-1 text-[color:var(--text-muted)] transition-colors hover:text-[color:var(--text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)] focus-visible:ring-offset-2"
-                            aria-label="Learn how workspaces and organizations connect"
+                            aria-label={stepDescription}
                           >
                             <Info className="h-4 w-4" />
                           </button>
                         </TooltipTrigger>
                         <TooltipContent className="max-w-[240px] rounded-[12px] border border-[color:var(--surface-ring)] bg-[color:var(--surface-pop)] px-3 py-2 text-left text-[12px] leading-relaxed text-[color:var(--text-muted)]">
-                          You’re creating a workspace. Each workspace is linked to one organization.
+                          {stepDescription}
                         </TooltipContent>
                       </Tooltip>
                     )}
                   </div>
                 )}
-                {stepDescription && (
-                  <p className="text-[13px] text-[color:var(--text-muted)]">{stepDescription}</p>
+                {currentStep === 1 && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        type="button"
+                        className="rounded-full p-1 text-[color:var(--text-muted)] transition-colors hover:text-[color:var(--text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)] focus-visible:ring-offset-2"
+                        aria-label="Learn how workspaces and organizations connect"
+                      >
+                        <Info className="h-4 w-4" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-[240px] rounded-[12px] border border-[color:var(--surface-ring)] bg-[color:var(--surface-pop)] px-3 py-2 text-left text-[12px] leading-relaxed text-[color:var(--text-muted)]">
+                      You’re creating a workspace. Each workspace is linked to one organization.
+                    </TooltipContent>
+                  </Tooltip>
                 )}
               </div>
-              {!showingOrganizationSections && (
+              {showingOrganizationSections ? (
+                <div className="flex justify-center sm:justify-end">
+                  <ol className="flex flex-wrap items-center justify-center gap-3 text-[12px] text-[color:var(--text-muted)] sm:justify-end">
+                    {ORGANIZATION_SECTION_DEFINITIONS.map((section, index) => {
+                      const status =
+                        index === organizationSectionProgress.index
+                          ? 'current'
+                          : index < organizationSectionProgress.index
+                            ? 'complete'
+                            : 'upcoming'
+                      return (
+                        <li
+                          key={section.id}
+                          className={cn(
+                            'flex items-center gap-2',
+                            status === 'current' && 'text-[color:var(--text)] font-medium',
+                            status === 'complete' && 'text-[var(--brand-accent)]'
+                          )}
+                        >
+                          <span
+                            className={cn(
+                              'flex h-7 w-7 items-center justify-center rounded-full border text-[12px]',
+                              status === 'complete' &&
+                                'border-[var(--brand-accent)] bg-[var(--brand-accent)] text-[color:var(--brand-accent-fg)]',
+                              status === 'current' &&
+                                'border-[var(--brand-accent)] text-[var(--brand-accent)]',
+                              status === 'upcoming' && 'border-[color:var(--surface-ring)]'
+                            )}
+                          >
+                            {status === 'complete' ? <Check className="h-4 w-4" /> : index + 1}
+                          </span>
+                          <span className="hidden sm:inline">{section.title}</span>
+                        </li>
+                      )
+                    })}
+                  </ol>
+                </div>
+              ) : (
                 <div className="flex justify-center sm:justify-end">
                   <ol className="flex items-center gap-3 text-[12px] text-[color:var(--text-muted)] sm:flex-col sm:items-end">
                     {steps.map(step => {
