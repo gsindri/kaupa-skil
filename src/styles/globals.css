@@ -82,9 +82,9 @@
 @media (prefers-color-scheme: light){
   :root{
     --brand-bg:#0f2031;
-    --surface-pop:#ffffff;
+    --surface-pop:#f5f7fb;
     --surface-pop-2:#f8fafc;
-    --surface-ring:#e2e8f0;
+    --surface-ring:#cbd5e1;
     --text:#0f2031;
     --text-muted:#41566f;
     --overlay:rgba(2,12,27,.35);
@@ -134,7 +134,7 @@
   color:var(--text);
   border:1px solid var(--surface-ring);
   border-radius:var(--radius-xl);
-  box-shadow:var(--elev-shadow);
+  box-shadow:var(--elev-shadow), 0 0 0 1px color-mix(in oklab, var(--surface-ring) 55%, transparent);
   backdrop-filter:saturate(120%) blur(6px);
 }
 
