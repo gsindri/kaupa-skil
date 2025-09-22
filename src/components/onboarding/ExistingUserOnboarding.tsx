@@ -6,7 +6,7 @@ import { useAuth } from '@/contexts/useAuth'
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 
 type TenantSummary = {
   id: string
@@ -40,6 +40,30 @@ export function ExistingUserOnboarding() {
   const { user, refetch } = useAuth()
   const { toast } = useToast()
   const navigate = useNavigate()
+  const location = useLocation()
+
+  const currentPath = React.useMemo(
+    () => `${location.pathname}${location.search}${location.hash}`,
+    [location.hash, location.pathname, location.search]
+  )
+
+  const previousPath = React.useMemo(() => {
+    const state = location.state as { from?: string } | null
+    const raw = state?.from
+    if (!raw || typeof raw !== 'string') {
+      return null
+    }
+    const trimmed = raw.trim()
+    if (!trimmed) {
+      return null
+    }
+    return trimmed
+  }, [location.state])
+
+  const navigateBack = React.useCallback(() => {
+    const target = previousPath && previousPath !== currentPath ? previousPath : '/'
+    navigate(target, { replace: true })
+  }, [currentPath, navigate, previousPath])
 
   const [isJoiningByCode, setIsJoiningByCode] = useState(false)
   const [joinCode, setJoinCode] = useState('')
@@ -189,7 +213,7 @@ export function ExistingUserOnboarding() {
       title: 'Saved for later',
       description: 'You can finish from Settings anytime.'
     })
-    navigate('/')
+    navigateBack()
   }
 
   return (
