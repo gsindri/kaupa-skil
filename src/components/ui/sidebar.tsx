@@ -177,7 +177,6 @@ const SidebarRail = React.forwardRef<
         "group-data-[side=right]:-left-4 group-data-[side=right]:after:right-0",
         "[[data-side=left]_&]:cursor-w-resize [[data-side=right]_&]:cursor-e-resize",
         "[[data-side=left][data-state=collapsed]_&]:cursor-e-resize [[data-side=right][data-state=collapsed]_&]:cursor-w-resize",
-        "[[data-state=expanded]_&]:pointer-events-none [[data-state=collapsed]_&]:pointer-events-auto",
         "group-data-[collapsible=offcanvas]:hover:bg-sidebar",
         "[[data-side=left][data-state=collapsed][data-collapsible=offcanvas]_&]:-right-2 [[data-side=left][data-state=collapsed][data-collapsible=offcanvas]_&]:after:left-full",
         "[[data-side=right][data-state=collapsed][data-collapsible=offcanvas]_&]:-left-2 [[data-side=right][data-state=collapsed][data-collapsible=offcanvas]_&]:after:right-full",
