@@ -96,14 +96,26 @@ export function ReviewStep({
             <dt className="font-medium text-[color:var(--text)]">Phone</dt>
             <dd>{organization.phone || 'Add later'}</dd>
           </div>
-          <div className="sm:col-span-2">
-            <dt className="font-medium text-[color:var(--text)]">Delivery &amp; invoice address</dt>
-            <dd>{organization.address || 'Add later'}</dd>
+          <div>
+            <dt className="font-medium text-[color:var(--text)]">Organization email</dt>
+            <dd>{organization.email || 'Add later'}</dd>
           </div>
           <div>
             <dt className="font-medium text-[color:var(--text)]">VAT / Kennitala</dt>
             <dd>{organization.vat || 'Optional'}</dd>
           </div>
+          <div className="sm:col-span-2">
+            <dt className="font-medium text-[color:var(--text)]">
+              {organization.useSeparateInvoiceAddress ? 'Delivery address' : 'Delivery &amp; invoice address'}
+            </dt>
+            <dd>{organization.address || 'Add later'}</dd>
+          </div>
+          {organization.useSeparateInvoiceAddress && (
+            <div className="sm:col-span-2">
+              <dt className="font-medium text-[color:var(--text)]">Invoice address</dt>
+              <dd>{organization.invoiceAddress || 'Add later'}</dd>
+            </div>
+          )}
         </dl>
       </section>
 

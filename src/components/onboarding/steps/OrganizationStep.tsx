@@ -2,7 +2,7 @@ import React, { forwardRef, useEffect, useImperativeHandle, useMemo, useState } 
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Building2, UserCircle2, Phone, MapPinHouse, Receipt, Info, ChevronDown } from 'lucide-react'
+import { Building2, UserCircle2, Phone, MapPinHouse, Receipt, Info, ChevronDown, Mail } from 'lucide-react'
 import type { CountryCode } from 'libphonenumber-js'
 
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
@@ -11,34 +11,56 @@ import { Textarea } from '@/components/ui/textarea'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Separator } from '@/components/ui/separator'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { getDefaultCountryCode, normalizePhoneInput, formatVat, isValidVat } from '@/utils/phone'
 
 const createOrganizationSchema = (country: CountryCode) =>
-  z.object({
-    name: z.string().trim().min(1, '⚠ Please enter an organization name.'),
-    contactName: z
-      .string()
-      .trim()
-      .min(2, '⚠ Please add a main contact person.'),
-    phone: z
-      .string()
-      .trim()
-      .min(1, '⚠ Please add a phone number.')
-      .refine(value => normalizePhoneInput(value, country).isValid, {
-        message: '⚠ Enter a valid international phone number.'
-      }),
-    address: z
-      .string()
-      .trim()
-      .min(5, '⚠ Please add your delivery & invoice address.'),
-    vat: z
-      .string()
-      .trim()
-      .optional()
-      .refine(value => isValidVat(value), {
-        message: '⚠ Use format ########-####.'
-      })
-  })
+  z
+    .object({
+      name: z.string().trim().min(1, '⚠ Please enter an organization name.'),
+      contactName: z
+        .string()
+        .trim()
+        .min(2, '⚠ Please add a main contact person.'),
+      phone: z
+        .string()
+        .trim()
+        .min(1, '⚠ Please add a phone number.')
+        .refine(value => normalizePhoneInput(value, country).isValid, {
+          message: '⚠ Enter a valid international phone number.'
+        }),
+      address: z
+        .string()
+        .trim()
+        .min(5, '⚠ Please add your delivery address.'),
+      vat: z
+        .string()
+        .trim()
+        .optional()
+        .refine(value => isValidVat(value), {
+          message: '⚠ Use format ########-####.'
+        }),
+      email: z
+        .string()
+        .trim()
+        .email('⚠ Enter a valid email address.')
+        .or(z.literal('')),
+      useSeparateInvoiceAddress: z.boolean().default(false),
+      invoiceAddress: z.string().trim().optional()
+    })
+    .superRefine((data, ctx) => {
+      if (data.useSeparateInvoiceAddress) {
+        const invoice = data.invoiceAddress?.trim() ?? ''
+        if (invoice.length < 5) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: '⚠ Please add your invoice address.',
+            path: ['invoiceAddress']
+          })
+        }
+      }
+    })
 
 export type OrganizationFormValues = z.infer<ReturnType<typeof createOrganizationSchema>>
 
@@ -67,6 +89,7 @@ export const OrganizationStep = forwardRef<OrganizationStepHandle, OrganizationS
 
     const [detailsOpen, setDetailsOpen] = useState(Boolean(value.vat))
     const vatError = form.formState.errors.vat
+    const useSeparateInvoiceAddress = form.watch('useSeparateInvoiceAddress')
 
     useEffect(() => {
       form.reset(value)
@@ -91,20 +114,43 @@ export const OrganizationStep = forwardRef<OrganizationStepHandle, OrganizationS
         contactName: current.contactName?.trim() || '',
         phone: current.phone?.trim() || '',
         address: current.address?.trim() || '',
-        vat: current.vat ? formatVat(current.vat) : current.vat
+        vat: current.vat ? formatVat(current.vat) : '',
+        email: current.email?.trim() || '',
+        useSeparateInvoiceAddress: Boolean(current.useSeparateInvoiceAddress),
+        invoiceAddress:
+          current.useSeparateInvoiceAddress && current.invoiceAddress
+            ? current.invoiceAddress.trim()
+            : ''
       })
     }
 
     const handleSubmit = form.handleSubmit(async data => {
       const normalized = { ...data }
+
+      normalized.name = normalized.name.trim()
+      normalized.contactName = normalized.contactName.trim()
+      normalized.address = normalized.address.trim()
+      normalized.phone = normalized.phone.trim()
+      normalized.email = normalized.email?.trim() ?? ''
+
       if (normalized.vat) {
         normalized.vat = formatVat(normalized.vat)
+      } else {
+        normalized.vat = ''
       }
+
+      if (normalized.useSeparateInvoiceAddress) {
+        normalized.invoiceAddress = normalized.invoiceAddress?.trim() ?? ''
+      } else {
+        normalized.invoiceAddress = ''
+      }
+
       const { formatted, isValid } = normalizePhoneInput(normalized.phone, defaultCountry)
       if (isValid && formatted !== normalized.phone) {
         normalized.phone = formatted
         form.setValue('phone', formatted, { shouldValidate: true, shouldDirty: true })
       }
+
       onUpdate(normalized)
       onComplete(normalized)
     })
@@ -215,6 +261,84 @@ export const OrganizationStep = forwardRef<OrganizationStepHandle, OrganizationS
                       </FormItem>
                     )}
                   />
+
+                  <FormField
+                    control={form.control}
+                    name="useSeparateInvoiceAddress"
+                    render={({ field }) => (
+                      <FormItem className="space-y-2">
+                        <div className="flex items-start gap-3 rounded-[12px] border border-[color:var(--surface-ring)]/70 bg-[color:var(--surface-pop-2)]/40 p-3">
+                          <Checkbox
+                            id="useSeparateInvoiceAddress"
+                            checked={field.value}
+                            onCheckedChange={checked => {
+                              const value = Boolean(checked)
+                              field.onChange(value)
+                              if (!value) {
+                                form.setValue('invoiceAddress', '', {
+                                  shouldDirty: true,
+                                  shouldValidate: true
+                                })
+                                form.clearErrors('invoiceAddress')
+                              }
+                              commit()
+                            }}
+                            className="mt-1"
+                          />
+                          <div className="space-y-1 text-left">
+                            <label
+                              htmlFor="useSeparateInvoiceAddress"
+                              className="text-[13px] font-semibold text-[color:var(--text)]"
+                            >
+                              Use a different invoice address
+                            </label>
+                            <p className="text-[12px] text-[color:var(--text-muted)]">
+                              Leave unchecked if deliveries and invoices share the same address.
+                            </p>
+                          </div>
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+
+                  {useSeparateInvoiceAddress && (
+                    <FormField
+                      control={form.control}
+                      name="invoiceAddress"
+                      render={({ field }) => (
+                        <FormItem className="group space-y-2">
+                          <div className="flex items-start gap-2">
+                            <MapPinHouse className="h-5 w-5 flex-shrink-0 text-[color:var(--text-muted)] transition-colors group-focus-within:text-[var(--brand-accent)]" />
+                            <div className="space-y-1">
+                              <FormLabel className="text-[13px] font-semibold text-[color:var(--text)]">
+                                Invoice address
+                                <span aria-hidden="true" className="ml-1 text-[color:var(--brand-accent)] opacity-80">
+                                  *
+                                </span>
+                              </FormLabel>
+                              <FormMessage />
+                            </div>
+                          </div>
+                          <FormControl>
+                            <Textarea
+                              placeholder="Finance office, street, city, postcode"
+                              rows={3}
+                              {...field}
+                              onBlur={event => {
+                                field.onBlur()
+                                const trimmed = event.target.value.trim()
+                                form.setValue('invoiceAddress', trimmed, {
+                                  shouldValidate: true,
+                                  shouldDirty: true
+                                })
+                                commit()
+                              }}
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  )}
                 </div>
               </section>
 
@@ -253,6 +377,38 @@ export const OrganizationStep = forwardRef<OrganizationStepHandle, OrganizationS
                             {...field}
                             onBlur={event => {
                               field.onBlur()
+                              commit()
+                            }}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem className="group space-y-2">
+                        <div className="flex items-start gap-2">
+                          <Mail className="h-5 w-5 flex-shrink-0 text-[color:var(--text-muted)] transition-colors group-focus-within:text-[var(--brand-accent)]" />
+                          <div className="space-y-1">
+                            <FormLabel className="text-[13px] font-semibold text-[color:var(--text)]">
+                              Organization email (optional)
+                            </FormLabel>
+                            <FormMessage />
+                          </div>
+                        </div>
+                        <FormControl>
+                          <Input
+                            type="email"
+                            inputMode="email"
+                            placeholder="orders@yourbusiness.is"
+                            {...field}
+                            onBlur={event => {
+                              field.onBlur()
+                              const trimmed = event.target.value.trim()
+                              form.setValue('email', trimmed, { shouldValidate: true, shouldDirty: true })
                               commit()
                             }}
                           />
@@ -321,9 +477,25 @@ export const OrganizationStep = forwardRef<OrganizationStepHandle, OrganizationS
                             <div className="flex items-start gap-2">
                               <Receipt className="h-5 w-5 flex-shrink-0 text-[color:var(--text-muted)] transition-colors group-focus-within:text-[var(--brand-accent)]" />
                               <div className="space-y-1">
-                                <FormLabel className="text-[13px] font-semibold text-[color:var(--text)]">
-                                  VAT / Kennitala (optional)
-                                </FormLabel>
+                                <div className="flex items-center gap-2">
+                                  <FormLabel className="text-[13px] font-semibold text-[color:var(--text)]">
+                                    VAT / Kennitala (optional)
+                                  </FormLabel>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <button
+                                        type="button"
+                                        className="inline-flex h-5 w-5 items-center justify-center rounded-full text-[color:var(--text-muted)] transition-colors hover:text-[color:var(--text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)] focus-visible:ring-offset-2"
+                                        aria-label="Why we ask for VAT or Kennitala"
+                                      >
+                                        <Info className="h-4 w-4" />
+                                      </button>
+                                    </TooltipTrigger>
+                                    <TooltipContent className="max-w-[220px] rounded-[12px] border border-[color:var(--surface-ring)] bg-[color:var(--surface-pop)] px-3 py-2 text-left text-[12px] leading-relaxed text-[color:var(--text-muted)]">
+                                      Used to pre-fill invoices and receipts.
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </div>
                                 <FormMessage />
                               </div>
                             </div>
@@ -339,10 +511,6 @@ export const OrganizationStep = forwardRef<OrganizationStepHandle, OrganizationS
                                 }}
                               />
                             </FormControl>
-                            <p className="flex items-center gap-2 text-[12px] text-[color:var(--text-muted)]">
-                              <Info className="h-4 w-4 text-[color:var(--text-muted)]" />
-                              Used to pre-fill invoices and receipts.
-                            </p>
                           </FormItem>
                         )}
                       />
