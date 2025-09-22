@@ -74,7 +74,7 @@ export function PantryStatusCard() {
                       Ordered {item.orderCount} time{item.orderCount === 1 ? '' : 's'} recently
                     </p>
                   </div>
-                  <Button size="xs" variant="secondary" className="whitespace-nowrap" onClick={() => console.info('Add to cart', item.id)}>
+                  <Button size="sm" variant="secondary" className="whitespace-nowrap" onClick={() => console.info('Add to cart', item.id)}>
                     Add to cart
                   </Button>
                 </li>

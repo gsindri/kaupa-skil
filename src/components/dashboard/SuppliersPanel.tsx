@@ -127,11 +127,11 @@ export function SuppliersPanel() {
                 </div>
                 <div className="flex items-center gap-2">
                   {s.status === 'needs_login' && (
-                    <Button size="xs" variant="outline">
+                    <Button size="sm" variant="outline">
                       Reconnect
                     </Button>
                   )}
-                  <Button size="xs" variant="ghost" className="gap-1">
+                  <Button size="sm" variant="ghost" className="gap-1">
                     <RefreshCcw className="h-3.5 w-3.5" />
                     Run sync
                   </Button>
