@@ -60,18 +60,20 @@ DialogOverlay.displayName = "DialogOverlay"
 type DialogContentProps = React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & {
   variant?: "default" | "spotlight"
   hideCloseButton?: boolean
+  overlayClassName?: string
 }
 
 const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
   DialogContentProps
->(({ className, children, variant = "default", hideCloseButton, ...props }, ref) => {
+>(({ className, children, variant = "default", hideCloseButton, overlayClassName, ...props }, ref) => {
   const spotlight = variant === "spotlight"
   const shouldHideClose = hideCloseButton ?? spotlight
+  const overlayClasses = cn(overlayClassName)
 
   return (
     <DialogPortal>
-      <DialogOverlay />
+      <DialogOverlay className={overlayClasses} />
       <DialogPrimitive.Content
         ref={ref}
         className={cn(

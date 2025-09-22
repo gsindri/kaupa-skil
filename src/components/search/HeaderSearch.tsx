@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useGlobalSearch, SearchScope } from '@/hooks/useGlobalSearch'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
-import { Loader2, Search } from 'lucide-react'
+import { Loader2, Search, Package, Building2, ClipboardList } from 'lucide-react'
 import { LazyImage } from '@/components/ui/LazyImage'
 import { cn } from '@/lib/utils'
 
@@ -33,11 +33,16 @@ const SCOPE_OPTIONS: { label: string; value: SearchScope }[] = [
 
 const SECTION_METADATA: Record<
   SearchResultSection,
-  { heading: string; meta: string; badge: string }
+  {
+    heading: string
+    meta: string
+    badge: string
+    icon: React.ComponentType<{ className?: string; strokeWidth?: number }>
+  }
 > = {
-  products: { heading: 'Products', meta: 'Product', badge: 'P' },
-  suppliers: { heading: 'Suppliers', meta: 'Supplier', badge: 'S' },
-  orders: { heading: 'Orders', meta: 'Order', badge: 'O' }
+  products: { heading: 'Products', meta: 'Product', badge: 'P', icon: Package },
+  suppliers: { heading: 'Suppliers', meta: 'Supplier', badge: 'S', icon: Building2 },
+  orders: { heading: 'Orders', meta: 'Order', badge: 'O', icon: ClipboardList }
 }
 
 const SECTION_ORDER: SearchResultSection[] = ['products', 'suppliers', 'orders']
@@ -236,7 +241,8 @@ export const HeaderSearch = React.forwardRef<HTMLInputElement, HeaderSearchProps
         <DialogContent
           variant="spotlight"
           hideCloseButton
-          className="w-[760px] max-w-[92vw] overflow-hidden rounded-[16px] border border-[color:var(--surface-ring)] bg-[color:var(--surface-pop)] p-0 shadow-[var(--elev-shadow)]"
+          overlayClassName="bg-[rgba(7,15,25,0.12)] backdrop-blur-[12px]"
+          className="w-[760px] max-w-[92vw] overflow-hidden rounded-[16px] border border-[color:var(--surface-ring)]/80 bg-[color:var(--surface-pop)] p-0 shadow-[0_48px_140px_-56px_rgba(5,12,24,0.85)]"
           onOpenAutoFocus={(event) => {
             event.preventDefault()
             requestAnimationFrame(() => {
@@ -247,12 +253,12 @@ export const HeaderSearch = React.forwardRef<HTMLInputElement, HeaderSearchProps
         >
           <div className="flex h-full flex-col bg-[color:var(--surface-pop)]">
             <div className="px-3 pt-3">
-              <div className="flex h-14 items-center gap-2 rounded-[14px] border border-[color:var(--surface-ring)] bg-[color:var(--surface-pop)] px-3">
+              <div className="flex h-14 items-center gap-2 rounded-[16px] border border-white/10 bg-[color:var(--surface-pop-2)]/75 px-3 shadow-[0_18px_48px_-30px_rgba(6,12,24,0.65)] backdrop-blur-[18px]">
                 <button
                   type="button"
                   aria-hidden
                   tabIndex={-1}
-                  className="flex h-10 w-10 items-center justify-center rounded-full text-[color:var(--text-muted)]"
+                  className="flex h-10 w-10 items-center justify-center rounded-full bg-[rgba(245,158,11,0.12)] text-[color:var(--brand-accent)] ring-1 ring-inset ring-[rgba(245,158,11,0.32)]"
                   onMouseDown={(event) => event.preventDefault()}
                 >
                   <Search className="h-[18px] w-[18px]" strokeWidth={1.75} />
@@ -287,7 +293,7 @@ export const HeaderSearch = React.forwardRef<HTMLInputElement, HeaderSearchProps
             </div>
 
             <div className="px-3 pb-2 pt-2">
-              <div className="grid grid-cols-4 gap-1 rounded-[12px] border border-[color:var(--surface-ring)] p-1">
+              <div className="grid grid-cols-4 gap-1 rounded-[14px] border border-white/10 bg-white/[0.02] p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
                 {SCOPE_OPTIONS.map((option) => {
                   const selected = scope === option.value
                   return (
@@ -298,10 +304,10 @@ export const HeaderSearch = React.forwardRef<HTMLInputElement, HeaderSearchProps
                       onMouseDown={(event) => event.preventDefault()}
                       onClick={() => setScope(option.value)}
                       className={cn(
-                        'h-10 rounded-[10px] text-[14px] font-medium text-[color:var(--text-muted)] transition-colors',
+                        'h-10 rounded-[12px] text-[14px] font-medium text-[color:var(--text-muted)] transition-all duration-150 ease-out',
                         selected
-                          ? 'bg-white/[0.08] text-[color:var(--text)] font-semibold'
-                          : 'hover:bg-white/[0.04]'
+                          ? 'bg-[rgba(245,158,11,0.14)] text-[color:var(--text)] font-semibold shadow-[0_16px_40px_-26px_rgba(245,158,11,0.7)] ring-1 ring-inset ring-[rgba(245,158,11,0.35)]'
+                          : 'hover:bg-white/[0.05] hover:text-[color:var(--text)]'
                       )}
                     >
                       {option.label}
@@ -377,6 +383,8 @@ function DialogResults({
   })
 
   const sectionsContent: React.ReactNode[] = []
+  const uniqueSections = new Set(resultEntries.map(({ entry }) => entry.item.section))
+  const shouldShowMeta = uniqueSections.size > 1
 
   if (!hasQuery && recentsEntries.length > 0) {
     sectionsContent.push(
@@ -411,13 +419,16 @@ function DialogResults({
           <DialogSection label={`${metadata.heading} (${sectionData.totalCount})`} />
           {sectionEntries.map(({ entry, index }) => {
             const thumbnailUrl = entry.item.metadata?.imageUrl
+            const metaSlot = shouldShowMeta ? (
+              <SectionIndicator icon={metadata.icon} label={metadata.meta} />
+            ) : undefined
 
             return (
               <DialogRow
                 key={entry.item.id}
                 title={entry.item.name}
                 subtitle={entry.item.metadata?.subtitle}
-                meta={metadata.meta}
+                meta={metaSlot}
                 thumbnailUrl={thumbnailUrl}
                 icon={!thumbnailUrl ? <DialogBadge>{metadata.badge}</DialogBadge> : undefined}
                 active={activeIndex === index}
@@ -427,12 +438,13 @@ function DialogResults({
             )
           })}
           {sectionData.hasMore && (
-            <div className="px-3 py-2">
+            <div className="px-3 pt-3">
               <button
                 onClick={() => onViewAll(section, trimmedQuery)}
-                className="text-sm text-[color:var(--text-muted)] hover:text-[color:var(--text)] transition-colors"
+                className="group inline-flex w-full items-center justify-center gap-2 rounded-[12px] border border-white/12 bg-white/[0.04] px-3 py-2 text-sm font-semibold text-[color:var(--text)] transition-all duration-150 ease-out hover:border-[rgba(245,158,11,0.35)] hover:bg-[rgba(245,158,11,0.14)]"
               >
-                View all {sectionData.totalCount} {metadata.heading.toLowerCase()}
+                <span>View all {sectionData.totalCount} {metadata.heading.toLowerCase()}</span>
+                <span className="text-[color:var(--brand-accent)] transition-colors group-hover:text-[color:var(--text)]">↗</span>
               </button>
             </div>
           )}
@@ -468,7 +480,7 @@ function DialogResults({
     )
   }
 
-  return <div className="space-y-1 pb-1">{sectionsContent}</div>
+  return <div className="space-y-2 pb-2">{sectionsContent}</div>
 }
 
 interface RecentDialogRowProps {
@@ -490,13 +502,12 @@ function RecentDialogRow({ query, active, onHover, onSelect, onRemove }: RecentD
         onSelect()
       }}
       className={cn(
-        'grid w-full cursor-pointer grid-cols-[44px,1fr,auto] items-center gap-2 rounded-[10px] px-3 text-left text-[color:var(--text)] transition-colors',
-        'h-[56px]',
-        active ? 'bg-white/[0.08]' : 'hover:bg-white/[0.04]'
+        'grid w-full cursor-pointer grid-cols-[56px,1fr,auto] items-center gap-3 rounded-[12px] px-3 py-3 text-left text-[color:var(--text)] transition-all duration-150 ease-out',
+        active ? 'bg-white/[0.12] ring-1 ring-inset ring-white/12' : 'hover:bg-white/[0.06]'
       )}
     >
-      <div className="flex h-10 w-10 items-center justify-center">
-        <span className="text-[12px] text-[color:var(--text-muted)] opacity-60">↺</span>
+      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[10px] border border-white/10 bg-white/[0.04]">
+        <span className="text-[12px] text-[color:var(--text-muted)] opacity-70">↺</span>
       </div>
       <div className="min-w-0">
         <div className="truncate text-[15px] font-medium">{query}</div>
@@ -512,7 +523,7 @@ function RecentDialogRow({ query, active, onHover, onSelect, onRemove }: RecentD
           event.stopPropagation()
           onRemove()
         }}
-        className="flex h-6 w-6 items-center justify-center rounded-full text-[11px] text-[color:var(--text-muted)] transition-colors hover:text-[color:var(--text)]"
+        className="flex h-8 w-8 items-center justify-center rounded-full text-[12px] text-[color:var(--text-muted)] transition-colors hover:text-[color:var(--text)]"
         aria-label={`Remove ${query} from recent searches`}
       >
         ✕
@@ -523,11 +534,11 @@ function RecentDialogRow({ query, active, onHover, onSelect, onRemove }: RecentD
 
 function DialogSection({ label }: { label: string }) {
   return (
-    <div className="px-3 pt-1">
-      <div className="mb-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-[color:var(--text-muted)] opacity-80">
+    <div className="px-4 pt-2">
+      <div className="mb-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-[color:var(--text-muted)] opacity-80">
         {label}
       </div>
-      <div className="h-px bg-[color:var(--surface-ring)] opacity-25" />
+      <div className="h-px bg-white/10" />
     </div>
   )
 }
@@ -535,7 +546,7 @@ function DialogSection({ label }: { label: string }) {
 interface DialogRowProps {
   title: string
   subtitle?: string
-  meta?: string
+  meta?: React.ReactNode
   icon?: React.ReactNode
   thumbnailUrl?: string
   active: boolean
@@ -564,18 +575,17 @@ function DialogRow({
         onSelect()
       }}
       className={cn(
-        'grid w-full grid-cols-[44px,1fr,auto] items-center gap-2 rounded-[10px] px-3 text-left text-[color:var(--text)] transition-colors',
-        'h-[56px]',
-        active ? 'bg-white/[0.08]' : 'hover:bg-white/[0.04]'
+        'grid w-full grid-cols-[56px,1fr,auto] items-center gap-3 rounded-[12px] px-3 py-3 text-left text-[color:var(--text)] transition-all duration-150 ease-out',
+        active ? 'bg-white/[0.1] ring-1 ring-inset ring-white/12' : 'hover:bg-white/[0.06]'
       )}
     >
-      <div className="flex h-10 w-10 items-center justify-center">
+      <div className="flex h-12 w-12 shrink-0 items-center justify-center">
         {thumbnailUrl ? (
           <LazyImage
             src={thumbnailUrl}
             alt={title}
             loading="lazy"
-            className="h-10 w-10 overflow-hidden rounded-[8px] border border-[color:var(--surface-ring)] bg-[color:var(--surface-raised)]"
+            className="h-12 w-12 overflow-hidden rounded-[10px] border border-[color:var(--surface-ring)] bg-[color:var(--surface-raised)]"
             imgClassName="h-full w-full object-cover"
           />
         ) : (
@@ -588,21 +598,35 @@ function DialogRow({
           <div className="truncate text-[13px] text-[color:var(--text-muted)]">{subtitle}</div>
         )}
       </div>
-      <div
-        className={cn(
-          'text-right text-[13px] text-[color:var(--text-muted)]',
-          meta ? 'pl-3' : 'pl-0'
+      <div className={cn('flex h-full items-center justify-end', meta ? 'pl-3' : 'pl-0')}>
+        {typeof meta === 'string' ? (
+          <span className="text-[13px] text-[color:var(--text-muted)]">{meta}</span>
+        ) : (
+          meta
         )}
-      >
-        {meta}
       </div>
     </button>
   )
 }
 
+function SectionIndicator({
+  icon: Icon,
+  label,
+}: {
+  icon: React.ComponentType<{ className?: string; strokeWidth?: number }>
+  label: string
+}) {
+  return (
+    <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/[0.06] text-[color:var(--brand-accent)] ring-1 ring-inset ring-[rgba(245,158,11,0.24)]">
+      <Icon className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
+      <span className="sr-only">{label}</span>
+    </span>
+  )
+}
+
 function DialogBadge({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex h-10 w-10 items-center justify-center rounded-[8px] border border-[color:var(--surface-ring)] bg-white/[0.06] text-[13px] font-semibold uppercase text-[color:var(--text-muted)]">
+    <div className="flex h-12 w-12 items-center justify-center rounded-[10px] border border-[color:var(--surface-ring)] bg-white/[0.08] text-[13px] font-semibold uppercase text-[color:var(--text-muted)]">
       {children}
     </div>
   )
