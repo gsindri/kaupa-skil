@@ -30,6 +30,91 @@ const STATUS_STORAGE_KEY = 'workspace_setup_status'
 const PREFERENCES_STORAGE_KEY = 'workspace_preferences'
 const TOTAL_STEPS = 3
 
+type AddressValues = OrganizationFormValues['deliveryAddress']
+
+const trimString = (value?: string | null) => value?.trim() ?? ''
+
+const createEmptyAddress = (): AddressValues => ({
+  line1: '',
+  line2: '',
+  postalCode: '',
+  city: ''
+})
+
+const ensureAddress = (address?: Partial<AddressValues> | null): AddressValues => ({
+  line1: trimString(address?.line1),
+  line2: trimString(address?.line2),
+  postalCode: trimString(address?.postalCode),
+  city: trimString(address?.city)
+})
+
+const addressHasDetails = (address?: Partial<AddressValues> | null) => {
+  if (!address) return false
+  return Boolean(
+    trimString(address.line1) ||
+      trimString(address.postalCode) ||
+      trimString(address.city) ||
+      trimString(address.line2)
+  )
+}
+
+const migrateOrganization = (
+  raw?: Partial<OrganizationFormValues> & {
+    address?: string
+    invoiceAddress?: unknown
+  }
+): OrganizationFormValues => {
+  const source = raw ?? {}
+
+  let deliveryAddress = ensureAddress((source as any).deliveryAddress as Partial<AddressValues> | undefined)
+  if (!addressHasDetails(deliveryAddress) && typeof source.address === 'string') {
+    const legacy = trimString(source.address)
+    if (legacy) {
+      deliveryAddress = {
+        ...deliveryAddress,
+        line1: legacy
+      }
+    }
+  }
+
+  let invoiceAddress: AddressValues
+  const rawInvoice = (source as any).invoiceAddress
+  if (typeof rawInvoice === 'string') {
+    const legacyInvoice = trimString(rawInvoice)
+    invoiceAddress = createEmptyAddress()
+    if (legacyInvoice) {
+      invoiceAddress.line1 = legacyInvoice
+    }
+  } else {
+    invoiceAddress = ensureAddress(rawInvoice as Partial<AddressValues> | undefined)
+  }
+
+  const useSeparate =
+    typeof source.useSeparateInvoiceAddress === 'boolean' ? source.useSeparateInvoiceAddress : true
+
+  return {
+    name: trimString(source.name),
+    contactName: trimString(source.contactName),
+    phone: trimString(source.phone),
+    deliveryAddress,
+    vat: trimString(source.vat),
+    email: trimString(source.email),
+    useSeparateInvoiceAddress: useSeparate,
+    invoiceAddress
+  }
+}
+
+const EMPTY_ORGANIZATION: OrganizationFormValues = {
+  name: '',
+  contactName: '',
+  phone: '',
+  deliveryAddress: createEmptyAddress(),
+  vat: '',
+  email: '',
+  useSeparateInvoiceAddress: true,
+  invoiceAddress: createEmptyAddress()
+}
+
 interface DraftState {
   organization: OrganizationFormValues
   selectedSupplierIds: string[]
@@ -46,17 +131,6 @@ interface StepDefinition {
 interface OnboardingWizardProps {
   onSkip?: () => void
   onComplete?: () => void
-}
-
-const EMPTY_ORGANIZATION: OrganizationFormValues = {
-  name: '',
-  contactName: '',
-  phone: '',
-  address: '',
-  vat: '',
-  email: '',
-  useSeparateInvoiceAddress: false,
-  invoiceAddress: ''
 }
 
 type SupplierRow = Database['public']['Tables']['suppliers']['Row']
@@ -136,7 +210,7 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
       try {
         const parsed = JSON.parse(raw) as Partial<DraftState>
         if (parsed.organization) {
-          setOrganization({ ...EMPTY_ORGANIZATION, ...parsed.organization })
+          setOrganization(migrateOrganization(parsed.organization))
         }
         if (Array.isArray(parsed.selectedSupplierIds)) {
           setSelectedSupplierIds(Array.from(new Set(parsed.selectedSupplierIds)))
@@ -212,14 +286,17 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
   }, [suppliersError, toast])
 
   const hasOrganizationDetails = useMemo(() => {
+    const deliveryAddressFilled = addressHasDetails(organization.deliveryAddress)
+    const invoiceAddressFilled = addressHasDetails(organization.invoiceAddress)
+
     return (
       Boolean(organization.name) ||
       Boolean(organization.contactName) ||
       Boolean(organization.phone) ||
-      Boolean(organization.address) ||
+      deliveryAddressFilled ||
       Boolean(organization.vat) ||
       Boolean(organization.email) ||
-      (organization.useSeparateInvoiceAddress && Boolean(organization.invoiceAddress))
+      (organization.useSeparateInvoiceAddress && invoiceAddressFilled)
     )
   }, [organization])
 
