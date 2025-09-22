@@ -9,7 +9,7 @@ import React, {
 import { useForm, type FieldPath } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Check, Info, Mail, MapPinHouse, Phone, Receipt, Store, UserCircle2 } from 'lucide-react'
+import { Info, Mail, MapPinHouse, Phone, Receipt, Store, UserCircle2 } from 'lucide-react'
 import type { CountryCode } from 'libphonenumber-js'
 
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
@@ -24,7 +24,6 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui/select'
-import { cn } from '@/lib/utils'
 import { getDefaultCountryCode, normalizePhoneInput, formatVat, isValidVat } from '@/utils/phone'
 
 // eslint-disable-next-line react-refresh/only-export-components
@@ -159,13 +158,14 @@ const createOrganizationSchema = (country: CountryCode) =>
 
 export type OrganizationFormValues = z.infer<ReturnType<typeof createOrganizationSchema>>
 
-type SectionDefinition = {
+export type OrganizationSectionDefinition = {
   id: 'basics' | 'delivery' | 'invoicing' | 'contacts'
   title: string
   description: string
 }
 
-const SECTION_DEFINITIONS: SectionDefinition[] = [
+// eslint-disable-next-line react-refresh/only-export-components
+export const ORGANIZATION_SECTION_DEFINITIONS: OrganizationSectionDefinition[] = [
   {
     id: 'basics',
     title: 'Basics',
@@ -188,7 +188,7 @@ const SECTION_DEFINITIONS: SectionDefinition[] = [
   }
 ]
 
-type SectionId = SectionDefinition['id']
+type SectionId = OrganizationSectionDefinition['id']
 type OrganizationFieldPath = FieldPath<OrganizationFormValues>
 
 const BASE_SECTION_VALIDATION: Record<SectionId, OrganizationFieldPath[]> = {
@@ -204,12 +204,19 @@ export interface OrganizationStepFooterContext {
   goToPrevious: () => void
 }
 
+export interface OrganizationSectionProgress {
+  index: number
+  total: number
+  section: OrganizationSectionDefinition
+}
+
 export interface OrganizationStepProps {
   value: OrganizationFormValues
   onUpdate: (value: OrganizationFormValues) => void
   onComplete: (value: OrganizationFormValues) => void
   footer: React.ReactNode | ((context: OrganizationStepFooterContext) => React.ReactNode)
   setupError?: string | null
+  onSectionChange?: (progress: OrganizationSectionProgress) => void
 }
 
 export interface OrganizationStepHandle {
@@ -217,10 +224,10 @@ export interface OrganizationStepHandle {
 }
 
 export const OrganizationStep = forwardRef<OrganizationStepHandle, OrganizationStepProps>(
-  ({ value, onUpdate, onComplete, footer, setupError }, ref) => {
+  ({ value, onUpdate, onComplete, footer, setupError, onSectionChange }, ref) => {
     const [sectionIndex, setSectionIndex] = useState(0)
-    const currentSection = SECTION_DEFINITIONS[sectionIndex]
-    const progress = ((sectionIndex + 1) / SECTION_DEFINITIONS.length) * 100
+    const currentSection = ORGANIZATION_SECTION_DEFINITIONS[sectionIndex]
+    const totalSections = ORGANIZATION_SECTION_DEFINITIONS.length
 
     const defaultCountry = useMemo(() => getDefaultCountryCode(), [])
     const schema = useMemo(() => createOrganizationSchema(defaultCountry), [defaultCountry])
@@ -263,19 +270,8 @@ export const OrganizationStep = forwardRef<OrganizationStepHandle, OrganizationS
       setSectionIndex(prev => Math.max(0, prev - 1))
     }, [commit, sectionIndex])
 
-    const goToSection = useCallback(
-      (targetIndex: number) => {
-        if (targetIndex < 0 || targetIndex >= SECTION_DEFINITIONS.length) {
-          return
-        }
-        commit()
-        setSectionIndex(targetIndex)
-      },
-      [commit]
-    )
-
     const validateCurrentSection = useCallback(async () => {
-      const sectionId = SECTION_DEFINITIONS[sectionIndex].id
+      const sectionId = ORGANIZATION_SECTION_DEFINITIONS[sectionIndex].id
       const baseFields = BASE_SECTION_VALIDATION[sectionId] || []
 
       let fields: OrganizationFieldPath[] = baseFields
@@ -334,8 +330,8 @@ export const OrganizationStep = forwardRef<OrganizationStepHandle, OrganizationS
         return false
       }
 
-      if (sectionIndex < SECTION_DEFINITIONS.length - 1) {
-        setSectionIndex(prev => Math.min(prev + 1, SECTION_DEFINITIONS.length - 1))
+      if (sectionIndex < ORGANIZATION_SECTION_DEFINITIONS.length - 1) {
+        setSectionIndex(prev => Math.min(prev + 1, ORGANIZATION_SECTION_DEFINITIONS.length - 1))
         return false
       }
 
@@ -359,18 +355,19 @@ export const OrganizationStep = forwardRef<OrganizationStepHandle, OrganizationS
       [submit]
     )
 
-    const handleStepClick = useCallback(
-      (index: number) => {
-        if (index >= sectionIndex) {
-          return
-        }
-        goToSection(index)
-      },
-      [goToSection, sectionIndex]
-    )
-
     const isFirstSection = sectionIndex === 0
-    const isLastSection = sectionIndex === SECTION_DEFINITIONS.length - 1
+    const isLastSection = sectionIndex === ORGANIZATION_SECTION_DEFINITIONS.length - 1
+
+    useEffect(() => {
+      if (!onSectionChange) {
+        return
+      }
+      onSectionChange({
+        index: sectionIndex,
+        total: totalSections,
+        section: currentSection
+      })
+    }, [currentSection, onSectionChange, sectionIndex, totalSections])
 
     const renderedFooter = useMemo(() => {
       if (typeof footer === 'function') {
@@ -387,7 +384,7 @@ export const OrganizationStep = forwardRef<OrganizationStepHandle, OrganizationS
       switch (currentSection.id) {
         case 'basics':
           return (
-            <div className="space-y-6">
+            <div className="space-y-5">
               <FormField
                 control={form.control}
                 name="name"
@@ -473,25 +470,36 @@ export const OrganizationStep = forwardRef<OrganizationStepHandle, OrganizationS
           )
         case 'delivery':
           return (
-            <div className="space-y-6">
-              <div className="flex items-start gap-2">
+            <div className="space-y-5">
+              <div className="flex items-center gap-2 text-[13px] text-[color:var(--text-muted)]">
                 <MapPinHouse className="h-5 w-5 flex-shrink-0 text-[color:var(--text-muted)]" />
-                <div className="space-y-1">
-                  <p className="text-[13px] font-semibold text-[color:var(--text)]">
+                <div className="flex items-center gap-2">
+                  <p className="text-[13px] font-medium text-[color:var(--text)]">
                     <span className="flex items-center gap-1">
-                      Delivery address
+                      Delivery location
                       <span aria-hidden="true" className="text-[color:var(--brand-accent)] opacity-80">
                         *
                       </span>
                     </span>
                   </p>
-                  <p className="text-[12px] text-[color:var(--text-muted)]">
-                    This is where suppliers will send orders.
-                  </p>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        type="button"
+                        className="inline-flex h-6 w-6 items-center justify-center rounded-full text-[color:var(--text-muted)] transition-colors hover:text-[color:var(--text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)] focus-visible:ring-offset-2"
+                        aria-label="Learn how the delivery location is used"
+                      >
+                        <Info className="h-4 w-4" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-[220px] rounded-[12px] border border-[color:var(--surface-ring)] bg-[color:var(--surface-pop)] px-3 py-2 text-left text-[12px] leading-relaxed text-[color:var(--text-muted)]">
+                      Suppliers deliver orders to this location.
+                    </TooltipContent>
+                  </Tooltip>
                 </div>
               </div>
 
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid gap-3 sm:grid-cols-2">
                 <FormField
                   control={form.control}
                   name="deliveryAddress.line1"
@@ -628,7 +636,7 @@ export const OrganizationStep = forwardRef<OrganizationStepHandle, OrganizationS
           )
         case 'invoicing':
           return (
-            <div className="space-y-6">
+            <div className="space-y-5">
               <FormField
                 control={form.control}
                 name="useSeparateInvoiceAddress"
@@ -650,7 +658,7 @@ export const OrganizationStep = forwardRef<OrganizationStepHandle, OrganizationS
                           }}
                           className="mt-1"
                         />
-                        <label htmlFor="invoicesUseDelivery" className="text-[13px] font-semibold text-[color:var(--text)]">
+                        <label htmlFor="invoicesUseDelivery" className="text-[13px] font-medium text-[color:var(--text)]">
                           Use delivery address for invoices
                         </label>
                       </div>
@@ -661,10 +669,10 @@ export const OrganizationStep = forwardRef<OrganizationStepHandle, OrganizationS
 
               {useSeparateInvoiceAddress && (
                 <div className="space-y-4">
-                  <div className="flex items-start gap-2">
+                  <div className="flex items-center gap-2 text-[13px] text-[color:var(--text-muted)]">
                     <MapPinHouse className="h-5 w-5 flex-shrink-0 text-[color:var(--text-muted)]" />
-                    <div className="space-y-1">
-                      <p className="text-[13px] font-semibold text-[color:var(--text)]">
+                    <div className="flex items-center gap-2">
+                      <p className="text-[13px] font-medium text-[color:var(--text)]">
                         <span className="flex items-center gap-1">
                           Invoice address
                           <span aria-hidden="true" className="text-[color:var(--brand-accent)] opacity-80">
@@ -672,13 +680,24 @@ export const OrganizationStep = forwardRef<OrganizationStepHandle, OrganizationS
                           </span>
                         </span>
                       </p>
-                      <p className="text-[12px] text-[color:var(--text-muted)]">
-                        Where finance teams should send paperwork.
-                      </p>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button
+                            type="button"
+                            className="inline-flex h-6 w-6 items-center justify-center rounded-full text-[color:var(--text-muted)] transition-colors hover:text-[color:var(--text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)] focus-visible:ring-offset-2"
+                            aria-label="See how invoice addresses are used"
+                          >
+                            <Info className="h-4 w-4" />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-[220px] rounded-[12px] border border-[color:var(--surface-ring)] bg-[color:var(--surface-pop)] px-3 py-2 text-left text-[12px] leading-relaxed text-[color:var(--text-muted)]">
+                          Finance teams receive paperwork at this address.
+                        </TooltipContent>
+                      </Tooltip>
                     </div>
                   </div>
 
-                  <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="grid gap-3 sm:grid-cols-2">
                     <FormField
                       control={form.control}
                       name="invoiceAddress.line1"
@@ -812,7 +831,7 @@ export const OrganizationStep = forwardRef<OrganizationStepHandle, OrganizationS
                     />
                   </div>
                 </div>
-              )}
+                )}
 
               <FormField
                 control={form.control}
@@ -869,7 +888,7 @@ export const OrganizationStep = forwardRef<OrganizationStepHandle, OrganizationS
           )
         case 'contacts':
           return (
-            <div className="space-y-6">
+            <div className="space-y-5">
               <FormField
                 control={form.control}
                 name="contactName"
@@ -997,69 +1016,10 @@ export const OrganizationStep = forwardRef<OrganizationStepHandle, OrganizationS
           </Alert>
         )}
         <Form {...form}>
-          <form className="flex flex-col gap-8" onSubmit={onFormSubmit}>
-            <div className="space-y-4 rounded-[16px] border border-[color:var(--surface-ring)]/60 bg-[color:var(--surface-pop)]/40 p-4 sm:p-5">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div className="space-y-1">
-                  <p className="text-[12px] font-semibold uppercase tracking-wide text-[color:var(--text-muted)]">
-                    Step {sectionIndex + 1} of {SECTION_DEFINITIONS.length}
-                  </p>
-                  <h3 className="text-[18px] font-semibold text-[color:var(--text)]">
-                    {currentSection.title}
-                  </h3>
-                  <p className="text-[13px] text-[color:var(--text-muted)]">{currentSection.description}</p>
-                </div>
-                <ol className="flex items-center gap-2 text-[12px] text-[color:var(--text-muted)]">
-                  {SECTION_DEFINITIONS.map((section, index) => {
-                    const status =
-                      index === sectionIndex
-                        ? 'current'
-                        : index < sectionIndex
-                          ? 'complete'
-                          : 'upcoming'
-                    return (
-                      <li key={section.id} className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => handleStepClick(index)}
-                          disabled={index > sectionIndex}
-                          className={cn(
-                            'flex h-8 w-8 items-center justify-center rounded-full border text-[12px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)] focus-visible:ring-offset-2',
-                            status === 'complete' &&
-                              'border-[var(--brand-accent)] bg-[var(--brand-accent)] text-[color:var(--brand-accent-fg)]',
-                            status === 'current' && 'border-[var(--brand-accent)] text-[var(--brand-accent)]',
-                            status === 'upcoming' && 'border-[color:var(--surface-ring)]'
-                          )}
-                          aria-current={status === 'current' ? 'step' : undefined}
-                          aria-label={`Step ${index + 1}: ${section.title}`}
-                        >
-                          {status === 'complete' ? <Check className="h-4 w-4" /> : index + 1}
-                        </button>
-                        <span
-                          className={cn(
-                            'hidden text-[12px] sm:inline',
-                            status === 'current' && 'font-medium text-[color:var(--text)]',
-                            status === 'complete' && 'text-[var(--brand-accent)]'
-                          )}
-                        >
-                          {section.title}
-                        </span>
-                      </li>
-                    )
-                  })}
-                </ol>
-              </div>
-              <div className="h-1 w-full rounded-full bg-[color:var(--surface-ring)]/40">
-                <div
-                  className="h-full rounded-full bg-[var(--brand-accent)] transition-all duration-500"
-                  style={{ width: `${progress}%` }}
-                />
-              </div>
-            </div>
-
+          <form className="flex flex-col gap-6" onSubmit={onFormSubmit}>
             {sectionContent}
 
-            <div className="border-t border-[color:var(--surface-ring)]/80 pt-6">
+            <div className="border-t border-[color:var(--surface-ring)]/80 pt-5">
               <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 {renderedFooter}
               </div>
