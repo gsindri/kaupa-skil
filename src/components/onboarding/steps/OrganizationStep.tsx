@@ -1,8 +1,8 @@
-import React, { forwardRef, useEffect, useImperativeHandle, useMemo } from 'react'
+import React, { forwardRef, useEffect, useImperativeHandle, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Building2, UserCircle2, Phone, MapPinHouse, Receipt, Info } from 'lucide-react'
+import { Building2, UserCircle2, Phone, MapPinHouse, Receipt, Info, ChevronDown } from 'lucide-react'
 import type { CountryCode } from 'libphonenumber-js'
 
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Separator } from '@/components/ui/separator'
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { getDefaultCountryCode, normalizePhoneInput, formatVat, isValidVat } from '@/utils/phone'
 
 const createOrganizationSchema = (country: CountryCode) =>
@@ -64,9 +65,24 @@ export const OrganizationStep = forwardRef<OrganizationStepHandle, OrganizationS
       defaultValues: value
     })
 
+    const [detailsOpen, setDetailsOpen] = useState(Boolean(value.vat))
+    const vatError = form.formState.errors.vat
+
     useEffect(() => {
       form.reset(value)
     }, [value, form])
+
+    useEffect(() => {
+      if (value.vat) {
+        setDetailsOpen(true)
+      }
+    }, [value.vat])
+
+    useEffect(() => {
+      if (vatError) {
+        setDetailsOpen(true)
+      }
+    }, [vatError])
 
     const commit = () => {
       const current = form.getValues()
@@ -118,186 +134,203 @@ export const OrganizationStep = forwardRef<OrganizationStepHandle, OrganizationS
         )}
         <Form {...form}>
           <form
-            className="space-y-8"
+            className="space-y-6 lg:space-y-0"
             onSubmit={event => {
               event.preventDefault()
               handleSubmit()
             }}
           >
-            <section className="space-y-4">
-              <div className="space-y-1">
-                <h3 className="text-[13px] font-semibold text-[color:var(--text)]">Contact information</h3>
-                <p className="text-[13px] text-[color:var(--text-muted)]">Let suppliers know who to reach.</p>
-              </div>
-              <div className="grid gap-6">
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem className="group">
-                      <FormLabel className="flex items-center gap-2 text-[13px] text-[color:var(--text-muted)]">
-                        <Building2 className="h-5 w-5 text-[color:var(--text-muted)] transition-colors group-focus-within:text-[var(--brand-accent)]" />
-                        <span className="flex items-center gap-1">
-                          Organization name
-                          <span aria-hidden="true" className="text-[color:var(--brand-accent)] opacity-80">
-                            *
+            <div className="flex flex-col gap-5 lg:grid lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:items-start lg:gap-10">
+              <section className="space-y-3">
+                <div className="space-y-1">
+                  <h3 className="text-[13px] font-semibold text-[color:var(--text)]">Contact information</h3>
+                  <p className="text-[13px] text-[color:var(--text-muted)]">Let suppliers know who to reach.</p>
+                </div>
+                <div className="grid gap-4">
+                  <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem className="group space-y-1.5">
+                        <FormLabel className="flex items-center gap-2 text-[13px] text-[color:var(--text-muted)]">
+                          <Building2 className="h-5 w-5 text-[color:var(--text-muted)] transition-colors group-focus-within:text-[var(--brand-accent)]" />
+                          <span className="flex items-center gap-1">
+                            Organization name
+                            <span aria-hidden="true" className="text-[color:var(--brand-accent)] opacity-80">
+                              *
+                            </span>
                           </span>
-                        </span>
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="e.g. Reykjavík Restaurant Group"
-                          required
-                          {...field}
-                          onBlur={event => {
-                            field.onBlur()
-                            commit()
-                          }}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="e.g. Reykjavík Restaurant Group"
+                            required
+                            {...field}
+                            onBlur={event => {
+                              field.onBlur()
+                              commit()
+                            }}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                <FormField
-                  control={form.control}
-                  name="contactName"
-                  render={({ field }) => (
-                    <FormItem className="group">
-                      <FormLabel className="flex items-center gap-2 text-[13px] text-[color:var(--text-muted)]">
-                        <UserCircle2 className="h-5 w-5 text-[color:var(--text-muted)] transition-colors group-focus-within:text-[var(--brand-accent)]" />
-                        <span className="flex items-center gap-1">
-                          Primary contact
-                          <span aria-hidden="true" className="text-[color:var(--brand-accent)] opacity-80">
-                            *
+                  <FormField
+                    control={form.control}
+                    name="contactName"
+                    render={({ field }) => (
+                      <FormItem className="group space-y-1.5">
+                        <FormLabel className="flex items-center gap-2 text-[13px] text-[color:var(--text-muted)]">
+                          <UserCircle2 className="h-5 w-5 text-[color:var(--text-muted)] transition-colors group-focus-within:text-[var(--brand-accent)]" />
+                          <span className="flex items-center gap-1">
+                            Primary contact
+                            <span aria-hidden="true" className="text-[color:var(--brand-accent)] opacity-80">
+                              *
+                            </span>
                           </span>
-                        </span>
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="Primary contact person"
-                          required
-                          {...field}
-                          onBlur={event => {
-                            field.onBlur()
-                            commit()
-                          }}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Primary contact person"
+                            required
+                            {...field}
+                            onBlur={event => {
+                              field.onBlur()
+                              commit()
+                            }}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                <FormField
-                  control={form.control}
-                  name="phone"
-                  render={({ field }) => (
-                    <FormItem className="group">
-                      <FormLabel className="flex items-center gap-2 text-[13px] text-[color:var(--text-muted)]">
-                        <Phone className="h-5 w-5 text-[color:var(--text-muted)] transition-colors group-focus-within:text-[var(--brand-accent)]" />
-                        <span className="flex items-center gap-1">
-                          Phone
-                          <span aria-hidden="true" className="text-[color:var(--brand-accent)] opacity-80">
-                            *
+                  <FormField
+                    control={form.control}
+                    name="phone"
+                    render={({ field }) => (
+                      <FormItem className="group space-y-1.5">
+                        <FormLabel className="flex items-center gap-2 text-[13px] text-[color:var(--text-muted)]">
+                          <Phone className="h-5 w-5 text-[color:var(--text-muted)] transition-colors group-focus-within:text-[var(--brand-accent)]" />
+                          <span className="flex items-center gap-1">
+                            Phone
+                            <span aria-hidden="true" className="text-[color:var(--brand-accent)] opacity-80">
+                              *
+                            </span>
                           </span>
-                        </span>
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          type="tel"
-                          inputMode="tel"
-                          placeholder="+354 555 1234"
-                          required
-                          {...field}
-                          onBlur={event => {
-                            field.onBlur()
-                            const { formatted, isValid } = normalizePhoneInput(event.target.value, defaultCountry)
-                            if (isValid && formatted !== event.target.value) {
-                              form.setValue('phone', formatted, { shouldValidate: true, shouldDirty: true })
-                            }
-                            commit()
-                          }}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            </section>
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            type="tel"
+                            inputMode="tel"
+                            placeholder="+354 555 1234"
+                            required
+                            {...field}
+                            onBlur={event => {
+                              field.onBlur()
+                              const { formatted, isValid } = normalizePhoneInput(event.target.value, defaultCountry)
+                              if (isValid && formatted !== event.target.value) {
+                                form.setValue('phone', formatted, { shouldValidate: true, shouldDirty: true })
+                              }
+                              commit()
+                            }}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </section>
 
-            <Separator className="bg-[color:var(--surface-ring)]/80" />
+              <Separator className="bg-[color:var(--surface-ring)]/80 lg:hidden" />
+              <div className="hidden h-full w-px bg-[color:var(--surface-ring)]/70 lg:block" aria-hidden="true" />
 
-            <section className="space-y-4">
-              <div className="space-y-1">
-                <h3 className="text-[13px] font-semibold text-[color:var(--text)]">Business details</h3>
-                <p className="text-[13px] text-[color:var(--text-muted)]">Tell us where deliveries and invoices go.</p>
-              </div>
-              <div className="grid gap-6">
-                <FormField
-                  control={form.control}
-                  name="address"
-                  render={({ field }) => (
-                    <FormItem className="group">
-                      <FormLabel className="flex items-center gap-2 text-[13px] text-[color:var(--text-muted)]">
-                        <MapPinHouse className="h-5 w-5 text-[color:var(--text-muted)] transition-colors group-focus-within:text-[var(--brand-accent)]" />
-                        <span className="flex items-center gap-1">
-                          Business address
-                          <span aria-hidden="true" className="text-[color:var(--brand-accent)] opacity-80">
-                            *
+              <section className="space-y-3">
+                <div className="space-y-1">
+                  <h3 className="text-[13px] font-semibold text-[color:var(--text)]">Business details</h3>
+                  <p className="text-[13px] text-[color:var(--text-muted)]">Tell us where deliveries and invoices go.</p>
+                </div>
+                <div className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="address"
+                    render={({ field }) => (
+                      <FormItem className="group space-y-1.5">
+                        <FormLabel className="flex items-center gap-2 text-[13px] text-[color:var(--text-muted)]">
+                          <MapPinHouse className="h-5 w-5 text-[color:var(--text-muted)] transition-colors group-focus-within:text-[var(--brand-accent)]" />
+                          <span className="flex items-center gap-1">
+                            Business address
+                            <span aria-hidden="true" className="text-[color:var(--brand-accent)] opacity-80">
+                              *
+                            </span>
                           </span>
-                        </span>
-                      </FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder="Street, city, postcode"
-                          rows={3}
-                          required
-                          {...field}
-                          onBlur={event => {
-                            field.onBlur()
-                            commit()
-                          }}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                        </FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder="Street, city, postcode"
+                            rows={3}
+                            required
+                            {...field}
+                            onBlur={event => {
+                              field.onBlur()
+                              commit()
+                            }}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                <FormField
-                  control={form.control}
-                  name="vat"
-                  render={({ field }) => (
-                    <FormItem className="group">
-                      <FormLabel className="flex items-center gap-2 text-[13px] text-[color:var(--text-muted)]">
-                        <Receipt className="h-5 w-5 text-[color:var(--text-muted)] transition-colors group-focus-within:text-[var(--brand-accent)]" />
-                        VAT / Kennitala (optional)
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="########-####"
-                          {...field}
-                          onBlur={event => {
-                            field.onBlur()
-                            const formatted = formatVat(event.target.value)
-                            form.setValue('vat', formatted)
-                            commit()
-                          }}
-                        />
-                      </FormControl>
-                      <p className="flex items-center gap-2 text-[12px] text-[color:var(--text-muted)]">
-                        <Info className="h-4 w-4 text-[color:var(--text-muted)]" />
-                        Used to pre-fill invoices and receipts.
-                      </p>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            </section>
+                  <Collapsible open={detailsOpen} onOpenChange={setDetailsOpen}>
+                    <CollapsibleTrigger
+                      type="button"
+                      className="flex items-center gap-2 text-[13px] font-semibold text-[color:var(--text-muted)] transition-colors hover:text-[color:var(--text)] focus-visible:outline-none focus-visible:underline"
+                    >
+                      <span>More details (optional)</span>
+                      <ChevronDown
+                        className={`h-4 w-4 transition-transform ${detailsOpen ? 'rotate-180' : ''}`}
+                        aria-hidden="true"
+                      />
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="space-y-4 pt-3">
+                      <FormField
+                        control={form.control}
+                        name="vat"
+                        render={({ field }) => (
+                          <FormItem className="group space-y-1.5">
+                            <FormLabel className="flex items-center gap-2 text-[13px] text-[color:var(--text-muted)]">
+                              <Receipt className="h-5 w-5 text-[color:var(--text-muted)] transition-colors group-focus-within:text-[var(--brand-accent)]" />
+                              VAT / Kennitala (optional)
+                            </FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder="########-####"
+                                {...field}
+                                onBlur={event => {
+                                  field.onBlur()
+                                  const formatted = formatVat(event.target.value)
+                                  form.setValue('vat', formatted)
+                                  commit()
+                                }}
+                              />
+                            </FormControl>
+                            <p className="flex items-center gap-2 text-[12px] text-[color:var(--text-muted)]">
+                              <Info className="h-4 w-4 text-[color:var(--text-muted)]" />
+                              Used to pre-fill invoices and receipts.
+                            </p>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </CollapsibleContent>
+                  </Collapsible>
+                </div>
+              </section>
+            </div>
           </form>
         </Form>
         {footer}

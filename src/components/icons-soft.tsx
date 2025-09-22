@@ -24,10 +24,10 @@ export function SearchSoft({ tone = 0.12, className, ...props }: SvgProps) {
       {...props}
       className={cn(baseStrokeClass, className)}
     >
-      <circle cx="10.6" cy="10.6" r="5.8" fill="currentColor" opacity={tone} />
-      <circle cx="10.6" cy="10.55" r="5.8" {...baseStrokeProps} />
-      <path d="M14.9 15.1c2.1 2 3.6 3.5 4.9 4.9" {...baseStrokeProps} />
-      <path d="M8.5 7.8c1.2-.8 2.5-.9 3.6-.6" {...baseStrokeProps} opacity={0.35} />
+      <circle cx="12" cy="12" r="5.8" fill="currentColor" opacity={tone} />
+      <circle cx="12" cy="11.95" r="5.8" {...baseStrokeProps} />
+      <path d="M16.3 16.5c2.1 2 3.6 3.5 4.9 4.9" {...baseStrokeProps} />
+      <path d="M9.9 9.2c1.2-.8 2.5-.9 3.6-.6" {...baseStrokeProps} opacity={0.35} />
     </svg>
   )
 }
