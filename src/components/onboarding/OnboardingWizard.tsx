@@ -418,20 +418,18 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
     'w-full justify-start text-[color:var(--text-muted)] hover:bg-transparent hover:text-[color:var(--text)] sm:w-auto'
 
   const skipLinkClass =
-    'px-0 text-[13px] font-medium text-[color:var(--text-muted)] transition-colors hover:text-[color:var(--text)] hover:underline focus-visible:outline-none focus-visible:ring-0 disabled:pointer-events-none disabled:opacity-50'
+    'px-0 text-[12px] font-normal text-[color:var(--text-muted)] underline-offset-4 transition-colors hover:text-[color:var(--text)] hover:underline focus-visible:outline-none focus-visible:ring-0 disabled:pointer-events-none disabled:opacity-50'
 
   const organizationFooter = (
-    <div className="flex flex-col items-start gap-3">
-      <div className="flex w-full justify-end">
-        <Button
-          size="lg"
-          className={emphasizedPrimaryClass}
-          onClick={() => organizationStepRef.current?.submit()}
-          disabled={isCompleting}
-        >
-          Continue
-        </Button>
-      </div>
+    <div className="flex flex-col items-start gap-2">
+      <Button
+        size="lg"
+        className={emphasizedPrimaryClass}
+        onClick={() => organizationStepRef.current?.submit()}
+        disabled={isCompleting}
+      >
+        Continue
+      </Button>
       <button type="button" className={skipLinkClass} onClick={handleSkip}>
         Skip for now
       </button>
