@@ -130,12 +130,20 @@
 /* Base look for any floating panel */
 .pop-chrome,
 .tw-pop{
-  background:var(--surface-pop);
+  background:
+    linear-gradient(
+      160deg,
+      color-mix(in oklab, var(--surface-pop) 95%, transparent) 0%,
+      color-mix(in oklab, var(--surface-pop-2) 92%, transparent) 100%
+    );
   color:var(--text);
-  border:1px solid var(--surface-ring);
+  border:1px solid color-mix(in oklab, var(--surface-ring) 82%, transparent);
   border-radius:var(--radius-xl);
-  box-shadow:var(--elev-shadow), 0 0 0 1px color-mix(in oklab, var(--surface-ring) 55%, transparent);
-  backdrop-filter:saturate(120%) blur(6px);
+  box-shadow:
+    var(--elev-shadow),
+    0 12px 32px -18px color-mix(in oklab, var(--brand-bg) 32%, transparent),
+    0 0 0 1px color-mix(in oklab, var(--surface-ring) 70%, transparent);
+  backdrop-filter:saturate(120%) blur(10px);
 }
 
 .tw-pop{ padding:0.5rem; }
