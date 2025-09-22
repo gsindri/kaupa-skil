@@ -24,7 +24,7 @@ function renderComponent() {
 test('shows empty state', () => {
   mockUseAlerts.mockReturnValue({ alerts: [], isLoading: false })
   renderComponent()
-  expect(screen.getByText(/No alerts/i)).toBeInTheDocument()
+  expect(screen.getByText(/All quiet/i)).toBeInTheDocument()
 })
 
 test('shows alerts', () => {

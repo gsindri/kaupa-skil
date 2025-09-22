@@ -99,6 +99,9 @@ export const queryKeys = {
     anomalies: () => ['dashboard', 'anomalies'] as const,
     suppliers: () => ['dashboard', 'suppliers'] as const,
     liveUpdates: () => ['dashboard', 'liveUpdates'] as const,
+    spend: () => ['dashboard', 'spend'] as const,
+    pantry: () => ['dashboard', 'pantry'] as const,
+    deliveries: () => ['dashboard', 'deliveries'] as const,
   },
 
   // Mutation keys for optimistic updates

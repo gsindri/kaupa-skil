@@ -11,6 +11,7 @@ export interface SupplierConnection {
   status: SupplierStatus
   last_sync: string | null
   next_run: string | null
+  logo_url?: string | null
 }
 
 export function useSupplierConnections() {
@@ -22,7 +23,7 @@ export function useSupplierConnections() {
       try {
         const { data, error } = await supabase
           .from('suppliers')
-          .select('id, name')
+          .select('id, name, logo_url')
           .order('created_at', { ascending: false })
 
         if (error) {
@@ -38,6 +39,7 @@ export function useSupplierConnections() {
             status: 'not_connected' as SupplierStatus,
             last_sync: null,
             next_run: null,
+            logo_url: s.logo_url,
           })) || []
         )
       } catch (error) {

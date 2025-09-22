@@ -38,5 +38,5 @@ test('shows activity', () => {
     isLoading: false,
   })
   renderComponent()
-  expect(screen.getByText('test')).toBeInTheDocument()
+  expect(screen.getByText('Test')).toBeInTheDocument()
 })
