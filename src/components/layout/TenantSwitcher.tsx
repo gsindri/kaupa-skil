@@ -43,13 +43,17 @@ export function TenantSwitcher() {
   const [open, setOpen] = React.useState(false)
   const [query, setQuery] = React.useState('')
   const inputRef = React.useRef<HTMLInputElement | null>(null)
+  const isSearchFocusedRef = React.useRef(false)
   const handleMenuItemPointerMove = React.useCallback(
     (event: React.PointerEvent<HTMLElement>) => {
       if (
         event.pointerType === 'mouse' &&
-        document.activeElement === inputRef.current
+        event.buttons === 0 &&
+        isSearchFocusedRef.current
       ) {
         event.preventDefault()
+        event.stopPropagation()
+        inputRef.current?.focus()
       }
     },
     [],
@@ -60,6 +64,7 @@ export function TenantSwitcher() {
       requestAnimationFrame(() => inputRef.current?.focus())
     } else {
       setQuery('')
+      isSearchFocusedRef.current = false
     }
   }, [open])
 
@@ -148,6 +153,12 @@ export function TenantSwitcher() {
             placeholder="Search workspaces..."
             value={query}
             onChange={(event) => setQuery(event.target.value)}
+            onFocus={() => {
+              isSearchFocusedRef.current = true
+            }}
+            onBlur={() => {
+              isSearchFocusedRef.current = false
+            }}
             className={cn(
               'h-12 w-full rounded-xl border border-[color:var(--surface-ring)] px-3 text-[14px] text-[color:var(--text)] placeholder:text-[color:var(--text-muted)]',
               'transition-colors focus:outline-none focus:border-transparent focus:ring-2 focus:ring-[color:var(--brand-accent)]',
