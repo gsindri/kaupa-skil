@@ -10,13 +10,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { ArrowUpRight, Loader2 } from 'lucide-react'
+import { ArrowUpRight, Loader2, Minus, Plus } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { formatCurrency } from '@/lib/format'
 import { useCart } from '@/contexts/useBasket'
 import type { AvailabilityStatus, PublicCatalogItem } from '@/services/catalog'
 import { fetchCatalogItemById } from '@/services/catalog'
 import type { SearchItem } from '@/hooks/useGlobalSearch'
+import { SupplierLogo } from '@/components/catalog/SupplierLogo'
 
 interface ProductQuickPeekDrawerProps {
   open: boolean
@@ -29,6 +30,7 @@ interface ProductQuickPeekDrawerProps {
 interface SupplierOption {
   id: string
   name: string
+  logoUrl?: string | null
 }
 
 export function ProductQuickPeekDrawer({
@@ -44,6 +46,7 @@ export function ProductQuickPeekDrawer({
   const [error, setError] = useState<string | null>(null)
   const [selectedSupplier, setSelectedSupplier] = useState<string | null>(null)
   const [isAdding, setIsAdding] = useState(false)
+  const [quantity, setQuantity] = useState(1)
 
   useEffect(() => {
     if (!open) {
@@ -52,6 +55,7 @@ export function ProductQuickPeekDrawer({
       setIsLoading(false)
       setSelectedSupplier(null)
       setIsAdding(false)
+      setQuantity(1)
     }
   }, [open])
 
@@ -84,7 +88,7 @@ export function ProductQuickPeekDrawer({
   const supplierOptions = useMemo(() => {
     const options: SupplierOption[] = []
 
-    const append = (ids: unknown, names: unknown) => {
+    const append = (ids: unknown, names: unknown, logos: unknown) => {
       if (!Array.isArray(ids)) return
       ids.forEach((rawId, index) => {
         if (typeof rawId !== 'string' || rawId.length === 0) return
@@ -99,15 +103,30 @@ export function ProductQuickPeekDrawer({
           }
         }
 
-        options.push({ id: rawId, name: label })
+        let logoUrl: string | null | undefined
+        if (Array.isArray(logos)) {
+          const logoCandidate = logos[index]
+          if (typeof logoCandidate === 'string' && logoCandidate.length > 0) {
+            logoUrl = logoCandidate
+          }
+        }
+
+        options.push({ id: rawId, name: label, logoUrl })
       })
     }
 
-    append(product?.supplier_ids ?? null, product?.supplier_names ?? null)
-    append(item?.metadata?.supplierIds ?? null, item?.metadata?.supplierNames ?? null)
+    append(product?.supplier_ids ?? null, product?.supplier_names ?? null, product?.supplier_logo_urls ?? null)
+    append(item?.metadata?.supplierIds ?? null, item?.metadata?.supplierNames ?? null, item?.metadata?.supplierLogos ?? null)
 
     return options
-  }, [item?.metadata?.supplierIds, item?.metadata?.supplierNames, product?.supplier_ids, product?.supplier_names])
+  }, [
+    item?.metadata?.supplierIds,
+    item?.metadata?.supplierLogos,
+    item?.metadata?.supplierNames,
+    product?.supplier_ids,
+    product?.supplier_logo_urls,
+    product?.supplier_names,
+  ])
 
   useEffect(() => {
     if (!open) return
@@ -153,10 +172,22 @@ export function ProductQuickPeekDrawer({
     item?.metadata?.supplierCount ??
     (supplierOptions.length > 0 ? supplierOptions.length : null)
 
+  const totalSuppliers =
+    typeof supplierCount === 'number' && supplierCount > 0
+      ? supplierCount
+      : supplierOptions.length
+  const supplierPreview = supplierOptions.slice(0, 3)
+  const supplierOverflow = Math.max(0, totalSuppliers - supplierPreview.length)
+  const supplierSummaryLabel =
+    totalSuppliers > 1
+      ? `${totalSuppliers} suppliers`
+      : supplierOptions[0]?.name ?? null
+  const selectedSupplierOption =
+    supplierOptions.find(option => option.id === selectedSupplier) ?? null
+  const selectedSupplierName = selectedSupplierOption?.name ?? null
+
   const additionalPackSizes = packSizes.slice(1)
   const canAddToCart = Boolean(productId && selectedSupplier)
-  const selectedSupplierName = supplierOptions.find(option => option.id === selectedSupplier)?.name
-
   const handleAddToCart = () => {
     if (!productId || !selectedSupplier || isAdding) return
     setIsAdding(true)
@@ -183,7 +214,7 @@ export function ProductQuickPeekDrawer({
           packQty: 1,
           image: imageUrl ?? null,
         },
-        1,
+        quantity,
       )
     } finally {
       setIsAdding(false)
@@ -209,7 +240,7 @@ export function ProductQuickPeekDrawer({
       <div className="space-y-4 text-sm text-[color:var(--text-muted)]">
         {availabilityLabel && (
           <div className="flex items-center gap-2">
-            <span className="text-[color:var(--text)] font-medium">Availability</span>
+            <span className="font-medium text-[color:var(--text)]">Availability</span>
             <Badge className={cn('text-xs font-medium', availabilityClasses)}>{availabilityLabel}</Badge>
           </div>
         )}
@@ -228,37 +259,73 @@ export function ProductQuickPeekDrawer({
           </div>
         )}
 
-        {typeof supplierCount === 'number' && supplierCount > 0 && (
-          <div className="space-y-1">
-            <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[color:var(--text-muted)] opacity-80">
-              Connected suppliers
-            </div>
-            <div className="text-[color:var(--text)]">{supplierCount}</div>
-          </div>
-        )}
-
         {supplierOptions.length > 0 ? (
-          <div className="space-y-2">
-            <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[color:var(--text-muted)] opacity-80">
-              Add from supplier
+          <div className="space-y-3">
+            <div className="space-y-2">
+              <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[color:var(--text-muted)] opacity-80">
+                Available from
+              </div>
+              <div className="flex items-center gap-3 rounded-[12px] border border-white/10 bg-white/[0.04] px-3 py-2">
+                <div className="flex -space-x-2">
+                  {supplierPreview.map((option, index) => (
+                    <SupplierLogo
+                      key={`${option.id}-${index}`}
+                      name={option.name}
+                      logoUrl={option.logoUrl}
+                      className="!h-7 !w-7 !rounded-full border border-white/10 bg-white/10"
+                    />
+                  ))}
+                  {supplierOverflow > 0 && (
+                    <span className="flex h-7 w-7 items-center justify-center rounded-full border border-white/10 bg-white/10 text-[11px] font-semibold text-[color:var(--text)]">
+                      +{supplierOverflow}
+                    </span>
+                  )}
+                </div>
+                {supplierSummaryLabel && (
+                  <span className="truncate text-sm font-medium text-[color:var(--text)]">
+                    {supplierSummaryLabel}
+                  </span>
+                )}
+              </div>
+              {supplierOptions.length > 1 && selectedSupplierOption && (
+                <div className="text-[12px] text-[color:var(--text-muted)]">
+                  Selected:{' '}
+                  <span className="font-medium text-[color:var(--text)]">
+                    {selectedSupplierOption.name}
+                  </span>
+                </div>
+              )}
             </div>
-            {supplierOptions.length > 1 ? (
+
+            {supplierOptions.length > 1 && (
               <Select value={selectedSupplier ?? undefined} onValueChange={value => setSelectedSupplier(value)}>
                 <SelectTrigger className="h-10 rounded-[12px] border border-white/12 bg-white/[0.04] text-[color:var(--text)]">
-                  <SelectValue placeholder="Choose supplier" />
+                  <div className="flex w-full items-center gap-2 text-[color:var(--text)]">
+                    {selectedSupplierOption && (
+                      <SupplierLogo
+                        name={selectedSupplierOption.name}
+                        logoUrl={selectedSupplierOption.logoUrl}
+                        className="!h-6 !w-6 !rounded-full border border-white/10 bg-white/10"
+                      />
+                    )}
+                    <SelectValue placeholder="Choose supplier" />
+                  </div>
                 </SelectTrigger>
                 <SelectContent className="rounded-[12px] border border-white/10 bg-[color:var(--surface-pop-2)] text-[color:var(--text)]">
                   {supplierOptions.map(option => (
                     <SelectItem key={option.id} value={option.id}>
-                      {option.name}
+                      <div className="flex items-center gap-2">
+                        <SupplierLogo
+                          name={option.name}
+                          logoUrl={option.logoUrl}
+                          className="!h-5 !w-5 !rounded-full border border-white/10 bg-white/10"
+                        />
+                        <span>{option.name}</span>
+                      </div>
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-            ) : (
-              <div className="rounded-[12px] border border-white/10 bg-white/[0.04] px-3 py-2 text-[color:var(--text)]">
-                {supplierOptions[0]?.name}
-              </div>
             )}
           </div>
         ) : (
@@ -270,6 +337,10 @@ export function ProductQuickPeekDrawer({
     )
   })()
 
+  const addButtonLabel = quantity > 1 ? `Add ${quantity} to cart` : 'Add to cart'
+  const canDecreaseQuantity = quantity > 1 && !isAdding
+  const canIncreaseQuantity = quantity < 999 && !isAdding
+
   return (
     <Drawer
       open={open}
@@ -279,7 +350,7 @@ export function ProductQuickPeekDrawer({
       <DrawerContent
         side="right"
         showBar={false}
-        overlayClassName="bg-transparent pointer-events-none"
+        overlayClassName="bg-[rgba(7,15,25,0.45)] backdrop-blur-[2px] pointer-events-auto"
         className="z-[120] w-full border-l border-[color:var(--surface-ring)] bg-[color:var(--surface-pop)] shadow-[0_32px_80px_-48px_rgba(5,12,24,0.85)] sm:max-w-[420px]"
       >
         <div className="flex h-full flex-col">
@@ -325,14 +396,39 @@ export function ProductQuickPeekDrawer({
           </div>
 
           <div className="space-y-3 border-t border-white/10 px-6 py-5">
-            <Button
-              type="button"
-              onClick={handleAddToCart}
-              disabled={!canAddToCart || isAdding}
-              className="h-11 w-full rounded-[14px]"
-            >
-              {isAdding ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Add to cart'}
-            </Button>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center rounded-full border border-white/12 bg-white/[0.04] px-1.5">
+                <button
+                  type="button"
+                  className="flex h-9 w-9 items-center justify-center text-[color:var(--text)] transition-opacity hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-40"
+                  onClick={() => setQuantity(prev => Math.max(1, prev - 1))}
+                  disabled={!canDecreaseQuantity}
+                  aria-label="Decrease quantity"
+                >
+                  <Minus className="h-4 w-4" />
+                </button>
+                <span className="min-w-[2.5rem] text-center text-sm font-semibold text-[color:var(--text)]">
+                  {quantity}
+                </span>
+                <button
+                  type="button"
+                  className="flex h-9 w-9 items-center justify-center text-[color:var(--text)] transition-opacity hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-40"
+                  onClick={() => setQuantity(prev => Math.min(999, prev + 1))}
+                  disabled={!canIncreaseQuantity}
+                  aria-label="Increase quantity"
+                >
+                  <Plus className="h-4 w-4" />
+                </button>
+              </div>
+              <Button
+                type="button"
+                onClick={handleAddToCart}
+                disabled={!canAddToCart || isAdding}
+                className="h-11 flex-1 rounded-[14px]"
+              >
+                {isAdding ? <Loader2 className="h-4 w-4 animate-spin" /> : addButtonLabel}
+              </Button>
+            </div>
             <Button
               type="button"
               variant="ghost"

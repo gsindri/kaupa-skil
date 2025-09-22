@@ -4,6 +4,8 @@ import { useGlobalSearch, SearchScope } from '@/hooks/useGlobalSearch'
 import type { SearchItem, SearchSections } from '@/hooks/useGlobalSearch'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { Loader2, Search, Package, Building2, ClipboardList } from 'lucide-react'
+import AvailabilityBadge from '@/components/catalog/AvailabilityBadge'
+import { SupplierLogo } from '@/components/catalog/SupplierLogo'
 import { LazyImage } from '@/components/ui/LazyImage'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -355,7 +357,7 @@ export const HeaderSearch = React.forwardRef<HTMLInputElement, HeaderSearchProps
                       className={cn(
                         'h-10 rounded-[12px] text-[14px] font-medium text-[color:var(--text-muted)] transition-all duration-150 ease-out',
                         selected
-                          ? 'bg-[rgba(245,158,11,0.14)] text-[color:var(--text)] font-semibold shadow-[0_16px_40px_-26px_rgba(245,158,11,0.7)] ring-1 ring-inset ring-[rgba(245,158,11,0.35)]'
+                          ? 'bg-[color:var(--button-primary)]/20 text-[color:var(--text)] font-semibold shadow-[0_18px_40px_-30px_rgba(11,91,211,0.75)] ring-1 ring-inset ring-[color:var(--button-primary)]/50'
                           : 'hover:bg-white/[0.05] hover:text-[color:var(--text)]'
                       )}
                     >
@@ -496,32 +498,9 @@ function DialogResults({
 
             let metaContent: React.ReactNode = metaIndicator
             if (entry.item.section === 'products') {
-              const priceLabel = itemMetadata?.price
-              const availabilityLabel = itemMetadata?.availability
-              const detailContent =
-                priceLabel || availabilityLabel ? (
-                  <div className="flex flex-col items-end text-right leading-tight">
-                    {priceLabel && (
-                      <span className="text-[13px] font-semibold text-[color:var(--text)]">{priceLabel}</span>
-                    )}
-                    {availabilityLabel && (
-                      <span className="text-[11px] uppercase tracking-[0.08em] text-[color:var(--text-muted)]">
-                        {availabilityLabel}
-                      </span>
-                    )}
-                  </div>
-                ) : null
-
-              if (metaIndicator && detailContent) {
-                metaContent = (
-                  <div className="flex items-center gap-2">
-                    {metaIndicator}
-                    {detailContent}
-                  </div>
-                )
-              } else {
-                metaContent = detailContent ?? metaIndicator
-              }
+              metaContent = (
+                <ProductResultMeta item={entry.item} indicator={metaIndicator} />
+              )
             }
 
             const action =
@@ -709,7 +688,7 @@ function DialogRow({
       </div>
       <div
         className={cn(
-          'flex h-full items-center justify-end gap-2',
+          'flex h-full items-end justify-end gap-3',
           meta || action ? 'pl-3' : 'pl-0',
         )}
       >
@@ -732,7 +711,7 @@ function SectionIndicator({
   label: string
 }) {
   return (
-    <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/[0.06] text-[color:var(--brand-accent)] ring-1 ring-inset ring-[rgba(245,158,11,0.24)]">
+    <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/[0.06] text-[color:var(--button-primary)] ring-1 ring-inset ring-[color:var(--button-primary)]/40">
       <Icon className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
       <span className="sr-only">{label}</span>
     </span>
@@ -743,6 +722,90 @@ function DialogBadge({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex h-12 w-12 items-center justify-center rounded-[10px] border border-[color:var(--surface-ring)] bg-white/[0.08] text-[13px] font-semibold uppercase text-[color:var(--text-muted)]">
       {children}
+    </div>
+  )
+}
+
+function ProductResultMeta({
+  item,
+  indicator,
+}: {
+  item: SearchResultItem
+  indicator?: React.ReactNode
+}) {
+  const metadata = item.metadata ?? {}
+  const priceLabel = metadata.price ?? null
+  const availabilityStatus = metadata.availabilityStatus ?? null
+  const availabilityText = metadata.availability ?? null
+
+  const rawNames = metadata.supplierNames ?? metadata.supplierIds ?? []
+  const entries = rawNames.length > 0
+    ? rawNames.map((name, index) => ({
+        name,
+        logoUrl: metadata.supplierLogos?.[index] ?? null,
+      }))
+    : (metadata.supplierLogos ?? []).map((logo, index) => ({
+        name: `Supplier ${index + 1}`,
+        logoUrl: logo,
+      }))
+
+  const derivedSupplierCount =
+    typeof metadata.supplierCount === 'number' && metadata.supplierCount > 0
+      ? metadata.supplierCount
+      : entries.length
+
+  const previewEntries = entries.slice(0, 3)
+  const overflowCount = Math.max(0, derivedSupplierCount - previewEntries.length)
+  const summaryLabel =
+    derivedSupplierCount > 1
+      ? `${derivedSupplierCount} suppliers`
+      : entries[0]?.name ?? null
+
+  const showAvailability = Boolean(availabilityStatus || availabilityText)
+
+  return (
+    <div className="flex flex-col items-end gap-1 text-right">
+      {priceLabel && (
+        <span className="text-[13px] font-semibold text-[color:var(--text)]">{priceLabel}</span>
+      )}
+      {(indicator || showAvailability) && (
+        <div className="flex items-center gap-2">
+          {indicator}
+          {showAvailability && (
+            <div className="flex items-center gap-2">
+              <AvailabilityBadge
+                status={availabilityStatus ?? undefined}
+                className="!h-7 !rounded-full !px-3"
+              />
+              {availabilityText && (
+                <span className="text-[11px] font-medium text-[color:var(--text-muted)]">
+                  {availabilityText}
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+      {entries.length > 0 && (
+        <div className="flex items-center gap-2 text-[11px] text-[color:var(--text-muted)]">
+          <div className="flex -space-x-2">
+            {previewEntries.map((entry, index) => (
+              <SupplierLogo
+                key={`${entry.name}-${index}`}
+                name={entry.name}
+                logoUrl={entry.logoUrl}
+                className="!h-6 !w-6 !rounded-full border border-white/10 bg-white/10"
+              />
+            ))}
+            {overflowCount > 0 && (
+              <span className="flex h-6 w-6 items-center justify-center rounded-full border border-white/10 bg-white/10 text-[10px] font-semibold text-[color:var(--text)]">
+                +{overflowCount}
+              </span>
+            )}
+          </div>
+          {summaryLabel && <span className="max-w-[140px] truncate">{summaryLabel}</span>}
+        </div>
+      )}
     </div>
   )
 }
@@ -802,12 +865,11 @@ function ProductQuickAddButton({ item }: { item: SearchResultItem }) {
     <Button
       type="button"
       size="sm"
-      variant="secondary"
       onClick={handleClick}
       disabled={isAdding}
-      className="h-8 rounded-full px-3 text-xs font-semibold"
+      className="h-9 rounded-full px-4 text-sm font-semibold shadow-[0_16px_36px_-24px_rgba(11,91,211,0.7)]"
     >
-      {isAdding ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : '+ Add'}
+      {isAdding ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Add to cart'}
     </Button>
   )
 }
