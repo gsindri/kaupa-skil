@@ -50,7 +50,7 @@ export function formatVat(value: string) {
 }
 
 export function isValidVat(value?: string) {
-  if (!value) return true
+  if (!value) return false
   const digits = value.replace(/[^0-9]/g, '')
-  return digits.length === 0 || digits.length === 10 || digits.length === 12
+  return digits.length === 10 || digits.length === 12
 }

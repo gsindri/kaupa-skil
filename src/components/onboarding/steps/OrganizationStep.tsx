@@ -1,18 +1,48 @@
-import React, { forwardRef, useEffect, useImperativeHandle, useMemo, useState } from 'react'
+import React, { forwardRef, useEffect, useImperativeHandle, useMemo } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Building2, UserCircle2, Phone, MapPinHouse, Receipt, Info, ChevronDown, Mail } from 'lucide-react'
+import { Building2, UserCircle2, Phone, MapPinHouse, Receipt, Info, Mail, Store } from 'lucide-react'
 import type { CountryCode } from 'libphonenumber-js'
 
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Separator } from '@/components/ui/separator'
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui/select'
 import { getDefaultCountryCode, normalizePhoneInput, formatVat, isValidVat } from '@/utils/phone'
+
+// eslint-disable-next-line react-refresh/only-export-components
+export const BUSINESS_TYPE_VALUES = [
+  'restaurant',
+  'cafe',
+  'hotel',
+  'retail',
+  'office',
+  'catering',
+  'other'
+] as const
+
+export type BusinessTypeValue = (typeof BUSINESS_TYPE_VALUES)[number]
+
+// eslint-disable-next-line react-refresh/only-export-components
+export const BUSINESS_TYPE_OPTIONS: ReadonlyArray<{ value: BusinessTypeValue; label: string }> = [
+  { value: 'restaurant', label: 'Restaurant' },
+  { value: 'cafe', label: 'Cafe / Bakery' },
+  { value: 'hotel', label: 'Hotel / Accommodation' },
+  { value: 'retail', label: 'Retail / Grocery' },
+  { value: 'office', label: 'Office / Workplace' },
+  { value: 'catering', label: 'Catering / Events' },
+  { value: 'other', label: 'Other' }
+]
 
 const addressSchema = z.object({
   line1: z.string().trim().default(''),
@@ -34,6 +64,7 @@ const createOrganizationSchema = (country: CountryCode) =>
   z
     .object({
       name: z.string().trim().min(1, '⚠ Please enter an organization name.'),
+      businessType: z.enum(BUSINESS_TYPE_VALUES).optional(),
       contactName: z
         .string()
         .trim()
@@ -49,16 +80,16 @@ const createOrganizationSchema = (country: CountryCode) =>
       vat: z
         .string()
         .trim()
-        .optional()
+        .min(1, '⚠ Please add VAT / Kennitala.')
         .refine(value => isValidVat(value), {
           message: '⚠ Use format ########-####.'
         }),
       email: z
         .string()
         .trim()
-        .email('⚠ Enter a valid email address.')
-        .or(z.literal('')),
-      useSeparateInvoiceAddress: z.boolean().default(true),
+        .min(1, '⚠ Please add an email address.')
+        .email('⚠ Enter a valid email address.'),
+      useSeparateInvoiceAddress: z.boolean().default(false),
       invoiceAddress: addressSchema
     })
     .superRefine((data, ctx) => {
@@ -144,25 +175,11 @@ export const OrganizationStep = forwardRef<OrganizationStepHandle, OrganizationS
       defaultValues: value
     })
 
-    const [detailsOpen, setDetailsOpen] = useState(Boolean(value.vat))
-    const vatError = form.formState.errors.vat
     const useSeparateInvoiceAddress = form.watch('useSeparateInvoiceAddress')
 
     useEffect(() => {
       form.reset(value)
     }, [value, form])
-
-    useEffect(() => {
-      if (value.vat) {
-        setDetailsOpen(true)
-      }
-    }, [value.vat])
-
-    useEffect(() => {
-      if (vatError) {
-        setDetailsOpen(true)
-      }
-    }, [vatError])
 
     const commit = () => {
       const current = form.getValues()
@@ -170,6 +187,7 @@ export const OrganizationStep = forwardRef<OrganizationStepHandle, OrganizationS
       const invoiceAddress = sanitizeAddress(current.invoiceAddress)
       onUpdate({
         name: current.name?.trim() || '',
+        businessType: current.businessType || undefined,
         contactName: current.contactName?.trim() || '',
         phone: current.phone?.trim() || '',
         deliveryAddress,
@@ -184,17 +202,14 @@ export const OrganizationStep = forwardRef<OrganizationStepHandle, OrganizationS
       const normalized = { ...data }
 
       normalized.name = normalized.name.trim()
+      normalized.businessType = normalized.businessType || undefined
       normalized.contactName = normalized.contactName.trim()
       normalized.phone = normalized.phone.trim()
-      normalized.email = normalized.email?.trim() ?? ''
+      normalized.email = normalized.email.trim()
       normalized.deliveryAddress = sanitizeAddress(normalized.deliveryAddress)
       normalized.invoiceAddress = sanitizeAddress(normalized.invoiceAddress)
 
-      if (normalized.vat) {
-        normalized.vat = formatVat(normalized.vat)
-      } else {
-        normalized.vat = ''
-      }
+      normalized.vat = formatVat(normalized.vat)
 
       const { formatted, isValid } = normalizePhoneInput(normalized.phone, defaultCountry)
       if (isValid && formatted !== normalized.phone) {
@@ -239,9 +254,8 @@ export const OrganizationStep = forwardRef<OrganizationStepHandle, OrganizationS
           >
             <div className="flex flex-col gap-5 lg:grid lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:items-start lg:gap-10">
               <section className="space-y-3">
-                <div className="space-y-1">
+                <div>
                   <h3 className="text-[13px] font-semibold text-[color:var(--text)]">Business details</h3>
-                  <p className="text-[13px] text-[color:var(--text-muted)]">Tell us about your organization.</p>
                 </div>
                 <div className="grid gap-4">
                   <FormField
@@ -250,14 +264,12 @@ export const OrganizationStep = forwardRef<OrganizationStepHandle, OrganizationS
                     render={({ field }) => (
                       <FormItem className="group space-y-2">
                         <div className="flex items-start gap-2">
-                          <Building2 className="h-5 w-5 flex-shrink-0 text-[color:var(--text-muted)] transition-colors group-focus-within:text-[var(--brand-accent)]" />
+                          <Store className="h-5 w-5 flex-shrink-0 text-[color:var(--text-muted)] transition-colors group-focus-within:text-[var(--brand-accent)]" />
                           <div className="space-y-1">
                             <FormLabel className="text-[13px] font-semibold text-[color:var(--text)]">
                               <span className="flex items-center gap-1">
                                 Organization name
-                                <span aria-hidden="true" className="text-[color:var(--brand-accent)] opacity-80">
-                                  *
-                                </span>
+                                <span aria-hidden="true" className="text-[color:var(--brand-accent)] opacity-80">*</span>
                               </span>
                             </FormLabel>
                             <FormMessage />
@@ -278,20 +290,63 @@ export const OrganizationStep = forwardRef<OrganizationStepHandle, OrganizationS
                     )}
                   />
 
-                  <div className="group space-y-3">
+                  <FormField
+                    control={form.control}
+                    name="businessType"
+                    render={({ field }) => (
+                      <FormItem className="group space-y-2">
+                        <div className="flex items-start gap-2">
+                          <Store className="h-5 w-5 flex-shrink-0 text-[color:var(--text-muted)] transition-colors group-focus-within:text-[var(--brand-accent)]" />
+                          <div className="space-y-1">
+                            <FormLabel className="text-[13px] font-semibold text-[color:var(--text)]">
+                              Business type <span className="text-[12px] text-[color:var(--text-muted)]">(optional)</span>
+                            </FormLabel>
+                            <FormMessage />
+                          </div>
+                        </div>
+                        <Select
+                          value={field.value ?? undefined}
+                          onValueChange={value => {
+                            if (value === '__none__') {
+                              field.onChange(undefined)
+                              commit()
+                              return
+                            }
+                            field.onChange(value as BusinessTypeValue)
+                            commit()
+                          }}
+                        >
+                          <FormControl>
+                            <SelectTrigger className="h-11 rounded-[12px] border-[color:var(--surface-ring)] bg-[color:var(--surface-pop)] text-left text-[13px]">
+                              <SelectValue placeholder="Select category" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent className="rounded-[12px] border-[color:var(--surface-ring)] bg-[color:var(--surface-pop)] text-[13px]">
+                            <SelectItem value="__none__" className="text-[13px] text-[color:var(--text-muted)]">
+                              Not specified
+                            </SelectItem>
+                            {BUSINESS_TYPE_OPTIONS.map(option => (
+                              <SelectItem key={option.value} value={option.value} className="text-[13px]">
+                                {option.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </FormItem>
+                    )}
+                  />
+
+                  <div className="group space-y-4">
                     <div className="flex items-start gap-2">
                       <MapPinHouse className="h-5 w-5 flex-shrink-0 text-[color:var(--text-muted)] transition-colors group-focus-within:text-[var(--brand-accent)]" />
-                      <div className="space-y-1">
-                        <p className="text-[13px] font-semibold text-[color:var(--text)]">
-                          <span className="flex items-center gap-1">
-                            Delivery address
-                            <span aria-hidden="true" className="text-[color:var(--brand-accent)] opacity-80">*</span>
-                          </span>
-                        </p>
-                        <p className="text-[12px] text-[color:var(--text-muted)]">Tell us exactly where deliveries should arrive.</p>
-                      </div>
+                      <p className="text-[13px] font-semibold text-[color:var(--text)]">
+                        <span className="flex items-center gap-1">
+                          Delivery address
+                          <span aria-hidden="true" className="text-[color:var(--brand-accent)] opacity-80">*</span>
+                        </span>
+                      </p>
                     </div>
-                    <div className="grid gap-3">
+                    <div className="grid gap-3 sm:grid-cols-2">
                       <FormField
                         control={form.control}
                         name="deliveryAddress.line1"
@@ -307,6 +362,7 @@ export const OrganizationStep = forwardRef<OrganizationStepHandle, OrganizationS
                               <Input
                                 placeholder="e.g. Sæbraut 31"
                                 autoComplete="shipping street-address"
+                                required
                                 {...field}
                                 onBlur={event => {
                                   field.onBlur()
@@ -351,71 +407,71 @@ export const OrganizationStep = forwardRef<OrganizationStepHandle, OrganizationS
                           </FormItem>
                         )}
                       />
-                      <div className="grid gap-3 sm:grid-cols-2">
-                        <FormField
-                          control={form.control}
-                          name="deliveryAddress.postalCode"
-                          render={({ field }) => (
-                            <FormItem className="space-y-2">
-                              <FormLabel className="text-[13px] font-medium text-[color:var(--text)]">
-                                <span className="flex items-center gap-1">
-                                  Postal code
-                                  <span aria-hidden="true" className="text-[color:var(--brand-accent)] opacity-80">*</span>
-                                </span>
-                              </FormLabel>
-                              <FormControl>
-                                <Input
-                                  placeholder="e.g. 101"
-                                  inputMode="numeric"
-                                  autoComplete="shipping postal-code"
-                                  {...field}
-                                  onBlur={event => {
-                                    field.onBlur()
-                                    const trimmed = event.target.value.trim()
-                                    form.setValue('deliveryAddress.postalCode', trimmed, {
-                                      shouldDirty: true,
-                                      shouldValidate: true
-                                    })
-                                    commit()
-                                  }}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name="deliveryAddress.city"
-                          render={({ field }) => (
-                            <FormItem className="space-y-2">
-                              <FormLabel className="text-[13px] font-medium text-[color:var(--text)]">
-                                <span className="flex items-center gap-1">
-                                  City
-                                  <span aria-hidden="true" className="text-[color:var(--brand-accent)] opacity-80">*</span>
-                                </span>
-                              </FormLabel>
-                              <FormControl>
-                                <Input
-                                  placeholder="e.g. Reykjavík"
-                                  autoComplete="shipping address-level2"
-                                  {...field}
-                                  onBlur={event => {
-                                    field.onBlur()
-                                    const trimmed = event.target.value.trim()
-                                    form.setValue('deliveryAddress.city', trimmed, {
-                                      shouldDirty: true,
-                                      shouldValidate: true
-                                    })
-                                    commit()
-                                  }}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
+                      <FormField
+                        control={form.control}
+                        name="deliveryAddress.postalCode"
+                        render={({ field }) => (
+                          <FormItem className="space-y-2">
+                            <FormLabel className="text-[13px] font-medium text-[color:var(--text)]">
+                              <span className="flex items-center gap-1">
+                                Postal code
+                                <span aria-hidden="true" className="text-[color:var(--brand-accent)] opacity-80">*</span>
+                              </span>
+                            </FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder="e.g. 101"
+                                inputMode="numeric"
+                                autoComplete="shipping postal-code"
+                                required
+                                {...field}
+                                onBlur={event => {
+                                  field.onBlur()
+                                  const trimmed = event.target.value.trim()
+                                  form.setValue('deliveryAddress.postalCode', trimmed, {
+                                    shouldDirty: true,
+                                    shouldValidate: true
+                                  })
+                                  commit()
+                                }}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="deliveryAddress.city"
+                        render={({ field }) => (
+                          <FormItem className="space-y-2">
+                            <FormLabel className="text-[13px] font-medium text-[color:var(--text)]">
+                              <span className="flex items-center gap-1">
+                                City
+                                <span aria-hidden="true" className="text-[color:var(--brand-accent)] opacity-80">*</span>
+                              </span>
+                            </FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder="e.g. Reykjavík"
+                                autoComplete="shipping address-level2"
+                                required
+                                {...field}
+                                onBlur={event => {
+                                  field.onBlur()
+                                  const trimmed = event.target.value.trim()
+                                  form.setValue('deliveryAddress.city', trimmed, {
+                                    shouldDirty: true,
+                                    shouldValidate: true
+                                  })
+                                  commit()
+                                }}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                     </div>
                   </div>
 
@@ -440,45 +496,33 @@ export const OrganizationStep = forwardRef<OrganizationStepHandle, OrganizationS
                               }}
                               className="mt-1"
                             />
-                            <div className="space-y-1 text-left">
-                              <label
-                                htmlFor="invoicesUseDelivery"
-                                className="text-[13px] font-semibold text-[color:var(--text)]"
-                              >
-                                Invoices use the delivery address
-                              </label>
-                              <p className="text-[12px] text-[color:var(--text-muted)]">
-                                Uncheck if invoices should be sent to a different location.
-                              </p>
-                            </div>
+                            <label
+                              htmlFor="invoicesUseDelivery"
+                              className="text-[13px] font-semibold text-[color:var(--text)]"
+                            >
+                              Send invoices to the delivery address.
+                            </label>
                           </div>
                         </FormItem>
                       )
                     }}
                   />
 
-                  <div className="group space-y-3">
+                  <div className="group space-y-4">
                     <div className="flex items-start gap-2">
                       <MapPinHouse className="h-5 w-5 flex-shrink-0 text-[color:var(--text-muted)] transition-colors group-focus-within:text-[var(--brand-accent)]" />
-                      <div className="space-y-1">
-                        <p className="text-[13px] font-semibold text-[color:var(--text)]">
-                          <span className="flex items-center gap-1">
-                            Invoice address
-                            {useSeparateInvoiceAddress && (
-                              <span aria-hidden="true" className="text-[color:var(--brand-accent)] opacity-80">*</span>
-                            )}
-                          </span>
-                        </p>
-                        <p className="text-[12px] text-[color:var(--text-muted)]">
-                          {useSeparateInvoiceAddress
-                            ? 'Where invoices should be mailed.'
-                            : 'Invoices will use the delivery address.'}
-                        </p>
-                      </div>
+                      <p className="text-[13px] font-semibold text-[color:var(--text)]">
+                        <span className="flex items-center gap-1">
+                          Invoice address
+                          {useSeparateInvoiceAddress && (
+                            <span aria-hidden="true" className="text-[color:var(--brand-accent)] opacity-80">*</span>
+                          )}
+                        </span>
+                      </p>
                     </div>
 
                     {useSeparateInvoiceAddress ? (
-                      <div className="grid gap-3">
+                      <div className="grid gap-3 sm:grid-cols-2">
                         <FormField
                           control={form.control}
                           name="invoiceAddress.line1"
@@ -491,12 +535,13 @@ export const OrganizationStep = forwardRef<OrganizationStepHandle, OrganizationS
                                 </span>
                               </FormLabel>
                               <FormControl>
-                                <Input
-                                  placeholder="e.g. Tryggvagata 11"
-                                  autoComplete="billing street-address"
-                                  {...field}
-                                  onBlur={event => {
-                                    field.onBlur()
+                              <Input
+                                placeholder="e.g. Tryggvagata 11"
+                                autoComplete="billing street-address"
+                                required
+                                {...field}
+                                onBlur={event => {
+                                  field.onBlur()
                                     const trimmed = event.target.value.trim()
                                     form.setValue('invoiceAddress.line1', trimmed, {
                                       shouldDirty: true,
@@ -538,75 +583,75 @@ export const OrganizationStep = forwardRef<OrganizationStepHandle, OrganizationS
                             </FormItem>
                           )}
                         />
-                        <div className="grid gap-3 sm:grid-cols-2">
-                          <FormField
-                            control={form.control}
-                            name="invoiceAddress.postalCode"
-                            render={({ field }) => (
-                              <FormItem className="space-y-2">
-                                <FormLabel className="text-[13px] font-medium text-[color:var(--text)]">
-                                  <span className="flex items-center gap-1">
-                                    Postal code
-                                    <span aria-hidden="true" className="text-[color:var(--brand-accent)] opacity-80">*</span>
-                                  </span>
-                                </FormLabel>
-                                <FormControl>
-                                  <Input
-                                    placeholder="e.g. 210"
-                                    inputMode="numeric"
-                                    autoComplete="billing postal-code"
-                                    {...field}
-                                    onBlur={event => {
-                                      field.onBlur()
-                                      const trimmed = event.target.value.trim()
-                                      form.setValue('invoiceAddress.postalCode', trimmed, {
-                                        shouldDirty: true,
-                                        shouldValidate: true
-                                      })
-                                      commit()
-                                    }}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name="invoiceAddress.city"
-                            render={({ field }) => (
-                              <FormItem className="space-y-2">
-                                <FormLabel className="text-[13px] font-medium text-[color:var(--text)]">
-                                  <span className="flex items-center gap-1">
-                                    City
-                                    <span aria-hidden="true" className="text-[color:var(--brand-accent)] opacity-80">*</span>
-                                  </span>
-                                </FormLabel>
-                                <FormControl>
-                                  <Input
-                                    placeholder="e.g. Hafnarfjörður"
-                                    autoComplete="billing address-level2"
-                                    {...field}
-                                    onBlur={event => {
-                                      field.onBlur()
-                                      const trimmed = event.target.value.trim()
-                                      form.setValue('invoiceAddress.city', trimmed, {
-                                        shouldDirty: true,
-                                        shouldValidate: true
-                                      })
-                                      commit()
-                                    }}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
+                        <FormField
+                          control={form.control}
+                          name="invoiceAddress.postalCode"
+                          render={({ field }) => (
+                            <FormItem className="space-y-2">
+                              <FormLabel className="text-[13px] font-medium text-[color:var(--text)]">
+                                <span className="flex items-center gap-1">
+                                  Postal code
+                                  <span aria-hidden="true" className="text-[color:var(--brand-accent)] opacity-80">*</span>
+                                </span>
+                              </FormLabel>
+                              <FormControl>
+                              <Input
+                                placeholder="e.g. 210"
+                                inputMode="numeric"
+                                autoComplete="billing postal-code"
+                                required
+                                {...field}
+                                onBlur={event => {
+                                    field.onBlur()
+                                    const trimmed = event.target.value.trim()
+                                    form.setValue('invoiceAddress.postalCode', trimmed, {
+                                      shouldDirty: true,
+                                      shouldValidate: true
+                                    })
+                                    commit()
+                                  }}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="invoiceAddress.city"
+                          render={({ field }) => (
+                            <FormItem className="space-y-2">
+                              <FormLabel className="text-[13px] font-medium text-[color:var(--text)]">
+                                <span className="flex items-center gap-1">
+                                  City
+                                  <span aria-hidden="true" className="text-[color:var(--brand-accent)] opacity-80">*</span>
+                                </span>
+                              </FormLabel>
+                              <FormControl>
+                              <Input
+                                placeholder="e.g. Hafnarfjörður"
+                                autoComplete="billing address-level2"
+                                required
+                                {...field}
+                                onBlur={event => {
+                                    field.onBlur()
+                                    const trimmed = event.target.value.trim()
+                                    form.setValue('invoiceAddress.city', trimmed, {
+                                      shouldDirty: true,
+                                      shouldValidate: true
+                                    })
+                                    commit()
+                                  }}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
                       </div>
                     ) : (
                       <div className="rounded-[12px] border border-dashed border-[color:var(--surface-ring)] bg-[color:var(--surface-pop)]/30 px-4 py-3 text-[12px] text-[color:var(--text-muted)]">
-                        Invoices will automatically use the delivery address above.
+                        Invoices will use the delivery address above.
                       </div>
                     )}
                   </div>
@@ -617,9 +662,8 @@ export const OrganizationStep = forwardRef<OrganizationStepHandle, OrganizationS
               <div className="hidden h-full w-px bg-[color:var(--surface-ring)]/70 lg:block" aria-hidden="true" />
 
               <section className="space-y-3">
-                <div className="space-y-1">
+                <div>
                   <h3 className="text-[13px] font-semibold text-[color:var(--text)]">Contact information</h3>
-                  <p className="text-[13px] text-[color:var(--text-muted)]">Let suppliers know who to reach.</p>
                 </div>
                 <div className="space-y-4">
                   <FormField
@@ -665,7 +709,10 @@ export const OrganizationStep = forwardRef<OrganizationStepHandle, OrganizationS
                           <Mail className="h-5 w-5 flex-shrink-0 text-[color:var(--text-muted)] transition-colors group-focus-within:text-[var(--brand-accent)]" />
                           <div className="space-y-1">
                             <FormLabel className="text-[13px] font-semibold text-[color:var(--text)]">
-                              Organization email (optional)
+                              <span className="flex items-center gap-1">
+                                Organization email
+                                <span aria-hidden="true" className="text-[color:var(--brand-accent)] opacity-80">*</span>
+                              </span>
                             </FormLabel>
                             <FormMessage />
                           </div>
@@ -675,6 +722,7 @@ export const OrganizationStep = forwardRef<OrganizationStepHandle, OrganizationS
                             type="email"
                             inputMode="email"
                             placeholder="orders@yourbusiness.is"
+                            required
                             {...field}
                             onBlur={event => {
                               field.onBlur()
@@ -728,65 +776,55 @@ export const OrganizationStep = forwardRef<OrganizationStepHandle, OrganizationS
                     )}
                   />
 
-                  <Collapsible open={detailsOpen} onOpenChange={setDetailsOpen}>
-                    <CollapsibleTrigger
-                      type="button"
-                      className="flex items-center gap-2 text-[13px] font-semibold text-[color:var(--text-muted)] transition-colors hover:text-[color:var(--text)] focus-visible:outline-none focus-visible:underline"
-                    >
-                      <span>More details (optional)</span>
-                      <ChevronDown
-                        className={`h-4 w-4 transition-transform ${detailsOpen ? 'rotate-180' : ''}`}
-                        aria-hidden="true"
-                      />
-                    </CollapsibleTrigger>
-                    <CollapsibleContent className="space-y-4 pt-3">
-                      <FormField
-                        control={form.control}
-                        name="vat"
-                        render={({ field }) => (
-                          <FormItem className="group space-y-2">
-                            <div className="flex items-start gap-2">
-                              <Receipt className="h-5 w-5 flex-shrink-0 text-[color:var(--text-muted)] transition-colors group-focus-within:text-[var(--brand-accent)]" />
-                              <div className="space-y-1">
-                                <div className="flex items-center gap-2">
-                                  <FormLabel className="text-[13px] font-semibold text-[color:var(--text)]">
-                                    VAT / Kennitala (optional)
-                                  </FormLabel>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <button
-                                        type="button"
-                                        className="inline-flex h-5 w-5 items-center justify-center rounded-full text-[color:var(--text-muted)] transition-colors hover:text-[color:var(--text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)] focus-visible:ring-offset-2"
-                                        aria-label="Why we ask for VAT or Kennitala"
-                                      >
-                                        <Info className="h-4 w-4" />
-                                      </button>
-                                    </TooltipTrigger>
-                                    <TooltipContent className="max-w-[220px] rounded-[12px] border border-[color:var(--surface-ring)] bg-[color:var(--surface-pop)] px-3 py-2 text-left text-[12px] leading-relaxed text-[color:var(--text-muted)]">
-                                      Used to pre-fill invoices and receipts.
-                                    </TooltipContent>
-                                  </Tooltip>
-                                </div>
-                                <FormMessage />
-                              </div>
+                  <FormField
+                    control={form.control}
+                    name="vat"
+                    render={({ field }) => (
+                      <FormItem className="group space-y-2">
+                        <div className="flex items-start gap-2">
+                          <Receipt className="h-5 w-5 flex-shrink-0 text-[color:var(--text-muted)] transition-colors group-focus-within:text-[var(--brand-accent)]" />
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                              <FormLabel className="text-[13px] font-semibold text-[color:var(--text)]">
+                                <span className="flex items-center gap-1">
+                                  VAT / Kennitala
+                                  <span aria-hidden="true" className="text-[color:var(--brand-accent)] opacity-80">*</span>
+                                </span>
+                              </FormLabel>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <button
+                                    type="button"
+                                    className="inline-flex h-5 w-5 items-center justify-center rounded-full text-[color:var(--text-muted)] transition-colors hover:text-[color:var(--text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)] focus-visible:ring-offset-2"
+                                    aria-label="Why we ask for VAT or Kennitala"
+                                  >
+                                    <Info className="h-4 w-4" />
+                                  </button>
+                                </TooltipTrigger>
+                                <TooltipContent className="max-w-[220px] rounded-[12px] border border-[color:var(--surface-ring)] bg-[color:var(--surface-pop)] px-3 py-2 text-left text-[12px] leading-relaxed text-[color:var(--text-muted)]">
+                                  Used to pre-fill invoices and receipts.
+                                </TooltipContent>
+                              </Tooltip>
                             </div>
-                            <FormControl>
-                              <Input
-                                placeholder="########-####"
-                                {...field}
-                                onBlur={event => {
-                                  field.onBlur()
-                                  const formatted = formatVat(event.target.value)
-                                  form.setValue('vat', formatted)
-                                  commit()
-                                }}
-                              />
-                            </FormControl>
-                          </FormItem>
-                        )}
-                      />
-                    </CollapsibleContent>
-                  </Collapsible>
+                            <FormMessage />
+                          </div>
+                        </div>
+                        <FormControl>
+                          <Input
+                            placeholder="########-####"
+                            required
+                            {...field}
+                            onBlur={event => {
+                              field.onBlur()
+                              const formatted = formatVat(event.target.value)
+                              form.setValue('vat', formatted)
+                              commit()
+                            }}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
                 </div>
               </section>
             </div>
