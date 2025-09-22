@@ -820,6 +820,30 @@ export type Database = {
         Args: { "": string }
         Returns: string[]
       }
+      v_org_catalog: {
+        Args: { _org: string }
+        Returns: {
+          active_supplier_count: number
+          availability_status: string
+          availability_text: string
+          availability_updated_at: string
+          best_price: number
+          brand: string
+          canonical_pack: string
+          catalog_id: string
+          category_tags: string[]
+          is_my_supplier: boolean
+          name: string
+          on_special: boolean
+          pack_sizes: string[]
+          sample_image_url: string
+          sample_source_url: string
+          supplier_ids: string[]
+          supplier_logo_urls: string[]
+          supplier_names: string[]
+          suppliers_count: number
+        }[]
+      }
     }
     Enums: {
       availability_status: "IN_STOCK" | "LOW_STOCK" | "OUT_OF_STOCK" | "UNKNOWN"
