@@ -134,7 +134,7 @@ export const OrganizationStep = forwardRef<OrganizationStepHandle, OrganizationS
         )}
         <Form {...form}>
           <form
-            className="space-y-6 lg:space-y-0"
+            className="flex flex-col gap-8"
             onSubmit={event => {
               event.preventDefault()
               handleSubmit()
@@ -351,9 +351,13 @@ export const OrganizationStep = forwardRef<OrganizationStepHandle, OrganizationS
                 </div>
               </section>
             </div>
+            <div className="border-t border-[color:var(--surface-ring)]/80 pt-6">
+              <div className="flex w-full flex-col items-center gap-2 sm:items-end">
+                {footer}
+              </div>
+            </div>
           </form>
         </Form>
-        {footer}
       </div>
     )
   }

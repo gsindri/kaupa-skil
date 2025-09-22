@@ -421,19 +421,24 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
     'px-0 text-[12px] font-normal text-[color:var(--text-muted)] underline-offset-4 transition-colors hover:text-[color:var(--text)] hover:underline focus-visible:outline-none focus-visible:ring-0 disabled:pointer-events-none disabled:opacity-50'
 
   const organizationFooter = (
-    <div className="flex flex-col items-start gap-2">
+    <>
       <Button
         size="lg"
-        className={emphasizedPrimaryClass}
+        className={cn(emphasizedPrimaryClass, 'w-full sm:w-auto')}
         onClick={() => organizationStepRef.current?.submit()}
         disabled={isCompleting}
       >
         Continue
       </Button>
-      <button type="button" className={skipLinkClass} onClick={handleSkip}>
+      <button
+        type="button"
+        className={cn(skipLinkClass, 'self-center sm:self-end')}
+        onClick={handleSkip}
+        disabled={isCompleting}
+      >
         Skip for now
       </button>
-    </div>
+    </>
   )
 
   const supplierFooter = (
@@ -513,12 +518,8 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
           </div>
 
           <div className="flex flex-col gap-8 px-6 py-8 sm:px-10 sm:py-10">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-              <div className="space-y-1">
-                <h2 className="text-2xl font-semibold text-[color:var(--text)]">{steps[currentStep - 1]?.title}</h2>
-                <p className="text-[14px] text-[color:var(--text-muted)]">{steps[currentStep - 1]?.description}</p>
-              </div>
-              <ol className="flex items-center justify-center gap-3 text-[12px] text-[color:var(--text-muted)] sm:flex-col sm:items-end">
+            <div className="flex justify-center sm:justify-end">
+              <ol className="flex items-center gap-3 text-[12px] text-[color:var(--text-muted)] sm:flex-col sm:items-end">
                 {steps.map(step => {
                   const status =
                     currentStep === step.id ? 'current' : currentStep > step.id ? 'complete' : 'upcoming'
