@@ -1,7 +1,6 @@
-import { useEffect, useMemo, useState } from 'react'
+import { Fragment, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { Drawer, DrawerClose, DrawerContent } from '@/components/ui/drawer'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { LazyImage } from '@/components/ui/LazyImage'
 import {
   Select,
@@ -11,13 +10,13 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { ArrowUpRight, Loader2, Minus, Plus } from 'lucide-react'
-import { cn } from '@/lib/utils'
 import { formatCurrency } from '@/lib/format'
 import { useCart } from '@/contexts/useBasket'
 import type { AvailabilityStatus, PublicCatalogItem } from '@/services/catalog'
 import { fetchCatalogItemById } from '@/services/catalog'
 import type { SearchItem } from '@/hooks/useGlobalSearch'
 import { SupplierLogo } from '@/components/catalog/SupplierLogo'
+import AvailabilityBadge from '@/components/catalog/AvailabilityBadge'
 
 interface ProductQuickPeekDrawerProps {
   open: boolean
@@ -165,7 +164,6 @@ export function ProductQuickPeekDrawer({
     | AvailabilityStatus
     | null
   const availabilityLabel = product?.availability_text ?? item?.metadata?.availability ?? null
-  const availabilityClasses = getAvailabilityTone(availabilityStatus)
   const imageUrl = product?.sample_image_url ?? item?.metadata?.imageUrl ?? null
   const supplierCount =
     product?.suppliers_count ??
@@ -185,6 +183,9 @@ export function ProductQuickPeekDrawer({
   const selectedSupplierOption =
     supplierOptions.find(option => option.id === selectedSupplier) ?? null
   const selectedSupplierName = selectedSupplierOption?.name ?? null
+
+  const totalPriceLabel =
+    priceValue != null ? formatCurrency(priceValue * quantity) : null
 
   const additionalPackSizes = packSizes.slice(1)
   const canAddToCart = Boolean(productId && selectedSupplier)
@@ -236,76 +237,94 @@ export function ProductQuickPeekDrawer({
       return <div className="rounded-[12px] bg-red-500/10 px-3 py-3 text-sm text-red-200">{error}</div>
     }
 
-    return (
-      <div className="space-y-4 text-sm text-[color:var(--text-muted)]">
-        {availabilityLabel && (
-          <div className="flex items-center gap-2">
-            <span className="font-medium text-[color:var(--text)]">Availability</span>
-            <Badge className={cn('text-xs font-medium', availabilityClasses)}>{availabilityLabel}</Badge>
-          </div>
-        )}
+    const detailSections: DetailSectionConfig[] = []
 
-        {packInfo && (
-          <div className="space-y-1">
-            <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[color:var(--text-muted)] opacity-80">
-              Pack size
-            </div>
-            <div className="text-[color:var(--text)]">{packInfo}</div>
+    if (availabilityStatus || availabilityLabel) {
+      const hasStatus = Boolean(availabilityStatus)
+      const fallbackAvailability = !hasStatus && availabilityLabel ? availabilityLabel : null
+      detailSections.push({
+        key: 'availability',
+        title: 'Availability',
+        content: (
+          <div
+            className="flex items-center gap-3 rounded-[12px] border border-white/10 bg-white/[0.03] px-3 py-2"
+            title={availabilityLabel ?? undefined}
+          >
+            {hasStatus ? (
+              <AvailabilityBadge
+                status={availabilityStatus ?? undefined}
+                className="!h-7 !rounded-full !px-3 opacity-80"
+              />
+            ) : fallbackAvailability ? (
+              <span className="inline-flex items-center rounded-full border border-white/12 bg-white/[0.04] px-3 py-1 text-sm font-medium text-[color:var(--text)]">
+                {fallbackAvailability}
+              </span>
+            ) : null}
+          </div>
+        ),
+      })
+    }
+
+    if (packInfo || additionalPackSizes.length > 0) {
+      detailSections.push({
+        key: 'pack',
+        title: 'Pack size',
+        content: (
+          <div className="rounded-[12px] border border-white/10 bg-white/[0.03] px-3 py-3 text-[color:var(--text)]">
+            {packInfo && <div>{packInfo}</div>}
             {additionalPackSizes.length > 0 && (
-              <div className="text-[12px] text-[color:var(--text-muted)]">
+              <div className="pt-1 text-[12px] text-[color:var(--text-muted)] opacity-80">
                 Also available: {additionalPackSizes.join(', ')}
               </div>
             )}
           </div>
-        )}
+        ),
+      })
+    }
 
-        {supplierOptions.length > 0 ? (
+    if (supplierOptions.length > 0) {
+      detailSections.push({
+        key: 'suppliers',
+        title: 'Available from',
+        content: (
           <div className="space-y-3">
-            <div className="space-y-2">
-              <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[color:var(--text-muted)] opacity-80">
-                Available from
-              </div>
-              <div className="flex items-center gap-3 rounded-[12px] border border-white/10 bg-white/[0.04] px-3 py-2">
-                <div className="flex -space-x-2">
-                  {supplierPreview.map((option, index) => (
-                    <SupplierLogo
-                      key={`${option.id}-${index}`}
-                      name={option.name}
-                      logoUrl={option.logoUrl}
-                      className="!h-7 !w-7 !rounded-full border border-white/10 bg-white/10"
-                    />
-                  ))}
-                  {supplierOverflow > 0 && (
-                    <span className="flex h-7 w-7 items-center justify-center rounded-full border border-white/10 bg-white/10 text-[11px] font-semibold text-[color:var(--text)]">
-                      +{supplierOverflow}
-                    </span>
-                  )}
-                </div>
-                {supplierSummaryLabel && (
-                  <span className="truncate text-sm font-medium text-[color:var(--text)]">
-                    {supplierSummaryLabel}
+            <div className="flex items-center gap-3 rounded-[12px] border border-white/10 bg-white/[0.03] px-3 py-2">
+              <div className="flex -space-x-2 opacity-80">
+                {supplierPreview.map((option, index) => (
+                  <SupplierLogo
+                    key={`${option.id}-${index}`}
+                    name={option.name}
+                    logoUrl={option.logoUrl}
+                    className="!h-7 !w-7 !rounded-full border border-white/10 bg-white/10 opacity-80"
+                  />
+                ))}
+                {supplierOverflow > 0 && (
+                  <span className="flex h-7 w-7 items-center justify-center rounded-full border border-white/10 bg-white/10 text-[11px] font-semibold text-[color:var(--text)] opacity-70">
+                    +{supplierOverflow}
                   </span>
                 )}
               </div>
-              {supplierOptions.length > 1 && selectedSupplierOption && (
-                <div className="text-[12px] text-[color:var(--text-muted)]">
-                  Selected:{' '}
-                  <span className="font-medium text-[color:var(--text)]">
-                    {selectedSupplierOption.name}
-                  </span>
-                </div>
+              {supplierSummaryLabel && (
+                <span className="truncate text-sm font-medium text-[color:var(--text)] opacity-85">
+                  {supplierSummaryLabel}
+                </span>
               )}
             </div>
-
+            {supplierOptions.length > 1 && selectedSupplierOption && (
+              <div className="text-[12px] text-[color:var(--text-muted)]">
+                Selected:{' '}
+                <span className="font-medium text-[color:var(--text)]">{selectedSupplierOption.name}</span>
+              </div>
+            )}
             {supplierOptions.length > 1 && (
               <Select value={selectedSupplier ?? undefined} onValueChange={value => setSelectedSupplier(value)}>
                 <SelectTrigger className="h-10 rounded-[12px] border border-white/12 bg-white/[0.04] text-[color:var(--text)]">
-                  <div className="flex w-full items-center gap-2 text-[color:var(--text)]">
+                  <div className="flex w-full items-center gap-2 text-[color:var(--text)] opacity-90">
                     {selectedSupplierOption && (
                       <SupplierLogo
                         name={selectedSupplierOption.name}
                         logoUrl={selectedSupplierOption.logoUrl}
-                        className="!h-6 !w-6 !rounded-full border border-white/10 bg-white/10"
+                        className="!h-6 !w-6 !rounded-full border border-white/10 bg-white/10 opacity-80"
                       />
                     )}
                     <SelectValue placeholder="Choose supplier" />
@@ -318,7 +337,7 @@ export function ProductQuickPeekDrawer({
                         <SupplierLogo
                           name={option.name}
                           logoUrl={option.logoUrl}
-                          className="!h-5 !w-5 !rounded-full border border-white/10 bg-white/10"
+                          className="!h-5 !w-5 !rounded-full border border-white/10 bg-white/10 opacity-80"
                         />
                         <span>{option.name}</span>
                       </div>
@@ -328,11 +347,28 @@ export function ProductQuickPeekDrawer({
               </Select>
             )}
           </div>
-        ) : (
-          <div className="rounded-[12px] border border-dashed border-white/12 bg-white/[0.04] px-3 py-3 text-[12px] text-[color:var(--text-muted)]">
+        ),
+      })
+    } else {
+      detailSections.push({
+        key: 'suppliers',
+        title: 'Available from',
+        content: (
+          <div className="rounded-[12px] border border-dashed border-white/12 bg-white/[0.03] px-3 py-3 text-[12px] text-[color:var(--text-muted)]">
             Supplier information will appear once available.
           </div>
-        )}
+        ),
+      })
+    }
+
+    return (
+      <div className="flex flex-col gap-6 text-sm text-[color:var(--text-muted)]">
+        {detailSections.map((section, index) => (
+          <Fragment key={section.key}>
+            <DetailSection title={section.title}>{section.content}</DetailSection>
+            {index < detailSections.length - 1 && <SectionDivider />}
+          </Fragment>
+        ))}
       </div>
     )
   })()
@@ -396,6 +432,28 @@ export function ProductQuickPeekDrawer({
           </div>
 
           <div className="space-y-3 border-t border-white/10 px-6 py-5">
+            {priceLabel && (
+              <div className="rounded-[12px] border border-white/10 bg-white/[0.03] px-3 py-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="space-y-1">
+                    <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[color:var(--text-muted)] opacity-80">
+                      Price
+                    </div>
+                    {packInfo && (
+                      <div className="text-[12px] text-[color:var(--text-muted)] opacity-80">{packInfo}</div>
+                    )}
+                  </div>
+                  <div className="text-right text-base font-semibold text-[color:var(--text)]">
+                    {priceLabel}
+                  </div>
+                </div>
+                {totalPriceLabel && quantity > 1 && (
+                  <div className="pt-2 text-right text-[12px] text-[color:var(--text-muted)]">
+                    Total {totalPriceLabel}
+                  </div>
+                )}
+              </div>
+            )}
             <div className="flex items-center gap-3">
               <div className="flex items-center rounded-full border border-white/12 bg-white/[0.04] px-1.5">
                 <button
@@ -449,15 +507,23 @@ export function ProductQuickPeekDrawer({
   )
 }
 
-function getAvailabilityTone(status: AvailabilityStatus | null): string {
-  switch (status) {
-    case 'IN_STOCK':
-      return 'bg-emerald-500/15 text-emerald-300'
-    case 'LOW_STOCK':
-      return 'bg-amber-500/15 text-amber-200'
-    case 'OUT_OF_STOCK':
-      return 'bg-red-500/15 text-red-200'
-    default:
-      return 'bg-white/10 text-[color:var(--text-muted)]'
-  }
+type DetailSectionConfig = {
+  key: string
+  title: string
+  content: ReactNode
+}
+
+function DetailSection({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <div className="space-y-2">
+      <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[color:var(--text-muted)] opacity-80">
+        {title}
+      </div>
+      {children}
+    </div>
+  )
+}
+
+function SectionDivider() {
+  return <div className="h-px w-full bg-white/[0.08]" />
 }

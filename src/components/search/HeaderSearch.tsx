@@ -293,7 +293,7 @@ export const HeaderSearch = React.forwardRef<HTMLInputElement, HeaderSearchProps
           variant="spotlight"
           hideCloseButton
           overlayClassName="bg-[rgba(7,15,25,0.12)] backdrop-blur-[12px]"
-          className="w-[760px] max-w-[92vw] overflow-hidden rounded-[16px] border border-[color:var(--surface-ring)]/80 bg-[color:var(--surface-pop)] p-0 shadow-[0_48px_140px_-56px_rgba(5,12,24,0.85)]"
+          className="w-[880px] max-w-[96vw] overflow-hidden rounded-[16px] border border-[color:var(--surface-ring)]/80 bg-[color:var(--surface-pop)] p-0 shadow-[0_48px_140px_-56px_rgba(5,12,24,0.85)]"
           onOpenAutoFocus={(event) => {
             event.preventDefault()
             requestAnimationFrame(() => {
@@ -761,49 +761,51 @@ function ProductResultMeta({
       ? `${derivedSupplierCount} suppliers`
       : entries[0]?.name ?? null
 
-  const showAvailability = Boolean(availabilityStatus || availabilityText)
+  const showAvailabilityBadge = Boolean(availabilityStatus)
+  const fallbackAvailabilityLabel = !availabilityStatus && availabilityText ? availabilityText : null
 
   return (
-    <div className="flex flex-col items-end gap-1 text-right">
+    <div className="flex flex-col items-end gap-2 text-right">
       {priceLabel && (
         <span className="text-[13px] font-semibold text-[color:var(--text)]">{priceLabel}</span>
       )}
-      {(indicator || showAvailability) && (
-        <div className="flex items-center gap-2">
-          {indicator}
-          {showAvailability && (
-            <div className="flex items-center gap-2">
-              <AvailabilityBadge
-                status={availabilityStatus ?? undefined}
-                className="!h-7 !rounded-full !px-3"
-              />
-              {availabilityText && (
-                <span className="text-[11px] font-medium text-[color:var(--text-muted)]">
-                  {availabilityText}
-                </span>
-              )}
-            </div>
-          )}
+      {(indicator || showAvailabilityBadge || fallbackAvailabilityLabel) && (
+        <div className="flex items-center gap-2 text-[11px] text-[color:var(--text-muted)]">
+          {indicator && <span className="opacity-80">{indicator}</span>}
+          {showAvailabilityBadge ? (
+            <AvailabilityBadge
+              status={availabilityStatus ?? undefined}
+              className="!h-7 !rounded-full !px-3 opacity-80"
+            />
+          ) : fallbackAvailabilityLabel ? (
+            <span className="inline-flex items-center rounded-full border border-white/12 bg-white/[0.04] px-3 py-1 font-medium text-[color:var(--text-muted)]">
+              {fallbackAvailabilityLabel}
+            </span>
+          ) : null}
         </div>
       )}
       {entries.length > 0 && (
         <div className="flex items-center gap-2 text-[11px] text-[color:var(--text-muted)]">
-          <div className="flex -space-x-2">
+          <div className="flex -space-x-2 opacity-80">
             {previewEntries.map((entry, index) => (
               <SupplierLogo
                 key={`${entry.name}-${index}`}
                 name={entry.name}
                 logoUrl={entry.logoUrl}
-                className="!h-6 !w-6 !rounded-full border border-white/10 bg-white/10"
+                className="!h-6 !w-6 !rounded-full border border-white/10 bg-white/10 opacity-80"
               />
             ))}
             {overflowCount > 0 && (
-              <span className="flex h-6 w-6 items-center justify-center rounded-full border border-white/10 bg-white/10 text-[10px] font-semibold text-[color:var(--text)]">
+              <span className="flex h-6 w-6 items-center justify-center rounded-full border border-white/10 bg-white/10 text-[10px] font-semibold text-[color:var(--text)] opacity-70">
                 +{overflowCount}
               </span>
             )}
           </div>
-          {summaryLabel && <span className="max-w-[140px] truncate">{summaryLabel}</span>}
+          {summaryLabel && (
+            <span className="max-w-[140px] truncate text-[color:var(--text-muted)] opacity-80">
+              {summaryLabel}
+            </span>
+          )}
         </div>
       )}
     </div>
@@ -865,6 +867,10 @@ function ProductQuickAddButton({ item }: { item: SearchResultItem }) {
     <Button
       type="button"
       size="sm"
+      onMouseDown={(event) => {
+        event.preventDefault()
+        event.stopPropagation()
+      }}
       onClick={handleClick}
       disabled={isAdding}
       className="h-9 rounded-full px-4 text-sm font-semibold shadow-[0_16px_36px_-24px_rgba(11,91,211,0.7)]"
