@@ -80,11 +80,17 @@ export function TenantSwitcher() {
 
       if (error) throw error
       
-      // Transform the data to match our expected type (Supabase returns tenant as array)
-      return (data || []).map(item => ({
+      // Transform the data to match our expected type (Supabase returns tenant as array for relationship queries)
+      const transformedData = (data || []).map(item => ({
         ...item,
         tenant: Array.isArray(item.tenant) && item.tenant.length > 0 ? item.tenant[0] : null
       })) as Membership[]
+      
+      // Debug logging
+      console.log('TenantSwitcher: userMemberships raw data:', data)
+      console.log('TenantSwitcher: userMemberships transformed:', transformedData)
+      
+      return transformedData
     },
     enabled: !!user?.id,
   })
@@ -103,12 +109,17 @@ export function TenantSwitcher() {
   const normalizedQuery = query.trim().toLowerCase()
 
   const matchingTenants = React.useMemo(() => {
+    // Always show all valid memberships when no search query
     if (!normalizedQuery) {
-      return userMemberships.filter((membership) => membership.tenant)
+      return userMemberships.filter((membership) => membership.tenant !== null)
     }
+    
+    // Filter based on search query
     return userMemberships.filter((membership) => {
-      const name = membership.tenant?.name?.toLowerCase() ?? ''
-      const displayLabel = membership.tenant?.kind === 'personal' ? 'personal workspace' : name
+      if (!membership.tenant) return false
+      
+      const name = membership.tenant.name?.toLowerCase() ?? ''
+      const displayLabel = membership.tenant.kind === 'personal' ? 'personal workspace' : name
       return displayLabel.includes(normalizedQuery)
     })
   }, [normalizedQuery, userMemberships])
