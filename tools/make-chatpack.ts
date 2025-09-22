@@ -194,8 +194,6 @@ const PRESETS: Record<string, PresetConfig> = {
     requested: [
       // Core UI building blocks
       'src/components/ui/sidebar.tsx',
-      'src/components/ui/sidebar-provider.tsx',
-      'src/components/ui/use-sidebar.ts',
       'src/components/ui/sidebar-constants.ts',
 
       // Layout / specialized sidebars
