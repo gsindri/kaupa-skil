@@ -301,23 +301,17 @@ body {
   display: none !important; /* hides any extra cyan stripe element if present */
 }
 
-/* Start the menu lower for visual balance (rail + full modes) */
+/* Start the menu lower for visual balance */
 :root {
-  --sidebar-offset: clamp(72px, 18vh, 160px);        /* expanded */
-  --sidebar-offset-rail: clamp(56px, 16vh, 136px);   /* icon-only */
+  --sidebar-offset: clamp(72px, 18vh, 160px);
 }
 
 [data-sidebar="content"] {
   padding-top: var(--sidebar-offset);
 }
 
-[data-collapsible="icon"] [data-sidebar="content"] {
-  padding-top: var(--sidebar-offset-rail);
-}
-
 @media (max-height: 700px) {
   :root {
     --sidebar-offset: clamp(48px, 12vh, 112px);
-    --sidebar-offset-rail: clamp(40px, 10vh, 96px);
   }
 }
