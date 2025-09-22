@@ -74,13 +74,13 @@ export function ExistingUserOnboarding() {
     }
   }
 
-  const handleSkip = () => {
+  const handleExit = () => {
     if (typeof window !== 'undefined') {
       localStorage.setItem('onboardingSkipped', 'true')
     }
     toast({
-      title: 'Setup skipped',
-      description: 'You can complete organization setup later in Settings.'
+      title: 'Setup saved for later',
+      description: 'You can return to workspace setup anytime from Settings.'
     })
     navigate('/')
   }
@@ -160,8 +160,8 @@ export function ExistingUserOnboarding() {
           )}
 
           <div className="text-center">
-            <Button variant="ghost" onClick={handleSkip}>
-              Skip for now
+            <Button variant="ghost" onClick={handleExit}>
+              Exit setup
             </Button>
           </div>
         </div>

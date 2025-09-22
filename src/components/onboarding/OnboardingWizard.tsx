@@ -1,12 +1,23 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useBlocker } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { ArrowLeft, Check, Loader2 } from 'lucide-react'
+import { ArrowLeft, Check, Info, Loader2 } from 'lucide-react'
 
 import { useAuth } from '@/contexts/useAuth'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
 import { Button } from '@/components/ui/button'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle
+} from '@/components/ui/alert-dialog'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 import { OrganizationStep, type OrganizationStepHandle, type OrganizationFormValues } from './steps/OrganizationStep'
 import { SupplierSelectionStep, type SupplierOption } from './steps/SupplierSelectionStep'
@@ -42,7 +53,10 @@ const EMPTY_ORGANIZATION: OrganizationFormValues = {
   contactName: '',
   phone: '',
   address: '',
-  vat: ''
+  vat: '',
+  email: '',
+  useSeparateInvoiceAddress: false,
+  invoiceAddress: ''
 }
 
 type SupplierRow = Database['public']['Tables']['suppliers']['Row']
@@ -77,8 +91,11 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
   const [isCompleting, setIsCompleting] = useState(false)
   const [draftLoaded, setDraftLoaded] = useState(false)
   const [allowNavigation, setAllowNavigation] = useState(false)
+  const [exitDialogOpen, setExitDialogOpen] = useState(false)
+  const [exitDialogContext, setExitDialogContext] = useState<'manual' | 'blocked' | null>(null)
 
   const organizationStepRef = useRef<OrganizationStepHandle>(null)
+  const exitDialogContextRef = useRef<'manual' | 'blocked' | null>(null)
 
   const steps = useMemo<StepDefinition[]>(
     () => [
@@ -200,7 +217,9 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
       Boolean(organization.contactName) ||
       Boolean(organization.phone) ||
       Boolean(organization.address) ||
-      Boolean(organization.vat)
+      Boolean(organization.vat) ||
+      Boolean(organization.email) ||
+      (organization.useSeparateInvoiceAddress && Boolean(organization.invoiceAddress))
     )
   }, [organization])
 
@@ -210,25 +229,26 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
 
   useEffect(() => {
     if (blocker.state === 'blocked') {
-      const confirmLeave = window.confirm('Progress saved. Leave setup?')
-      if (confirmLeave) {
-        setAllowNavigation(true)
-        blocker.proceed()
-      } else {
-        blocker.reset()
-      }
+      exitDialogContextRef.current = 'blocked'
+      setExitDialogContext('blocked')
+      setExitDialogOpen(true)
     }
-  }, [blocker])
+  }, [blocker.state])
 
   useEffect(() => {
     if (!shouldBlockNavigation) return
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
       event.preventDefault()
-      event.returnValue = 'Progress saved. Leave setup?'
+      event.returnValue = 'Your setup progress is saved. Exit setup?'
     }
     window.addEventListener('beforeunload', handleBeforeUnload)
     return () => window.removeEventListener('beforeunload', handleBeforeUnload)
   }, [shouldBlockNavigation])
+
+  const currentStepDefinition = useMemo(
+    () => steps.find(step => step.id === currentStep),
+    [steps, currentStep]
+  )
 
   const progress = (currentStep / TOTAL_STEPS) * 100
 
@@ -285,7 +305,7 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
     })
   }, [toast])
 
-  const handleSkip = useCallback(() => {
+  const exitSetup = useCallback(() => {
     if (typeof window !== 'undefined') {
       window.localStorage.setItem('onboardingSkipped', 'true')
     }
@@ -300,6 +320,44 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
       navigate('/')
     }
   }, [navigate, onSkip, toast])
+
+  const requestExit = useCallback(() => {
+    exitDialogContextRef.current = 'manual'
+    setExitDialogContext('manual')
+    setExitDialogOpen(true)
+  }, [])
+
+  const cancelExitDialog = useCallback(() => {
+    if (exitDialogContextRef.current === 'blocked') {
+      blocker.reset()
+    }
+    exitDialogContextRef.current = null
+    setExitDialogContext(null)
+    setExitDialogOpen(false)
+  }, [blocker])
+
+  const confirmExitDialog = useCallback(() => {
+    const context = exitDialogContextRef.current
+    exitDialogContextRef.current = null
+    setExitDialogContext(null)
+    setExitDialogOpen(false)
+
+    if (context === 'manual') {
+      exitSetup()
+    } else if (context === 'blocked') {
+      setAllowNavigation(true)
+      blocker.proceed()
+    }
+  }, [blocker, exitSetup])
+
+  const handleExitDialogChange = useCallback(
+    (nextOpen: boolean) => {
+      if (!nextOpen) {
+        cancelExitDialog()
+      }
+    },
+    [cancelExitDialog]
+  )
 
   const completeOnboarding = useCallback(async () => {
     if (!user) return
@@ -417,8 +475,21 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
   const backButtonClass =
     'w-full justify-start text-[color:var(--text-muted)] hover:bg-transparent hover:text-[color:var(--text)] sm:w-auto'
 
-  const skipLinkClass =
+  const exitLinkClass =
     'px-0 text-[12px] font-normal text-[color:var(--text-muted)] underline-offset-4 transition-colors hover:text-[color:var(--text)] hover:underline focus-visible:outline-none focus-visible:ring-0 disabled:pointer-events-none disabled:opacity-50'
+
+  const exitDialogCopy =
+    exitDialogContext === 'blocked'
+      ? {
+          title: 'Leave workspace setup?',
+          description:
+            'Your progress has been saved. Leaving now will keep your draft ready for when you return.'
+        }
+      : {
+          title: 'Leave workspace setup?',
+          description:
+            'Your progress has been saved. You can finish setup anytime from your dashboard.'
+        }
 
   const organizationFooter = (
     <>
@@ -432,11 +503,11 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
       </Button>
       <button
         type="button"
-        className={cn(skipLinkClass, 'self-center sm:self-end')}
-        onClick={handleSkip}
+        className={cn(exitLinkClass, 'self-center sm:self-end')}
+        onClick={requestExit}
         disabled={isCompleting}
       >
-        Skip for now
+        Exit setup
       </button>
     </>
   )
@@ -495,8 +566,8 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
           )}
         </Button>
       </div>
-      <button type="button" className={skipLinkClass} onClick={handleSkip} disabled={isCompleting}>
-        Skip for now
+      <button type="button" className={exitLinkClass} onClick={requestExit} disabled={isCompleting}>
+        Exit setup
       </button>
     </div>
   )
@@ -518,37 +589,69 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
           </div>
 
           <div className="flex flex-col gap-8 px-6 py-8 sm:px-10 sm:py-10">
-            <div className="flex justify-center sm:justify-end">
-              <ol className="flex items-center gap-3 text-[12px] text-[color:var(--text-muted)] sm:flex-col sm:items-end">
-                {steps.map(step => {
-                  const status =
-                    currentStep === step.id ? 'current' : currentStep > step.id ? 'complete' : 'upcoming'
-                  return (
-                    <li
-                      key={step.id}
-                      className={cn(
-                        'flex items-center gap-2',
-                        status === 'current' && 'text-[color:var(--text)] font-medium',
-                        status === 'complete' && 'text-[var(--brand-accent)]'
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div className="flex flex-col items-center gap-2 text-center sm:items-start sm:text-left">
+                {currentStepDefinition && (
+                  <>
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-[20px] font-semibold text-[color:var(--text)]">
+                        {currentStepDefinition.title}
+                      </h2>
+                      {currentStep === 1 && (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button
+                              type="button"
+                              className="rounded-full p-1 text-[color:var(--text-muted)] transition-colors hover:text-[color:var(--text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)] focus-visible:ring-offset-2"
+                              aria-label="Learn how workspaces and organizations connect"
+                            >
+                              <Info className="h-4 w-4" />
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent className="max-w-[240px] rounded-[12px] border border-[color:var(--surface-ring)] bg-[color:var(--surface-pop)] px-3 py-2 text-left text-[12px] leading-relaxed text-[color:var(--text-muted)]">
+                            You’re creating a workspace. Each workspace is linked to one organization.
+                          </TooltipContent>
+                        </Tooltip>
                       )}
-                    >
-                      <span
+                    </div>
+                    <p className="text-[13px] text-[color:var(--text-muted)]">
+                      {currentStepDefinition.description}
+                    </p>
+                  </>
+                )}
+              </div>
+              <div className="flex justify-center sm:justify-end">
+                <ol className="flex items-center gap-3 text-[12px] text-[color:var(--text-muted)] sm:flex-col sm:items-end">
+                  {steps.map(step => {
+                    const status =
+                      currentStep === step.id ? 'current' : currentStep > step.id ? 'complete' : 'upcoming'
+                    return (
+                      <li
+                        key={step.id}
                         className={cn(
-                          'flex h-7 w-7 items-center justify-center rounded-full border text-[12px]',
-                          status === 'complete' &&
-                            'border-[var(--brand-accent)] bg-[var(--brand-accent)] text-[color:var(--brand-accent-fg)]',
-                          status === 'current' &&
-                            'border-[var(--brand-accent)] text-[var(--brand-accent)]',
-                          status === 'upcoming' && 'border-[color:var(--surface-ring)]'
+                          'flex items-center gap-2',
+                          status === 'current' && 'text-[color:var(--text)] font-medium',
+                          status === 'complete' && 'text-[var(--brand-accent)]'
                         )}
                       >
-                        {status === 'complete' ? <Check className="h-4 w-4" /> : step.id}
-                      </span>
-                      <span className="hidden sm:inline">{step.title}</span>
-                    </li>
-                  )
-                })}
-              </ol>
+                        <span
+                          className={cn(
+                            'flex h-7 w-7 items-center justify-center rounded-full border text-[12px]',
+                            status === 'complete' &&
+                              'border-[var(--brand-accent)] bg-[var(--brand-accent)] text-[color:var(--brand-accent-fg)]',
+                            status === 'current' &&
+                              'border-[var(--brand-accent)] text-[var(--brand-accent)]',
+                            status === 'upcoming' && 'border-[color:var(--surface-ring)]'
+                          )}
+                        >
+                          {status === 'complete' ? <Check className="h-4 w-4" /> : step.id}
+                        </span>
+                        <span className="hidden sm:inline">{step.title}</span>
+                      </li>
+                    )
+                  })}
+                </ol>
+              </div>
             </div>
 
             {currentStep === 1 && (
@@ -589,6 +692,35 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
           </div>
         </div>
       </div>
+      <AlertDialog open={exitDialogOpen} onOpenChange={handleExitDialogChange}>
+        <AlertDialogContent className="sm:max-w-[420px] rounded-[16px] border border-[color:var(--surface-ring)] bg-[color:var(--surface-pop)] px-6 py-6">
+          <AlertDialogHeader className="space-y-2 text-left">
+            <AlertDialogTitle className="text-[18px] font-semibold text-[color:var(--text)]">
+              {exitDialogCopy.title}
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-[13px] leading-relaxed text-[color:var(--text-muted)]">
+              {exitDialogCopy.description}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="mt-4 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end sm:gap-3">
+            <AlertDialogCancel
+              onClick={cancelExitDialog}
+              className="text-[13px] text-[color:var(--text)] hover:bg-[color:var(--surface-pop-2)]"
+            >
+              Stay here
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmExitDialog}
+              className={cn(
+                'text-[13px]',
+                'bg-[var(--brand-accent)] text-[color:var(--brand-accent-fg)] hover:bg-[var(--brand-accent)]/90'
+              )}
+            >
+              Leave setup
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
