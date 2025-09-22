@@ -7,13 +7,28 @@ import type { CountryCode } from 'libphonenumber-js'
 
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Separator } from '@/components/ui/separator'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { getDefaultCountryCode, normalizePhoneInput, formatVat, isValidVat } from '@/utils/phone'
+
+const addressSchema = z.object({
+  line1: z.string().trim().default(''),
+  line2: z.string().trim().default(''),
+  postalCode: z.string().trim().default(''),
+  city: z.string().trim().default('')
+})
+
+type AddressFormValues = z.infer<typeof addressSchema>
+
+const sanitizeAddress = (address?: Partial<AddressFormValues>): AddressFormValues => ({
+  line1: address?.line1?.trim() ?? '',
+  line2: address?.line2?.trim() ?? '',
+  postalCode: address?.postalCode?.trim() ?? '',
+  city: address?.city?.trim() ?? ''
+})
 
 const createOrganizationSchema = (country: CountryCode) =>
   z
@@ -30,10 +45,7 @@ const createOrganizationSchema = (country: CountryCode) =>
         .refine(value => normalizePhoneInput(value, country).isValid, {
           message: '⚠ Enter a valid international phone number.'
         }),
-      address: z
-        .string()
-        .trim()
-        .min(5, '⚠ Please add your delivery address.'),
+      deliveryAddress: addressSchema,
       vat: z
         .string()
         .trim()
@@ -46,17 +58,62 @@ const createOrganizationSchema = (country: CountryCode) =>
         .trim()
         .email('⚠ Enter a valid email address.')
         .or(z.literal('')),
-      useSeparateInvoiceAddress: z.boolean().default(false),
-      invoiceAddress: z.string().trim().optional()
+      useSeparateInvoiceAddress: z.boolean().default(true),
+      invoiceAddress: addressSchema
     })
     .superRefine((data, ctx) => {
+      const deliveryLine1 = data.deliveryAddress.line1.trim()
+      if (deliveryLine1.length < 5) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: '⚠ Please add a street and house number.',
+          path: ['deliveryAddress', 'line1']
+        })
+      }
+
+      const deliveryPostal = data.deliveryAddress.postalCode.trim()
+      if (deliveryPostal.length < 2) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: '⚠ Please add a postal code.',
+          path: ['deliveryAddress', 'postalCode']
+        })
+      }
+
+      const deliveryCity = data.deliveryAddress.city.trim()
+      if (deliveryCity.length < 2) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: '⚠ Please add a city.',
+          path: ['deliveryAddress', 'city']
+        })
+      }
+
       if (data.useSeparateInvoiceAddress) {
-        const invoice = data.invoiceAddress?.trim() ?? ''
-        if (invoice.length < 5) {
+        const invoiceLine1 = data.invoiceAddress.line1.trim()
+        if (invoiceLine1.length < 5) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
-            message: '⚠ Please add your invoice address.',
-            path: ['invoiceAddress']
+            message: '⚠ Please add an invoice street address.',
+            path: ['invoiceAddress', 'line1']
+          })
+        }
+
+        const invoicePostal = data.invoiceAddress.postalCode.trim()
+        if (invoicePostal.length < 2) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: '⚠ Please add an invoice postal code.',
+            path: ['invoiceAddress', 'postalCode']
+          })
+        }
+
+        const invoiceCity = data.invoiceAddress.city.trim()
+        if (invoiceCity.length < 2) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: '⚠ Please add an invoice city.',
+            path: ['invoiceAddress', 'city']
           })
         }
       }
@@ -109,18 +166,17 @@ export const OrganizationStep = forwardRef<OrganizationStepHandle, OrganizationS
 
     const commit = () => {
       const current = form.getValues()
+      const deliveryAddress = sanitizeAddress(current.deliveryAddress)
+      const invoiceAddress = sanitizeAddress(current.invoiceAddress)
       onUpdate({
         name: current.name?.trim() || '',
         contactName: current.contactName?.trim() || '',
         phone: current.phone?.trim() || '',
-        address: current.address?.trim() || '',
+        deliveryAddress,
         vat: current.vat ? formatVat(current.vat) : '',
         email: current.email?.trim() || '',
         useSeparateInvoiceAddress: Boolean(current.useSeparateInvoiceAddress),
-        invoiceAddress:
-          current.useSeparateInvoiceAddress && current.invoiceAddress
-            ? current.invoiceAddress.trim()
-            : ''
+        invoiceAddress
       })
     }
 
@@ -129,20 +185,15 @@ export const OrganizationStep = forwardRef<OrganizationStepHandle, OrganizationS
 
       normalized.name = normalized.name.trim()
       normalized.contactName = normalized.contactName.trim()
-      normalized.address = normalized.address.trim()
       normalized.phone = normalized.phone.trim()
       normalized.email = normalized.email?.trim() ?? ''
+      normalized.deliveryAddress = sanitizeAddress(normalized.deliveryAddress)
+      normalized.invoiceAddress = sanitizeAddress(normalized.invoiceAddress)
 
       if (normalized.vat) {
         normalized.vat = formatVat(normalized.vat)
       } else {
         normalized.vat = ''
-      }
-
-      if (normalized.useSeparateInvoiceAddress) {
-        normalized.invoiceAddress = normalized.invoiceAddress?.trim() ?? ''
-      } else {
-        normalized.invoiceAddress = ''
       }
 
       const { formatted, isValid } = normalizePhoneInput(normalized.phone, defaultCountry)
@@ -227,118 +278,338 @@ export const OrganizationStep = forwardRef<OrganizationStepHandle, OrganizationS
                     )}
                   />
 
-                  <FormField
-                    control={form.control}
-                    name="address"
-                    render={({ field }) => (
-                      <FormItem className="group space-y-2">
-                        <div className="flex items-start gap-2">
-                          <MapPinHouse className="h-5 w-5 flex-shrink-0 text-[color:var(--text-muted)] transition-colors group-focus-within:text-[var(--brand-accent)]" />
-                          <div className="space-y-1">
-                            <FormLabel className="text-[13px] font-semibold text-[color:var(--text)]">
+                  <div className="group space-y-3">
+                    <div className="flex items-start gap-2">
+                      <MapPinHouse className="h-5 w-5 flex-shrink-0 text-[color:var(--text-muted)] transition-colors group-focus-within:text-[var(--brand-accent)]" />
+                      <div className="space-y-1">
+                        <p className="text-[13px] font-semibold text-[color:var(--text)]">
+                          <span className="flex items-center gap-1">
+                            Delivery address
+                            <span aria-hidden="true" className="text-[color:var(--brand-accent)] opacity-80">*</span>
+                          </span>
+                        </p>
+                        <p className="text-[12px] text-[color:var(--text-muted)]">Tell us exactly where deliveries should arrive.</p>
+                      </div>
+                    </div>
+                    <div className="grid gap-3">
+                      <FormField
+                        control={form.control}
+                        name="deliveryAddress.line1"
+                        render={({ field }) => (
+                          <FormItem className="space-y-2">
+                            <FormLabel className="text-[13px] font-medium text-[color:var(--text)]">
                               <span className="flex items-center gap-1">
-                                Delivery &amp; invoice address
-                                <span aria-hidden="true" className="text-[color:var(--brand-accent)] opacity-80">
-                                  *
-                                </span>
+                                Street &amp; house number
+                                <span aria-hidden="true" className="text-[color:var(--brand-accent)] opacity-80">*</span>
                               </span>
                             </FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder="e.g. Sæbraut 31"
+                                autoComplete="shipping street-address"
+                                {...field}
+                                onBlur={event => {
+                                  field.onBlur()
+                                  const trimmed = event.target.value.trim()
+                                  form.setValue('deliveryAddress.line1', trimmed, {
+                                    shouldDirty: true,
+                                    shouldValidate: true
+                                  })
+                                  commit()
+                                }}
+                              />
+                            </FormControl>
                             <FormMessage />
-                          </div>
-                        </div>
-                        <FormControl>
-                          <Textarea
-                            placeholder="Street, city, postcode"
-                            rows={3}
-                            required
-                            {...field}
-                            onBlur={event => {
-                              field.onBlur()
-                              commit()
-                            }}
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="deliveryAddress.line2"
+                        render={({ field }) => (
+                          <FormItem className="space-y-2">
+                            <FormLabel className="text-[13px] font-medium text-[color:var(--text)]">
+                              Additional details <span className="text-[12px] text-[color:var(--text-muted)]">(optional)</span>
+                            </FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder="Floor, entrance, instructions"
+                                autoComplete="shipping address-line2"
+                                {...field}
+                                onBlur={event => {
+                                  field.onBlur()
+                                  const trimmed = event.target.value.trim()
+                                  form.setValue('deliveryAddress.line2', trimmed, {
+                                    shouldDirty: true,
+                                    shouldValidate: true
+                                  })
+                                  commit()
+                                }}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        <FormField
+                          control={form.control}
+                          name="deliveryAddress.postalCode"
+                          render={({ field }) => (
+                            <FormItem className="space-y-2">
+                              <FormLabel className="text-[13px] font-medium text-[color:var(--text)]">
+                                <span className="flex items-center gap-1">
+                                  Postal code
+                                  <span aria-hidden="true" className="text-[color:var(--brand-accent)] opacity-80">*</span>
+                                </span>
+                              </FormLabel>
+                              <FormControl>
+                                <Input
+                                  placeholder="e.g. 101"
+                                  inputMode="numeric"
+                                  autoComplete="shipping postal-code"
+                                  {...field}
+                                  onBlur={event => {
+                                    field.onBlur()
+                                    const trimmed = event.target.value.trim()
+                                    form.setValue('deliveryAddress.postalCode', trimmed, {
+                                      shouldDirty: true,
+                                      shouldValidate: true
+                                    })
+                                    commit()
+                                  }}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="deliveryAddress.city"
+                          render={({ field }) => (
+                            <FormItem className="space-y-2">
+                              <FormLabel className="text-[13px] font-medium text-[color:var(--text)]">
+                                <span className="flex items-center gap-1">
+                                  City
+                                  <span aria-hidden="true" className="text-[color:var(--brand-accent)] opacity-80">*</span>
+                                </span>
+                              </FormLabel>
+                              <FormControl>
+                                <Input
+                                  placeholder="e.g. Reykjavík"
+                                  autoComplete="shipping address-level2"
+                                  {...field}
+                                  onBlur={event => {
+                                    field.onBlur()
+                                    const trimmed = event.target.value.trim()
+                                    form.setValue('deliveryAddress.city', trimmed, {
+                                      shouldDirty: true,
+                                      shouldValidate: true
+                                    })
+                                    commit()
+                                  }}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </div>
+                  </div>
 
                   <FormField
                     control={form.control}
                     name="useSeparateInvoiceAddress"
-                    render={({ field }) => (
-                      <FormItem className="space-y-2">
-                        <div className="flex items-start gap-3 rounded-[12px] border border-[color:var(--surface-ring)]/70 bg-[color:var(--surface-pop-2)]/40 p-3">
-                          <Checkbox
-                            id="useSeparateInvoiceAddress"
-                            checked={field.value}
-                            onCheckedChange={checked => {
-                              const value = Boolean(checked)
-                              field.onChange(value)
-                              if (!value) {
-                                form.setValue('invoiceAddress', '', {
-                                  shouldDirty: true,
-                                  shouldValidate: true
-                                })
-                                form.clearErrors('invoiceAddress')
-                              }
-                              commit()
-                            }}
-                            className="mt-1"
-                          />
-                          <div className="space-y-1 text-left">
-                            <label
-                              htmlFor="useSeparateInvoiceAddress"
-                              className="text-[13px] font-semibold text-[color:var(--text)]"
-                            >
-                              Use a different invoice address
-                            </label>
-                            <p className="text-[12px] text-[color:var(--text-muted)]">
-                              Leave unchecked if deliveries and invoices share the same address.
-                            </p>
-                          </div>
-                        </div>
-                      </FormItem>
-                    )}
-                  />
-
-                  {useSeparateInvoiceAddress && (
-                    <FormField
-                      control={form.control}
-                      name="invoiceAddress"
-                      render={({ field }) => (
-                        <FormItem className="group space-y-2">
-                          <div className="flex items-start gap-2">
-                            <MapPinHouse className="h-5 w-5 flex-shrink-0 text-[color:var(--text-muted)] transition-colors group-focus-within:text-[var(--brand-accent)]" />
-                            <div className="space-y-1">
-                              <FormLabel className="text-[13px] font-semibold text-[color:var(--text)]">
-                                Invoice address
-                                <span aria-hidden="true" className="ml-1 text-[color:var(--brand-accent)] opacity-80">
-                                  *
-                                </span>
-                              </FormLabel>
-                              <FormMessage />
-                            </div>
-                          </div>
-                          <FormControl>
-                            <Textarea
-                              placeholder="Finance office, street, city, postcode"
-                              rows={3}
-                              {...field}
-                              onBlur={event => {
-                                field.onBlur()
-                                const trimmed = event.target.value.trim()
-                                form.setValue('invoiceAddress', trimmed, {
-                                  shouldValidate: true,
-                                  shouldDirty: true
-                                })
+                    render={({ field }) => {
+                      const invoicesUseDelivery = !field.value
+                      return (
+                        <FormItem className="space-y-2">
+                          <div className="flex items-start gap-3 rounded-[12px] border border-[color:var(--surface-ring)]/70 bg-[color:var(--surface-pop-2)]/40 p-3">
+                            <Checkbox
+                              id="invoicesUseDelivery"
+                              checked={invoicesUseDelivery}
+                              onCheckedChange={checked => {
+                                const useDelivery = Boolean(checked)
+                                field.onChange(!useDelivery)
+                                if (useDelivery) {
+                                  form.clearErrors('invoiceAddress')
+                                }
                                 commit()
                               }}
+                              className="mt-1"
                             />
-                          </FormControl>
+                            <div className="space-y-1 text-left">
+                              <label
+                                htmlFor="invoicesUseDelivery"
+                                className="text-[13px] font-semibold text-[color:var(--text)]"
+                              >
+                                Invoices use the delivery address
+                              </label>
+                              <p className="text-[12px] text-[color:var(--text-muted)]">
+                                Uncheck if invoices should be sent to a different location.
+                              </p>
+                            </div>
+                          </div>
                         </FormItem>
-                      )}
-                    />
-                  )}
+                      )
+                    }}
+                  />
+
+                  <div className="group space-y-3">
+                    <div className="flex items-start gap-2">
+                      <MapPinHouse className="h-5 w-5 flex-shrink-0 text-[color:var(--text-muted)] transition-colors group-focus-within:text-[var(--brand-accent)]" />
+                      <div className="space-y-1">
+                        <p className="text-[13px] font-semibold text-[color:var(--text)]">
+                          <span className="flex items-center gap-1">
+                            Invoice address
+                            {useSeparateInvoiceAddress && (
+                              <span aria-hidden="true" className="text-[color:var(--brand-accent)] opacity-80">*</span>
+                            )}
+                          </span>
+                        </p>
+                        <p className="text-[12px] text-[color:var(--text-muted)]">
+                          {useSeparateInvoiceAddress
+                            ? 'Where invoices should be mailed.'
+                            : 'Invoices will use the delivery address.'}
+                        </p>
+                      </div>
+                    </div>
+
+                    {useSeparateInvoiceAddress ? (
+                      <div className="grid gap-3">
+                        <FormField
+                          control={form.control}
+                          name="invoiceAddress.line1"
+                          render={({ field }) => (
+                            <FormItem className="space-y-2">
+                              <FormLabel className="text-[13px] font-medium text-[color:var(--text)]">
+                                <span className="flex items-center gap-1">
+                                  Street &amp; house number
+                                  <span aria-hidden="true" className="text-[color:var(--brand-accent)] opacity-80">*</span>
+                                </span>
+                              </FormLabel>
+                              <FormControl>
+                                <Input
+                                  placeholder="e.g. Tryggvagata 11"
+                                  autoComplete="billing street-address"
+                                  {...field}
+                                  onBlur={event => {
+                                    field.onBlur()
+                                    const trimmed = event.target.value.trim()
+                                    form.setValue('invoiceAddress.line1', trimmed, {
+                                      shouldDirty: true,
+                                      shouldValidate: true
+                                    })
+                                    commit()
+                                  }}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="invoiceAddress.line2"
+                          render={({ field }) => (
+                            <FormItem className="space-y-2">
+                              <FormLabel className="text-[13px] font-medium text-[color:var(--text)]">
+                                Additional details <span className="text-[12px] text-[color:var(--text-muted)]">(optional)</span>
+                              </FormLabel>
+                              <FormControl>
+                                <Input
+                                  placeholder="Department, floor, instructions"
+                                  autoComplete="billing address-line2"
+                                  {...field}
+                                  onBlur={event => {
+                                    field.onBlur()
+                                    const trimmed = event.target.value.trim()
+                                    form.setValue('invoiceAddress.line2', trimmed, {
+                                      shouldDirty: true,
+                                      shouldValidate: true
+                                    })
+                                    commit()
+                                  }}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <div className="grid gap-3 sm:grid-cols-2">
+                          <FormField
+                            control={form.control}
+                            name="invoiceAddress.postalCode"
+                            render={({ field }) => (
+                              <FormItem className="space-y-2">
+                                <FormLabel className="text-[13px] font-medium text-[color:var(--text)]">
+                                  <span className="flex items-center gap-1">
+                                    Postal code
+                                    <span aria-hidden="true" className="text-[color:var(--brand-accent)] opacity-80">*</span>
+                                  </span>
+                                </FormLabel>
+                                <FormControl>
+                                  <Input
+                                    placeholder="e.g. 210"
+                                    inputMode="numeric"
+                                    autoComplete="billing postal-code"
+                                    {...field}
+                                    onBlur={event => {
+                                      field.onBlur()
+                                      const trimmed = event.target.value.trim()
+                                      form.setValue('invoiceAddress.postalCode', trimmed, {
+                                        shouldDirty: true,
+                                        shouldValidate: true
+                                      })
+                                      commit()
+                                    }}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="invoiceAddress.city"
+                            render={({ field }) => (
+                              <FormItem className="space-y-2">
+                                <FormLabel className="text-[13px] font-medium text-[color:var(--text)]">
+                                  <span className="flex items-center gap-1">
+                                    City
+                                    <span aria-hidden="true" className="text-[color:var(--brand-accent)] opacity-80">*</span>
+                                  </span>
+                                </FormLabel>
+                                <FormControl>
+                                  <Input
+                                    placeholder="e.g. Hafnarfjörður"
+                                    autoComplete="billing address-level2"
+                                    {...field}
+                                    onBlur={event => {
+                                      field.onBlur()
+                                      const trimmed = event.target.value.trim()
+                                      form.setValue('invoiceAddress.city', trimmed, {
+                                        shouldDirty: true,
+                                        shouldValidate: true
+                                      })
+                                      commit()
+                                    }}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="rounded-[12px] border border-dashed border-[color:var(--surface-ring)] bg-[color:var(--surface-pop)]/30 px-4 py-3 text-[12px] text-[color:var(--text-muted)]">
+                        Invoices will automatically use the delivery address above.
+                      </div>
+                    )}
+                  </div>
                 </div>
               </section>
 

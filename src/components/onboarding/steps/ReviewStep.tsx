@@ -49,6 +49,27 @@ const CURRENCY_OPTIONS = [
   { value: 'NOK', label: 'Norwegian krone (NOK)' }
 ]
 
+const formatAddress = (address: OrganizationFormValues['deliveryAddress']) => {
+  const line1 = address.line1?.trim()
+  const line2 = address.line2?.trim()
+  const postalCode = address.postalCode?.trim()
+  const city = address.city?.trim()
+
+  const lines: string[] = []
+  if (line1) {
+    lines.push(line1)
+  }
+  if (line2) {
+    lines.push(line2)
+  }
+  const cityLine = [postalCode, city].filter(Boolean).join(' ')
+  if (cityLine) {
+    lines.push(cityLine)
+  }
+
+  return lines.join('\n')
+}
+
 export function ReviewStep({
   organization,
   suppliers,
@@ -63,6 +84,9 @@ export function ReviewStep({
   const selectedSuppliers = selectedSupplierIds
     .map(id => suppliers.find(supplier => supplier.id === id) ?? null)
     .filter(Boolean) as SupplierOption[]
+
+  const deliveryAddressText = formatAddress(organization.deliveryAddress)
+  const invoiceAddressText = formatAddress(organization.invoiceAddress)
 
   return (
     <div className="space-y-6">
@@ -105,17 +129,31 @@ export function ReviewStep({
             <dd>{organization.vat || 'Optional'}</dd>
           </div>
           <div className="sm:col-span-2">
-            <dt className="font-medium text-[color:var(--text)]">
-              {organization.useSeparateInvoiceAddress ? 'Delivery address' : 'Delivery &amp; invoice address'}
-            </dt>
-            <dd>{organization.address || 'Add later'}</dd>
+            <dt className="font-medium text-[color:var(--text)]">Delivery address</dt>
+            <dd>
+              {deliveryAddressText ? (
+                <address className="not-italic whitespace-pre-line">{deliveryAddressText}</address>
+              ) : (
+                'Add later'
+              )}
+            </dd>
           </div>
-          {organization.useSeparateInvoiceAddress && (
-            <div className="sm:col-span-2">
-              <dt className="font-medium text-[color:var(--text)]">Invoice address</dt>
-              <dd>{organization.invoiceAddress || 'Add later'}</dd>
-            </div>
-          )}
+          <div className="sm:col-span-2">
+            <dt className="font-medium text-[color:var(--text)]">Invoice address</dt>
+            <dd>
+              {organization.useSeparateInvoiceAddress ? (
+                invoiceAddressText ? (
+                  <address className="not-italic whitespace-pre-line">{invoiceAddressText}</address>
+                ) : (
+                  'Add later'
+                )
+              ) : deliveryAddressText ? (
+                'Same as delivery address'
+              ) : (
+                'Add later'
+              )}
+            </dd>
+          </div>
         </dl>
       </section>
 
