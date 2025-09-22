@@ -22,6 +22,7 @@ export interface SearchItemMetadata {
   imageUrl?: string
   supplierIds?: string[]
   supplierNames?: string[]
+  supplierLogos?: string[]
   supplierCount?: number
   canonicalPack?: string
   packSizes?: string[]
@@ -91,7 +92,7 @@ export function useGlobalSearch(q: string, scope: SearchScope) {
           const { data: products, error: productsError } = await supabase
             .from('v_public_catalog')
             .select(
-              'catalog_id, name, brand, availability_status, availability_text, best_price, sample_image_url, supplier_ids, supplier_names, suppliers_count, canonical_pack, pack_sizes'
+              'catalog_id, name, brand, availability_status, availability_text, best_price, sample_image_url, supplier_ids, supplier_names, supplier_logo_urls, suppliers_count, canonical_pack, pack_sizes'
             )
             .ilike('name', `%${query}%`)
             .not('catalog_id', 'is', null)
@@ -108,6 +109,9 @@ export function useGlobalSearch(q: string, scope: SearchScope) {
                   : []
                 const supplierNames = Array.isArray(p.supplier_names)
                   ? (p.supplier_names as string[]).filter(Boolean)
+                  : []
+                const supplierLogos = Array.isArray(p.supplier_logo_urls)
+                  ? (p.supplier_logo_urls as string[]).filter(Boolean)
                   : []
                 const packSizes = Array.isArray(p.pack_sizes)
                   ? (p.pack_sizes as string[]).filter(Boolean)
@@ -128,6 +132,7 @@ export function useGlobalSearch(q: string, scope: SearchScope) {
                     imageUrl: p.sample_image_url || undefined,
                     supplierIds: supplierIds.length ? supplierIds : undefined,
                     supplierNames: supplierNames.length ? supplierNames : undefined,
+                    supplierLogos: supplierLogos.length ? supplierLogos : undefined,
                     supplierCount:
                       typeof p.suppliers_count === 'number'
                         ? p.suppliers_count
