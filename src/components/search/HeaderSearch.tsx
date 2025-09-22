@@ -6,6 +6,7 @@ import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { Loader2, Search, Package, Building2, ClipboardList } from 'lucide-react'
 import AvailabilityBadge from '@/components/catalog/AvailabilityBadge'
 import { SupplierLogo } from '@/components/catalog/SupplierLogo'
+import { QuantityStepper } from '@/components/cart/QuantityStepper'
 import { LazyImage } from '@/components/ui/LazyImage'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -479,9 +480,6 @@ function DialogResults({
           {sectionEntries.map(({ entry, index }) => {
             const itemMetadata = entry.item.metadata
             const thumbnailUrl = itemMetadata?.imageUrl
-            const metaIndicator = shouldShowMeta ? (
-              <SectionIndicator icon={metadata.icon} label={metadata.meta} />
-            ) : undefined
 
             let subtitle: string | undefined = itemMetadata?.subtitle
             if (entry.item.section === 'products') {
@@ -496,27 +494,34 @@ function DialogResults({
               subtitle = parts.length > 0 ? parts.join(' • ') : undefined
             }
 
-            let metaContent: React.ReactNode = metaIndicator
             if (entry.item.section === 'products') {
-              metaContent = (
-                <ProductResultMeta item={entry.item} indicator={metaIndicator} />
+              return (
+                <ProductDialogRow
+                  key={entry.item.id}
+                  item={entry.item}
+                  subtitle={subtitle}
+                  thumbnailUrl={thumbnailUrl}
+                  badge={metadata.badge}
+                  sectionLabel={shouldShowMeta ? metadata.meta : undefined}
+                  active={activeIndex === index}
+                  onHover={() => onHoverIndex(index)}
+                  onSelect={() => onEntrySelect(entry)}
+                />
               )
             }
 
-            const action =
-              entry.item.section === 'products' ? (
-                <ProductQuickAddButton item={entry.item} />
-              ) : undefined
+            const metaIndicator = shouldShowMeta ? (
+              <SectionIndicator icon={metadata.icon} label={metadata.meta} />
+            ) : undefined
 
             return (
               <DialogRow
                 key={entry.item.id}
                 title={entry.item.name}
                 subtitle={subtitle}
-                meta={metaContent}
+                meta={metaIndicator}
                 thumbnailUrl={thumbnailUrl}
                 icon={!thumbnailUrl ? <DialogBadge>{metadata.badge}</DialogBadge> : undefined}
-                action={action}
                 active={activeIndex === index}
                 onHover={() => onHoverIndex(index)}
                 onSelect={() => onEntrySelect(entry)}
@@ -703,36 +708,27 @@ function DialogRow({
   )
 }
 
-function SectionIndicator({
-  icon: Icon,
-  label,
-}: {
-  icon: React.ComponentType<{ className?: string; strokeWidth?: number }>
-  label: string
-}) {
-  return (
-    <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/[0.06] text-[color:var(--button-primary)] ring-1 ring-inset ring-[color:var(--button-primary)]/40">
-      <Icon className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
-      <span className="sr-only">{label}</span>
-    </span>
-  )
-}
-
-function DialogBadge({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="flex h-12 w-12 items-center justify-center rounded-[10px] border border-[color:var(--surface-ring)] bg-white/[0.08] text-[13px] font-semibold uppercase text-[color:var(--text-muted)]">
-      {children}
-    </div>
-  )
-}
-
-function ProductResultMeta({
-  item,
-  indicator,
-}: {
+interface ProductDialogRowProps {
   item: SearchResultItem
-  indicator?: React.ReactNode
-}) {
+  subtitle?: string
+  thumbnailUrl?: string
+  badge?: string
+  sectionLabel?: string
+  active: boolean
+  onHover: () => void
+  onSelect: () => void
+}
+
+function ProductDialogRow({
+  item,
+  subtitle,
+  thumbnailUrl,
+  badge,
+  sectionLabel,
+  active,
+  onHover,
+  onSelect,
+}: ProductDialogRowProps) {
   const metadata = item.metadata ?? {}
   const priceLabel = metadata.price ?? null
   const availabilityStatus = metadata.availabilityStatus ?? null
@@ -763,57 +759,127 @@ function ProductResultMeta({
 
   const showAvailabilityBadge = Boolean(availabilityStatus)
   const fallbackAvailabilityLabel = !availabilityStatus && availabilityText ? availabilityText : null
+  const showMetaRow =
+    showAvailabilityBadge || Boolean(fallbackAvailabilityLabel) || entries.length > 0
 
   return (
-    <div className="flex flex-col items-end gap-2 text-right">
-      {priceLabel && (
-        <span className="text-[13px] font-semibold text-[color:var(--text)]">{priceLabel}</span>
+    <button
+      type="button"
+      role="option"
+      aria-selected={active}
+      onMouseEnter={onHover}
+      onMouseDown={(event) => {
+        event.preventDefault()
+        onSelect()
+      }}
+      className={cn(
+        'grid w-full grid-cols-[56px,1fr,auto] items-center gap-3 rounded-[12px] px-3 py-3 text-left text-[color:var(--text)] transition-all duration-150 ease-out',
+        active ? 'bg-white/[0.1] ring-1 ring-inset ring-white/12' : 'hover:bg-white/[0.06]'
       )}
-      {(indicator || showAvailabilityBadge || fallbackAvailabilityLabel) && (
-        <div className="flex items-center gap-2 text-[11px] text-[color:var(--text-muted)]">
-          {indicator && <span className="opacity-80">{indicator}</span>}
-          {showAvailabilityBadge ? (
-            <AvailabilityBadge
-              status={availabilityStatus ?? undefined}
-              className="!h-7 !rounded-full !px-3 opacity-80"
-            />
-          ) : fallbackAvailabilityLabel ? (
-            <span className="inline-flex items-center rounded-full border border-white/12 bg-white/[0.04] px-3 py-1 font-medium text-[color:var(--text-muted)]">
-              {fallbackAvailabilityLabel}
-            </span>
-          ) : null}
-        </div>
-      )}
-      {entries.length > 0 && (
-        <div className="flex items-center gap-2 text-[11px] text-[color:var(--text-muted)]">
-          <div className="flex -space-x-2 opacity-80">
-            {previewEntries.map((entry, index) => (
-              <SupplierLogo
-                key={`${entry.name}-${index}`}
-                name={entry.name}
-                logoUrl={entry.logoUrl}
-                className="!h-6 !w-6 !rounded-full border border-white/10 bg-white/10 opacity-80"
-              />
-            ))}
-            {overflowCount > 0 && (
-              <span className="flex h-6 w-6 items-center justify-center rounded-full border border-white/10 bg-white/10 text-[10px] font-semibold text-[color:var(--text)] opacity-70">
-                +{overflowCount}
-              </span>
+    >
+      <div className="flex h-12 w-12 shrink-0 items-center justify-center">
+        {thumbnailUrl ? (
+          <LazyImage
+            src={thumbnailUrl}
+            alt={item.name}
+            loading="lazy"
+            className="h-12 w-12 overflow-hidden rounded-[10px] border border-[color:var(--surface-ring)] bg-[color:var(--surface-raised)]"
+            imgClassName="h-full w-full object-cover"
+          />
+        ) : (
+          <DialogBadge>{badge ?? item.name.charAt(0).toUpperCase()}</DialogBadge>
+        )}
+      </div>
+      <div className="min-w-0 space-y-2">
+        <div className="flex flex-wrap items-start justify-between gap-2">
+          <div className="min-w-0 space-y-1">
+            <div className="flex flex-wrap items-center gap-2">
+              {sectionLabel && (
+                <span className="inline-flex shrink-0 items-center rounded-full border border-white/10 bg-white/[0.04] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-[color:var(--text-muted)]">
+                  {sectionLabel}
+                </span>
+              )}
+              <span className="truncate text-[15px] font-semibold">{item.name}</span>
+            </div>
+            {subtitle && (
+              <div className="truncate text-[13px] text-[color:var(--text-muted)]">{subtitle}</div>
             )}
           </div>
-          {summaryLabel && (
-            <span className="max-w-[140px] truncate text-[color:var(--text-muted)] opacity-80">
-              {summaryLabel}
+          {priceLabel && (
+            <span className="shrink-0 whitespace-nowrap text-[13px] font-semibold text-[color:var(--text)]">
+              {priceLabel}
             </span>
           )}
         </div>
-      )}
+        {showMetaRow && (
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-[color:var(--text-muted)]">
+            {showAvailabilityBadge ? (
+              <AvailabilityBadge
+                status={availabilityStatus ?? undefined}
+                className="!h-6 !rounded-full !px-2 text-[11px] opacity-80"
+              />
+            ) : fallbackAvailabilityLabel ? (
+              <span className="inline-flex items-center rounded-full border border-white/12 bg-white/[0.04] px-2 py-1 font-medium text-[color:var(--text-muted)]">
+                {fallbackAvailabilityLabel}
+              </span>
+            ) : null}
+            {entries.length > 0 && (
+              <div className="flex items-center gap-2">
+                <div className="flex -space-x-2">
+                  {previewEntries.map((entry, index) => (
+                    <SupplierLogo
+                      key={`${entry.name}-${index}`}
+                      name={entry.name}
+                      logoUrl={entry.logoUrl}
+                      className="!h-5 !w-5 !rounded-full border border-white/10 bg-white/10 opacity-80"
+                    />
+                  ))}
+                  {overflowCount > 0 && (
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full border border-white/10 bg-white/10 text-[10px] font-semibold text-[color:var(--text)] opacity-70">
+                      +{overflowCount}
+                    </span>
+                  )}
+                </div>
+                {summaryLabel && (
+                  <span className="max-w-[140px] truncate opacity-80">{summaryLabel}</span>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+      <div className="flex h-full items-center justify-end">
+        <ProductQuickAddButton item={item} />
+      </div>
+    </button>
+  )
+}
+
+function SectionIndicator({
+  icon: Icon,
+  label,
+}: {
+  icon: React.ComponentType<{ className?: string; strokeWidth?: number }>
+  label: string
+}) {
+  return (
+    <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/[0.06] text-[color:var(--button-primary)] ring-1 ring-inset ring-[color:var(--button-primary)]/40">
+      <Icon className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
+      <span className="sr-only">{label}</span>
+    </span>
+  )
+}
+
+function DialogBadge({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex h-12 w-12 items-center justify-center rounded-[10px] border border-[color:var(--surface-ring)] bg-white/[0.08] text-[13px] font-semibold uppercase text-[color:var(--text-muted)]">
+      {children}
     </div>
   )
 }
 
 function ProductQuickAddButton({ item }: { item: SearchResultItem }) {
-  const { addItem } = useCart()
+  const { items, addItem, updateQuantity, removeItem } = useCart()
   const [isAdding, setIsAdding] = useState(false)
 
   const supplierIds = item.metadata?.supplierIds ?? []
@@ -821,6 +887,32 @@ function ProductQuickAddButton({ item }: { item: SearchResultItem }) {
   const supplierNames = item.metadata?.supplierNames ?? []
   const primarySupplierId = supplierIds[0]
   if (!primarySupplierId) return null
+
+  const existingItem = items.find((cartItem) => cartItem.supplierItemId === item.id)
+
+  const stopPropagation = (event: React.SyntheticEvent) => {
+    event.stopPropagation()
+  }
+
+  if (existingItem) {
+    return (
+      <div
+        onMouseDown={stopPropagation}
+        onPointerDown={stopPropagation}
+        onTouchStart={stopPropagation}
+        onClick={stopPropagation}
+        className="flex items-center"
+      >
+        <QuantityStepper
+          quantity={existingItem.quantity}
+          onChange={(qty) => updateQuantity(existingItem.supplierItemId, qty)}
+          onRemove={() => removeItem(existingItem.supplierItemId)}
+          label={item.name}
+          supplier={existingItem.supplierName}
+        />
+      </div>
+    )
+  }
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault()
@@ -867,15 +959,17 @@ function ProductQuickAddButton({ item }: { item: SearchResultItem }) {
     <Button
       type="button"
       size="sm"
+      onPointerDown={stopPropagation}
       onMouseDown={(event) => {
         event.preventDefault()
         event.stopPropagation()
       }}
+      onTouchStart={stopPropagation}
       onClick={handleClick}
       disabled={isAdding}
-      className="h-9 rounded-full px-4 text-sm font-semibold shadow-[0_16px_36px_-24px_rgba(11,91,211,0.7)]"
+      className="!h-8 !px-3 rounded-full text-sm font-semibold shadow-[0_16px_36px_-24px_rgba(11,91,211,0.7)]"
     >
-      {isAdding ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Add to cart'}
+      {isAdding ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Add'}
     </Button>
   )
 }
