@@ -43,6 +43,17 @@ export function TenantSwitcher() {
   const [open, setOpen] = React.useState(false)
   const [query, setQuery] = React.useState('')
   const inputRef = React.useRef<HTMLInputElement | null>(null)
+  const handleMenuItemPointerMove = React.useCallback(
+    (event: React.PointerEvent<HTMLElement>) => {
+      if (
+        event.pointerType === 'mouse' &&
+        document.activeElement === inputRef.current
+      ) {
+        event.preventDefault()
+      }
+    },
+    [],
+  )
 
   React.useEffect(() => {
     if (open) {
@@ -137,7 +148,11 @@ export function TenantSwitcher() {
             placeholder="Search workspaces..."
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            className="h-12 w-full rounded-xl border border-[color:var(--surface-ring)] bg-transparent px-3 text-[14px] text-[color:var(--text)] placeholder:text-[color:var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[color:var(--brand-accent)]"
+            className={cn(
+              'h-12 w-full rounded-xl border border-[color:var(--surface-ring)] px-3 text-[14px] text-[color:var(--text)] placeholder:text-[color:var(--text-muted)]',
+              'transition-colors focus:outline-none focus:border-transparent focus:ring-2 focus:ring-[color:var(--brand-accent)]',
+              'bg-transparent hover:bg-[color:var(--surface-pop-2)]/35 focus:bg-[color:var(--surface-pop-2)]/50',
+            )}
             type="search"
           />
         </div>
@@ -146,6 +161,7 @@ export function TenantSwitcher() {
         <div className="flex flex-col gap-1 px-1">
           {showPersonal && (
             <DropdownMenuItem
+              onPointerMove={handleMenuItemPointerMove}
               onSelect={async () => {
                 await handleTenantSwitch(null)
                 setOpen(false)
@@ -178,6 +194,7 @@ export function TenantSwitcher() {
             return (
               <DropdownMenuItem
                 key={membership.id}
+                onPointerMove={handleMenuItemPointerMove}
                 onSelect={async () => {
                   await handleTenantSwitch(tenant.id)
                   setOpen(false)
@@ -221,6 +238,7 @@ export function TenantSwitcher() {
         <div className="tw-label normal-case">Actions</div>
         <div className="flex flex-col gap-1 px-1">
           <DropdownMenuItem
+            onPointerMove={handleMenuItemPointerMove}
             onSelect={() => {
               navigate('/settings/organization/create')
               setOpen(false)
@@ -234,6 +252,7 @@ export function TenantSwitcher() {
             </button>
           </DropdownMenuItem>
           <DropdownMenuItem
+            onPointerMove={handleMenuItemPointerMove}
             onSelect={() => {
               navigate('/settings/organization/join')
               setOpen(false)
