@@ -234,7 +234,9 @@ export const HeaderSearch = React.forwardRef<HTMLInputElement, HeaderSearchProps
     return (
       <Dialog open={dialogOpen} onOpenChange={(value) => closeDialog(value)}>
         <DialogContent
-          className="w-[760px] max-w-[92vw] overflow-hidden rounded-[16px] border border-[color:var(--surface-ring)] bg-[color:var(--surface-pop)] p-0 shadow-[var(--elev-shadow)] [&>button]:hidden"
+          variant="spotlight"
+          hideCloseButton
+          className="w-[760px] max-w-[92vw] overflow-hidden rounded-[16px] border border-[color:var(--surface-ring)] bg-[color:var(--surface-pop)] p-0 shadow-[var(--elev-shadow)]"
           onOpenAutoFocus={(event) => {
             event.preventDefault()
             requestAnimationFrame(() => {

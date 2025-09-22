@@ -47,7 +47,7 @@ const DialogOverlay = React.forwardRef<
   <DialogPrimitive.Overlay
     ref={ref}
     className={cn(
-      "fixed inset-0 z-50 bg-[color:var(--overlay)] backdrop-blur-sm",
+      "fixed inset-0 z-[var(--z-dialog-overlay,70)] bg-[color:var(--overlay)] backdrop-blur-sm",
       "data-[state=open]:animate-in data-[state=closed]:animate-out",
       "data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0",
       className
@@ -57,32 +57,49 @@ const DialogOverlay = React.forwardRef<
 ))
 DialogOverlay.displayName = "DialogOverlay"
 
+type DialogContentProps = React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & {
+  variant?: "default" | "spotlight"
+  hideCloseButton?: boolean
+}
+
 const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
->(({ className, children, ...props }, ref) => (
-  <DialogPortal>
-    <DialogOverlay />
-    <DialogPrimitive.Content
-      ref={ref}
-      className={cn(
-        "fixed left-1/2 top-1/2 z-50 grid w-full max-w-3xl translate-x-[-50%] translate-y-[-50%] gap-0",
-        "tw-pop p-0 shadow-[var(--elev-shadow)] duration-[var(--enter)] ease-snap motion-reduce:transition-none",
-        "data-[state=open]:animate-in data-[state=closed]:animate-out",
-        "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
-        className
-      )}
-      {...props}
-    >
-      <div className="h-1 w-full rounded-t-[var(--radius-xl)] bg-[color:var(--brand-accent)]" />
-      {children}
-      <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity duration-fast ease-snap hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-[var(--brand-accent)] focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground motion-reduce:transition-none">
-        <X className="h-4 w-4" />
-        <span className="sr-only">Close</span>
-      </DialogPrimitive.Close>
-    </DialogPrimitive.Content>
-  </DialogPortal>
-))
+  DialogContentProps
+>(({ className, children, variant = "default", hideCloseButton, ...props }, ref) => {
+  const spotlight = variant === "spotlight"
+  const shouldHideClose = hideCloseButton ?? spotlight
+
+  return (
+    <DialogPortal>
+      <DialogOverlay />
+      <DialogPrimitive.Content
+        ref={ref}
+        className={cn(
+          "fixed left-1/2 z-[var(--z-dialog-content,80)] grid w-full gap-0",
+          "tw-pop p-0 shadow-[var(--elev-shadow)] duration-[var(--enter)] ease-snap motion-reduce:transition-none",
+          "data-[state=open]:animate-in data-[state=closed]:animate-out",
+          "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
+          spotlight
+            ? "top-[18vh] -translate-x-1/2 translate-y-0 sm:top-[16vh] md:top-[14vh] max-w-[min(760px,calc(100vw-32px))]"
+            : "top-1/2 -translate-x-1/2 -translate-y-1/2 max-w-3xl",
+          className
+        )}
+        {...props}
+      >
+        {!spotlight ? (
+          <div className="h-1 w-full rounded-t-[var(--radius-xl)] bg-[color:var(--brand-accent)]" />
+        ) : null}
+        {children}
+        {!shouldHideClose ? (
+          <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity duration-fast ease-snap hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-[var(--brand-accent)] focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground motion-reduce:transition-none">
+            <X className="h-4 w-4" />
+            <span className="sr-only">Close</span>
+          </DialogPrimitive.Close>
+        ) : null}
+      </DialogPrimitive.Content>
+    </DialogPortal>
+  )
+})
 DialogContent.displayName = DialogPrimitive.Content.displayName
 
 const DialogHeader = ({

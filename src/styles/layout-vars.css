@@ -37,6 +37,8 @@
   --z-header: 55;    /* header content on top */
   --z-chrome: 50;    /* chrome background below header */
   --z-popover: 70;   /* overlay surfaces (menus, popovers) */
+  --z-dialog-overlay: 72; /* global dialog overlay layer */
+  --z-dialog-content: 80; /* spotlight/dialog content */
 
   /* Catalog toolbar tokens */
   --toolbar-ring: 0 0 0 1px rgba(255, 255, 255, 0.1) inset;
