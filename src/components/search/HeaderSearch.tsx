@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useGlobalSearch, SearchScope } from '@/hooks/useGlobalSearch'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { Loader2, Search } from 'lucide-react'
+import { LazyImage } from '@/components/ui/LazyImage'
 import { cn } from '@/lib/utils'
 
 type SearchResultSection = 'products' | 'suppliers' | 'orders'
@@ -406,18 +407,23 @@ function DialogResults({
       sectionsContent.push(
         <div key={section} className="space-y-[2px] pb-1">
           <DialogSection label={`${metadata.heading} (${sectionData.totalCount})`} />
-          {sectionEntries.map(({ entry, index }) => (
-            <DialogRow
-              key={entry.item.id}
-              title={entry.item.name}
-              subtitle={entry.item.metadata?.subtitle}
-              meta={metadata.meta}
-              icon={<DialogBadge>{metadata.badge}</DialogBadge>}
-              active={activeIndex === index}
-              onHover={() => onHoverIndex(index)}
-              onSelect={() => onEntrySelect(entry)}
-            />
-          ))}
+          {sectionEntries.map(({ entry, index }) => {
+            const thumbnailUrl = entry.item.metadata?.imageUrl
+
+            return (
+              <DialogRow
+                key={entry.item.id}
+                title={entry.item.name}
+                subtitle={entry.item.metadata?.subtitle}
+                meta={metadata.meta}
+                thumbnailUrl={thumbnailUrl}
+                icon={!thumbnailUrl ? <DialogBadge>{metadata.badge}</DialogBadge> : undefined}
+                active={activeIndex === index}
+                onHover={() => onHoverIndex(index)}
+                onSelect={() => onEntrySelect(entry)}
+              />
+            )
+          })}
           {sectionData.hasMore && (
             <div className="px-3 py-2">
               <button
@@ -482,12 +488,12 @@ function RecentDialogRow({ query, active, onHover, onSelect, onRemove }: RecentD
         onSelect()
       }}
       className={cn(
-        'grid w-full cursor-pointer grid-cols-[20px,1fr,auto] items-center gap-2.5 rounded-[10px] px-3 text-left text-[color:var(--text)] transition-colors',
-        'h-[50px]',
+        'grid w-full cursor-pointer grid-cols-[44px,1fr,auto] items-center gap-2 rounded-[10px] px-3 text-left text-[color:var(--text)] transition-colors',
+        'h-[56px]',
         active ? 'bg-white/[0.08]' : 'hover:bg-white/[0.04]'
       )}
     >
-      <div className="flex items-center justify-center">
+      <div className="flex h-10 w-10 items-center justify-center">
         <span className="text-[12px] text-[color:var(--text-muted)] opacity-60">↺</span>
       </div>
       <div className="min-w-0">
@@ -529,12 +535,22 @@ interface DialogRowProps {
   subtitle?: string
   meta?: string
   icon?: React.ReactNode
+  thumbnailUrl?: string
   active: boolean
   onHover: () => void
   onSelect: () => void
 }
 
-function DialogRow({ title, subtitle, meta, icon, active, onHover, onSelect }: DialogRowProps) {
+function DialogRow({
+  title,
+  subtitle,
+  meta,
+  icon,
+  thumbnailUrl,
+  active,
+  onHover,
+  onSelect,
+}: DialogRowProps) {
   return (
     <button
       type="button"
@@ -546,13 +562,23 @@ function DialogRow({ title, subtitle, meta, icon, active, onHover, onSelect }: D
         onSelect()
       }}
       className={cn(
-        'grid w-full grid-cols-[20px,1fr,auto] items-center gap-2.5 rounded-[10px] px-3 text-left text-[color:var(--text)] transition-colors',
-        'h-[50px]',
+        'grid w-full grid-cols-[44px,1fr,auto] items-center gap-2 rounded-[10px] px-3 text-left text-[color:var(--text)] transition-colors',
+        'h-[56px]',
         active ? 'bg-white/[0.08]' : 'hover:bg-white/[0.04]'
       )}
     >
-      <div className="flex items-center justify-center">
-        {icon ?? <DialogBadge>{title.charAt(0).toUpperCase()}</DialogBadge>}
+      <div className="flex h-10 w-10 items-center justify-center">
+        {thumbnailUrl ? (
+          <LazyImage
+            src={thumbnailUrl}
+            alt={title}
+            loading="lazy"
+            className="h-10 w-10 overflow-hidden rounded-[8px] border border-[color:var(--surface-ring)] bg-[color:var(--surface-raised)]"
+            imgClassName="h-full w-full object-cover"
+          />
+        ) : (
+          icon ?? <DialogBadge>{title.charAt(0).toUpperCase()}</DialogBadge>
+        )}
       </div>
       <div className="min-w-0">
         <div className="truncate text-[15px] font-medium">{title}</div>
@@ -574,7 +600,7 @@ function DialogRow({ title, subtitle, meta, icon, active, onHover, onSelect }: D
 
 function DialogBadge({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex h-5 w-5 items-center justify-center rounded-[6px] bg-white/[0.08] text-[11px] font-semibold uppercase text-[color:var(--text-muted)]">
+    <div className="flex h-10 w-10 items-center justify-center rounded-[8px] border border-[color:var(--surface-ring)] bg-white/[0.06] text-[13px] font-semibold uppercase text-[color:var(--text-muted)]">
       {children}
     </div>
   )
