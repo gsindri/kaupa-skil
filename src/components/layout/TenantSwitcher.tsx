@@ -24,7 +24,7 @@ import {
 type Membership = {
   id: string
   base_role: string
-  tenant: { id: string; name: string } | null
+  tenant: { id: string; name: string; kind: string } | null
 }
 
 function getInitials(name: string) {
@@ -75,7 +75,7 @@ export function TenantSwitcher() {
 
       const { data, error } = await supabase
         .from('memberships')
-        .select(`id, base_role, tenant:tenants(id, name)`)
+        .select(`id, base_role, tenant:tenants(id, name, kind)`)
         .eq('user_id', user.id)
 
       if (error) throw error
@@ -93,7 +93,13 @@ export function TenantSwitcher() {
     (m) => m.tenant && m.tenant.id === profile?.tenant_id,
   )?.tenant
 
-  const displayName = currentTenant?.name || 'Personal workspace'
+  // Display "Personal workspace" for personal tenants, otherwise show the tenant name
+  const displayName = currentTenant 
+    ? currentTenant.kind === 'personal' 
+      ? 'Personal workspace (Private)' 
+      : currentTenant.name
+    : 'Personal workspace (Private)'
+  
   const normalizedQuery = query.trim().toLowerCase()
 
   const matchingTenants = React.useMemo(() => {
@@ -102,17 +108,14 @@ export function TenantSwitcher() {
     }
     return userMemberships.filter((membership) => {
       const name = membership.tenant?.name?.toLowerCase() ?? ''
-      return name.includes(normalizedQuery)
+      const displayLabel = membership.tenant?.kind === 'personal' ? 'personal workspace' : name
+      return displayLabel.includes(normalizedQuery)
     })
   }, [normalizedQuery, userMemberships])
 
-  const showPersonal =
-    normalizedQuery.length === 0 ||
-    'personal workspace'.includes(normalizedQuery)
+  const hasResults = matchingTenants.length > 0
 
-  const hasResults = showPersonal || matchingTenants.length > 0
-
-  const handleTenantSwitch = async (tenantId: string | null) => {
+  const handleTenantSwitch = async (tenantId: string) => {
     if (!user?.id) return
 
     try {
@@ -170,38 +173,11 @@ export function TenantSwitcher() {
 
         <div className="tw-label normal-case">Workspaces</div>
         <div className="flex flex-col gap-1 px-1">
-          {showPersonal && (
-            <DropdownMenuItem
-              onPointerMove={handleMenuItemPointerMove}
-              onSelect={async () => {
-                await handleTenantSwitch(null)
-                setOpen(false)
-              }}
-              asChild
-            >
-              <button
-                type="button"
-                aria-selected={!profile?.tenant_id}
-                className="tw-row text-left"
-              >
-                <Home className="size-4 text-[color:var(--text-muted)]" />
-                <div className="flex w-full items-center justify-between gap-2">
-                  <span className="truncate">Personal workspace</span>
-                </div>
-                <Check
-                  className={cn(
-                    'size-3.5 self-baseline text-[color:var(--brand-accent)] transition-opacity',
-                    !profile?.tenant_id ? 'opacity-70' : 'opacity-0',
-                  )}
-                />
-              </button>
-            </DropdownMenuItem>
-          )}
-
           {matchingTenants.map((membership) => {
             const tenant = membership.tenant
             if (!tenant) return null
             const isCurrent = tenant.id === profile?.tenant_id
+            const isPersonal = tenant.kind === 'personal'
             return (
               <DropdownMenuItem
                 key={membership.id}
@@ -217,11 +193,17 @@ export function TenantSwitcher() {
                   aria-selected={isCurrent}
                   className="tw-row text-left"
                 >
-                  <Avatar className="h-6 w-6 text-[12px] text-[color:var(--text-muted)]">
-                    <AvatarFallback>{getInitials(tenant.name)}</AvatarFallback>
-                  </Avatar>
+                  {isPersonal ? (
+                    <Home className="size-4 text-[color:var(--text-muted)]" />
+                  ) : (
+                    <Avatar className="h-6 w-6 text-[12px] text-[color:var(--text-muted)]">
+                      <AvatarFallback>{getInitials(tenant.name)}</AvatarFallback>
+                    </Avatar>
+                  )}
                   <div className="flex w-full items-center justify-between gap-2">
-                    <span className="truncate">{tenant.name}</span>
+                    <span className="truncate">
+                      {isPersonal ? 'Personal workspace (Private)' : tenant.name}
+                    </span>
                     <span className="pop-accent px-2 py-0.5 capitalize">
                       {membership.base_role}
                     </span>
