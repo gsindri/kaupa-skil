@@ -80,10 +80,13 @@ export function TenantSwitcher() {
 
       if (error) throw error
       
-      // Transform the data to match our expected type (Supabase returns tenant as array for relationship queries)
+      // Transform the data to match our expected type
+      // Supabase can return tenant data as either object or array depending on the query
       const transformedData = (data || []).map(item => ({
         ...item,
-        tenant: Array.isArray(item.tenant) && item.tenant.length > 0 ? item.tenant[0] : null
+        tenant: Array.isArray(item.tenant) 
+          ? (item.tenant.length > 0 ? item.tenant[0] : null)
+          : (item.tenant || null)
       })) as Membership[]
       
       // Debug logging
