@@ -167,6 +167,7 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
   const [allowNavigation, setAllowNavigation] = useState(false)
   const [exitDialogOpen, setExitDialogOpen] = useState(false)
   const [exitDialogContext, setExitDialogContext] = useState<'manual' | 'blocked' | null>(null)
+  const [pendingExitAction, setPendingExitAction] = useState<'skip' | 'complete' | null>(null)
 
   const organizationStepRef = useRef<OrganizationStepHandle>(null)
   const exitDialogContextRef = useRef<'manual' | 'blocked' | null>(null)
@@ -313,6 +314,29 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
   }, [blocker.state])
 
   useEffect(() => {
+    if (!allowNavigation || !pendingExitAction) {
+      return
+    }
+
+    const action = pendingExitAction
+    setPendingExitAction(null)
+
+    if (action === 'skip') {
+      if (onSkip) {
+        onSkip()
+      } else {
+        navigate('/')
+      }
+    } else if (action === 'complete') {
+      if (onComplete) {
+        onComplete()
+      } else {
+        navigate('/')
+      }
+    }
+  }, [allowNavigation, navigate, onComplete, onSkip, pendingExitAction])
+
+  useEffect(() => {
     if (!shouldBlockNavigation) return
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
       event.preventDefault()
@@ -391,12 +415,8 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
       description: 'You can complete organization setup whenever you’re ready.'
     })
     setAllowNavigation(true)
-    if (onSkip) {
-      onSkip()
-    } else {
-      navigate('/')
-    }
-  }, [navigate, onSkip, toast])
+    setPendingExitAction('skip')
+  }, [toast])
 
   const requestExit = useCallback(() => {
     exitDialogContextRef.current = 'manual'
@@ -526,12 +546,7 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
 
       await refetch()
       setAllowNavigation(true)
-
-      if (onComplete) {
-        onComplete()
-      } else {
-        navigate('/')
-      }
+      setPendingExitAction('complete')
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Failed to complete setup. Please try again.'
       setSetupError(message)
@@ -544,7 +559,7 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
     } finally {
       setIsCompleting(false)
     }
-  }, [navigate, onComplete, organization, preferences, refetch, selectedSupplierIds, toast, user])
+  }, [organization, preferences, refetch, selectedSupplierIds, toast, user])
 
   const emphasizedPrimaryClass =
     'justify-center bg-[var(--brand-accent)] text-[color:var(--brand-accent-fg)] hover:bg-[var(--brand-accent)]/90'
