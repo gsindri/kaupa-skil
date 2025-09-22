@@ -188,6 +188,28 @@ export const ORGANIZATION_SECTION_DEFINITIONS: OrganizationSectionDefinition[] =
   }
 ]
 
+const SectionIntro = ({ section }: { section: OrganizationSectionDefinition }) => (
+  <div className="flex items-center gap-2 text-[13px] text-[color:var(--text-muted)]">
+    <span className="text-[15px] font-semibold text-[color:var(--text)]">{section.title}</span>
+    {section.description && (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            type="button"
+            className="inline-flex h-6 w-6 items-center justify-center rounded-full text-[color:var(--text-muted)] transition-colors hover:text-[color:var(--text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)] focus-visible:ring-offset-2"
+            aria-label={section.description}
+          >
+            <Info className="h-4 w-4" />
+          </button>
+        </TooltipTrigger>
+        <TooltipContent className="max-w-[240px] rounded-[12px] border border-[color:var(--surface-ring)] bg-[color:var(--surface-pop)] px-3 py-2 text-left text-[12px] leading-relaxed text-[color:var(--text-muted)]">
+          {section.description}
+        </TooltipContent>
+      </Tooltip>
+    )}
+  </div>
+)
+
 type SectionId = OrganizationSectionDefinition['id']
 type OrganizationFieldPath = FieldPath<OrganizationFormValues>
 
@@ -385,6 +407,7 @@ export const OrganizationStep = forwardRef<OrganizationStepHandle, OrganizationS
         case 'basics':
           return (
             <div className="space-y-5">
+              <SectionIntro section={currentSection} />
               <FormField
                 control={form.control}
                 name="name"
@@ -471,6 +494,7 @@ export const OrganizationStep = forwardRef<OrganizationStepHandle, OrganizationS
         case 'delivery':
           return (
             <div className="space-y-5">
+              <SectionIntro section={currentSection} />
               <div className="flex items-center gap-2 text-[13px] text-[color:var(--text-muted)]">
                 <MapPinHouse className="h-5 w-5 flex-shrink-0 text-[color:var(--text-muted)]" />
                 <div className="flex items-center gap-2">
@@ -482,20 +506,6 @@ export const OrganizationStep = forwardRef<OrganizationStepHandle, OrganizationS
                       </span>
                     </span>
                   </p>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button
-                        type="button"
-                        className="inline-flex h-6 w-6 items-center justify-center rounded-full text-[color:var(--text-muted)] transition-colors hover:text-[color:var(--text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)] focus-visible:ring-offset-2"
-                        aria-label="Learn how the delivery location is used"
-                      >
-                        <Info className="h-4 w-4" />
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent className="max-w-[220px] rounded-[12px] border border-[color:var(--surface-ring)] bg-[color:var(--surface-pop)] px-3 py-2 text-left text-[12px] leading-relaxed text-[color:var(--text-muted)]">
-                      Suppliers deliver orders to this location.
-                    </TooltipContent>
-                  </Tooltip>
                 </div>
               </div>
 
@@ -637,6 +647,7 @@ export const OrganizationStep = forwardRef<OrganizationStepHandle, OrganizationS
         case 'invoicing':
           return (
             <div className="space-y-5">
+              <SectionIntro section={currentSection} />
               <FormField
                 control={form.control}
                 name="useSeparateInvoiceAddress"
@@ -680,20 +691,6 @@ export const OrganizationStep = forwardRef<OrganizationStepHandle, OrganizationS
                           </span>
                         </span>
                       </p>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <button
-                            type="button"
-                            className="inline-flex h-6 w-6 items-center justify-center rounded-full text-[color:var(--text-muted)] transition-colors hover:text-[color:var(--text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)] focus-visible:ring-offset-2"
-                            aria-label="See how invoice addresses are used"
-                          >
-                            <Info className="h-4 w-4" />
-                          </button>
-                        </TooltipTrigger>
-                        <TooltipContent className="max-w-[220px] rounded-[12px] border border-[color:var(--surface-ring)] bg-[color:var(--surface-pop)] px-3 py-2 text-left text-[12px] leading-relaxed text-[color:var(--text-muted)]">
-                          Finance teams receive paperwork at this address.
-                        </TooltipContent>
-                      </Tooltip>
                     </div>
                   </div>
 
@@ -850,20 +847,6 @@ export const OrganizationStep = forwardRef<OrganizationStepHandle, OrganizationS
                               </span>
                             </span>
                           </FormLabel>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <button
-                                type="button"
-                                className="inline-flex h-5 w-5 items-center justify-center rounded-full text-[color:var(--text-muted)] transition-colors hover:text-[color:var(--text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)] focus-visible:ring-offset-2"
-                                aria-label="Why we ask for VAT or Kennitala"
-                              >
-                                <Info className="h-4 w-4" />
-                              </button>
-                            </TooltipTrigger>
-                            <TooltipContent className="max-w-[220px] rounded-[12px] border border-[color:var(--surface-ring)] bg-[color:var(--surface-pop)] px-3 py-2 text-left text-[12px] leading-relaxed text-[color:var(--text-muted)]">
-                              Used to pre-fill invoices and receipts.
-                            </TooltipContent>
-                          </Tooltip>
                         </div>
                         <FormMessage />
                       </div>
@@ -889,6 +872,7 @@ export const OrganizationStep = forwardRef<OrganizationStepHandle, OrganizationS
         case 'contacts':
           return (
             <div className="space-y-5">
+              <SectionIntro section={currentSection} />
               <FormField
                 control={form.control}
                 name="contactName"
@@ -1005,7 +989,7 @@ export const OrganizationStep = forwardRef<OrganizationStepHandle, OrganizationS
         default:
           return null
       }
-    }, [commit, currentSection.id, defaultCountry, form, useSeparateInvoiceAddress])
+    }, [commit, currentSection, defaultCountry, form, useSeparateInvoiceAddress])
 
     return (
       <div className="space-y-6">
