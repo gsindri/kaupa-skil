@@ -19,7 +19,13 @@ import {
 } from '@/components/ui/alert-dialog'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
-import { OrganizationStep, type OrganizationStepHandle, type OrganizationFormValues } from './steps/OrganizationStep'
+import {
+  OrganizationStep,
+  type OrganizationStepHandle,
+  type OrganizationFormValues,
+  type BusinessTypeValue,
+  BUSINESS_TYPE_VALUES
+} from './steps/OrganizationStep'
 import { SupplierSelectionStep, type SupplierOption } from './steps/SupplierSelectionStep'
 import { ReviewStep, type ReviewPreferences } from './steps/ReviewStep'
 import { useLocaleDefaults } from '@/utils/locale'
@@ -89,11 +95,18 @@ const migrateOrganization = (
     invoiceAddress = ensureAddress(rawInvoice as Partial<AddressValues> | undefined)
   }
 
+  const rawBusinessType = (source as any).businessType
+  const businessType =
+    typeof rawBusinessType === 'string' && (BUSINESS_TYPE_VALUES as readonly string[]).includes(rawBusinessType)
+      ? (rawBusinessType as BusinessTypeValue)
+      : undefined
+
   const useSeparate =
-    typeof source.useSeparateInvoiceAddress === 'boolean' ? source.useSeparateInvoiceAddress : true
+    typeof source.useSeparateInvoiceAddress === 'boolean' ? source.useSeparateInvoiceAddress : false
 
   return {
     name: trimString(source.name),
+    businessType,
     contactName: trimString(source.contactName),
     phone: trimString(source.phone),
     deliveryAddress,
@@ -106,12 +119,13 @@ const migrateOrganization = (
 
 const EMPTY_ORGANIZATION: OrganizationFormValues = {
   name: '',
+  businessType: undefined,
   contactName: '',
   phone: '',
   deliveryAddress: createEmptyAddress(),
   vat: '',
   email: '',
-  useSeparateInvoiceAddress: true,
+  useSeparateInvoiceAddress: false,
   invoiceAddress: createEmptyAddress()
 }
 

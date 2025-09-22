@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/select'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 
-import type { OrganizationFormValues } from './OrganizationStep'
+import { BUSINESS_TYPE_OPTIONS, type OrganizationFormValues } from './OrganizationStep'
 import type { SupplierOption } from './SupplierSelectionStep'
 
 export interface ReviewPreferences {
@@ -87,6 +87,9 @@ export function ReviewStep({
 
   const deliveryAddressText = formatAddress(organization.deliveryAddress)
   const invoiceAddressText = formatAddress(organization.invoiceAddress)
+  const businessTypeOption = organization.businessType
+    ? BUSINESS_TYPE_OPTIONS.find(option => option.value === organization.businessType)
+    : undefined
 
   return (
     <div className="space-y-6">
@@ -125,8 +128,12 @@ export function ReviewStep({
             <dd>{organization.email || 'Add later'}</dd>
           </div>
           <div>
+            <dt className="font-medium text-[color:var(--text)]">Business type</dt>
+            <dd>{businessTypeOption?.label ?? 'Not specified'}</dd>
+          </div>
+          <div>
             <dt className="font-medium text-[color:var(--text)]">VAT / Kennitala</dt>
-            <dd>{organization.vat || 'Optional'}</dd>
+            <dd>{organization.vat || 'Missing'}</dd>
           </div>
           <div className="sm:col-span-2">
             <dt className="font-medium text-[color:var(--text)]">Delivery address</dt>
