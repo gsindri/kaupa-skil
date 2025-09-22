@@ -185,7 +185,7 @@ export async function fetchOrgCatalogItems(
     let query: any = supabase
       .rpc('v_org_catalog', { _org: orgId })
       .select(
-        'catalog_id, name, brand, canonical_pack, pack_sizes, suppliers_count, supplier_ids, supplier_names, supplier_logo_urls, sample_image_url, sample_source_url, availability_status, availability_text, availability_updated_at, best_price'
+        'catalog_id, name, brand, canonical_pack, pack_sizes, suppliers_count, supplier_ids, supplier_names, supplier_logo_urls, active_supplier_count, sample_image_url, sample_source_url, availability_status, availability_text, availability_updated_at, best_price, category_tags, on_special, is_my_supplier'
       )
 
   if (sort === 'az') {
@@ -236,10 +236,12 @@ export async function fetchOrgCatalogItems(
       brand: item.brand ?? null,
       canonical_pack: item.canonical_pack ?? null,
       pack_sizes: item.pack_sizes ?? null,
+      category_tags: item.category_tags ?? null,
       suppliers_count: item.suppliers_count ?? item.supplier_count ?? 0,
       supplier_ids: item.supplier_ids ?? null,
       supplier_names: item.supplier_names ?? null,
       supplier_logo_urls: item.supplier_logo_urls ?? null,
+      active_supplier_count: item.active_supplier_count ?? 0,
       sample_image_url: item.sample_image_url ?? item.image_url ?? null,
       availability_text: item.availability_text ?? null,
       availability_status: (item.availability_status ?? null) as AvailabilityStatus | null,
