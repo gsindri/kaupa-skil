@@ -23,6 +23,7 @@ import {
   OrganizationStep,
   type OrganizationStepHandle,
   type OrganizationFormValues,
+  type OrganizationStepFooterContext,
   type BusinessTypeValue,
   BUSINESS_TYPE_VALUES
 } from './steps/OrganizationStep'
@@ -597,25 +598,43 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
             'Your progress has been saved. You can finish setup anytime from your dashboard.'
         }
 
-  const organizationFooter = (
-    <>
-      <Button
-        size="lg"
-        className={cn(emphasizedPrimaryClass, 'w-full sm:w-auto')}
-        onClick={() => organizationStepRef.current?.submit()}
-        disabled={isCompleting}
-      >
-        Continue
-      </Button>
-      <button
-        type="button"
-        className={cn(exitLinkClass, 'self-center sm:self-end')}
-        onClick={requestExit}
-        disabled={isCompleting}
-      >
-        Exit setup
-      </button>
-    </>
+  const organizationFooter = ({
+    isFirstSection,
+    goToPrevious
+  }: OrganizationStepFooterContext) => (
+    <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      {!isFirstSection && (
+        <Button
+          variant="ghost"
+          size="lg"
+          className={backButtonClass}
+          onClick={goToPrevious}
+          disabled={isCompleting}
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" /> Back
+        </Button>
+      )}
+      <div className="flex flex-col items-center gap-2 sm:flex-row sm:items-center sm:justify-end sm:gap-3">
+        <Button
+          size="lg"
+          className={cn(emphasizedPrimaryClass, 'w-full sm:w-auto')}
+          onClick={() => {
+            void organizationStepRef.current?.submit()
+          }}
+          disabled={isCompleting}
+        >
+          Continue
+        </Button>
+        <button
+          type="button"
+          className={cn(exitLinkClass, 'self-center sm:self-end')}
+          onClick={requestExit}
+          disabled={isCompleting}
+        >
+          Exit setup
+        </button>
+      </div>
+    </div>
   )
 
   const supplierFooter = (
