@@ -24,7 +24,7 @@ import {
 } from '@/lib/analytics'
 import { AnalyticsTracker } from '@/components/quick/AnalyticsTrackerUtils'
 import { ViewToggle } from '@/components/place-order/ViewToggle'
-import { LayoutDebugger } from '@/components/debug/LayoutDebugger'
+
 import AppLayout from '@/components/layout/AppLayout'
 import { useCatalogFilters, SortOrder } from '@/state/catalogFiltersStore'
 import type { TriState } from '@/lib/catalogFilters'
@@ -679,8 +679,6 @@ export default function CatalogPage() {
       }
       panelOpen={showFilters}
     >
-      {/* eslint-disable-next-line no-constant-binary-expression */}
-      {false && <LayoutDebugger show />}
 
       {view === 'list' ? (
         <>

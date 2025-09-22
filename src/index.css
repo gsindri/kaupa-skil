@@ -148,3 +148,41 @@ html { scrollbar-gutter: stable; }
   transform: none;
 }
 
+/* Remove any debug outlines or borders from icons and UI elements */
+.nav-icon,
+.nav-icon *,
+[data-nav-icon-scale],
+[data-nav-icon-translate],
+svg.lucide,
+.search-icon,
+.search-icon *,
+button svg,
+button svg * {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Specifically target search icons to ensure clean rendering */
+[data-testid="search-icon"],
+[data-testid="search-icon"] *,
+.header-search svg,
+.header-search svg *,
+[role="button"] svg,
+[role="button"] svg * {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+/* Remove browser dev tools highlighting */
+*[style*="outline"],
+*[style*="border"]:not(.border-intended),
+.dev-tools-highlight,
+.__web-inspector-hide-shortcut__ {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
