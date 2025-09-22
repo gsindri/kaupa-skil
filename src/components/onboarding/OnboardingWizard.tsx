@@ -25,7 +25,9 @@ import {
   type OrganizationFormValues,
   type OrganizationStepFooterContext,
   type BusinessTypeValue,
-  BUSINESS_TYPE_VALUES
+  BUSINESS_TYPE_VALUES,
+  type OrganizationSectionProgress,
+  ORGANIZATION_SECTION_DEFINITIONS
 } from './steps/OrganizationStep'
 import { SupplierSelectionStep, type SupplierOption } from './steps/SupplierSelectionStep'
 import { ReviewStep, type ReviewPreferences } from './steps/ReviewStep'
@@ -171,6 +173,12 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
 
   const [currentStep, setCurrentStep] = useState(1)
   const [organization, setOrganization] = useState<OrganizationFormValues>(EMPTY_ORGANIZATION)
+  const [organizationSectionProgress, setOrganizationSectionProgress] = useState({
+    index: 0,
+    total: ORGANIZATION_SECTION_DEFINITIONS.length,
+    title: ORGANIZATION_SECTION_DEFINITIONS[0].title,
+    description: ORGANIZATION_SECTION_DEFINITIONS[0].description
+  })
   const [selectedSupplierIds, setSelectedSupplierIds] = useState<string[]>([])
   const [preferences, setPreferences] = useState<ReviewPreferences>({
     language: defaultLanguage,
@@ -366,7 +374,28 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
     [steps, currentStep]
   )
 
-  const progress = (currentStep / TOTAL_STEPS) * 100
+  const organizationStepShare = useMemo(() => {
+    if (currentStep !== 1) {
+      return 0
+    }
+    return organizationSectionProgress.total > 0
+      ? (organizationSectionProgress.index + 1) / organizationSectionProgress.total
+      : 0
+  }, [currentStep, organizationSectionProgress])
+
+  const progress =
+    currentStep === 1 ? (organizationStepShare / TOTAL_STEPS) * 100 : (currentStep / TOTAL_STEPS) * 100
+
+  const showingOrganizationSections = currentStep === 1
+  const stepCountLabel = showingOrganizationSections
+    ? `Step ${organizationSectionProgress.index + 1} of ${organizationSectionProgress.total}`
+    : `Step ${currentStep} of ${TOTAL_STEPS}`
+  const stepTitle = showingOrganizationSections
+    ? organizationSectionProgress.title
+    : currentStepDefinition?.title ?? ''
+  const stepDescription = showingOrganizationSections
+    ? organizationSectionProgress.description
+    : currentStepDefinition?.description ?? ''
 
   const handleOrganizationUpdate = useCallback((values: OrganizationFormValues) => {
     setOrganization(values)
@@ -379,6 +408,29 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
     (values: OrganizationFormValues) => {
       setOrganization(values)
       setCurrentStep(2)
+    },
+    []
+  )
+
+  const handleOrganizationSectionChange = useCallback(
+    (progress: OrganizationSectionProgress) => {
+      setOrganizationSectionProgress(prev => {
+        if (
+          prev.index === progress.index &&
+          prev.total === progress.total &&
+          prev.title === progress.section.title &&
+          prev.description === progress.section.description
+        ) {
+          return prev
+        }
+
+        return {
+          index: progress.index,
+          total: progress.total,
+          title: progress.section.title,
+          description: progress.section.description
+        }
+      })
     },
     []
   )
@@ -603,58 +655,68 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
     goToPrevious
   }: OrganizationStepFooterContext) => (
     <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-      {!isFirstSection && (
-        <Button
-          variant="ghost"
-          size="lg"
-          className={backButtonClass}
-          onClick={goToPrevious}
-          disabled={isCompleting}
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" /> Back
-        </Button>
-      )}
-      <div className="flex flex-col items-center gap-2 sm:flex-row sm:items-center sm:justify-end sm:gap-3">
-        <Button
-          size="lg"
-          className={cn(emphasizedPrimaryClass, 'w-full sm:w-auto')}
-          onClick={() => {
-            void organizationStepRef.current?.submit()
-          }}
-          disabled={isCompleting}
-        >
-          Continue
-        </Button>
+      <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-4">
+        {!isFirstSection && (
+          <Button
+            variant="ghost"
+            size="lg"
+            className={backButtonClass}
+            onClick={goToPrevious}
+            disabled={isCompleting}
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" /> Back
+          </Button>
+        )}
         <button
           type="button"
-          className={cn(exitLinkClass, 'self-center sm:self-end')}
+          className={exitLinkClass}
           onClick={requestExit}
           disabled={isCompleting}
         >
           Exit setup
         </button>
       </div>
+      <Button
+        size="lg"
+        className={cn(emphasizedPrimaryClass, 'w-full sm:w-auto')}
+        onClick={() => {
+          void organizationStepRef.current?.submit()
+        }}
+        disabled={isCompleting}
+      >
+        Continue
+      </Button>
     </div>
   )
 
   const supplierFooter = (
-    <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
-      <Button
-        variant="ghost"
-        size="lg"
-        className={backButtonClass}
-        onClick={handleBack}
-        disabled={isCompleting}
-      >
-        <ArrowLeft className="mr-2 h-4 w-4" /> Back
-      </Button>
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end sm:gap-3">
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-4">
+        <Button
+          variant="ghost"
+          size="lg"
+          className={backButtonClass}
+          onClick={handleBack}
+          disabled={isCompleting}
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" /> Back
+        </Button>
+        <button
+          type="button"
+          className={exitLinkClass}
+          onClick={requestExit}
+          disabled={isCompleting}
+        >
+          Exit setup
+        </button>
+      </div>
+      <div className="flex flex-col items-center gap-2 sm:flex-row sm:items-center sm:justify-end sm:gap-3">
         <span className="text-center text-[13px] text-[color:var(--text-muted)] sm:text-left">
           {selectedSupplierIds.length} selected
         </span>
         <Button
           size="lg"
-          className={emphasizedPrimaryClass}
+          className={cn(emphasizedPrimaryClass, 'w-full sm:w-auto')}
           onClick={handleSupplierContinue}
           disabled={isCompleting}
         >
@@ -665,8 +727,8 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
   )
 
   const reviewFooter = (
-    <div className="flex flex-col items-start gap-3">
-      <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-4">
         <Button
           variant="ghost"
           size="lg"
@@ -676,24 +738,24 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
         >
           <ArrowLeft className="mr-2 h-4 w-4" /> Back
         </Button>
-        <Button
-          size="lg"
-          className={emphasizedPrimaryClass}
-          onClick={completeOnboarding}
-          disabled={isCompleting}
-        >
-          {isCompleting ? (
-            <span className="flex items-center gap-2">
-              <Loader2 className="h-4 w-4 animate-spin" /> Finishing…
-            </span>
-          ) : (
-            'Finish setup'
-          )}
-        </Button>
+        <button type="button" className={exitLinkClass} onClick={requestExit} disabled={isCompleting}>
+          Exit setup
+        </button>
       </div>
-      <button type="button" className={exitLinkClass} onClick={requestExit} disabled={isCompleting}>
-        Exit setup
-      </button>
+      <Button
+        size="lg"
+        className={cn(emphasizedPrimaryClass, 'w-full sm:w-auto')}
+        onClick={completeOnboarding}
+        disabled={isCompleting}
+      >
+        {isCompleting ? (
+          <span className="flex items-center gap-2">
+            <Loader2 className="h-4 w-4 animate-spin" /> Finishing…
+          </span>
+        ) : (
+          'Finish setup'
+        )}
+      </Button>
     </div>
   )
 
@@ -713,70 +775,71 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
             />
           </div>
 
-          <div className="flex flex-col gap-8 px-6 py-8 sm:px-10 sm:py-10">
+          <div className="flex flex-col gap-7 px-6 py-8 sm:px-10 sm:py-10">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-              <div className="flex flex-col items-center gap-2 text-center sm:items-start sm:text-left">
-                {currentStepDefinition && (
-                  <>
-                    <div className="flex items-center gap-2">
-                      <h2 className="text-[20px] font-semibold text-[color:var(--text)]">
-                        {currentStepDefinition.title}
-                      </h2>
-                      {currentStep === 1 && (
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <button
-                              type="button"
-                              className="rounded-full p-1 text-[color:var(--text-muted)] transition-colors hover:text-[color:var(--text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)] focus-visible:ring-offset-2"
-                              aria-label="Learn how workspaces and organizations connect"
-                            >
-                              <Info className="h-4 w-4" />
-                            </button>
-                          </TooltipTrigger>
-                          <TooltipContent className="max-w-[240px] rounded-[12px] border border-[color:var(--surface-ring)] bg-[color:var(--surface-pop)] px-3 py-2 text-left text-[12px] leading-relaxed text-[color:var(--text-muted)]">
-                            You’re creating a workspace. Each workspace is linked to one organization.
-                          </TooltipContent>
-                        </Tooltip>
-                      )}
-                    </div>
-                    <p className="text-[13px] text-[color:var(--text-muted)]">
-                      {currentStepDefinition.description}
-                    </p>
-                  </>
+              <div className="flex flex-col items-center gap-1 text-center sm:items-start sm:text-left">
+                <p className="text-[12px] font-semibold uppercase tracking-wide text-[color:var(--text-muted)]">
+                  {stepCountLabel}
+                </p>
+                {stepTitle && (
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-[20px] font-semibold text-[color:var(--text)]">{stepTitle}</h2>
+                    {currentStep === 1 && (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button
+                            type="button"
+                            className="rounded-full p-1 text-[color:var(--text-muted)] transition-colors hover:text-[color:var(--text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)] focus-visible:ring-offset-2"
+                            aria-label="Learn how workspaces and organizations connect"
+                          >
+                            <Info className="h-4 w-4" />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-[240px] rounded-[12px] border border-[color:var(--surface-ring)] bg-[color:var(--surface-pop)] px-3 py-2 text-left text-[12px] leading-relaxed text-[color:var(--text-muted)]">
+                          You’re creating a workspace. Each workspace is linked to one organization.
+                        </TooltipContent>
+                      </Tooltip>
+                    )}
+                  </div>
+                )}
+                {stepDescription && (
+                  <p className="text-[13px] text-[color:var(--text-muted)]">{stepDescription}</p>
                 )}
               </div>
-              <div className="flex justify-center sm:justify-end">
-                <ol className="flex items-center gap-3 text-[12px] text-[color:var(--text-muted)] sm:flex-col sm:items-end">
-                  {steps.map(step => {
-                    const status =
-                      currentStep === step.id ? 'current' : currentStep > step.id ? 'complete' : 'upcoming'
-                    return (
-                      <li
-                        key={step.id}
-                        className={cn(
-                          'flex items-center gap-2',
-                          status === 'current' && 'text-[color:var(--text)] font-medium',
-                          status === 'complete' && 'text-[var(--brand-accent)]'
-                        )}
-                      >
-                        <span
+              {!showingOrganizationSections && (
+                <div className="flex justify-center sm:justify-end">
+                  <ol className="flex items-center gap-3 text-[12px] text-[color:var(--text-muted)] sm:flex-col sm:items-end">
+                    {steps.map(step => {
+                      const status =
+                        currentStep === step.id ? 'current' : currentStep > step.id ? 'complete' : 'upcoming'
+                      return (
+                        <li
+                          key={step.id}
                           className={cn(
-                            'flex h-7 w-7 items-center justify-center rounded-full border text-[12px]',
-                            status === 'complete' &&
-                              'border-[var(--brand-accent)] bg-[var(--brand-accent)] text-[color:var(--brand-accent-fg)]',
-                            status === 'current' &&
-                              'border-[var(--brand-accent)] text-[var(--brand-accent)]',
-                            status === 'upcoming' && 'border-[color:var(--surface-ring)]'
+                            'flex items-center gap-2',
+                            status === 'current' && 'text-[color:var(--text)] font-medium',
+                            status === 'complete' && 'text-[var(--brand-accent)]'
                           )}
                         >
-                          {status === 'complete' ? <Check className="h-4 w-4" /> : step.id}
-                        </span>
-                        <span className="hidden sm:inline">{step.title}</span>
-                      </li>
-                    )
-                  })}
-                </ol>
-              </div>
+                          <span
+                            className={cn(
+                              'flex h-7 w-7 items-center justify-center rounded-full border text-[12px]',
+                              status === 'complete' &&
+                                'border-[var(--brand-accent)] bg-[var(--brand-accent)] text-[color:var(--brand-accent-fg)]',
+                              status === 'current' &&
+                                'border-[var(--brand-accent)] text-[var(--brand-accent)]',
+                              status === 'upcoming' && 'border-[color:var(--surface-ring)]'
+                            )}
+                          >
+                            {status === 'complete' ? <Check className="h-4 w-4" /> : step.id}
+                          </span>
+                          <span className="hidden sm:inline">{step.title}</span>
+                        </li>
+                      )
+                    })}
+                  </ol>
+                </div>
+              )}
             </div>
 
             {currentStep === 1 && (
@@ -787,6 +850,7 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
                 onComplete={handleOrganizationComplete}
                 footer={organizationFooter}
                 setupError={setupError}
+                onSectionChange={handleOrganizationSectionChange}
               />
             )}
 
