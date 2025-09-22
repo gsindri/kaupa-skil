@@ -84,11 +84,14 @@
     --brand-bg:#0f2031;
     --surface-pop:#ffffff;
     --surface-pop-2:#f8fafc;
-    --surface-ring:rgba(2,12,27,.12);
+    --surface-ring:#e2e8f0;
     --text:#0f2031;
     --text-muted:#41566f;
     --overlay:rgba(2,12,27,.35);
-    --elev-shadow:0 18px 40px rgba(2,12,27,.18);
+    --elev-shadow:
+      0 24px 48px -24px rgba(15,23,42,0.24),
+      0 14px 32px -16px rgba(15,23,42,0.16),
+      0 4px 12px -4px rgba(15,23,42,0.12);
   }
 }
 
