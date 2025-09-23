@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -15,6 +16,7 @@ import { LazyImage } from '@/components/ui/LazyImage'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Input } from '@/components/ui/input'
 import type { CartItem } from '@/lib/types'
 
 function formatPriceISK(price: number) {
@@ -40,6 +42,9 @@ function SupplierItemRow({ item, includeVat, formatPrice, onUpdateQuantity, onRe
   const displayName = item.displayName || item.itemName
   const unitPrice = includeVat ? item.unitPriceIncVat : item.unitPriceExVat
   const unitLabel = item.unit ? `per ${item.unit}` : 'per unit'
+  const metadata = [item.packSize, item.unit ? `Unit: ${item.unit}` : null]
+    .filter(Boolean)
+    .join(' • ')
   const lineTotal = unitPrice != null ? unitPrice * item.quantity : null
   const pricePerUnit = unitPrice != null ? formatPrice(unitPrice) : 'Pending'
   const lineTotalDisplay = lineTotal != null ? formatPrice(lineTotal) : 'Pending'
@@ -51,43 +56,48 @@ function SupplierItemRow({ item, includeVat, formatPrice, onUpdateQuantity, onRe
     <Collapsible
       open={open}
       onOpenChange={setOpen}
-      className="rounded-xl border border-border/60 bg-background/60 p-4 shadow-sm"
+      className="rounded-xl border border-border/60 bg-background/70 px-4 py-3 shadow-sm"
     >
-      <div className="grid gap-4 md:grid-cols-[minmax(0,1.4fr)_minmax(0,0.7fr)_minmax(0,0.8fr)] md:items-center">
-        <div className="flex items-start gap-4">
-          <div className="h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-muted">
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <div className="flex flex-1 items-center gap-4">
+          <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-muted">
             {item.image ? (
               <LazyImage src={item.image} alt={displayName} className="h-full w-full" imgClassName="object-contain" />
             ) : (
-              <div className="flex h-full w-full items-center justify-center text-xs text-muted-foreground">No image</div>
+              <div className="flex h-full w-full items-center justify-center text-[11px] text-muted-foreground">No image</div>
             )}
           </div>
 
           <div className="min-w-0 space-y-1">
-            <p className="truncate text-sm font-semibold leading-5 text-foreground">{displayName}</p>
-            {item.packSize && <p className="text-xs text-muted-foreground">{item.packSize}</p>}
+            <p className="truncate text-sm font-semibold text-foreground">{displayName}</p>
+            {metadata && metadata.length > 0 && (
+              <p className="text-xs text-muted-foreground">{metadata}</p>
+            )}
 
             <CollapsibleTrigger asChild>
               <button
                 type="button"
                 className="flex items-center gap-1 text-xs font-medium text-primary hover:underline"
               >
-                {open ? 'Hide details' : 'More details'}
+                {open ? 'Hide details' : 'View details'}
                 {open ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
               </button>
             </CollapsibleTrigger>
           </div>
         </div>
 
-        <div className="text-sm">
-          <div className="font-semibold tabular-nums text-foreground">{pricePerUnit}</div>
-          <div className="text-xs text-muted-foreground">
-            {unitLabel} {includeVat ? '(inc VAT)' : '(ex VAT)'}
+        <div className="flex flex-col gap-3 text-right md:flex-row md:items-center md:gap-6">
+          <div>
+            <p className="text-sm font-semibold tabular-nums text-foreground">{lineTotalDisplay}</p>
+            <p className="text-xs text-muted-foreground">Line total</p>
           </div>
-        </div>
-
-        <div className="flex flex-col items-end gap-2">
-          <div className="flex items-center gap-2">
+          <div>
+            <p className="text-xs font-medium tabular-nums text-muted-foreground">{pricePerUnit}</p>
+            <p className="text-xs text-muted-foreground">
+              {unitLabel} {includeVat ? '(inc VAT)' : '(ex VAT)'}
+            </p>
+          </div>
+          <div className="flex items-center justify-end gap-2">
             <QuantityStepper
               quantity={item.quantity}
               onChange={qty => onUpdateQuantity(item.supplierItemId, qty)}
@@ -99,16 +109,12 @@ function SupplierItemRow({ item, includeVat, formatPrice, onUpdateQuantity, onRe
               type="button"
               variant="ghost"
               size="icon"
+              aria-label={`Remove ${displayName}`}
               className="h-8 w-8 rounded-full text-muted-foreground transition hover:bg-destructive/10 hover:text-destructive"
               onClick={() => onRemoveItem(item.supplierItemId)}
             >
               <Trash2 className="h-4 w-4" />
             </Button>
-          </div>
-
-          <div className="text-right">
-            <p className="text-xs text-muted-foreground">Line total</p>
-            <p className="text-sm font-semibold tabular-nums text-foreground">{lineTotalDisplay}</p>
           </div>
         </div>
       </div>
@@ -156,7 +162,6 @@ export function OrderComposer() {
     updateQuantity,
     removeItem,
     clearCart,
-    getTotalItems,
     getTotalPrice,
     getMissingPriceCount,
   } = useCart()
@@ -167,12 +172,13 @@ export function OrderComposer() {
   } = useDeliveryCalculation()
   const { data: optimization } = useDeliveryOptimization()
   const { toast } = useToast()
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const navigate = useNavigate()
   const [orderApproved, setOrderApproved] = useState(false)
+  const [showPromoField, setShowPromoField] = useState(false)
+  const [promoCode, setPromoCode] = useState('')
 
   const formatPrice = formatPriceISK
 
-  const totalItems = getTotalItems()
   const subtotalPrice = getTotalPrice(includeVat)
   const missingPriceCount = getMissingPriceCount()
   const totalDeliveryFees = deliveryCalculations?.reduce(
@@ -201,6 +207,31 @@ export function OrderComposer() {
 
   const hasMultipleSuppliers = supplierGroups.length > 1
 
+  const supplierSummaries = useMemo(() => {
+    return supplierGroups.map(([supplierId, group]) => {
+      const supplierDelivery = deliveryCalculations?.find(calc => calc.supplier_id === supplierId)
+      const supplierSubtotal = group.items.reduce((sum, item) => {
+        const price = includeVat ? item.unitPriceIncVat : item.unitPriceExVat
+        return price != null ? sum + price * item.quantity : sum
+      }, 0)
+      const supplierHasUnknownPrices = group.items.some(item => {
+        const price = includeVat ? item.unitPriceIncVat : item.unitPriceExVat
+        return price == null
+      })
+      const deliveryCost = supplierDelivery?.total_delivery_cost ?? 0
+      const supplierTotal = supplierSubtotal + deliveryCost
+
+      return {
+        supplierId,
+        supplierName: group.supplierName,
+        subtotal: supplierSubtotal,
+        deliveryCost,
+        total: supplierTotal,
+        hasUnknownPrices: supplierHasUnknownPrices,
+      }
+    })
+  }, [deliveryCalculations, includeVat, supplierGroups])
+
   const handleOrderApproval = (reason?: string) => {
     setOrderApproved(true)
     toast({
@@ -217,24 +248,22 @@ export function OrderComposer() {
     })
   }
 
-  const handleCheckout = async () => {
-    setIsSubmitting(true)
-    try {
-      toast({
-        title: 'Order Submitted',
-        description: 'Your order has been submitted successfully.',
-      })
-      clearCart()
-      setOrderApproved(false)
-    } catch (error) {
-      toast({
-        title: 'Checkout Failed',
-        description: 'There was an error submitting your order.',
-        variant: 'destructive',
-      })
-    } finally {
-      setIsSubmitting(false)
+  const handleProceedToCheckout = () => {
+    if (!orderApproved && totalDeliveryFees > 10000) {
+      return
     }
+    navigate('/checkout')
+  }
+
+  const handleApplyPromoCode = () => {
+    if (!promoCode.trim()) return
+
+    toast({
+      title: 'Promo codes not yet supported',
+      description: 'We will let you know once discounts are available.',
+    })
+    setPromoCode('')
+    setShowPromoField(false)
   }
 
   if (items.length === 0) {
@@ -261,7 +290,6 @@ export function OrderComposer() {
     )
   }
 
-  const subtotalDisplay = subtotalPrice > 0 || missingPriceCount === 0 ? formatPrice(subtotalPrice) : 'Pending'
   const deliveryDisplay = isLoadingDelivery
     ? 'Calculating…'
     : deliveryCalculations
@@ -281,7 +309,6 @@ export function OrderComposer() {
             calculations={deliveryCalculations}
             onApprove={handleOrderApproval}
             onReject={handleOrderRejection}
-            isSubmitting={isSubmitting}
           />
         )}
 
@@ -339,19 +366,14 @@ export function OrderComposer() {
                   </div>
 
                   <div className="flex flex-wrap items-center gap-2">
-                    {supplierDelivery ? (
-                      supplierDelivery.total_delivery_cost === 0 ? (
-                        <Badge className="border-emerald-200 bg-emerald-50 text-emerald-700">
-                          <Truck className="mr-1 h-3 w-3" />
-                          Free delivery
-                        </Badge>
-                      ) : (
-                        <Badge variant="outline" className="border-orange-200 text-orange-600">
-                          <Truck className="mr-1 h-3 w-3" />
-                          {formatPrice(supplierDelivery.total_delivery_cost)} delivery
-                        </Badge>
-                      )
-                    ) : null}
+                    {supplierDelivery && (
+                      <Badge variant="outline" className="flex items-center gap-1 border-border/60 text-xs text-muted-foreground">
+                        <Truck className="h-3 w-3" />
+                        {supplierDelivery.total_delivery_cost > 0
+                          ? `${formatPrice(supplierDelivery.total_delivery_cost)} delivery`
+                          : 'Delivery included'}
+                      </Badge>
+                    )}
 
                     {isLoadingDelivery && !supplierDelivery && (
                       <Badge variant="outline" className="border-dashed text-muted-foreground">
@@ -486,22 +508,58 @@ export function OrderComposer() {
           <CardContent className="space-y-4 pt-0">
             {missingPriceCount > 0 && (
               <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
-                {missingPriceCount} item{missingPriceCount === 1 ? '' : 's'} still need pricing. Totals below are estimates.
+                {missingPriceCount} item{missingPriceCount === 1 ? '' : 's'} awaiting supplier pricing – total is estimated.
               </div>
             )}
 
             <div className="space-y-3">
-              <SummaryRow label={`Items (${totalItems})`} value={subtotalDisplay} />
+              <div className="space-y-1.5">
+                {supplierSummaries.map(summary => (
+                  <SummaryRow
+                    key={summary.supplierId}
+                    label={summary.supplierName || 'Supplier'}
+                    value={
+                      summary.hasUnknownPrices
+                        ? 'Pending'
+                        : summary.total > 0 || summary.deliveryCost > 0
+                          ? formatPrice(summary.total)
+                          : 'Pending'
+                    }
+                  />
+                ))}
+              </div>
+
               <SummaryRow label="Delivery fees" value={deliveryDisplay} />
-              <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center text-sm">
-                <span className="text-muted-foreground">Discounts</span>
+
+              <div className="space-y-2">
                 <button
                   type="button"
                   className="text-xs font-medium text-primary hover:underline"
+                  onClick={() => setShowPromoField(prev => !prev)}
                 >
-                  Add code
+                  {showPromoField ? 'Hide promo code' : 'Add promo code'}
                 </button>
+                {showPromoField && (
+                  <div className="flex flex-col gap-2 sm:flex-row">
+                    <Input
+                      value={promoCode}
+                      onChange={event => setPromoCode(event.target.value)}
+                      placeholder="Enter code"
+                      className="h-9 flex-1"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleApplyPromoCode}
+                      disabled={!promoCode.trim()}
+                    >
+                      Apply
+                    </Button>
+                  </div>
+                )}
               </div>
+
               <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center text-sm">
                 <span className="text-muted-foreground">VAT</span>
                 <span className="text-right text-xs text-muted-foreground">
@@ -521,30 +579,26 @@ export function OrderComposer() {
               <p className="text-2xl font-semibold tabular-nums text-foreground">{grandTotalDisplay}</p>
             </div>
 
-            <div className="space-y-2 pt-2">
+            <div className="space-y-3 pt-2">
               <Button
                 type="button"
                 className="w-full"
                 size="lg"
-                onClick={handleCheckout}
-                disabled={
-                  isSubmitting || (!orderApproved && totalDeliveryFees > 10000)
-                }
+                onClick={handleProceedToCheckout}
+                disabled={!orderApproved && totalDeliveryFees > 10000}
               >
-                {isSubmitting ? 'Processing…' : 'Proceed to Checkout'}
+                Proceed to Checkout
               </Button>
-              <Button
+              <button
                 type="button"
-                variant="ghost"
-                className="w-full text-destructive hover:bg-destructive/10 hover:text-destructive"
                 onClick={() => {
                   clearCart()
                   setOrderApproved(false)
                 }}
-                disabled={isSubmitting}
+                className="w-full text-sm font-medium text-destructive underline-offset-4 hover:underline"
               >
                 Clear cart
-              </Button>
+              </button>
             </div>
 
             {deliveryCalculations && totalDeliveryFees > 0 && !orderApproved && (

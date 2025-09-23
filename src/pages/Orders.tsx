@@ -13,11 +13,11 @@ function OrdersErrorFallback({ resetErrorBoundary }: { resetErrorBoundary: () =>
         <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
           <AlertTriangle className="h-6 w-6 text-destructive" />
         </div>
-        <CardTitle className="text-lg">Orders System Unavailable</CardTitle>
+        <CardTitle className="text-lg">Cart unavailable</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <p className="text-center text-muted-foreground">
-          We couldn't load the order management system. Please try again.
+          We couldn't load your cart right now. Please try again.
         </p>
         
         <div className="flex flex-col gap-2">
@@ -39,13 +39,8 @@ function OrdersErrorFallback({ resetErrorBoundary }: { resetErrorBoundary: () =>
 function OrdersContent() {
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-foreground">Order Management</h1>
-        <p className="text-muted-foreground">
-          Compose and dispatch orders to suppliers
-        </p>
-      </div>
-      
+      <h1 className="text-3xl font-bold text-foreground">Cart</h1>
+
       <OrderComposer />
     </div>
   )
