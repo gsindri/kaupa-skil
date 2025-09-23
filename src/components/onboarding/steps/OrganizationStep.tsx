@@ -224,6 +224,7 @@ export interface OrganizationStepFooterContext {
   isFirstSection: boolean
   isLastSection: boolean
   goToPrevious: () => void
+  onBackToOrigin?: () => void
 }
 
 export interface OrganizationSectionProgress {
@@ -239,6 +240,7 @@ export interface OrganizationStepProps {
   footer: React.ReactNode | ((context: OrganizationStepFooterContext) => React.ReactNode)
   setupError?: string | null
   onSectionChange?: (progress: OrganizationSectionProgress) => void
+  onBackToOrigin?: () => void
 }
 
 export interface OrganizationStepHandle {
@@ -246,7 +248,7 @@ export interface OrganizationStepHandle {
 }
 
 export const OrganizationStep = forwardRef<OrganizationStepHandle, OrganizationStepProps>(
-  ({ value, onUpdate, onComplete, footer, setupError, onSectionChange }, ref) => {
+  ({ value, onUpdate, onComplete, footer, setupError, onSectionChange, onBackToOrigin }, ref) => {
     const [sectionIndex, setSectionIndex] = useState(0)
     const currentSection = ORGANIZATION_SECTION_DEFINITIONS[sectionIndex]
     const totalSections = ORGANIZATION_SECTION_DEFINITIONS.length
@@ -285,12 +287,13 @@ export const OrganizationStep = forwardRef<OrganizationStepHandle, OrganizationS
     }, [form, onUpdate])
 
     const goToPrevious = useCallback(() => {
+      commit()
       if (sectionIndex === 0) {
+        onBackToOrigin?.()
         return
       }
-      commit()
       setSectionIndex(prev => Math.max(0, prev - 1))
-    }, [commit, sectionIndex])
+    }, [commit, onBackToOrigin, sectionIndex])
 
     const validateCurrentSection = useCallback(async () => {
       const sectionId = ORGANIZATION_SECTION_DEFINITIONS[sectionIndex].id
@@ -396,11 +399,12 @@ export const OrganizationStep = forwardRef<OrganizationStepHandle, OrganizationS
         return footer({
           isFirstSection,
           isLastSection,
-          goToPrevious
+          goToPrevious,
+          onBackToOrigin
         })
       }
       return footer
-    }, [footer, goToPrevious, isFirstSection, isLastSection])
+    }, [footer, goToPrevious, isFirstSection, isLastSection, onBackToOrigin])
 
     const sectionContent = useMemo(() => {
       switch (currentSection.id) {
