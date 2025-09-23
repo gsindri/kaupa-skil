@@ -44,18 +44,19 @@ export function TenantSwitcher() {
   const [open, setOpen] = React.useState(false)
   const [query, setQuery] = React.useState('')
   const inputRef = React.useRef<HTMLInputElement | null>(null)
-  const isSearchFocusedRef = React.useRef(false)
-  const handleMenuItemPointerMove = React.useCallback(
-    (event: React.PointerEvent<HTMLElement>) => {
-      if (
-        event.pointerType === 'mouse' &&
-        event.buttons === 0 &&
-        isSearchFocusedRef.current
-      ) {
-        event.preventDefault()
-        event.stopPropagation()
         inputRef.current?.focus()
       }
+    })
+  }, [open])
+
+  const handleContentPointerDownCapture = React.useCallback(
+    (event: React.PointerEvent<HTMLDivElement>) => {
+      if (inputRef.current?.contains(event.target as Node)) {
+        allowSearchBlurRef.current = false
+        return
+      }
+
+      allowSearchBlurRef.current = true
     },
     [],
   )
@@ -164,7 +165,13 @@ export function TenantSwitcher() {
         </button>
       </DropdownMenuTrigger>
 
-      <PopCard className="w-[320px] space-y-2" sideOffset={12} align="start">
+      <PopCard
+        ref={contentRef}
+        className="w-[320px] space-y-2"
+        sideOffset={12}
+        align="start"
+        onPointerDownCapture={handleContentPointerDownCapture}
+      >
         <div className="px-2 pb-1">
           <input
             ref={inputRef}
@@ -173,9 +180,6 @@ export function TenantSwitcher() {
             onChange={(event) => setQuery(event.target.value)}
             onFocus={() => {
               isSearchFocusedRef.current = true
-            }}
-            onBlur={() => {
-              isSearchFocusedRef.current = false
             }}
             className={cn(
               'h-12 w-full rounded-xl border border-[color:var(--surface-ring)] px-3 text-[14px] text-[color:var(--text)] placeholder:text-[color:var(--text-muted)]',
@@ -196,7 +200,6 @@ export function TenantSwitcher() {
             return (
               <DropdownMenuItem
                 key={membership.id}
-                onPointerMove={handleMenuItemPointerMove}
                 onSelect={async () => {
                   await handleTenantSwitch(tenant.id)
                   setOpen(false)
@@ -246,7 +249,6 @@ export function TenantSwitcher() {
         <div className="tw-label normal-case">Actions</div>
         <div className="flex flex-col gap-1 px-1">
           <DropdownMenuItem
-            onPointerMove={handleMenuItemPointerMove}
             onSelect={() => {
               const targetPath = '/settings/organization/create'
               const currentPath = `${location.pathname}${location.search}${location.hash}`
@@ -266,7 +268,6 @@ export function TenantSwitcher() {
             </button>
           </DropdownMenuItem>
           <DropdownMenuItem
-            onPointerMove={handleMenuItemPointerMove}
             onSelect={() => {
               const targetPath = '/settings/organization/join'
               const currentPath = `${location.pathname}${location.search}${location.hash}`
