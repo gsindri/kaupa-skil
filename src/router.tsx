@@ -5,6 +5,8 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import Dashboard from "@/pages/Dashboard";
 import Compare from "@/pages/Compare";
 import Orders from "@/pages/Orders";
+import Checkout from "@/pages/Checkout";
+import OrderConfirmation from "@/pages/OrderConfirmation";
 import Suppliers from "@/pages/Suppliers";
 import Pantry from "@/pages/Pantry";
 import Settings from "@/pages/Settings";
@@ -39,6 +41,14 @@ export const routes = [
       {
         path: "cart",
         element: <Orders />,
+      },
+      {
+        path: "checkout",
+        element: <Checkout />,
+      },
+      {
+        path: "checkout/confirmation",
+        element: <OrderConfirmation />,
       },
       {
         path: "compare",
