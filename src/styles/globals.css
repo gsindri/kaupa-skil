@@ -78,6 +78,23 @@
   --catalog-cta-bg-disabled:linear-gradient(135deg,rgba(74,99,216,0.24) 0%,rgba(61,86,200,0.2) 100%);
 }
 
+input[type='search']::-webkit-search-cancel-button,
+input[type='search']::-webkit-search-decoration,
+input[type='search']::-webkit-search-results-button,
+input[type='search']::-webkit-search-results-decoration {
+  display: none;
+}
+
+input[type='search']::-ms-clear {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+input[type='search'] {
+  -webkit-appearance: none;
+}
+
 /* Light-mode fallback if needed */
 @media (prefers-color-scheme: light){
   :root{
