@@ -213,11 +213,23 @@ export function CatalogTable({
                         {p.name}
                       </a>
                       {(p.brand || p.canonical_pack) && (
-                        <span className="truncate text-xs text-muted-foreground">
-                          {p.brand}
-                          {p.brand && p.canonical_pack && ' • '}
-                          {p.canonical_pack}
-                        </span>
+                        <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-xs leading-tight text-[color:var(--ink-dim)]/80">
+                          {p.brand && (
+                            <span className="truncate font-medium">
+                              {p.brand}
+                            </span>
+                          )}
+                          {p.brand && p.canonical_pack && (
+                            <span aria-hidden className="text-[color:var(--ink-dim)]/50">
+                              •
+                            </span>
+                          )}
+                          {p.canonical_pack && (
+                            <span className="truncate text-sm font-semibold leading-snug text-[color:var(--ink-hi)]">
+                              {p.canonical_pack}
+                            </span>
+                          )}
+                        </div>
                       )}
                     </div>
                     <AddToCartButton
@@ -406,115 +418,128 @@ export function CatalogTable({
     }
   }
 
+  const slotClasses = cn(
+    'ml-auto flex-shrink-0 w-[120px] pr-3',
+    className,
+  )
+
   if (existingItem)
     return (
-      <QuantityStepper
-        className={className}
-        quantity={existingItem.quantity}
-        onChange={qty =>
-          updateQuantity(existingItem.supplierItemId, qty)
-        }
-        onRemove={() => removeItem(existingItem.supplierItemId)}
-        label={product.name}
-        supplier={existingItem.supplierName}
-      />
+      <div className={slotClasses}>
+        <QuantityStepper
+          className="w-full"
+          quantity={existingItem.quantity}
+          onChange={qty =>
+            updateQuantity(existingItem.supplierItemId, qty)
+          }
+          onRemove={() => removeItem(existingItem.supplierItemId)}
+          label={product.name}
+          supplier={existingItem.supplierName}
+        />
+      </div>
     )
 
   if (supplierEntries.length === 0) return null
 
   if (isUnavailable) {
     return (
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <span className={cn(className, 'cursor-not-allowed')}>
-            <Button
-              size="sm"
-              disabled
-              aria-disabled="true"
-              aria-label={`Add ${product.name} to cart`}
-              className="pointer-events-none"
-            >
-              Add
-            </Button>
-          </span>
-        </TooltipTrigger>
-        <TooltipContent>Out of stock</TooltipContent>
-      </Tooltip>
+      <div className={slotClasses}>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span className="flex w-full cursor-not-allowed">
+              <Button
+                size="sm"
+                disabled
+                aria-disabled="true"
+                aria-label={`Add ${product.name} to cart`}
+                className="pointer-events-none w-full justify-center"
+              >
+                Add
+              </Button>
+            </span>
+          </TooltipTrigger>
+          <TooltipContent>Out of stock</TooltipContent>
+        </Tooltip>
+      </div>
     )
   }
 
   if (supplierEntries.length === 1) {
     const s = supplierEntries[0]
     return (
-      <Button
-        size="sm"
-        className={className}
-        onClick={() => {
-          addItem(buildCartItem(s, 0))
-          if (s.availability === 'OUT_OF_STOCK') {
-            toast({ description: 'Out of stock at selected supplier.' })
-          }
-        }}
-        aria-label={`Add ${product.name} to cart`}
-      >
-        Add
-      </Button>
+      <div className={slotClasses}>
+        <Button
+          size="sm"
+          className="w-full justify-center"
+          onClick={() => {
+            addItem(buildCartItem(s, 0))
+            if (s.availability === 'OUT_OF_STOCK') {
+              toast({ description: 'Out of stock at selected supplier.' })
+            }
+          }}
+          aria-label={`Add ${product.name} to cart`}
+        >
+          Add
+        </Button>
+      </div>
     )
   }
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button size="sm" className={className} aria-label={`Add ${product.name} to cart`}>
-          Add
-        </Button>
-      </PopoverTrigger>
-    <PopoverContent className="w-64 p-2 space-y-1">
-        {supplierEntries.map((s, index) => {
-          const initials = s.name
-            ? s.name
-                .split(' ')
-                .map((n: string) => n[0])
-                .join('')
-                .slice(0, 2)
-                .toUpperCase()
-            : '?'
-          return (
-            <Button
-              key={s.id}
-              variant="ghost"
-              className="w-full justify-start gap-2 px-2"
-              onClick={() => {
-                addItem(buildCartItem(s, index))
-                if (s.availability === 'OUT_OF_STOCK') {
-                  toast({ description: 'Out of stock at selected supplier.' })
-                }
-                setOpen(false)
-              }}
-            >
-              {s.logoUrl ? (
-                <img
-                  src={s.logoUrl}
-                  alt=""
-                  className="h-6 w-6 rounded-sm"
-                />
-              ) : (
-                <span className="flex h-6 w-6 items-center justify-center rounded-sm bg-muted text-xs font-medium">
-                  {initials}
-                </span>
-              )}
-              <span className="flex-1 text-left">{s.name}</span>
-              {s.availability && (
-                <AvailabilityBadge
-                  status={s.availability}
-                  updatedAt={s.updatedAt}
-                />
-              )}
-              {!s.connected && <Lock className="h-4 w-4" />}
-            </Button>
-          )
-        })}
-      </PopoverContent>
-    </Popover>
+    <div className={slotClasses}>
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button size="sm" className="w-full justify-center" aria-label={`Add ${product.name} to cart`}>
+            Add
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-64 space-y-1 p-2">
+          {supplierEntries.map((s, index) => {
+            const initials = s.name
+              ? s.name
+                  .split(' ')
+                  .map((n: string) => n[0])
+                  .join('')
+                  .slice(0, 2)
+                  .toUpperCase()
+              : '?'
+            return (
+              <Button
+                key={s.id}
+                variant="ghost"
+                className="w-full justify-start gap-2 px-2"
+                onClick={() => {
+                  addItem(buildCartItem(s, index))
+                  if (s.availability === 'OUT_OF_STOCK') {
+                    toast({ description: 'Out of stock at selected supplier.' })
+                  }
+                  setOpen(false)
+                }}
+              >
+                {s.logoUrl ? (
+                  <img
+                    src={s.logoUrl}
+                    alt=""
+                    className="h-6 w-6 rounded-sm"
+                  />
+                ) : (
+                  <span className="flex h-6 w-6 items-center justify-center rounded-sm bg-muted text-xs font-medium">
+                    {initials}
+                  </span>
+                )}
+                <span className="flex-1 text-left">{s.name}</span>
+                {s.availability && (
+                  <AvailabilityBadge
+                    status={s.availability}
+                    updatedAt={s.updatedAt}
+                  />
+                )}
+                {!s.connected && <Lock className="h-4 w-4" />}
+              </Button>
+            )
+          })}
+        </PopoverContent>
+      </Popover>
+    </div>
   )
 }
 

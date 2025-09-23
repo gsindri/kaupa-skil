@@ -74,7 +74,7 @@ export function QuantityStepper({
   return (
     <div
       className={cn(
-        'relative inline-flex h-7 w-[92px] md:w-[100px] items-center divide-x rounded-md border ring-offset-1 focus-within:ring-2 focus-within:ring-brand/50',
+        'relative inline-flex h-9 min-w-[104px] items-center divide-x rounded-md border ring-offset-1 focus-within:ring-2 focus-within:ring-brand/50',
         (quantity === min || isInvalid) && 'border-destructive',
         className,
       )}
