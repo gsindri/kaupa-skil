@@ -41,6 +41,7 @@ const TOTAL_STEPS = 3
 
 type OnboardingLocationState = {
   from?: string
+  allowExisting?: boolean
 }
 
 type AddressValues = OrganizationFormValues['deliveryAddress']
@@ -181,9 +182,13 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
     [location.hash, location.pathname, location.search]
   )
 
+  const locationState = useMemo(
+    () => (location.state as OnboardingLocationState | null) ?? null,
+    [location.state]
+  )
+
   const previousPath = useMemo(() => {
-    const state = location.state as OnboardingLocationState | null
-    const raw = state?.from
+    const raw = locationState?.from
     if (!raw || typeof raw !== 'string') {
       return null
     }
@@ -192,7 +197,9 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
       return null
     }
     return trimmed
-  }, [location.state])
+  }, [locationState])
+
+  const allowExistingWorkspaceCreation = locationState?.allowExisting ?? false
 
   const navigateToPrevious = useCallback(() => {
     const target = previousPath && previousPath !== currentPath ? previousPath : '/'
@@ -246,14 +253,14 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
 
   useEffect(() => {
     if (profileLoading) return
-    if (profile?.tenant_id) {
+    if (profile?.tenant_id && !allowExistingWorkspaceCreation) {
       toast({
         title: 'Setup already complete!',
         description: 'Your workspace is ready to use.'
       })
       navigateToPrevious()
     }
-  }, [profile, profileLoading, toast, navigateToPrevious])
+  }, [profile, profileLoading, toast, navigateToPrevious, allowExistingWorkspaceCreation])
 
   useEffect(() => {
     if (typeof window === 'undefined' || draftLoaded) return
