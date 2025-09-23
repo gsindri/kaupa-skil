@@ -43,25 +43,27 @@ const DrawerContent = React.forwardRef<
   }
 >(({ className, children, showBar = true, side = 'bottom', overlayClassName, ...props }, ref) => (
   <DrawerPortal>
-    <DrawerOverlay className={overlayClassName} />
-    <DrawerPrimitive.Content
-      ref={ref}
-      className={cn(
-        'fixed z-50 flex flex-col bg-[color:var(--surface-pop-2)] text-[color:var(--text)] shadow-[var(--elev-shadow)]',
-        side === 'bottom' &&
-          'inset-x-0 bottom-0 mt-24 h-auto rounded-t-4 border border-[color:var(--surface-ring)]',
-        side === 'right' &&
-          'inset-y-0 right-0 h-full w-full border-l border-[color:var(--surface-ring)] rounded-l-4',
-        className
-      )}
-      {...props}
-    >
-      <div className="memory-stripe w-full" />
-      {showBar && side === 'bottom' && (
-        <div className="mx-auto mt-4 h-2 w-[100px] rounded-full bg-muted" />
-      )}
-      {children}
-    </DrawerPrimitive.Content>
+    <>
+      <DrawerOverlay className={overlayClassName} />
+      <DrawerPrimitive.Content
+        ref={ref}
+        className={cn(
+          'fixed z-50 flex flex-col bg-[color:var(--surface-pop-2)] text-[color:var(--text)] shadow-[var(--elev-shadow)]',
+          side === 'bottom' &&
+            'inset-x-0 bottom-0 mt-24 h-auto rounded-t-4 border border-[color:var(--surface-ring)]',
+          side === 'right' &&
+            'inset-y-0 right-0 h-full w-full border-l border-[color:var(--surface-ring)] rounded-l-4',
+          className
+        )}
+        {...props}
+      >
+        <div className="memory-stripe w-full" />
+        {showBar && side === 'bottom' && (
+          <div className="mx-auto mt-4 h-2 w-[100px] rounded-full bg-muted" />
+        )}
+        {children}
+      </DrawerPrimitive.Content>
+    </>
   </DrawerPortal>
 ))
 DrawerContent.displayName = 'DrawerContent'
