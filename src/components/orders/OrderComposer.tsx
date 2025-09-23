@@ -1,17 +1,154 @@
-
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
-import { Trash2, Plus, Minus, Truck } from 'lucide-react'
+import { ArrowRight, ChevronDown, ChevronUp, Info, Trash2, Truck } from 'lucide-react'
 import { useDeliveryCalculation, useDeliveryOptimization } from '@/hooks/useDeliveryOptimization'
 import { DeliveryOptimizationBanner } from '@/components/quick/DeliveryOptimizationBanner'
-import { DeliveryFeeIndicator } from '@/components/delivery/DeliveryFeeIndicator'
 import { OrderApprovalWorkflow } from './OrderApprovalWorkflow'
 import { useToast } from '@/hooks/use-toast'
 import { useCart } from '@/contexts/useBasket'
 import { useSettings } from '@/contexts/useSettings'
+import { QuantityStepper } from '@/components/cart/QuantityStepper'
+import { LazyImage } from '@/components/ui/LazyImage'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import type { CartItem } from '@/lib/types'
+
+function formatPriceISK(price: number) {
+  return new Intl.NumberFormat('is-IS', {
+    style: 'currency',
+    currency: 'ISK',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(price)
+}
+
+interface SupplierItemRowProps {
+  item: CartItem
+  includeVat: boolean
+  formatPrice: (price: number) => string
+  onUpdateQuantity: (supplierItemId: string, quantity: number) => void
+  onRemoveItem: (supplierItemId: string) => void
+}
+
+function SupplierItemRow({ item, includeVat, formatPrice, onUpdateQuantity, onRemoveItem }: SupplierItemRowProps) {
+  const [open, setOpen] = useState(false)
+
+  const displayName = item.displayName || item.itemName
+  const unitPrice = includeVat ? item.unitPriceIncVat : item.unitPriceExVat
+  const unitLabel = item.unit ? `per ${item.unit}` : 'per unit'
+  const lineTotal = unitPrice != null ? unitPrice * item.quantity : null
+  const pricePerUnit = unitPrice != null ? formatPrice(unitPrice) : 'Pending'
+  const lineTotalDisplay = lineTotal != null ? formatPrice(lineTotal) : 'Pending'
+  const packPriceDisplay = item.packPrice != null ? formatPrice(item.packPrice) : 'Pending'
+  const priceIncVat = item.unitPriceIncVat != null ? formatPrice(item.unitPriceIncVat) : 'Pending'
+  const priceExVat = item.unitPriceExVat != null ? formatPrice(item.unitPriceExVat) : 'Pending'
+
+  return (
+    <Collapsible
+      open={open}
+      onOpenChange={setOpen}
+      className="rounded-xl border border-border/60 bg-background/60 p-4 shadow-sm"
+    >
+      <div className="grid gap-4 md:grid-cols-[minmax(0,1.4fr)_minmax(0,0.7fr)_minmax(0,0.8fr)] md:items-center">
+        <div className="flex items-start gap-4">
+          <div className="h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-muted">
+            {item.image ? (
+              <LazyImage src={item.image} alt={displayName} className="h-full w-full" imgClassName="object-contain" />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center text-xs text-muted-foreground">No image</div>
+            )}
+          </div>
+
+          <div className="min-w-0 space-y-1">
+            <p className="truncate text-sm font-semibold leading-5 text-foreground">{displayName}</p>
+            {item.packSize && <p className="text-xs text-muted-foreground">{item.packSize}</p>}
+
+            <CollapsibleTrigger asChild>
+              <button
+                type="button"
+                className="flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+              >
+                {open ? 'Hide details' : 'More details'}
+                {open ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+              </button>
+            </CollapsibleTrigger>
+          </div>
+        </div>
+
+        <div className="text-sm">
+          <div className="font-semibold tabular-nums text-foreground">{pricePerUnit}</div>
+          <div className="text-xs text-muted-foreground">
+            {unitLabel} {includeVat ? '(inc VAT)' : '(ex VAT)'}
+          </div>
+        </div>
+
+        <div className="flex flex-col items-end gap-2">
+          <div className="flex items-center gap-2">
+            <QuantityStepper
+              quantity={item.quantity}
+              onChange={qty => onUpdateQuantity(item.supplierItemId, qty)}
+              onRemove={() => onRemoveItem(item.supplierItemId)}
+              min={1}
+              label={displayName}
+            />
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 rounded-full text-muted-foreground transition hover:bg-destructive/10 hover:text-destructive"
+              onClick={() => onRemoveItem(item.supplierItemId)}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
+
+          <div className="text-right">
+            <p className="text-xs text-muted-foreground">Line total</p>
+            <p className="text-sm font-semibold tabular-nums text-foreground">{lineTotalDisplay}</p>
+          </div>
+        </div>
+      </div>
+
+      <CollapsibleContent className="mt-3 rounded-lg border border-dashed border-muted-foreground/30 bg-muted/10 p-3 text-xs text-muted-foreground">
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="space-y-1">
+            <p className="text-xs font-medium text-foreground">SKU</p>
+            <p className="font-mono text-xs">{item.sku || 'Not provided'}</p>
+          </div>
+          <div className="space-y-1">
+            <p className="text-xs font-medium text-foreground">Pack size</p>
+            <p>{item.packSize || 'Not provided'}</p>
+          </div>
+          <div className="space-y-1">
+            <p className="text-xs font-medium text-foreground">Pack price</p>
+            <p className="tabular-nums">{packPriceDisplay}</p>
+          </div>
+          <div className="space-y-1">
+            <p className="text-xs font-medium text-foreground">Unit price (inc VAT)</p>
+            <p className="tabular-nums">{priceIncVat}</p>
+          </div>
+          <div className="space-y-1">
+            <p className="text-xs font-medium text-foreground">Unit price (ex VAT)</p>
+            <p className="tabular-nums">{priceExVat}</p>
+          </div>
+        </div>
+      </CollapsibleContent>
+    </Collapsible>
+  )
+}
+
+function SummaryRow({ label, value }: { label: string; value: React.ReactNode }) {
+  return (
+    <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center text-sm">
+      <span className="text-muted-foreground">{label}</span>
+      <span className="text-right font-medium tabular-nums text-foreground">{value}</span>
+    </div>
+  )
+}
 
 export function OrderComposer() {
   const {
@@ -24,58 +161,76 @@ export function OrderComposer() {
     getMissingPriceCount,
   } = useCart()
   const { includeVat } = useSettings()
-  const { data: deliveryCalculations, isLoading: isLoadingDelivery } = useDeliveryCalculation()
+  const {
+    data: deliveryCalculations,
+    isLoading: isLoadingDelivery,
+  } = useDeliveryCalculation()
   const { data: optimization } = useDeliveryOptimization()
   const { toast } = useToast()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [orderApproved, setOrderApproved] = useState(false)
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('is-IS', {
-      style: 'currency',
-      currency: 'ISK',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(price)
-  }
+  const formatPrice = formatPriceISK
 
   const totalItems = getTotalItems()
   const subtotalPrice = getTotalPrice(includeVat)
   const missingPriceCount = getMissingPriceCount()
-  const totalDeliveryFees = deliveryCalculations?.reduce((sum, calc) => sum + calc.total_delivery_cost, 0) || 0
+  const totalDeliveryFees = deliveryCalculations?.reduce(
+    (sum, calc) => sum + calc.total_delivery_cost,
+    0,
+  ) ?? 0
   const grandTotal = subtotalPrice + totalDeliveryFees
+
+  const supplierGroups = useMemo(() => {
+    const groups = new Map<string, { supplierName: string; items: CartItem[] }>()
+
+    items.forEach(item => {
+      const current = groups.get(item.supplierId)
+      if (current) {
+        current.items.push(item)
+      } else {
+        groups.set(item.supplierId, {
+          supplierName: item.supplierName,
+          items: [item],
+        })
+      }
+    })
+
+    return Array.from(groups.entries())
+  }, [items])
+
+  const hasMultipleSuppliers = supplierGroups.length > 1
 
   const handleOrderApproval = (reason?: string) => {
     setOrderApproved(true)
     toast({
-      title: "Order Approved",
-      description: reason || "Order approved for checkout despite delivery costs.",
+      title: 'Order Approved',
+      description: reason || 'Order approved for checkout despite delivery costs.',
     })
   }
 
   const handleOrderRejection = (reason: string) => {
     toast({
-      title: "Order Rejected",
+      title: 'Order Rejected',
       description: reason,
-      variant: "destructive"
+      variant: 'destructive',
     })
   }
 
   const handleCheckout = async () => {
     setIsSubmitting(true)
     try {
-      // Here you would implement actual checkout logic
       toast({
-        title: "Order Submitted",
-        description: "Your order has been submitted successfully.",
+        title: 'Order Submitted',
+        description: 'Your order has been submitted successfully.',
       })
       clearCart()
       setOrderApproved(false)
     } catch (error) {
       toast({
-        title: "Checkout Failed",
-        description: "There was an error submitting your order.",
-        variant: "destructive"
+        title: 'Checkout Failed',
+        description: 'There was an error submitting your order.',
+        variant: 'destructive',
       })
     } finally {
       setIsSubmitting(false)
@@ -84,241 +239,338 @@ export function OrderComposer() {
 
   if (items.length === 0) {
     return (
-      <Card>
-        <CardContent className="flex flex-col items-center justify-center py-12">
-          <div className="text-muted-foreground text-center">
-            <p className="text-lg mb-2">Your cart is empty</p>
-            <p className="text-sm">Add items from the product comparison to get started</p>
+      <Card className="overflow-hidden text-center">
+        <CardContent className="flex flex-col items-center gap-6 py-16">
+          <img src="/unavailable.svg" alt="" className="h-32 w-32 object-contain" />
+          <div className="space-y-2">
+            <p className="text-xl font-semibold text-foreground">Your cart is empty</p>
+            <p className="text-sm text-muted-foreground">
+              Browse the catalog to discover products for your next order.
+            </p>
           </div>
+          <Button
+            type="button"
+            className="inline-flex items-center gap-2"
+            onClick={() => (window.location.href = '/catalog')}
+          >
+            Browse catalog
+            <ArrowRight className="h-4 w-4" />
+          </Button>
         </CardContent>
       </Card>
     )
   }
 
-  // Group items by supplier
-  const supplierGroups = items.reduce((groups, item) => {
-    if (!groups[item.supplierId]) {
-      groups[item.supplierId] = {
-        supplierName: item.supplierName,
-        items: []
-      }
-    }
-    groups[item.supplierId].items.push(item)
-    return groups
-  }, {} as Record<string, { supplierName: string; items: typeof items }>)
+  const subtotalDisplay = subtotalPrice > 0 || missingPriceCount === 0 ? formatPrice(subtotalPrice) : 'Pending'
+  const deliveryDisplay = isLoadingDelivery
+    ? 'Calculating…'
+    : deliveryCalculations
+      ? totalDeliveryFees > 0
+        ? formatPrice(totalDeliveryFees)
+        : 'Included'
+      : '—'
+  const grandTotalDisplay = missingPriceCount > 0 && grandTotal === 0 ? 'Pending' : formatPrice(grandTotal)
 
   return (
-    <div className="space-y-6">
-      {/* Delivery Optimization Banner */}
-      {optimization && (
-        <DeliveryOptimizationBanner optimization={optimization} />
-      )}
+    <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
+      <div className="space-y-6">
+        {optimization && <DeliveryOptimizationBanner optimization={optimization} />}
 
-      {/* Order Approval Workflow */}
-      {deliveryCalculations && !orderApproved && (
-        <OrderApprovalWorkflow
-          calculations={deliveryCalculations}
-          onApprove={handleOrderApproval}
-          onReject={handleOrderRejection}
-          isSubmitting={isSubmitting}
-        />
-      )}
+        {deliveryCalculations && !orderApproved && (
+          <OrderApprovalWorkflow
+            calculations={deliveryCalculations}
+            onApprove={handleOrderApproval}
+            onReject={handleOrderRejection}
+            isSubmitting={isSubmitting}
+          />
+        )}
 
-      {/* Order Items by Supplier */}
-      {Object.entries(supplierGroups).map(([supplierId, group]) => {
-        const supplierDelivery = deliveryCalculations?.find(calc => calc.supplier_id === supplierId)
-        const supplierSubtotal = group.items.reduce((sum, item) => {
-          const price = includeVat ? item.unitPriceIncVat : item.unitPriceExVat
-          return sum + (price * item.quantity)
-        }, 0)
+        {hasMultipleSuppliers && (
+          <Alert className="border-primary/20 bg-primary/5">
+            <Info className="h-4 w-4" />
+            <AlertDescription className="text-sm">
+              Separate orders will be sent to each supplier.
+            </AlertDescription>
+          </Alert>
+        )}
 
-        return (
-          <Card key={supplierId}>
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg">{group.supplierName}</CardTitle>
-                <div className="flex items-center gap-2">
+        {supplierGroups.map(([supplierId, group]) => {
+          const supplierDelivery = deliveryCalculations?.find(calc => calc.supplier_id === supplierId)
+          const supplierSubtotal = group.items.reduce((sum, item) => {
+            const price = includeVat ? item.unitPriceIncVat : item.unitPriceExVat
+            return price != null ? sum + price * item.quantity : sum
+          }, 0)
+          const supplierHasUnknownPrices = group.items.some(item => {
+            const price = includeVat ? item.unitPriceIncVat : item.unitPriceExVat
+            return price == null
+          })
+          const supplierDeliveryCost = supplierDelivery?.total_delivery_cost ?? 0
+          const supplierTotal = supplierSubtotal + supplierDeliveryCost
+          const [firstItem] = group.items
+          const extended = firstItem as CartItem & {
+            supplierLogoUrl?: string | null
+            logoUrl?: string | null
+            supplierLogo?: string | null
+          }
+          const supplierLogo = extended?.supplierLogoUrl ?? extended?.logoUrl ?? extended?.supplierLogo ?? null
+          const supplierInitials = (group.supplierName || '??').slice(0, 2).toUpperCase()
+          const amountToFreeDelivery = supplierDelivery?.amount_to_free_delivery
+
+          return (
+            <Card key={supplierId} className="shadow-md">
+              <CardHeader className="border-b pb-4">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex items-center gap-3">
+                    <Avatar className="h-11 w-11">
+                      {supplierLogo ? (
+                        <AvatarImage src={supplierLogo} alt={`${group.supplierName} logo`} className="object-contain" />
+                      ) : (
+                        <AvatarFallback className="text-sm font-medium">{supplierInitials}</AvatarFallback>
+                      )}
+                    </Avatar>
+                    <div>
+                      <CardTitle className="text-lg font-semibold leading-snug text-foreground">
+                        {group.supplierName || 'Supplier'}
+                      </CardTitle>
+                      <p className="text-sm text-muted-foreground">
+                        {group.items.length} item{group.items.length === 1 ? '' : 's'} in this delivery
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2">
+                    {supplierDelivery ? (
+                      supplierDelivery.total_delivery_cost === 0 ? (
+                        <Badge className="border-emerald-200 bg-emerald-50 text-emerald-700">
+                          <Truck className="mr-1 h-3 w-3" />
+                          Free delivery
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="border-orange-200 text-orange-600">
+                          <Truck className="mr-1 h-3 w-3" />
+                          {formatPrice(supplierDelivery.total_delivery_cost)} delivery
+                        </Badge>
+                      )
+                    ) : null}
+
+                    {isLoadingDelivery && !supplierDelivery && (
+                      <Badge variant="outline" className="border-dashed text-muted-foreground">
+                        Calculating delivery
+                      </Badge>
+                    )}
+
+                    {supplierDelivery?.next_delivery_day && (
+                      <Badge variant="outline" className="text-xs">
+                        <Truck className="mr-1 h-3 w-3" />
+                        Next: {supplierDelivery.next_delivery_day}
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+              </CardHeader>
+
+              <CardContent className="space-y-5 pt-4">
+                <div className="space-y-3">
+                  {group.items.map(item => (
+                    <SupplierItemRow
+                      key={item.supplierItemId}
+                      item={item}
+                      includeVat={includeVat}
+                      formatPrice={formatPrice}
+                      onUpdateQuantity={updateQuantity}
+                      onRemoveItem={removeItem}
+                    />
+                  ))}
+                </div>
+
+                <Separator />
+
+                <div className="space-y-3 rounded-lg bg-muted/10 p-4">
+                  <SummaryRow
+                    label="Items subtotal"
+                    value={
+                      supplierSubtotal > 0 || !supplierHasUnknownPrices
+                        ? formatPrice(supplierSubtotal)
+                        : 'Pending'
+                    }
+                  />
+
                   {supplierDelivery && (
-                    <DeliveryFeeIndicator calculation={supplierDelivery} />
-                  )}
-                  {supplierDelivery?.next_delivery_day && (
-                    <Badge variant="outline" className="text-xs">
-                      <Truck className="h-3 w-3 mr-1" />
-                      Next: {supplierDelivery.next_delivery_day}
-                    </Badge>
-                  )}
-                </div>
-              </div>
-            </CardHeader>
-            
-            <CardContent className="space-y-3">
-              {group.items.map((item) => {
-                const itemPrice = includeVat ? item.unitPriceIncVat : item.unitPriceExVat
-                const lineTotal = itemPrice * item.quantity
+                    <div className="space-y-2">
+                      <SummaryRow
+                        label="Delivery & fees"
+                        value={
+                          supplierDeliveryCost > 0
+                            ? formatPrice(supplierDeliveryCost)
+                            : 'Included'
+                        }
+                      />
 
-                return (
-                  <div key={item.supplierItemId} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-medium text-sm truncate">{item.displayName}</h4>
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
-                        <span>SKU: {item.sku}</span>
-                        <span>•</span>
-                        <span>{item.packSize}</span>
-                        <span>•</span>
-                        <span>{formatPrice(itemPrice)} per {item.unit}</span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-3">
-                      <div className="text-right min-w-[80px]">
-                        <div className="font-medium text-sm">
-                          {formatPrice(lineTotal)}
+                      {(supplierDelivery.delivery_fee > 0 ||
+                        supplierDelivery.fuel_surcharge > 0 ||
+                        supplierDelivery.pallet_deposit > 0) && (
+                        <div className="space-y-1 pl-2 text-xs text-muted-foreground">
+                          {supplierDelivery.delivery_fee > 0 && (
+                            <div className="flex items-center justify-between">
+                              <span>Delivery fee</span>
+                              <span className="tabular-nums">
+                                {formatPrice(supplierDelivery.delivery_fee)}
+                              </span>
+                            </div>
+                          )}
+                          {supplierDelivery.fuel_surcharge > 0 && (
+                            <div className="flex items-center justify-between">
+                              <span>Fuel surcharge</span>
+                              <span className="tabular-nums">
+                                {formatPrice(supplierDelivery.fuel_surcharge)}
+                              </span>
+                            </div>
+                          )}
+                          {supplierDelivery.pallet_deposit > 0 && (
+                            <div className="flex items-center justify-between">
+                              <span>Pallet deposit</span>
+                              <span className="tabular-nums">
+                                {formatPrice(supplierDelivery.pallet_deposit)}
+                              </span>
+                            </div>
+                          )}
                         </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className="flex items-center w-[96px] gap-1">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() =>
-                              updateQuantity(
-                                item.supplierItemId,
-                                Math.max(1, item.quantity - 1),
-                              )
-                            }
-                            className="h-6 w-6 p-0 rounded-md"
-                          >
-                            <Minus className="h-4 w-4" />
-                          </Button>
-                          <span className="w-10 text-center tabular-nums text-sm font-medium">
-                            {item.quantity}
-                          </span>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() =>
-                              updateQuantity(item.supplierItemId, item.quantity + 1)
-                            }
-                            className="h-6 w-6 p-0 rounded-md"
-                          >
-                            <Plus className="h-4 w-4" />
-                          </Button>
-                        </div>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => removeItem(item.supplierItemId)}
-                          className="h-6 w-6 p-0 rounded-md text-destructive hover:text-destructive flex items-center justify-center"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
+                      )}
                     </div>
-                  </div>
-                )
-              })}
+                  )}
 
-              {/* Supplier Summary */}
-              <div className="pt-2 border-t space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span>Items subtotal:</span>
-                  <span>{formatPrice(supplierSubtotal)}</span>
+                  {amountToFreeDelivery && amountToFreeDelivery > 0 && (
+                    <div className="rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-700">
+                      Add {formatPrice(amountToFreeDelivery)} more for free delivery
+                    </div>
+                  )}
+
+                  <Separator className="my-1" />
+
+                  <SummaryRow
+                    label={supplierHasUnknownPrices ? 'Estimated supplier total' : 'Supplier total'}
+                    value={
+                      supplierTotal > 0 || (!supplierHasUnknownPrices && supplierDeliveryCost === 0)
+                        ? formatPrice(supplierTotal)
+                        : 'Pending'
+                    }
+                  />
+
+                  {supplierHasUnknownPrices && (
+                    <p className="text-xs text-muted-foreground">
+                      Final total will update once pricing is confirmed for all items.
+                    </p>
+                  )}
                 </div>
-                
-                {supplierDelivery && supplierDelivery.total_delivery_cost > 0 && (
-                  <>
-                    {supplierDelivery.delivery_fee > 0 && (
-                      <div className="flex justify-between text-sm">
-                        <span>Delivery fee:</span>
-                        <span>{formatPrice(supplierDelivery.delivery_fee)}</span>
-                      </div>
-                    )}
-                    
-                    {supplierDelivery.fuel_surcharge > 0 && (
-                      <div className="flex justify-between text-sm">
-                        <span>Fuel surcharge:</span>
-                        <span>{formatPrice(supplierDelivery.fuel_surcharge)}</span>
-                      </div>
-                    )}
-                    
-                    {supplierDelivery.pallet_deposit > 0 && (
-                      <div className="flex justify-between text-sm">
-                        <span>Pallet deposit:</span>
-                        <span>{formatPrice(supplierDelivery.pallet_deposit)}</span>
-                      </div>
-                    )}
-                  </>
-                )}
+              </CardContent>
+            </Card>
+          )
+        })}
+      </div>
 
-                {supplierDelivery?.amount_to_free_delivery && (
-                  <div className="text-xs text-blue-600 bg-blue-50 p-2 rounded">
-                    Add {formatPrice(supplierDelivery.amount_to_free_delivery)} more for free delivery
-                  </div>
-                )}
-
-                <div className="flex justify-between font-medium border-t pt-2">
-                  <span>Supplier total:</span>
-                  <span>{formatPrice(supplierSubtotal + (supplierDelivery?.total_delivery_cost || 0))}</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )
-      })}
-
-      {/* Order Summary */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <CardTitle>Order Summary</CardTitle>
-            {missingPriceCount > 0 && (
-              <Badge variant="destructive" className="text-xs">
-                Some prices unavailable
-              </Badge>
-            )}
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="flex justify-between">
-            <span>Items ({totalItems}):</span>
-            <span>{formatPrice(subtotalPrice)}</span>
-          </div>
-          
-          {totalDeliveryFees > 0 && (
-            <div className="flex justify-between">
-              <span>Total delivery fees:</span>
-              <span>{formatPrice(totalDeliveryFees)}</span>
+      <div className="space-y-4 xl:sticky xl:top-[calc(100vh-26rem)] xl:self-end">
+        <Card className="shadow-lg">
+          <CardHeader className="space-y-1 pb-4">
+            <div className="flex items-center justify-between gap-3">
+              <CardTitle className="text-lg font-semibold">Order Summary</CardTitle>
+              {missingPriceCount > 0 && (
+                <Badge variant="outline" className="border-amber-200 bg-amber-50 text-amber-700">
+                  Pricing pending
+                </Badge>
+              )}
             </div>
-          )}
-          
-          <Separator />
-          
-          <div className="flex justify-between text-lg font-semibold">
-            <span>Grand total:</span>
-            <span>{formatPrice(grandTotal)}</span>
-          </div>
-          
-          <div className="pt-4 space-y-2">
-            <Button 
-              className="w-full" 
-              size="lg"
-              onClick={handleCheckout}
-              disabled={isSubmitting || (!orderApproved && totalDeliveryFees > 10000)}
-            >
-              {isSubmitting ? 'Processing...' : 'Proceed to Checkout'}
-            </Button>
-            
-            <Button 
-              variant="outline" 
-              className="w-full" 
-              onClick={clearCart}
-              disabled={isSubmitting}
-            >
-              Clear Cart
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+            <p className="text-sm text-muted-foreground">
+              Review totals before proceeding to checkout.
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-4 pt-0">
+            {missingPriceCount > 0 && (
+              <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+                {missingPriceCount} item{missingPriceCount === 1 ? '' : 's'} still need pricing. Totals below are estimates.
+              </div>
+            )}
+
+            <div className="space-y-3">
+              <SummaryRow label={`Items (${totalItems})`} value={subtotalDisplay} />
+              <SummaryRow label="Delivery fees" value={deliveryDisplay} />
+              <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center text-sm">
+                <span className="text-muted-foreground">Discounts</span>
+                <button
+                  type="button"
+                  className="text-xs font-medium text-primary hover:underline"
+                >
+                  Add code
+                </button>
+              </div>
+              <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center text-sm">
+                <span className="text-muted-foreground">VAT</span>
+                <span className="text-right text-xs text-muted-foreground">
+                  {includeVat ? 'Included in totals' : 'Calculated at checkout'}
+                </span>
+              </div>
+            </div>
+
+            <Separator />
+
+            <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end">
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  {missingPriceCount > 0 ? 'Estimated total' : 'Grand total'}
+                </p>
+              </div>
+              <p className="text-2xl font-semibold tabular-nums text-foreground">{grandTotalDisplay}</p>
+            </div>
+
+            <div className="space-y-2 pt-2">
+              <Button
+                type="button"
+                className="w-full"
+                size="lg"
+                onClick={handleCheckout}
+                disabled={
+                  isSubmitting || (!orderApproved && totalDeliveryFees > 10000)
+                }
+              >
+                {isSubmitting ? 'Processing…' : 'Proceed to Checkout'}
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                className="w-full text-destructive hover:bg-destructive/10 hover:text-destructive"
+                onClick={() => {
+                  clearCart()
+                  setOrderApproved(false)
+                }}
+                disabled={isSubmitting}
+              >
+                Clear cart
+              </Button>
+            </div>
+
+            {deliveryCalculations && totalDeliveryFees > 0 && !orderApproved && (
+              <p className="text-xs text-muted-foreground">
+                Delivery fees above exceed your automatic approval limit. Approve the delivery plan to enable checkout.
+              </p>
+            )}
+
+            <div className="rounded-md border border-dashed border-muted-foreground/40 bg-muted/10 px-3 py-2 text-xs text-muted-foreground">
+              Need to adjust delivery dates or split shipments? You can finalize these details on the next step.
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-muted/40 shadow-sm">
+          <CardHeader className="space-y-1 pb-3">
+            <CardTitle className="text-base font-semibold">Need help?</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Our team can assist with combining deliveries or sourcing alternatives if pricing is missing.
+            </p>
+          </CardHeader>
+          <CardContent className="pt-0 text-sm text-muted-foreground">
+            <p>Chat with support or leave a note for suppliers during checkout.</p>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   )
 }
