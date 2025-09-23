@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useNavigate, useBlocker } from 'react-router-dom'
+import { useNavigate, useBlocker, useLocation } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { ArrowLeft, Check, Info, Loader2 } from 'lucide-react'
 
@@ -38,6 +38,11 @@ const DRAFT_STORAGE_KEY = 'workspace_setup_draft'
 const STATUS_STORAGE_KEY = 'workspace_setup_status'
 const PREFERENCES_STORAGE_KEY = 'workspace_preferences'
 const TOTAL_STEPS = 3
+
+type OnboardingLocationState = {
+  from?: string
+  allowExisting?: boolean
+}
 
 type AddressValues = OrganizationFormValues['deliveryAddress']
 
@@ -167,9 +172,39 @@ function mapConnectorType(connectorType?: string | null) {
 
 export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) {
   const navigate = useNavigate()
+  const location = useLocation()
   const { toast } = useToast()
   const { user, profile, profileLoading, refetch } = useAuth()
   const { language: defaultLanguage, currency: defaultCurrency } = useLocaleDefaults()
+
+  const currentPath = useMemo(
+    () => `${location.pathname}${location.search}${location.hash}`,
+    [location.hash, location.pathname, location.search]
+  )
+
+  const locationState = useMemo(
+    () => (location.state as OnboardingLocationState | null) ?? null,
+    [location.state]
+  )
+
+  const previousPath = useMemo(() => {
+    const raw = locationState?.from
+    if (!raw || typeof raw !== 'string') {
+      return null
+    }
+    const trimmed = raw.trim()
+    if (!trimmed) {
+      return null
+    }
+    return trimmed
+  }, [locationState])
+
+  const allowExistingWorkspaceCreation = locationState?.allowExisting ?? false
+
+  const navigateToPrevious = useCallback(() => {
+    const target = previousPath && previousPath !== currentPath ? previousPath : '/'
+    navigate(target, { replace: true })
+  }, [currentPath, navigate, previousPath])
 
   const [currentStep, setCurrentStep] = useState(1)
   const [organization, setOrganization] = useState<OrganizationFormValues>(EMPTY_ORGANIZATION)
@@ -218,14 +253,14 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
 
   useEffect(() => {
     if (profileLoading) return
-    if (profile?.tenant_id) {
+    if (profile?.tenant_id && !allowExistingWorkspaceCreation) {
       toast({
         title: 'Setup already complete!',
         description: 'Your workspace is ready to use.'
       })
-      navigate('/')
+      navigateToPrevious()
     }
-  }, [profile, profileLoading, navigate, toast])
+  }, [profile, profileLoading, toast, navigateToPrevious, allowExistingWorkspaceCreation])
 
   useEffect(() => {
     if (typeof window === 'undefined' || draftLoaded) return
@@ -348,7 +383,7 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
       if (onSkip) {
         onSkip()
       } else {
-        navigate('/')
+        navigateToPrevious()
       }
     } else if (action === 'complete') {
       if (onComplete) {
@@ -357,7 +392,7 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
         navigate('/')
       }
     }
-  }, [allowNavigation, navigate, onComplete, onSkip, pendingExitAction])
+  }, [allowNavigation, navigate, navigateToPrevious, onComplete, onSkip, pendingExitAction])
 
   useEffect(() => {
     if (!shouldBlockNavigation) return

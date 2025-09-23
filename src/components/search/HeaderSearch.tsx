@@ -36,7 +36,7 @@ const SECTION_METADATA: Record<
     heading: string
     meta: string
     badge: string
-    icon: React.ComponentType<{ className?: string; strokeWidth?: number }>
+    icon: React.ComponentType<any>
   }
 > = {
   products: { heading: 'Products', meta: 'Product', badge: 'P', icon: Package },

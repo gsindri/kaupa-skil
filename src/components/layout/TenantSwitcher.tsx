@@ -1,7 +1,7 @@
 import React from 'react'
 import { Check, ChevronDown, Home, LogIn, Plus } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import {
@@ -24,7 +24,7 @@ import {
 type Membership = {
   id: string
   base_role: string
-  tenant: { id: string; name: string } | null
+  tenant: { id: string; name: string; kind: string } | null
 }
 
 function getInitials(name: string) {
@@ -39,16 +39,11 @@ function getInitials(name: string) {
 export function TenantSwitcher() {
   const { profile, user } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
 
   const [open, setOpen] = React.useState(false)
   const [query, setQuery] = React.useState('')
   const inputRef = React.useRef<HTMLInputElement | null>(null)
-  const contentRef = React.useRef<HTMLDivElement | null>(null)
-  const isSearchFocusedRef = React.useRef(false)
-  const allowSearchBlurRef = React.useRef(false)
-  const restoreSearchFocus = React.useCallback(() => {
-    requestAnimationFrame(() => {
-      if (open && isSearchFocusedRef.current && !allowSearchBlurRef.current) {
         inputRef.current?.focus()
       }
     })
@@ -72,7 +67,6 @@ export function TenantSwitcher() {
     } else {
       setQuery('')
       isSearchFocusedRef.current = false
-      allowSearchBlurRef.current = false
     }
   }, [open])
 
@@ -83,16 +77,25 @@ export function TenantSwitcher() {
 
       const { data, error } = await supabase
         .from('memberships')
-        .select(`id, base_role, tenant:tenants(id, name)`)
+        .select(`id, base_role, tenant:tenants(id, name, kind)`)
         .eq('user_id', user.id)
 
       if (error) throw error
       
-      // Transform the data to match our expected type (Supabase returns tenant as array)
-      return (data || []).map(item => ({
+      // Transform the data to match our expected type
+      // Supabase can return tenant data as either object or array depending on the query
+      const transformedData = (data || []).map(item => ({
         ...item,
-        tenant: Array.isArray(item.tenant) && item.tenant.length > 0 ? item.tenant[0] : null
+        tenant: Array.isArray(item.tenant) 
+          ? (item.tenant.length > 0 ? item.tenant[0] : null)
+          : (item.tenant || null)
       })) as Membership[]
+      
+      // Debug logging
+      console.log('TenantSwitcher: userMemberships raw data:', data)
+      console.log('TenantSwitcher: userMemberships transformed:', transformedData)
+      
+      return transformedData
     },
     enabled: !!user?.id,
   })
@@ -101,26 +104,34 @@ export function TenantSwitcher() {
     (m) => m.tenant && m.tenant.id === profile?.tenant_id,
   )?.tenant
 
-  const displayName = currentTenant?.name || 'Personal workspace'
+  // Display "Personal workspace" for personal tenants, otherwise show the tenant name
+  const displayName = currentTenant 
+    ? currentTenant.kind === 'personal' 
+      ? 'Personal workspace (Private)' 
+      : currentTenant.name
+    : 'Personal workspace (Private)'
+  
   const normalizedQuery = query.trim().toLowerCase()
 
   const matchingTenants = React.useMemo(() => {
+    // Always show all valid memberships when no search query
     if (!normalizedQuery) {
-      return userMemberships.filter((membership) => membership.tenant)
+      return userMemberships.filter((membership) => membership.tenant !== null)
     }
+    
+    // Filter based on search query
     return userMemberships.filter((membership) => {
-      const name = membership.tenant?.name?.toLowerCase() ?? ''
-      return name.includes(normalizedQuery)
+      if (!membership.tenant) return false
+      
+      const name = membership.tenant.name?.toLowerCase() ?? ''
+      const displayLabel = membership.tenant.kind === 'personal' ? 'personal workspace' : name
+      return displayLabel.includes(normalizedQuery)
     })
   }, [normalizedQuery, userMemberships])
 
-  const showPersonal =
-    normalizedQuery.length === 0 ||
-    'personal workspace'.includes(normalizedQuery)
+  const hasResults = matchingTenants.length > 0
 
-  const hasResults = showPersonal || matchingTenants.length > 0
-
-  const handleTenantSwitch = async (tenantId: string | null) => {
+  const handleTenantSwitch = async (tenantId: string) => {
     if (!user?.id) return
 
     try {
@@ -169,23 +180,6 @@ export function TenantSwitcher() {
             onChange={(event) => setQuery(event.target.value)}
             onFocus={() => {
               isSearchFocusedRef.current = true
-              allowSearchBlurRef.current = false
-            }}
-            onBlur={(event) => {
-              const nextFocused = event.relatedTarget as HTMLElement | null
-
-              if (
-                open &&
-                !allowSearchBlurRef.current &&
-                contentRef.current &&
-                nextFocused === contentRef.current
-              ) {
-                restoreSearchFocus()
-                return
-              }
-
-              isSearchFocusedRef.current = false
-              allowSearchBlurRef.current = false
             }}
             className={cn(
               'h-12 w-full rounded-xl border border-[color:var(--surface-ring)] px-3 text-[14px] text-[color:var(--text)] placeholder:text-[color:var(--text-muted)]',
@@ -198,37 +192,11 @@ export function TenantSwitcher() {
 
         <div className="tw-label normal-case">Workspaces</div>
         <div className="flex flex-col gap-1 px-1">
-          {showPersonal && (
-            <DropdownMenuItem
-              onSelect={async () => {
-                await handleTenantSwitch(null)
-                setOpen(false)
-              }}
-              asChild
-            >
-              <button
-                type="button"
-                aria-selected={!profile?.tenant_id}
-                className="tw-row text-left"
-              >
-                <Home className="size-4 text-[color:var(--text-muted)]" />
-                <div className="flex w-full items-center justify-between gap-2">
-                  <span className="truncate">Personal workspace</span>
-                </div>
-                <Check
-                  className={cn(
-                    'size-3.5 self-baseline text-[color:var(--brand-accent)] transition-opacity',
-                    !profile?.tenant_id ? 'opacity-70' : 'opacity-0',
-                  )}
-                />
-              </button>
-            </DropdownMenuItem>
-          )}
-
           {matchingTenants.map((membership) => {
             const tenant = membership.tenant
             if (!tenant) return null
             const isCurrent = tenant.id === profile?.tenant_id
+            const isPersonal = tenant.kind === 'personal'
             return (
               <DropdownMenuItem
                 key={membership.id}
@@ -243,11 +211,17 @@ export function TenantSwitcher() {
                   aria-selected={isCurrent}
                   className="tw-row text-left"
                 >
-                  <Avatar className="h-6 w-6 text-[12px] text-[color:var(--text-muted)]">
-                    <AvatarFallback>{getInitials(tenant.name)}</AvatarFallback>
-                  </Avatar>
+                  {isPersonal ? (
+                    <Home className="size-4 text-[color:var(--text-muted)]" />
+                  ) : (
+                    <Avatar className="h-6 w-6 text-[12px] text-[color:var(--text-muted)]">
+                      <AvatarFallback>{getInitials(tenant.name)}</AvatarFallback>
+                    </Avatar>
+                  )}
                   <div className="flex w-full items-center justify-between gap-2">
-                    <span className="truncate">{tenant.name}</span>
+                    <span className="truncate">
+                      {isPersonal ? 'Personal workspace (Private)' : tenant.name}
+                    </span>
                     <span className="pop-accent px-2 py-0.5 capitalize">
                       {membership.base_role}
                     </span>
@@ -276,7 +250,13 @@ export function TenantSwitcher() {
         <div className="flex flex-col gap-1 px-1">
           <DropdownMenuItem
             onSelect={() => {
-              navigate('/settings/organization/create')
+              const targetPath = '/settings/organization/create'
+              const currentPath = `${location.pathname}${location.search}${location.hash}`
+              const state =
+                currentPath === targetPath
+                  ? undefined
+                  : { from: currentPath, allowExisting: true }
+              navigate(targetPath, { state })
               setOpen(false)
             }}
             asChild
@@ -289,7 +269,11 @@ export function TenantSwitcher() {
           </DropdownMenuItem>
           <DropdownMenuItem
             onSelect={() => {
-              navigate('/settings/organization/join')
+              const targetPath = '/settings/organization/join'
+              const currentPath = `${location.pathname}${location.search}${location.hash}`
+              navigate(targetPath, {
+                state: currentPath === targetPath ? undefined : { from: currentPath }
+              })
               setOpen(false)
             }}
             asChild

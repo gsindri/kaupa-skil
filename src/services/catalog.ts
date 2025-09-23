@@ -180,11 +180,13 @@ export async function fetchOrgCatalogItems(
   filters: OrgCatalogFilters,
   sort: SortOrder,
 ): Promise<{ items: PublicCatalogItem[]; nextCursor: string | null; total: number }> {
-  let query: any = supabase
-    .rpc('v_org_catalog', { _org: orgId })
-    .select(
-      'catalog_id, name, brand, canonical_pack, pack_sizes, suppliers_count, supplier_ids, supplier_names, supplier_logo_urls, sample_image_url, sample_source_url, availability_status, availability_text, availability_updated_at, best_price'
-    )
+  try {
+    // Try organization-specific catalog first
+    let query: any = supabase
+      .rpc('v_org_catalog', { _org: orgId })
+      .select(
+        'catalog_id, name, brand, canonical_pack, pack_sizes, suppliers_count, supplier_ids, supplier_names, supplier_logo_urls, active_supplier_count, sample_image_url, sample_source_url, availability_status, availability_text, availability_updated_at, best_price, category_tags, on_special, is_my_supplier'
+      )
 
   if (sort === 'az') {
     query = query.order('name', { ascending: true }).order('catalog_id', { ascending: true })
@@ -216,37 +218,55 @@ export async function fetchOrgCatalogItems(
 
   query = query.limit(50)
 
-  const { data, error } = await query
-  if (error) throw error
+    const { data, error } = await query
+    if (error) throw error
 
-  // Deduplicate any duplicate catalog rows returned from the view
-  const rows: any[] = data ?? []
-  const seen = new Set<string>()
-  const deduped = rows.filter(r => {
-    if (seen.has(r.catalog_id)) return false
-    seen.add(r.catalog_id)
-    return true
-  })
+    // Deduplicate any duplicate catalog rows returned from the view
+    const rows: any[] = data ?? []
+    const seen = new Set<string>()
+    const deduped = rows.filter(r => {
+      if (seen.has(r.catalog_id)) return false
+      seen.add(r.catalog_id)
+      return true
+    })
 
-  const items: PublicCatalogItem[] = deduped.map((item: any) => ({
-    catalog_id: item.catalog_id,
-    name: item.name,
-    brand: item.brand ?? null,
-    canonical_pack: item.canonical_pack ?? null,
-    pack_sizes: item.pack_sizes ?? null,
-    suppliers_count: item.suppliers_count ?? item.supplier_count ?? 0,
-    supplier_ids: item.supplier_ids ?? null,
-    supplier_names: item.supplier_names ?? null,
-    supplier_logo_urls: item.supplier_logo_urls ?? null,
-    sample_image_url: item.sample_image_url ?? item.image_url ?? null,
-    availability_text: item.availability_text ?? null,
-    availability_status: (item.availability_status ?? null) as AvailabilityStatus | null,
-    availability_updated_at: item.availability_updated_at ?? null,
-    sample_source_url: item.sample_source_url ?? null,
-    best_price: item.best_price ?? null,
-  }))
-  const nextCursor = items.length ? items[items.length - 1].catalog_id : null
-  return { items, nextCursor, total: items.length }
+    const items: PublicCatalogItem[] = deduped.map((item: any) => ({
+      catalog_id: item.catalog_id,
+      name: item.name,
+      brand: item.brand ?? null,
+      canonical_pack: item.canonical_pack ?? null,
+      pack_sizes: item.pack_sizes ?? null,
+      category_tags: item.category_tags ?? null,
+      suppliers_count: item.suppliers_count ?? item.supplier_count ?? 0,
+      supplier_ids: item.supplier_ids ?? null,
+      supplier_names: item.supplier_names ?? null,
+      supplier_logo_urls: item.supplier_logo_urls ?? null,
+      active_supplier_count: item.active_supplier_count ?? 0,
+      sample_image_url: item.sample_image_url ?? item.image_url ?? null,
+      availability_text: item.availability_text ?? null,
+      availability_status: (item.availability_status ?? null) as AvailabilityStatus | null,
+      availability_updated_at: item.availability_updated_at ?? null,
+      sample_source_url: item.sample_source_url ?? null,
+      best_price: item.best_price ?? null,
+    }))
+    const nextCursor = items.length ? items[items.length - 1].catalog_id : null
+    return { items, nextCursor, total: items.length }
+  } catch (error) {
+    // Fallback to public catalog if org-specific function doesn't exist or fails
+    console.log('Organization catalog not available, falling back to public catalog:', error)
+    const publicFilters: PublicCatalogFilters = {
+      search: filters.search,
+      brand: filters.brand,
+      category: filters.category,
+      supplier: filters.supplier,
+      availability: filters.availability,
+      packSizeRange: filters.packSizeRange,
+      onlyWithPrice: filters.onlyWithPrice,
+      onSpecial: filters.onSpecial,
+      cursor: filters.cursor,
+    }
+    return await fetchPublicCatalogItems(publicFilters, sort)
+  }
 }
 
 export async function fetchCatalogSuggestions(
