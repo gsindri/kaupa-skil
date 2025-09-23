@@ -42,7 +42,10 @@ function renderWithProviders(items: CartItem[]) {
     getTotalPrice: vi.fn(),
     getMissingPriceCount: vi.fn(() => 0),
     isDrawerOpen: false,
-    setIsDrawerOpen: vi.fn()
+    setIsDrawerOpen: vi.fn(),
+    isDrawerPinned: false,
+    setIsDrawerPinned: vi.fn(),
+    cartPulseSignal: 0
   }
 
   const settingsValue: SettingsContextType = {

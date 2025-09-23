@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { useToast } from '@/hooks/use-toast'
 import type { CartItem } from '@/lib/types'
 import { BasketContext } from './BasketProviderUtils'
@@ -6,9 +6,13 @@ import { ToastAction } from '@/components/ui/toast'
 import { flyToCart } from '@/lib/flyToCart'
 import { getCachedImageUrl } from '@/services/ImageCache'
 
+const CART_STORAGE_KEY = 'procurewise-basket'
+const CART_PIN_STORAGE_KEY = 'procurewise-cart-pinned'
+const CART_AUTO_OPEN_SESSION_KEY = 'procurewise-cart-auto-opened'
+
 export default function BasketProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>(() => {
-    const saved = localStorage.getItem('procurewise-basket')
+    const saved = localStorage.getItem(CART_STORAGE_KEY)
     if (!saved) return []
 
     try {
@@ -37,8 +41,27 @@ export default function BasketProvider({ children }: { children: React.ReactNode
     }
   })
 
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false)
+  const [isDrawerPinned, setIsDrawerPinned] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false
+    try {
+      return window.localStorage.getItem(CART_PIN_STORAGE_KEY) === '1'
+    } catch {
+      return false
+    }
+  })
+  const [hasAutoOpenedDrawer, setHasAutoOpenedDrawer] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false
+    try {
+      return window.sessionStorage.getItem(CART_AUTO_OPEN_SESSION_KEY) === '1'
+    } catch {
+      return false
+    }
+  })
+  const [cartPulseSignal, setCartPulseSignal] = useState(0)
+  const [drawerOpenExplicit, setDrawerOpenExplicit] = useState(false)
   const { toast } = useToast()
+
+  const isDrawerOpen = isDrawerPinned || drawerOpenExplicit
 
   // Sync basket across tabs
   useEffect(() => {
@@ -63,13 +86,13 @@ export default function BasketProvider({ children }: { children: React.ReactNode
   // Fallback: cross-tab sync via storage events
   useEffect(() => {
     const onStorage = (e: StorageEvent) => {
-        if (e.key === 'procurewise-basket' && e.newValue) {
-          try {
-            setItems(JSON.parse(e.newValue))
-          } catch {
-            /* ignore parse errors */
-          }
+      if (e.key === CART_STORAGE_KEY && e.newValue) {
+        try {
+          setItems(JSON.parse(e.newValue))
+        } catch {
+          /* ignore parse errors */
         }
+      }
     }
     window.addEventListener('storage', onStorage)
     return () => window.removeEventListener('storage', onStorage)
@@ -79,7 +102,7 @@ export default function BasketProvider({ children }: { children: React.ReactNode
     let timeout: number | undefined
     let latest: CartItem[] = []
     const send = (items: CartItem[]) => {
-      localStorage.setItem('procurewise-basket', JSON.stringify(items))
+      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items))
       if (typeof BroadcastChannel !== 'undefined') {
         const channel = new BroadcastChannel('procurewise-basket')
         channel.postMessage({ type: 'BASKET_UPDATED', items })
@@ -92,6 +115,55 @@ export default function BasketProvider({ children }: { children: React.ReactNode
       timeout = window.setTimeout(() => send(latest), 400)
     }
   })()
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    try {
+      if (isDrawerPinned) {
+        window.localStorage.setItem(CART_PIN_STORAGE_KEY, '1')
+      } else {
+        window.localStorage.removeItem(CART_PIN_STORAGE_KEY)
+      }
+    } catch {
+      /* ignore persistence errors */
+    }
+  }, [isDrawerPinned])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    try {
+      if (hasAutoOpenedDrawer) {
+        window.sessionStorage.setItem(CART_AUTO_OPEN_SESSION_KEY, '1')
+      } else {
+        window.sessionStorage.removeItem(CART_AUTO_OPEN_SESSION_KEY)
+      }
+    } catch {
+      /* ignore persistence errors */
+    }
+  }, [hasAutoOpenedDrawer])
+
+  useEffect(() => {
+    if (isDrawerPinned) {
+      setDrawerOpenExplicit(true)
+      setHasAutoOpenedDrawer(true)
+    }
+  }, [isDrawerPinned])
+
+  const setIsDrawerOpen = useCallback(
+    (open: boolean) => {
+      if (!open) {
+        setDrawerOpenExplicit(false)
+        if (isDrawerPinned) {
+          setIsDrawerPinned(false)
+        }
+        return
+      }
+
+      setHasAutoOpenedDrawer(true)
+      setDrawerOpenExplicit(true)
+    },
+    [isDrawerPinned, setDrawerOpenExplicit, setHasAutoOpenedDrawer, setIsDrawerPinned]
+  )
 
   const addItem = (
     item:
@@ -168,6 +240,19 @@ export default function BasketProvider({ children }: { children: React.ReactNode
 
       return newItems
     })
+
+    const drawerVisible = isDrawerOpen
+    if (!hasAutoOpenedDrawer) {
+      setHasAutoOpenedDrawer(true)
+      if (!drawerVisible) {
+        setDrawerOpenExplicit(true)
+      }
+      return
+    }
+
+    if (!drawerVisible && !isDrawerPinned) {
+      setCartPulseSignal(signal => signal + 1)
+    }
   }
 
   const updateQuantity = (supplierItemId: string, quantity: number) => {
@@ -247,10 +332,12 @@ export default function BasketProvider({ children }: { children: React.ReactNode
       getTotalPrice,
       getMissingPriceCount,
       isDrawerOpen,
-      setIsDrawerOpen
+      setIsDrawerOpen,
+      isDrawerPinned,
+      setIsDrawerPinned,
+      cartPulseSignal
     }}>
       {children}
     </BasketContext.Provider>
   )
 }
-

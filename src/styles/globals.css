@@ -198,6 +198,45 @@ input[type='search'] {
   cursor:pointer;
   transition:background var(--enter), outline var(--enter), box-shadow var(--enter), color var(--enter);
 }
+
+.cart-button-pulse{
+  animation:cartButtonPulse 0.78s var(--ease-snap, cubic-bezier(.22,1,.36,1));
+}
+
+.cart-button-pulse::after{
+  content:"";
+  position:absolute;
+  inset:50% auto auto 50%;
+  width:140%;
+  height:140%;
+  transform:translate(-50%, -50%) scale(.82);
+  border-radius:999px;
+  background:radial-gradient(circle at center, rgba(245,158,11,.42) 0%, rgba(245,158,11,0) 65%);
+  opacity:0;
+  pointer-events:none;
+  animation:cartButtonGlow 0.78s var(--ease-snap, cubic-bezier(.22,1,.36,1));
+}
+
+@keyframes cartButtonPulse{
+  0%{ transform:translateY(0) scale(1); }
+  30%{ transform:translateY(-1px) scale(1.08); }
+  62%{ transform:translateY(0) scale(1); }
+  100%{ transform:translateY(0) scale(1); }
+}
+
+@keyframes cartButtonGlow{
+  0%{ opacity:0; transform:translate(-50%, -50%) scale(.82); }
+  28%{ opacity:.7; transform:translate(-50%, -50%) scale(1); }
+  70%{ opacity:0; transform:translate(-50%, -50%) scale(1.18); }
+  100%{ opacity:0; transform:translate(-50%, -50%) scale(1.22); }
+}
+
+@media (prefers-reduced-motion: reduce){
+  .cart-button-pulse,
+  .cart-button-pulse::after{
+    animation:none !important;
+  }
+}
 .tw-row-loose{
   min-height:48px;
   padding-top:14px;
