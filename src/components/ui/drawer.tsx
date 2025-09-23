@@ -42,9 +42,11 @@ const DrawerContent = React.forwardRef<
     overlayClassName?: string
   }
 >(({ className, children, showBar = true, side = 'bottom', overlayClassName, ...props }, ref) => (
-  <DrawerPortal>
-    <div>
+  <React.Fragment>
+    <DrawerPortal>
       <DrawerOverlay className={overlayClassName} />
+    </DrawerPortal>
+    <DrawerPortal>
       <DrawerPrimitive.Content
         ref={ref}
         className={cn(
@@ -63,8 +65,8 @@ const DrawerContent = React.forwardRef<
         )}
         {children}
       </DrawerPrimitive.Content>
-    </div>
-  </DrawerPortal>
+    </DrawerPortal>
+  </React.Fragment>
 ))
 DrawerContent.displayName = 'DrawerContent'
 
