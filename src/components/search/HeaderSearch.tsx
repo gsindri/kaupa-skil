@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useGlobalSearch, SearchScope } from '@/hooks/useGlobalSearch'
 import type { SearchItem, SearchSections } from '@/hooks/useGlobalSearch'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
-import { Loader2, Search, Package, Building2, ClipboardList } from 'lucide-react'
+import { Loader2, Search, Package, Building2, ClipboardList, X } from 'lucide-react'
 import AvailabilityBadge from '@/components/catalog/AvailabilityBadge'
 import { SupplierLogo } from '@/components/catalog/SupplierLogo'
 import { QuantityStepper } from '@/components/cart/QuantityStepper'
@@ -326,21 +326,32 @@ export const HeaderSearch = React.forwardRef<HTMLInputElement, HeaderSearchProps
                   onKeyDown={handleKeyDown}
                   className="flex-1 bg-transparent text-[15px] text-[color:var(--text)] outline-none placeholder:text-[color:var(--text-muted)]"
                 />
-                {query ? (
+                <div className="flex items-center gap-1.5">
+                  {query ? (
+                    <button
+                      type="button"
+                      aria-label="Clear search query"
+                      onClick={() => setQuery('')}
+                      className="flex h-10 w-10 items-center justify-center rounded-full text-[14px] text-[color:var(--text-muted)] transition-colors hover:text-[color:var(--text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--brand-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--surface-pop-2)]"
+                    >
+                      ✕
+                    </button>
+                  ) : isLoading ? (
+                    <span className="flex h-10 w-10 items-center justify-center text-[color:var(--text-muted)]">
+                      <Loader2 className="h-4 w-4 animate-spin" strokeWidth={1.5} />
+                    </span>
+                  ) : (
+                    <span className="flex items-center rounded-[6px] border border-[color:var(--surface-ring)] px-1.5 py-[0.125rem] text-[12px] text-[color:var(--text-muted)] opacity-70">⌘K</span>
+                  )}
                   <button
                     type="button"
-                    onClick={() => setQuery('')}
-                    className="flex h-10 w-10 items-center justify-center rounded-full text-[14px] text-[color:var(--text-muted)] transition-colors hover:text-[color:var(--text)]"
+                    aria-label="Close search"
+                    onClick={() => closeDialog(false)}
+                    className="flex h-10 w-10 items-center justify-center rounded-full text-[color:var(--text-muted)] transition-colors hover:bg-white/[0.06] hover:text-[color:var(--text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--brand-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--surface-pop-2)]"
                   >
-                    ✕
+                    <X className="h-[18px] w-[18px]" strokeWidth={1.75} />
                   </button>
-                ) : isLoading ? (
-                  <span className="flex h-10 w-10 items-center justify-center text-[color:var(--text-muted)]">
-                    <Loader2 className="h-4 w-4 animate-spin" strokeWidth={1.5} />
-                  </span>
-                ) : (
-                  <span className="flex items-center rounded-[6px] border border-[color:var(--surface-ring)] px-1.5 py-[0.125rem] text-[12px] text-[color:var(--text-muted)] opacity-70">⌘K</span>
-                )}
+                </div>
               </div>
             </div>
 
