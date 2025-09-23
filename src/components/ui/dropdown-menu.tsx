@@ -60,20 +60,102 @@ DropdownMenuSubContent.displayName =
 
 const DropdownMenuContent = React.forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Content>
->(({ className, sideOffset = 4, ...props }, ref) => (
-  <DropdownMenuPrimitive.Portal>
-    <DropdownMenuPrimitive.Content
-      ref={ref}
-      sideOffset={sideOffset}
-      className={cn(
-        "z-[var(--z-popover,70)] min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
-        className
-      )}
-      {...props}
-    />
-  </DropdownMenuPrimitive.Portal>
-))
+  React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Content> & {
+    withOverlay?: boolean
+  }
+>(({ className, sideOffset = 4, withOverlay = false, ...props }, ref) => {
+  const [menuState, setMenuState] = React.useState<"open" | "closed">("closed")
+  const [contentNode, setContentNode] = React.useState<
+    React.ElementRef<typeof DropdownMenuPrimitive.Content> | null
+  >(null)
+
+  const setRefs = React.useCallback(
+    (node: React.ElementRef<typeof DropdownMenuPrimitive.Content> | null) => {
+      setContentNode(node)
+      if (typeof ref === "function") {
+        ref(node)
+      } else if (ref) {
+        ;(
+          ref as React.MutableRefObject<
+            React.ElementRef<typeof DropdownMenuPrimitive.Content> | null
+          >
+        ).current = node
+      }
+    },
+    [ref]
+  )
+
+  React.useEffect(() => {
+    if (!withOverlay || !contentNode) return
+
+    let animationFrame = 0
+    const updateState = () => {
+      cancelAnimationFrame(animationFrame)
+      animationFrame = requestAnimationFrame(() => {
+        const nextState = contentNode.getAttribute("data-state")
+        if (nextState === "open" || nextState === "closed") {
+          setMenuState(nextState)
+        }
+      })
+    }
+
+    updateState()
+
+    const observer = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        if (mutation.attributeName === "data-state") {
+          updateState()
+          break
+        }
+      }
+    })
+
+    observer.observe(contentNode, {
+      attributes: true,
+      attributeFilter: ["data-state"],
+    })
+
+    return () => {
+      cancelAnimationFrame(animationFrame)
+      observer.disconnect()
+    }
+  }, [withOverlay, contentNode])
+
+  React.useEffect(() => {
+    if (!withOverlay) {
+      setMenuState("closed")
+    }
+  }, [withOverlay])
+
+  return (
+    <DropdownMenuPrimitive.Portal>
+      {withOverlay ? (
+        <div
+          aria-hidden
+          data-state={menuState}
+          className={cn(
+            "fixed inset-0 bg-[color:var(--overlay)] z-[calc(var(--z-popover,70)-1)]",
+            "opacity-0 data-[state=open]:opacity-100",
+            "pointer-events-none data-[state=open]:pointer-events-auto",
+            "data-[state=open]:animate-in data-[state=open]:fade-in-0",
+            "data-[state=closed]:animate-out data-[state=closed]:fade-out-0",
+            "data-[state=open]:duration-200 data-[state=closed]:duration-150",
+            "data-[state=open]:ease-out data-[state=closed]:ease-in"
+          )}
+        />
+      ) : null}
+      <DropdownMenuPrimitive.Content
+        ref={setRefs}
+        sideOffset={sideOffset}
+        className={cn(
+          "z-[var(--z-popover,70)] min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
+          className
+        )}
+        {...props}
+      />
+    </DropdownMenuPrimitive.Portal>
+  )
+})
 DropdownMenuContent.displayName = DropdownMenuPrimitive.Content.displayName
 
 const DropdownMenuItem = React.forwardRef<

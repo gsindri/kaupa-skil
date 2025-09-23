@@ -215,7 +215,7 @@ export function TopNavigation() {
           Open search dialog. Shortcut: press / or {platformShortcut}.
         </span>
         <LanguageSwitcher className="hidden xl:block" />
-        <DropdownMenu open={userMenuOpen} onOpenChange={setUserMenuOpen} modal={false}>
+        <DropdownMenu open={userMenuOpen} onOpenChange={setUserMenuOpen}>
           <DropdownMenuTrigger asChild>
             <button
               type="button"
@@ -243,7 +243,12 @@ export function TopNavigation() {
             </button>
           </DropdownMenuTrigger>
 
-          <PopCard className="w-[320px] space-y-2" sideOffset={12} align="end">
+          <PopCard
+            className="w-[320px] space-y-2"
+            sideOffset={12}
+            align="end"
+            withOverlay
+          >
             <div className="px-2.5 pt-2">
               <div className="flex items-center gap-3 rounded-[14px] bg-[color:var(--surface-pop)]/35 px-3 py-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[color:var(--surface-pop)] text-[16px] font-semibold text-[color:var(--text)]">
