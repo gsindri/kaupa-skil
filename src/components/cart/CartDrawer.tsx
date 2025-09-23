@@ -3,10 +3,11 @@ import { Sheet, SheetContent, SheetClose } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Badge } from "@/components/ui/badge"
-import { Trash2, X } from "lucide-react"
+import { Pin, PinOff, Trash2, X } from "lucide-react"
 import { useCart } from "@/contexts/useBasket"
 import { useSettings } from "@/contexts/useSettings"
 import { QuantityStepper } from "./QuantityStepper"
+import { cn } from "@/lib/utils"
 
 export function CartDrawer() {
   const {
@@ -17,6 +18,8 @@ export function CartDrawer() {
     getMissingPriceCount,
     isDrawerOpen,
     setIsDrawerOpen,
+    isDrawerPinned,
+    setIsDrawerPinned,
   } = useCart()
   const { includeVat, setIncludeVat } = useSettings()
 
@@ -29,11 +32,22 @@ export function CartDrawer() {
       maximumFractionDigits: 0,
     }).format(n || 0)
 
+  const togglePinned = React.useCallback(() => {
+    setIsDrawerPinned(prev => !prev)
+  }, [setIsDrawerPinned])
+
+  const pinLabel = isDrawerPinned ? "Unpin cart sidebar" : "Pin cart sidebar"
+
   return (
     <Sheet open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
       <SheetContent
         side="right"
-        className="w-[440px] md:w-[520px] max-w-[100vw] flex flex-col p-0 text-[color:var(--text)] [&>button:last-child]:hidden"
+        hideOverlay={isDrawerPinned}
+        data-pinned={isDrawerPinned ? "true" : undefined}
+        className={cn(
+          "w-[360px] md:w-[420px] max-w-[100vw] flex flex-col p-0 text-[color:var(--text)] [&>button:last-child]:hidden",
+          isDrawerPinned && "shadow-none"
+        )}
         aria-label="Shopping cart"
         id="cart-drawer"
       >
@@ -52,6 +66,20 @@ export function CartDrawer() {
                   Some prices unavailable
                 </Badge>
               )}
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label={pinLabel}
+                aria-pressed={isDrawerPinned}
+                title={pinLabel}
+                className={cn(
+                  "text-[color:var(--text-muted)] hover:text-[color:var(--text)]",
+                  isDrawerPinned && "text-[color:var(--brand-accent,#f59e0b)]"
+                )}
+                onClick={togglePinned}
+              >
+                {isDrawerPinned ? <PinOff className="h-4 w-4" /> : <Pin className="h-4 w-4" />}
+              </Button>
               <Button
                 variant="secondary"
                 size="sm"

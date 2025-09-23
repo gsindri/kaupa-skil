@@ -22,7 +22,7 @@ export function CartButton({
   hideLabel = false,
   label = 'Cart'
 }: CartButtonProps) {
-  const { items, setIsDrawerOpen, isDrawerOpen } = useCart()
+  const { items, setIsDrawerOpen, isDrawerOpen, cartPulseSignal } = useCart()
 
   const totalItems = React.useMemo(() => {
     return items.reduce((accumulator, item) => {
@@ -35,6 +35,20 @@ export function CartButton({
   const hasItems = totalItems > 0
   const ariaLabel = `${displayLabel}, ${totalItems} item${totalItems === 1 ? '' : 's'}`
   const tooltipLabel = `${displayLabel} (C)`
+
+  const [isPulsing, setIsPulsing] = React.useState(false)
+
+  React.useEffect(() => {
+    if (!cartPulseSignal) return
+    if (isDrawerOpen) {
+      setIsPulsing(false)
+      return
+    }
+
+    setIsPulsing(true)
+    const timeout = window.setTimeout(() => setIsPulsing(false), 900)
+    return () => window.clearTimeout(timeout)
+  }, [cartPulseSignal, isDrawerOpen])
 
   const handleOpenCart = React.useCallback(() => {
     setIsDrawerOpen(true)
@@ -65,7 +79,12 @@ export function CartButton({
       aria-keyshortcuts="c"
       {...accessibilityProps}
     >
-      <span className="relative inline-flex items-center justify-center pb-px">
+      <span
+        className={cn(
+          'relative inline-flex items-center justify-center pb-px transition-transform duration-200 ease-out',
+          isPulsing && 'cart-button-pulse'
+        )}
+      >
         <CartIcon
           count={totalItems}
           className={cn('shrink-0 text-current', iconSizeClass)}

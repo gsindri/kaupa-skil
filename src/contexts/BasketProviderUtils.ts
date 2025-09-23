@@ -1,4 +1,4 @@
-import { createContext } from 'react'
+import { createContext, type Dispatch, type SetStateAction } from 'react'
 import type { CartItem } from '@/lib/types'
 
 export interface BasketContextType {
@@ -20,6 +20,9 @@ export interface BasketContextType {
   getMissingPriceCount: () => number
   isDrawerOpen: boolean
   setIsDrawerOpen: (open: boolean) => void
+  isDrawerPinned: boolean
+  setIsDrawerPinned: Dispatch<SetStateAction<boolean>>
+  cartPulseSignal: number
 }
 
 export const BasketContext = createContext<BasketContextType | undefined>(undefined)
