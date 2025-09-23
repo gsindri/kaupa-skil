@@ -152,17 +152,19 @@ export default function BasketProvider({ children }: { children: React.ReactNode
   const setIsDrawerOpen = useCallback(
     (open: boolean) => {
       if (!open) {
-        setDrawerOpenExplicit(false)
         if (isDrawerPinned) {
-          setIsDrawerPinned(false)
+          setDrawerOpenExplicit(true)
+          return
         }
+
+        setDrawerOpenExplicit(false)
         return
       }
 
       setHasAutoOpenedDrawer(true)
       setDrawerOpenExplicit(true)
     },
-    [isDrawerPinned, setDrawerOpenExplicit, setHasAutoOpenedDrawer, setIsDrawerPinned]
+    [isDrawerPinned, setDrawerOpenExplicit, setHasAutoOpenedDrawer]
   )
 
   const addItem = (

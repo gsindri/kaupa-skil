@@ -190,6 +190,22 @@ describe('BasketProvider', () => {
       result.current.setIsDrawerOpen(false)
     })
 
+    expect(result.current.isDrawerPinned).toBe(true)
+    expect(result.current.isDrawerOpen).toBe(true)
+    expect(localStorage.getItem('procurewise-cart-pinned')).toBe('1')
+
+    act(() => {
+      result.current.setIsDrawerPinned(false)
+    })
+
     expect(result.current.isDrawerPinned).toBe(false)
+    expect(result.current.isDrawerOpen).toBe(true)
+    expect(localStorage.getItem('procurewise-cart-pinned')).toBeNull()
+
+    act(() => {
+      result.current.setIsDrawerOpen(false)
+    })
+
+    expect(result.current.isDrawerOpen).toBe(false)
   })
 })
