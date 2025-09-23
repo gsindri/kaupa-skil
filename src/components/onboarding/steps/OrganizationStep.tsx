@@ -245,6 +245,7 @@ export interface OrganizationStepProps {
 
 export interface OrganizationStepHandle {
   submit: () => Promise<boolean>
+  goToSection: (sectionIndex: number) => void
 }
 
 export const OrganizationStep = forwardRef<OrganizationStepHandle, OrganizationStepProps>(
@@ -364,12 +365,18 @@ export const OrganizationStep = forwardRef<OrganizationStepHandle, OrganizationS
       return true
     }, [handleSubmit, sectionIndex, validateCurrentSection])
 
+    const goToSection = useCallback((index: number) => {
+      const clampedIndex = Math.max(0, Math.min(index, ORGANIZATION_SECTION_DEFINITIONS.length - 1))
+      setSectionIndex(clampedIndex)
+    }, [])
+
     useImperativeHandle(
       ref,
       () => ({
-        submit
+        submit,
+        goToSection
       }),
-      [submit]
+      [submit, goToSection]
     )
 
     const onFormSubmit = useCallback(

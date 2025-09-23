@@ -497,7 +497,16 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
       // or call onBackToOrigin when on the first section
       return
     }
-    setCurrentStep(prev => Math.max(1, prev - 1))
+    // When going from step 2 back to step 1, position organization step on last section
+    if (currentStep === 2) {
+      setCurrentStep(1)
+      // Set organization step to its last section so user can continue from where they left off
+      setTimeout(() => {
+        organizationStepRef.current?.goToSection(ORGANIZATION_SECTION_DEFINITIONS.length - 1)
+      }, 0)
+    } else {
+      setCurrentStep(prev => Math.max(1, prev - 1))
+    }
   }, [currentStep])
 
   const handlePreferencesChange = useCallback((prefs: ReviewPreferences) => {
