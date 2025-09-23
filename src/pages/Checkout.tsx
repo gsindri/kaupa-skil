@@ -207,7 +207,7 @@ export default function Checkout() {
                 Browse catalog
                 <ArrowRight className="h-4 w-4" />
               </Button>
-              <Button variant="outline" onClick={() => navigate('/cart')}>Back to cart</Button>
+              <Button variant="outline" onClick={() => navigate('/orders')}>Back to cart</Button>
             </div>
           </CardContent>
         </Card>
@@ -224,7 +224,7 @@ export default function Checkout() {
             Confirm delivery details, payment method, and totals before placing your order.
           </p>
         </div>
-        <Button variant="outline" onClick={() => navigate('/cart')}>
+        <Button variant="outline" onClick={() => navigate('/orders')}>
           Return to cart
         </Button>
       </div>
@@ -484,7 +484,7 @@ export default function Checkout() {
                   type="button"
                   variant="ghost"
                   className="w-full"
-                  onClick={() => navigate('/cart')}
+                  onClick={() => navigate('/orders')}
                 >
                   Back to cart
                 </Button>
