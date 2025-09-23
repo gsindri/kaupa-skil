@@ -355,49 +355,48 @@ export const HeaderSearch = React.forwardRef<HTMLInputElement, HeaderSearchProps
               </div>
             </div>
 
+            <div className="px-3 pb-2 pt-2">
+              <div className="grid grid-cols-4 gap-1 rounded-[14px] border border-white/10 bg-white/[0.02] p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+                {SCOPE_OPTIONS.map((option) => {
+                  const selected = scope === option.value
+                  return (
+                    <button
+                      key={option.value}
+                      type="button"
+                      aria-pressed={selected}
+                      onMouseDown={(event) => event.preventDefault()}
+                      onClick={() => setScope(option.value)}
+                      className={cn(
+                        'h-10 rounded-[12px] text-[14px] font-medium text-[color:var(--text-muted)] transition-all duration-150 ease-out',
+                        selected
+                          ? 'bg-[color:var(--button-primary)]/20 text-[color:var(--text)] font-semibold shadow-[0_18px_40px_-30px_rgba(11,91,211,0.75)] ring-1 ring-inset ring-[color:var(--button-primary)]/50'
+                          : 'hover:bg-white/[0.05] hover:text-[color:var(--text)]'
+                      )}
+                    >
+                      {option.label}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+
             <div className="flex-1 overflow-hidden">
               <div
                 id="header-search-results"
                 role="listbox"
                 className="max-h-[56vh] overflow-y-auto pb-3"
               >
-                <div className="sticky top-0 z-10 bg-[color:var(--surface-pop)]/96 px-3 pb-2 pt-2 backdrop-blur-[10px] shadow-[0_8px_24px_-18px_rgba(5,12,24,0.6)]">
-                  <div className="grid grid-cols-4 gap-1 rounded-[14px] border border-white/10 bg-white/[0.02] p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
-                    {SCOPE_OPTIONS.map((option) => {
-                      const selected = scope === option.value
-                      return (
-                        <button
-                          key={option.value}
-                          type="button"
-                          aria-pressed={selected}
-                          onMouseDown={(event) => event.preventDefault()}
-                          onClick={() => setScope(option.value)}
-                          className={cn(
-                            'h-10 rounded-[12px] text-[14px] font-medium text-[color:var(--text-muted)] transition-all duration-150 ease-out',
-                            selected
-                              ? 'bg-[color:var(--button-primary)]/20 text-[color:var(--text)] font-semibold shadow-[0_18px_40px_-30px_rgba(11,91,211,0.75)] ring-1 ring-inset ring-[color:var(--button-primary)]/50'
-                              : 'hover:bg-white/[0.05] hover:text-[color:var(--text)]'
-                          )}
-                        >
-                          {option.label}
-                        </button>
-                      )
-                    })}
-                  </div>
-                </div>
-                <div className="px-3 pt-2">
-                  <DialogResults
-                    query={query}
-                    isLoading={isLoading}
-                    sections={sections}
-                    dialogEntries={dialogEntries}
-                    activeIndex={activeDialogIndex}
-                    onHoverIndex={setActiveDialogIndex}
-                    onEntrySelect={handleDialogEntrySelect}
-                    onRemoveRecent={removeRecent}
-                    onViewAll={handleViewAll}
-                  />
-                </div>
+                <DialogResults
+                  query={query}
+                  isLoading={isLoading}
+                  sections={sections}
+                  dialogEntries={dialogEntries}
+                  activeIndex={activeDialogIndex}
+                  onHoverIndex={setActiveDialogIndex}
+                  onEntrySelect={handleDialogEntrySelect}
+                  onRemoveRecent={removeRecent}
+                  onViewAll={handleViewAll}
+                />
               </div>
             </div>
           </div>
@@ -492,21 +491,26 @@ function DialogResults({
           {sectionEntries.map(({ entry, index }) => {
             const itemMetadata = entry.item.metadata
             const thumbnailUrl = itemMetadata?.imageUrl
-            const detailSubtitle = itemMetadata?.subtitle
 
+            let subtitle: string | undefined = itemMetadata?.subtitle
             if (entry.item.section === 'products') {
+              const parts: string[] = []
               const packInfo =
                 itemMetadata?.canonicalPack ||
                 (itemMetadata?.packSizes && itemMetadata.packSizes.length > 0
                   ? itemMetadata.packSizes[0]
                   : undefined)
+              if (packInfo) parts.push(packInfo)
+              if (itemMetadata?.subtitle) parts.push(itemMetadata.subtitle)
+              subtitle = parts.length > 0 ? parts.join(' • ') : undefined
+            }
 
+            if (entry.item.section === 'products') {
               return (
                 <ProductDialogRow
                   key={entry.item.id}
                   item={entry.item}
-                  packInfo={packInfo}
-                  secondarySubtitle={detailSubtitle}
+                  subtitle={subtitle}
                   thumbnailUrl={thumbnailUrl}
                   badge={metadata.badge}
                   sectionLabel={shouldShowMeta ? metadata.meta : undefined}
@@ -525,7 +529,7 @@ function DialogResults({
               <DialogRow
                 key={entry.item.id}
                 title={entry.item.name}
-                subtitle={detailSubtitle}
+                subtitle={subtitle}
                 meta={metaIndicator}
                 thumbnailUrl={thumbnailUrl}
                 icon={!thumbnailUrl ? <DialogBadge>{metadata.badge}</DialogBadge> : undefined}
@@ -717,8 +721,7 @@ function DialogRow({
 
 interface ProductDialogRowProps {
   item: SearchResultItem
-  packInfo?: string
-  secondarySubtitle?: string
+  subtitle?: string
   thumbnailUrl?: string
   badge?: string
   sectionLabel?: string
@@ -727,16 +730,9 @@ interface ProductDialogRowProps {
   onSelect: () => void
 }
 
-const AVAILABILITY_STATUS_LABELS: Partial<Record<string, string>> = {
-  IN_STOCK: 'In stock',
-  LOW_STOCK: 'Low stock',
-  OUT_OF_STOCK: 'Out of stock',
-}
-
 function ProductDialogRow({
   item,
-  packInfo,
-  secondarySubtitle,
+  subtitle,
   thumbnailUrl,
   badge,
   sectionLabel,
@@ -772,12 +768,10 @@ function ProductDialogRow({
       ? `${derivedSupplierCount} suppliers`
       : entries[0]?.name ?? null
 
-  const normalizedStatus = typeof availabilityStatus === 'string' ? availabilityStatus : null
-  const showAvailabilityBadge = Boolean(normalizedStatus)
-  const availabilityDescriptor =
-    availabilityText ?? (normalizedStatus ? AVAILABILITY_STATUS_LABELS[normalizedStatus] ?? null : null)
-  const showAvailabilityInfo = showAvailabilityBadge || Boolean(availabilityDescriptor)
-  const showMetaRow = entries.length > 0 || showAvailabilityInfo
+  const showAvailabilityBadge = Boolean(availabilityStatus)
+  const fallbackAvailabilityLabel = !availabilityStatus && availabilityText ? availabilityText : null
+  const showMetaRow =
+    showAvailabilityBadge || Boolean(fallbackAvailabilityLabel) || entries.length > 0
 
   return (
     <button
@@ -818,19 +812,8 @@ function ProductDialogRow({
               )}
               <span className="truncate text-[15px] font-semibold">{item.name}</span>
             </div>
-            {(packInfo || secondarySubtitle) && (
-              <div className="flex min-w-0 flex-wrap items-center gap-2 text-[12px] text-[color:var(--text-muted)]">
-                {packInfo && (
-                  <span className="text-[13px] font-semibold text-[color:var(--text)] opacity-90">
-                    {packInfo}
-                  </span>
-                )}
-                {secondarySubtitle && (
-                  <span className="min-w-0 max-w-[240px] truncate text-[12px] text-[color:var(--text-muted)]">
-                    {secondarySubtitle}
-                  </span>
-                )}
-              </div>
+            {subtitle && (
+              <div className="truncate text-[13px] text-[color:var(--text-muted)]">{subtitle}</div>
             )}
           </div>
           {priceLabel && (
@@ -841,67 +824,42 @@ function ProductDialogRow({
         </div>
         {showMetaRow && (
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-[color:var(--text-muted)]">
-            <div className="flex flex-wrap items-center gap-2">
-              {entries.length > 0 && (
-                <>
-                  <div className="flex -space-x-2">
-                    {previewEntries.map((entry, index) => (
-                      <SupplierLogo
-                        key={`${entry.name}-${index}`}
-                        name={entry.name}
-                        logoUrl={entry.logoUrl}
-                        className="!h-5 !w-5 !rounded-full border border-white/10 bg-white/10 opacity-80"
-                      />
-                    ))}
-                    {overflowCount > 0 && (
-                      <span className="flex h-5 w-5 items-center justify-center rounded-full border border-white/10 bg-white/10 text-[10px] font-semibold text-[color:var(--text)] opacity-70">
-                        +{overflowCount}
-                      </span>
-                    )}
-                  </div>
-                  {summaryLabel && (
-                    <span className="max-w-[160px] truncate text-[12px] font-medium text-[color:var(--text)] opacity-85">
-                      {summaryLabel}
+            {showAvailabilityBadge ? (
+              <AvailabilityBadge
+                status={availabilityStatus ?? undefined}
+                className="!h-6 !rounded-full !px-2 text-[11px] opacity-80"
+              />
+            ) : fallbackAvailabilityLabel ? (
+              <span className="inline-flex items-center rounded-full border border-white/12 bg-white/[0.04] px-2 py-1 font-medium text-[color:var(--text-muted)]">
+                {fallbackAvailabilityLabel}
+              </span>
+            ) : null}
+            {entries.length > 0 && (
+              <div className="flex items-center gap-2">
+                <div className="flex -space-x-2">
+                  {previewEntries.map((entry, index) => (
+                    <SupplierLogo
+                      key={`${entry.name}-${index}`}
+                      name={entry.name}
+                      logoUrl={entry.logoUrl}
+                      className="!h-5 !w-5 !rounded-full border border-white/10 bg-white/10 opacity-80"
+                    />
+                  ))}
+                  {overflowCount > 0 && (
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full border border-white/10 bg-white/10 text-[10px] font-semibold text-[color:var(--text)] opacity-70">
+                      +{overflowCount}
                     </span>
                   )}
-                </>
-              )}
-              {showAvailabilityInfo && (
-                <>
-                  {entries.length > 0 && (
-                    <span
-                      aria-hidden="true"
-                      className="px-1 text-[color:var(--text-muted)] opacity-60"
-                    >
-                      —
-                    </span>
-                  )}
-                  {showAvailabilityBadge ? (
-                    <>
-                      <AvailabilityBadge
-                        status={normalizedStatus ?? undefined}
-                        className="!h-5 !rounded-full !px-2 text-[11px] font-medium opacity-85"
-                      />
-                      {availabilityDescriptor && (
-                        <span className="font-medium text-[color:var(--text-muted)] opacity-90">
-                          {availabilityDescriptor}
-                        </span>
-                      )}
-                    </>
-                  ) : (
-                    availabilityDescriptor && (
-                      <span className="font-medium text-[color:var(--text-muted)] opacity-90">
-                        {availabilityDescriptor}
-                      </span>
-                    )
-                  )}
-                </>
-              )}
-            </div>
+                </div>
+                {summaryLabel && (
+                  <span className="max-w-[140px] truncate opacity-80">{summaryLabel}</span>
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>
-      <div className="flex h-full items-center justify-end pr-2 sm:pr-3">
+      <div className="flex h-full items-center justify-end">
         <ProductQuickAddButton item={item} />
       </div>
     </button>
@@ -947,24 +905,21 @@ function ProductQuickAddButton({ item }: { item: SearchResultItem }) {
     event.stopPropagation()
   }
 
-  const containerClass = 'flex w-[120px] items-center justify-end sm:w-[140px]'
-  const containerHandlers = {
-    onMouseDown: stopPropagation,
-    onPointerDown: stopPropagation,
-    onTouchStart: stopPropagation,
-    onClick: stopPropagation,
-  } as const
-
   if (existingItem) {
     return (
-      <div {...containerHandlers} className={containerClass}>
+      <div
+        onMouseDown={stopPropagation}
+        onPointerDown={stopPropagation}
+        onTouchStart={stopPropagation}
+        onClick={stopPropagation}
+        className="flex items-center"
+      >
         <QuantityStepper
           quantity={existingItem.quantity}
           onChange={(qty) => updateQuantity(existingItem.supplierItemId, qty)}
           onRemove={() => removeItem(existingItem.supplierItemId)}
           label={item.name}
           supplier={existingItem.supplierName}
-          className="!w-full"
         />
       </div>
     )
@@ -1012,23 +967,21 @@ function ProductQuickAddButton({ item }: { item: SearchResultItem }) {
   }
 
   return (
-    <div {...containerHandlers} className={containerClass}>
-      <Button
-        type="button"
-        size="sm"
-        onPointerDown={stopPropagation}
-        onMouseDown={(event) => {
-          event.preventDefault()
-          event.stopPropagation()
-        }}
-        onTouchStart={stopPropagation}
-        onClick={handleClick}
-        disabled={isAdding}
-        className="!h-8 w-full justify-center rounded-full text-sm font-semibold shadow-[0_16px_36px_-24px_rgba(11,91,211,0.7)]"
-      >
-        {isAdding ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Add'}
-      </Button>
-    </div>
+    <Button
+      type="button"
+      size="sm"
+      onPointerDown={stopPropagation}
+      onMouseDown={(event) => {
+        event.preventDefault()
+        event.stopPropagation()
+      }}
+      onTouchStart={stopPropagation}
+      onClick={handleClick}
+      disabled={isAdding}
+      className="!h-8 !px-3 rounded-full text-sm font-semibold shadow-[0_16px_36px_-24px_rgba(11,91,211,0.7)]"
+    >
+      {isAdding ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Add'}
+    </Button>
   )
 }
 
