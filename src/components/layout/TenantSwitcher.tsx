@@ -172,7 +172,7 @@ export function TenantSwitcher() {
   }
 
   return (
-    <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
+    <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
         <button
           type="button"
@@ -193,6 +193,7 @@ export function TenantSwitcher() {
         className="w-[320px] space-y-2"
         sideOffset={12}
         align="start"
+        withOverlay
         onPointerDownCapture={handleContentPointerDownCapture}
       >
         <div className="px-2 pb-1">

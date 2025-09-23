@@ -33,7 +33,7 @@ export function LanguageSwitcher({ className, triggerClassName }: LanguageSwitch
 
   return (
     <div className={className}>
-      <DropdownMenu modal={false}>
+      <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button
             type="button"
@@ -60,7 +60,7 @@ export function LanguageSwitcher({ className, triggerClassName }: LanguageSwitch
             <span className={navTextButtonFocusRingClass} aria-hidden="true" />
           </button>
         </DropdownMenuTrigger>
-        <PopCard className="w-[240px]" sideOffset={12} align="end">
+        <PopCard className="w-[240px]" sideOffset={12} align="end" withOverlay>
           <div className="tw-label normal-case">Language</div>
           <div className="flex flex-col gap-1 px-1">
             {languageOptions.map((option) => (
