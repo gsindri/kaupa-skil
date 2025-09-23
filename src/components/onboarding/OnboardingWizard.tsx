@@ -491,12 +491,14 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
   }, [selectedSupplierIds.length, toast])
 
   const handleBack = useCallback(() => {
-    if (currentStep <= 1) {
-      goBackToOrigin()
+    // For step 1 (organization step), let the organization step handle its internal navigation
+    if (currentStep === 1) {
+      // The organization step will handle back navigation between sections
+      // or call onBackToOrigin when on the first section
       return
     }
     setCurrentStep(prev => Math.max(1, prev - 1))
-  }, [currentStep, goBackToOrigin])
+  }, [currentStep])
 
   const handlePreferencesChange = useCallback((prefs: ReviewPreferences) => {
     setPreferences(prefs)
@@ -697,7 +699,7 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
   }: OrganizationStepFooterContext) => (
     <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-4">
-        {(onBackToOrigin || !isFirstSection) && (
+        {!isFirstSection && (
           <Button
             variant="ghost"
             size="lg"
