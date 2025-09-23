@@ -10,7 +10,7 @@ const childPaths = new Set(
   (appRoute.children ?? []).map(r => (r.index ? '' : r.path))
 )
 
-const expectedPaths = ['', 'cart', 'compare', 'suppliers', 'pantry', 'price-history', 'discovery', 'admin']
+const expectedPaths = ['', 'orders', 'compare', 'suppliers', 'pantry', 'price-history', 'discovery', 'admin']
 
 describe('sidebar route definitions', () => {
   for (const p of expectedPaths) {

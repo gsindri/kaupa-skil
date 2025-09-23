@@ -85,7 +85,7 @@ export function CartDrawer() {
                 size="sm"
                 onClick={() => {
                   setIsDrawerOpen(false)
-                  location.assign("/cart")
+                  location.assign("/orders")
                 }}
               >
                 Go to Cart
