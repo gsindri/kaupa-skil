@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { isValidElement, useState } from 'react'
 import SupplierLogo from './SupplierLogo'
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerFooter, DrawerClose } from '@/components/ui/drawer'
@@ -85,9 +85,23 @@ export default function SupplierChips({ suppliers }: SupplierChipsProps) {
       </button>
     )
 
+    const tooltipTriggerChild = isValidElement(chip)
+      ? chip
+      : (
+        <button
+          type="button"
+          className="flex items-center gap-1 rounded-full bg-muted pl-1 pr-2 h-6 max-w-full"
+          onClick={() => setActive(s)}
+          tabIndex={0}
+          aria-label={aria}
+        >
+          <span className="truncate text-xs">{s.supplier_name || 'Unknown supplier'}</span>
+        </button>
+      )
+
     return loc ? (
       <Tooltip key={s.supplier_id}>
-        <TooltipTrigger asChild>{chip}</TooltipTrigger>
+        <TooltipTrigger asChild>{tooltipTriggerChild}</TooltipTrigger>
         <TooltipContent>{locationFull}</TooltipContent>
       </Tooltip>
     ) : (
