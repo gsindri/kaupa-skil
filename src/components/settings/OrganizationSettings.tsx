@@ -12,9 +12,11 @@ export function OrganizationSettings() {
         onClick={() => {
           const targetPath = '/settings/organization/create'
           const currentPath = `${location.pathname}${location.search}${location.hash}`
-          navigate(targetPath, {
-            state: currentPath === targetPath ? undefined : { from: currentPath }
-          })
+          const state =
+            currentPath === targetPath
+              ? undefined
+              : { from: currentPath, allowExisting: true }
+          navigate(targetPath, { state })
         }}
       >
         Create Organization
