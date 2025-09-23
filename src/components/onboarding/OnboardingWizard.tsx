@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate, useBlocker, useLocation } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { ArrowLeft, Check, Info, Loader2 } from 'lucide-react'
@@ -19,16 +19,10 @@ import {
 } from '@/components/ui/alert-dialog'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
-import {
-  OrganizationStep,
-  type OrganizationStepHandle,
-  type OrganizationFormValues,
-  type OrganizationStepFooterContext,
-  type BusinessTypeValue,
-  BUSINESS_TYPE_VALUES,
-  type OrganizationSectionProgress,
-  ORGANIZATION_SECTION_DEFINITIONS
-} from './steps/OrganizationStep'
+import { OrganizationBasicsStep, type OrganizationBasicsFormValues } from './steps/OrganizationBasicsStep'
+import { DeliveryDetailsStep, type DeliveryDetailsFormValues } from './steps/DeliveryDetailsStep'
+import { InvoicingSetupStep, type InvoicingSetupFormValues } from './steps/InvoicingSetupStep'
+import { ContactInformationStep, type ContactInformationFormValues } from './steps/ContactInformationStep'
 import { SupplierSelectionStep, type SupplierOption } from './steps/SupplierSelectionStep'
 import { ReviewStep, type ReviewPreferences } from './steps/ReviewStep'
 import { useLocaleDefaults } from '@/utils/locale'
@@ -37,14 +31,25 @@ import type { Database } from '@/lib/types'
 const DRAFT_STORAGE_KEY = 'workspace_setup_draft'
 const STATUS_STORAGE_KEY = 'workspace_setup_status'
 const PREFERENCES_STORAGE_KEY = 'workspace_preferences'
-const TOTAL_STEPS = 3
+const TOTAL_STEPS = 6
 
 type OnboardingLocationState = {
   from?: string
   allowExisting?: boolean
 }
 
-type AddressValues = OrganizationFormValues['deliveryAddress']
+type AddressValues = {
+  line1: string
+  line2: string
+  postalCode: string
+  city: string
+}
+
+// Combined form values from all steps
+type CombinedFormValues = OrganizationBasicsFormValues & 
+  DeliveryDetailsFormValues & 
+  InvoicingSetupFormValues & 
+  ContactInformationFormValues
 
 const trimString = (value?: string | null) => value?.trim() ?? ''
 
@@ -55,90 +60,20 @@ const createEmptyAddress = (): AddressValues => ({
   city: ''
 })
 
-const ensureAddress = (address?: Partial<AddressValues> | null): AddressValues => ({
-  line1: trimString(address?.line1),
-  line2: trimString(address?.line2),
-  postalCode: trimString(address?.postalCode),
-  city: trimString(address?.city)
-})
-
-const addressHasDetails = (address?: Partial<AddressValues> | null) => {
-  if (!address) return false
-  return Boolean(
-    trimString(address.line1) ||
-      trimString(address.postalCode) ||
-      trimString(address.city) ||
-      trimString(address.line2)
-  )
-}
-
-const migrateOrganization = (
-  raw?: Partial<OrganizationFormValues> & {
-    address?: string
-    invoiceAddress?: unknown
-  }
-): OrganizationFormValues => {
-  const source = raw ?? {}
-
-  let deliveryAddress = ensureAddress((source as any).deliveryAddress as Partial<AddressValues> | undefined)
-  if (!addressHasDetails(deliveryAddress) && typeof source.address === 'string') {
-    const legacy = trimString(source.address)
-    if (legacy) {
-      deliveryAddress = {
-        ...deliveryAddress,
-        line1: legacy
-      }
-    }
-  }
-
-  let invoiceAddress: AddressValues
-  const rawInvoice = (source as any).invoiceAddress
-  if (typeof rawInvoice === 'string') {
-    const legacyInvoice = trimString(rawInvoice)
-    invoiceAddress = createEmptyAddress()
-    if (legacyInvoice) {
-      invoiceAddress.line1 = legacyInvoice
-    }
-  } else {
-    invoiceAddress = ensureAddress(rawInvoice as Partial<AddressValues> | undefined)
-  }
-
-  const rawBusinessType = (source as any).businessType
-  const businessType =
-    typeof rawBusinessType === 'string' && (BUSINESS_TYPE_VALUES as readonly string[]).includes(rawBusinessType)
-      ? (rawBusinessType as BusinessTypeValue)
-      : undefined
-
-  const useSeparate =
-    typeof source.useSeparateInvoiceAddress === 'boolean' ? source.useSeparateInvoiceAddress : false
-
-  return {
-    name: trimString(source.name),
-    businessType,
-    contactName: trimString(source.contactName),
-    phone: trimString(source.phone),
-    deliveryAddress,
-    vat: trimString(source.vat),
-    email: trimString(source.email),
-    useSeparateInvoiceAddress: useSeparate,
-    invoiceAddress
-  }
-}
-
-const EMPTY_ORGANIZATION: OrganizationFormValues = {
+const EMPTY_COMBINED_VALUES: CombinedFormValues = {
   name: '',
   businessType: undefined,
-  contactName: '',
-  phone: '',
   deliveryAddress: createEmptyAddress(),
   vat: '',
-  email: '',
   useSeparateInvoiceAddress: false,
-  invoiceAddress: createEmptyAddress()
+  invoiceAddress: createEmptyAddress(),
+  contactName: '',
+  email: '',
+  phone: ''
 }
 
 interface DraftState {
-  organization: OrganizationFormValues
+  combinedValues: CombinedFormValues
   selectedSupplierIds: string[]
   currentStep: number
   preferences: ReviewPreferences
@@ -207,13 +142,7 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
   }, [currentPath, navigate, previousPath])
 
   const [currentStep, setCurrentStep] = useState(1)
-  const [organization, setOrganization] = useState<OrganizationFormValues>(EMPTY_ORGANIZATION)
-  const [organizationSectionProgress, setOrganizationSectionProgress] = useState({
-    index: 0,
-    total: ORGANIZATION_SECTION_DEFINITIONS.length,
-    title: ORGANIZATION_SECTION_DEFINITIONS[0].title,
-    description: ORGANIZATION_SECTION_DEFINITIONS[0].description
-  })
+  const [combinedValues, setCombinedValues] = useState<CombinedFormValues>(EMPTY_COMBINED_VALUES)
   const [selectedSupplierIds, setSelectedSupplierIds] = useState<string[]>([])
   const [preferences, setPreferences] = useState<ReviewPreferences>({
     language: defaultLanguage,
@@ -227,8 +156,7 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
   const [exitDialogContext, setExitDialogContext] = useState<'manual' | 'blocked' | null>(null)
   const [pendingExitAction, setPendingExitAction] = useState<'skip' | 'complete' | null>(null)
 
-  const organizationStepRef = useRef<OrganizationStepHandle>(null)
-  const exitDialogContextRef = useRef<'manual' | 'blocked' | null>(null)
+  const exitDialogContextRef = React.useRef<'manual' | 'blocked' | null>(null)
 
   const goBackToOrigin = useCallback(() => {
     setAllowNavigation(true)
@@ -239,16 +167,31 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
     () => [
       {
         id: 1,
-        title: 'Organization',
-        description: 'Used for orders and supplier communications.'
+        title: 'Organization basics',
+        description: 'Name your organization and categorize your business.'
       },
       {
         id: 2,
+        title: 'Delivery details',
+        description: 'Tell us where orders should be delivered.'
+      },
+      {
+        id: 3,
+        title: 'Invoicing setup',
+        description: 'Set invoice preferences and required tax details.'
+      },
+      {
+        id: 4,
+        title: 'Contact information',
+        description: 'Share who suppliers should reach out to.'
+      },
+      {
+        id: 5,
         title: 'Connect suppliers',
         description: 'Select suppliers to connect now. You can add more later.'
       },
       {
-        id: 3,
+        id: 6,
         title: 'Review & finish',
         description: 'Confirm details before you start.'
       }
@@ -273,8 +216,8 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
     if (raw) {
       try {
         const parsed = JSON.parse(raw) as Partial<DraftState>
-        if (parsed.organization) {
-          setOrganization(migrateOrganization(parsed.organization))
+        if (parsed.combinedValues) {
+          setCombinedValues(prev => ({ ...prev, ...parsed.combinedValues }))
         }
         if (Array.isArray(parsed.selectedSupplierIds)) {
           setSelectedSupplierIds(Array.from(new Set(parsed.selectedSupplierIds)))
@@ -298,13 +241,13 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
   useEffect(() => {
     if (!draftLoaded || typeof window === 'undefined') return
     const draft: DraftState = {
-      organization,
+      combinedValues,
       selectedSupplierIds,
       currentStep,
       preferences
     }
     window.localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(draft))
-  }, [organization, selectedSupplierIds, preferences, currentStep, draftLoaded])
+  }, [combinedValues, selectedSupplierIds, preferences, currentStep, draftLoaded])
 
   const {
     data: marketplaceSuppliers = [],
@@ -349,22 +292,18 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
     }
   }, [suppliersError, toast])
 
-  const hasOrganizationDetails = useMemo(() => {
-    const deliveryAddressFilled = addressHasDetails(organization.deliveryAddress)
-    const invoiceAddressFilled = addressHasDetails(organization.invoiceAddress)
-
+  const hasFormDetails = useMemo(() => {
     return (
-      Boolean(organization.name) ||
-      Boolean(organization.contactName) ||
-      Boolean(organization.phone) ||
-      deliveryAddressFilled ||
-      Boolean(organization.vat) ||
-      Boolean(organization.email) ||
-      (organization.useSeparateInvoiceAddress && invoiceAddressFilled)
+      Boolean(combinedValues.name) ||
+      Boolean(combinedValues.contactName) ||
+      Boolean(combinedValues.phone) ||
+      Boolean(combinedValues.deliveryAddress.line1) ||
+      Boolean(combinedValues.vat) ||
+      Boolean(combinedValues.email)
     )
-  }, [organization])
+  }, [combinedValues])
 
-  const hasDraft = hasOrganizationDetails || selectedSupplierIds.length > 0 || currentStep > 1
+  const hasDraft = hasFormDetails || selectedSupplierIds.length > 0 || currentStep > 1
   const shouldBlockNavigation = !allowNavigation && !isCompleting && hasDraft
   const blocker = useBlocker(shouldBlockNavigation)
 
@@ -414,62 +353,35 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
     [steps, currentStep]
   )
 
-  const organizationSectionCount = ORGANIZATION_SECTION_DEFINITIONS.length
-  const additionalStepCount = Math.max(steps.length - 1, 0)
-  const totalFlowSteps = Math.max(organizationSectionCount + additionalStepCount, 1)
+  const stepTitle = currentStepDefinition?.title ?? ''
+  const stepDescription = currentStepDefinition?.description ?? ''
+  const progress = TOTAL_STEPS <= 1 ? 100 : ((currentStep - 1) / (TOTAL_STEPS - 1)) * 100
 
-  const showingOrganizationSections = currentStep === 1
-  const stepTitle = showingOrganizationSections
-    ? organizationSectionProgress.title
-    : currentStepDefinition?.title ?? ''
-  const stepDescription = showingOrganizationSections
-    ? organizationSectionProgress.description
-    : currentStepDefinition?.description ?? ''
-
-  const rawDisplayStepNumber = showingOrganizationSections
-    ? organizationSectionProgress.index + 1
-    : organizationSectionCount + Math.max(currentStep - 1, 0)
-  const displayStepNumber = Math.min(Math.max(rawDisplayStepNumber, 1), totalFlowSteps)
-
-  const progress =
-    totalFlowSteps <= 1
-      ? 100
-      : ((displayStepNumber - 1) / (totalFlowSteps - 1)) * 100
-
-  const handleOrganizationUpdate = useCallback((values: OrganizationFormValues) => {
-    setOrganization(values)
-    if (setupError) {
-      setSetupError(null)
-    }
+  // Step update handlers
+  const handleBasicsUpdate = useCallback((values: OrganizationBasicsFormValues) => {
+    setCombinedValues(prev => ({ ...prev, ...values }))
+    if (setupError) setSetupError(null)
   }, [setupError])
 
-  const handleOrganizationComplete = useCallback((values: OrganizationFormValues) => {
-    setOrganization(values)
+  const handleDeliveryUpdate = useCallback((values: DeliveryDetailsFormValues) => {
+    setCombinedValues(prev => ({ ...prev, ...values }))
+    if (setupError) setSetupError(null)
+  }, [setupError])
+
+  const handleInvoicingUpdate = useCallback((values: InvoicingSetupFormValues) => {
+    setCombinedValues(prev => ({ ...prev, ...values }))
+    if (setupError) setSetupError(null)
+  }, [setupError])
+
+  const handleContactUpdate = useCallback((values: ContactInformationFormValues) => {
+    setCombinedValues(prev => ({ ...prev, ...values }))
+    if (setupError) setSetupError(null)
+  }, [setupError])
+
+  // Step complete handlers
+  const handleStepComplete = useCallback(() => {
     setCurrentStep(prev => Math.min(prev + 1, TOTAL_STEPS))
   }, [])
-
-  const handleOrganizationSectionChange = useCallback(
-    (progress: OrganizationSectionProgress) => {
-      setOrganizationSectionProgress(prev => {
-        if (
-          prev.index === progress.index &&
-          prev.total === progress.total &&
-          prev.title === progress.section.title &&
-          prev.description === progress.section.description
-        ) {
-          return prev
-        }
-
-        return {
-          index: progress.index,
-          total: progress.total,
-          title: progress.section.title,
-          description: progress.section.description
-        }
-      })
-    },
-    []
-  )
 
   const handleSupplierToggle = useCallback((supplierId: string) => {
     setSelectedSupplierIds(prev =>
@@ -483,7 +395,7 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
     if (selectedSupplierIds.length === 0) {
       toast({
         title: 'No suppliers selected',
-        description: 'You haven’t connected any suppliers yet.',
+        description: 'You haven't connected any suppliers yet.',
         duration: 4000
       })
     }
@@ -491,50 +403,13 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
   }, [selectedSupplierIds.length, toast])
 
   const handleBack = useCallback(() => {
-    // For step 1 (organization step), let the organization step handle its internal navigation
     if (currentStep === 1) {
-      // The organization step will handle back navigation between sections
-      // or call onBackToOrigin when on the first section
+      // On first step, exit setup
+      goBackToOrigin()
       return
     }
-    // When going from step 2 back to step 1, position organization step on last section
-    if (currentStep === 2) {
-      setCurrentStep(1)
-      // Set organization step to its last section so user can continue from where they left off
-      setTimeout(() => {
-        organizationStepRef.current?.goToSection(ORGANIZATION_SECTION_DEFINITIONS.length - 1)
-      }, 0)
-    } else {
-      setCurrentStep(prev => Math.max(1, prev - 1))
-    }
-  }, [currentStep])
-
-  const handlePreferencesChange = useCallback((prefs: ReviewPreferences) => {
-    setPreferences(prefs)
-  }, [])
-
-  const handleInviteSupplier = useCallback(() => {
-    if (typeof window !== 'undefined') {
-      window.open('/suppliers', '_blank', 'noopener')
-    }
-    toast({
-      title: 'Invite suppliers',
-      description: 'We opened the suppliers workspace in a new tab.',
-      duration: 3500
-    })
-  }, [toast])
-
-  const exitSetup = useCallback(() => {
-    if (typeof window !== 'undefined') {
-      window.localStorage.setItem('onboardingSkipped', 'true')
-    }
-    toast({
-      title: 'Setup saved for later',
-      description: 'You can complete organization setup whenever you’re ready.'
-    })
-    setAllowNavigation(true)
-    setPendingExitAction('skip')
-  }, [toast])
+    setCurrentStep(prev => Math.max(1, prev - 1))
+  }, [currentStep, goBackToOrigin])
 
   const requestExit = useCallback(() => {
     exitDialogContextRef.current = 'manual'
@@ -542,51 +417,19 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
     setExitDialogOpen(true)
   }, [])
 
-  const cancelExitDialog = useCallback(() => {
-    if (exitDialogContextRef.current === 'blocked') {
-      blocker.reset()
-    }
-    exitDialogContextRef.current = null
-    setExitDialogContext(null)
+  const exitSetup = useCallback(() => {
     setExitDialogOpen(false)
-  }, [blocker])
-
-  const confirmExitDialog = useCallback(() => {
-    const context = exitDialogContextRef.current
-    exitDialogContextRef.current = null
-    setExitDialogContext(null)
-    setExitDialogOpen(false)
-
-    if (context === 'manual') {
-      exitSetup()
-    } else if (context === 'blocked') {
-      setAllowNavigation(true)
-      blocker.proceed()
-    }
-  }, [blocker, exitSetup])
-
-  const handleExitDialogChange = useCallback(
-    (nextOpen: boolean) => {
-      if (!nextOpen) {
-        cancelExitDialog()
-      }
-    },
-    [cancelExitDialog]
-  )
+    setAllowNavigation(true)
+    setPendingExitAction('skip')
+  }, [])
 
   const completeOnboarding = useCallback(async () => {
     if (!user) return
-    if (!organization.name.trim()) {
-      setCurrentStep(1)
-      setSetupError('Add your organization name before finishing setup.')
-      return
-    }
-
     setIsCompleting(true)
     setSetupError(null)
 
     try {
-      const trimmedName = organization.name.trim()
+      const trimmedName = combinedValues.name.trim()
       const { data: existingTenant, error: checkError } = await supabase
         .from('tenants')
         .select('id, name, created_by')
@@ -677,7 +520,7 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
     } finally {
       setIsCompleting(false)
     }
-  }, [organization, preferences, refetch, selectedSupplierIds, toast, user])
+  }, [combinedValues, preferences, refetch, selectedSupplierIds, toast, user])
 
   const emphasizedPrimaryClass =
     'justify-center bg-[var(--brand-accent)] text-[color:var(--brand-accent-fg)] hover:bg-[var(--brand-accent)]/90'
@@ -701,314 +544,268 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
             'Your progress has been saved. You can finish setup anytime from your dashboard.'
         }
 
-  const organizationFooter = ({
-    isFirstSection,
-    goToPrevious,
-    onBackToOrigin
-  }: OrganizationStepFooterContext) => (
-    <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-      <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-4">
-        {!isFirstSection && (
+  // Step-specific footers
+  const stepFooter = useMemo(() => {
+    const isFirstStep = currentStep === 1
+    const isLastStep = currentStep === TOTAL_STEPS
+    
+    if (isLastStep) {
+      // Review step footer
+      return (
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-4">
+            <Button
+              variant="ghost"
+              size="lg"
+              className={backButtonClass}
+              onClick={handleBack}
+              disabled={isCompleting}
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" /> Back
+            </Button>
+            <button
+              type="button"
+              className={exitLinkClass}
+              onClick={requestExit}
+              disabled={isCompleting}
+            >
+              Exit setup
+            </button>
+          </div>
           <Button
-            variant="ghost"
             size="lg"
-            className={backButtonClass}
-            onClick={goToPrevious}
+            className={cn(emphasizedPrimaryClass, 'w-full sm:w-auto')}
+            onClick={completeOnboarding}
             disabled={isCompleting}
           >
-            <ArrowLeft className="mr-2 h-4 w-4" /> Back
+            {isCompleting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Creating workspace...
+              </>
+            ) : (
+              <>
+                <Check className="mr-2 h-4 w-4" />
+                Finish setup
+              </>
+            )}
           </Button>
-        )}
-        <button
-          type="button"
-          className={exitLinkClass}
-          onClick={requestExit}
-          disabled={isCompleting}
-        >
-          Exit setup
-        </button>
-      </div>
-      <Button
-        size="lg"
-        className={cn(emphasizedPrimaryClass, 'w-full sm:w-auto')}
-        onClick={() => {
-          void organizationStepRef.current?.submit()
-        }}
-        disabled={isCompleting}
-      >
-        Continue
-      </Button>
-    </div>
-  )
+        </div>
+      )
+    }
 
-  const supplierFooter = (
-    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-      <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-4">
-        <Button
-          variant="ghost"
-          size="lg"
-          className={backButtonClass}
-          onClick={handleBack}
-          disabled={isCompleting}
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" /> Back
-        </Button>
-        <button
-          type="button"
-          className={exitLinkClass}
-          onClick={requestExit}
-          disabled={isCompleting}
-        >
-          Exit setup
-        </button>
-      </div>
-      <div className="flex flex-col items-center gap-2 sm:flex-row sm:items-center sm:justify-end sm:gap-3">
-        <span className="text-center text-[13px] text-[color:var(--text-muted)] sm:text-left">
-          {selectedSupplierIds.length} selected
-        </span>
+    if (currentStep === 5) {
+      // Supplier selection footer
+      return (
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-4">
+            <Button
+              variant="ghost"
+              size="lg"
+              className={backButtonClass}
+              onClick={handleBack}
+              disabled={isCompleting}
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" /> Back
+            </Button>
+            <button
+              type="button"
+              className={exitLinkClass}
+              onClick={requestExit}
+              disabled={isCompleting}
+            >
+              Exit setup
+            </button>
+          </div>
+          <div className="flex flex-col items-center gap-2 sm:flex-row sm:items-center sm:justify-end sm:gap-3">
+            <span className="text-center text-[13px] text-[color:var(--text-muted)] sm:text-left">
+              {selectedSupplierIds.length} selected
+            </span>
+            <Button
+              size="lg"
+              className={cn(emphasizedPrimaryClass, 'w-full sm:w-auto')}
+              onClick={handleSupplierContinue}
+              disabled={isCompleting}
+            >
+              Continue
+            </Button>
+          </div>
+        </div>
+      )
+    }
+
+    // Default footer for form steps 1-4
+    return (
+      <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-4">
+          {!isFirstStep && (
+            <Button
+              variant="ghost"
+              size="lg"
+              className={backButtonClass}
+              onClick={handleBack}
+              disabled={isCompleting}
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" /> Back
+            </Button>
+          )}
+          <button
+            type="button"
+            className={exitLinkClass}
+            onClick={requestExit}
+            disabled={isCompleting}
+          >
+            Exit setup
+          </button>
+        </div>
         <Button
           size="lg"
           className={cn(emphasizedPrimaryClass, 'w-full sm:w-auto')}
-          onClick={handleSupplierContinue}
+          onClick={handleStepComplete}
           disabled={isCompleting}
         >
           Continue
         </Button>
       </div>
-    </div>
-  )
-
-  const reviewFooter = (
-    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-      <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-4">
-        <Button
-          variant="ghost"
-          size="lg"
-          className={backButtonClass}
-          onClick={handleBack}
-          disabled={isCompleting}
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" /> Back
-        </Button>
-        <button type="button" className={exitLinkClass} onClick={requestExit} disabled={isCompleting}>
-          Exit setup
-        </button>
-      </div>
-      <Button
-        size="lg"
-        className={cn(emphasizedPrimaryClass, 'w-full sm:w-auto')}
-        onClick={completeOnboarding}
-        disabled={isCompleting}
-      >
-        {isCompleting ? (
-          <span className="flex items-center gap-2">
-            <Loader2 className="h-4 w-4 animate-spin" /> Finishing…
-          </span>
-        ) : (
-          'Finish setup'
-        )}
-      </Button>
-    </div>
-  )
+    )
+  }, [currentStep, isCompleting, handleBack, requestExit, handleStepComplete, handleSupplierContinue, completeOnboarding, selectedSupplierIds.length])
 
   return (
-    <div className="min-h-screen bg-[color:var(--brand-bg)]/6 py-10 sm:py-16">
-      <div className="mx-auto w-full max-w-4xl px-4">
-        <header className="mb-8 space-y-2 text-center">
-          <h1 className="text-3xl font-semibold text-[color:var(--text)]">Welcome to Deilda</h1>
-          <p className="text-[15px] text-[color:var(--text-muted)]">Let’s get your workspace set up in a few steps.</p>
-        </header>
-
-        <div className="relative overflow-hidden rounded-[16px] border border-[color:var(--surface-ring)] bg-[color:var(--surface-pop)] shadow-[var(--elev-shadow)]">
-          <div className="absolute inset-x-0 top-0 h-[3px] bg-[color:var(--surface-ring)]/40">
-            <div
-              className="h-full bg-[var(--brand-accent)] transition-all duration-500"
-              style={{ width: `${progress}%` }}
-            />
+    <div className="flex min-h-screen w-full flex-col">
+      <div className="flex flex-1 flex-col items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
+        <div className="w-full max-w-[520px] space-y-8">
+          {/* Progress Header */}
+          <div className="text-center">
+            <div className="mb-4 flex items-center justify-center">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[color:var(--brand-accent)] text-white">
+                <span className="text-lg font-semibold">{currentStep}</span>
+              </div>
+            </div>
+            <div className="mb-2 h-2 w-full overflow-hidden rounded-full bg-[color:var(--surface-muted)]">
+              <div
+                className="h-full bg-[color:var(--brand-accent)] transition-all duration-300"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+            <p className="text-sm text-[color:var(--text-muted)]">
+              Step {currentStep} of {TOTAL_STEPS}
+            </p>
           </div>
 
-          <div className="flex flex-col gap-7 px-6 py-8 sm:px-10 sm:py-10">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-              <div className="flex flex-col items-center gap-2 text-center sm:items-start sm:text-left">
-                {stepTitle && (
-                  <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-start">
-                    <h2 className="text-[20px] font-semibold text-[color:var(--text)]">
-                      {`Step ${displayStepNumber} of ${totalFlowSteps}: ${stepTitle}`}
-                    </h2>
-                    {stepDescription && (
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <button
-                            type="button"
-                            className="rounded-full p-1 text-[color:var(--text-muted)] transition-colors hover:text-[color:var(--text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)] focus-visible:ring-offset-2"
-                            aria-label={stepDescription}
-                          >
-                            <Info className="h-4 w-4" />
-                          </button>
-                        </TooltipTrigger>
-                        <TooltipContent className="max-w-[240px] rounded-[12px] border border-[color:var(--surface-ring)] bg-[color:var(--surface-pop)] px-3 py-2 text-left text-[12px] leading-relaxed text-[color:var(--text-muted)]">
-                          {stepDescription}
-                        </TooltipContent>
-                      </Tooltip>
-                    )}
-                  </div>
-                )}
-                {currentStep === 1 && (
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button
-                        type="button"
-                        className="rounded-full p-1 text-[color:var(--text-muted)] transition-colors hover:text-[color:var(--text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)] focus-visible:ring-offset-2"
-                        aria-label="Learn how workspaces and organizations connect"
-                      >
-                        <Info className="h-4 w-4" />
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent className="max-w-[240px] rounded-[12px] border border-[color:var(--surface-ring)] bg-[color:var(--surface-pop)] px-3 py-2 text-left text-[12px] leading-relaxed text-[color:var(--text-muted)]">
-                      You’re creating a workspace. Each workspace is linked to one organization.
-                    </TooltipContent>
-                  </Tooltip>
-                )}
-              </div>
-              {showingOrganizationSections ? (
-                <div className="flex justify-center sm:justify-end">
-                  <ol className="flex flex-wrap items-center justify-center gap-3 text-[12px] text-[color:var(--text-muted)] sm:justify-end">
-                    {ORGANIZATION_SECTION_DEFINITIONS.map((section, index) => {
-                      const status =
-                        index === organizationSectionProgress.index
-                          ? 'current'
-                          : index < organizationSectionProgress.index
-                            ? 'complete'
-                            : 'upcoming'
-                      return (
-                        <li
-                          key={section.id}
-                          className={cn(
-                            'flex items-center gap-2',
-                            status === 'current' && 'text-[color:var(--text)] font-medium',
-                            status === 'complete' && 'text-[var(--brand-accent)]'
-                          )}
-                        >
-                          <span
-                            className={cn(
-                              'flex h-7 w-7 items-center justify-center rounded-full border text-[12px]',
-                              status === 'complete' &&
-                                'border-[var(--brand-accent)] bg-[var(--brand-accent)] text-[color:var(--brand-accent-fg)]',
-                              status === 'current' &&
-                                'border-[var(--brand-accent)] text-[var(--brand-accent)]',
-                              status === 'upcoming' && 'border-[color:var(--surface-ring)]'
-                            )}
-                          >
-                            {status === 'complete' ? <Check className="h-4 w-4" /> : index + 1}
-                          </span>
-                          <span className="hidden sm:inline">{section.title}</span>
-                        </li>
-                      )
-                    })}
-                  </ol>
-                </div>
-              ) : (
-                <div className="flex justify-center sm:justify-end">
-                  <ol className="flex items-center gap-3 text-[12px] text-[color:var(--text-muted)] sm:flex-col sm:items-end">
-                    {steps.map(step => {
-                      const status =
-                        currentStep === step.id ? 'current' : currentStep > step.id ? 'complete' : 'upcoming'
-                      return (
-                        <li
-                          key={step.id}
-                          className={cn(
-                            'flex items-center gap-2',
-                            status === 'current' && 'text-[color:var(--text)] font-medium',
-                            status === 'complete' && 'text-[var(--brand-accent)]'
-                          )}
-                        >
-                          <span
-                            className={cn(
-                              'flex h-7 w-7 items-center justify-center rounded-full border text-[12px]',
-                              status === 'complete' &&
-                                'border-[var(--brand-accent)] bg-[var(--brand-accent)] text-[color:var(--brand-accent-fg)]',
-                              status === 'current' &&
-                                'border-[var(--brand-accent)] text-[var(--brand-accent)]',
-                              status === 'upcoming' && 'border-[color:var(--surface-ring)]'
-                            )}
-                          >
-                            {status === 'complete' ? <Check className="h-4 w-4" /> : step.id}
-                          </span>
-                          <span className="hidden sm:inline">{step.title}</span>
-                        </li>
-                      )
-                    })}
-                  </ol>
-                </div>
-              )}
-            </div>
+          {/* Step Title */}
+          <div className="space-y-2 text-center">
+            <h1 className="text-2xl font-bold text-[color:var(--text)]">{stepTitle}</h1>
+            {stepDescription && (
+              <p className="text-base text-[color:var(--text-muted)]">{stepDescription}</p>
+            )}
+          </div>
 
+          {/* Step Content */}
+          <div className="space-y-6">
             {currentStep === 1 && (
-              <OrganizationStep
-                ref={organizationStepRef}
-                value={organization}
-                onUpdate={handleOrganizationUpdate}
-                onComplete={handleOrganizationComplete}
-                footer={organizationFooter}
+              <OrganizationBasicsStep
+                value={{
+                  name: combinedValues.name,
+                  businessType: combinedValues.businessType
+                }}
+                onUpdate={handleBasicsUpdate}
+                onComplete={handleStepComplete}
                 setupError={setupError}
-                onSectionChange={handleOrganizationSectionChange}
-                onBackToOrigin={goBackToOrigin}
               />
             )}
 
             {currentStep === 2 && (
-              <SupplierSelectionStep
-                suppliers={marketplaceSuppliers}
-                selectedIds={selectedSupplierIds}
-                onToggle={handleSupplierToggle}
-                onInviteSupplier={handleInviteSupplier}
-                isLoading={suppliersLoading}
-                error={suppliersError instanceof Error ? suppliersError.message : null}
-                footer={supplierFooter}
+              <DeliveryDetailsStep
+                value={{
+                  deliveryAddress: combinedValues.deliveryAddress
+                }}
+                onUpdate={handleDeliveryUpdate}
+                onComplete={handleStepComplete}
+                setupError={setupError}
               />
             )}
 
             {currentStep === 3 && (
-              <ReviewStep
-                organization={organization}
+              <InvoicingSetupStep
+                value={{
+                  vat: combinedValues.vat,
+                  useSeparateInvoiceAddress: combinedValues.useSeparateInvoiceAddress,
+                  invoiceAddress: combinedValues.invoiceAddress
+                }}
+                onUpdate={handleInvoicingUpdate}
+                onComplete={handleStepComplete}
+                setupError={setupError}
+              />
+            )}
+
+            {currentStep === 4 && (
+              <ContactInformationStep
+                value={{
+                  contactName: combinedValues.contactName,
+                  email: combinedValues.email,
+                  phone: combinedValues.phone
+                }}
+                onUpdate={handleContactUpdate}
+                onComplete={handleStepComplete}
+                setupError={setupError}
+              />
+            )}
+
+            {currentStep === 5 && (
+              <SupplierSelectionStep
                 suppliers={marketplaceSuppliers}
                 selectedSupplierIds={selectedSupplierIds}
+                onToggleSupplier={handleSupplierToggle}
+                isLoading={suppliersLoading}
+              />
+            )}
+
+            {currentStep === 6 && (
+              <ReviewStep
+                organization={{
+                  name: combinedValues.name,
+                  businessType: combinedValues.businessType,
+                  contactName: combinedValues.contactName,
+                  phone: combinedValues.phone,
+                  deliveryAddress: combinedValues.deliveryAddress,
+                  vat: combinedValues.vat,
+                  email: combinedValues.email,
+                  useSeparateInvoiceAddress: combinedValues.useSeparateInvoiceAddress,
+                  invoiceAddress: combinedValues.invoiceAddress
+                }}
+                suppliers={marketplaceSuppliers.filter(s => selectedSupplierIds.includes(s.id))}
                 preferences={preferences}
-                onPreferencesChange={handlePreferencesChange}
-                onEditOrganization={() => setCurrentStep(1)}
-                onEditSuppliers={() => setCurrentStep(2)}
-                footer={reviewFooter}
+                onPreferencesChange={setPreferences}
               />
             )}
           </div>
+
+          {/* Footer */}
+          <div className="pt-6">
+            {stepFooter}
+          </div>
         </div>
       </div>
-      <AlertDialog open={exitDialogOpen} onOpenChange={handleExitDialogChange}>
-        <AlertDialogContent className="sm:max-w-[420px] rounded-[16px] border border-[color:var(--surface-ring)] bg-[color:var(--surface-pop)] px-6 py-6">
-          <AlertDialogHeader className="space-y-2 text-left">
-            <AlertDialogTitle className="text-[18px] font-semibold text-[color:var(--text)]">
-              {exitDialogCopy.title}
-            </AlertDialogTitle>
-            <AlertDialogDescription className="text-[13px] leading-relaxed text-[color:var(--text-muted)]">
-              {exitDialogCopy.description}
-            </AlertDialogDescription>
+
+      {/* Exit Dialog */}
+      <AlertDialog open={exitDialogOpen} onOpenChange={setExitDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{exitDialogCopy.title}</AlertDialogTitle>
+            <AlertDialogDescription>{exitDialogCopy.description}</AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter className="mt-4 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end sm:gap-3">
+          <AlertDialogFooter>
             <AlertDialogCancel
-              onClick={cancelExitDialog}
-              className="text-[13px] text-[color:var(--text)] hover:bg-[color:var(--surface-pop-2)]"
+              onClick={() => {
+                setExitDialogOpen(false)
+                if (blocker.state === 'blocked') {
+                  blocker.reset?.()
+                }
+              }}
             >
-              Stay here
+              Stay and finish
             </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={confirmExitDialog}
-              className={cn(
-                'text-[13px]',
-                'bg-[var(--brand-accent)] text-[color:var(--brand-accent-fg)] hover:bg-[var(--brand-accent)]/90'
-              )}
-            >
-              Leave setup
-            </AlertDialogAction>
+            <AlertDialogAction onClick={exitSetup}>Leave setup</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
