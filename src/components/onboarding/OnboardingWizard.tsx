@@ -389,10 +389,10 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
       if (onComplete) {
         onComplete()
       } else {
-        navigate('/')
+        navigateToPrevious()
       }
     }
-  }, [allowNavigation, navigate, navigateToPrevious, onComplete, onSkip, pendingExitAction])
+  }, [allowNavigation, navigateToPrevious, onComplete, onSkip, pendingExitAction])
 
   useEffect(() => {
     if (!shouldBlockNavigation) return
