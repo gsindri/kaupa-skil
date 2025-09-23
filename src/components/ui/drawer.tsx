@@ -43,7 +43,7 @@ const DrawerContent = React.forwardRef<
   }
 >(({ className, children, showBar = true, side = 'bottom', overlayClassName, ...props }, ref) => (
   <DrawerPortal>
-    <>
+    <div>
       <DrawerOverlay className={overlayClassName} />
       <DrawerPrimitive.Content
         ref={ref}
@@ -63,7 +63,7 @@ const DrawerContent = React.forwardRef<
         )}
         {children}
       </DrawerPrimitive.Content>
-    </>
+    </div>
   </DrawerPortal>
 ))
 DrawerContent.displayName = 'DrawerContent'
