@@ -288,7 +288,7 @@ export function ExistingUserOnboarding() {
 
         <div className="mt-8 text-center">
           <Button variant="ghost" onClick={handleExit}>
-            Back to dashboard
+            Go back
           </Button>
         </div>
       </div>
