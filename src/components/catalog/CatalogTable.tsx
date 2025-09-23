@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useRef, useState, isValidElement } from 'react'
 import {
   Table,
   TableBody,
@@ -539,7 +539,14 @@ function PriceCell({
     : []
   const isLocked = product.prices_locked ?? product.price_locked ?? false
 
-  let priceNode: React.ReactNode
+  const fallbackPriceNode = (
+    <span className="tabular-nums">
+      <span aria-hidden="true">—</span>
+      <span className="sr-only">Price unavailable</span>
+    </span>
+  )
+
+  let priceNode: React.ReactNode = fallbackPriceNode
   let tooltip: React.ReactNode | null = null
 
   if (isLocked) {
@@ -582,13 +589,17 @@ function PriceCell({
     tooltip = 'No supplier data'
   }
 
+  const triggerNode = isValidElement(priceNode)
+    ? priceNode
+    : fallbackPriceNode
+
   const priceContent = tooltip ? (
     <Tooltip>
-      <TooltipTrigger asChild>{priceNode}</TooltipTrigger>
+      <TooltipTrigger asChild>{triggerNode}</TooltipTrigger>
       <TooltipContent className="space-y-1">{tooltip}</TooltipContent>
     </Tooltip>
   ) : (
-    priceNode
+    triggerNode
   )
 
   return (
