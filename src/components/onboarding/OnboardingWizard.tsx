@@ -230,6 +230,11 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
   const organizationStepRef = useRef<OrganizationStepHandle>(null)
   const exitDialogContextRef = useRef<'manual' | 'blocked' | null>(null)
 
+  const goBackToOrigin = useCallback(() => {
+    setAllowNavigation(true)
+    navigateToPrevious()
+  }, [navigateToPrevious])
+
   const steps = useMemo<StepDefinition[]>(
     () => [
       {
@@ -486,8 +491,12 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
   }, [selectedSupplierIds.length, toast])
 
   const handleBack = useCallback(() => {
+    if (currentStep <= 1) {
+      goBackToOrigin()
+      return
+    }
     setCurrentStep(prev => Math.max(1, prev - 1))
-  }, [])
+  }, [currentStep, goBackToOrigin])
 
   const handlePreferencesChange = useCallback((prefs: ReviewPreferences) => {
     setPreferences(prefs)
@@ -683,11 +692,12 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
 
   const organizationFooter = ({
     isFirstSection,
-    goToPrevious
+    goToPrevious,
+    onBackToOrigin
   }: OrganizationStepFooterContext) => (
     <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-4">
-        {!isFirstSection && (
+        {(onBackToOrigin || !isFirstSection) && (
           <Button
             variant="ghost"
             size="lg"
@@ -931,6 +941,7 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
                 footer={organizationFooter}
                 setupError={setupError}
                 onSectionChange={handleOrganizationSectionChange}
+                onBackToOrigin={goBackToOrigin}
               />
             )}
 
