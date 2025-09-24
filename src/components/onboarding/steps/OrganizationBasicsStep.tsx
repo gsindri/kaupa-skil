@@ -222,7 +222,7 @@ export function OrganizationBasicsStep({
                     Workspace logo <span className="text-[12px] text-[color:var(--text-muted)]">(optional)</span>
                   </FormLabel>
                   <FormDescription className="text-[12px] text-[color:var(--text-muted)]">
-                    Personalize your workspace — the logo appears in navigation and communications.
+                    Appears in navigation and communications.
                   </FormDescription>
                   <FormControl>
                     <div className="space-y-3 rounded-[12px] border border-dashed border-[color:var(--surface-ring)] bg-[color:var(--surface-pop)]/60 p-4">
@@ -340,7 +340,7 @@ export function OrganizationBasicsStep({
                 >
                   <FormControl>
                     <SelectTrigger className="h-11 rounded-[12px] border-[color:var(--surface-ring)] bg-[color:var(--surface-pop)] text-left text-[13px]">
-                      <SelectValue placeholder="Select category" />
+                      <SelectValue placeholder="Choose a category" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent className="rounded-[12px] border-[color:var(--surface-ring)] bg-[color:var(--surface-pop)] text-[13px]">
