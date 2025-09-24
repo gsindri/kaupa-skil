@@ -115,7 +115,7 @@ export function CatalogQuantityStepper({
         type="button"
         variant="ghost"
         size="icon"
-        className="catalog-card__stepper-btn"
+        className="catalog-card__stepper-btn h-9 w-9"
         aria-label={`Decrease quantity of ${itemLabel}`}
         onPointerDown={() => {
           scheduleHold("dec");
@@ -134,7 +134,7 @@ export function CatalogQuantityStepper({
         type="button"
         variant="ghost"
         size="icon"
-        className="catalog-card__stepper-btn"
+        className="catalog-card__stepper-btn h-9 w-9"
         aria-label={`Increase quantity of ${itemLabel}`}
         disabled={!canIncrease}
         onPointerDown={() => {

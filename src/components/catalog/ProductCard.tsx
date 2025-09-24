@@ -265,7 +265,7 @@ export const ProductCard = memo(function ProductCard({
           type="button"
           variant="ghost"
           size="default"
-          className="catalog-card__cta catalog-card__cta--muted"
+          className="catalog-card__cta catalog-card__cta--muted h-9"
           disabled
           aria-disabled="true"
         >
@@ -288,7 +288,7 @@ export const ProductCard = memo(function ProductCard({
             asChild
             variant="default"
             size="default"
-            className="catalog-card__cta catalog-card__cta--primary"
+            className="catalog-card__cta catalog-card__cta--primary h-9"
           >
             <a {...detailLink} aria-label={`See price for ${product.name}`}>
               {content}
@@ -301,7 +301,7 @@ export const ProductCard = memo(function ProductCard({
           type="button"
           variant="default"
           size="default"
-          className="catalog-card__cta catalog-card__cta--primary"
+          className="catalog-card__cta catalog-card__cta--primary h-9"
           disabled
           aria-disabled="true"
         >
@@ -328,7 +328,7 @@ export const ProductCard = memo(function ProductCard({
           <PopoverTrigger asChild>
             <Button
               size="icon"
-              className="catalog-card__cta"
+              className="catalog-card__cta h-9 w-9"
               disabled={isAdding || isUnavailable}
               aria-label={`Choose supplier for ${product.name}`}
             >
@@ -361,7 +361,7 @@ export const ProductCard = memo(function ProductCard({
     return (
       <Button
         size="icon"
-        className="catalog-card__cta"
+        className="catalog-card__cta h-9 w-9"
         onClick={() => handleAdd(defaultSupplierId, defaultSupplierName)}
         disabled={isAdding || isUnavailable}
         aria-label={`Add ${product.name}`}
@@ -388,8 +388,8 @@ export const ProductCard = memo(function ProductCard({
         className,
       )}
     >
-      <CardContent className="catalog-card__content flex flex-1 flex-col gap-3 px-4 pb-5 pt-3">
-        <div className="catalog-card__media relative">
+      <CardContent className="catalog-card__content flex flex-1 flex-col p-0">
+        <div className="catalog-card__media relative px-4 pt-4">
           <div className="catalog-card__surface aspect-[4/3] w-full bg-muted/30 rounded-xl overflow-hidden">
             <div className="catalog-card__badge-layer" data-badge-slot>
               {isInCart && (
@@ -410,19 +410,19 @@ export const ProductCard = memo(function ProductCard({
             </div>
           </div>
         </div>
-        <div className="catalog-card__details flex min-h-[4.25rem] flex-col gap-1">
+        <div className="catalog-card__details flex min-h-[4.25rem] flex-col gap-1 px-3 pt-3">
           {detailLink ? (
             <a
               {...detailLink}
               title={product.name}
-              className="catalog-card__title line-clamp-2 text-base font-semibold leading-snug text-foreground"
+              className="catalog-card__title mb-1.5 line-clamp-2 text-base font-semibold leading-[1.3] text-foreground"
             >
               {product.name}
             </a>
           ) : (
             <div
               title={product.name}
-              className="catalog-card__title line-clamp-2 text-base font-semibold leading-snug text-foreground"
+              className="catalog-card__title mb-1.5 line-clamp-2 text-base font-semibold leading-[1.3] text-foreground"
             >
               {product.name}
             </div>
@@ -437,7 +437,7 @@ export const ProductCard = memo(function ProductCard({
           ) : null}
         </div>
       </CardContent>
-      <CardFooter className="catalog-card__footer mt-auto flex w-full flex-wrap items-start gap-x-3 gap-y-4 px-4 pb-5 pt-0">
+      <CardFooter className="catalog-card__footer mt-auto flex w-full flex-wrap items-center gap-3 px-3 py-2.5">
         <div className="catalog-card__footer-meta flex min-w-0 flex-1 flex-nowrap items-center gap-2.5 overflow-hidden">
           <AvailabilityBadge
             status={availability}
@@ -470,7 +470,7 @@ export const ProductCard = memo(function ProductCard({
             </span>
           )}
         </div>
-        <div className="catalog-card__footer-actions ml-auto flex flex-shrink-0 items-center gap-3 pl-3">
+        <div className="catalog-card__footer-actions flex flex-shrink-0 items-center gap-3 md:ml-auto md:pl-3">
           {priceLabel && (
             <div className="catalog-card__price text-sm font-medium tabular-nums" aria-live="polite">
               {priceLabel}
