@@ -91,12 +91,6 @@ export function DeliveryDetailsStep({
 
   return (
     <div className="space-y-6">
-      <div className="space-y-2">
-        <p className="text-sm text-[color:var(--text-muted)]">
-          Tell us where orders should be delivered.
-        </p>
-      </div>
-
       <Form {...form}>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-5">
