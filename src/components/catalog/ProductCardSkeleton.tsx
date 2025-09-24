@@ -10,7 +10,7 @@ export function ProductCardSkeleton({ className }: ProductCardSkeletonProps) {
   return (
     <Card
       className={cn(
-        "catalog-card flex h-[380px] w-full flex-col overflow-hidden rounded-2xl border-0 bg-card shadow-sm hover:shadow-md transition-all duration-200",
+        "catalog-card flex h-[400px] w-full flex-col overflow-hidden rounded-2xl border-0 bg-card shadow-sm transition-all duration-200 hover:shadow-md",
         className,
       )}
       data-grid-card
@@ -24,11 +24,12 @@ export function ProductCardSkeleton({ className }: ProductCardSkeletonProps) {
         </div>
       </div>
       <CardContent className="flex flex-1 flex-col px-4 pb-0 pt-5">
-        <Skeleton className="h-5 w-5/6 mb-1" />
-        <Skeleton className="h-4 w-1/2 mb-4" />
-        <div className="mt-auto" />
+        <div className="flex flex-1 flex-col gap-2.5 pb-2">
+          <Skeleton className="h-5 w-5/6" />
+          <Skeleton className="h-4 w-1/2" />
+        </div>
       </CardContent>
-      <CardFooter className="flex flex-nowrap items-center gap-3 px-4 pb-5 pt-3">
+      <CardFooter className="mt-auto flex min-h-[88px] flex-nowrap items-center gap-3 px-4 pb-5 pt-4">
         <div className="flex min-w-0 flex-1 flex-nowrap items-center gap-2.5 overflow-hidden">
           <Skeleton className="h-6 w-20 rounded-full" />
           <Skeleton className="h-6 w-24 rounded-full" />
