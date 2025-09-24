@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react'
-import { addDays, differenceInCalendarDays, format, isSameDay, startOfDay } from 'date-fns'
+import { addDays, differenceInCalendarDays, format, isSameDay } from 'date-fns'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -23,7 +23,7 @@ export function UpcomingDeliveriesCard() {
   const { rules, isLoading } = useUpcomingDeliveries()
   const { suppliers } = useSupplierConnections()
 
-  const referenceDate = useMemo(() => startOfDay(new Date()), [])
+  const referenceDate = useMemo(() => new Date(), [])
 
   const supplierMap = useMemo(() => {
     return new Map(suppliers.map((supplier) => [supplier.supplier_id ?? supplier.id, supplier]))
