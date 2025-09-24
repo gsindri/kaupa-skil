@@ -112,10 +112,12 @@ export const HeaderSearch = React.forwardRef<HTMLInputElement, HeaderSearchProps
     const [internalDialogOpen, setInternalDialogOpen] = useState(false)
     const [selectedProduct, setSelectedProduct] = useState<SearchResultItem | null>(null)
     const [productDrawerOpen, setProductDrawerOpen] = useState(false)
+    const [searchFocused, setSearchFocused] = useState(false)
 
     const dialogOpen = controlledOpen ?? internalDialogOpen
 
     const inputRef = React.useRef<HTMLInputElement | null>(null)
+    const searchShellRef = React.useRef<HTMLDivElement | null>(null)
     const setInputRef = React.useCallback(
       (node: HTMLInputElement | null) => {
         inputRef.current = node
@@ -165,6 +167,9 @@ export const HeaderSearch = React.forwardRef<HTMLInputElement, HeaderSearchProps
         setInternalDialogOpen(nextOpen)
       }
       onOpenChange?.(nextOpen)
+      if (!nextOpen) {
+        setSearchFocused(false)
+      }
     }
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -305,7 +310,24 @@ export const HeaderSearch = React.forwardRef<HTMLInputElement, HeaderSearchProps
         >
           <div className="flex h-full flex-col bg-[color:var(--surface-pop)]">
             <div className="px-3 pt-3">
-              <div className="flex h-14 items-center gap-2 rounded-[16px] border border-white/10 bg-[color:var(--surface-pop-2)]/75 px-3 shadow-[0_18px_48px_-30px_rgba(6,12,24,0.65)] backdrop-blur-[18px]">
+              <div
+                ref={searchShellRef}
+                onFocus={() => setSearchFocused(true)}
+                onBlur={(event) => {
+                  const currentTarget = event.currentTarget
+                  requestAnimationFrame(() => {
+                    if (!currentTarget.contains(document.activeElement)) {
+                      setSearchFocused(false)
+                    }
+                  })
+                }}
+                className={cn(
+                  'flex h-16 items-center gap-3 rounded-[18px] border px-4 shadow-[0_24px_72px_-48px_rgba(5,12,26,0.75)] backdrop-blur-[18px] transition-all duration-200',
+                  searchFocused
+                    ? 'border-[color:var(--brand-accent)] bg-[color:var(--surface-pop-2)] shadow-[0_32px_96px_-48px_rgba(6,14,30,0.88),0_0_0_1px_rgba(245,158,11,0.35)]'
+                    : 'border-[rgba(132,179,238,0.32)] bg-[color:var(--surface-pop-2)]/92'
+                )}
+              >
                 <button
                   type="button"
                   aria-hidden
@@ -324,7 +346,7 @@ export const HeaderSearch = React.forwardRef<HTMLInputElement, HeaderSearchProps
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
                   onKeyDown={handleKeyDown}
-                  className="flex-1 bg-transparent text-[15px] text-[color:var(--text)] outline-none placeholder:text-[color:var(--text-muted)]"
+                  className="flex-1 bg-transparent text-[15px] text-[color:var(--text)] outline-none placeholder:text-[color:var(--text-subtle)]"
                 />
                 <div className="flex items-center gap-1.5">
                   {query ? (
@@ -355,7 +377,7 @@ export const HeaderSearch = React.forwardRef<HTMLInputElement, HeaderSearchProps
               </div>
             </div>
 
-            <div className="px-3 pb-2 pt-2">
+            <div className={cn('px-3 pb-2 pt-2 transition-opacity duration-200', searchFocused ? 'opacity-80' : 'opacity-100')}>
               <div className="grid grid-cols-4 gap-1 rounded-[14px] border border-white/10 bg-white/[0.02] p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
                 {SCOPE_OPTIONS.map((option) => {
                   const selected = scope === option.value
@@ -380,7 +402,12 @@ export const HeaderSearch = React.forwardRef<HTMLInputElement, HeaderSearchProps
               </div>
             </div>
 
-            <div className="flex-1 overflow-hidden">
+            <div
+              className={cn(
+                'flex-1 overflow-hidden transition-opacity duration-200',
+                searchFocused ? 'opacity-90' : 'opacity-100'
+              )}
+            >
               <div
                 id="header-search-results"
                 role="listbox"
@@ -604,15 +631,29 @@ function RecentDialogRow({ query, active, onHover, onSelect, onRemove }: RecentD
         onSelect()
       }}
       className={cn(
-        'grid w-full cursor-pointer grid-cols-[56px,1fr,auto] items-center gap-3 rounded-[12px] px-3 py-3 text-left text-[color:var(--text)] transition-all duration-150 ease-out',
-        active ? 'bg-white/[0.12] ring-1 ring-inset ring-white/12' : 'hover:bg-white/[0.06]'
+        'group flex w-full cursor-pointer items-center gap-3 rounded-[10px] px-2.5 py-2.5 text-left transition-colors duration-150 ease-out',
+        active
+          ? 'bg-white/[0.10] text-[color:var(--text)] shadow-[0_0_0_1px_rgba(255,255,255,0.16)]'
+          : 'text-[color:var(--text-subtle)] hover:bg-white/[0.05]'
       )}
     >
-      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[10px] border border-white/10 bg-white/[0.04]">
-        <span className="text-[12px] text-[color:var(--text-muted)] opacity-70">↺</span>
-      </div>
-      <div className="min-w-0">
-        <div className="truncate text-[15px] font-medium">{query}</div>
+      <span
+        className={cn(
+          'flex h-6 w-6 shrink-0 items-center justify-center text-[11px] font-medium transition-opacity',
+          active ? 'opacity-100' : 'opacity-70 group-hover:opacity-90'
+        )}
+      >
+        ↺
+      </span>
+      <div className="min-w-0 flex-1">
+        <div
+          className={cn(
+            'truncate text-[14px] font-medium transition-colors',
+            active ? 'text-[color:var(--text)]' : 'text-current group-hover:text-[color:var(--text)]'
+          )}
+        >
+          {query}
+        </div>
       </div>
       <button
         type="button"
@@ -625,7 +666,10 @@ function RecentDialogRow({ query, active, onHover, onSelect, onRemove }: RecentD
           event.stopPropagation()
           onRemove()
         }}
-        className="flex h-8 w-8 items-center justify-center rounded-full text-[12px] text-[color:var(--text-muted)] transition-colors hover:text-[color:var(--text)]"
+        className={cn(
+          'flex h-7 w-7 items-center justify-center rounded-full text-[12px] transition-colors',
+          active ? 'text-[color:var(--text)] hover:text-[color:var(--text)]' : 'text-[color:var(--text-subtle)] hover:text-[color:var(--text)]'
+        )}
         aria-label={`Remove ${query} from recent searches`}
       >
         ✕
