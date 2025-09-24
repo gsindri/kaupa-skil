@@ -603,11 +603,95 @@ export default function CatalogPage() {
     setFilters(f)
   }
 
-  const handleAdd = (product: any) => {
+  const handleAdd = (product: any, selectedSupplierId?: string) => {
+    const supplierIds = Array.isArray(product.supplier_ids)
+      ? (product.supplier_ids as unknown[]).filter(
+          (value): value is string => typeof value === 'string' && value.length > 0,
+        )
+      : []
+    const supplierNames = Array.isArray(product.supplier_names)
+      ? (product.supplier_names as unknown[]).filter(
+          (value): value is string => typeof value === 'string' && value.length > 0,
+        )
+      : []
+    const supplierEntries = Array.isArray(product.suppliers)
+      ? product.suppliers.filter(Boolean)
+      : []
+
+    const extractId = (entry: any): string => {
+      if (!entry) return ''
+      if (typeof entry === 'string') return entry
+      return (
+        entry.supplier_id ??
+        entry.id ??
+        entry.supplierId ??
+        entry.supplier?.id ??
+        ''
+      )
+    }
+
+    const extractName = (entry: any): string => {
+      if (!entry) return ''
+      if (typeof entry === 'string') return entry
+      return (
+        entry.supplier_name ??
+        entry.name ??
+        entry.displayName ??
+        entry.supplier?.name ??
+        ''
+      )
+    }
+
+    let supplierId =
+      typeof selectedSupplierId === 'string' && selectedSupplierId.length > 0
+        ? selectedSupplierId
+        : undefined
+
+    if (!supplierId && supplierIds.length) {
+      supplierId = supplierIds[0]
+    }
+
+    if (!supplierId && supplierEntries.length) {
+      supplierId = extractId(supplierEntries[0]) || undefined
+    }
+
+    if (!supplierId) {
+      supplierId = ''
+    }
+
+    const findNameForId = (id: string): string => {
+      if (!id) return ''
+      const index = supplierIds.indexOf(id)
+      if (index !== -1) {
+        const candidate = supplierNames[index]
+        if (candidate) return candidate
+      }
+      const supplierMatch = supplierEntries.find(entry => extractId(entry) === id)
+      if (supplierMatch) {
+        const candidate = extractName(supplierMatch)
+        if (candidate) return candidate
+      }
+      return ''
+    }
+
+    let supplierName = findNameForId(supplierId)
+
+    if (!supplierName && supplierNames.length) {
+      supplierName = supplierNames[0]
+    }
+
+    if (!supplierName && supplierEntries.length) {
+      supplierName = extractName(supplierEntries[0])
+    }
+
+    if (!supplierName && supplierId) {
+      supplierName = supplierId
+    }
+
     const item: Omit<CartItem, 'quantity'> = {
       id: product.catalog_id,
-      supplierId: product.suppliers?.[0] || '',
-      supplierName: product.suppliers?.[0] || '',
+      supplierId,
+      supplierName: supplierName || supplierId || '',
       itemName: product.name,
       sku: product.catalog_id,
       packSize: product.pack_size || '',

@@ -39,6 +39,8 @@ const productsMock = [
   { catalog_id: '8', suppliers: ['s2'] },
 ]
 
+const addItemMock = vi.fn()
+
 vi.mock('@/components/catalog/SortDropdown', () => ({ SortDropdown: () => <div /> }))
 vi.mock('@/components/ui/alert', () => ({
   Alert: ({ children }: any) => <div data-testid="alert">{children}</div>,
@@ -81,6 +83,39 @@ vi.mock('@/components/catalog/CatalogTable', () => ({
   ),
 }))
 vi.mock('@/components/catalog/ProductCard', () => ({ ProductCard: () => <div /> }))
+vi.mock('@/components/catalog/CatalogGrid', () => ({
+  CatalogGrid: ({ products, onAddToCart }: any) => {
+    return (
+      <div data-testid="catalog-grid">
+        {products.map((product: any) => {
+          const supplierIds: (string | undefined)[] = Array.isArray(
+            product.supplier_ids,
+          )
+            ? (product.supplier_ids as (string | null | undefined)[])
+                .filter(Boolean)
+                .map(id => id as string)
+            : [undefined]
+          if (supplierIds.length === 0) supplierIds.push(undefined)
+          return (
+            <div key={product.catalog_id}>
+              {supplierIds.map((supplierId, idx) => (
+                <button
+                  key={supplierId ?? `default-${idx}`}
+                  type="button"
+                  onClick={() => onAddToCart(product, supplierId)}
+                >
+                  {supplierId
+                    ? `add-${product.catalog_id}-${supplierId}`
+                    : `add-${product.catalog_id}`}
+                </button>
+              ))}
+            </div>
+          )
+        })}
+      </div>
+    )
+  },
+}))
 vi.mock('@/components/catalog/ProductCardSkeleton', () => ({ ProductCardSkeleton: () => <div /> }))
 vi.mock('@/components/ui/filter-chip', () => ({
   FilterChip: ({ children }: any) => <div>{children}</div>,
@@ -144,7 +179,11 @@ catalogFiltersStore = create((set: any) => ({
   triSuppliers: 'off',
   setTriSuppliers: (v: any) => set({ triSuppliers: v }),
 }))
-vi.mock('@/contexts/useBasket', () => ({ useCart: () => ({ addItem: () => {} }) }))
+vi.mock('@/contexts/useBasket', () => ({
+  useCart: () => ({
+    addItem: addItemMock,
+  }),
+}))
 vi.mock('@/lib/images', () => ({ resolveImage: () => '' }))
 
 function renderCatalogPage() {
@@ -160,6 +199,7 @@ describe('CatalogPage', () => {
     localStorage.clear()
     useCatalogProductsMock.mockClear()
     useOrgCatalogMock.mockClear()
+    addItemMock.mockClear()
     catalogFiltersStore.setState({
       triSpecial: 'off',
       triSuppliers: 'off',
@@ -181,6 +221,46 @@ describe('CatalogPage', () => {
     localStorage.setItem('catalog-view', 'list')
     renderCatalogPage()
     expect(screen.getByTestId('catalog-table')).toBeInTheDocument()
+  })
+
+  it('keeps the chosen supplier name when adding from the grid view', async () => {
+    const gridProduct = {
+      catalog_id: 'grid-item',
+      name: 'Grid Product',
+      supplier_ids: ['sup-1', 'sup-2'],
+      supplier_names: ['Supplier One', 'Supplier Two'],
+      suppliers_count: 2,
+      suppliers: [],
+      pack_size: 'Case',
+      best_price: 42,
+      availability_status: 'IN_STOCK',
+      sample_image_url: null,
+    }
+    const originalCatalogData = catalogProductsResult.data
+    const originalOrgData = orgCatalogResult.data
+    catalogProductsResult.data = [gridProduct]
+    orgCatalogResult.data = [gridProduct]
+
+    const user = userEvent.setup()
+    localStorage.setItem('catalog-view', 'grid')
+
+    try {
+      renderCatalogPage()
+      const supplierButton = await screen.findByRole('button', {
+        name: 'add-grid-item-sup-2',
+      })
+      await user.click(supplierButton)
+      expect(addItemMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          supplierId: 'sup-2',
+          supplierName: 'Supplier Two',
+        }),
+        1,
+      )
+    } finally {
+      catalogProductsResult.data = originalCatalogData
+      orgCatalogResult.data = originalOrgData
+    }
   })
 
   it.skip('cycles triSuppliers filter without clearing results', async () => {
