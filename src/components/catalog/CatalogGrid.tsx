@@ -33,7 +33,7 @@ export function CatalogGrid({
       renderItem={renderItem}
       itemKey={(item) => item.catalog_id}
       minCardWidth={280}
-      rowHeight={340}
+      rowHeight={380}
       gap={32}
       onNearEnd={onNearEnd}
       className="py-6"
