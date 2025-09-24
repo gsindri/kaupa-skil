@@ -79,17 +79,20 @@ export function FullWidthLayout({
             'flex-1 min-h-0 px-4 sm:px-6 lg:px-8 xl:px-10 2xl:px-12',
             contentClassName,
           )}
-          style={{ 
+          style={{
             paddingTop: 'var(--header-h, var(--layout-header-h,56px))',
-            ...contentStyle 
+            ...contentStyle
           }}
           {...restContentProps}
         >
-          {children}
+          <div className="page-grid items-start gap-3">
+            <div className="page-grid__content min-w-0">
+              {children}
+            </div>
+            <CartDrawer />
+          </div>
         </div>
       </div>
-
-      <CartDrawer />
     </div>
   )
 }
