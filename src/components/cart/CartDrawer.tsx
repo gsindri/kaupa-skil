@@ -37,6 +37,73 @@ export function CartDrawer() {
   }, [setIsDrawerPinned])
 
   const pinLabel = isDrawerPinned ? "Unpin cart sidebar" : "Pin cart sidebar"
+  const drawerRef = React.useRef<HTMLDivElement | null>(null)
+
+  React.useEffect(() => {
+    if (typeof document === "undefined") return
+
+    const root = document.documentElement
+    if (!root) return
+
+    const clearOffset = () => {
+      root.style.removeProperty("--cart-drawer-width")
+      root.style.removeProperty("--cart-drawer-offset")
+      root.removeAttribute("data-cart-drawer")
+    }
+
+    const updateOffset = () => {
+      const drawerEl = drawerRef.current
+
+      if (!drawerEl || !isDrawerOpen) {
+        clearOffset()
+        return
+      }
+
+      const width = drawerEl.offsetWidth
+      if (!width) {
+        clearOffset()
+        return
+      }
+
+      const viewport = typeof window !== "undefined" ? window.innerWidth : 0
+      const gap = 16
+      const minContentWidth = 480
+      const offset = width + gap
+
+      if (viewport <= offset || viewport - offset < minContentWidth) {
+        clearOffset()
+        return
+      }
+
+      root.style.setProperty("--cart-drawer-width", `${width}px`)
+      root.style.setProperty("--cart-drawer-offset", `${offset}px`)
+      root.setAttribute("data-cart-drawer", isDrawerPinned ? "pinned" : "open")
+    }
+
+    updateOffset()
+
+    if (!isDrawerOpen) {
+      return () => {
+        clearOffset()
+      }
+    }
+
+    const handleResize = () => updateOffset()
+    window.addEventListener("resize", handleResize)
+
+    let resizeObserver: ResizeObserver | undefined
+    const drawerEl = drawerRef.current
+    if (typeof ResizeObserver !== "undefined" && drawerEl) {
+      resizeObserver = new ResizeObserver(() => updateOffset())
+      resizeObserver.observe(drawerEl)
+    }
+
+    return () => {
+      window.removeEventListener("resize", handleResize)
+      resizeObserver?.disconnect()
+      clearOffset()
+    }
+  }, [isDrawerOpen, isDrawerPinned])
 
   return (
     <Sheet open={isDrawerOpen} onOpenChange={setIsDrawerOpen} modal={false}>
@@ -44,7 +111,8 @@ export function CartDrawer() {
         side="right"
         hideOverlay
         data-pinned={isDrawerPinned ? "true" : undefined}
-        className={cn("w-full max-w-[360px]", isDrawerPinned && "shadow-none")}
+        ref={drawerRef}
+        className={cn("w-full max-w-[320px]", isDrawerPinned && "shadow-none")}
         onPointerDownOutside={event => event.preventDefault()}
         onInteractOutside={event => event.preventDefault()}
         aria-label="Shopping cart"
