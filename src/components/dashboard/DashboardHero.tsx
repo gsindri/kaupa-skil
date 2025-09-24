@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react'
-import { differenceInCalendarDays, startOfDay, startOfWeek, format } from 'date-fns'
+import { differenceInCalendarDays, startOfWeek, format } from 'date-fns'
 import { Card } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useSpendSnapshot } from '@/hooks/useSpendSnapshot'
@@ -46,7 +46,7 @@ export function DashboardHero() {
   const { rules, isLoading: deliveriesLoading } = useUpcomingDeliveries()
   const { suppliers, isLoading: suppliersLoading } = useSupplierConnections()
 
-  const referenceDate = useMemo(() => startOfDay(new Date()), [])
+  const referenceDate = useMemo(() => new Date(), [])
 
   const deliveriesDue = useMemo(() => {
     return rules.reduce((count, rule) => {
