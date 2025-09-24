@@ -310,6 +310,12 @@ input[type='search'] {
 /* Numbers align perfectly in tables/badges */
 .ui-numeric{ font-variant-numeric: tabular-nums; }
 
+/* Basic line clamp utilities for legacy Tailwind setup */
+.line-clamp-1,
+.line-clamp-2{ display:-webkit-box; -webkit-box-orient:vertical; overflow:hidden; }
+.line-clamp-1{ -webkit-line-clamp:1; }
+.line-clamp-2{ -webkit-line-clamp:2; }
+
 /* Lucide icons */
 svg.lucide{ stroke-width:1.75; }
 .icon-16{ width:16px; height:16px; }

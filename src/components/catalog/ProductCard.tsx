@@ -374,7 +374,7 @@ export const ProductCard = memo(function ProductCard({
       data-grid-card
       data-in-cart={isInCart ? "true" : undefined}
       className={cn(
-        "catalog-card group isolate flex h-[380px] w-full flex-col overflow-hidden border-0 bg-card shadow-sm",
+        "catalog-card group isolate flex h-[400px] w-full flex-col overflow-hidden border-0 bg-card shadow-sm",
         "rounded-2xl transition-all duration-200 ease-out hover:shadow-md hover:scale-[1.02]",
         "focus-within:shadow-md focus-within:scale-[1.02]",
         "motion-reduce:transition-none motion-reduce:hover:scale-100 motion-reduce:focus-within:scale-100",
@@ -404,22 +404,32 @@ export const ProductCard = memo(function ProductCard({
         </div>
       </div>
       <CardContent className="flex flex-1 flex-col px-4 pb-0 pt-5">
-        {detailLink ? (
-          <a
-            {...detailLink}
-            className="catalog-card__title font-semibold text-base leading-tight text-foreground hover:text-primary transition-colors focus-visible:outline-none focus-visible:text-primary"
+        <div className="flex flex-1 flex-col gap-2.5 pb-2">
+          {detailLink ? (
+            <a
+              {...detailLink}
+              title={product.name}
+              className="catalog-card__title line-clamp-2 font-semibold text-base leading-tight text-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:text-primary"
+            >
+              {product.name}
+            </a>
+          ) : (
+            <div
+              title={product.name}
+              className="catalog-card__title line-clamp-2 font-semibold text-base leading-tight text-foreground"
+            >
+              {product.name}
+            </div>
+          )}
+          <div
+            className="catalog-card__meta text-sm text-muted-foreground leading-relaxed"
+            aria-hidden={!metaLine}
           >
-            {product.name}
-          </a>
-        ) : (
-          <div className="catalog-card__title font-semibold text-base leading-tight text-foreground">{product.name}</div>
-        )}
-        <div className="catalog-card__meta text-sm text-muted-foreground mt-1 mb-4 leading-relaxed" aria-hidden={!metaLine}>
-          {metaLine || "\u00A0"}
+            {metaLine || "\u00A0"}
+          </div>
         </div>
-        <div className="mt-auto" />
       </CardContent>
-      <CardFooter className="catalog-card__footer flex flex-nowrap items-center gap-3 px-4 pb-5 pt-3">
+      <CardFooter className="catalog-card__footer mt-auto flex min-h-[88px] flex-nowrap items-center gap-3 px-4 pb-5 pt-4">
         <div className="catalog-card__footer-meta flex min-w-0 flex-1 flex-nowrap items-center gap-2.5 overflow-hidden">
           <AvailabilityBadge
             status={availability}
