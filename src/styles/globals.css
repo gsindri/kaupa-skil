@@ -369,7 +369,7 @@ svg.lucide{ stroke-width:1.75; }
 .catalog-card__footer{ container-type:inline-size; }
 .catalog-card__footer-meta{ gap:0.65rem; }
 .catalog-card__footer-actions{ justify-content:flex-end; gap:0.75rem; }
-.catalog-card__supplier-label{ font-size:13px; font-weight:600; color:hsl(var(--foreground) / 0.68); transition:opacity var(--dur-base) var(--ease-snap); }
+.catalog-card__supplier-label{ display:block; flex:1 1 auto; min-width:0; max-width:100%; font-size:13px; font-weight:600; color:hsl(var(--foreground) / 0.68); transition:opacity var(--dur-base) var(--ease-snap); }
 .dark .catalog-card__supplier-label{ color:rgba(226,232,240,0.78); }
 @container (max-width: 220px){
   .catalog-card__supplier-label{ display:none; }

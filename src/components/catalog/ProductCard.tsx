@@ -13,6 +13,16 @@ import type { CartItem } from "@/lib/types";
 import { CatalogQuantityStepper } from "./CatalogQuantityStepper";
 import { BellRing, HelpCircle, Loader2, Lock, Plus } from "lucide-react";
 
+type SupplierEntry = {
+  supplier_id?: string | null;
+  supplierId?: string | null;
+  id?: string | null;
+  supplier?: { id?: string | null; name?: string | null } | null;
+  supplier_name?: string | null;
+  name?: string | null;
+  displayName?: string | null;
+};
+
 interface ProductCardProps {
   product: PublicCatalogItem;
   onAdd?: (supplierId?: string) => void;
@@ -36,23 +46,133 @@ export const ProductCard = memo(function ProductCard({
     | "OUT_OF_STOCK"
     | "UNKNOWN";
   const img = resolveImage(product.sample_image_url, availability);
-  const supplierLabel = `${product.suppliers_count} supplier${
-    product.suppliers_count === 1 ? "" : "s"
-  }`;
-  const primarySupplierName = product.supplier_names?.[0] ?? "";
-  const primarySupplierLogo = product.supplier_logo_urls?.[0] ?? null;
+  const normalizeString = (value: unknown): string | null => {
+    if (typeof value !== "string") return null;
+    const trimmed = value.trim();
+    return trimmed.length ? trimmed : null;
+  };
+
+  const productWithSuppliers = product as PublicCatalogItem & {
+    suppliers?: SupplierEntry[] | null;
+  };
+  const supplierEntries = Array.isArray(productWithSuppliers.suppliers)
+    ? productWithSuppliers.suppliers.filter(
+        (entry): entry is SupplierEntry => !!entry && typeof entry === "object",
+      )
+    : [];
+
+  const fallbackNameById = new Map<string, string>();
+  const fallbackNameList: string[] = [];
+  for (const entry of supplierEntries) {
+    const mappedName =
+      normalizeString(entry.supplier_name) ??
+      normalizeString(entry.name) ??
+      normalizeString(entry.displayName) ??
+      normalizeString(entry.supplier?.name);
+    if (mappedName) {
+      fallbackNameList.push(mappedName);
+    }
+    const mappedId =
+      normalizeString(entry.supplier_id) ??
+      normalizeString(entry.supplierId) ??
+      normalizeString(entry.id) ??
+      normalizeString(entry.supplier?.id);
+    if (mappedId && mappedName) {
+      fallbackNameById.set(mappedId, mappedName);
+    }
+  }
+
+  const rawSupplierIds = Array.isArray(product.supplier_ids)
+    ? product.supplier_ids
+    : [];
+  const rawSupplierNames = Array.isArray(product.supplier_names)
+    ? product.supplier_names
+    : [];
+  const rawSupplierLogos = Array.isArray(product.supplier_logo_urls)
+    ? product.supplier_logo_urls
+    : [];
+
+  const supplierIds: string[] = [];
+  const supplierDisplayNames: string[] = [];
+  const fallbackQueue = [...fallbackNameList];
+  let derivedPrimaryLogo: string | null = null;
+
+  for (let idx = 0; idx < rawSupplierIds.length; idx += 1) {
+    const normalizedId = normalizeString(rawSupplierIds[idx]);
+    if (!normalizedId) continue;
+
+    if (!derivedPrimaryLogo) {
+      const logoCandidate = normalizeString(rawSupplierLogos[idx]);
+      if (logoCandidate) {
+        derivedPrimaryLogo = logoCandidate;
+      }
+    }
+
+    supplierIds.push(normalizedId);
+
+    const directName = normalizeString(rawSupplierNames[idx]);
+    if (directName) {
+      supplierDisplayNames.push(directName);
+      continue;
+    }
+
+    const mappedName = fallbackNameById.get(normalizedId);
+    if (mappedName) {
+      supplierDisplayNames.push(mappedName);
+      continue;
+    }
+
+    let queuedName: string | null = null;
+    while (fallbackQueue.length) {
+      const candidate = fallbackQueue.shift();
+      if (!candidate) continue;
+      queuedName = candidate;
+      break;
+    }
+
+    supplierDisplayNames.push(queuedName ?? "");
+  }
+
+  if (!derivedPrimaryLogo) {
+    const fallbackLogo = rawSupplierLogos.find(value => !!normalizeString(value));
+    derivedPrimaryLogo = fallbackLogo ? normalizeString(fallbackLogo) : null;
+  }
+
+  const supplierCountCandidates = [
+    typeof product.suppliers_count === "number" ? product.suppliers_count : null,
+    supplierIds.length,
+    fallbackNameList.length,
+  ].filter((value): value is number => typeof value === "number" && value > 0);
+
+  const supplierCount = supplierCountCandidates.length
+    ? Math.max(...supplierCountCandidates)
+    : 0;
+
+  const supplierLabel =
+    supplierCount > 0
+      ? `${supplierCount} supplier${supplierCount === 1 ? "" : "s"}`
+      : "0 suppliers";
+
+  const primarySupplierName =
+    (supplierDisplayNames[0] && supplierDisplayNames[0].length
+      ? supplierDisplayNames[0]
+      : fallbackNameList[0]) ?? "";
+  const primarySupplierLogo = derivedPrimaryLogo;
   const packInfo = product.canonical_pack ?? product.pack_sizes?.join(", ") ?? "";
   const brand = product.brand ?? "";
-  const supplierIds = product.supplier_ids ?? [];
-  const supplierNames = product.supplier_names ?? [];
   const hasMultipleSuppliers = supplierIds.length > 1;
   const defaultSupplierId = supplierIds[0] ?? "";
-  const defaultSupplierName = supplierNames[0] ?? defaultSupplierId;
+  const defaultSupplierName =
+    (supplierDisplayNames[0] && supplierDisplayNames[0].length
+      ? supplierDisplayNames[0]
+      : supplierIds[0]) ?? supplierLabel;
   const orderedSuppliers = supplierIds.map((id, idx) => ({
     id,
-    name: supplierNames[idx] ?? id,
+    name: supplierDisplayNames[idx] && supplierDisplayNames[idx].length
+      ? supplierDisplayNames[idx]
+      : id,
   }));
-  const overflowSupplierCount = Math.max(0, supplierIds.length - 1);
+  const overflowSupplierCount = Math.max(0, supplierCount - 1);
 
   const metaLine = useMemo(() => {
     const parts: string[] = [];
@@ -306,14 +426,17 @@ export const ProductCard = memo(function ProductCard({
             updatedAt={product.availability_updated_at}
             className="flex-shrink-0"
           />
-          {product.suppliers_count > 0 && (
+          {supplierCount > 0 && (
             <span className="catalog-chip flex min-w-0 items-center gap-2">
               <SupplierLogo
                 name={primarySupplierName || supplierLabel}
                 logoUrl={primarySupplierLogo}
                 className="!h-7 !w-7 flex-shrink-0 !rounded-full bg-white/80 shadow-sm"
               />
-              <span className="catalog-card__supplier-label truncate">
+              <span
+                className="catalog-card__supplier-label truncate"
+                title={bestSupplierLabel}
+              >
                 {bestSupplierLabel}
               </span>
             </span>
