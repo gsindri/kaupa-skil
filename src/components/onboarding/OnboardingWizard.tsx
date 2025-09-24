@@ -395,7 +395,7 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
     if (selectedSupplierIds.length === 0) {
       toast({
         title: 'No suppliers selected',
-        description: 'You haven't connected any suppliers yet.',
+        description: "You haven't connected any suppliers yet.",
         duration: 4000
       })
     }

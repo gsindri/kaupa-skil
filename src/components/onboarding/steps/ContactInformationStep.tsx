@@ -62,7 +62,7 @@ export function ContactInformationStep({
   }, [form, onUpdate])
 
   const handleSubmit = form.handleSubmit(async (data) => {
-    let normalized = {
+    const normalized = {
       contactName: data.contactName.trim(),
       email: data.email.trim(),
       phone: data.phone.trim()
@@ -74,7 +74,7 @@ export function ContactInformationStep({
       normalized.phone = formatted
       form.setValue('phone', formatted, { shouldValidate: true, shouldDirty: true })
     }
-    
+
     onUpdate(normalized)
     onComplete(normalized)
   })

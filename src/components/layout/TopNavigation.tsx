@@ -1,8 +1,22 @@
 
 import React, { useEffect, useRef, useState, useLayoutEffect, useId, useMemo } from 'react'
 import { Link } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 import { DropdownMenu, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import { Building2, CircleUserRound, Keyboard, LifeBuoy, ChevronDown, Check } from 'lucide-react'
+import {
+  Building2,
+  CircleUserRound,
+  Keyboard,
+  LifeBuoy,
+  ChevronDown,
+  Check,
+  BookOpen,
+  Mail,
+  LogOut,
+  ArrowUpRight,
+  ChevronRight,
+} from 'lucide-react'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { TenantSwitcher } from './TenantSwitcher'
 import { useAuth } from '@/contexts/useAuth'
 import { useCart } from '@/contexts/useBasket'
@@ -20,6 +34,32 @@ import {
   navTextButtonPillClass,
   navTextCaretClass,
 } from './navStyles'
+import { supabase } from '@/integrations/supabase/client'
+
+type Membership = {
+  id: string
+  base_role: string
+  tenant: { id: string; name: string; kind: string } | null
+}
+
+function getInitials(name: string) {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((part) => part[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase()
+}
+
+function stringToHslColor(value: string) {
+  let hash = 0
+  for (let i = 0; i < value.length; i += 1) {
+    hash = value.charCodeAt(i) + ((hash << 5) - hash)
+  }
+  const hue = Math.abs(hash) % 360
+  return `hsl(${hue} 65% 45%)`
+}
 
 const languageOptions = [
   { value: 'is', label: 'Icelandic', code: 'IS' },
@@ -156,11 +196,50 @@ export function TopNavigation() {
     return trimmed
   }, [rawDisplayName])
   const displayEmail = profile?.email || user?.email || ''
-  const userInitial = displayName[0]?.toUpperCase() || 'U'
+  const avatarSeed = displayEmail || displayName || 'User'
+  const userInitials = useMemo(() => getInitials(displayName || 'User'), [displayName])
+  const avatarColor = useMemo(() => stringToHslColor(avatarSeed), [avatarSeed])
+  const userMetadata = user?.user_metadata as Record<string, unknown> | undefined
+  const avatarUrl =
+    typeof userMetadata?.avatar_url === 'string' ? (userMetadata.avatar_url as string) : undefined
   const accountMenuLabel = displayName
     ? `Open account menu for ${displayName}`
     : 'Open account menu'
   const isBusy = loading || profileLoading
+
+  const { data: userMemberships = [], isLoading: membershipsLoading } = useQuery<Membership[]>({
+    queryKey: ['user-memberships', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return []
+
+      const { data, error } = await supabase
+        .from('memberships')
+        .select(`id, base_role, tenant:tenants(id, name, kind)`)
+        .eq('user_id', user.id)
+
+      if (error) throw error
+
+      const transformedData = (data || []).map((item) => ({
+        ...item,
+        tenant: Array.isArray(item.tenant)
+          ? item.tenant.length > 0
+            ? item.tenant[0]
+            : null
+          : item.tenant || null,
+      })) as Membership[]
+
+      return transformedData
+    },
+    enabled: !!user?.id,
+  })
+
+  const currentTenant = userMemberships.find((membership) => membership.tenant?.id === profile?.tenant_id)?.tenant
+  const workspaceLabel = currentTenant
+    ? currentTenant.kind === 'personal'
+      ? 'Personal workspace (Private)'
+      : currentTenant.name
+    : 'Personal workspace (Private)'
+  const workspacePillLabel = currentTenant?.kind === 'personal' ? 'Personal' : 'Workspace'
   
   return (
     <div
@@ -251,10 +330,18 @@ export function TopNavigation() {
           >
             <div className="px-2.5 pt-2">
               <div className="flex items-center gap-3 rounded-[14px] bg-[color:var(--surface-pop)]/35 px-3 py-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[color:var(--surface-pop)] text-[16px] font-semibold text-[color:var(--text)]">
-                  {userInitial}
-                </div>
-                <div className="min-w-0">
+                <Avatar className="h-11 w-11 border border-white/10 bg-white/10 shadow-[0_1px_4px_rgba(15,23,42,0.32)]">
+                  {avatarUrl ? (
+                    <AvatarImage src={avatarUrl} alt={`${displayName} avatar`} className="object-cover" />
+                  ) : null}
+                  <AvatarFallback
+                    style={{ background: avatarColor }}
+                    className="text-sm font-semibold uppercase tracking-wide text-white"
+                  >
+                    {userInitials}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="min-w-0 space-y-1">
                   <div className="truncate text-[15px] font-semibold text-[color:var(--text)]">
                     {displayName}
                   </div>
@@ -263,6 +350,14 @@ export function TopNavigation() {
                       {displayEmail}
                     </div>
                   ) : null}
+                  <div className="flex items-center gap-2 text-[12px] text-[color:var(--text-muted)]">
+                    <span className="inline-flex items-center rounded-full bg-white/10 px-2 py-[2px] text-[10px] font-semibold uppercase tracking-[0.08em] text-white/80">
+                      {workspacePillLabel}
+                    </span>
+                    <span className="truncate">
+                      {membershipsLoading ? 'Loading workspace…' : workspaceLabel}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -280,13 +375,13 @@ export function TopNavigation() {
                 <button type="button" className="tw-row tw-row-loose text-left">
                   <Building2 className="size-4 text-[color:var(--text-muted)]" />
                   <span className="truncate">Organization settings</span>
-                  <span />
+                  <ChevronRight className="size-4 text-[color:var(--text-muted)]" aria-hidden />
                 </button>
               </DropdownMenuItem>
             </div>
 
             <div className="xl:hidden">
-              <div className="pop-div my-2" />
+              <div className="pop-div my-2 opacity-70" />
               <div className="tw-label normal-case opacity-60">Language</div>
               <div className="flex flex-col gap-1 px-1">
                 {languageOptions.map((option) => (
@@ -321,7 +416,7 @@ export function TopNavigation() {
               </div>
             </div>
 
-            <div className="pop-div my-2" />
+            <div className="pop-div my-2 opacity-70" />
 
             <div className="tw-label normal-case opacity-60">Help</div>
             <div className="flex flex-col gap-1 px-1">
@@ -333,15 +428,45 @@ export function TopNavigation() {
                 </button>
               </DropdownMenuItem>
               <DropdownMenuItem asChild onSelect={() => setUserMenuOpen(false)}>
-                <button type="button" className="tw-row tw-row-loose text-left">
+                <a
+                  href="https://help.heilda.app"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="tw-row tw-row-loose text-left"
+                  onClick={() => setUserMenuOpen(false)}
+                >
                   <LifeBuoy className="size-4 text-[color:var(--text-muted)]" />
-                  <span className="truncate">Support</span>
+                  <span className="truncate">Help center</span>
+                  <ArrowUpRight className="size-4 text-[color:var(--text-muted)]" aria-hidden />
+                </a>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild onSelect={() => setUserMenuOpen(false)}>
+                <a
+                  href="mailto:support@heilda.app"
+                  className="tw-row tw-row-loose text-left"
+                  onClick={() => setUserMenuOpen(false)}
+                >
+                  <Mail className="size-4 text-[color:var(--text-muted)]" />
+                  <span className="truncate">Contact support</span>
                   <span />
-                </button>
+                </a>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild onSelect={() => setUserMenuOpen(false)}>
+                <a
+                  href="https://docs.heilda.app"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="tw-row tw-row-loose text-left"
+                  onClick={() => setUserMenuOpen(false)}
+                >
+                  <BookOpen className="size-4 text-[color:var(--text-muted)]" />
+                  <span className="truncate">Documentation</span>
+                  <ArrowUpRight className="size-4 text-[color:var(--text-muted)]" aria-hidden />
+                </a>
               </DropdownMenuItem>
             </div>
 
-            <div className="pop-div my-2" />
+            <div className="pop-div my-2 opacity-70" />
 
             <DropdownMenuItem
               onSelect={() => {
@@ -350,8 +475,11 @@ export function TopNavigation() {
               }}
               asChild
             >
-              <button type="button" className="tw-row tw-row-loose text-left text-red-300 hover:text-red-200">
-                <span aria-hidden className="inline-block h-4 w-4" />
+              <button
+                type="button"
+                className="tw-row tw-row-loose text-left text-[color:var(--text)]"
+              >
+                <LogOut className="size-4 text-[color:var(--text-muted)]" aria-hidden />
                 <span className="truncate">Sign out</span>
                 <span />
               </button>
