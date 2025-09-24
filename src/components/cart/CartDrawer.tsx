@@ -1,13 +1,53 @@
 import * as React from "react"
-import { Sheet, SheetContent, SheetClose } from "@/components/ui/sheet"
+import { Sheet, SheetContent } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Badge } from "@/components/ui/badge"
-import { Pin, PinOff, ShoppingCart, Trash2, X } from "lucide-react"
+import { X, Trash2 } from "lucide-react"
 import { useCart } from "@/contexts/useBasket"
 import { useSettings } from "@/contexts/useSettings"
 import { QuantityStepper } from "./QuantityStepper"
 import { cn } from "@/lib/utils"
+
+const DESKTOP_MEDIA_QUERY = "(min-width: 1280px)"
+
+function useMediaQuery(query: string) {
+  const [matches, setMatches] = React.useState(() => {
+    if (typeof window === "undefined") return false
+    return window.matchMedia(query).matches
+  })
+
+  React.useEffect(() => {
+    if (typeof window === "undefined") return () => {}
+
+    const mediaQuery = window.matchMedia(query)
+    const handleChange = (event: MediaQueryListEvent) => setMatches(event.matches)
+
+    if ("addEventListener" in mediaQuery) {
+      mediaQuery.addEventListener("change", handleChange)
+    } else {
+      mediaQuery.addListener(handleChange)
+    }
+
+    setMatches(mediaQuery.matches)
+
+    return () => {
+      if ("removeEventListener" in mediaQuery) {
+        mediaQuery.removeEventListener("change", handleChange)
+      } else {
+        mediaQuery.removeListener(handleChange)
+      }
+    }
+  }, [query])
+
+  return matches
+}
+
+function formatCurrency(value: number) {
+  return new Intl.NumberFormat(undefined, {
+    style: "currency",
+    currency: "ISK",
+    maximumFractionDigits: 0,
+  }).format(value || 0)
+}
 
 export function CartDrawer() {
   const {
@@ -15,246 +55,134 @@ export function CartDrawer() {
     updateQuantity,
     removeItem,
     getTotalPrice,
-    getMissingPriceCount,
     isDrawerOpen,
     setIsDrawerOpen,
-    isDrawerPinned,
-    setIsDrawerPinned,
   } = useCart()
-  const { includeVat, setIncludeVat } = useSettings()
+  const { includeVat } = useSettings()
+  const isDesktop = useMediaQuery(DESKTOP_MEDIA_QUERY)
 
   const subtotal = getTotalPrice(includeVat)
-  const missingPriceCount = getMissingPriceCount()
-  const formatCurrency = (n: number) =>
-    new Intl.NumberFormat(undefined, {
-      style: "currency",
-      currency: "ISK",
-      maximumFractionDigits: 0,
-    }).format(n || 0)
 
-  const togglePinned = React.useCallback(() => {
-    setIsDrawerPinned(prev => !prev)
-  }, [setIsDrawerPinned])
+  const handleClose = React.useCallback(() => {
+    setIsDrawerOpen(false)
+  }, [setIsDrawerOpen])
 
-  const pinLabel = isDrawerPinned ? "Unpin cart sidebar" : "Pin cart sidebar"
-  const drawerRef = React.useRef<HTMLDivElement | null>(null)
+  const handleCheckout = React.useCallback(() => {
+    window.location.assign("/checkout")
+  }, [])
 
-  React.useEffect(() => {
-    if (typeof document === "undefined") return
-
-    const root = document.documentElement
-    if (!root) return
-
-    const clearOffset = () => {
-      root.style.removeProperty("--cart-drawer-width")
-      root.style.removeProperty("--cart-drawer-offset")
-      root.removeAttribute("data-cart-drawer")
+  const renderItemThumb = (image: string | null, name: string) => {
+    if (image) {
+      return <img src={image} alt={name} className="cart-item__thumb" />
     }
+    const fallback = name.trim().charAt(0).toUpperCase() || "•"
+    return (
+      <span aria-hidden className="cart-item__thumb cart-item__thumb--fallback">
+        {fallback}
+      </span>
+    )
+  }
 
-    const updateOffset = () => {
-      const drawerEl = drawerRef.current
+  const cartItems = (
+    <div className="cart-rail__body">
+      {items.length === 0 ? (
+        <p className="cart-rail__empty">Your cart is empty.</p>
+      ) : (
+        items.map(item => {
+          const name = (item.displayName || item.itemName || "Item").trim() || "Item"
+          const unitPrice = includeVat
+            ? item.unitPriceIncVat ?? item.packPrice ?? 0
+            : item.unitPriceExVat ?? item.packPrice ?? 0
+          const lineTotal = unitPrice * item.quantity
 
-      if (!drawerEl || !isDrawerOpen) {
-        clearOffset()
-        return
-      }
+          return (
+            <article className="cart-item" key={item.supplierItemId}>
+              {renderItemThumb(item.image, name)}
+              <div className="cart-item__info">
+                <div className="cart-item__title" title={name}>
+                  {name}
+                </div>
+                <div className="cart-item__price">{formatCurrency(lineTotal)}</div>
+                <div className="cart-item__actions">
+                  <QuantityStepper
+                    quantity={item.quantity}
+                    onChange={qty =>
+                      qty === 0
+                        ? removeItem(item.supplierItemId)
+                        : updateQuantity(item.supplierItemId, qty)
+                    }
+                    onRemove={() => removeItem(item.supplierItemId)}
+                    label={name}
+                    supplier={item.supplierName}
+                    className="cart-item__stepper"
+                  />
+                  <button
+                    type="button"
+                    className="cart-item__remove"
+                    aria-label={`Remove ${name}`}
+                    onClick={() => removeItem(item.supplierItemId)}
+                  >
+                    <Trash2 aria-hidden className="cart-item__remove-icon" />
+                  </button>
+                </div>
+              </div>
+            </article>
+          )
+        })
+      )}
+    </div>
+  )
 
-      const width = drawerEl.offsetWidth
-      if (!width) {
-        clearOffset()
-        return
-      }
-
-      const viewport = typeof window !== "undefined" ? window.innerWidth : 0
-      const gap = 16
-      const minContentWidth = 480
-      const offset = width + gap
-
-      if (viewport <= offset || viewport - offset < minContentWidth) {
-        clearOffset()
-        return
-      }
-
-      root.style.setProperty("--cart-drawer-width", `${width}px`)
-      root.style.setProperty("--cart-drawer-offset", `${offset}px`)
-      root.setAttribute("data-cart-drawer", isDrawerPinned ? "pinned" : "open")
-    }
-
-    updateOffset()
-
-    if (!isDrawerOpen) {
-      return () => {
-        clearOffset()
-      }
-    }
-
-    const handleResize = () => updateOffset()
-    window.addEventListener("resize", handleResize)
-
-    let resizeObserver: ResizeObserver | undefined
-    const drawerEl = drawerRef.current
-    if (typeof ResizeObserver !== "undefined" && drawerEl) {
-      resizeObserver = new ResizeObserver(() => updateOffset())
-      resizeObserver.observe(drawerEl)
-    }
-
-    return () => {
-      window.removeEventListener("resize", handleResize)
-      resizeObserver?.disconnect()
-      clearOffset()
-    }
-  }, [isDrawerOpen, isDrawerPinned])
+  const content = (
+    <>
+      <header className="cart-rail__header">
+        <span className="cart-rail__title">Cart</span>
+        <button
+          type="button"
+          className="cart-rail__close"
+          aria-label="Close cart"
+          onClick={handleClose}
+        >
+          <X aria-hidden className="cart-rail__close-icon" />
+        </button>
+      </header>
+      {cartItems}
+      <footer className="cart-rail__footer">
+        <div className="cart-rail__summary">
+          <span>Subtotal</span>
+          <span className="cart-rail__subtotal">{formatCurrency(subtotal)}</span>
+        </div>
+        <Button
+          type="button"
+          className="cart-rail__checkout"
+          onClick={handleCheckout}
+        >
+          Checkout
+        </Button>
+      </footer>
+    </>
+  )
 
   return (
-    <Sheet open={isDrawerOpen} onOpenChange={setIsDrawerOpen} modal={false}>
-      <SheetContent
-        side="right"
-        hideOverlay
-        data-pinned={isDrawerPinned ? "true" : undefined}
-        ref={drawerRef}
-        className={cn("w-full max-w-[320px]", isDrawerPinned && "shadow-none")}
-        onPointerDownOutside={event => event.preventDefault()}
-        onInteractOutside={event => event.preventDefault()}
-        aria-label="Shopping cart"
-        id="cart-drawer"
-      >
-        <div className="flex h-full flex-col">
-          <div className="sticky top-0 z-10 border-b border-[color:var(--surface-ring)] bg-[color:var(--surface-pop-2)]/95 backdrop-blur">
-            <div className="flex items-center justify-between gap-2 px-4 py-3">
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  aria-label={pinLabel}
-                  aria-pressed={isDrawerPinned}
-                  title={pinLabel}
-                  className={cn(
-                    "h-8 w-8 text-[color:var(--text-muted)] hover:text-[color:var(--text)]",
-                    isDrawerPinned && "text-[color:var(--brand-accent,#f59e0b)]"
-                  )}
-                  onClick={togglePinned}
-                >
-                  {isDrawerPinned ? <PinOff className="h-4 w-4" /> : <Pin className="h-4 w-4" />}
-                </Button>
-                <Button
-                  variant="secondary"
-                  size="icon"
-                  className="h-8 w-8"
-                  onClick={() => {
-                    setIsDrawerOpen(false)
-                    location.assign("/orders")
-                  }}
-                >
-                  <ShoppingCart className="h-4 w-4" aria-hidden="true" />
-                  <span className="sr-only">Go to cart</span>
-                </Button>
-              </div>
-              <SheetClose asChild>
-                <Button variant="ghost" size="icon" aria-label="Close cart" className="h-8 w-8">
-                  <X className="h-4 w-4" />
-                </Button>
-              </SheetClose>
-            </div>
-          </div>
+    <>
+      {isDesktop && (
+        <aside className="cart-rail cart-rail--desktop" aria-label="Cart" data-state="open">
+          {content}
+        </aside>
+      )}
 
-          <ScrollArea className="flex-1">
-            <div className="flex flex-col gap-3 px-4 py-3">
-              {items.length === 0 ? (
-                <div className="rounded-xl border border-dashed border-[color:var(--surface-ring)] px-3 py-6 text-center text-xs text-[color:var(--text-muted)]">
-                  Your cart is empty.
-                </div>
-              ) : null}
-
-              {items.map(it => (
-                <div
-                  key={it.supplierItemId}
-                  className="flex flex-col items-center gap-2 rounded-xl border border-[color:var(--surface-ring)] bg-[color:var(--surface-pop)]/60 px-1.5 py-3 text-center"
-                >
-                  <div className="flex w-full flex-col items-center gap-1">
-                    <div className="line-clamp-2 text-[13px] font-semibold leading-tight">
-                      {it.displayName || it.itemName}
-                    </div>
-                    {it.packSize ? (
-                      <div className="text-[10px] text-[color:var(--text-muted)]">{it.packSize}</div>
-                    ) : null}
-                    {it.supplierName ? (
-                      <div className="text-[10px] text-[color:var(--text-muted)]">{it.supplierName}</div>
-                    ) : null}
-
-                    <div className="mt-1 text-sm font-semibold">
-                      {formatCurrency(
-                        includeVat
-                          ? it.unitPriceIncVat ?? it.packPrice ?? 0
-                          : it.unitPriceExVat ?? it.packPrice ?? 0,
-                      )}
-                    </div>
-
-                    <QuantityStepper
-                      quantity={it.quantity}
-                      onChange={qty =>
-                        qty === 0
-                          ? removeItem(it.supplierItemId)
-                          : updateQuantity(it.supplierItemId, qty)
-                      }
-                      label={it.displayName || it.itemName}
-                      className="mx-auto min-w-[96px]"
-                    />
-
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      aria-label={`Remove ${it.displayName || "item"}`}
-                      className="mt-2 h-8 w-8 text-destructive hover:text-destructive"
-                      onClick={() => removeItem(it.supplierItemId)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </ScrollArea>
-
-          <div className="sticky bottom-0 z-10 border-t border-[color:var(--surface-ring)] bg-[color:var(--surface-pop-2)]/95 backdrop-blur">
-            <div className="flex flex-col gap-3 px-4 py-3">
-              <div className="flex items-center justify-between text-sm">
-                <span className="font-medium text-[color:var(--text-muted)]">Subtotal</span>
-                <span className="font-semibold text-[color:var(--text)]">{formatCurrency(subtotal)}</span>
-              </div>
-              {missingPriceCount > 0 ? (
-                <div className="flex items-center justify-between text-xs text-[color:var(--text-muted)]">
-                  <span>Items missing price</span>
-                  <Badge variant="outline" className="border-[color:var(--surface-ring)] text-[color:var(--text)]">
-                    {missingPriceCount}
-                  </Badge>
-                </div>
-              ) : null}
-              <div className="flex items-center justify-between gap-3 text-xs">
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant={!includeVat ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setIncludeVat(false)}
-                  >
-                    Ex VAT
-                  </Button>
-                  <Button
-                    variant={includeVat ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setIncludeVat(true)}
-                  >
-                    Inc VAT
-                  </Button>
-                </div>
-                <Button size="lg" className="min-w-[140px]" onClick={() => location.assign("/checkout")}>
-                  Checkout
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </SheetContent>
-    </Sheet>
+      {!isDesktop && (
+        <Sheet open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
+          <SheetContent
+            side="right"
+            className={cn("cart-rail cart-rail--mobile p-0")}
+            aria-label="Cart"
+          >
+            {content}
+          </SheetContent>
+        </Sheet>
+      )}
+    </>
   )
 }
 
