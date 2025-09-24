@@ -409,33 +409,21 @@ export const ProductCard = memo(function ProductCard({
           </div>
         </div>
       </div>
-      <CardContent className="flex flex-1 flex-col px-4 pb-1 pt-3">
-        <div className="flex flex-1 flex-col gap-1.5 pb-1">
           {detailLink ? (
             <a
               {...detailLink}
               title={product.name}
-              className="catalog-card__title line-clamp-3 font-semibold text-base leading-tight text-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:text-primary"
             >
               {product.name}
             </a>
           ) : (
             <div
               title={product.name}
-              className="catalog-card__title line-clamp-3 font-semibold text-base leading-tight text-foreground"
             >
               {product.name}
             </div>
           )}
           <div
-            className="catalog-card__meta text-sm text-muted-foreground leading-snug"
-            aria-hidden={!supportingLine}
-          >
-            {supportingLine || "\u00A0"}
-          </div>
-        </div>
-      </CardContent>
-      <CardFooter className="catalog-card__footer mt-auto flex min-h-[76px] flex-nowrap items-center gap-3 px-4 pb-4 pt-3">
         <div className="catalog-card__footer-meta flex min-w-0 flex-1 flex-nowrap items-center gap-2.5 overflow-hidden">
           <AvailabilityBadge
             status={availability}

@@ -23,13 +23,10 @@ export function ProductCardSkeleton({ className }: ProductCardSkeletonProps) {
           </div>
         </div>
       </div>
-      <CardContent className="flex flex-1 flex-col px-4 pb-1 pt-3">
-        <div className="flex flex-1 flex-col gap-1.5 pb-1">
           <Skeleton className="h-5 w-5/6" />
           <Skeleton className="h-4 w-1/2" />
         </div>
       </CardContent>
-      <CardFooter className="catalog-card__footer mt-auto flex min-h-[76px] flex-nowrap items-center gap-3 px-4 pb-4 pt-3">
         <div className="flex min-w-0 flex-1 flex-nowrap items-center gap-2.5 overflow-hidden">
           <Skeleton className="h-6 w-20 rounded-full" />
           <Skeleton className="h-6 w-24 rounded-full" />

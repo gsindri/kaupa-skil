@@ -14,7 +14,6 @@
 
   /* type scale (tweak if needed) */
   --fs-h1: 28px; --fs-h2: 22px; --fs-h3: 18px; --fs-body: 15px; --fs-meta: 13px;
-  --cart-drawer-offset: 0px;
 }
 
 /* Defaults */
@@ -85,17 +84,6 @@ body {
   max-width: none !important;
   margin: 0 !important;
   padding: 0 !important;
-}
-
-/* If no overlay is actively locking scroll, ensure no ghost gutter on body */
-:root:not([data-cart-drawer]) body:not([data-scroll-locked]) {
-  padding-right: 0 !important;
-  margin-right: 0 !important;
-}
-
-:root[data-cart-drawer] body {
-  padding-right: var(--cart-drawer-offset, 0px) !important;
-  margin-right: 0 !important;
 }
 
 main > *:first-child {
