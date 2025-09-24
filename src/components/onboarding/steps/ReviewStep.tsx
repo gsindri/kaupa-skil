@@ -3,6 +3,7 @@ import { Pencil, Building2, Users2, Languages, Coins } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   Select,
   SelectContent,
@@ -100,6 +101,8 @@ export function ReviewStep({
     ? BUSINESS_TYPE_OPTIONS.find(option => option.value === organization.businessType)
     : undefined
 
+  const organizationLogo = organization.logo ?? null
+
   return (
     <div className="space-y-6">
       {error && (
@@ -111,13 +114,33 @@ export function ReviewStep({
 
       <section className="space-y-4 rounded-[14px] border border-[color:var(--surface-ring)] bg-[color:var(--surface-pop-2)]/40 p-4">
         <header className="flex items-start justify-between gap-4">
-          <div>
-            <p className="flex items-center gap-2 text-[13px] uppercase tracking-wide text-[color:var(--text-muted)]">
-              <Building2 className="h-4 w-4 text-[color:var(--brand-accent)]" />
-              Organization
-            </p>
-            <h3 className="text-[17px] font-semibold text-[color:var(--text)]">{organization.name || 'Add your organization'}</h3>
-            <p className="text-[13px] text-[color:var(--text-muted)]">Used for orders and supplier communications.</p>
+          <div className="flex flex-1 items-start gap-3">
+            <Avatar className="mt-1 h-14 w-14 border border-[color:var(--surface-ring)] bg-[color:var(--surface-pop)]">
+              {organizationLogo?.dataUrl ? (
+                <AvatarImage
+                  src={organizationLogo.dataUrl}
+                  alt={`${organization.name || 'Organization'} logo`}
+                  className="h-full w-full object-contain p-1"
+                />
+              ) : (
+                <AvatarFallback className="bg-[color:var(--surface-pop-2)] text-[color:var(--text-muted)]">
+                  <Building2 className="h-5 w-5" />
+                </AvatarFallback>
+              )}
+            </Avatar>
+            <div className="flex-1">
+              <p className="flex items-center gap-2 text-[13px] uppercase tracking-wide text-[color:var(--text-muted)]">
+                <Building2 className="h-4 w-4 text-[color:var(--brand-accent)]" />
+                Organization
+              </p>
+              <h3 className="text-[17px] font-semibold text-[color:var(--text)]">
+                {organization.name || 'Add your organization'}
+              </h3>
+              <p className="text-[13px] text-[color:var(--text-muted)]">Used for orders and supplier communications.</p>
+              <p className="text-[12px] text-[color:var(--text-muted)]">
+                {organizationLogo ? organizationLogo.fileName : 'Add a logo to personalize your workspace.'}
+              </p>
+            </div>
           </div>
           <Button variant="ghost" size="sm" className="gap-2 text-[13px]" onClick={onEditOrganization}>
             <Pencil className="h-4 w-4" /> Edit

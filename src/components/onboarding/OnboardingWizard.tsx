@@ -63,6 +63,7 @@ const createEmptyAddress = (): AddressValues => ({
 const EMPTY_COMBINED_VALUES: CombinedFormValues = {
   name: '',
   businessType: undefined,
+  logo: null,
   deliveryAddress: createEmptyAddress(),
   vat: '',
   useSeparateInvoiceAddress: false,
@@ -299,7 +300,8 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
       Boolean(combinedValues.phone) ||
       Boolean(combinedValues.deliveryAddress.line1) ||
       Boolean(combinedValues.vat) ||
-      Boolean(combinedValues.email)
+      Boolean(combinedValues.email) ||
+      Boolean(combinedValues.logo?.dataUrl)
     )
   }, [combinedValues])
 

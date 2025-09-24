@@ -350,13 +350,15 @@ export function TopNavigation() {
                       {displayEmail}
                     </div>
                   ) : null}
-                  <div className="flex items-center gap-2 text-[12px] text-[color:var(--text-muted)]">
-                    <span className="inline-flex items-center rounded-full bg-white/10 px-2 py-[2px] text-[10px] font-semibold uppercase tracking-[0.08em] text-white/80">
-                      {workspacePillLabel}
-                    </span>
-                    <span className="truncate">
-                      {membershipsLoading ? 'Loading workspace…' : workspaceLabel}
-                    </span>
+                  <div className="min-w-0 text-[12px] text-[color:var(--text-muted)]">
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                      <span className="inline-flex shrink-0 items-center rounded-full bg-white/10 px-2 py-[2px] text-[10px] font-semibold uppercase tracking-[0.08em] text-white/80">
+                        {workspacePillLabel}
+                      </span>
+                      <span className="flex-1 min-w-0 whitespace-normal text-left leading-tight">
+                        {membershipsLoading ? 'Loading workspace…' : workspaceLabel}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -365,14 +367,14 @@ export function TopNavigation() {
             <div className="tw-label normal-case opacity-60">Profile</div>
             <div className="flex flex-col gap-1 px-1">
               <DropdownMenuItem asChild onSelect={() => setUserMenuOpen(false)}>
-                <button type="button" className="tw-row tw-row-loose text-left">
+                <button type="button" className="tw-row tw-row-loose w-full text-left">
                   <CircleUserRound className="size-4 text-[color:var(--text-muted)]" />
                   <span className="truncate">Profile settings</span>
                   <span />
                 </button>
               </DropdownMenuItem>
               <DropdownMenuItem asChild onSelect={() => setUserMenuOpen(false)}>
-                <button type="button" className="tw-row tw-row-loose text-left">
+                <button type="button" className="tw-row tw-row-loose w-full text-left">
                   <Building2 className="size-4 text-[color:var(--text-muted)]" />
                   <span className="truncate">Organization settings</span>
                   <ChevronRight className="size-4 text-[color:var(--text-muted)]" aria-hidden />
@@ -397,7 +399,7 @@ export function TopNavigation() {
                       type="button"
                       role="menuitemradio"
                       aria-checked={language === option.value}
-                      className="tw-row tw-row-loose text-left"
+                      className="tw-row tw-row-loose w-full text-left"
                     >
                       <span className="flex size-8 items-center justify-center rounded-full border border-[color:var(--surface-ring)] text-[13px] font-semibold text-[color:var(--text-muted)]" aria-hidden="true">
                         {option.code}
@@ -421,7 +423,7 @@ export function TopNavigation() {
             <div className="tw-label normal-case opacity-60">Help</div>
             <div className="flex flex-col gap-1 px-1">
               <DropdownMenuItem asChild onSelect={() => setUserMenuOpen(false)}>
-                <button type="button" className="tw-row tw-row-loose text-left">
+                <button type="button" className="tw-row tw-row-loose w-full text-left">
                   <Keyboard className="size-4 text-[color:var(--text-muted)]" />
                   <span className="truncate">Keyboard shortcuts</span>
                   <span className="tw-kbd">?</span>
@@ -432,7 +434,7 @@ export function TopNavigation() {
                   href="https://help.heilda.app"
                   target="_blank"
                   rel="noreferrer"
-                  className="tw-row tw-row-loose text-left"
+                  className="tw-row tw-row-loose w-full text-left"
                   onClick={() => setUserMenuOpen(false)}
                 >
                   <LifeBuoy className="size-4 text-[color:var(--text-muted)]" />
@@ -443,7 +445,7 @@ export function TopNavigation() {
               <DropdownMenuItem asChild onSelect={() => setUserMenuOpen(false)}>
                 <a
                   href="mailto:support@heilda.app"
-                  className="tw-row tw-row-loose text-left"
+                  className="tw-row tw-row-loose w-full text-left"
                   onClick={() => setUserMenuOpen(false)}
                 >
                   <Mail className="size-4 text-[color:var(--text-muted)]" />
@@ -456,7 +458,7 @@ export function TopNavigation() {
                   href="https://docs.heilda.app"
                   target="_blank"
                   rel="noreferrer"
-                  className="tw-row tw-row-loose text-left"
+                  className="tw-row tw-row-loose w-full text-left"
                   onClick={() => setUserMenuOpen(false)}
                 >
                   <BookOpen className="size-4 text-[color:var(--text-muted)]" />
@@ -477,7 +479,7 @@ export function TopNavigation() {
             >
               <button
                 type="button"
-                className="tw-row tw-row-loose text-left text-[color:var(--text)]"
+                className="tw-row tw-row-loose w-full text-left text-[color:var(--text)]"
               >
                 <LogOut className="size-4 text-[color:var(--text-muted)]" aria-hidden />
                 <span className="truncate">Sign out</span>

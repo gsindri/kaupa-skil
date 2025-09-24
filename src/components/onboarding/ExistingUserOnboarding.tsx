@@ -229,7 +229,7 @@ export function ExistingUserOnboarding() {
       <div className="mx-auto w-full max-w-xl px-4">
         <header className="mb-10 space-y-6 text-center">
           <div className="flex justify-center">
-            <HeildaLogo className="h-8 w-auto" />
+            <HeildaLogo className="h-12 w-auto" />
           </div>
           <div className="space-y-2">
             <div className="flex items-center justify-center gap-2 text-[color:var(--text)]">
@@ -256,7 +256,7 @@ export function ExistingUserOnboarding() {
                 </Label>
                 <h2 className="text-[22px] font-semibold text-[color:var(--text)]">Join by code</h2>
                 <p className="text-[14px] text-[color:var(--text-muted)]">
-                  Paste the code your admin shared to unlock the workspace instantly.
+                  Paste the code to join instantly.
                 </p>
               </section>
               <form className="space-y-4" onSubmit={handleJoinWithCode}>
@@ -277,7 +277,7 @@ export function ExistingUserOnboarding() {
                   <Button
                     type="submit"
                     disabled={isJoiningByCode || !joinCode.trim()}
-                    className="h-12 rounded-[12px] px-6 sm:w-auto"
+                    className="h-12 rounded-[12px] bg-[var(--brand-accent)] px-6 text-[color:var(--brand-accent-fg)] hover:bg-[var(--brand-accent)]/90 sm:w-auto"
                   >
                     {isJoiningByCode ? 'Joining…' : 'Join workspace'}
                   </Button>
@@ -331,7 +331,7 @@ export function ExistingUserOnboarding() {
             className="inline-flex items-center gap-2 text-[15px] text-[color:var(--text-muted)] hover:text-[color:var(--text)]"
           >
             <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-            <span>Back to setup</span>
+            <span>Back</span>
           </Button>
         </div>
       </div>
