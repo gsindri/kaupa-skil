@@ -44,7 +44,7 @@ export function CartDrawer() {
         side="right"
         hideOverlay
         data-pinned={isDrawerPinned ? "true" : undefined}
-        className={cn(isDrawerPinned && "shadow-none")}
+        className={cn("w-full max-w-[360px]", isDrawerPinned && "shadow-none")}
         onPointerDownOutside={event => event.preventDefault()}
         onInteractOutside={event => event.preventDefault()}
         aria-label="Shopping cart"
