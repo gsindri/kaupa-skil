@@ -42,17 +42,17 @@ export function CartDrawer() {
     <Sheet open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
       <SheetContent
         side="right"
-        hideOverlay={isDrawerPinned}
+        hideOverlay
         data-pinned={isDrawerPinned ? "true" : undefined}
         className={cn(
-          "w-[360px] md:w-[420px] max-w-[100vw] flex flex-col p-0 text-[color:var(--text)] [&>button:last-child]:hidden",
+          "w-[260px] md:w-[320px] max-w-[100vw] flex flex-col p-0 text-[color:var(--text)] [&>button:last-child]:hidden",
           isDrawerPinned && "shadow-none"
         )}
         aria-label="Shopping cart"
         id="cart-drawer"
       >
         <div className="sticky top-0 z-10 border-b border-[color:var(--surface-ring)] bg-[color:var(--surface-pop-2)]/95 backdrop-blur">
-          <div className="flex items-center justify-between px-5 py-4">
+          <div className="flex items-center justify-between px-4 py-3">
             <div className="text-sm leading-tight text-[color:var(--text-muted)]">
               <span aria-live="polite" className="sr-only">
                 Cart subtotal {formatCurrency(subtotal)}
@@ -60,7 +60,7 @@ export function CartDrawer() {
               <div className="text-[12px] uppercase tracking-[0.08em]">Subtotal</div>
               <div className="text-base font-semibold text-[color:var(--text)]">{formatCurrency(subtotal)}</div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
               {missingPriceCount > 0 && (
                 <Badge variant="destructive" className="text-xs">
                   Some prices unavailable
@@ -100,7 +100,7 @@ export function CartDrawer() {
         </div>
 
         <ScrollArea className="flex-1">
-          <div className="space-y-3 px-4 py-4">
+          <div className="space-y-3 px-3 py-4">
             {items.length === 0 && (
               <div className="p-6 text-center text-sm text-[color:var(--text-muted)]">
                 Your cart is empty.
@@ -113,7 +113,7 @@ export function CartDrawer() {
                 className="rounded-xl border border-[color:var(--surface-ring)] bg-[color:var(--surface-pop)]/60 p-3"
               >
                 <div className="flex gap-3">
-                  <div className="h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-[color:var(--surface-pop-2)]/40">
+                  <div className="h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-[color:var(--surface-pop-2)]/40">
                     {it.image ? (
                       <img src={it.image} alt="" className="h-full w-full object-contain" />
                     ) : null}
@@ -165,7 +165,7 @@ export function CartDrawer() {
         </ScrollArea>
 
         <div className="sticky bottom-0 z-10 border-t border-[color:var(--surface-ring)] bg-[color:var(--surface-pop-2)]/95 backdrop-blur">
-          <div className="flex items-center justify-between px-5 py-4">
+          <div className="flex items-center justify-between px-4 py-3">
             <div className="flex items-center gap-2 text-xs">
               <Button
                 variant={!includeVat ? "default" : "outline"}
