@@ -89,43 +89,7 @@ describe('BasketProvider', () => {
     expect(result.current.items[0].supplierItemId).toBe('1')
   })
 
-  it('auto opens the cart drawer on the first add in a session', () => {
-    const wrapper = ({ children }: { children: React.ReactNode }) => (
-      <BasketProvider>{children}</BasketProvider>
-    )
-
-    const { result } = renderHook(() => useCart(), { wrapper })
-
-    act(() => {
-      result.current.addItem(
-        {
-          id: 'item-1',
-          supplierId: 'supplier',
-          supplierName: 'Supplier',
-          itemName: 'Item',
-          sku: 'sku',
-          packSize: '1kg',
-          packPrice: 100,
-          unitPriceExVat: 100,
-          unitPriceIncVat: 120,
-          quantity: 1,
-          vatRate: 0.24,
-          unit: 'each',
-          supplierItemId: 'item-1',
-          displayName: 'Item',
-          packQty: 1,
-          image: null
-        },
-        1,
-        { showToast: false }
-      )
-    })
-
-    expect(result.current.isDrawerOpen).toBe(true)
-    expect(sessionStorage.getItem('procurewise-cart-auto-opened')).toBe('1')
-  })
-
-  it('emits a pulse signal on subsequent adds when the drawer stays closed', () => {
+  it('opens the cart drawer whenever an item is added', () => {
     const wrapper = ({ children }: { children: React.ReactNode }) => (
       <BasketProvider>{children}</BasketProvider>
     )
@@ -152,21 +116,25 @@ describe('BasketProvider', () => {
     }
 
     act(() => {
-      result.current.addItem(item, 1, { showToast: false })
+      result.current.addItem(
+        item,
+        1,
+        { showToast: false }
+      )
     })
 
+    expect(result.current.isDrawerOpen).toBe(true)
     act(() => {
       result.current.setIsDrawerOpen(false)
     })
 
-    const initialSignal = result.current.cartPulseSignal
+    expect(result.current.isDrawerOpen).toBe(false)
 
     act(() => {
       result.current.addItem(item, 1, { showToast: false })
     })
 
-    expect(result.current.isDrawerOpen).toBe(false)
-    expect(result.current.cartPulseSignal).toBeGreaterThan(initialSignal)
+    expect(result.current.isDrawerOpen).toBe(true)
   })
 
   it('allows pinning the drawer open until manually unpinned', () => {
