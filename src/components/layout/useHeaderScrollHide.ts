@@ -40,11 +40,75 @@ export function useHeaderScrollHide(
       typeof window.matchMedia === 'function' &&
       window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
-    const setP = (p: number) => {
+    const currentP = { current: 0 }
+    let snapFrame: number | null = null
+    let snapTarget: number | null = null
+
+    const commit = (p: number) => {
       const v = p < 0.02 ? 0 : p > 0.98 ? 1 : p
       const val = v.toFixed(3)
+      currentP.current = Number(val)
       el.style.setProperty('--hdr-p', val)
       document.documentElement.style.setProperty('--hdr-p', val)
+    }
+
+    const stopSnap = () => {
+      if (snapFrame !== null) {
+        cancelAnimationFrame(snapFrame)
+        snapFrame = null
+      }
+      snapTarget = null
+    }
+
+    const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3)
+    const HIDE_SNAP_MS = 220
+    const SHOW_SNAP_MS = 260
+
+    const animateTo = (target: number, duration: number) => {
+      if (reduceMotion) {
+        stopSnap()
+        commit(target)
+        return
+      }
+
+      const clamped = Math.max(0, Math.min(1, target))
+      const start = currentP.current
+      if (Math.abs(clamped - start) <= 0.001) {
+        stopSnap()
+        commit(clamped)
+        return
+      }
+
+      stopSnap()
+      const startTime = performance.now()
+      snapTarget = clamped
+
+      const tick = (now: number) => {
+        const elapsed = now - startTime
+        const t = Math.min(1, elapsed / duration)
+        const value = start + (clamped - start) * easeOutCubic(t)
+        commit(value)
+        if (t < 1) {
+          snapFrame = requestAnimationFrame(tick)
+        } else {
+          snapFrame = null
+          snapTarget = null
+        }
+      }
+
+      snapFrame = requestAnimationFrame(tick)
+    }
+
+    const setP = (p: number, options?: { animated?: boolean; duration?: number }) => {
+      if (options?.animated) {
+        animateTo(p, options.duration ?? (p > currentP.current ? HIDE_SNAP_MS : SHOW_SNAP_MS))
+        return
+      }
+      if (snapTarget !== null && Math.abs(snapTarget - p) <= 0.001) {
+        return
+      }
+      stopSnap()
+      commit(p)
     }
 
     let H = Math.round(el.getBoundingClientRect().height)
@@ -143,7 +207,7 @@ export function useHeaderScrollHide(
           ) {
             // keep visible
           } else {
-            setP(1)
+            setP(1, { animated: true, duration: HIDE_SNAP_MS })
             lock = 'hidden'
             acc = 0
             lastSnapDir = 1
@@ -159,7 +223,7 @@ export function useHeaderScrollHide(
           ) {
             // keep hidden
           } else {
-            setP(0)
+            setP(0, { animated: true, duration: SHOW_SNAP_MS })
             lock = 'visible'
             acc = 0
             lastSnapDir = -1
@@ -179,7 +243,7 @@ export function useHeaderScrollHide(
         const now = performance.now()
         if (e.deltaY > 0) {
           if (!(lastSnapDir === -1 && now - lastSnapTime < SNAP_COOLDOWN_MS)) {
-            setP(1)
+            setP(1, { animated: true, duration: HIDE_SNAP_MS })
             lock = 'hidden'
             lastSnapDir = 1
             lastSnapTime = now
@@ -187,7 +251,7 @@ export function useHeaderScrollHide(
           }
         } else if (e.deltaY < 0) {
           if (!(lastSnapDir === 1 && now - lastSnapTime < SNAP_COOLDOWN_MS)) {
-            setP(0)
+            setP(0, { animated: true, duration: SHOW_SNAP_MS })
             lock = 'visible'
             lastSnapDir = -1
             lastSnapTime = now
@@ -202,6 +266,7 @@ export function useHeaderScrollHide(
     listener()
 
     return () => {
+      stopSnap()
       document.documentElement.style.setProperty('--hdr-p', '0')
       window.removeEventListener('scroll', listener)
       window.removeEventListener('wheel', wheel)
