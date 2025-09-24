@@ -355,8 +355,6 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
 
   const stepTitle = currentStepDefinition?.title ?? ''
   const stepDescription = currentStepDefinition?.description ?? ''
-  const progress = TOTAL_STEPS <= 1 ? 100 : ((currentStep - 1) / (TOTAL_STEPS - 1)) * 100
-
   // Step update handlers
   const handleBasicsUpdate = useCallback((values: OrganizationBasicsFormValues) => {
     setCombinedValues(prev => ({ ...prev, ...values }))
@@ -529,7 +527,7 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
     'w-full justify-start text-[color:var(--text-muted)] hover:bg-transparent hover:text-[color:var(--text)] sm:w-auto'
 
   const exitLinkClass =
-    'px-0 text-[12px] font-normal text-[color:var(--text-muted)] underline-offset-4 transition-colors hover:text-[color:var(--text)] hover:underline focus-visible:outline-none focus-visible:ring-0 disabled:pointer-events-none disabled:opacity-50'
+    'px-0 text-xs font-normal text-[color:var(--text-muted)] opacity-80 underline-offset-4 transition-colors hover:text-[color:var(--text)] hover:opacity-100 hover:underline focus-visible:outline-none focus-visible:ring-0 disabled:pointer-events-none disabled:opacity-50'
 
   const exitDialogCopy =
     exitDialogContext === 'blocked'
@@ -681,11 +679,19 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
                 <span className="text-lg font-semibold">{currentStep}</span>
               </div>
             </div>
-            <div className="mb-2 h-2 w-full overflow-hidden rounded-full bg-[color:var(--surface-muted)]">
-              <div
-                className="h-full bg-[color:var(--brand-accent)] transition-all duration-300"
-                style={{ width: `${progress}%` }}
-              />
+            <div className="mb-3 flex w-full items-center gap-1.5">
+              {steps.map(step => (
+                <span
+                  key={step.id}
+                  aria-hidden="true"
+                  className="h-2.5 flex-1 rounded-full transition-all duration-300"
+                  style={{
+                    backgroundColor:
+                      step.id <= currentStep ? 'var(--brand-accent)' : 'var(--surface-muted)',
+                    opacity: step.id < currentStep ? 1 : step.id === currentStep ? 0.85 : 0.45
+                  }}
+                />
+              ))}
             </div>
             <p className="text-sm text-[color:var(--text-muted)]">
               Step {currentStep} of {TOTAL_STEPS}
