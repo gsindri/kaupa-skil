@@ -388,7 +388,7 @@ export const ProductCard = memo(function ProductCard({
         className,
       )}
     >
-      <CardContent className="catalog-card__content flex flex-1 flex-col gap-3 px-4 pb-4 pt-3">
+      <CardContent className="catalog-card__content flex flex-1 flex-col gap-3 px-4 pb-5 pt-3">
         <div className="catalog-card__media relative">
           <div className="catalog-card__surface aspect-[4/3] w-full bg-muted/30 rounded-xl overflow-hidden">
             <div className="catalog-card__badge-layer" data-badge-slot>
@@ -410,7 +410,7 @@ export const ProductCard = memo(function ProductCard({
             </div>
           </div>
         </div>
-        <div className="catalog-card__details flex flex-col gap-1">
+        <div className="catalog-card__details flex min-h-[4.25rem] flex-col gap-1">
           {detailLink ? (
             <a
               {...detailLink}
@@ -437,7 +437,7 @@ export const ProductCard = memo(function ProductCard({
           ) : null}
         </div>
       </CardContent>
-      <CardFooter className="catalog-card__footer flex w-full items-center gap-3 px-4 pb-4 pt-0">
+      <CardFooter className="catalog-card__footer mt-auto flex w-full flex-wrap items-start gap-x-3 gap-y-4 px-4 pb-5 pt-0">
         <div className="catalog-card__footer-meta flex min-w-0 flex-1 flex-nowrap items-center gap-2.5 overflow-hidden">
           <AvailabilityBadge
             status={availability}
