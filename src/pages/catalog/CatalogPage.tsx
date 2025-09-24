@@ -165,7 +165,7 @@ export default function CatalogPage() {
     const param = searchParams.get('view')
     if (param === 'grid' || param === 'list') return param
     try {
-      const stored = localStorage.getItem('catalog-view')
+      const stored = localStorage.getItem('catalog:view')
       if (stored === 'grid' || stored === 'list') return stored
     } catch {
       /* ignore */
@@ -224,7 +224,7 @@ export default function CatalogPage() {
 
   useEffect(() => {
     try {
-      localStorage.setItem('catalog-view', view)
+      localStorage.setItem('catalog:view', view)
     } catch {
       /* ignore */
     }
