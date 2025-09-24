@@ -4,7 +4,7 @@ import { ProductCard } from './ProductCard'
 
 interface CatalogGridProps {
   products: any[]
-  onAddToCart: (p: any) => void
+  onAddToCart: (p: any, supplierId?: string) => void
   onNearEnd?: () => void
   showPrice?: boolean
 }
@@ -20,7 +20,7 @@ export function CatalogGrid({
       <ProductCard 
         key={p.catalog_id} 
         product={p} 
-        onAdd={() => onAddToCart(p)} 
+        onAdd={supplierId => onAddToCart(p, supplierId)}
         showPrice={showPrice} 
       />
     ),
