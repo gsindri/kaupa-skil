@@ -20,6 +20,7 @@ import { useCart } from '@/contexts/useBasket'
 import { QuantityStepper } from '@/components/cart/QuantityStepper'
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover'
 import { useVendors } from '@/hooks/useVendors'
+import type { Vendor } from '@/hooks/useVendors'
 import AvailabilityBadge from '@/components/catalog/AvailabilityBadge'
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
 import { timeAgo } from '@/lib/timeAgo'
@@ -35,6 +36,368 @@ import { toast } from '@/hooks/use-toast'
 import { cn } from '@/lib/utils'
 import { useSupplierConnections } from '@/hooks/useSupplierConnections'
 import { useSuppliers } from '@/hooks/useSuppliers'
+
+type AvailabilityState = 'IN_STOCK' | 'LOW_STOCK' | 'OUT_OF_STOCK' | 'UNKNOWN' | null | undefined
+
+interface SupplierLocationMeta {
+  city: string | null
+  country: string | null
+}
+
+interface SupplierMetadataMaps {
+  nameById: Map<string, string>
+  logoById: Map<string, string>
+  locationById: Map<string, SupplierLocationMeta>
+  connectedById: Map<string, boolean>
+  availabilityById: Map<string, AvailabilityState>
+  fallbackNames: string[]
+}
+
+interface SupplierLookupRecord {
+  id: string
+  name: string | null
+  logo_url?: string | null
+}
+
+interface SupplierChipInfo {
+  supplier_id: string
+  supplier_name: string
+  supplier_logo_url: string | null
+  is_connected: boolean
+  availability_state?: AvailabilityState
+  location_city?: string | null
+  location_country_code?: string | null
+}
+
+const normalizeString = (value: unknown): string | null => {
+  if (typeof value !== 'string') return null
+  const trimmed = value.trim()
+  return trimmed.length ? trimmed : null
+}
+
+const normalizeAvailability = (value: unknown): AvailabilityState => {
+  const normalized = normalizeString(value)
+  if (!normalized) return null
+  if (
+    normalized === 'IN_STOCK' ||
+    normalized === 'LOW_STOCK' ||
+    normalized === 'OUT_OF_STOCK' ||
+    normalized === 'UNKNOWN'
+  ) {
+    return normalized
+  }
+  return null
+}
+
+const gatherSupplierMetadata = (product: any): SupplierMetadataMaps => {
+  const nameById = new Map<string, string>()
+  const logoById = new Map<string, string>()
+  const locationById = new Map<string, SupplierLocationMeta>()
+  const connectedById = new Map<string, boolean>()
+  const availabilityById = new Map<string, AvailabilityState>()
+  const fallbackNames: string[] = []
+  const seenNames = new Set<string>()
+
+  const sources = [
+    Array.isArray(product?.supplier_products) ? product.supplier_products : [],
+    Array.isArray(product?.suppliers) ? product.suppliers : [],
+  ]
+
+  for (const entries of sources) {
+    for (const rawEntry of entries) {
+      if (!rawEntry) continue
+
+      if (typeof rawEntry === 'string') {
+        const normalized = normalizeString(rawEntry)
+        if (!normalized) continue
+        if (!nameById.has(normalized)) {
+          nameById.set(normalized, normalized)
+        }
+        if (!seenNames.has(normalized)) {
+          seenNames.add(normalized)
+          fallbackNames.push(normalized)
+        }
+        continue
+      }
+
+      const entry: any = rawEntry
+
+      const id =
+        normalizeString(entry.supplier_id) ??
+        normalizeString(entry.supplierId) ??
+        normalizeString(entry.id) ??
+        normalizeString(entry.supplier?.id)
+
+      const name =
+        normalizeString(entry.supplier_name) ??
+        normalizeString(entry.name) ??
+        normalizeString(entry.displayName) ??
+        normalizeString(entry.supplier?.name)
+
+      const logo =
+        normalizeString(entry.logo_url) ??
+        normalizeString(entry.logoUrl) ??
+        normalizeString(entry.supplier?.logo_url)
+
+      const city =
+        normalizeString(entry.location_city) ??
+        normalizeString(entry.location?.city) ??
+        normalizeString(entry.supplier?.location_city) ??
+        normalizeString(entry.supplier?.location?.city)
+
+      const country =
+        normalizeString(entry.location_country_code) ??
+        normalizeString(entry.location?.country_code) ??
+        normalizeString(entry.location?.country) ??
+        normalizeString(entry.supplier?.location_country_code) ??
+        normalizeString(entry.supplier?.location?.country_code) ??
+        normalizeString(entry.supplier?.location?.country)
+
+      const availability =
+        normalizeAvailability(entry.availability?.status) ??
+        normalizeAvailability(entry.availability_status) ??
+        normalizeAvailability(entry.status)
+
+      const connectedValue =
+        typeof entry.connected === 'boolean'
+          ? entry.connected
+          : typeof entry.is_connected === 'boolean'
+            ? entry.is_connected
+            : typeof entry.supplier?.connected === 'boolean'
+              ? entry.supplier.connected
+              : null
+
+      if (id) {
+        if (name && !nameById.has(id)) {
+          nameById.set(id, name)
+        }
+        if (logo && !logoById.has(id)) {
+          logoById.set(id, logo)
+        }
+        if ((city || country) && !locationById.has(id)) {
+          locationById.set(id, {
+            city: city ?? null,
+            country: country ?? null,
+          })
+        }
+        if (availability && !availabilityById.has(id)) {
+          availabilityById.set(id, availability)
+        }
+        if (connectedValue != null && !connectedById.has(id)) {
+          connectedById.set(id, connectedValue)
+        }
+      }
+
+      if (name && !seenNames.has(name)) {
+        seenNames.add(name)
+        fallbackNames.push(name)
+      }
+    }
+  }
+
+  return {
+    nameById,
+    logoById,
+    locationById,
+    connectedById,
+    availabilityById,
+    fallbackNames,
+  }
+}
+
+const buildSupplierChipData = (
+  product: any,
+  allSuppliers: SupplierLookupRecord[] | undefined,
+  vendors: Vendor[],
+  connectedSupplierIds: Set<string>,
+): SupplierChipInfo[] => {
+  const metadata = gatherSupplierMetadata(product)
+
+  const supplierRecords = new Map(
+    (allSuppliers ?? []).map(supplier => [supplier.id, supplier]),
+  )
+  const vendorById = new Map(vendors.map(vendor => [vendor.id, vendor]))
+  const vendorByName = new Map(vendors.map(vendor => [vendor.name, vendor]))
+
+  const rawSupplierIds = Array.isArray(product?.supplier_ids)
+    ? product.supplier_ids
+    : []
+  const rawSupplierNames = Array.isArray(product?.supplier_names)
+    ? product.supplier_names
+    : []
+  const rawSupplierLogos = Array.isArray(product?.supplier_logo_urls)
+    ? product.supplier_logo_urls
+    : []
+
+  const suppliers: SupplierChipInfo[] = []
+  const usedIds = new Set<string>()
+  const fallbackQueue = metadata.fallbackNames.slice()
+  const removeFromQueue = (value: string | null | undefined) => {
+    if (!value) return
+    const index = fallbackQueue.indexOf(value)
+    if (index !== -1) {
+      fallbackQueue.splice(index, 1)
+    }
+  }
+
+  for (let idx = 0; idx < rawSupplierIds.length; idx += 1) {
+    const normalizedId = normalizeString(rawSupplierIds[idx])
+    if (!normalizedId) continue
+
+    const directName = normalizeString(rawSupplierNames[idx])
+    const directLogo = normalizeString(rawSupplierLogos[idx])
+
+    let supplierName = directName && directName !== normalizedId ? directName : null
+    let supplierLogo = directLogo ?? null
+
+    const entryName = metadata.nameById.get(normalizedId) ?? null
+    const entryLogo = metadata.logoById.get(normalizedId) ?? null
+    const entryLocation = metadata.locationById.get(normalizedId)
+    const entryConnected = metadata.connectedById.get(normalizedId)
+    const entryAvailability = metadata.availabilityById.get(normalizedId)
+
+    if (!supplierName && entryName) {
+      supplierName = entryName
+    }
+
+    if (!supplierLogo && entryLogo) {
+      supplierLogo = entryLogo
+    }
+
+    const supplierRecord = supplierRecords.get(normalizedId)
+    if ((!supplierName || supplierName === normalizedId) && supplierRecord?.name) {
+      supplierName = supplierRecord.name ?? supplierName
+    }
+    if (!supplierLogo && supplierRecord?.logo_url) {
+      const normalizedLogo = normalizeString(supplierRecord.logo_url)
+      if (normalizedLogo) supplierLogo = normalizedLogo
+    }
+
+    let vendorMatch: Vendor | undefined
+    if (!supplierLogo) {
+      vendorMatch =
+        vendorById.get(normalizedId) ??
+        (supplierName ? vendorByName.get(supplierName) : undefined) ??
+        (entryName ? vendorByName.get(entryName) : undefined)
+      const vendorLogo =
+        normalizeString(vendorMatch?.logo_url) ??
+        normalizeString(vendorMatch?.logoUrl)
+      if (vendorLogo) {
+        supplierLogo = vendorLogo
+      }
+    }
+
+    if ((!supplierName || supplierName === normalizedId) && vendorMatch?.name) {
+      supplierName = vendorMatch.name
+    }
+
+    if (!supplierName || supplierName === normalizedId) {
+      while (fallbackQueue.length) {
+        const candidate = fallbackQueue.shift()
+        if (!candidate) continue
+        supplierName = candidate
+        break
+      }
+    }
+
+    if (!supplierName || supplierName === normalizedId) {
+      supplierName =
+        entryName ??
+        supplierRecord?.name ??
+        vendorMatch?.name ??
+        normalizedId
+    }
+
+    removeFromQueue(supplierName)
+
+    suppliers.push({
+      supplier_id: normalizedId,
+      supplier_name: supplierName,
+      supplier_logo_url: supplierLogo ?? null,
+      is_connected: entryConnected ?? connectedSupplierIds.has(normalizedId),
+      availability_state: entryAvailability ?? (product.availability_status as AvailabilityState),
+      location_city: entryLocation?.city ?? null,
+      location_country_code: entryLocation?.country ?? null,
+    })
+    usedIds.add(normalizedId)
+  }
+
+  for (const [id, name] of metadata.nameById) {
+    if (!id || usedIds.has(id)) continue
+
+    let supplierName = name
+    let supplierLogo = metadata.logoById.get(id) ?? null
+    const entryLocation = metadata.locationById.get(id)
+    const entryConnected = metadata.connectedById.get(id)
+    const entryAvailability = metadata.availabilityById.get(id)
+
+    const supplierRecord = supplierRecords.get(id)
+    if ((!supplierName || supplierName === id) && supplierRecord?.name) {
+      supplierName = supplierRecord.name ?? supplierName
+    }
+    if (!supplierLogo && supplierRecord?.logo_url) {
+      const normalizedLogo = normalizeString(supplierRecord.logo_url)
+      if (normalizedLogo) supplierLogo = normalizedLogo
+    }
+
+    const vendorMatch =
+      vendorById.get(id) ??
+      (supplierName ? vendorByName.get(supplierName) : undefined)
+    if (!supplierLogo && vendorMatch) {
+      supplierLogo =
+        normalizeString(vendorMatch.logo_url) ??
+        normalizeString(vendorMatch.logoUrl) ??
+        null
+    }
+    if ((!supplierName || supplierName === id) && vendorMatch?.name) {
+      supplierName = vendorMatch.name
+    }
+
+    if (!supplierName) {
+      while (fallbackQueue.length) {
+        const candidate = fallbackQueue.shift()
+        if (!candidate) continue
+        supplierName = candidate
+        break
+      }
+    }
+
+    if (!supplierName) {
+      supplierName = id
+    }
+
+    removeFromQueue(supplierName)
+
+    suppliers.push({
+      supplier_id: id,
+      supplier_name: supplierName,
+      supplier_logo_url: supplierLogo ?? null,
+      is_connected: entryConnected ?? connectedSupplierIds.has(id),
+      availability_state: entryAvailability ?? (product.availability_status as AvailabilityState),
+      location_city: entryLocation?.city ?? null,
+      location_country_code: entryLocation?.country ?? null,
+    })
+    usedIds.add(id)
+  }
+
+  if (!suppliers.length) {
+    fallbackQueue.forEach((name, index) => {
+      if (!name) return
+      removeFromQueue(name)
+      suppliers.push({
+        supplier_id: `fallback-${index}-${name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`,
+        supplier_name: name,
+        supplier_logo_url: null,
+        is_connected: false,
+        availability_state: product.availability_status as AvailabilityState,
+        location_city: null,
+        location_country_code: null,
+      })
+    })
+  }
+
+  return suppliers
+}
 
 interface CatalogTableProps {
   products: any[]
@@ -262,9 +625,18 @@ export function CatalogTable({
                 </TableCell>
                 <TableCell className="w-[220px] min-w-[180px] max-w-[220px] px-3 py-3">
                   {(() => {
-                    // Map supplier IDs to SupplierChips format
-                    const supplierIds = p.supplier_ids ?? []
-                    if (supplierIds.length === 0) {
+                    const connectedSupplierIds = new Set(
+                      connectedSuppliers?.map(cs => cs.supplier_id) ?? []
+                    )
+
+                    const suppliers = buildSupplierChipData(
+                      p,
+                      allSuppliers ?? [],
+                      vendors,
+                      connectedSupplierIds,
+                    )
+
+                    if (!suppliers.length) {
                       return (
                         <Tooltip>
                           <TooltipTrigger asChild>
@@ -274,41 +646,6 @@ export function CatalogTable({
                         </Tooltip>
                       )
                     }
-
-                    // Create connected supplier ID set for is_connected lookup
-                    const connectedSupplierIds = new Set(
-                      connectedSuppliers?.map(cs => cs.supplier_id) ?? []
-                    )
-
-                    // Map to SupplierChips format
-                    const suppliers = supplierIds.map((id: string, i: number) => {
-                      // Try to get supplier name from multiple sources
-                      let supplierName = p.supplier_names?.[i] || id
-                      let supplierLogoUrl = p.supplier_logo_urls?.[i] || null
-
-                      // Fallback to allSuppliers lookup if name is missing
-                      if (!supplierName || supplierName === id) {
-                        const supplierData = allSuppliers?.find(s => s.id === id)
-                        if (supplierData) {
-                          supplierName = supplierData.name
-                          supplierLogoUrl = supplierData.logo_url || supplierLogoUrl
-                        }
-                      }
-
-                      // Fallback to vendors lookup (localStorage-based)
-                      if (!supplierLogoUrl) {
-                        const vendor = vendors.find(v => v.name === supplierName || v.id === id)
-                        supplierLogoUrl = vendor?.logo_url || vendor?.logoUrl || null
-                      }
-
-                      return {
-                        supplier_id: id,
-                        supplier_name: supplierName,
-                        supplier_logo_url: supplierLogoUrl,
-                        is_connected: connectedSupplierIds.has(id),
-                        availability_state: p.availability_status as any,
-                      }
-                    })
 
                     return <SupplierChips suppliers={suppliers} />
                   })()}
