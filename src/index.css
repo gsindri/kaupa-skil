@@ -95,7 +95,7 @@ html { scrollbar-gutter: stable; }
 #catalogHeader,
 [data-app-header="true"] {
   --hdr-h: var(--header-h, 56px);
-  transform: translateY(calc(-1 * var(--hdr-p, 0) * var(--hdr-h)));
+  transform: translate3d(0, calc(-1 * var(--hdr-p, 0) * var(--hdr-h)), 0);
 }
 
 :root {

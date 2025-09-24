@@ -137,14 +137,7 @@ input[type='search'] {
 }
 
 [data-chrome-layer], #catalogHeader {
-  transition: transform var(--hdr-ms) var(--hdr-ease), opacity var(--hdr-ms) var(--hdr-ease);
   will-change: transform;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  [data-chrome-layer], #catalogHeader {
-    transition: none;
-  }
 }
 
 /* Base look for any floating panel */
