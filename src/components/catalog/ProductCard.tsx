@@ -388,42 +388,56 @@ export const ProductCard = memo(function ProductCard({
         className,
       )}
     >
-      <div className="relative px-4 pt-3">
-        <div className="catalog-card__surface aspect-[4/3] w-full bg-muted/30 rounded-xl overflow-hidden">
-          <div className="catalog-card__badge-layer" data-badge-slot>
-            {isInCart && (
-              <span className="absolute top-2 right-2 bg-primary text-primary-foreground rounded-full h-6 w-6 flex items-center justify-center text-xs font-medium z-10" aria-hidden="true">
-                {cartQuantity}
-              </span>
-            )}
-          </div>
-          <div className="catalog-card__image-frame h-full w-full bg-gradient-to-b from-background/50 to-muted/50">
-            <img
-              src={img}
-              alt={product.name}
-              loading="lazy"
-              decoding="async"
-              fetchPriority="low"
-              className="catalog-card__image h-full w-full object-cover transition-transform duration-200 ease-out group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
-            />
+      <CardContent className="catalog-card__content flex flex-1 flex-col gap-3 px-4 pb-4 pt-3">
+        <div className="catalog-card__media relative">
+          <div className="catalog-card__surface aspect-[4/3] w-full bg-muted/30 rounded-xl overflow-hidden">
+            <div className="catalog-card__badge-layer" data-badge-slot>
+              {isInCart && (
+                <span className="absolute top-2 right-2 bg-primary text-primary-foreground rounded-full h-6 w-6 flex items-center justify-center text-xs font-medium z-10" aria-hidden="true">
+                  {cartQuantity}
+                </span>
+              )}
+            </div>
+            <div className="catalog-card__image-frame h-full w-full bg-gradient-to-b from-background/50 to-muted/50">
+              <img
+                src={img}
+                alt={product.name}
+                loading="lazy"
+                decoding="async"
+                fetchPriority="low"
+                className="catalog-card__image h-full w-full object-cover transition-transform duration-200 ease-out group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+              />
+            </div>
           </div>
         </div>
-      </div>
+        <div className="catalog-card__details flex flex-col gap-1">
           {detailLink ? (
             <a
               {...detailLink}
               title={product.name}
+              className="catalog-card__title line-clamp-2 text-base font-semibold leading-snug text-foreground"
             >
               {product.name}
             </a>
           ) : (
             <div
               title={product.name}
+              className="catalog-card__title line-clamp-2 text-base font-semibold leading-snug text-foreground"
             >
               {product.name}
             </div>
           )}
-          <div
+          {supportingLine ? (
+            <div
+              className="catalog-card__meta line-clamp-1 text-sm text-muted-foreground"
+              title={supportingLine}
+            >
+              {supportingLine}
+            </div>
+          ) : null}
+        </div>
+      </CardContent>
+      <CardFooter className="catalog-card__footer flex w-full items-center gap-3 px-4 pb-4 pt-0">
         <div className="catalog-card__footer-meta flex min-w-0 flex-1 flex-nowrap items-center gap-2.5 overflow-hidden">
           <AvailabilityBadge
             status={availability}
