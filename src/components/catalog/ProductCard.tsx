@@ -374,7 +374,7 @@ export const ProductCard = memo(function ProductCard({
       data-grid-card
       data-in-cart={isInCart ? "true" : undefined}
       className={cn(
-        "catalog-card group isolate flex h-[340px] w-full flex-col overflow-hidden border-0 bg-card shadow-sm",
+        "catalog-card group isolate flex h-[380px] w-full flex-col overflow-hidden border-0 bg-card shadow-sm",
         "rounded-2xl transition-all duration-200 ease-out hover:shadow-md hover:scale-[1.02]",
         "focus-within:shadow-md focus-within:scale-[1.02]",
         "motion-reduce:transition-none motion-reduce:hover:scale-100 motion-reduce:focus-within:scale-100",
