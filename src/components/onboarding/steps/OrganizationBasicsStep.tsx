@@ -82,13 +82,6 @@ export function OrganizationBasicsStep({
 
   return (
     <div className="space-y-6">
-      <div className="space-y-2">
-        <h2 className="text-lg font-semibold text-[color:var(--text)]">Organization basics</h2>
-        <p className="text-sm text-[color:var(--text-muted)]">
-          Name your organization and categorize your business.
-        </p>
-      </div>
-
       <Form {...form}>
         <form onSubmit={handleSubmit} className="space-y-5">
           <FormField
@@ -96,24 +89,17 @@ export function OrganizationBasicsStep({
             name="name"
             render={({ field }) => (
               <FormItem className="group space-y-2">
-                <div className="flex items-start gap-2">
+                <FormLabel className="flex items-center gap-2 text-[13px] font-semibold text-[color:var(--text)]">
                   <Store className="h-5 w-5 flex-shrink-0 text-[color:var(--text-muted)] transition-colors group-focus-within:text-[var(--brand-accent)]" />
-                  <div className="space-y-1">
-                    <FormLabel className="text-[13px] font-semibold text-[color:var(--text)]">
-                      <span className="flex items-center gap-1">
-                        Organization name
-                        <span aria-hidden="true" className="text-[color:var(--brand-accent)] opacity-80">
-                          *
-                        </span>
-                      </span>
-                    </FormLabel>
-                    <FormMessage />
-                  </div>
-                </div>
+                  <span className="flex items-center gap-1">
+                    Organization name
+                    <span aria-hidden="true" className="text-[color:var(--brand-accent)] opacity-80">*</span>
+                  </span>
+                </FormLabel>
                 <FormControl>
                   <Input
                     placeholder="e.g. Reykjavík Restaurant Group"
-                    required
+                    aria-required="true"
                     {...field}
                     onBlur={event => {
                       field.onBlur()
@@ -123,6 +109,7 @@ export function OrganizationBasicsStep({
                     }}
                   />
                 </FormControl>
+                <FormMessage />
               </FormItem>
             )}
           />
@@ -132,15 +119,13 @@ export function OrganizationBasicsStep({
             name="businessType"
             render={({ field }) => (
               <FormItem className="group space-y-2">
-                <div className="flex items-start gap-2">
+                <FormLabel className="flex items-center gap-2 text-[13px] font-semibold text-[color:var(--text)]">
                   <Store className="h-5 w-5 flex-shrink-0 text-[color:var(--text-muted)] transition-colors group-focus-within:text-[var(--brand-accent)]" />
-                  <div className="space-y-1">
-                    <FormLabel className="text-[13px] font-semibold text-[color:var(--text)]">
-                      Business type <span className="text-[12px] text-[color:var(--text-muted)]">(optional)</span>
-                    </FormLabel>
-                    <FormMessage />
-                  </div>
-                </div>
+                  <span className="flex items-center gap-1">
+                    Business type
+                    <span className="text-[12px] font-normal text-[color:var(--text-muted)]">(optional)</span>
+                  </span>
+                </FormLabel>
                 <Select
                   value={field.value ?? undefined}
                   onValueChange={value => {
@@ -169,6 +154,7 @@ export function OrganizationBasicsStep({
                     ))}
                   </SelectContent>
                 </Select>
+                <FormMessage />
               </FormItem>
             )}
           />

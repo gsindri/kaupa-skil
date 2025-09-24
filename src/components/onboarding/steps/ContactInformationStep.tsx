@@ -81,13 +81,6 @@ export function ContactInformationStep({
 
   return (
     <div className="space-y-6">
-      <div className="space-y-2">
-        <h2 className="text-lg font-semibold text-[color:var(--text)]">Contact information</h2>
-        <p className="text-sm text-[color:var(--text-muted)]">
-          Share who suppliers should reach out to.
-        </p>
-      </div>
-
       <Form {...form}>
         <form onSubmit={handleSubmit} className="space-y-5">
           <FormField
@@ -95,24 +88,17 @@ export function ContactInformationStep({
             name="contactName"
             render={({ field }) => (
               <FormItem className="group space-y-2">
-                <div className="flex items-start gap-2">
+                <FormLabel className="flex items-center gap-2 text-[13px] font-semibold text-[color:var(--text)]">
                   <UserCircle2 className="h-5 w-5 flex-shrink-0 text-[color:var(--text-muted)] transition-colors group-focus-within:text-[var(--brand-accent)]" />
-                  <div className="space-y-1">
-                    <FormLabel className="text-[13px] font-semibold text-[color:var(--text)]">
-                      <span className="flex items-center gap-1">
-                        Primary contact name
-                        <span aria-hidden="true" className="text-[color:var(--brand-accent)] opacity-80">
-                          *
-                        </span>
-                      </span>
-                    </FormLabel>
-                    <FormMessage />
-                  </div>
-                </div>
+                  <span className="flex items-center gap-1">
+                    Primary contact name
+                    <span aria-hidden="true" className="text-[color:var(--brand-accent)] opacity-80">*</span>
+                  </span>
+                </FormLabel>
                 <FormControl>
                   <Input
                     placeholder="e.g. Jón Jónsson"
-                    required
+                    aria-required="true"
                     {...field}
                     onBlur={event => {
                       field.onBlur()
@@ -122,6 +108,7 @@ export function ContactInformationStep({
                     }}
                   />
                 </FormControl>
+                <FormMessage />
               </FormItem>
             )}
           />
@@ -131,25 +118,18 @@ export function ContactInformationStep({
             name="email"
             render={({ field }) => (
               <FormItem className="group space-y-2">
-                <div className="flex items-start gap-2">
+                <FormLabel className="flex items-center gap-2 text-[13px] font-semibold text-[color:var(--text)]">
                   <Mail className="h-5 w-5 flex-shrink-0 text-[color:var(--text-muted)] transition-colors group-focus-within:text-[var(--brand-accent)]" />
-                  <div className="space-y-1">
-                    <FormLabel className="text-[13px] font-semibold text-[color:var(--text)]">
-                      <span className="flex items-center gap-1">
-                        Email address
-                        <span aria-hidden="true" className="text-[color:var(--brand-accent)] opacity-80">
-                          *
-                        </span>
-                      </span>
-                    </FormLabel>
-                    <FormMessage />
-                  </div>
-                </div>
+                  <span className="flex items-center gap-1">
+                    Email address
+                    <span aria-hidden="true" className="text-[color:var(--brand-accent)] opacity-80">*</span>
+                  </span>
+                </FormLabel>
                 <FormControl>
                   <Input
                     type="email"
                     placeholder="jon@example.com"
-                    required
+                    aria-required="true"
                     {...field}
                     onBlur={event => {
                       field.onBlur()
@@ -159,6 +139,7 @@ export function ContactInformationStep({
                     }}
                   />
                 </FormControl>
+                <FormMessage />
               </FormItem>
             )}
           />
@@ -168,25 +149,18 @@ export function ContactInformationStep({
             name="phone"
             render={({ field }) => (
               <FormItem className="group space-y-2">
-                <div className="flex items-start gap-2">
+                <FormLabel className="flex items-center gap-2 text-[13px] font-semibold text-[color:var(--text)]">
                   <Phone className="h-5 w-5 flex-shrink-0 text-[color:var(--text-muted)] transition-colors group-focus-within:text-[var(--brand-accent)]" />
-                  <div className="space-y-1">
-                    <FormLabel className="text-[13px] font-semibold text-[color:var(--text)]">
-                      <span className="flex items-center gap-1">
-                        Phone number
-                        <span aria-hidden="true" className="text-[color:var(--brand-accent)] opacity-80">
-                          *
-                        </span>
-                      </span>
-                    </FormLabel>
-                    <FormMessage />
-                  </div>
-                </div>
+                  <span className="flex items-center gap-1">
+                    Phone number
+                    <span aria-hidden="true" className="text-[color:var(--brand-accent)] opacity-80">*</span>
+                  </span>
+                </FormLabel>
                 <FormControl>
                   <Input
                     type="tel"
                     placeholder="+354 555 1234"
-                    required
+                    aria-required="true"
                     {...field}
                     onBlur={event => {
                       field.onBlur()
@@ -196,6 +170,7 @@ export function ContactInformationStep({
                     }}
                   />
                 </FormControl>
+                <FormMessage />
               </FormItem>
             )}
           />

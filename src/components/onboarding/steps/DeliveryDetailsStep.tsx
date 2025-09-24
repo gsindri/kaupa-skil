@@ -91,77 +91,72 @@ export function DeliveryDetailsStep({
 
   return (
     <div className="space-y-6">
-      <div className="space-y-2">
-        <h2 className="text-lg font-semibold text-[color:var(--text)]">Delivery details</h2>
-        <p className="text-sm text-[color:var(--text-muted)]">
-          Tell us where orders should be delivered.
-        </p>
-      </div>
-
       <Form {...form}>
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <FormField
-            control={form.control}
-            name="deliveryAddress.line1"
-            render={({ field }) => (
-              <FormItem className="group space-y-2">
-                <div className="flex items-start gap-2">
-                  <MapPinHouse className="h-5 w-5 flex-shrink-0 text-[color:var(--text-muted)] transition-colors group-focus-within:text-[var(--brand-accent)]" />
-                  <div className="space-y-1">
-                    <FormLabel className="text-[13px] font-semibold text-[color:var(--text)]">
-                      <span className="flex items-center gap-1">
-                        Street address
-                        <span aria-hidden="true" className="text-[color:var(--brand-accent)] opacity-80">
-                          *
-                        </span>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-5">
+            <FormField
+              control={form.control}
+              name="deliveryAddress.line1"
+              render={({ field }) => (
+                <FormItem className="group space-y-2">
+                  <FormLabel className="flex items-center gap-2 text-[13px] font-semibold text-[color:var(--text)]">
+                    <MapPinHouse
+                      aria-hidden="true"
+                      className="h-5 w-5 flex-shrink-0 text-[color:var(--text-muted)] transition-colors group-focus-within:text-[var(--brand-accent)]"
+                    />
+                    <span className="flex items-center gap-1">
+                      Street address
+                      <span aria-hidden="true" className="text-[color:var(--brand-accent)] opacity-80">
+                        *
                       </span>
-                    </FormLabel>
-                    <FormMessage />
-                  </div>
-                </div>
-                <FormControl>
-                  <Input
-                    placeholder="e.g. Laugavegur 26"
-                    required
-                    {...field}
-                    onBlur={event => {
-                      field.onBlur()
-                      const trimmed = event.target.value.trim()
-                      form.setValue('deliveryAddress.line1', trimmed, { shouldDirty: true, shouldValidate: true })
-                      commit()
-                    }}
-                  />
-                </FormControl>
-              </FormItem>
-            )}
-          />
+                    </span>
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="e.g. Laugavegur 26"
+                      aria-required="true"
+                      {...field}
+                      onBlur={event => {
+                        field.onBlur()
+                        const trimmed = event.target.value.trim()
+                        form.setValue('deliveryAddress.line1', trimmed, { shouldDirty: true, shouldValidate: true })
+                        commit()
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-          <FormField
-            control={form.control}
-            name="deliveryAddress.line2"
-            render={({ field }) => (
-              <FormItem className="space-y-2">
-                <FormLabel className="text-[13px] font-semibold text-[color:var(--text)]">
-                  Apartment, suite, etc. <span className="text-[12px] text-[color:var(--text-muted)]">(optional)</span>
-                </FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="e.g. Suite 3B"
-                    {...field}
-                    onBlur={event => {
-                      field.onBlur()
-                      const trimmed = event.target.value.trim()
-                      form.setValue('deliveryAddress.line2', trimmed, { shouldDirty: true })
-                      commit()
-                    }}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+            <FormField
+              control={form.control}
+              name="deliveryAddress.line2"
+              render={({ field }) => (
+                <FormItem className="space-y-2">
+                  <FormLabel className="text-[13px] font-semibold text-[color:var(--text)]">
+                    Apartment, suite, etc.{' '}
+                    <span className="text-[12px] font-normal text-[color:var(--text-muted)]">(optional)</span>
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="e.g. Suite 3B"
+                      {...field}
+                      onBlur={event => {
+                        field.onBlur()
+                        const trimmed = event.target.value.trim()
+                        form.setValue('deliveryAddress.line2', trimmed, { shouldDirty: true })
+                        commit()
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <FormField
               control={form.control}
               name="deliveryAddress.postalCode"
@@ -178,7 +173,7 @@ export function DeliveryDetailsStep({
                   <FormControl>
                     <Input
                       placeholder="e.g. 101"
-                      required
+                      aria-required="true"
                       {...field}
                       onBlur={event => {
                         field.onBlur()
@@ -209,7 +204,7 @@ export function DeliveryDetailsStep({
                   <FormControl>
                     <Input
                       placeholder="e.g. Reykjavík"
-                      required
+                      aria-required="true"
                       {...field}
                       onBlur={event => {
                         field.onBlur()
