@@ -45,7 +45,6 @@ export function CartDrawer() {
         hideOverlay
         data-pinned={isDrawerPinned ? "true" : undefined}
         className={cn(
-          "w-[110px] max-w-[100vw] flex flex-col overflow-hidden p-0 text-[color:var(--text)] [&>button:last-child]:hidden",
           isDrawerPinned && "shadow-none"
         )}
         onPointerDownOutside={event => event.preventDefault()}
@@ -54,23 +53,6 @@ export function CartDrawer() {
         id="cart-drawer"
       >
         <div className="sticky top-0 z-10 border-b border-[color:var(--surface-ring)] bg-[color:var(--surface-pop-2)]/95 backdrop-blur">
-          <div className="flex flex-col items-center gap-2 px-3 py-4 text-center">
-            <span aria-live="polite" className="sr-only">
-              Cart subtotal {formatCurrency(subtotal)}
-            </span>
-            <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[color:var(--text-muted)]">
-              Subtotal
-            </div>
-            <div className="text-base font-semibold text-[color:var(--text)]">{formatCurrency(subtotal)}</div>
-            {missingPriceCount > 0 && (
-              <Badge
-                variant="destructive"
-                className="max-w-full text-center text-[10px] leading-snug"
-              >
-                Some prices unavailable
-              </Badge>
-            )}
-            <div className="flex items-center justify-center gap-1.5 pt-1">
               <Button
                 variant="ghost"
                 size="icon"
@@ -107,7 +89,6 @@ export function CartDrawer() {
         </div>
 
         <ScrollArea className="flex-1">
-          <div className="space-y-3 px-1.5 py-3">
             {items.length === 0 && (
               <div className="rounded-xl border border-dashed border-[color:var(--surface-ring)] px-3 py-6 text-center text-xs text-[color:var(--text-muted)]">
                 Your cart is empty.
@@ -119,11 +100,6 @@ export function CartDrawer() {
                 key={it.supplierItemId}
                 className="flex flex-col items-center gap-2 rounded-xl border border-[color:var(--surface-ring)] bg-[color:var(--surface-pop)]/60 px-1.5 py-3 text-center"
               >
-                <div className="h-16 w-16 overflow-hidden rounded-lg bg-[color:var(--surface-pop-2)]/40">
-                  {it.image ? (
-                    <img src={it.image} alt="" className="h-full w-full object-contain" />
-                  ) : null}
-                </div>
 
                 <div className="flex w-full flex-col items-center gap-1">
                   <div className="line-clamp-2 text-[13px] font-semibold leading-tight">
