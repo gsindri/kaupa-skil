@@ -190,6 +190,12 @@ export const ProductCard = memo(function ProductCard({
     return primarySupplierName || supplierLabel;
   }, [hasMultipleSuppliers, primarySupplierName, supplierLabel]);
 
+  const supportingLine = useMemo(() => {
+    if (metaLine) return metaLine;
+    if (supplierCount > 0) return supplierLabel;
+    return "";
+  }, [metaLine, supplierCount, supplierLabel]);
+
   const { cartItem, cartQuantity } = useMemo(() => {
     let total = 0;
     let found: CartItem | null = null;
@@ -382,7 +388,7 @@ export const ProductCard = memo(function ProductCard({
         className,
       )}
     >
-      <div className="relative px-4 pt-5">
+      <div className="relative px-4 pt-3">
         <div className="catalog-card__surface aspect-[4/3] w-full bg-muted/30 rounded-xl overflow-hidden">
           <div className="catalog-card__badge-layer" data-badge-slot>
             {isInCart && (
@@ -403,33 +409,21 @@ export const ProductCard = memo(function ProductCard({
           </div>
         </div>
       </div>
-      <CardContent className="flex flex-1 flex-col px-4 pb-0 pt-5">
-        <div className="flex flex-1 flex-col gap-2.5 pb-2">
           {detailLink ? (
             <a
               {...detailLink}
               title={product.name}
-              className="catalog-card__title line-clamp-2 font-semibold text-base leading-tight text-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:text-primary"
             >
               {product.name}
             </a>
           ) : (
             <div
               title={product.name}
-              className="catalog-card__title line-clamp-2 font-semibold text-base leading-tight text-foreground"
             >
               {product.name}
             </div>
           )}
           <div
-            className="catalog-card__meta text-sm text-muted-foreground leading-relaxed"
-            aria-hidden={!metaLine}
-          >
-            {metaLine || "\u00A0"}
-          </div>
-        </div>
-      </CardContent>
-      <CardFooter className="catalog-card__footer mt-auto flex min-h-[88px] flex-nowrap items-center gap-3 px-4 pb-5 pt-4">
         <div className="catalog-card__footer-meta flex min-w-0 flex-1 flex-nowrap items-center gap-2.5 overflow-hidden">
           <AvailabilityBadge
             status={availability}
