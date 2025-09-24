@@ -8,8 +8,6 @@ import { getCachedImageUrl } from '@/services/ImageCache'
 
 const CART_STORAGE_KEY = 'procurewise-basket'
 const CART_PIN_STORAGE_KEY = 'procurewise-cart-pinned'
-const CART_AUTO_OPEN_SESSION_KEY = 'procurewise-cart-auto-opened'
-
 export default function BasketProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>(() => {
     const saved = localStorage.getItem(CART_STORAGE_KEY)
@@ -49,15 +47,7 @@ export default function BasketProvider({ children }: { children: React.ReactNode
       return false
     }
   })
-  const [hasAutoOpenedDrawer, setHasAutoOpenedDrawer] = useState<boolean>(() => {
-    if (typeof window === 'undefined') return false
-    try {
-      return window.sessionStorage.getItem(CART_AUTO_OPEN_SESSION_KEY) === '1'
-    } catch {
-      return false
-    }
-  })
-  const [cartPulseSignal, setCartPulseSignal] = useState(0)
+  const [cartPulseSignal] = useState(0)
   const [drawerOpenExplicit, setDrawerOpenExplicit] = useState(false)
   const { toast } = useToast()
 
@@ -130,22 +120,8 @@ export default function BasketProvider({ children }: { children: React.ReactNode
   }, [isDrawerPinned])
 
   useEffect(() => {
-    if (typeof window === 'undefined') return
-    try {
-      if (hasAutoOpenedDrawer) {
-        window.sessionStorage.setItem(CART_AUTO_OPEN_SESSION_KEY, '1')
-      } else {
-        window.sessionStorage.removeItem(CART_AUTO_OPEN_SESSION_KEY)
-      }
-    } catch {
-      /* ignore persistence errors */
-    }
-  }, [hasAutoOpenedDrawer])
-
-  useEffect(() => {
     if (isDrawerPinned) {
       setDrawerOpenExplicit(true)
-      setHasAutoOpenedDrawer(true)
     }
   }, [isDrawerPinned])
 
@@ -161,10 +137,9 @@ export default function BasketProvider({ children }: { children: React.ReactNode
         return
       }
 
-      setHasAutoOpenedDrawer(true)
       setDrawerOpenExplicit(true)
     },
-    [isDrawerPinned, setDrawerOpenExplicit, setHasAutoOpenedDrawer]
+    [isDrawerPinned]
   )
 
   const addItem = (
@@ -243,18 +218,7 @@ export default function BasketProvider({ children }: { children: React.ReactNode
       return newItems
     })
 
-    const drawerVisible = isDrawerOpen
-    if (!hasAutoOpenedDrawer) {
-      setHasAutoOpenedDrawer(true)
-      if (!drawerVisible) {
-        setDrawerOpenExplicit(true)
-      }
-      return
-    }
-
-    if (!drawerVisible && !isDrawerPinned) {
-      setCartPulseSignal(signal => signal + 1)
-    }
+    setDrawerOpenExplicit(true)
   }
 
   const updateQuantity = (supplierItemId: string, quantity: number) => {

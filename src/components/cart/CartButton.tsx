@@ -22,7 +22,7 @@ export function CartButton({
   hideLabel = false,
   label = 'Cart'
 }: CartButtonProps) {
-  const { items, setIsDrawerOpen, isDrawerOpen, cartPulseSignal } = useCart()
+  const { items, isDrawerOpen, cartPulseSignal } = useCart()
 
   const totalItems = React.useMemo(() => {
     return items.reduce((accumulator, item) => {
@@ -51,14 +51,8 @@ export function CartButton({
   }, [cartPulseSignal, isDrawerOpen])
 
   const handleOpenCart = React.useCallback(() => {
-    setIsDrawerOpen(true)
-  }, [setIsDrawerOpen])
-
-  const accessibilityProps = {
-    'aria-haspopup': 'dialog' as const,
-    'aria-expanded': isDrawerOpen,
-    'aria-controls': 'cart-drawer'
-  }
+    window.location.assign('/orders')
+  }, [])
 
   const iconSizeClass = size === 'sm' ? 'h-8 w-8' : 'h-9 w-9'
   const trigger = (
@@ -76,8 +70,6 @@ export function CartButton({
       )}
       aria-label={ariaLabel}
       title={tooltipLabel}
-      aria-keyshortcuts="c"
-      {...accessibilityProps}
     >
       <span
         className={cn(
