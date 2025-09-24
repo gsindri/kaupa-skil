@@ -3,7 +3,7 @@ import { Sheet, SheetContent, SheetClose } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Badge } from "@/components/ui/badge"
-import { Pin, PinOff, Trash2, X } from "lucide-react"
+import { Pin, PinOff, ShoppingCart, Trash2, X } from "lucide-react"
 import { useCart } from "@/contexts/useBasket"
 import { useSettings } from "@/contexts/useSettings"
 import { QuantityStepper } from "./QuantityStepper"
@@ -39,33 +39,20 @@ export function CartDrawer() {
   const pinLabel = isDrawerPinned ? "Unpin cart sidebar" : "Pin cart sidebar"
 
   return (
-    <Sheet open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
+    <Sheet open={isDrawerOpen} onOpenChange={setIsDrawerOpen} modal={false}>
       <SheetContent
         side="right"
         hideOverlay
         data-pinned={isDrawerPinned ? "true" : undefined}
         className={cn(
-          "w-[260px] md:w-[320px] max-w-[100vw] flex flex-col p-0 text-[color:var(--text)] [&>button:last-child]:hidden",
           isDrawerPinned && "shadow-none"
         )}
+        onPointerDownOutside={event => event.preventDefault()}
+        onInteractOutside={event => event.preventDefault()}
         aria-label="Shopping cart"
         id="cart-drawer"
       >
         <div className="sticky top-0 z-10 border-b border-[color:var(--surface-ring)] bg-[color:var(--surface-pop-2)]/95 backdrop-blur">
-          <div className="flex items-center justify-between px-4 py-3">
-            <div className="text-sm leading-tight text-[color:var(--text-muted)]">
-              <span aria-live="polite" className="sr-only">
-                Cart subtotal {formatCurrency(subtotal)}
-              </span>
-              <div className="text-[12px] uppercase tracking-[0.08em]">Subtotal</div>
-              <div className="text-base font-semibold text-[color:var(--text)]">{formatCurrency(subtotal)}</div>
-            </div>
-            <div className="flex items-center gap-1.5">
-              {missingPriceCount > 0 && (
-                <Badge variant="destructive" className="text-xs">
-                  Some prices unavailable
-                </Badge>
-              )}
               <Button
                 variant="ghost"
                 size="icon"
@@ -73,7 +60,7 @@ export function CartDrawer() {
                 aria-pressed={isDrawerPinned}
                 title={pinLabel}
                 className={cn(
-                  "text-[color:var(--text-muted)] hover:text-[color:var(--text)]",
+                  "h-8 w-8 text-[color:var(--text-muted)] hover:text-[color:var(--text)]",
                   isDrawerPinned && "text-[color:var(--brand-accent,#f59e0b)]"
                 )}
                 onClick={togglePinned}
@@ -82,17 +69,19 @@ export function CartDrawer() {
               </Button>
               <Button
                 variant="secondary"
-                size="sm"
+                size="icon"
+                className="h-8 w-8"
                 onClick={() => {
                   setIsDrawerOpen(false)
                   location.assign("/orders")
                 }}
               >
-                Go to Cart
+                <ShoppingCart className="h-4 w-4" aria-hidden="true" />
+                <span className="sr-only">Go to cart</span>
               </Button>
               <SheetClose asChild>
-                <Button variant="ghost" size="icon" aria-label="Close cart">
-                  <X className="h-5 w-5" />
+                <Button variant="ghost" size="icon" aria-label="Close cart" className="h-8 w-8">
+                  <X className="h-4 w-4" />
                 </Button>
               </SheetClose>
             </div>
@@ -100,9 +89,8 @@ export function CartDrawer() {
         </div>
 
         <ScrollArea className="flex-1">
-          <div className="space-y-3 px-3 py-4">
             {items.length === 0 && (
-              <div className="p-6 text-center text-sm text-[color:var(--text-muted)]">
+              <div className="rounded-xl border border-dashed border-[color:var(--surface-ring)] px-3 py-6 text-center text-xs text-[color:var(--text-muted)]">
                 Your cart is empty.
               </div>
             )}
@@ -110,54 +98,48 @@ export function CartDrawer() {
             {items.map(it => (
               <div
                 key={it.supplierItemId}
-                className="rounded-xl border border-[color:var(--surface-ring)] bg-[color:var(--surface-pop)]/60 p-3"
+                className="flex flex-col items-center gap-2 rounded-xl border border-[color:var(--surface-ring)] bg-[color:var(--surface-pop)]/60 px-1.5 py-3 text-center"
               >
-                <div className="flex gap-3">
-                  <div className="h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-[color:var(--surface-pop-2)]/40">
-                    {it.image ? (
-                      <img src={it.image} alt="" className="h-full w-full object-contain" />
-                    ) : null}
+
+                <div className="flex w-full flex-col items-center gap-1">
+                  <div className="line-clamp-2 text-[13px] font-semibold leading-tight">
+                    {it.displayName || it.itemName}
+                  </div>
+                  {it.packSize ? (
+                    <div className="text-[10px] text-[color:var(--text-muted)]">{it.packSize}</div>
+                  ) : null}
+                  {it.supplierName ? (
+                    <div className="text-[10px] text-[color:var(--text-muted)]">{it.supplierName}</div>
+                  ) : null}
+
+                  <div className="mt-1 text-sm font-semibold">
+                    {formatCurrency(
+                      includeVat
+                        ? it.unitPriceIncVat ?? it.packPrice ?? 0
+                        : it.unitPriceExVat ?? it.packPrice ?? 0,
+                    )}
                   </div>
 
-                  <div className="min-w-0 flex-1">
-                    <div className="truncate text-[15px] font-semibold">{it.displayName || it.itemName}</div>
-                    {it.packSize ? (
-                      <div className="text-xs text-[color:var(--text-muted)]">{it.packSize}</div>
-                    ) : null}
-                    {it.supplierName ? (
-                      <div className="mt-0.5 text-xs text-[color:var(--text-muted)]">{it.supplierName}</div>
-                    ) : null}
+                  <QuantityStepper
+                    quantity={it.quantity}
+                    onChange={qty =>
+                      qty === 0
+                        ? removeItem(it.supplierItemId)
+                        : updateQuantity(it.supplierItemId, qty)
+                    }
+                    label={it.displayName || it.itemName}
+                    className="mx-auto min-w-[96px]"
+                  />
 
-                    <div className="mt-3 text-sm font-semibold">
-                      {formatCurrency(
-                        includeVat
-                          ? it.unitPriceIncVat ?? it.packPrice ?? 0
-                          : it.unitPriceExVat ?? it.packPrice ?? 0,
-                      )}
-                    </div>
-
-                    <div className="mt-3 inline-flex items-center gap-2">
-                      <QuantityStepper
-                        quantity={it.quantity}
-                        onChange={qty =>
-                          qty === 0
-                            ? removeItem(it.supplierItemId)
-                            : updateQuantity(it.supplierItemId, qty)
-                        }
-                        label={it.displayName || it.itemName}
-                      />
-
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        aria-label={`Remove ${it.displayName || "item"}`}
-                        className="ml-1 text-destructive hover:text-destructive"
-                        onClick={() => removeItem(it.supplierItemId)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    aria-label={`Remove ${it.displayName || "item"}`}
+                    className="mt-2 h-8 w-8 text-destructive hover:text-destructive"
+                    onClick={() => removeItem(it.supplierItemId)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
                 </div>
               </div>
             ))}
