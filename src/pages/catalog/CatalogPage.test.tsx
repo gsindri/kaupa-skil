@@ -209,16 +209,16 @@ describe('CatalogPage', () => {
   })
 
   it('shows banner when connect pills are hidden', async () => {
-    localStorage.setItem('catalog-view', 'list')
+    localStorage.setItem('catalog:view', 'list')
     renderCatalogPage()
     await screen.findByTestId('alert')
     expect(screen.getByText('Connect suppliers to unlock prices.')).toBeInTheDocument()
     expect(screen.getByTestId('catalog-table')).toBeInTheDocument()
-    expect(localStorage.getItem('catalog-view')).toBe('list')
+    expect(localStorage.getItem('catalog:view')).toBe('list')
   })
 
   it('restores view preference from localStorage', () => {
-    localStorage.setItem('catalog-view', 'list')
+    localStorage.setItem('catalog:view', 'list')
     renderCatalogPage()
     expect(screen.getByTestId('catalog-table')).toBeInTheDocument()
   })
@@ -242,7 +242,7 @@ describe('CatalogPage', () => {
     orgCatalogResult.data = [gridProduct]
 
     const user = userEvent.setup()
-    localStorage.setItem('catalog-view', 'grid')
+    localStorage.setItem('catalog:view', 'grid')
 
     try {
       renderCatalogPage()
