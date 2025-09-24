@@ -270,15 +270,22 @@ body {
   }
 }
 
-/* Iceland-specific formatting */
-.currency-isk {
-  font-variant-numeric: tabular-nums;
+/* Card enhancements for catalog grid */
+.catalog-card {
+  @apply bg-card border border-border/50 shadow-[var(--shadow-soft)] transition-all duration-200;
+  @apply hover:shadow-[var(--shadow-soft-md)] hover:scale-[1.02] hover:border-border/75;
 }
 
-.currency-isk::after {
-  content: ' kr';
-  font-weight: normal;
-  color: hsl(var(--muted-foreground));
+.catalog-card__image {
+  @apply transition-transform duration-200 hover:scale-105;
+}
+
+.catalog-card__surface {
+  @apply bg-muted/30 rounded-xl overflow-hidden;
+}
+
+.catalog-card__image-frame {
+  @apply w-full h-full bg-gradient-to-b from-background/50 to-muted/50;
 }
 /* --- Sidebar chrome fixes --- */
 

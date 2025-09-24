@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Lock } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-type Availability = 'IN_STOCK' | 'LOW_STOCK' | 'OUT_OF_STOCK' | null | undefined
+type Availability = 'IN_STOCK' | 'LOW_STOCK' | 'OUT_OF_STOCK' | 'UNKNOWN' | null | undefined
 
 interface SupplierInfo {
   supplier_id: string

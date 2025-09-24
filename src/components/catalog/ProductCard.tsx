@@ -374,52 +374,52 @@ export const ProductCard = memo(function ProductCard({
       data-grid-card
       data-in-cart={isInCart ? "true" : undefined}
       className={cn(
-        "catalog-card group isolate flex h-[368px] w-full flex-col overflow-hidden border-0 bg-[color:var(--catalog-card-surface)] shadow-none",
-        "rounded-[20px] transition-[box-shadow,transform,background-color] duration-base ease-snap",
-        "hover:-translate-y-[2px] focus-within:-translate-y-[2px]",
-        "motion-reduce:transition-none motion-reduce:hover:translate-y-0 motion-reduce:focus-within:translate-y-0",
+        "catalog-card group isolate flex h-[340px] w-full flex-col overflow-hidden border-0 bg-card shadow-sm",
+        "rounded-2xl transition-all duration-200 ease-out hover:shadow-md hover:scale-[1.02]",
+        "focus-within:shadow-md focus-within:scale-[1.02]",
+        "motion-reduce:transition-none motion-reduce:hover:scale-100 motion-reduce:focus-within:scale-100",
+        isInCart && "ring-2 ring-primary/20",
         className,
       )}
     >
-      <div className="relative px-4 pt-4">
-        <div className="catalog-card__surface aspect-[4/3] w-full">
+      <div className="relative px-4 pt-5">
+        <div className="catalog-card__surface aspect-[4/3] w-full bg-muted/30 rounded-xl overflow-hidden">
           <div className="catalog-card__badge-layer" data-badge-slot>
             {isInCart && (
-              <span className="catalog-card__count-chip" aria-hidden="true">
+              <span className="absolute top-2 right-2 bg-primary text-primary-foreground rounded-full h-6 w-6 flex items-center justify-center text-xs font-medium z-10" aria-hidden="true">
                 {cartQuantity}
               </span>
             )}
           </div>
-          <div className="catalog-card__image-frame">
+          <div className="catalog-card__image-frame h-full w-full bg-gradient-to-b from-background/50 to-muted/50">
             <img
               src={img}
               alt={product.name}
               loading="lazy"
               decoding="async"
               fetchPriority="low"
-              className="catalog-card__image transition-transform duration-300 ease-out group-hover:scale-[1.02] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+              className="catalog-card__image h-full w-full object-cover transition-transform duration-200 ease-out group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
             />
           </div>
         </div>
-        <div className="catalog-card__glint" aria-hidden="true" />
       </div>
-      <CardContent className="flex flex-1 flex-col px-4 pb-0 pt-4">
+      <CardContent className="flex flex-1 flex-col px-4 pb-0 pt-5">
         {detailLink ? (
           <a
             {...detailLink}
-            className="catalog-card__title catalog-card__title-link focus-visible:outline-none"
+            className="catalog-card__title font-semibold text-base leading-tight text-foreground hover:text-primary transition-colors focus-visible:outline-none focus-visible:text-primary"
           >
             {product.name}
           </a>
         ) : (
-          <div className="catalog-card__title">{product.name}</div>
+          <div className="catalog-card__title font-semibold text-base leading-tight text-foreground">{product.name}</div>
         )}
-        <div className="catalog-card__meta" aria-hidden={!metaLine}>
+        <div className="catalog-card__meta text-sm text-muted-foreground mt-1 mb-4 leading-relaxed" aria-hidden={!metaLine}>
           {metaLine || "\u00A0"}
         </div>
         <div className="mt-auto" />
       </CardContent>
-      <CardFooter className="catalog-card__footer flex flex-nowrap items-center gap-3 px-4 pb-4 pt-4">
+      <CardFooter className="catalog-card__footer flex flex-nowrap items-center gap-3 px-4 pb-5 pt-3">
         <div className="catalog-card__footer-meta flex min-w-0 flex-1 flex-nowrap items-center gap-2.5 overflow-hidden">
           <AvailabilityBadge
             status={availability}
@@ -427,14 +427,14 @@ export const ProductCard = memo(function ProductCard({
             className="flex-shrink-0"
           />
           {supplierCount > 0 && (
-            <span className="catalog-chip flex min-w-0 items-center gap-2">
+            <span className="catalog-chip flex min-w-0 items-center gap-2 bg-muted/50 rounded-full px-2 py-1">
               <SupplierLogo
                 name={primarySupplierName || supplierLabel}
                 logoUrl={primarySupplierLogo}
-                className="!h-7 !w-7 flex-shrink-0 !rounded-full bg-white/80 shadow-sm"
+                className="!h-5 !w-5 flex-shrink-0 !rounded-full bg-background shadow-sm"
               />
               <span
-                className="catalog-card__supplier-label truncate"
+                className="catalog-card__supplier-label truncate text-xs text-muted-foreground"
                 title={bestSupplierLabel}
               >
                 {bestSupplierLabel}
@@ -442,19 +442,19 @@ export const ProductCard = memo(function ProductCard({
             </span>
           )}
           {overflowSupplierCount > 0 && (
-            <span className="catalog-chip catalog-chip--quiet flex-shrink-0">
+            <span className="catalog-chip bg-muted/50 text-muted-foreground rounded-full px-2 py-1 text-xs flex-shrink-0">
               +{overflowSupplierCount}
             </span>
           )}
           {product.active_supplier_count === 0 && (
-            <span className="catalog-chip catalog-chip--quiet flex-shrink-0">
+            <span className="catalog-chip bg-muted/50 text-muted-foreground rounded-full px-2 py-1 text-xs flex-shrink-0">
               Not seen recently
             </span>
           )}
         </div>
         <div className="catalog-card__footer-actions ml-auto flex flex-shrink-0 items-center gap-3 pl-3">
           {priceLabel && (
-            <div className="catalog-card__price" aria-live="polite">
+            <div className="catalog-card__price text-sm font-medium tabular-nums" aria-live="polite">
               {priceLabel}
             </div>
           )}
