@@ -1,134 +1,162 @@
 import React, { useMemo } from 'react'
-import { addDays, differenceInCalendarDays, format, getISODay } from 'date-fns'
+import { addDays, differenceInCalendarDays, format, isSameDay, startOfDay } from 'date-fns'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Skeleton } from '@/components/ui/skeleton'
 import { useUpcomingDeliveries } from '@/hooks/useUpcomingDeliveries'
+import type { DeliveryRule } from '@/hooks/useUpcomingDeliveries'
 import { useSupplierConnections } from '@/hooks/useSupplierConnections'
+import type { SupplierConnection } from '@/hooks/useSupplierConnections'
 import { Truck } from 'lucide-react'
+import { formatCurrency } from '@/lib/format'
+import { formatCutoffTime, getNextDeliveryDate } from './delivery-helpers'
 
-const formatCurrency = (value: number | null) => {
-  if (!value || !Number.isFinite(value)) return undefined
-  return new Intl.NumberFormat('is-IS', {
-    style: 'currency',
-    currency: 'ISK',
-    maximumFractionDigits: 0,
-  }).format(value)
+type DeliveryEntry = {
+  rule: DeliveryRule
+  supplier?: SupplierConnection
+  nextDelivery: Date
 }
 
-const parseTime = (value: string | null) => {
-  if (!value) return { hours: 9, minutes: 0 }
-  const segments = value.split(':').map((part) => Number.parseInt(part, 10))
-  const [hours = 9, minutes = 0] = segments
-  return {
-    hours: Number.isFinite(hours) ? hours : 9,
-    minutes: Number.isFinite(minutes) ? minutes : 0,
-  }
-}
-
-const getNextDeliveryDate = (deliveryDays: number[] | null, cutoffTime: string | null) => {
-  if (!deliveryDays || deliveryDays.length === 0) return null
-  const now = new Date()
-  const todayIso = getISODay(now)
-  const orderedDays = [...deliveryDays].sort((a, b) => a - b)
-  const { hours, minutes } = parseTime(cutoffTime)
-
-  let bestDiff = 7
-  orderedDays.forEach((day) => {
-    let diff = day - todayIso
-    if (diff < 0) diff += 7
-
-    const cutoffToday = new Date(now)
-    cutoffToday.setHours(hours, minutes, 0, 0)
-    if (diff === 0 && now > cutoffToday) {
-      diff = 7
-    }
-
-    if (diff < bestDiff) bestDiff = diff
-  })
-
-  const deliveryDate = addDays(now, bestDiff)
-  deliveryDate.setHours(9, 0, 0, 0)
-
-  return deliveryDate
-}
+const horizonDays = 6
 
 export function UpcomingDeliveriesCard() {
   const { rules, isLoading } = useUpcomingDeliveries()
   const { suppliers } = useSupplierConnections()
 
+  const referenceDate = useMemo(() => startOfDay(new Date()), [])
+
   const supplierMap = useMemo(() => {
     return new Map(suppliers.map((supplier) => [supplier.supplier_id ?? supplier.id, supplier]))
   }, [suppliers])
 
-  const upcoming = useMemo(() => {
+  const deliveries = useMemo<DeliveryEntry[]>(() => {
     return rules
       .map((rule) => {
-        const nextDelivery = getNextDeliveryDate(rule.delivery_days, rule.cutoff_time)
+        const nextDelivery = getNextDeliveryDate(rule.delivery_days, rule.cutoff_time, referenceDate)
+        if (!nextDelivery) return null
+
+        if (differenceInCalendarDays(nextDelivery, referenceDate) < 0) return null
+
         return {
           rule,
           supplier: supplierMap.get(rule.supplier_id ?? rule.id),
           nextDelivery,
         }
       })
-      .filter((entry) => entry.nextDelivery)
-      .sort((a, b) => (a.nextDelivery?.getTime() ?? 0) - (b.nextDelivery?.getTime() ?? 0))
-      .slice(0, 4)
-  }, [rules, supplierMap])
+      .filter((entry): entry is DeliveryEntry => Boolean(entry))
+      .sort((a, b) => a.nextDelivery.getTime() - b.nextDelivery.getTime())
+  }, [referenceDate, rules, supplierMap])
+
+  const deliveriesWithinWindow = useMemo(() => {
+    return deliveries.filter((entry) => {
+      const diff = differenceInCalendarDays(entry.nextDelivery, referenceDate)
+      return diff >= 0 && diff <= horizonDays
+    })
+  }, [deliveries, referenceDate])
+
+  const timelineDays = useMemo(() => {
+    return Array.from({ length: horizonDays + 1 }, (_, index) => {
+      const day = addDays(referenceDate, index)
+      const items = deliveriesWithinWindow.filter((entry) => isSameDay(entry.nextDelivery, day))
+      return { date: day, items }
+    })
+  }, [deliveriesWithinWindow, referenceDate])
+
+  const laterDeliveries = deliveries.length - deliveriesWithinWindow.length
 
   return (
-    <Card className="h-full flex flex-col">
-      <CardHeader className="p-4 pb-2">
-        <CardTitle className="text-base">Upcoming deliveries</CardTitle>
-        <p className="text-sm text-muted-foreground">
-          Your delivery cadence, so the kitchen knows what’s landing next.
-        </p>
+    <Card className="overflow-hidden">
+      <CardHeader className="p-6 pb-4">
+        <CardTitle className="text-base font-semibold">Deliveries this week</CardTitle>
+        <p className="text-sm text-muted-foreground">Line up the drops that are on the horizon.</p>
       </CardHeader>
-      <CardContent className="p-4 pt-0 flex-1 flex flex-col gap-4">
+      <CardContent className="p-6 pt-0">
         {isLoading ? (
-          <div className="flex-1 grid place-content-center text-sm text-muted-foreground">
-            Loading delivery schedule…
-          </div>
-        ) : upcoming.length === 0 ? (
-          <div className="flex-1 grid place-content-center text-sm text-muted-foreground text-center space-y-2">
-            <p className="font-medium text-foreground">No delivery windows tracked yet</p>
-            <p>Set delivery days with each supplier to build your incoming calendar.</p>
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-7">
+            {[...Array(horizonDays + 1)].map((_, index) => (
+              <div key={index} className="space-y-3 rounded-xl border border-dashed border-muted/60 p-4">
+                <Skeleton className="h-3 w-10" />
+                <Skeleton className="h-2 w-full" />
+                <Skeleton className="h-2 w-2/3" />
+              </div>
+            ))}
           </div>
         ) : (
-          <ul className="space-y-3">
-            {upcoming.map(({ rule, supplier, nextDelivery }) => {
-              if (!nextDelivery) return null
-              const diff = differenceInCalendarDays(nextDelivery, new Date())
-              const timingLabel =
-                diff === 0 ? 'Today' : diff === 1 ? 'Tomorrow' : `In ${diff} days`
-              const supplierName = supplier?.name ?? 'Supplier'
-              const threshold = formatCurrency(rule.free_threshold_ex_vat)
-              const flatFee = formatCurrency(rule.flat_fee)
-              const cutoff = parseTime(rule.cutoff_time)
+          <>
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-7">
+              {timelineDays.map((day) => {
+                const isToday = isSameDay(day.date, referenceDate)
+                const hasDeliveries = day.items.length > 0
+                const tileClassName = [
+                  'flex h-full flex-col gap-3 rounded-xl border p-4 transition-colors',
+                  hasDeliveries ? 'border-primary/40 bg-primary/5' : 'border-dashed border-muted/60 bg-muted/10',
+                  isToday ? 'ring-1 ring-primary/40' : '',
+                ]
+                  .filter(Boolean)
+                  .join(' ')
 
-              return (
-                <li key={rule.id} className="rounded-lg border bg-muted/40 p-3">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2 font-medium text-foreground">
-                        <Truck className="h-4 w-4 text-muted-foreground" />
-                        <span>{supplierName}</span>
-                        <Badge className="bg-blue-50 text-blue-600 border-blue-200 text-xs">{timingLabel}</Badge>
-                      </div>
-                      <p className="text-xs text-muted-foreground">
-                        Next drop {format(nextDelivery, 'EEE d MMM')} • cutoff {cutoff.hours.toString().padStart(2, '0')}:{
-                          cutoff.minutes.toString().padStart(2, '0')
-                        }
-                      </p>
+                return (
+                  <div key={day.date.toISOString()} className={tileClassName}>
+                    <div className="flex items-baseline justify-between">
+                      <span className="text-xs font-semibold uppercase text-muted-foreground">
+                        {format(day.date, 'EEE')}
+                      </span>
+                      <span className="text-xs text-muted-foreground">{format(day.date, 'd MMM')}</span>
                     </div>
-                    <div className="text-right text-xs text-muted-foreground space-y-1 min-w-[120px]">
-                      {threshold ? <p>Free over {threshold}</p> : null}
-                      {flatFee ? <p>Delivery fee {flatFee}</p> : <p>Delivery fee included</p>}
+                    <div className="flex-1 space-y-2">
+                      {day.items.length > 0 ? (
+                        day.items.map(({ rule, supplier, nextDelivery }) => {
+                          const diff = differenceInCalendarDays(nextDelivery, referenceDate)
+                          const timingLabel = diff === 0 ? 'Today' : diff === 1 ? 'Tomorrow' : `In ${diff} days`
+                          const supplierName = supplier?.name ?? 'Supplier'
+
+                          const details: string[] = [`Cutoff ${formatCutoffTime(rule.cutoff_time)}`]
+                          if (rule.free_threshold_ex_vat) {
+                            details.push(`Free over ${formatCurrency(rule.free_threshold_ex_vat)}`)
+                          } else if (rule.flat_fee) {
+                            details.push(`Fee ${formatCurrency(rule.flat_fee)}`)
+                          }
+
+                          return (
+                            <div
+                              key={rule.id}
+                              className="rounded-lg border border-primary/30 bg-background/80 px-3 py-2 shadow-sm"
+                            >
+                              <div className="flex items-center justify-between gap-2">
+                                <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                                  <Truck className="h-4 w-4 text-muted-foreground" />
+                                  <span>{supplierName}</span>
+                                </div>
+                                <Badge variant="secondary" className="text-[11px]">
+                                  {timingLabel}
+                                </Badge>
+                              </div>
+                              <p className="mt-2 text-xs text-muted-foreground">{details.join(' • ')}</p>
+                            </div>
+                          )
+                        })
+                      ) : (
+                        <div className="flex h-full items-center justify-center">
+                          <span className="text-[11px] uppercase tracking-wide text-muted-foreground/80">
+                            No deliveries
+                          </span>
+                        </div>
+                      )}
                     </div>
                   </div>
-                </li>
-              )
-            })}
-          </ul>
+                )
+              })}
+            </div>
+            {deliveriesWithinWindow.length === 0 ? (
+              <p className="mt-4 text-sm text-muted-foreground">
+                Set delivery days with each supplier to build your upcoming schedule.
+              </p>
+            ) : laterDeliveries > 0 ? (
+              <p className="mt-4 text-xs text-muted-foreground">
+                {laterDeliveries} more delivery{laterDeliveries === 1 ? '' : 'ies'} scheduled later on.
+              </p>
+            ) : null}
+          </>
         )}
       </CardContent>
     </Card>

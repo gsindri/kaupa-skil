@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Skeleton } from '@/components/ui/skeleton'
 import { useAuth } from '@/contexts/useAuth'
 import { useAuditLogs } from '@/hooks/useAuditLogs'
 import { formatDistanceToNow, subDays } from 'date-fns'
@@ -9,7 +10,7 @@ export function ActivityList() {
   const { profile } = useAuth()
   const { auditLogs = [], isLoading } = useAuditLogs({ tenantId: profile?.tenant_id })
 
-  const metrics = useMemo(() => {
+  const { stats, recentLogs } = useMemo(() => {
     const now = new Date()
     const weekAgo = subDays(now, 7)
 
@@ -24,14 +25,6 @@ export function ActivityList() {
       return createdAt ? createdAt >= weekAgo : false
     }).length
 
-    const lastOrder = orders.length > 0
-      ? orders.reduce((latest: any, current: any) =>
-          !latest || new Date(current.created_at) > new Date(latest.created_at)
-            ? current
-            : latest,
-        null)
-      : null
-
     const activeUsers = new Set(
       auditLogs
         .map((log: any) => log.actor_id)
@@ -43,10 +36,8 @@ export function ActivityList() {
       : '—'
 
     return {
-      ordersThisWeek,
-      lastOrder,
-      activeUsers,
-      lastActivity,
+      stats: { ordersThisWeek, activeUsers, lastActivity },
+      recentLogs: auditLogs.slice(0, 6),
     }
   }, [auditLogs])
 
@@ -57,62 +48,51 @@ export function ActivityList() {
       .join(' ')
 
   return (
-    <Card className="h-full flex flex-col">
-      <CardHeader className="p-4 pb-2 space-y-4">
-        <div>
-          <CardTitle className="text-base">Recent activity</CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Who placed orders and nudged the system this week.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-2 gap-3 text-sm">
-          <div className="rounded-lg border bg-muted/40 p-3">
-            <div className="text-xs font-medium uppercase text-muted-foreground">Orders this week</div>
-            <div className="mt-1 text-xl font-semibold">{metrics.ordersThisWeek}</div>
-          </div>
-          <div className="rounded-lg border bg-muted/40 p-3">
-            <div className="text-xs font-medium uppercase text-muted-foreground">Active users</div>
-            <div className="mt-1 text-xl font-semibold">{metrics.activeUsers}</div>
-          </div>
-          <div className="rounded-lg border bg-muted/40 p-3">
-            <div className="text-xs font-medium uppercase text-muted-foreground">Last activity</div>
-            <div className="mt-1 text-xl font-semibold">{metrics.lastActivity}</div>
-          </div>
-          <div className="rounded-lg border bg-muted/40 p-3">
-            <div className="text-xs font-medium uppercase text-muted-foreground">Latest order</div>
-            <div className="mt-1 text-sm font-semibold">
-              {metrics.lastOrder
-                ? `${formatDistanceToNow(new Date(metrics.lastOrder.created_at), { addSuffix: true })}`
-                : '—'}
-            </div>
-          </div>
-        </div>
+    <Card className="overflow-hidden">
+      <CardHeader className="p-6 pb-4">
+        <CardTitle className="text-base font-semibold">Recent activity</CardTitle>
+        <p className="text-sm text-muted-foreground">
+          {stats.ordersThisWeek > 0
+            ? `${stats.ordersThisWeek} order${stats.ordersThisWeek === 1 ? '' : 's'} in the past week • Last update ${stats.lastActivity}.`
+            : `Last update ${stats.lastActivity}. We’ll list new orders here as they happen.`}
+        </p>
       </CardHeader>
-      <CardContent className="p-0 flex-1">
+      <CardContent className="p-0">
         {isLoading ? (
-          <div className="p-4 text-sm text-muted-foreground text-center">Loading activity...</div>
-        ) : auditLogs.length === 0 ? (
-          <div className="p-4 text-sm text-muted-foreground text-center">No recent activity</div>
+          <div className="space-y-3 p-6">
+            {[...Array(3)].map((_, index) => (
+              <div key={index} className="flex items-center justify-between gap-4">
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-3 w-20" />
+                </div>
+                <Skeleton className="h-3 w-16" />
+              </div>
+            ))}
+          </div>
+        ) : recentLogs.length === 0 ? (
+          <div className="p-6 text-sm text-muted-foreground">
+            Activity will appear here once your team starts ordering.
+          </div>
         ) : (
           <ul className="divide-y">
-            {auditLogs.map((a: any) => (
-              <li key={a.id} className="p-4 text-sm flex items-center justify-between">
+            {recentLogs.map((log: any) => (
+              <li key={log.id} className="flex items-center justify-between gap-4 px-6 py-4 text-sm">
                 <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium text-foreground">{formatAction(a.action)}</span>
-                    {a.entity_type ? (
-                      <Badge variant="outline" className="text-[11px]">
-                        {a.entity_type}
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="font-medium text-foreground">{formatAction(log.action)}</span>
+                    {log.entity_type ? (
+                      <Badge variant="outline" className="text-[11px] uppercase tracking-wide">
+                        {log.entity_type}
                       </Badge>
                     ) : null}
                   </div>
-                  {a.tenant?.name ? (
-                    <p className="text-xs text-muted-foreground">{a.tenant.name}</p>
+                  {log.tenant?.name ? (
+                    <p className="text-xs text-muted-foreground">{log.tenant.name}</p>
                   ) : null}
                 </div>
                 <span className="text-xs text-muted-foreground">
-                  {formatDistanceToNow(new Date(a.created_at), { addSuffix: true })}
+                  {formatDistanceToNow(new Date(log.created_at), { addSuffix: true })}
                 </span>
               </li>
             ))}

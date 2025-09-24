@@ -1,86 +1,89 @@
-import React, { useMemo } from 'react'
+import React from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { AlertTriangle, Bell } from 'lucide-react'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Bell } from 'lucide-react'
 import { alertSeverityTokens } from './status-tokens'
-import { useAlerts } from '@/hooks/useAlerts'
+import type { AlertItem } from '@/hooks/useAlerts'
 
-export function AlertsPanel() {
-  const { alerts, isLoading } = useAlerts()
+interface AlertsPanelProps {
+  alerts: AlertItem[]
+  isLoading: boolean
+}
 
-  const severityBreakdown = useMemo(() => {
-    return alerts.reduce(
-      (acc, alert) => {
-        acc[alert.severity] = (acc[alert.severity] || 0) + 1
-        return acc
-      },
-      { high: 0, medium: 0, info: 0 } as Record<'high' | 'medium' | 'info', number>
-    )
-  }, [alerts])
-
-  return (
-    <Card className="h-full flex flex-col">
-      <CardHeader className="p-4 pb-2 space-y-4">
-        <div className="flex items-start justify-between gap-2">
-          <div>
-            <CardTitle className="text-base">Alerts</CardTitle>
-            <p className="text-sm text-muted-foreground">
-              Price spikes, stock-outs and invoices that need a quick look.
-            </p>
+export function AlertsPanel({ alerts, isLoading }: AlertsPanelProps) {
+  if (isLoading) {
+    return (
+      <Card className="overflow-hidden">
+        <CardHeader className="flex flex-col gap-3 p-6 pb-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="space-y-1">
+            <CardTitle className="text-base font-semibold">Alerts</CardTitle>
+            <p className="text-sm text-muted-foreground">Keeping an eye on spikes and shortages.</p>
           </div>
-          <Button size="sm" variant="ghost" className="gap-1">
+          <Button size="sm" variant="ghost" className="gap-2">
             <Bell className="h-4 w-4" />
             Settings
           </Button>
-        </div>
-
-        <div className="grid grid-cols-3 gap-3 text-sm">
-          {(['high', 'medium', 'info'] as const).map((severity) => (
-            <div key={severity} className="rounded-lg border bg-muted/40 p-3">
-              <div className="text-xs font-medium uppercase text-muted-foreground">
-                {alertSeverityTokens[severity].label}
-              </div>
-              <div className="mt-1 text-xl font-semibold">{severityBreakdown[severity]}</div>
+        </CardHeader>
+        <CardContent className="space-y-3 p-6 pt-0">
+          {[...Array(2)].map((_, index) => (
+            <div key={index} className="space-y-2 rounded-xl border border-dashed border-muted/60 p-4">
+              <Skeleton className="h-4 w-1/4" />
+              <Skeleton className="h-3 w-3/4" />
             </div>
           ))}
+        </CardContent>
+      </Card>
+    )
+  }
+
+  const visibleAlerts = alerts.slice(0, 5)
+
+  if (visibleAlerts.length === 0) {
+    return null
+  }
+
+  return (
+    <Card className="overflow-hidden">
+      <CardHeader className="flex flex-col gap-3 p-6 pb-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="space-y-1">
+          <CardTitle className="text-base font-semibold">Alerts</CardTitle>
+          <p className="text-sm text-muted-foreground">Heads-ups that need a human glance.</p>
         </div>
+        <Button size="sm" variant="ghost" className="gap-2">
+          <Bell className="h-4 w-4" />
+          Settings
+        </Button>
       </CardHeader>
-      <CardContent className="p-0 flex-1">
-        {isLoading ? (
-          <div className="p-4 text-sm text-muted-foreground text-center">Loading alerts...</div>
-        ) : alerts.length === 0 ? (
-          <div className="p-6 text-sm text-muted-foreground text-center space-y-2">
-            <AlertTriangle className="mx-auto h-5 w-5" />
-            <p className="font-medium text-foreground">All quiet</p>
-            <p>We’ll raise price jumps, stockouts and invoice tasks here as they happen.</p>
-          </div>
-        ) : (
-          <ul className="divide-y">
-            {alerts.map((a) => (
-              <li key={a.id} className="p-4 flex items-center justify-between gap-4">
-                <div>
-                  <div className="flex items-center gap-2 text-sm">
-                    <Badge className={`${alertSeverityTokens[a.severity].badge}`}>
-                      {alertSeverityTokens[a.severity].label}
-                    </Badge>
-                    <span className="font-medium">{a.supplier}</span>
-                    <span className="text-muted-foreground">{a.sku}</span>
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    {a.summary} • {new Date(a.created_at).toLocaleString('is-IS')}
-                  </div>
+      <CardContent className="p-0">
+        <ul className="divide-y">
+          {visibleAlerts.map((alert) => (
+            <li key={alert.id} className="flex flex-col gap-3 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="space-y-1">
+                <div className="flex flex-wrap items-center gap-2 text-sm">
+                  <Badge className={`text-xs ${alertSeverityTokens[alert.severity].badge}`}>
+                    {alertSeverityTokens[alert.severity].label}
+                  </Badge>
+                  <span className="font-medium text-foreground">{alert.supplier}</span>
+                  <span className="text-xs text-muted-foreground">{alert.sku}</span>
                 </div>
-                <div className="flex gap-2">
-                  <Button size="sm" variant="secondary">
-                    Add to cart
-                  </Button>
-                  <Button size="sm" variant="ghost">Dismiss</Button>
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
+                <p className="text-xs text-muted-foreground">{alert.summary}</p>
+                <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                  {new Date(alert.created_at).toLocaleString('is-IS')}
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button size="sm" variant="outline">
+                  Review
+                </Button>
+                <Button size="sm" variant="ghost">
+                  Dismiss
+                </Button>
+              </div>
+            </li>
+          ))}
+        </ul>
       </CardContent>
     </Card>
   )
