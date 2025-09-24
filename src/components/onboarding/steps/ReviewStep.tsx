@@ -12,8 +12,17 @@ import {
 } from '@/components/ui/select'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 
-import { BUSINESS_TYPE_OPTIONS, type OrganizationFormValues } from './OrganizationStep'
+import { BUSINESS_TYPE_OPTIONS, type OrganizationBasicsFormValues } from './OrganizationBasicsStep'
+import type { ContactInformationFormValues } from './ContactInformationStep'
+import type { DeliveryDetailsFormValues } from './DeliveryDetailsStep'
+import type { InvoicingSetupFormValues } from './InvoicingSetupStep'
 import type { SupplierOption } from './SupplierSelectionStep'
+
+// Combined organization data type
+export type OrganizationFormValues = OrganizationBasicsFormValues & 
+  ContactInformationFormValues & 
+  DeliveryDetailsFormValues & 
+  InvoicingSetupFormValues
 
 export interface ReviewPreferences {
   language: string

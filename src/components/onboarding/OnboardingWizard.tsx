@@ -394,7 +394,7 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
   const handleSupplierContinue = useCallback(() => {
     if (selectedSupplierIds.length === 0) {
       toast({
-        title: 'No suppliers selected',
+        title: "No suppliers selected",
         description: "You haven't connected any suppliers yet.",
         duration: 4000
       })
@@ -754,9 +754,11 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
             {currentStep === 5 && (
               <SupplierSelectionStep
                 suppliers={marketplaceSuppliers}
-                selectedSupplierIds={selectedSupplierIds}
-                onToggleSupplier={handleSupplierToggle}
+                selectedIds={selectedSupplierIds}
+                onToggle={handleSupplierToggle}
+                onInviteSupplier={() => {}}
                 isLoading={suppliersLoading}
+                footer={null}
               />
             )}
 
@@ -774,8 +776,12 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
                   invoiceAddress: combinedValues.invoiceAddress
                 }}
                 suppliers={marketplaceSuppliers.filter(s => selectedSupplierIds.includes(s.id))}
+                selectedSupplierIds={selectedSupplierIds}
                 preferences={preferences}
                 onPreferencesChange={setPreferences}
+                onEditOrganization={() => setCurrentStep(1)}
+                onEditSuppliers={() => setCurrentStep(5)}
+                footer={null}
               />
             )}
           </div>
