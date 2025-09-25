@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { cn } from '@/lib/utils'
 import { VirtualizedGrid } from './VirtualizedGrid'
 import { ProductCard } from './ProductCard'
 
@@ -7,6 +8,7 @@ interface CatalogGridProps {
   onAddToCart: (p: any, supplierId?: string) => void
   onNearEnd?: () => void
   showPrice?: boolean
+  className?: string
 }
 
 export function CatalogGrid({
@@ -14,6 +16,7 @@ export function CatalogGrid({
   onAddToCart,
   onNearEnd,
   showPrice,
+  className,
 }: CatalogGridProps) {
   const renderItem = React.useCallback(
     (p: any, _index: number) => (
@@ -36,7 +39,7 @@ export function CatalogGrid({
       rowHeight={400}
       gap={32}
       onNearEnd={onNearEnd}
-      className="py-6"
+      className={cn('pt-2 pb-12', className)}
     />
   )
 }
