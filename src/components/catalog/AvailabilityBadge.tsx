@@ -26,7 +26,7 @@ const MAP: Record<
   LOW_STOCK: {
     icon: <AlertTriangle className="icon-16" aria-hidden="true" />,
     label: 'Low',
-    className: 'badge badge--in',
+    className: 'badge badge--low',
     aria: 'Low stock',
   },
   OUT_OF_STOCK: {

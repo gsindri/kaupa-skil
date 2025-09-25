@@ -51,6 +51,8 @@
   /* Availability badges */
   --badge-in-bg:#D6FBEF;
   --badge-in-text:#046C4E;
+  --badge-low-bg:#FEF3C7;
+  --badge-low-text:#92400E;
   --badge-out-bg:#FCE2E6;
   --badge-out-text:#8C1D2E;
   --badge-unknown-bg:#E8EEF7;
@@ -612,6 +614,7 @@ svg.lucide{ stroke-width:1.75; }
   font-size:13px; line-height:1.1; font-weight:600;
 }
 .badge--in{ background:var(--badge-in-bg); color:var(--badge-in-text); }
+.badge--low{ background:var(--badge-low-bg); color:var(--badge-low-text); }
 .badge--out{ background:var(--badge-out-bg); color:var(--badge-out-text); }
 .badge--unknown{ background:var(--badge-unknown-bg); color:var(--badge-unknown-text); }
 
