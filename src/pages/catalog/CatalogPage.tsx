@@ -836,7 +836,13 @@ export default function CatalogPage() {
       }
       panelOpen={showFilters}
     >
-      <div className={cn(CATALOG_CONTAINER_CLASS, 'w-full space-y-6 py-6')}>
+      <div
+        className={cn(
+          CATALOG_CONTAINER_CLASS,
+          'w-full space-y-6 pb-6',
+          view === 'grid' ? 'pt-4' : 'pt-6',
+        )}
+      >
         {showConnectBanner && (
           <div
             data-testid="alert"
@@ -944,6 +950,7 @@ export default function CatalogPage() {
                 onNearEnd={handleLoadMore}
                 showPrice
                 addingId={addingId}
+                className="-mt-4 sm:-mt-5"
               />
             ) : (
               <CatalogTable
