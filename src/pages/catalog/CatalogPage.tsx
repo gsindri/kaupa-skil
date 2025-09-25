@@ -440,14 +440,37 @@ export default function CatalogPage() {
   // Use data directly from the appropriate hook
   const currentQuery = orgId ? orgQuery : publicQuery
   const products = useMemo(() => currentQuery.data ?? [], [currentQuery.data])
-  const nextCursor = currentQuery.nextCursor
   const totalCount = currentQuery.total
   const isFetching = currentQuery.isFetching
   const error = currentQuery.error
+  const {
+    hasNextPage,
+    isFetchingNextPage,
+    loadMore,
+    isLoading: queryLoading,
+    refetch,
+  } = currentQuery
 
   const unconnectedPercentage = useMemo(() => {
     if (!products.length) return 0
-    const missing = products.filter(p => !p.supplier_ids?.length).length
+    const missing = products.filter(product => {
+      const supplierIds = Array.isArray(product?.supplier_ids)
+        ? (product.supplier_ids as unknown[]).filter(
+            (value): value is string => typeof value === 'string' && value.length > 0,
+          )
+        : []
+      const supplierEntries = Array.isArray(product?.suppliers)
+        ? product.suppliers.filter(Boolean)
+        : []
+      const supplierProducts = Array.isArray(product?.supplier_products)
+        ? product.supplier_products.filter(Boolean)
+        : []
+      return (
+        supplierIds.length === 0 &&
+        supplierEntries.length === 0 &&
+        supplierProducts.length === 0
+      )
+    }).length
     return (missing / products.length) * 100
   }, [products])
   
@@ -528,16 +551,14 @@ export default function CatalogPage() {
     sortOrder,
   ])
 
-  const isLoading = isFetching
-  const loadingMore = isLoading && nextCursor !== null
+  const isInitialLoading = (queryLoading || isFetching) && products.length === 0
+  const isLoadingMore = isFetchingNextPage
 
   const handleLoadMore = useCallback(() => {
-    console.log('CatalogPage: handleLoadMore called, nextCursor:', nextCursor)
-    if (currentQuery.hasNextPage && !currentQuery.isFetchingNextPage) {
-      console.log('CatalogPage: Calling loadMore')
-      currentQuery.loadMore()
+    if (hasNextPage && !isFetchingNextPage) {
+      loadMore()
     }
-  }, [nextCursor, currentQuery])
+  }, [hasNextPage, isFetchingNextPage, loadMore])
 
   const sortedProducts = useMemo(() => {
     if (!tableSort) return products
@@ -575,10 +596,57 @@ export default function CatalogPage() {
     return sorted
   }, [products, tableSort])
 
+  const displayProducts = view === 'list' ? sortedProducts : products
+  const hasFacetFilters = Boolean(
+    (filters.brand && filters.brand.length) ||
+      (filters.category && filters.category.length) ||
+      (filters.supplier && filters.supplier.length) ||
+      filters.packSizeRange,
+  )
+  const hasSearchQuery = Boolean((filters.search ?? '').trim().length)
+  const hasAnyFilters =
+    hasFacetFilters ||
+    hasSearchQuery ||
+    onlyWithPrice ||
+    triStock !== 'off' ||
+    triSuppliers !== 'off' ||
+    triSpecial !== 'off'
+  const showConnectBanner = hideConnectPill && !bannerDismissed && products.length > 0
+  const sentinelKey = useMemo(
+    () =>
+      [
+        viewKey,
+        stringifiedFilters,
+        sortOrder,
+        triStock,
+        triSuppliers,
+        triSpecial,
+        view,
+      ].join(':'),
+    [
+      viewKey,
+      stringifiedFilters,
+      sortOrder,
+      triStock,
+      triSuppliers,
+      triSpecial,
+      view,
+    ],
+  )
+
   const toggleSelect = (id: string) => {
     setSelected(prev =>
       prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id],
     )
+  }
+
+  const handleToggleBulkMode = () => {
+    setBulkMode(prev => {
+      if (prev) {
+        setSelected([])
+      }
+      return !prev
+    })
   }
 
   const handleSelectAll = (checked: boolean) => {
@@ -598,10 +666,6 @@ export default function CatalogPage() {
       }
       return { key, direction: 'asc' }
     })
-  }
-
-  const handleFilterChange = (f: Partial<FacetFilters>) => {
-    setFilters(f)
   }
 
   const handleAdd = (product: any, selectedSupplierId?: string) => {
@@ -715,6 +779,13 @@ export default function CatalogPage() {
   }
 
   useEffect(() => {
+    if (view !== 'list' && bulkMode) {
+      setBulkMode(false)
+      setSelected([])
+    }
+  }, [view, bulkMode])
+
+  useEffect(() => {
     if (typeof window === 'undefined') return
     const shouldBeScrolled = window.scrollY > 0
     setScrolled(prev => (prev === shouldBeScrolled ? prev : shouldBeScrolled))
@@ -765,6 +836,147 @@ export default function CatalogPage() {
       }
       panelOpen={showFilters}
     >
+      <div className={cn(CATALOG_CONTAINER_CLASS, 'w-full space-y-6 py-6')}>
+        {showConnectBanner && (
+          <div
+            data-testid="alert"
+            className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white/90 p-6 shadow-sm backdrop-blur-xl"
+          >
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-start gap-3">
+                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-sky-100 text-sky-600">
+                  <AlertCircle className="h-5 w-5" aria-hidden="true" />
+                </span>
+                <div>
+                  <p className="text-sm font-semibold text-slate-900">
+                    Connect suppliers to unlock prices.
+                  </p>
+                  <p className="mt-1 text-sm text-slate-600">
+                    Get live pricing and availability by connecting with your suppliers.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setShowFilters(true)}
+                >
+                  Browse suppliers
+                </Button>
+                <button
+                  type="button"
+                  onClick={() => setBannerDismissed(true)}
+                  className="rounded-full p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-2"
+                  aria-label="Dismiss connect suppliers banner"
+                >
+                  <X className="h-4 w-4" aria-hidden="true" />
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {isInitialLoading ? (
+          <div className="flex h-64 items-center justify-center rounded-2xl border border-slate-200 bg-white/90 shadow-sm">
+            <p className="text-sm font-medium text-slate-600">Loading catalog…</p>
+          </div>
+        ) : !displayProducts.length ? (
+          <div className="rounded-2xl border border-dashed border-slate-300 bg-white/80 px-6 py-12 text-center shadow-sm">
+            <h2 className="text-lg font-semibold text-slate-900">No products found</h2>
+            <p className="mt-2 text-sm text-slate-600">
+              {hasAnyFilters
+                ? 'Try adjusting or clearing your search and filters to see more results.'
+                : 'We could not find any products to show right now. Try refreshing the catalog.'}
+            </p>
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+              {hasAnyFilters && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    clearAllFilters()
+                    setFilters({ search: '' })
+                  }}
+                >
+                  Clear filters
+                </Button>
+              )}
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => refetch()}
+              >
+                Refresh
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {view === 'list' && (
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-sm font-medium text-slate-600">
+                  {bulkMode
+                    ? `${selected.length} item${selected.length === 1 ? '' : 's'} selected`
+                    : `${displayProducts.length} item${displayProducts.length === 1 ? '' : 's'} visible`}
+                </p>
+                <div className="flex items-center gap-2">
+                  {bulkMode && selected.length > 0 && (
+                    <Button size="sm" variant="ghost" onClick={() => setSelected([])}>
+                      Clear selection
+                    </Button>
+                  )}
+                  <Button
+                    size="sm"
+                    variant={bulkMode ? 'default' : 'outline'}
+                    onClick={handleToggleBulkMode}
+                  >
+                    {bulkMode ? 'Done selecting' : 'Bulk select'}
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {view === 'grid' ? (
+              <CatalogGrid
+                products={displayProducts}
+                onAddToCart={handleAdd}
+                onNearEnd={handleLoadMore}
+                showPrice
+                addingId={addingId}
+              />
+            ) : (
+              <CatalogTable
+                products={displayProducts}
+                selected={selected}
+                onSelect={toggleSelect}
+                onSelectAll={handleSelectAll}
+                sort={tableSort}
+                onSort={handleSort}
+                isBulkMode={bulkMode}
+              />
+            )}
+
+            {hasNextPage && (
+              <div className="flex flex-col items-center gap-3 py-6">
+                <InfiniteSentinel
+                  key={sentinelKey}
+                  onVisible={handleLoadMore}
+                  disabled={!hasNextPage || isLoadingMore}
+                />
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleLoadMore}
+                  disabled={isLoadingMore}
+                >
+                  {isLoadingMore ? 'Loading more…' : 'Load more'}
+                </Button>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </AppLayout>
   )
 }
