@@ -723,7 +723,6 @@ export default function CatalogPage() {
 
   const total = totalCount
 
-  const containerClass = CATALOG_CONTAINER_CLASS
 
   return (
     <AppLayout
@@ -769,7 +768,6 @@ export default function CatalogPage() {
     >
 
       {view === 'list' ? (
-        <div className={CATALOG_CONTENT_CLASS}>
           {hideConnectPill && !bannerDismissed && (
             <div
               role="status"
@@ -815,7 +813,6 @@ export default function CatalogPage() {
           )}
         </div>
       ) : (
-        <div className={CATALOG_CONTENT_CLASS}>
           <CatalogGrid
             products={sortedProducts}
             onAddToCart={handleAdd}
