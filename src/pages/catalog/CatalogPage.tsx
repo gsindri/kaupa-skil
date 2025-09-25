@@ -37,6 +37,8 @@ import { MagnifyingGlass, FunnelSimple, XCircle } from '@phosphor-icons/react'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 
 const FILTER_PANEL_LS_KEY = 'catalog-filters-open'
+const CATALOG_CONTAINER_CLASS = 'mx-auto w-full max-w-[1600px] px-4 sm:px-6 lg:px-12'
+const CATALOG_CONTENT_CLASS = cn(CATALOG_CONTAINER_CLASS, 'space-y-6')
 
 interface DerivedChip {
   key: string
@@ -721,9 +723,6 @@ export default function CatalogPage() {
 
   const total = totalCount
 
-  const sharedContainerClass = 'mx-auto w-full max-w-[1600px] px-4 sm:px-6 lg:px-12'
-  const containerClass = cn(sharedContainerClass)
-  const contentContainerClass = cn(sharedContainerClass, 'space-y-6')
 
   return (
     <AppLayout
@@ -877,6 +876,7 @@ function FiltersBar({
   total,
   scrolled,
 }: FiltersBarProps) {
+  const containerClass = CATALOG_CONTAINER_CLASS
   const { search: _search, ...facetFilters } = filters
   const chips = deriveChipsFromFilters(
     filters,
