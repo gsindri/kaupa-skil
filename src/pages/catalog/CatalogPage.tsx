@@ -798,8 +798,6 @@ export default function CatalogPage() {
               onSelectAll={handleSelectAll}
               sort={tableSort}
               onSort={handleSort}
-              filters={filters}
-              onFilterChange={handleFilterChange}
               isBulkMode={bulkMode}
             />
             <InfiniteSentinel

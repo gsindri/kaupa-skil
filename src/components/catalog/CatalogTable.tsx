@@ -8,13 +8,6 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Checkbox } from '@/components/ui/checkbox'
-import {
-  Select,
-  SelectTrigger,
-  SelectContent,
-  SelectItem,
-  SelectValue,
-} from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
 import { useCart } from '@/contexts/useBasket'
 import { QuantityStepper } from '@/components/cart/QuantityStepper'
@@ -25,10 +18,8 @@ import AvailabilityBadge from '@/components/catalog/AvailabilityBadge'
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
 import { timeAgo } from '@/lib/timeAgo'
 import { formatCurrency } from '@/lib/format'
-import type { FacetFilters } from '@/services/catalog'
 import ProductThumb from '@/components/catalog/ProductThumb'
 import SupplierLogo from './SupplierLogo'
-import SupplierChips from './SupplierChips'
 import { resolveImage } from '@/lib/images'
 import type { CartItem } from '@/lib/types'
 import { Lock } from 'lucide-react'
@@ -406,8 +397,6 @@ interface CatalogTableProps {
   onSelectAll: (checked: boolean) => void
   sort: { key: 'name' | 'supplier' | 'price' | 'availability'; direction: 'asc' | 'desc' } | null
   onSort: (key: 'name' | 'supplier' | 'price' | 'availability') => void
-  filters: FacetFilters
-  onFilterChange: (f: Partial<FacetFilters>) => void
   isBulkMode: boolean
 }
 
@@ -418,8 +407,6 @@ export function CatalogTable({
   onSelectAll,
   sort,
   onSort,
-  filters,
-  onFilterChange,
   isBulkMode,
 }: CatalogTableProps) {
   const rowRefs = useRef<Array<HTMLTableRowElement | null>>([])
@@ -427,15 +414,6 @@ export function CatalogTable({
   const { vendors } = useVendors()
   const { suppliers: allSuppliers } = useSuppliers()
   const { suppliers: connectedSuppliers } = useSupplierConnections()
-  const brandValues = filters.brand ?? []
-  const brandOptions = Array.from(
-    new Set(products.map(p => p.brand).filter(Boolean) as string[]),
-  ).sort()
-  const showBrandFilter =
-    products.length > 0 &&
-    products.filter(p => p.brand).length / products.length > 0.3
-
-  const showFilterRow = showBrandFilter
 
   const allIds = products.map(p => p.catalog_id)
   const isAllSelected = allIds.length > 0 && allIds.every(id => selected.includes(id))
@@ -453,9 +431,10 @@ export function CatalogTable({
     }
   }
 
-  const renderSortPill = (
+  const renderSortButton = (
     key: 'name' | 'supplier' | 'price' | 'availability',
     label: string,
+    align: 'left' | 'right' = 'left',
   ) => {
     const isActive = sort?.key === key
     const direction = isActive ? sort?.direction : null
@@ -467,27 +446,29 @@ export function CatalogTable({
         aria-label={`Sort by ${label}${direction ? direction === 'asc' ? ' (ascending)' : ' (descending)' : ''}`}
         onClick={() => onSort(key)}
         className={cn(
-          'flex items-center gap-1 rounded-full border border-slate-200/80 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500 transition-colors hover:border-slate-300 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 dark:border-white/20 dark:text-slate-300 dark:hover:border-white/30 dark:hover:text-white',
-          isActive &&
-            'border-slate-400 bg-slate-100 text-slate-900 dark:border-white/40 dark:bg-white/10 dark:text-white',
+          'inline-flex w-full items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 dark:text-slate-300',
+          align === 'right'
+            ? 'justify-end text-right'
+            : 'justify-start text-left',
+          isActive && 'text-slate-900 dark:text-white',
         )}
         title={`Sort by ${label}`}
       >
         <span>{label}</span>
-        {direction ? (
-          <span aria-hidden>{direction === 'asc' ? '▲' : '▼'}</span>
-        ) : null}
+        <span aria-hidden className="text-[10px]">
+          {direction ? (direction === 'asc' ? '▲' : '▼') : ''}
+        </span>
       </button>
     )
   }
 
   return (
-    <div className="group/catalog-table mt-6 overflow-hidden rounded-[24px] border border-slate-200/80 bg-white/90 text-slate-900 shadow-[0_24px_48px_-24px_rgba(15,23,42,0.35)] backdrop-blur-xl dark:border-white/10 dark:bg-[rgba(13,19,32,0.86)] dark:text-slate-100">
+    <div className="mt-6 overflow-hidden rounded-xl border border-slate-200/70 bg-white text-slate-900 dark:border-white/10 dark:bg-[rgba(13,19,32,0.86)] dark:text-slate-100">
       <Table className="min-w-full text-sm text-slate-600 dark:text-slate-300">
-        <TableHeader className="sticky top-0 z-10 bg-white/70 backdrop-blur-xl shadow-[0_12px_26px_rgba(15,23,42,0.08)] dark:bg-[rgba(13,19,32,0.94)]">
+        <TableHeader className="sticky top-0 z-10 bg-slate-50/70 backdrop-blur-sm dark:bg-white/5">
           <TableRow className="border-b border-slate-200/70 bg-transparent dark:border-white/10">
             {isBulkMode && (
-              <TableHead className="w-12 px-6 py-5 text-left align-bottom">
+              <TableHead className="w-12 px-4 py-3 text-left align-middle">
                 <Checkbox
                   aria-label="Select all products"
                   checked={isAllSelected}
@@ -495,56 +476,22 @@ export function CatalogTable({
                 />
               </TableHead>
             )}
-            <TableHead className="px-6 py-5 align-bottom text-left">
-              <div className="flex flex-col gap-2">
-                <span className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400">
-                  Product
-                </span>
-                <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-                  {renderSortPill('name', 'Name')}
-                  {renderSortPill('availability', 'Availability')}
-                  {renderSortPill('supplier', 'Suppliers')}
-                </div>
-              </div>
+            <TableHead className="px-4 py-3 text-left align-middle">
+              {renderSortButton('name', 'Product')}
             </TableHead>
-            <TableHead className="w-[260px] px-6 py-5 text-right align-bottom">
-              <div className="flex flex-col items-end gap-2">
-                <span className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400">
-                  Price
-                </span>
-                <div className="flex justify-end">
-                  {renderSortPill('price', 'Price')}
-                </div>
-              </div>
+            <TableHead className="w-40 px-4 py-3 text-left align-middle">
+              {renderSortButton('availability', 'Availability')}
+            </TableHead>
+            <TableHead className="px-4 py-3 text-left align-middle">
+              {renderSortButton('supplier', 'Supplier')}
+            </TableHead>
+            <TableHead className="w-32 px-4 py-3 text-right align-middle">
+              {renderSortButton('price', 'Price', 'right')}
+            </TableHead>
+            <TableHead className="w-32 px-4 py-3 text-right align-middle text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+              Actions
             </TableHead>
           </TableRow>
-          {showFilterRow && (
-            <TableRow className="border-b border-slate-200/60 bg-transparent text-slate-600 dark:border-white/10 dark:text-slate-300">
-              {isBulkMode && <TableHead className="px-6" />}
-              <TableHead className="px-6 py-3" colSpan={isBulkMode ? 2 : 1}>
-                {showBrandFilter && (
-                  <Select
-                    value={brandValues[0] ?? 'all'}
-                    onValueChange={v =>
-                      onFilterChange({ brand: v === 'all' ? undefined : [v] })
-                    }
-                  >
-                    <SelectTrigger className="h-9 w-48 rounded-full border border-slate-200/80 bg-white/90 text-xs font-medium text-slate-600 shadow-sm transition-colors hover:border-slate-300 focus:border-slate-400 focus:ring-0 dark:border-white/15 dark:bg-white/10 dark:text-slate-200">
-                      <SelectValue placeholder="Brand" />
-                    </SelectTrigger>
-                    <SelectContent className="rounded-[16px] bg-white text-slate-700 shadow-lg ring-1 ring-slate-200 dark:bg-[rgba(13,19,32,0.94)] dark:text-slate-100 dark:ring-white/10">
-                      <SelectItem value="all">All</SelectItem>
-                      {brandOptions.map(b => (
-                        <SelectItem key={b} value={b}>
-                          {b}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              </TableHead>
-            </TableRow>
-          )}
         </TableHeader>
         <TableBody className="[&_tr:last-child]:border-b-0">
           {products.map((p, i) => {
@@ -569,6 +516,10 @@ export function CatalogTable({
               connectedSupplierIds,
             )
 
+            const primarySupplier = suppliers[0]
+            const primarySupplierName = primarySupplier?.supplier_name || 'Unknown supplier'
+            const remainingSupplierCount = Math.max(0, suppliers.length - 1)
+
             return (
               <TableRow
                 key={id}
@@ -576,10 +527,10 @@ export function CatalogTable({
                 tabIndex={-1}
                 data-state={isSelected ? 'selected' : undefined}
                 onKeyDown={e => handleKeyDown(e, i, id)}
-                className="group align-top border-b border-slate-200/60 bg-white/40 transition-colors hover:bg-white/80 focus-visible:bg-white/90 data-[state=selected]:bg-slate-100 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10 dark:focus-visible:bg-white/15 dark:data-[state=selected]:bg-white/12"
+                className="group border-b border-slate-200/60 bg-white transition-colors hover:bg-slate-50 focus-visible:bg-slate-100 data-[state=selected]:bg-slate-100 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10 dark:focus-visible:bg-white/15 dark:data-[state=selected]:bg-white/12"
               >
                 {isBulkMode && (
-                  <TableCell className="w-12 px-6 py-6 align-top">
+                  <TableCell className="w-12 px-4 py-3 align-middle">
                     <Checkbox
                       aria-label={`Select ${p.name}`}
                       checked={isSelected}
@@ -587,10 +538,10 @@ export function CatalogTable({
                     />
                   </TableCell>
                 )}
-                <TableCell className="px-6 py-6 align-top">
-                  <div className="flex gap-4">
+                <TableCell className="px-4 py-3 align-middle">
+                  <div className="flex items-center gap-3">
                     <ProductThumb
-                      className="h-[72px] w-[72px] flex-none overflow-hidden rounded-[18px] border border-slate-200/80 bg-white object-cover dark:border-white/15 dark:bg-white/10"
+                      className="h-12 w-12 flex-none overflow-hidden rounded-md border border-slate-200/80 bg-white object-cover dark:border-white/15 dark:bg-white/10"
                       src={resolveImage(
                         p.sample_image_url ?? p.image_main,
                         p.availability_status,
@@ -598,72 +549,70 @@ export function CatalogTable({
                       name={p.name}
                       brand={p.brand}
                     />
-                    <div className="min-w-0 flex-1 space-y-3">
-                      <div className="min-w-0 space-y-2">
-                        <a
-                          href={`#${p.catalog_id}`}
-                          aria-label={`View details for ${p.name}`}
-                          className="line-clamp-1 text-base font-semibold text-slate-900 transition-colors hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 dark:text-white dark:hover:text-slate-200"
-                        >
-                          {p.name}
-                        </a>
-                        {(p.brand || p.canonical_pack) && (
-                          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-slate-500 dark:text-slate-300">
-                            {p.brand && <span className="font-medium">{p.brand}</span>}
-                            {p.brand && p.canonical_pack && (
-                              <span aria-hidden className="text-slate-300 dark:text-slate-500">
-                                •
-                              </span>
-                            )}
-                            {p.canonical_pack && (
-                              <span className="font-medium text-slate-600 dark:text-slate-200">
-                                {p.canonical_pack}
-                              </span>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex flex-wrap items-center gap-3 text-xs font-medium text-slate-500 dark:text-slate-300">
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <AvailabilityBadge
-                              className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600 dark:bg-white/10 dark:text-slate-200"
-                              tabIndex={-1}
-                              status={p.availability_status}
-                              updatedAt={p.availability_updated_at}
-                            />
-                          </TooltipTrigger>
-                          <TooltipContent className="space-y-1 text-sm">
-                            <div>{availabilityLabel}.</div>
-                            <div className="text-xs text-muted-foreground">
-                              Last checked {p.availability_updated_at ? timeAgo(p.availability_updated_at) : 'unknown'}. Source: {p.suppliers?.[0] || 'Unknown'}
-                            </div>
-                          </TooltipContent>
-                        </Tooltip>
-                        {suppliers.length ? (
-                          <SupplierChips suppliers={suppliers} />
-                        ) : (
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <span className="text-xs text-muted-foreground">No supplier data</span>
-                            </TooltipTrigger>
-                            <TooltipContent>No supplier data</TooltipContent>
-                          </Tooltip>
-                        )}
-                      </div>
+                    <div className="min-w-0">
+                      <a
+                        href={`#${p.catalog_id}`}
+                        aria-label={`View details for ${p.name}`}
+                        className="truncate text-sm font-semibold text-slate-900 transition-colors hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 dark:text-white dark:hover:text-slate-200"
+                      >
+                        {p.name}
+                      </a>
+                      {(p.brand || p.canonical_pack) && (
+                        <div className="mt-1 flex flex-wrap items-center gap-x-1 gap-y-0.5 text-xs text-muted-foreground">
+                          {p.brand && <span className="font-medium">{p.brand}</span>}
+                          {p.brand && p.canonical_pack && <span aria-hidden>·</span>}
+                          {p.canonical_pack && (
+                            <span className="font-medium text-slate-600 dark:text-slate-200">
+                              {p.canonical_pack}
+                            </span>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </TableCell>
-                <TableCell className="w-[260px] px-6 py-6 align-top">
-                  <div className="flex h-full flex-col items-end gap-4">
-                    <div className="w-full text-right text-base font-semibold text-slate-900 dark:text-white">
-                      <PriceCell product={p} />
+                <TableCell className="w-40 px-4 py-3 align-middle">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <AvailabilityBadge
+                        className="inline-flex h-6 items-center rounded-full bg-slate-100 px-2.5 text-xs font-semibold text-slate-600 dark:bg-white/10 dark:text-slate-200"
+                        tabIndex={-1}
+                        status={p.availability_status}
+                        updatedAt={p.availability_updated_at}
+                      />
+                    </TooltipTrigger>
+                    <TooltipContent className="space-y-1 text-sm">
+                      <div>{availabilityLabel}.</div>
+                      <div className="text-xs text-muted-foreground">
+                        Last checked {p.availability_updated_at ? timeAgo(p.availability_updated_at) : 'unknown'}. Source: {p.suppliers?.[0] || 'Unknown'}
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                </TableCell>
+                <TableCell className="px-4 py-3 align-middle">
+                  {suppliers.length ? (
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-1 truncate text-sm font-medium text-slate-700 dark:text-slate-200">
+                        <span className="truncate">{primarySupplierName}</span>
+                        {primarySupplier && !primarySupplier.is_connected && (
+                          <Lock className="h-3.5 w-3.5 text-muted-foreground" />
+                        )}
+                      </div>
+                      {remainingSupplierCount > 0 && (
+                        <div className="text-xs text-muted-foreground">
+                          +{remainingSupplierCount} more
+                        </div>
+                      )}
                     </div>
-                    <AddToCartButton
-                      product={p}
-                      className="w-full max-w-[220px]"
-                    />
-                  </div>
+                  ) : (
+                    <span className="text-xs text-muted-foreground">No supplier data</span>
+                  )}
+                </TableCell>
+                <TableCell className="w-32 px-4 py-3 text-right align-middle">
+                  <PriceCell product={p} />
+                </TableCell>
+                <TableCell className="w-32 px-4 py-3 text-right align-middle">
+                  <AddToCartButton product={p} />
                 </TableCell>
               </TableRow>
             )
@@ -770,8 +719,8 @@ export function CatalogTable({
     }
   }
 
-  const slotClasses = cn('flex w-full justify-end', className)
-  const actionButtonClasses = 'h-10 w-full justify-center rounded-full px-6 text-sm font-semibold shadow-[0_14px_28px_-18px_rgba(15,23,42,0.35)] transition-shadow hover:shadow-[0_18px_36px_-16px_rgba(15,23,42,0.4)] dark:shadow-[0_14px_28px_-18px_rgba(3,10,26,0.55)] dark:hover:shadow-[0_20px_38px_-16px_rgba(3,10,26,0.6)]'
+  const slotClasses = cn('flex justify-end', className)
+  const actionButtonClasses = 'h-10 justify-center rounded-full px-4 text-sm font-semibold shadow-[0_14px_28px_-18px_rgba(15,23,42,0.35)] transition-shadow hover:shadow-[0_18px_36px_-16px_rgba(15,23,42,0.4)] dark:shadow-[0_14px_28px_-18px_rgba(3,10,26,0.55)] dark:hover:shadow-[0_20px_38px_-16px_rgba(3,10,26,0.6)]'
 
   if (existingItem)
     return (
