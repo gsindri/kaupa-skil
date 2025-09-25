@@ -10,7 +10,7 @@ export function ProductCardSkeleton({ className }: ProductCardSkeletonProps) {
   return (
     <Card
       className={cn(
-        "catalog-card flex h-[360px] w-full flex-col overflow-hidden rounded-2xl border-0 bg-card shadow-sm transition-all duration-200 hover:shadow-md",
+        "catalog-card flex h-[400px] w-full flex-col overflow-hidden rounded-2xl border-0 bg-card shadow-sm transition-all duration-200 hover:shadow-md",
         className,
       )}
       data-grid-card
