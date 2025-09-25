@@ -453,13 +453,41 @@ export function CatalogTable({
     }
   }
 
+  const renderSortPill = (
+    key: 'name' | 'supplier' | 'price' | 'availability',
+    label: string,
+  ) => {
+    const isActive = sort?.key === key
+    const direction = isActive ? sort?.direction : null
+    return (
+      <button
+        type="button"
+        key={key}
+        aria-pressed={isActive}
+        aria-label={`Sort by ${label}${direction ? direction === 'asc' ? ' (ascending)' : ' (descending)' : ''}`}
+        onClick={() => onSort(key)}
+        className={cn(
+          'flex items-center gap-1 rounded-full border border-slate-200/80 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500 transition-colors hover:border-slate-300 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 dark:border-white/20 dark:text-slate-300 dark:hover:border-white/30 dark:hover:text-white',
+          isActive &&
+            'border-slate-400 bg-slate-100 text-slate-900 dark:border-white/40 dark:bg-white/10 dark:text-white',
+        )}
+        title={`Sort by ${label}`}
+      >
+        <span>{label}</span>
+        {direction ? (
+          <span aria-hidden>{direction === 'asc' ? '▲' : '▼'}</span>
+        ) : null}
+      </button>
+    )
+  }
+
   return (
-    <div className="group/catalog-table mt-4 rounded-[var(--r-card,20px)] bg-[color:var(--surface-raised)] ring-1 ring-inset ring-white/12 shadow-[0_28px_64px_rgba(3,10,26,0.5)] backdrop-blur-xl">
-      <Table className="min-w-full text-sm text-[color:var(--ink)]">
-        <TableHeader className="sticky top-0 z-10 bg-[color:var(--surface-raised-strong)] backdrop-blur-xl shadow-[0_12px_26px_rgba(3,10,26,0.45)] [&_tr]:border-0">
-          <TableRow>
+    <div className="group/catalog-table mt-6 overflow-hidden rounded-[24px] border border-slate-200/80 bg-white/90 text-slate-900 shadow-[0_24px_48px_-24px_rgba(15,23,42,0.35)] backdrop-blur-xl dark:border-white/10 dark:bg-[rgba(13,19,32,0.86)] dark:text-slate-100">
+      <Table className="min-w-full text-sm text-slate-600 dark:text-slate-300">
+        <TableHeader className="sticky top-0 z-10 bg-white/70 backdrop-blur-xl shadow-[0_12px_26px_rgba(15,23,42,0.08)] dark:bg-[rgba(13,19,32,0.94)]">
+          <TableRow className="border-b border-slate-200/70 bg-transparent dark:border-white/10">
             {isBulkMode && (
-              <TableHead className="w-8 px-3 text-[color:var(--ink-dim)]/70">
+              <TableHead className="w-12 px-6 py-5 text-left align-bottom">
                 <Checkbox
                   aria-label="Select all products"
                   checked={isAllSelected}
@@ -467,37 +495,33 @@ export function CatalogTable({
                 />
               </TableHead>
             )}
-            <TableHead className="w-10 px-3 text-[color:var(--ink-dim)]/70">Image</TableHead>
-            <TableHead
-              className="[width:minmax(0,1fr)] cursor-pointer select-none px-3 text-[color:var(--ink-dim)]/70"
-              onClick={() => onSort('name')}
-            >
-              Name {sort?.key === 'name' && (sort?.direction === 'asc' ? '▲' : '▼')}
+            <TableHead className="px-6 py-5 align-bottom text-left">
+              <div className="flex flex-col gap-2">
+                <span className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400">
+                  Product
+                </span>
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                  {renderSortPill('name', 'Name')}
+                  {renderSortPill('availability', 'Availability')}
+                  {renderSortPill('supplier', 'Suppliers')}
+                </div>
+              </div>
             </TableHead>
-            <TableHead
-              className="w-[120px] cursor-pointer select-none px-3 text-center text-[color:var(--ink-dim)]/70"
-              onClick={() => onSort('availability')}
-            >
-              Availability {sort?.key === 'availability' && (sort?.direction === 'asc' ? '▲' : '▼')}
-            </TableHead>
-            <TableHead
-              className="w-[136px] cursor-pointer select-none px-3 text-right text-[color:var(--ink-dim)]/70"
-              onClick={() => onSort('price')}
-            >
-              Price {sort?.key === 'price' && (sort?.direction === 'asc' ? '▲' : '▼')}
-            </TableHead>
-            <TableHead
-              className="w-[220px] min-w-[180px] max-w-[220px] cursor-pointer select-none px-3 text-[color:var(--ink-dim)]/70"
-              onClick={() => onSort('supplier')}
-            >
-              Suppliers {sort?.key === 'supplier' && (sort?.direction === 'asc' ? '▲' : '▼')}
+            <TableHead className="w-[260px] px-6 py-5 text-right align-bottom">
+              <div className="flex flex-col items-end gap-2">
+                <span className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400">
+                  Price
+                </span>
+                <div className="flex justify-end">
+                  {renderSortPill('price', 'Price')}
+                </div>
+              </div>
             </TableHead>
           </TableRow>
           {showFilterRow && (
-            <TableRow className="bg-white/5">
-              {isBulkMode && <TableHead className="px-3" />}
-              <TableHead className="px-3" />
-              <TableHead className="px-3">
+            <TableRow className="border-b border-slate-200/60 bg-transparent text-slate-600 dark:border-white/10 dark:text-slate-300">
+              {isBulkMode && <TableHead className="px-6" />}
+              <TableHead className="px-6 py-3" colSpan={isBulkMode ? 2 : 1}>
                 {showBrandFilter && (
                   <Select
                     value={brandValues[0] ?? 'all'}
@@ -505,10 +529,10 @@ export function CatalogTable({
                       onFilterChange({ brand: v === 'all' ? undefined : [v] })
                     }
                   >
-                    <SelectTrigger className="h-8 rounded-[var(--ctrl-r,12px)] bg-white/10 text-xs text-[color:var(--ink-dim)]/80 ring-1 ring-inset ring-white/15 focus:ring-0">
+                    <SelectTrigger className="h-9 w-48 rounded-full border border-slate-200/80 bg-white/90 text-xs font-medium text-slate-600 shadow-sm transition-colors hover:border-slate-300 focus:border-slate-400 focus:ring-0 dark:border-white/15 dark:bg-white/10 dark:text-slate-200">
                       <SelectValue placeholder="Brand" />
                     </SelectTrigger>
-                    <SelectContent className="rounded-[16px] bg-[color:var(--field-bg-elev)] text-[color:var(--ink)] ring-1 ring-inset ring-white/12 backdrop-blur-xl">
+                    <SelectContent className="rounded-[16px] bg-white text-slate-700 shadow-lg ring-1 ring-slate-200 dark:bg-[rgba(13,19,32,0.94)] dark:text-slate-100 dark:ring-white/10">
                       <SelectItem value="all">All</SelectItem>
                       {brandOptions.map(b => (
                         <SelectItem key={b} value={b}>
@@ -519,12 +543,10 @@ export function CatalogTable({
                   </Select>
                 )}
               </TableHead>
-              <TableHead className="px-3" />
-              <TableHead className="w-[136px] px-3" />
             </TableRow>
           )}
         </TableHeader>
-        <TableBody>
+        <TableBody className="[&_tr:last-child]:border-b-0">
           {products.map((p, i) => {
             const id = p.catalog_id
             const isSelected = selected.includes(id)
@@ -536,6 +558,17 @@ export function CatalogTable({
                 UNKNOWN: 'Unknown',
               }[p.availability_status ?? 'UNKNOWN']
 
+            const connectedSupplierIds = new Set(
+              connectedSuppliers?.map(cs => cs.supplier_id) ?? [],
+            )
+
+            const suppliers = buildSupplierChipData(
+              p,
+              allSuppliers ?? [],
+              vendors,
+              connectedSupplierIds,
+            )
+
             return (
               <TableRow
                 key={id}
@@ -543,10 +576,10 @@ export function CatalogTable({
                 tabIndex={-1}
                 data-state={isSelected ? 'selected' : undefined}
                 onKeyDown={e => handleKeyDown(e, i, id)}
-                className="group h-[58px] border-b border-white/10 bg-transparent transition-colors hover:bg-white/6 focus-visible:bg-white/8"
+                className="group align-top border-b border-slate-200/60 bg-white/40 transition-colors hover:bg-white/80 focus-visible:bg-white/90 data-[state=selected]:bg-slate-100 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10 dark:focus-visible:bg-white/15 dark:data-[state=selected]:bg-white/12"
               >
                 {isBulkMode && (
-                  <TableCell className="w-8 px-3 py-3">
+                  <TableCell className="w-12 px-6 py-6 align-top">
                     <Checkbox
                       aria-label={`Select ${p.name}`}
                       checked={isSelected}
@@ -554,101 +587,83 @@ export function CatalogTable({
                     />
                   </TableCell>
                 )}
-                <TableCell className="w-10 px-3 py-3">
-                  <ProductThumb
-                    className="h-10 w-10"
-                    src={resolveImage(
-                      p.sample_image_url ?? p.image_main,
-                      p.availability_status,
-                    )}
-                    name={p.name}
-                    brand={p.brand}
-                  />
-                </TableCell>
-                <TableCell className="px-3 py-3">
-                  <div className="flex items-center gap-3">
-                    <div className="flex min-w-0 flex-1 flex-col">
-                      <a
-                        href={`#${p.catalog_id}`}
-                        aria-label={`View details for ${p.name}`}
-                        className="truncate text-sm font-medium hover:underline"
-                      >
-                        {p.name}
-                      </a>
-                      {(p.brand || p.canonical_pack) && (
-                        <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-xs leading-tight text-[color:var(--ink-dim)]/80">
-                          {p.brand && (
-                            <span className="truncate font-medium">
-                              {p.brand}
-                            </span>
-                          )}
-                          {p.brand && p.canonical_pack && (
-                            <span aria-hidden className="text-[color:var(--ink-dim)]/50">
-                              •
-                            </span>
-                          )}
-                          {p.canonical_pack && (
-                            <span className="truncate text-sm font-semibold leading-snug text-[color:var(--ink-hi)]">
-                              {p.canonical_pack}
-                            </span>
-                          )}
-                        </div>
+                <TableCell className="px-6 py-6 align-top">
+                  <div className="flex gap-4">
+                    <ProductThumb
+                      className="h-[72px] w-[72px] flex-none overflow-hidden rounded-[18px] border border-slate-200/80 bg-white object-cover dark:border-white/15 dark:bg-white/10"
+                      src={resolveImage(
+                        p.sample_image_url ?? p.image_main,
+                        p.availability_status,
                       )}
+                      name={p.name}
+                      brand={p.brand}
+                    />
+                    <div className="min-w-0 flex-1 space-y-3">
+                      <div className="min-w-0 space-y-2">
+                        <a
+                          href={`#${p.catalog_id}`}
+                          aria-label={`View details for ${p.name}`}
+                          className="line-clamp-1 text-base font-semibold text-slate-900 transition-colors hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 dark:text-white dark:hover:text-slate-200"
+                        >
+                          {p.name}
+                        </a>
+                        {(p.brand || p.canonical_pack) && (
+                          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-slate-500 dark:text-slate-300">
+                            {p.brand && <span className="font-medium">{p.brand}</span>}
+                            {p.brand && p.canonical_pack && (
+                              <span aria-hidden className="text-slate-300 dark:text-slate-500">
+                                •
+                              </span>
+                            )}
+                            {p.canonical_pack && (
+                              <span className="font-medium text-slate-600 dark:text-slate-200">
+                                {p.canonical_pack}
+                              </span>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex flex-wrap items-center gap-3 text-xs font-medium text-slate-500 dark:text-slate-300">
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <AvailabilityBadge
+                              className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600 dark:bg-white/10 dark:text-slate-200"
+                              tabIndex={-1}
+                              status={p.availability_status}
+                              updatedAt={p.availability_updated_at}
+                            />
+                          </TooltipTrigger>
+                          <TooltipContent className="space-y-1 text-sm">
+                            <div>{availabilityLabel}.</div>
+                            <div className="text-xs text-muted-foreground">
+                              Last checked {p.availability_updated_at ? timeAgo(p.availability_updated_at) : 'unknown'}. Source: {p.suppliers?.[0] || 'Unknown'}
+                            </div>
+                          </TooltipContent>
+                        </Tooltip>
+                        {suppliers.length ? (
+                          <SupplierChips suppliers={suppliers} />
+                        ) : (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span className="text-xs text-muted-foreground">No supplier data</span>
+                            </TooltipTrigger>
+                            <TooltipContent>No supplier data</TooltipContent>
+                          </Tooltip>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </TableCell>
+                <TableCell className="w-[260px] px-6 py-6 align-top">
+                  <div className="flex h-full flex-col items-end gap-4">
+                    <div className="w-full text-right text-base font-semibold text-slate-900 dark:text-white">
+                      <PriceCell product={p} />
                     </div>
                     <AddToCartButton
                       product={p}
-                      className="ml-auto"
+                      className="w-full max-w-[220px]"
                     />
                   </div>
-                </TableCell>
-                <TableCell className="w-[120px] px-3 py-3">
-                  <div className="flex h-6 items-center justify-center">
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <AvailabilityBadge
-                          tabIndex={-1}
-                          status={p.availability_status}
-                          updatedAt={p.availability_updated_at}
-                        />
-                      </TooltipTrigger>
-                      <TooltipContent className="space-y-1">
-                        <div>{availabilityLabel}.</div>
-                        <div className="text-xs text-muted-foreground">
-                          Last checked {p.availability_updated_at ? timeAgo(p.availability_updated_at) : 'unknown'}. Source: {p.suppliers?.[0] || 'Unknown'}
-                        </div>
-                      </TooltipContent>
-                    </Tooltip>
-                  </div>
-                </TableCell>
-                <TableCell className="w-[136px] whitespace-nowrap px-3 py-3 text-right">
-                  <PriceCell product={p} />
-                </TableCell>
-                <TableCell className="w-[220px] min-w-[180px] max-w-[220px] px-3 py-3">
-                  {(() => {
-                    const connectedSupplierIds = new Set(
-                      connectedSuppliers?.map(cs => cs.supplier_id) ?? []
-                    )
-
-                    const suppliers = buildSupplierChipData(
-                      p,
-                      allSuppliers ?? [],
-                      vendors,
-                      connectedSupplierIds,
-                    )
-
-                    if (!suppliers.length) {
-                      return (
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <div className="flex justify-center text-muted-foreground">—</div>
-                          </TooltipTrigger>
-                          <TooltipContent>No supplier data</TooltipContent>
-                        </Tooltip>
-                      )
-                    }
-
-                    return <SupplierChips suppliers={suppliers} />
-                  })()}
                 </TableCell>
               </TableRow>
             )
@@ -755,16 +770,14 @@ export function CatalogTable({
     }
   }
 
-  const slotClasses = cn(
-    'ml-auto flex-shrink-0 w-[120px] pr-3',
-    className,
-  )
+  const slotClasses = cn('flex w-full justify-end', className)
+  const actionButtonClasses = 'h-10 w-full justify-center rounded-full px-6 text-sm font-semibold shadow-[0_14px_28px_-18px_rgba(15,23,42,0.35)] transition-shadow hover:shadow-[0_18px_36px_-16px_rgba(15,23,42,0.4)] dark:shadow-[0_14px_28px_-18px_rgba(3,10,26,0.55)] dark:hover:shadow-[0_20px_38px_-16px_rgba(3,10,26,0.6)]'
 
   if (existingItem)
     return (
       <div className={slotClasses}>
         <QuantityStepper
-          className="w-full"
+          className="w-auto"
           quantity={existingItem.quantity}
           onChange={qty =>
             updateQuantity(existingItem.supplierItemId, qty)
@@ -785,11 +798,14 @@ export function CatalogTable({
           <TooltipTrigger asChild>
             <span className="flex w-full cursor-not-allowed">
               <Button
-                size="sm"
+                size="default"
                 disabled
                 aria-disabled="true"
                 aria-label={`Add ${product.name} to cart`}
-                className="pointer-events-none w-full justify-center"
+                className={cn(
+                  actionButtonClasses,
+                  'pointer-events-none bg-slate-200 text-slate-500 dark:bg-white/10 dark:text-slate-400',
+                )}
               >
                 Add
               </Button>
@@ -806,8 +822,8 @@ export function CatalogTable({
     return (
       <div className={slotClasses}>
         <Button
-          size="sm"
-          className="w-full justify-center"
+          size="default"
+          className={actionButtonClasses}
           onClick={() => {
             addItem(buildCartItem(s, 0))
             if (s.availability === 'OUT_OF_STOCK') {
@@ -825,7 +841,11 @@ export function CatalogTable({
     <div className={slotClasses}>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
-          <Button size="sm" className="w-full justify-center" aria-label={`Add ${product.name} to cart`}>
+          <Button
+            size="default"
+            className={actionButtonClasses}
+            aria-label={`Add ${product.name} to cart`}
+          >
             Add
           </Button>
         </PopoverTrigger>
