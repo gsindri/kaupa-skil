@@ -7,6 +7,7 @@ import { useAuth } from '@/contexts/useAuth'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
 import { Button } from '@/components/ui/button'
+import { HeildaLogo } from '@/components/branding/HeildaLogo'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -674,6 +675,10 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
     <div className="flex min-h-screen w-full flex-col">
       <div className="flex flex-1 flex-col items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
         <div className="w-full max-w-[520px] space-y-8">
+          <div className="flex justify-center">
+            <HeildaLogo className="h-10 w-auto" />
+          </div>
+
           {/* Progress Header */}
           <div className="text-center">
             <div className="mb-4 flex items-center justify-center">
