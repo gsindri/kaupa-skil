@@ -70,6 +70,39 @@ describe('useHeaderScrollHide', () => {
     expect(header.style.transform).toBe('translate3d(0, -100%, 0)')
   })
 
+  it('responds to sustained small scroll changes', () => {
+    const { container } = render(<TestComponent />)
+    const header = container.firstChild as HTMLDivElement
+    vi.runAllTimers()
+
+    const emitScroll = (value: number) => {
+      Object.defineProperty(window, 'scrollY', { writable: true, value })
+      window.dispatchEvent(new Event('scroll'))
+      vi.runAllTimers()
+    }
+
+    emitScroll(0)
+
+    emitScroll(2)
+    expect(header.style.transform).toBe('translate3d(0, 0, 0)')
+
+    emitScroll(4)
+    emitScroll(6)
+    emitScroll(8)
+    expect(header.style.transform).toBe('translate3d(0, 0, 0)')
+
+    emitScroll(9)
+    expect(header.style.transform).toBe('translate3d(0, -100%, 0)')
+
+    emitScroll(8)
+    emitScroll(6)
+    emitScroll(2)
+    expect(header.style.transform).toBe('translate3d(0, -100%, 0)')
+
+    emitScroll(0)
+    expect(header.style.transform).toBe('translate3d(0, 0, 0)')
+  })
+
   it('stays visible when pinned', () => {
     const isPinned = vi.fn().mockReturnValue(true)
     const { container } = render(<TestComponent isPinned={isPinned} />)
