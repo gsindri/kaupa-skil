@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef } from 'react'
 
+const HIDE_DELTA = 8
+
 interface Options {
   /**
    * Return true when header should remain pinned (always visible)
@@ -67,7 +69,13 @@ export function useHeaderScrollHide(
     el.addEventListener('pointerdown', handlePointerDown, { passive: true })
 
     let lastY = Math.max(0, window.scrollY)
+    let accumulatedDelta = 0
     let hidden = false
+
+    const resetScrollState = (y: number) => {
+      lastY = y
+      accumulatedDelta = 0
+    }
 
     const applyHidden = (nextHidden: boolean) => {
       if (hidden === nextHidden) return
@@ -89,23 +97,26 @@ export function useHeaderScrollHide(
 
       if (pinned()) {
         if (hidden) applyHidden(false)
-        lastY = y
+        resetScrollState(y)
         return
       }
 
       const delta = y - lastY
-      if (Math.abs(delta) <= 10) {
-        lastY = y
+      lastY = y
+      if (delta === 0) {
         return
       }
 
-      if (delta > 0) {
-        applyHidden(true)
-      } else if (delta < 0) {
-        applyHidden(false)
+      if (Math.sign(delta) !== Math.sign(accumulatedDelta)) {
+        accumulatedDelta = delta
+      } else {
+        accumulatedDelta += delta
       }
 
-      lastY = y
+      if (Math.abs(accumulatedDelta) > HIDE_DELTA) {
+        applyHidden(accumulatedDelta > 0)
+        accumulatedDelta = 0
+      }
     }
 
     const handleScroll = () => requestAnimationFrame(onScroll)
