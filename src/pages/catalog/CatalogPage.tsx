@@ -721,6 +721,10 @@ export default function CatalogPage() {
 
   const total = totalCount
 
+  const sharedContainerClass = 'mx-auto w-full max-w-[1600px] px-4 sm:px-6 lg:px-12'
+  const containerClass = cn(sharedContainerClass)
+  const contentContainerClass = cn(sharedContainerClass, 'space-y-6')
+
   return (
     <AppLayout
       headerRef={headerRef}
@@ -972,11 +976,6 @@ function FiltersBar({
     setShowFilters(next)
     onLockChange?.(next)
   }, [showFilters, facetFilters, setFocusedFacet, setShowFilters, onLockChange])
-
-  const sharedContainerClass = 'mx-auto w-full max-w-[1600px] px-4 sm:px-6 lg:px-12'
-
-  const containerClass = cn(sharedContainerClass)
-  const contentContainerClass = cn(sharedContainerClass, 'space-y-6')
 
   const isEditableElement = (el: Element | null) => {
     if (!el) return false
