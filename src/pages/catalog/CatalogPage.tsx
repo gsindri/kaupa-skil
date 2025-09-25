@@ -37,6 +37,8 @@ import { MagnifyingGlass, FunnelSimple, XCircle } from '@phosphor-icons/react'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 
 const FILTER_PANEL_LS_KEY = 'catalog-filters-open'
+const CATALOG_CONTAINER_CLASS = 'mx-auto w-full max-w-[1600px] px-4 sm:px-6 lg:px-12'
+const CATALOG_CONTENT_SPACING = 'space-y-6 py-6'
 
 interface DerivedChip {
   key: string
@@ -763,61 +765,64 @@ export default function CatalogPage() {
       }
       panelOpen={showFilters}
     >
-
-      {view === 'list' ? (
-        <>
-            {hideConnectPill && !bannerDismissed && (
-              <div
-                role="status"
-                data-testid="alert"
-                className="mb-4 flex items-center justify-between rounded-[var(--ctrl-r,12px)] bg-white/12 px-4 py-3 text-sm text-[color:var(--ink)] ring-1 ring-inset ring-white/15 shadow-[0_18px_40px_rgba(3,10,26,0.4)] backdrop-blur-xl"
-              >
-                <span>Connect suppliers to unlock prices.</span>
-                <button
-                  type="button"
-                  aria-label="Dismiss notice"
-                  onClick={() => setBannerDismissed(true)}
-                  className="ml-3 inline-flex h-7 w-7 items-center justify-center rounded-full text-[color:var(--ink-dim)]/80 transition duration-150 ease-out hover:bg-white/10 hover:text-[color:var(--ink)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent motion-reduce:transition-none"
+      <div className={CATALOG_CONTAINER_CLASS}>
+        <div className={CATALOG_CONTENT_SPACING}>
+          {view === 'list' ? (
+            <>
+              {hideConnectPill && !bannerDismissed && (
+                <div
+                  role="status"
+                  data-testid="alert"
+                  className="flex items-center justify-between rounded-[var(--ctrl-r,12px)] bg-white/12 px-4 py-3 text-sm text-[color:var(--ink)] ring-1 ring-inset ring-white/15 shadow-[0_18px_40px_rgba(3,10,26,0.4)] backdrop-blur-xl"
                 >
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
-            )}
-            {bulkMode && (
-              <div className="sticky top-0 z-20 flex items-center justify-between border-b bg-background px-4 py-2 text-sm">
-                <span>{selected.length} selected</span>
-                <Button variant="ghost" onClick={() => { setBulkMode(false); setSelected([]) }}>
-                  Done
-                </Button>
-              </div>
-            )}
-            <CatalogTable
+                  <span>Connect suppliers to unlock prices.</span>
+                  <button
+                    type="button"
+                    aria-label="Dismiss notice"
+                    onClick={() => setBannerDismissed(true)}
+                    className="ml-3 inline-flex h-7 w-7 items-center justify-center rounded-full text-[color:var(--ink-dim)]/80 transition duration-150 ease-out hover:bg-white/10 hover:text-[color:var(--ink)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent motion-reduce:transition-none"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              )}
+              {bulkMode && (
+                <div className="sticky top-0 z-20 flex items-center justify-between border-b bg-background py-2 text-sm">
+                  <span>{selected.length} selected</span>
+                  <Button variant="ghost" onClick={() => { setBulkMode(false); setSelected([]) }}>
+                    Done
+                  </Button>
+                </div>
+              )}
+              <CatalogTable
+                products={sortedProducts}
+                selected={selected}
+                onSelect={toggleSelect}
+                onSelectAll={handleSelectAll}
+                sort={tableSort}
+                onSort={handleSort}
+                isBulkMode={bulkMode}
+              />
+              <InfiniteSentinel
+                onVisible={handleLoadMore}
+                disabled={!nextCursor || loadingMore}
+                root={null}
+                rootMargin="800px"
+              />
+              {loadingMore && (
+                <div className="py-6 text-center text-muted-foreground">Loading more…</div>
+              )}
+            </>
+          ) : (
+            <CatalogGrid
               products={sortedProducts}
-              selected={selected}
-              onSelect={toggleSelect}
-              onSelectAll={handleSelectAll}
-              sort={tableSort}
-              onSort={handleSort}
-              isBulkMode={bulkMode}
+              onAddToCart={handleAdd}
+              onNearEnd={nextCursor ? handleLoadMore : undefined}
+              showPrice
             />
-            <InfiniteSentinel
-              onVisible={handleLoadMore}
-              disabled={!nextCursor || loadingMore}
-              root={null}
-              rootMargin="800px"
-            />
-            {loadingMore && (
-              <div className="py-6 text-center text-muted-foreground">Loading more…</div>
-            )}
-        </>
-      ) : (
-        <CatalogGrid
-          products={sortedProducts}
-          onAddToCart={handleAdd}
-          onNearEnd={nextCursor ? handleLoadMore : undefined}
-          showPrice
-        />
-      )}
+          )}
+        </div>
+      </div>
     </AppLayout>
   )
 }
@@ -871,6 +876,7 @@ function FiltersBar({
   total,
   scrolled,
 }: FiltersBarProps) {
+  const containerClass = CATALOG_CONTAINER_CLASS
   const { search: _search, ...facetFilters } = filters
   const chips = deriveChipsFromFilters(
     filters,
@@ -970,11 +976,6 @@ function FiltersBar({
     setShowFilters(next)
     onLockChange?.(next)
   }, [showFilters, facetFilters, setFocusedFacet, setShowFilters, onLockChange])
-
-  const containerClass = cn(
-    'mx-auto w-full max-w-none px-4 sm:px-6 lg:px-8',
-    showFilters && 'lg:max-w-[1600px]',
-  )
 
   const isEditableElement = (el: Element | null) => {
     if (!el) return false
