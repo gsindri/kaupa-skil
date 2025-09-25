@@ -10,7 +10,7 @@ export function AppChrome() {
         style={{
           left: 'var(--header-left, 0px)',
           right: 'var(--header-right, 0px)',
-          transform: 'translate3d(0, calc(-1 * var(--hdr-p, 0) * var(--header-h, 56px)), 0)',
+          transform: 'translate3d(0, calc(-1 * var(--header-hidden, 0) * var(--header-h, 56px)), 0)',
           background:
             'linear-gradient(90deg, rgba(255, 196, 148, 0.45) 0%, rgba(255, 140, 0, 0.7) 50%, rgba(255, 196, 148, 0.45) 100%)',
         }}
@@ -24,8 +24,8 @@ export function AppChrome() {
           left: 'var(--header-left, 0px)',
           right: 'var(--header-right, 0px)',
           height: 'clamp(44px, var(--toolbar-h, 56px), 72px)',
-          transform: 'translate3d(0, calc(-1 * var(--hdr-p, 0) * var(--header-h, 56px)), 0)',
-          opacity: 'calc(1 - (0.05 * var(--hdr-p, 0)))',
+          transform: 'translate3d(0, calc(-1 * var(--header-hidden, 0) * var(--header-h, 56px)), 0)',
+          opacity: 'calc(1 - (0.05 * var(--header-hidden, 0)))',
         }}
         aria-hidden
       >
