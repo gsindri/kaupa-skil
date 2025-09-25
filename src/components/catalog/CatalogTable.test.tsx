@@ -45,8 +45,6 @@ describe('CatalogTable', () => {
           onSelectAll={() => {}}
           sort={null}
           onSort={() => {}}
-          filters={{}}
-          onFilterChange={() => {}}
           isBulkMode={false}
         />
       </TooltipProvider>,
@@ -83,8 +81,6 @@ describe('CatalogTable', () => {
           onSelectAll={() => {}}
           sort={null}
           onSort={() => {}}
-          filters={{}}
-          onFilterChange={() => {}}
           isBulkMode={false}
         />
       </TooltipProvider>,
@@ -113,8 +109,6 @@ describe('CatalogTable', () => {
           onSelectAll={() => {}}
           sort={null}
           onSort={() => {}}
-          filters={{}}
-          onFilterChange={() => {}}
           isBulkMode={false}
         />
       </TooltipProvider>,
@@ -146,8 +140,6 @@ describe('CatalogTable', () => {
           onSelectAll={() => {}}
           sort={null}
           onSort={() => {}}
-          filters={{}}
-          onFilterChange={() => {}}
           isBulkMode={false}
         />
       </TooltipProvider>,
@@ -188,8 +180,6 @@ describe('CatalogTable', () => {
           onSelectAll={() => {}}
           sort={null}
           onSort={() => {}}
-          filters={{}}
-          onFilterChange={() => {}}
           isBulkMode={false}
         />
       </TooltipProvider>,
