@@ -575,7 +575,6 @@ export function CatalogTable({
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <AvailabilityBadge
-                        className="inline-flex h-6 items-center rounded-full bg-slate-100 px-2.5 text-xs font-semibold text-slate-600 dark:bg-white/10 dark:text-slate-200"
                         tabIndex={-1}
                         status={p.availability_status}
                         updatedAt={p.availability_updated_at}
@@ -591,18 +590,25 @@ export function CatalogTable({
                 </TableCell>
                 <TableCell className="px-4 py-3 align-middle">
                   {suppliers.length ? (
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-1 truncate text-sm font-medium text-slate-700 dark:text-slate-200">
-                        <span className="truncate">{primarySupplierName}</span>
-                        {primarySupplier && !primarySupplier.is_connected && (
-                          <Lock className="h-3.5 w-3.5 text-muted-foreground" />
+                    <div className="flex items-center gap-3">
+                      <SupplierLogo
+                        name={primarySupplierName}
+                        logoUrl={primarySupplier?.supplier_logo_url ?? undefined}
+                        className="!h-8 !w-8 flex-none !rounded-md border border-slate-200/70 bg-white p-1 shadow-sm dark:border-white/10 dark:bg-white/10"
+                      />
+                      <div className="min-w-0 space-y-1">
+                        <div className="flex items-center gap-1 truncate text-sm font-medium text-slate-700 dark:text-slate-200">
+                          <span className="truncate">{primarySupplierName}</span>
+                          {primarySupplier && !primarySupplier.is_connected && (
+                            <Lock className="h-3.5 w-3.5 text-muted-foreground" />
+                          )}
+                        </div>
+                        {remainingSupplierCount > 0 && (
+                          <div className="text-xs text-muted-foreground">
+                            +{remainingSupplierCount} more
+                          </div>
                         )}
                       </div>
-                      {remainingSupplierCount > 0 && (
-                        <div className="text-xs text-muted-foreground">
-                          +{remainingSupplierCount} more
-                        </div>
-                      )}
                     </div>
                   ) : (
                     <span className="text-xs text-muted-foreground">No supplier data</span>
