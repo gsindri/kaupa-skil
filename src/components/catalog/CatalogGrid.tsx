@@ -39,7 +39,6 @@ export function CatalogGrid({
       rowHeight={400}
       gap={32}
       onNearEnd={onNearEnd}
-      className={cn('pt-2 pb-12', className)}
     />
   )
 }

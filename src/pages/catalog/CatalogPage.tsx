@@ -38,7 +38,6 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 
 const FILTER_PANEL_LS_KEY = 'catalog-filters-open'
 const CATALOG_CONTAINER_CLASS = 'mx-auto w-full max-w-[1600px] px-4 sm:px-6 lg:px-12'
-const CATALOG_CONTENT_CLASS = cn(CATALOG_CONTAINER_CLASS, 'space-y-6')
 
 interface DerivedChip {
   key: string
@@ -766,61 +765,6 @@ export default function CatalogPage() {
       }
       panelOpen={showFilters}
     >
-
-      {view === 'list' ? (
-          {hideConnectPill && !bannerDismissed && (
-            <div
-              role="status"
-              data-testid="alert"
-              className="flex items-center justify-between rounded-[var(--ctrl-r,12px)] bg-white/12 px-4 py-3 text-sm text-[color:var(--ink)] ring-1 ring-inset ring-white/15 shadow-[0_18px_40px_rgba(3,10,26,0.4)] backdrop-blur-xl"
-            >
-              <span>Connect suppliers to unlock prices.</span>
-              <button
-                type="button"
-                aria-label="Dismiss notice"
-                onClick={() => setBannerDismissed(true)}
-                className="ml-3 inline-flex h-7 w-7 items-center justify-center rounded-full text-[color:var(--ink-dim)]/80 transition duration-150 ease-out hover:bg-white/10 hover:text-[color:var(--ink)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent motion-reduce:transition-none"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-          )}
-          {bulkMode && (
-            <div className="sticky top-0 z-20 flex items-center justify-between border-b bg-background py-2 text-sm">
-              <span>{selected.length} selected</span>
-              <Button variant="ghost" onClick={() => { setBulkMode(false); setSelected([]) }}>
-                Done
-              </Button>
-            </div>
-          )}
-          <CatalogTable
-            products={sortedProducts}
-            selected={selected}
-            onSelect={toggleSelect}
-            onSelectAll={handleSelectAll}
-            sort={tableSort}
-            onSort={handleSort}
-            isBulkMode={bulkMode}
-          />
-          <InfiniteSentinel
-            onVisible={handleLoadMore}
-            disabled={!nextCursor || loadingMore}
-            root={null}
-            rootMargin="800px"
-          />
-          {loadingMore && (
-            <div className="py-6 text-center text-muted-foreground">Loading more…</div>
-          )}
-        </div>
-      ) : (
-          <CatalogGrid
-            products={sortedProducts}
-            onAddToCart={handleAdd}
-            onNearEnd={nextCursor ? handleLoadMore : undefined}
-            showPrice
-          />
-        </div>
-      )}
     </AppLayout>
   )
 }
