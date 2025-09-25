@@ -95,7 +95,8 @@ html { scrollbar-gutter: stable; }
 #catalogHeader,
 [data-app-header="true"] {
   --hdr-h: var(--header-h, 56px);
-  transform: translate3d(0, calc(-1 * var(--hdr-p, 0) * var(--hdr-h)), 0);
+  transform: translate3d(0, calc(-100% * var(--header-hidden, 0)), 0);
+  transition: transform 200ms ease-in-out;
 }
 
 :root {
@@ -107,6 +108,7 @@ html { scrollbar-gutter: stable; }
   --ring: 0 0% 100% / 0.22;
   --ring-open: 0 0% 100% / 0.32;
   --accent: 38 92% 50%;
+  --header-hidden: 0;
 }
 
 #catalogHeader::before,
@@ -118,7 +120,7 @@ html { scrollbar-gutter: stable; }
 @media (prefers-reduced-motion: reduce){
   #catalogHeader,
   [data-app-header="true"]{
-    transition:none;
+    transition: none;
   }
 }
 
