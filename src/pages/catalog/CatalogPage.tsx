@@ -723,8 +723,6 @@ export default function CatalogPage() {
 
   const total = totalCount
 
-  const containerClass = CATALOG_CONTAINER_CLASS
-  const contentContainerClass = CATALOG_CONTENT_CLASS
 
   return (
     <AppLayout
