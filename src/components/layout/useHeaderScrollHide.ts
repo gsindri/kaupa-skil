@@ -135,10 +135,14 @@ export function useHeaderScrollHide(
     const PROGRESS_START = 10
     const GAP = 24
     const MIN_DY = 0.25
-    const SNAP_THRESHOLD = 3
     const SNAP_COOLDOWN_MS = 200
     const REVEAL_DIST = 32
     const REHIDE_DIST = 32
+    const TOP_PIN_THRESHOLD = 64
+    const HIDE_DISTANCE = 24
+    const SHOW_DISTANCE = 16
+    const VELOCITY_LERP = 0.18
+    const MIN_TOGGLE_VELOCITY = 0.08
 
     let lastY = window.scrollY
     let acc = 0
@@ -147,6 +151,8 @@ export function useHeaderScrollHide(
     let lastSnapDir: -1 | 0 | 1 = 0
     let lastSnapTime = 0
     let lastSnapY = 0
+    let velocity = 0
+    let lastSampleTime = performance.now()
 
     const pinned = () =>
       (isPinned?.() ?? false) || lockCount.current > 0 || performance.now() < interactionLockUntil
@@ -155,6 +161,11 @@ export function useHeaderScrollHide(
       const y = Math.max(0, window.scrollY)
       const dy = y - lastY
       lastY = y
+      const now = performance.now()
+      const dt = Math.max(1, now - lastSampleTime)
+      const instantaneous = dy / dt
+      velocity = velocity + (instantaneous - velocity) * VELOCITY_LERP
+      lastSampleTime = now
 
       if (reduceMotion) {
         setP(0)
@@ -165,6 +176,7 @@ export function useHeaderScrollHide(
         lock = 'none'
         acc = 0
         lastDir = 0
+        velocity = 0
         setP(0)
         return
       }
@@ -172,10 +184,21 @@ export function useHeaderScrollHide(
       if (lock === 'visible' && y <= H - GAP) lock = 'none'
       if (lock === 'hidden' && y >= H + GAP) lock = 'none'
 
+      if (y <= TOP_PIN_THRESHOLD) {
+        lock = 'none'
+        acc = 0
+        velocity = 0
+        lastDir = 0
+        lastSnapDir = 0
+        setP(0)
+        return
+      }
+
       if (y < H) {
         const dir: -1 | 0 | 1 = Math.abs(dy) < MIN_DY ? 0 : dy > 0 ? 1 : -1
         if (lock === 'visible' || dir <= 0) {
           acc = 0
+          velocity = 0
           lastDir = dir
           setP(0)
           return
@@ -199,8 +222,8 @@ export function useHeaderScrollHide(
         if (dir !== lastDir) acc = 0
         acc += dy
         lastDir = dir
-        const now = performance.now()
-        if (acc >= SNAP_THRESHOLD) {
+        const speed = Math.abs(velocity)
+        if (dir > 0 && acc >= HIDE_DISTANCE && speed >= MIN_TOGGLE_VELOCITY) {
           if (
             lastSnapDir === -1 &&
             (now - lastSnapTime < SNAP_COOLDOWN_MS || y - lastSnapY < REHIDE_DIST)
@@ -210,13 +233,14 @@ export function useHeaderScrollHide(
             setP(1, { animated: true, duration: HIDE_SNAP_MS })
             lock = 'hidden'
             acc = 0
+            velocity = 0
             lastSnapDir = 1
             lastSnapTime = now
             lastSnapY = y
             return
           }
         }
-        if (acc <= -SNAP_THRESHOLD) {
+        if (dir < 0 && acc <= -SHOW_DISTANCE && speed >= MIN_TOGGLE_VELOCITY) {
           if (
             lastSnapDir === 1 &&
             (now - lastSnapTime < SNAP_COOLDOWN_MS || lastSnapY - y < REVEAL_DIST)
@@ -226,6 +250,7 @@ export function useHeaderScrollHide(
             setP(0, { animated: true, duration: SHOW_SNAP_MS })
             lock = 'visible'
             acc = 0
+            velocity = 0
             lastSnapDir = -1
             lastSnapTime = now
             lastSnapY = y
