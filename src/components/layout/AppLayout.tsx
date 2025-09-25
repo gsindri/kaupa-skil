@@ -107,7 +107,7 @@ export function AppLayout({
         </div>
 
         {/* Main content */}
-        <div className="px-4 pb-8 pt-4 sm:px-6 lg:px-8">
+        <div className="px-4 pb-8 pt-2 sm:px-6 lg:px-8">
           <div
             className={clsx('page-grid items-start gap-3', showSecondary && 'page-grid--with-secondary')}
             data-has-secondary={showSecondary ? 'true' : undefined}
