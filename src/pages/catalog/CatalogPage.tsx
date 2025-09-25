@@ -768,7 +768,6 @@ export default function CatalogPage() {
     >
 
       {view === 'list' ? (
-        <div className={contentContainerClass}>
           {hideConnectPill && !bannerDismissed && (
             <div
               role="status"
@@ -814,7 +813,6 @@ export default function CatalogPage() {
           )}
         </div>
       ) : (
-        <div className={contentContainerClass}>
           <CatalogGrid
             products={sortedProducts}
             onAddToCart={handleAdd}
