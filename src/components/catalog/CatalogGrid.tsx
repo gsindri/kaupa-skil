@@ -9,6 +9,7 @@ interface CatalogGridProps {
   onNearEnd?: () => void
   showPrice?: boolean
   className?: string
+  addingId?: string | null
 }
 
 export function CatalogGrid({
@@ -17,17 +18,19 @@ export function CatalogGrid({
   onNearEnd,
   showPrice,
   className,
+  addingId,
 }: CatalogGridProps) {
   const renderItem = React.useCallback(
     (p: any, _index: number) => (
-      <ProductCard 
-        key={p.catalog_id} 
-        product={p} 
+      <ProductCard
+        key={p.catalog_id}
+        product={p}
         onAdd={supplierId => onAddToCart(p, supplierId)}
-        showPrice={showPrice} 
+        showPrice={showPrice}
+        isAdding={addingId === p.catalog_id}
       />
     ),
-    [onAddToCart, showPrice],
+    [onAddToCart, showPrice, addingId],
   )
 
   return (
