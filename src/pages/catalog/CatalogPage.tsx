@@ -37,7 +37,7 @@ import { MagnifyingGlass, FunnelSimple, XCircle } from '@phosphor-icons/react'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 
 const FILTER_PANEL_LS_KEY = 'catalog-filters-open'
-const CATALOG_CONTAINER_CLASS = 'mx-auto w-full max-w-[1600px] px-4 sm:px-6 lg:px-12'
+const CATALOG_CONTAINER_CLASS = 'mx-auto w-full max-w-[1600px] px-6 sm:px-10 lg:px-16'
 
 interface DerivedChip {
   key: string
@@ -839,8 +839,8 @@ export default function CatalogPage() {
       <div
         className={cn(
           CATALOG_CONTAINER_CLASS,
-          'w-full space-y-6 pb-6',
-          view === 'grid' ? 'pt-4' : 'pt-6',
+          'w-full space-y-6 pb-8',
+          view === 'grid' ? 'pt-2' : 'pt-4',
         )}
       >
         {showConnectBanner && (
@@ -950,7 +950,6 @@ export default function CatalogPage() {
                 onNearEnd={handleLoadMore}
                 showPrice
                 addingId={addingId}
-                className="-mt-4 sm:-mt-5"
               />
             ) : (
               <CatalogTable

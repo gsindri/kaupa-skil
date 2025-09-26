@@ -463,7 +463,7 @@ export function CatalogTable({
   }
 
   return (
-    <div className="mt-6 overflow-hidden rounded-xl border border-slate-200/70 bg-white text-slate-900 dark:border-white/10 dark:bg-[rgba(13,19,32,0.86)] dark:text-slate-100">
+    <div className="mt-4 overflow-hidden rounded-xl border border-slate-200/70 bg-white text-slate-900 dark:border-white/10 dark:bg-[rgba(13,19,32,0.86)] dark:text-slate-100">
       <Table className="min-w-full text-sm text-slate-600 dark:text-slate-300">
         <TableHeader className="sticky top-0 z-10 bg-slate-50/70 backdrop-blur-sm dark:bg-white/5">
           <TableRow className="border-b border-slate-200/70 bg-transparent dark:border-white/10">
