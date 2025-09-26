@@ -389,7 +389,7 @@ export const ProductCard = memo(function ProductCard({
       )}
     >
       <CardContent className="catalog-card__content flex flex-1 flex-col p-0">
-        <div className="catalog-card__media relative px-4 pt-4">
+        <div className="catalog-card__media relative px-5 pt-5">
           <div className="catalog-card__surface aspect-[4/3] w-full bg-muted/30 rounded-xl overflow-hidden">
             <div className="catalog-card__badge-layer" data-badge-slot>
               {isInCart && (
@@ -410,35 +410,32 @@ export const ProductCard = memo(function ProductCard({
             </div>
           </div>
         </div>
-        <div className="catalog-card__details flex min-h-[4.25rem] flex-col gap-1 px-3 pt-3">
+        <div className="catalog-card__details flex min-h-[4.25rem] flex-col gap-1.5 px-4 pb-1 pt-4">
           {detailLink ? (
             <a
               {...detailLink}
               title={product.name}
-              className="catalog-card__title mb-1.5 line-clamp-2 text-base font-semibold leading-[1.3] text-foreground"
+              className="catalog-card__title mb-1 line-clamp-2 tracking-tight"
             >
               {product.name}
             </a>
           ) : (
             <div
               title={product.name}
-              className="catalog-card__title mb-1.5 line-clamp-2 text-base font-semibold leading-[1.3] text-foreground"
+              className="catalog-card__title mb-1 line-clamp-2 tracking-tight"
             >
               {product.name}
             </div>
           )}
           {supportingLine ? (
-            <div
-              className="catalog-card__meta line-clamp-1 text-sm text-muted-foreground"
-              title={supportingLine}
-            >
+            <div className="catalog-card__meta line-clamp-1" title={supportingLine}>
               {supportingLine}
             </div>
           ) : null}
         </div>
       </CardContent>
-      <CardFooter className="catalog-card__footer mt-auto flex w-full flex-wrap items-center gap-3 px-3 py-2.5">
-        <div className="catalog-card__footer-meta flex min-w-0 flex-1 flex-nowrap items-center gap-2.5 overflow-hidden">
+      <CardFooter className="catalog-card__footer mt-auto flex w-full flex-wrap items-center gap-x-4 gap-y-3 px-4 pb-4 pt-5">
+        <div className="catalog-card__footer-meta flex min-w-0 flex-1 flex-nowrap items-center gap-3 overflow-hidden">
           <AvailabilityBadge
             status={availability}
             updatedAt={product.availability_updated_at}
@@ -470,7 +467,7 @@ export const ProductCard = memo(function ProductCard({
             </span>
           )}
         </div>
-        <div className="catalog-card__footer-actions flex flex-shrink-0 items-center gap-3 md:ml-auto md:pl-3">
+        <div className="catalog-card__footer-actions flex flex-shrink-0 items-center gap-3 md:ml-auto md:pl-4">
           {priceLabel && (
             <div className="catalog-card__price text-sm font-medium tabular-nums" aria-live="polite">
               {priceLabel}
