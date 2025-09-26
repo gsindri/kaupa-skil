@@ -40,7 +40,7 @@ export function CatalogGrid({
       itemKey={(item) => item.catalog_id}
       minCardWidth={280}
       rowHeight={400}
-      gap={32}
+      gap={20}
       onNearEnd={onNearEnd}
       className={cn('catalog-grid', className)}
     />
