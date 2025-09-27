@@ -1,4 +1,4 @@
-import { useRef, useState, isValidElement } from 'react'
+import { useState, isValidElement } from 'react'
 import {
   Table,
   TableBody,
@@ -7,7 +7,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Checkbox } from '@/components/ui/checkbox'
 import { Button } from '@/components/ui/button'
 import { useCart } from '@/contexts/useBasket'
 import { QuantityStepper } from '@/components/cart/QuantityStepper'
@@ -392,49 +391,21 @@ const buildSupplierChipData = (
 
 interface CatalogTableProps {
   products: any[]
-  selected: string[]
-  onSelect: (id: string) => void
-  onSelectAll: (checked: boolean) => void
   sort: { key: 'name' | 'supplier' | 'price' | 'availability'; direction: 'asc' | 'desc' } | null
   onSort: (key: 'name' | 'supplier' | 'price' | 'availability') => void
-  isBulkMode: boolean
 }
 
-export function CatalogTable({
-  products,
-  selected,
-  onSelect,
-  onSelectAll,
-  sort,
-  onSort,
-  isBulkMode,
-}: CatalogTableProps) {
-  const rowRefs = useRef<Array<HTMLTableRowElement | null>>([])
+export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
 
   const { vendors } = useVendors()
   const { suppliers: allSuppliers } = useSuppliers()
   const { suppliers: connectedSuppliers } = useSupplierConnections()
 
-  const allIds = products.map(p => p.catalog_id)
-  const isAllSelected = allIds.length > 0 && allIds.every(id => selected.includes(id))
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTableRowElement>, index: number, id: string) => {
-    if (e.key === 'ArrowDown') {
-      rowRefs.current[index + 1]?.focus()
-      e.preventDefault()
-    } else if (e.key === 'ArrowUp') {
-      rowRefs.current[index - 1]?.focus()
-      e.preventDefault()
-    } else if (e.key === ' ') {
-      onSelect(id)
-      e.preventDefault()
-    }
-  }
-
   const renderSortButton = (
     key: 'name' | 'supplier' | 'price' | 'availability',
     label: string,
     align: 'left' | 'right' = 'left',
+    emphasize = false,
   ) => {
     const isActive = sort?.key === key
     const direction = isActive ? sort?.direction : null
@@ -450,7 +421,7 @@ export function CatalogTable({
           align === 'right'
             ? 'justify-end text-right'
             : 'justify-start text-left',
-          isActive && 'text-slate-900 dark:text-white',
+          (emphasize || isActive) && 'text-slate-900 dark:text-white',
         )}
         title={`Sort by ${label}`}
       >
@@ -463,40 +434,30 @@ export function CatalogTable({
   }
 
   return (
-    <div className="mt-4 overflow-hidden rounded-xl border border-slate-200/70 bg-white text-slate-900 dark:border-white/10 dark:bg-[rgba(13,19,32,0.86)] dark:text-slate-100">
-      <Table className="min-w-full text-sm text-slate-600 dark:text-slate-300">
+    <div className="overflow-hidden rounded-xl border border-slate-200/70 bg-white text-slate-900 shadow-sm dark:border-white/10 dark:bg-[rgba(13,19,32,0.86)] dark:text-slate-100">
+      <Table className="min-w-full text-[13px] text-slate-600 dark:text-slate-300">
         <TableHeader className="sticky top-0 z-10 bg-slate-50/70 backdrop-blur-sm dark:bg-white/5">
           <TableRow className="border-b border-slate-200/70 bg-transparent dark:border-white/10">
-            {isBulkMode && (
-              <TableHead className="w-12 px-4 py-3 text-left align-middle">
-                <Checkbox
-                  aria-label="Select all products"
-                  checked={isAllSelected}
-                  onCheckedChange={onSelectAll}
-                />
-              </TableHead>
-            )}
-            <TableHead className="px-4 py-3 text-left align-middle">
-              {renderSortButton('name', 'Product')}
+            <TableHead className="px-3 py-3 text-left align-middle">
+              {renderSortButton('name', 'Product', 'left', true)}
             </TableHead>
-            <TableHead className="w-40 px-4 py-3 text-left align-middle">
+            <TableHead className="w-32 px-3 py-3 text-left align-middle">
               {renderSortButton('availability', 'Availability')}
             </TableHead>
-            <TableHead className="px-4 py-3 text-left align-middle">
+            <TableHead className="w-52 px-3 py-3 text-left align-middle">
               {renderSortButton('supplier', 'Supplier')}
             </TableHead>
-            <TableHead className="w-32 px-4 py-3 text-right align-middle">
+            <TableHead className="w-32 px-3 py-3 text-right align-middle">
               {renderSortButton('price', 'Price', 'right')}
             </TableHead>
-            <TableHead className="w-32 px-4 py-3 text-right align-middle text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+            <TableHead className="w-36 px-3 py-3 text-right align-middle text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
               Actions
             </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody className="[&_tr:last-child]:border-b-0">
-          {products.map((p, i) => {
+          {products.map(p => {
             const id = p.catalog_id
-            const isSelected = selected.includes(id)
             const availabilityLabel =
               {
                 IN_STOCK: 'In',
@@ -523,25 +484,12 @@ export function CatalogTable({
             return (
               <TableRow
                 key={id}
-                ref={el => (rowRefs.current[i] = el)}
-                tabIndex={-1}
-                data-state={isSelected ? 'selected' : undefined}
-                onKeyDown={e => handleKeyDown(e, i, id)}
-                className="group border-b border-slate-200/60 bg-white transition-colors hover:bg-slate-50 focus-visible:bg-slate-100 data-[state=selected]:bg-slate-100 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10 dark:focus-visible:bg-white/15 dark:data-[state=selected]:bg-white/12"
+                className="group border-b border-slate-200/60 bg-white transition-colors hover:bg-slate-50 focus-visible:bg-slate-100 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10 dark:focus-visible:bg-white/15"
               >
-                {isBulkMode && (
-                  <TableCell className="w-12 px-4 py-3 align-middle">
-                    <Checkbox
-                      aria-label={`Select ${p.name}`}
-                      checked={isSelected}
-                      onCheckedChange={() => onSelect(id)}
-                    />
-                  </TableCell>
-                )}
-                <TableCell className="px-4 py-3 align-middle">
-                  <div className="flex items-center gap-3">
+                <TableCell className="px-3 py-2.5 align-middle">
+                  <div className="flex items-center gap-2.5">
                     <ProductThumb
-                      className="h-12 w-12 flex-none overflow-hidden rounded-md border border-slate-200/80 bg-white object-cover dark:border-white/15 dark:bg-white/10"
+                      className="h-10 w-10 flex-none overflow-hidden rounded-lg border border-slate-200/80 bg-white object-cover dark:border-white/15 dark:bg-white/10"
                       src={resolveImage(
                         p.sample_image_url ?? p.image_main,
                         p.availability_status,
@@ -558,11 +506,11 @@ export function CatalogTable({
                         {p.name}
                       </a>
                       {(p.brand || p.canonical_pack) && (
-                        <div className="mt-1 flex flex-wrap items-center gap-x-1 gap-y-0.5 text-xs text-muted-foreground">
-                          {p.brand && <span className="font-medium">{p.brand}</span>}
+                        <div className="mt-0.5 flex flex-wrap items-center gap-x-1 gap-y-0.5 text-[11px] text-muted-foreground">
+                          {p.brand && <span className="font-medium text-muted-foreground/90">{p.brand}</span>}
                           {p.brand && p.canonical_pack && <span aria-hidden>·</span>}
                           {p.canonical_pack && (
-                            <span className="font-medium text-slate-600 dark:text-slate-200">
+                            <span className="text-muted-foreground">
                               {p.canonical_pack}
                             </span>
                           )}
@@ -571,13 +519,14 @@ export function CatalogTable({
                     </div>
                   </div>
                 </TableCell>
-                <TableCell className="w-40 px-4 py-3 align-middle">
+                <TableCell className="w-32 px-3 py-2.5 align-middle text-xs text-muted-foreground">
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <AvailabilityBadge
                         tabIndex={-1}
                         status={p.availability_status}
                         updatedAt={p.availability_updated_at}
+                        className="scale-90 transform"
                       />
                     </TooltipTrigger>
                     <TooltipContent className="space-y-1 text-sm">
@@ -588,23 +537,23 @@ export function CatalogTable({
                     </TooltipContent>
                   </Tooltip>
                 </TableCell>
-                <TableCell className="px-4 py-3 align-middle">
+                <TableCell className="w-52 px-3 py-2.5 align-middle text-xs text-muted-foreground">
                   {suppliers.length ? (
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2.5">
                       <SupplierLogo
                         name={primarySupplierName}
                         logoUrl={primarySupplier?.supplier_logo_url ?? undefined}
-                        className="!h-8 !w-8 flex-none !rounded-md border border-slate-200/70 bg-white p-1 shadow-sm dark:border-white/10 dark:bg-white/10"
+                        className="!h-6 !w-6 flex-none !rounded-md border border-slate-200/60 bg-white p-1 shadow-sm dark:border-white/10 dark:bg-white/10"
                       />
-                      <div className="min-w-0 space-y-1">
-                        <div className="flex items-center gap-1 truncate text-sm font-medium text-slate-700 dark:text-slate-200">
-                          <span className="truncate">{primarySupplierName}</span>
+                      <div className="min-w-0 space-y-0.5 text-left">
+                        <div className="flex items-center gap-1 truncate text-[13px] font-medium text-slate-700 dark:text-slate-200">
+                          <span className="truncate text-slate-700 dark:text-slate-200">{primarySupplierName}</span>
                           {primarySupplier && !primarySupplier.is_connected && (
                             <Lock className="h-3.5 w-3.5 text-muted-foreground" />
                           )}
                         </div>
                         {remainingSupplierCount > 0 && (
-                          <div className="text-xs text-muted-foreground">
+                          <div className="text-[11px] text-muted-foreground">
                             +{remainingSupplierCount} more
                           </div>
                         )}
@@ -614,10 +563,10 @@ export function CatalogTable({
                     <span className="text-xs text-muted-foreground">No supplier data</span>
                   )}
                 </TableCell>
-                <TableCell className="w-32 px-4 py-3 text-right align-middle">
+                <TableCell className="w-32 px-3 py-2.5 text-right align-middle">
                   <PriceCell product={p} />
                 </TableCell>
-                <TableCell className="w-32 px-4 py-3 text-right align-middle">
+                <TableCell className="w-36 px-3 py-2.5 text-right align-middle">
                   <AddToCartButton product={p} />
                 </TableCell>
               </TableRow>
@@ -725,14 +674,14 @@ export function CatalogTable({
     }
   }
 
-  const slotClasses = cn('flex justify-end', className)
-  const actionButtonClasses = 'h-10 justify-center rounded-full px-4 text-sm font-semibold shadow-[0_14px_28px_-18px_rgba(15,23,42,0.35)] transition-shadow hover:shadow-[0_18px_36px_-16px_rgba(15,23,42,0.4)] dark:shadow-[0_14px_28px_-18px_rgba(3,10,26,0.55)] dark:hover:shadow-[0_20px_38px_-16px_rgba(3,10,26,0.6)]'
+  const slotClasses = cn('flex justify-end min-w-[8.5rem]', className)
+  const actionButtonClasses = 'h-10 w-full justify-center rounded-full px-4 text-sm font-semibold shadow-[0_14px_28px_-18px_rgba(15,23,42,0.35)] transition-shadow hover:shadow-[0_18px_36px_-16px_rgba(15,23,42,0.4)] dark:shadow-[0_14px_28px_-18px_rgba(3,10,26,0.55)] dark:hover:shadow-[0_20px_38px_-16px_rgba(3,10,26,0.6)]'
 
   if (existingItem)
     return (
       <div className={slotClasses}>
         <QuantityStepper
-          className="w-auto"
+          className="w-full max-w-[8.5rem] justify-end"
           quantity={existingItem.quantity}
           onChange={qty =>
             updateQuantity(existingItem.supplierItemId, qty)
@@ -877,7 +826,7 @@ function PriceCell({
   const isLocked = product.prices_locked ?? product.price_locked ?? false
 
   const fallbackPriceNode = (
-    <span className="tabular-nums">
+    <span className="tabular-nums text-sm text-muted-foreground">
       <span aria-hidden="true">—</span>
       <span className="sr-only">Price unavailable</span>
     </span>
@@ -888,7 +837,7 @@ function PriceCell({
 
   if (isLocked) {
     priceNode = (
-      <div className="flex items-center justify-end gap-2 text-muted-foreground">
+      <div className="flex items-center justify-end gap-2 text-sm text-muted-foreground">
         <Lock className="h-4 w-4" />
         <span aria-hidden="true" className="tabular-nums">
           —
@@ -915,14 +864,13 @@ function PriceCell({
       min === max
         ? formatCurrency(min, currency)
         : `${formatCurrency(min, currency)}–${formatCurrency(max, currency)}`
-    priceNode = <span className="tabular-nums">{text}</span>
-  } else {
     priceNode = (
-      <span className="tabular-nums">
-        <span aria-hidden="true">—</span>
-        <span className="sr-only">No supplier data</span>
+      <span className="tabular-nums text-sm font-semibold text-slate-900 dark:text-white">
+        {text}
       </span>
     )
+  } else {
+    priceNode = fallbackPriceNode
     tooltip = 'No supplier data'
   }
 
