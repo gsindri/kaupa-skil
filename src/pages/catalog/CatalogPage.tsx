@@ -175,8 +175,6 @@ export default function CatalogPage() {
   })
   const viewKey = `catalog:${view}`
   // Removed separate products state - using data directly from hooks
-  const [selected, setSelected] = useState<string[]>([])
-  const [bulkMode, setBulkMode] = useState(false)
   const { addItem } = useCart()
   const [addingId, setAddingId] = useState<string | null>(null)
   const [tableSort, setTableSort] = useState<{
@@ -634,29 +632,6 @@ export default function CatalogPage() {
     ],
   )
 
-  const toggleSelect = (id: string) => {
-    setSelected(prev =>
-      prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id],
-    )
-  }
-
-  const handleToggleBulkMode = () => {
-    setBulkMode(prev => {
-      if (prev) {
-        setSelected([])
-      }
-      return !prev
-    })
-  }
-
-  const handleSelectAll = (checked: boolean) => {
-    if (checked) {
-      setSelected(sortedProducts.map(p => p.catalog_id))
-    } else {
-      setSelected([])
-    }
-  }
-
   const handleSort = (
     key: 'name' | 'supplier' | 'price' | 'availability',
   ) => {
@@ -779,13 +754,6 @@ export default function CatalogPage() {
   }
 
   useEffect(() => {
-    if (view !== 'list' && bulkMode) {
-      setBulkMode(false)
-      setSelected([])
-    }
-  }, [view, bulkMode])
-
-  useEffect(() => {
     if (typeof window === 'undefined') return
     const shouldBeScrolled = window.scrollY > 0
     setScrolled(prev => (prev === shouldBeScrolled ? prev : shouldBeScrolled))
@@ -839,8 +807,8 @@ export default function CatalogPage() {
       <div
         className={cn(
           CATALOG_CONTAINER_CLASS,
-          'w-full space-y-6 pb-8',
-          view === 'grid' ? 'pt-2' : 'pt-4',
+          'w-full space-y-5 pb-8',
+          view === 'grid' ? 'pt-2' : 'pt-2',
         )}
       >
         {showConnectBanner && (
@@ -919,30 +887,6 @@ export default function CatalogPage() {
           </div>
         ) : (
           <div className="space-y-6">
-            {view === 'list' && (
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                <p className="text-sm font-medium text-slate-600">
-                  {bulkMode
-                    ? `${selected.length} item${selected.length === 1 ? '' : 's'} selected`
-                    : `${displayProducts.length} item${displayProducts.length === 1 ? '' : 's'} visible`}
-                </p>
-                <div className="flex items-center gap-2">
-                  {bulkMode && selected.length > 0 && (
-                    <Button size="sm" variant="ghost" onClick={() => setSelected([])}>
-                      Clear selection
-                    </Button>
-                  )}
-                  <Button
-                    size="sm"
-                    variant={bulkMode ? 'default' : 'outline'}
-                    onClick={handleToggleBulkMode}
-                  >
-                    {bulkMode ? 'Done selecting' : 'Bulk select'}
-                  </Button>
-                </div>
-              </div>
-            )}
-
             {view === 'grid' ? (
               <CatalogGrid
                 products={displayProducts}
@@ -952,15 +896,16 @@ export default function CatalogPage() {
                 addingId={addingId}
               />
             ) : (
-              <CatalogTable
-                products={displayProducts}
-                selected={selected}
-                onSelect={toggleSelect}
-                onSelectAll={handleSelectAll}
-                sort={tableSort}
-                onSort={handleSort}
-                isBulkMode={bulkMode}
-              />
+              <>
+                <p className="text-sm text-muted-foreground">
+                  {`${displayProducts.length} item${displayProducts.length === 1 ? '' : 's'} visible`}
+                </p>
+                <CatalogTable
+                  products={displayProducts}
+                  sort={tableSort}
+                  onSort={handleSort}
+                />
+              </>
             )}
 
             {hasNextPage && (

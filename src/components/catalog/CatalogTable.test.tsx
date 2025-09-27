@@ -40,12 +40,8 @@ describe('CatalogTable', () => {
       <TooltipProvider>
         <CatalogTable
           products={[product]}
-          selected={[]}
-          onSelect={() => {}}
-          onSelectAll={() => {}}
           sort={null}
           onSort={() => {}}
-          isBulkMode={false}
         />
       </TooltipProvider>,
     )
@@ -76,12 +72,8 @@ describe('CatalogTable', () => {
       <TooltipProvider>
         <CatalogTable
           products={[product]}
-          selected={[]}
-          onSelect={() => {}}
-          onSelectAll={() => {}}
           sort={null}
           onSort={() => {}}
-          isBulkMode={false}
         />
       </TooltipProvider>,
     )
@@ -104,12 +96,8 @@ describe('CatalogTable', () => {
       <TooltipProvider>
         <CatalogTable
           products={[product]}
-          selected={[]}
-          onSelect={() => {}}
-          onSelectAll={() => {}}
           sort={null}
           onSort={() => {}}
-          isBulkMode={false}
         />
       </TooltipProvider>,
     )
@@ -135,12 +123,8 @@ describe('CatalogTable', () => {
       <TooltipProvider>
         <CatalogTable
           products={[product]}
-          selected={[]}
-          onSelect={() => {}}
-          onSelectAll={() => {}}
           sort={null}
           onSort={() => {}}
-          isBulkMode={false}
         />
       </TooltipProvider>,
     )
