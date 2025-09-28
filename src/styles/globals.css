@@ -230,9 +230,16 @@ input[type='search'] {
 }
 
 .cart-rail{
-  background:color-mix(in srgb, #0f1a26 94%, transparent);
-  border:1px solid rgba(255,255,255,0.08);
-  color:var(--text);
+  --cart-rail-surface:color-mix(in oklab, #ffffff 94%, var(--surface-pop) 6%);
+  --cart-rail-surface-strong:color-mix(in oklab, #ffffff 90%, var(--surface-pop) 10%);
+  --cart-rail-text:#12263c;
+  --cart-rail-text-muted:color-mix(in oklab, var(--cart-rail-text) 62%, #70829c 38%);
+  --cart-rail-border:color-mix(in oklab, var(--surface-ring) 65%, #ffffff 35%);
+  --text:var(--cart-rail-text);
+  --text-muted:var(--cart-rail-text-muted);
+  background:linear-gradient(180deg, var(--cart-rail-surface) 0%, var(--cart-rail-surface-strong) 100%);
+  border:1px solid var(--cart-rail-border);
+  color:var(--cart-rail-text);
   display:grid;
   grid-template-rows:auto 1fr auto;
   font-size:12px;
@@ -240,8 +247,10 @@ input[type='search'] {
   max-height:100%;
   border-radius:12px;
   overflow:hidden;
-  box-shadow:0 24px 48px -26px rgba(6,12,24,0.8);
-  backdrop-filter:blur(18px);
+  box-shadow:
+    0 28px 48px -28px rgba(15,23,42,0.22),
+    0 18px 36px -26px rgba(15,23,42,0.16);
+  backdrop-filter:blur(10px);
 }
 
 .cart-rail--desktop{
@@ -283,8 +292,8 @@ input[type='search'] {
   justify-content:space-between;
   gap:8px;
   padding:10px 12px;
-  border-bottom:1px solid rgba(255,255,255,0.08);
-  background:color-mix(in srgb, rgba(15,26,38,0.92) 92%, transparent);
+  border-bottom:1px solid color-mix(in oklab, var(--cart-rail-border) 82%, transparent);
+  background:color-mix(in oklab, var(--cart-rail-surface) 88%, #ffffff 12%);
 }
 
 .cart-rail__title{
@@ -305,7 +314,8 @@ input[type='search'] {
   padding:0 0.4rem;
   height:18px;
   border-radius:999px;
-  background:rgba(255,255,255,0.12);
+  background:color-mix(in oklab, var(--cart-rail-text) 12%, #ffffff 88%);
+  color:var(--cart-rail-text);
   font-size:11px;
   font-variant-numeric:tabular-nums;
 }
@@ -319,14 +329,14 @@ input[type='search'] {
   border:0;
   border-radius:6px;
   background:transparent;
-  color:var(--text-muted);
+  color:var(--cart-rail-text-muted);
 }
 
 .cart-rail__close:hover,
 .cart-rail__close:focus-visible{
-  color:var(--text);
+  color:var(--cart-rail-text);
   outline:none;
-  background:rgba(255,255,255,0.05);
+  background:color-mix(in oklab, #ffffff 78%, transparent);
 }
 
 .cart-rail__close-icon{
@@ -359,6 +369,7 @@ input[type='search'] {
   margin:0 2px;
   border-radius:8px;
   align-items:flex-start;
+  background:color-mix(in oklab, var(--cart-rail-surface) 85%, #ffffff 15%);
 }
 
 .cart-item + .cart-item{
@@ -370,7 +381,7 @@ input[type='search'] {
   height:32px;
   object-fit:cover;
   border-radius:6px;
-  background:#142133;
+  background:color-mix(in oklab, var(--cart-rail-text) 8%, #ffffff 92%);
   flex-shrink:0;
 }
 
@@ -395,7 +406,7 @@ input[type='search'] {
 }
 
 .cart-item__price{
-  opacity:0.72;
+  color:var(--cart-rail-text-muted);
   font-size:11px;
   margin:2px 0 4px;
   font-variant-numeric:tabular-nums;
@@ -411,8 +422,9 @@ input[type='search'] {
   height:24px !important;
   min-width:78px !important;
   border-radius:8px !important;
-  border-color:rgba(255,255,255,0.16) !important;
-  background:rgba(15,26,38,0.6) !important;
+  border-color:color-mix(in oklab, var(--cart-rail-border) 86%, transparent) !important;
+  background:color-mix(in oklab, var(--cart-rail-surface) 82%, #ffffff 18%) !important;
+  color:var(--cart-rail-text) !important;
 }
 
 .cart-item__stepper button{
@@ -440,14 +452,14 @@ input[type='search'] {
   border:0;
   border-radius:6px;
   background:transparent;
-  color:var(--text-muted);
+  color:var(--cart-rail-text-muted);
 }
 
 .cart-item__remove:hover,
 .cart-item__remove:focus-visible{
-  color:var(--text);
+  color:var(--cart-rail-text);
   outline:none;
-  background:rgba(255,255,255,0.05);
+  background:color-mix(in oklab, #ffffff 78%, transparent);
 }
 
 .cart-item__remove-icon{
@@ -457,10 +469,10 @@ input[type='search'] {
 
 .cart-rail__footer{
   padding:10px 12px 12px;
-  border-top:1px solid rgba(255,255,255,0.08);
+  border-top:1px solid color-mix(in oklab, var(--cart-rail-border) 82%, transparent);
   display:grid;
   gap:8px;
-  background:color-mix(in srgb, rgba(15,26,38,0.94) 94%, transparent);
+  background:color-mix(in oklab, var(--cart-rail-surface-strong) 88%, #ffffff 12%);
 }
 
 .cart-rail__summary{
