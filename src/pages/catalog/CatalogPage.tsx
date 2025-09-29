@@ -270,6 +270,7 @@ export default function CatalogPage() {
     const brands = searchParams.get('brands')
     const suppliers = searchParams.get('suppliers')
     const pack = searchParams.get('pack')
+    const search = searchParams.get('search')
     if (categories) f.category = categories.split(',').filter(Boolean)
     if (brands) f.brand = brands.split(',').filter(Boolean)
     if (suppliers) f.supplier = suppliers.split(',').filter(Boolean)
@@ -280,6 +281,9 @@ export default function CatalogPage() {
       f.packSizeRange = { min, max }
     }
     if (Object.keys(f).length) setFilters(f)
+    if (search && search.trim() && search !== filters.search) {
+      setFilters({ search })
+    }
     const suppliersParam = searchParams.get('mySuppliers')
     const specialParam = searchParams.get('special')
     if (suppliersParam === 'include' || suppliersParam === 'exclude') {
@@ -375,6 +379,21 @@ export default function CatalogPage() {
     updateParam('pack', packValue)
     if (changed) setSearchParams(params, { replace: true })
   }, [filters, searchParams, setSearchParams])
+
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams.toString())
+    const current = params.get('search')
+    const searchValue = filters.search && filters.search.trim() ? filters.search : null
+    if (searchValue) {
+      if (current !== searchValue) {
+        params.set('search', searchValue)
+        setSearchParams(params, { replace: true })
+      }
+    } else if (current) {
+      params.delete('search')
+      setSearchParams(params, { replace: true })
+    }
+  }, [filters.search, searchParams, setSearchParams])
 
   useEffect(() => {
     // No longer need to reset products here - hooks handle this internally
