@@ -210,7 +210,7 @@ export function TopNavigation() {
   const avatarUrl =
     typeof userMetadata?.avatar_url === 'string' ? (userMetadata.avatar_url as string) : undefined
   const accountMenuLabel = displayName
-    ? t('navigation.account.openWithName', { values: { name: displayName } })
+    ? t('navigation.account.openWithName', { name: displayName })
     : t('navigation.account.open')
   const isBusy = loading || profileLoading
 
@@ -301,7 +301,7 @@ export function TopNavigation() {
           </span>
         </button>
         <span id={searchShortcutDescriptionId} className="sr-only">
-          {t('navigation.search.shortcut', { values: { shortcut: platformShortcut } })}
+          {t('navigation.search.shortcut', { shortcut: platformShortcut })}
         </span>
         <LanguageSwitcher className="hidden xl:block" />
         <DropdownMenu open={userMenuOpen} onOpenChange={setUserMenuOpen}>

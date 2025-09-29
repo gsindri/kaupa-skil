@@ -58,6 +58,107 @@
       }
     }
   },
+  "cart": {
+    "button": {
+      "label": "Karfa",
+      "tooltip": "{label} (C)",
+      "iconTitle": "{label} ({count})",
+      "ariaLabel": {
+        "withItems": "{label}, {count} {count, plural, one {vara} other {vörur}}",
+        "empty": "{label}, {count} {count, plural, one {vara} other {vörur}}"
+      },
+      "status": {
+        "withItems": "{count, plural, one {{count} vara í körfu} other {{count} vörur í körfu}}",
+        "empty": "Karfan er tóm"
+      }
+    }
+  },
+  "search": {
+    "header": {
+      "input": {
+        "placeholder": "Leitaðu að vörum, birgjum, pöntunum…"
+      },
+      "actions": {
+        "clear": "Hreinsa leit",
+        "close": "Loka leit",
+        "viewAll": "Skoða allar {count} {section}"
+      },
+      "scopes": {
+        "all": "Allt",
+        "products": "Vörur",
+        "suppliers": "Birgjar",
+        "orders": "Pantanir"
+      },
+      "sections": {
+        "products": {
+          "heading": "Vörur",
+          "meta": "Vara",
+          "badge": "V",
+          "label": "{count, plural, one {Vara ({count})} other {Vörur ({count})}}"
+        },
+        "suppliers": {
+          "heading": "Birgjar",
+          "meta": "Birgir",
+          "badge": "B",
+          "label": "{count, plural, one {Birgir ({count})} other {Birgjar ({count})}}"
+        },
+        "orders": {
+          "heading": "Pantanir",
+          "meta": "Pöntun",
+          "badge": "P",
+          "label": "{count, plural, one {Pöntun ({count})} other {Pantanir ({count})}}"
+        },
+        "recent": {
+          "label": "Nýleg leit"
+        }
+      }
+    }
+  },
+  "catalog": {
+    "filters": {
+      "title": "Síur",
+      "actions": {
+        "clear": "Hreinsa allt"
+      },
+      "stock": {
+        "label": "Birgðir",
+        "options": {
+          "all": "Allar birgðir",
+          "include": "Aðeins til á lager",
+          "exclude": "Ekki til á lager"
+        }
+      },
+      "suppliers": {
+        "label": "Birgjar",
+        "options": {
+          "all": "Allir birgjar",
+          "include": "Mínir birgjar",
+          "exclude": "Ekki mínir birgjar"
+        }
+      },
+      "specials": {
+        "label": "Tilboð",
+        "options": {
+          "all": "Öll tilboð",
+          "include": "Á tilboði",
+          "exclude": "Ekki á tilboði"
+        }
+      },
+      "facets": {
+        "categories": "Flokkar",
+        "suppliers": "Birgjar",
+        "brands": "Vörumerki",
+        "unknown": "Óþekkt"
+      },
+      "packSize": {
+        "label": "Pökkunarstærð",
+        "placeholders": {
+          "min": "Lágmark",
+          "max": "Hámark"
+        }
+      }
+    }
+  },
   "onboarding": {
     "existing": {
       "notifications": {
@@ -201,8 +302,242 @@
       "errors": {
         "duplicateOrganization": "Fyrirtæki með heitinu \"{name}\" er þegar til. Prófaðu annað nafn.",
         "genericCompletion": "Ekki tókst að ljúka uppsetningu. Reyndu aftur."
+    },
+    "progress": "Skref {current} af {total}"
+  },
+  "steps": {
+    "organizationBasics": {
+      "validation": {
+        "nameRequired": "⚠ Vinsamlegast skráðu heiti fyrirtækis.",
+        "logo": {
+          "invalidType": "Táknmynd þarf að vera PNG-, JPG- eða SVG-skrá.",
+          "size": "Táknmynd má mest vera 1 MB að stærð.",
+          "readError": "Tókst ekki að lesa myndina. Prófaðu aðra skrá."
+        }
       },
-      "progress": "Skref {current} af {total}"
+      "form": {
+        "optional": "(valfrjálst)",
+        "logo": {
+          "label": "Táknmynd vinnusvæðis",
+          "description": "Birtist í leiðsögn og samskiptum.",
+          "fileNameFallback": "Hlaða inn táknmynd",
+          "fileInfoFallback": "PNG, JPG eða SVG (hámark 1 MB)",
+          "upload": "Hlaða upp táknmynd",
+          "remove": "Fjarlægja",
+          "previewAlt": "Táknmynd fyrirtækis",
+          "previewAltNamed": "Táknmynd fyrir {name}"
+        },
+        "name": {
+          "label": "Heiti fyrirtækis",
+          "placeholder": "t.d. Reykjavík Restaurant Group"
+        },
+        "businessType": {
+          "label": "Rekstrarflokkur",
+          "placeholder": "Veldu flokk",
+          "none": "Óskilgreint"
+        }
+      },
+      "businessTypes": {
+        "restaurant": "Veitingastaður",
+        "cafe": "Kaffihús / Bakarí",
+        "hotel": "Hótel / Gististaður",
+        "retail": "Verslun / Matvöruverslun",
+        "office": "Skrifstofa / Vinnustaður",
+        "catering": "Veisluþjónusta / Viðburðir",
+        "other": "Annað"
+      }
+    },
+    "deliveryDetails": {
+      "validation": {
+        "street": "⚠ Vinsamlegast bættu við heimilisfangi.",
+        "postal": "⚠ Vinsamlegast skráðu póstnúmer.",
+        "city": "⚠ Vinsamlegast skráðu bæ."
+      },
+      "form": {
+        "optional": "(valfrjálst)",
+        "street": {
+          "label": "Heimilisfang",
+          "placeholder": "t.d. Laugavegur 26"
+        },
+        "addressLine2": {
+          "label": "Íbúð, hæð o.s.frv.",
+          "placeholder": "t.d. Íbúð 3B"
+        },
+        "postal": {
+          "label": "Póstnúmer",
+          "placeholder": "t.d. 101"
+        },
+        "city": {
+          "label": "Bær",
+          "placeholder": "t.d. Reykjavík"
+        }
+      }
+    },
+    "invoicingSetup": {
+      "validation": {
+        "vat": {
+          "required": "⚠ Vinsamlegast skráðu VSK-/Kennitölu.",
+          "format": "⚠ Notaðu sniðið ########-####."
+        },
+        "invoiceAddress": {
+          "street": "⚠ Vinsamlegast bættu við innheimtuheimilisfangi.",
+          "postal": "⚠ Vinsamlegast skráðu innheimtupóstnúmer.",
+          "city": "⚠ Vinsamlegast skráðu innheimtubæ."
+        }
+      },
+      "form": {
+        "optional": "(valfrjálst)",
+        "vat": {
+          "label": "VSK / Kennitala",
+          "placeholder": "t.d. 1234567-1234"
+        },
+        "useSeparate": {
+          "label": "Nota annað innheimtuheimilisfang",
+          "description": "Hakaðu við ef senda á reikninga á annað heimilisfang en afhendingar."
+        },
+        "invoiceSection": {
+          "title": "Innheimtuheimilisfang"
+        },
+        "invoiceAddress": {
+          "street": {
+            "label": "Heimilisfang",
+            "placeholder": "t.d. Bankastræti 14"
+          },
+          "line2": {
+            "label": "Íbúð, hæð o.s.frv.",
+            "placeholder": "t.d. 2. hæð"
+          },
+          "postal": {
+            "label": "Póstnúmer",
+            "placeholder": "t.d. 101"
+          },
+          "city": {
+            "label": "Bær",
+            "placeholder": "t.d. Reykjavík"
+          }
+        }
+      }
+    },
+    "contactInformation": {
+      "validation": {
+        "nameRequired": "⚠ Vinsamlegast skráðu tengilið.",
+        "emailRequired": "⚠ Vinsamlegast skráðu netfang.",
+        "emailFormat": "⚠ Sláðu inn gilt netfang.",
+        "phoneRequired": "⚠ Vinsamlegast skráðu símanúmer.",
+        "phoneFormat": "⚠ Sláðu inn gilt alþjóðlegt símanúmer."
+      },
+      "form": {
+        "contactName": {
+          "label": "Aðaltengiliður",
+          "placeholder": "t.d. Jón Jónsson"
+        },
+        "email": {
+          "label": "Netfang",
+          "placeholder": "jon@example.com"
+        },
+        "phone": {
+          "label": "Símanúmer",
+          "placeholder": "+354 555 1234"
+        }
+      }
+    },
+    "supplierSelection": {
+      "filters": {
+        "all": "Allt",
+        "connected": "Tengdir",
+        "not_connected": "Ekki tengdir"
+      },
+      "statuses": {
+        "paused": "Í bið",
+        "unverified": "Óstaðfestur",
+        "connected": "Tengdur",
+        "verified": "Staðfestur"
+      },
+      "search": {
+        "placeholder": "Leita að birgjum…",
+        "helper": "Við birtum eingöngu staðfesta, virka birgja á þínu svæði. Veldu þá sem þú verslar við — þú getur bætt við fleirum síðar."
+      },
+      "error": {
+        "title": "Tókst ekki að hlaða birgja"
+      },
+      "cards": {
+        "subtitleFallback": "Traustur samstarfsaðili"
+      },
+      "empty": {
+        "title": "Engir birgjar enn.",
+        "subtitle": "Bjóðaðu inn söluaðila til að byrja.",
+        "cta": "Bjóða inn birgja"
+      }
+    },
+    "review": {
+      "error": {
+        "title": "Ekki tókst að ljúka uppsetningu"
+      },
+      "organization": {
+        "section": {
+          "heading": "Fyrirtæki",
+          "emptyName": "Bættu við fyrirtæki",
+          "description": "Notað fyrir pantanir og samskipti við birgja.",
+          "logoFallback": "Bættu inn táknmynd til að sérsníða vinnusvæðið.",
+          "logoAlt": "Táknmynd fyrir {name}"
+        },
+        "actions": {
+          "edit": "Breyta"
+        },
+        "fields": {
+          "contactName": "Aðaltengiliður",
+          "phone": "Sími",
+          "email": "Netfang fyrirtækis",
+          "businessType": "Rekstrarflokkur",
+          "vat": "VSK / Kennitala",
+          "deliveryAddress": "Afhendingarheimilisfang",
+          "invoiceAddress": "Innheimtuheimilisfang",
+          "addLater": "Bæta við síðar",
+          "notSpecified": "Óskilgreint",
+          "missing": "Vantar",
+          "sameAsDelivery": "Sama og afhendingarheimilisfang"
+        }
+      },
+      "suppliers": {
+        "section": {
+          "heading": "Birgjar"
+        },
+        "summary": "{count, plural, =0 {Engir birgjar tengdir enn} one {{count} tengdur} other {{count} tengdir}}",
+        "description": "Þú getur alltaf bætt við eða fjarlægt birgja síðar í stillingum.",
+        "actions": {
+          "edit": "Breyta birgjum"
+        },
+        "empty": {
+          "message": "Þú hefur ekki tengt neina birgja enn. Við minnum þig á það á mælaborðinu."
+        }
+      },
+      "preferences": {
+        "language": {
+          "label": "Sjálfgefið tungumál",
+          "placeholder": "Veldu tungumál",
+          "options": {
+            "is-IS": "Íslenska",
+            "en-IS": "Enska (Ísland)",
+            "en-GB": "Enska (Bretland)",
+            "en-US": "Enska (Bandaríkin)"
+          }
+        },
+        "currency": {
+          "label": "Sjálfgefin mynt",
+          "placeholder": "Veldu gjaldmiðil",
+          "options": {
+            "ISK": "Íslensk króna (ISK)",
+            "EUR": "Evra (EUR)",
+            "USD": "Bandaríkjadalur (USD)",
+            "GBP": "Sterlingspund (GBP)",
+            "SEK": "Sænsk króna (SEK)",
+            "DKK": "Dönsk króna (DKK)",
+            "NOK": "Norsk króna (NOK)"
+          },
+          "help": "Við notum þetta fyrir verð og framtíðarskýrslur."
+        }
+      }
     }
   }
+}
 }

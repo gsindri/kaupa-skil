@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { MapPinHouse } from 'lucide-react'
+import { useTranslation } from '@/lib/i18n'
 
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
@@ -14,38 +15,11 @@ const addressSchema = z.object({
   city: z.string().trim().default('')
 })
 
-const deliverySchema = z.object({
+const baseDeliverySchema = z.object({
   deliveryAddress: addressSchema
-}).superRefine((data, ctx) => {
-  const deliveryLine1 = data.deliveryAddress.line1.trim()
-  if (deliveryLine1.length < 5) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: '⚠ Please add a street and house number.',
-      path: ['deliveryAddress', 'line1']
-    })
-  }
-
-  const deliveryPostal = data.deliveryAddress.postalCode.trim()
-  if (deliveryPostal.length < 2) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: '⚠ Please add a postal code.',
-      path: ['deliveryAddress', 'postalCode']
-    })
-  }
-
-  const deliveryCity = data.deliveryAddress.city.trim()
-  if (deliveryCity.length < 2) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: '⚠ Please add a city.',
-      path: ['deliveryAddress', 'city']
-    })
-  }
 })
 
-export type DeliveryDetailsFormValues = z.infer<typeof deliverySchema>
+export type DeliveryDetailsFormValues = z.infer<typeof baseDeliverySchema>
 
 const sanitizeAddress = (address?: Partial<DeliveryDetailsFormValues['deliveryAddress']>) => ({
   line1: address?.line1?.trim() ?? '',
@@ -61,14 +35,47 @@ interface DeliveryDetailsStepProps {
   setupError?: string | null
 }
 
-export function DeliveryDetailsStep({ 
-  value, 
-  onUpdate, 
-  onComplete, 
-  setupError 
+export function DeliveryDetailsStep({
+  value,
+  onUpdate,
+  onComplete,
+  setupError
 }: DeliveryDetailsStepProps) {
+  const { t } = useTranslation(undefined, { keyPrefix: 'onboarding.steps.deliveryDetails' })
+  const schema = React.useMemo(
+    () =>
+      baseDeliverySchema.superRefine((data, ctx) => {
+        const deliveryLine1 = data.deliveryAddress.line1.trim()
+        if (deliveryLine1.length < 5) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: t('validation.street'),
+            path: ['deliveryAddress', 'line1']
+          })
+        }
+
+        const deliveryPostal = data.deliveryAddress.postalCode.trim()
+        if (deliveryPostal.length < 2) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: t('validation.postal'),
+            path: ['deliveryAddress', 'postalCode']
+          })
+        }
+
+        const deliveryCity = data.deliveryAddress.city.trim()
+        if (deliveryCity.length < 2) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: t('validation.city'),
+            path: ['deliveryAddress', 'city']
+          })
+        }
+      }),
+    [t]
+  )
   const form = useForm<DeliveryDetailsFormValues>({
-    resolver: zodResolver(deliverySchema),
+    resolver: zodResolver(schema),
     mode: 'onBlur',
     defaultValues: value
   })
@@ -105,7 +112,7 @@ export function DeliveryDetailsStep({
                       className="h-5 w-5 flex-shrink-0 text-[color:var(--text-muted)] transition-colors group-focus-within:text-[var(--brand-accent)]"
                     />
                     <span className="flex items-center gap-1">
-                      Street address
+                      {t('form.street.label')}
                       <span aria-hidden="true" className="text-[color:var(--brand-accent)] opacity-80">
                         *
                       </span>
@@ -113,7 +120,7 @@ export function DeliveryDetailsStep({
                   </FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="e.g. Laugavegur 26"
+                      placeholder={t('form.street.placeholder')}
                       aria-required="true"
                       {...field}
                       onBlur={event => {
@@ -135,12 +142,12 @@ export function DeliveryDetailsStep({
               render={({ field }) => (
                 <FormItem className="space-y-2">
                   <FormLabel className="text-[13px] font-semibold text-[color:var(--text)]">
-                    Apartment, suite, etc.{' '}
-                    <span className="text-[12px] font-normal text-[color:var(--text-muted)]">(optional)</span>
+                    {t('form.addressLine2.label')} {' '}
+                    <span className="text-[12px] font-normal text-[color:var(--text-muted)]">{t('form.optional')}</span>
                   </FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="e.g. Suite 3B"
+                      placeholder={t('form.addressLine2.placeholder')}
                       {...field}
                       onBlur={event => {
                         field.onBlur()
@@ -164,7 +171,7 @@ export function DeliveryDetailsStep({
                 <FormItem className="space-y-2">
                   <FormLabel className="text-[13px] font-semibold text-[color:var(--text)]">
                     <span className="flex items-center gap-1">
-                      Postal code
+                      {t('form.postal.label')}
                       <span aria-hidden="true" className="text-[color:var(--brand-accent)] opacity-80">
                         *
                       </span>
@@ -172,7 +179,7 @@ export function DeliveryDetailsStep({
                   </FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="e.g. 101"
+                      placeholder={t('form.postal.placeholder')}
                       aria-required="true"
                       {...field}
                       onBlur={event => {
@@ -195,7 +202,7 @@ export function DeliveryDetailsStep({
                 <FormItem className="space-y-2">
                   <FormLabel className="text-[13px] font-semibold text-[color:var(--text)]">
                     <span className="flex items-center gap-1">
-                      City
+                      {t('form.city.label')}
                       <span aria-hidden="true" className="text-[color:var(--brand-accent)] opacity-80">
                         *
                       </span>
@@ -203,7 +210,7 @@ export function DeliveryDetailsStep({
                   </FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="e.g. Reykjavík"
+                      placeholder={t('form.city.placeholder')}
                       aria-required="true"
                       {...field}
                       onBlur={event => {

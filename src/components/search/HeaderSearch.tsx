@@ -4,6 +4,7 @@ import { useGlobalSearch, SearchScope } from '@/hooks/useGlobalSearch'
 import type { SearchItem, SearchSections } from '@/hooks/useGlobalSearch'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { Loader2, Search, Package, Building2, ClipboardList, X } from 'lucide-react'
+import { useTranslation } from '@/lib/i18n'
 import AvailabilityBadge from '@/components/catalog/AvailabilityBadge'
 import { SupplierLogo } from '@/components/catalog/SupplierLogo'
 import { QuantityStepper } from '@/components/cart/QuantityStepper'
@@ -23,25 +24,22 @@ type DialogEntry =
   | { type: 'recent'; query: string }
   | { type: 'result'; item: SearchResultItem }
 
-const SCOPE_OPTIONS: { label: string; value: SearchScope }[] = [
-  { label: 'All', value: 'all' },
-  { label: 'Products', value: 'products' },
-  { label: 'Suppliers', value: 'suppliers' },
-  { label: 'Orders', value: 'orders' }
+const SCOPE_OPTION_CONFIG: ReadonlyArray<{ value: SearchScope }> = [
+  { value: 'all' },
+  { value: 'products' },
+  { value: 'suppliers' },
+  { value: 'orders' }
 ]
 
-const SECTION_METADATA: Record<
+const SECTION_CONFIG: Record<
   SearchResultSection,
   {
-    heading: string
-    meta: string
-    badge: string
     icon: React.ComponentType<any>
   }
 > = {
-  products: { heading: 'Products', meta: 'Product', badge: 'P', icon: Package },
-  suppliers: { heading: 'Suppliers', meta: 'Supplier', badge: 'S', icon: Building2 },
-  orders: { heading: 'Orders', meta: 'Order', badge: 'O', icon: ClipboardList }
+  products: { icon: Package },
+  suppliers: { icon: Building2 },
+  orders: { icon: ClipboardList }
 }
 
 const SECTION_ORDER: SearchResultSection[] = ['products', 'suppliers', 'orders']
@@ -104,6 +102,7 @@ export const HeaderSearch = React.forwardRef<HTMLInputElement, HeaderSearchProps
     const { mode = 'dialog', open: controlledOpen, onOpenChange } = props
     void mode
     const navigate = useNavigate()
+    const { t } = useTranslation(undefined, { keyPrefix: 'search.header' })
     const [query, setQuery] = useState('')
     const [scope, setScope] = useState<SearchScope>('all')
     const { sections, isLoading } = useGlobalSearch(query, scope)
@@ -115,6 +114,47 @@ export const HeaderSearch = React.forwardRef<HTMLInputElement, HeaderSearchProps
     const [searchFocused, setSearchFocused] = useState(false)
 
     const dialogOpen = controlledOpen ?? internalDialogOpen
+
+    const scopeOptions = React.useMemo(
+      () =>
+        SCOPE_OPTION_CONFIG.map(({ value }) => ({
+          value,
+          label: t(`scopes.${value}`)
+        })),
+      [t]
+    )
+
+    const sectionMetadata = React.useMemo(
+      () => ({
+        products: {
+          heading: t('sections.products.heading'),
+          meta: t('sections.products.meta'),
+          badge: t('sections.products.badge'),
+          icon: SECTION_CONFIG.products.icon
+        },
+        suppliers: {
+          heading: t('sections.suppliers.heading'),
+          meta: t('sections.suppliers.meta'),
+          badge: t('sections.suppliers.badge'),
+          icon: SECTION_CONFIG.suppliers.icon
+        },
+        orders: {
+          heading: t('sections.orders.heading'),
+          meta: t('sections.orders.meta'),
+          badge: t('sections.orders.badge'),
+          icon: SECTION_CONFIG.orders.icon
+        }
+      }),
+      [t]
+    ) as Record<
+      SearchResultSection,
+      {
+        heading: string
+        meta: string
+        badge: string
+        icon: React.ComponentType<any>
+      }
+    >
 
     const inputRef = React.useRef<HTMLInputElement | null>(null)
     const searchShellRef = React.useRef<HTMLDivElement | null>(null)
@@ -342,7 +382,7 @@ export const HeaderSearch = React.forwardRef<HTMLInputElement, HeaderSearchProps
                   role="combobox"
                   aria-expanded={dialogEntries.length > 0}
                   aria-controls="header-search-results"
-                  placeholder="Search products, suppliers, orders…"
+                  placeholder={t('input.placeholder')}
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
                   onKeyDown={handleKeyDown}
@@ -352,7 +392,7 @@ export const HeaderSearch = React.forwardRef<HTMLInputElement, HeaderSearchProps
                   {query ? (
                     <button
                       type="button"
-                      aria-label="Clear search query"
+                      aria-label={t('actions.clear')}
                       onClick={() => setQuery('')}
                       className="flex h-10 w-10 items-center justify-center rounded-full text-[14px] text-[color:var(--text-muted)] transition-colors hover:text-[color:var(--text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--brand-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--surface-pop-2)]"
                     >
@@ -367,7 +407,7 @@ export const HeaderSearch = React.forwardRef<HTMLInputElement, HeaderSearchProps
                   )}
                   <button
                     type="button"
-                    aria-label="Close search"
+                    aria-label={t('actions.close')}
                     onClick={() => closeDialog(false)}
                     className="flex h-10 w-10 items-center justify-center rounded-full text-[color:var(--text-muted)] transition-colors hover:bg-white/[0.06] hover:text-[color:var(--text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--brand-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--surface-pop-2)]"
                   >
@@ -379,7 +419,7 @@ export const HeaderSearch = React.forwardRef<HTMLInputElement, HeaderSearchProps
 
             <div className={cn('px-3 pb-2 pt-2 transition-opacity duration-200', searchFocused ? 'opacity-80' : 'opacity-100')}>
               <div className="grid grid-cols-4 gap-1 rounded-[14px] border border-white/10 bg-white/[0.02] p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
-                {SCOPE_OPTIONS.map((option) => {
+                {scopeOptions.map((option) => {
                   const selected = scope === option.value
                   return (
                     <button
@@ -487,7 +527,7 @@ function DialogResults({
   if (!hasQuery && recentsEntries.length > 0) {
     sectionsContent.push(
       <div key="recent" className="space-y-[2px] pb-1">
-        <DialogSection label="Recent searches" />
+        <DialogSection label={t('sections.recent.label')} />
         {recentsEntries.map(({ entry, index }) => (
           <RecentDialogRow
             key={`recent-${entry.query}-${index}`}
@@ -509,12 +549,16 @@ function DialogResults({
       )
       if (sectionEntries.length === 0) return
 
-      const metadata = SECTION_METADATA[section]
+      const metadata = sectionMetadata[section]
       const sectionData = sections[section]
 
       sectionsContent.push(
         <div key={section} className="space-y-[2px] pb-1">
-          <DialogSection label={`${metadata.heading} (${sectionData.totalCount})`} />
+          <DialogSection
+            label={t(`sections.${section}.label`, {
+              count: sectionData.totalCount
+            })}
+          />
           {sectionEntries.map(({ entry, index }) => {
             const itemMetadata = entry.item.metadata
             const thumbnailUrl = itemMetadata?.imageUrl
@@ -572,7 +616,12 @@ function DialogResults({
                 onClick={() => onViewAll(section, trimmedQuery)}
                 className="group inline-flex w-full items-center justify-center gap-2 rounded-[12px] border border-white/12 bg-white/[0.04] px-3 py-2 text-sm font-semibold text-[color:var(--text)] transition-all duration-150 ease-out hover:border-[rgba(245,158,11,0.35)] hover:bg-[rgba(245,158,11,0.14)]"
               >
-                <span>View all {sectionData.totalCount} {metadata.heading.toLowerCase()}</span>
+                <span>
+                  {t('actions.viewAll', {
+                    count: sectionData.totalCount,
+                    section: metadata.heading.toLowerCase()
+                  })}
+                </span>
                 <span className="text-[color:var(--brand-accent)] transition-colors group-hover:text-[color:var(--text)]">↗</span>
               </button>
             </div>
