@@ -21,6 +21,15 @@ const PLACEHOLDER_SUPPLIER_NAMES = new Set([
   'unspecified'
 ])
 
+const WORD_PATTERN = /(\p{L})([\p{L}\p{M}]*)/gu
+
+const toSmartTitleCase = (value: string): string => {
+  const normalized = value.toLocaleLowerCase('is-IS')
+  return normalized.replace(WORD_PATTERN, (_, first: string, rest: string) =>
+    first.toLocaleUpperCase('is-IS') + rest
+  )
+}
+
 const sanitizeSupplierName = (
   candidate: unknown,
   fallbackId?: unknown
@@ -43,6 +52,14 @@ const sanitizeSupplierName = (
   const lowerCandidate = candidateName.toLowerCase()
   if (PLACEHOLDER_SUPPLIER_NAMES.has(lowerCandidate)) {
     return fallback
+  }
+
+  const isUniformCase =
+    candidateName === candidateName.toLowerCase() ||
+    candidateName === candidateName.toUpperCase()
+
+  if (isUniformCase && candidateName.length > 2) {
+    return toSmartTitleCase(candidateName)
   }
 
   return candidateName
@@ -90,12 +107,15 @@ export default function BasketProvider({ children }: { children: React.ReactNode
       return parsed.map(it => ({
         ...it,
         supplierItemId: it.supplierItemId ?? it.id,
-        supplierLogoUrl:
-          it.supplierLogoUrl ??
-          it.supplier_logo_url ??
-          it.logoUrl ??
-          it.supplierLogo ??
-          null,
+        supplierLogoUrl: (() => {
+          const logoCandidate =
+            it.supplierLogoUrl ??
+            it.supplier_logo_url ??
+            it.logoUrl ??
+            it.supplierLogo ??
+            null
+          return logoCandidate ? getCachedImageUrl(logoCandidate) : null
+        })(),
         supplierName: extractLegacySupplierName(it),
         itemName:
           it.itemName ??
@@ -257,6 +277,9 @@ export default function BasketProvider({ children }: { children: React.ReactNode
       normalizedItem = {
         ...item,
         supplierName: sanitizeSupplierName(item.supplierName, item.supplierId),
+        supplierLogoUrl: item.supplierLogoUrl
+          ? getCachedImageUrl(item.supplierLogoUrl)
+          : null,
         itemName: item.itemName ?? item.displayName ?? 'Item',
         displayName: item.displayName ?? item.itemName ?? 'Item',
         image: item.image ? getCachedImageUrl(item.image) : null

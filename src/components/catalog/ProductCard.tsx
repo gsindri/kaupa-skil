@@ -92,8 +92,9 @@ export const ProductCard = memo(function ProductCard({
     ? product.supplier_logo_urls
     : [];
 
-  const supplierIds: string[] = [];
-  const supplierDisplayNames: string[] = [];
+  type NormalizedSupplier = { id: string; name: string; logo: string | null };
+
+  const supplierRecords: NormalizedSupplier[] = [];
   const fallbackQueue = [...fallbackNameList];
   let derivedPrimaryLogo: string | null = null;
 
@@ -101,24 +102,28 @@ export const ProductCard = memo(function ProductCard({
     const normalizedId = normalizeString(rawSupplierIds[idx]);
     if (!normalizedId) continue;
 
-    if (!derivedPrimaryLogo) {
-      const logoCandidate = normalizeString(rawSupplierLogos[idx]);
-      if (logoCandidate) {
-        derivedPrimaryLogo = logoCandidate;
-      }
+    const logoCandidate = normalizeString(rawSupplierLogos[idx]);
+    if (!derivedPrimaryLogo && logoCandidate) {
+      derivedPrimaryLogo = logoCandidate;
     }
-
-    supplierIds.push(normalizedId);
 
     const directName = normalizeString(rawSupplierNames[idx]);
     if (directName) {
-      supplierDisplayNames.push(directName);
+      supplierRecords.push({
+        id: normalizedId,
+        name: directName,
+        logo: logoCandidate ?? null,
+      });
       continue;
     }
 
     const mappedName = fallbackNameById.get(normalizedId);
     if (mappedName) {
-      supplierDisplayNames.push(mappedName);
+      supplierRecords.push({
+        id: normalizedId,
+        name: mappedName,
+        logo: logoCandidate ?? null,
+      });
       continue;
     }
 
@@ -130,7 +135,11 @@ export const ProductCard = memo(function ProductCard({
       break;
     }
 
-    supplierDisplayNames.push(queuedName ?? "");
+    supplierRecords.push({
+      id: normalizedId,
+      name: queuedName ?? "",
+      logo: logoCandidate ?? null,
+    });
   }
 
   if (!derivedPrimaryLogo) {
@@ -138,9 +147,12 @@ export const ProductCard = memo(function ProductCard({
     derivedPrimaryLogo = fallbackLogo ? normalizeString(fallbackLogo) : null;
   }
 
+  const supplierIds = supplierRecords.map(record => record.id);
+  const supplierDisplayNames = supplierRecords.map(record => record.name);
+
   const supplierCountCandidates = [
     typeof product.suppliers_count === "number" ? product.suppliers_count : null,
-    supplierIds.length,
+    supplierRecords.length,
     fallbackNameList.length,
   ].filter((value): value is number => typeof value === "number" && value > 0);
 
@@ -166,11 +178,9 @@ export const ProductCard = memo(function ProductCard({
     (supplierDisplayNames[0] && supplierDisplayNames[0].length
       ? supplierDisplayNames[0]
       : supplierIds[0]) ?? supplierLabel;
-  const orderedSuppliers = supplierIds.map((id, idx) => ({
-    id,
-    name: supplierDisplayNames[idx] && supplierDisplayNames[idx].length
-      ? supplierDisplayNames[idx]
-      : id,
+  const orderedSuppliers = supplierRecords.map(record => ({
+    id: record.id,
+    name: record.name && record.name.length ? record.name : record.id,
   }));
   const overflowSupplierCount = Math.max(0, supplierCount - 1);
 
@@ -217,11 +227,14 @@ export const ProductCard = memo(function ProductCard({
       onAdd(supplierId);
       return;
     }
+
+    const selectedSupplier = supplierRecords.find(record => record.id === supplierId);
     addItem(
       {
         id: product.catalog_id,
         supplierId,
         supplierName,
+        supplierLogoUrl: selectedSupplier?.logo ?? derivedPrimaryLogo ?? null,
         itemName: product.name,
         sku: product.catalog_id,
         packSize: packInfo,
