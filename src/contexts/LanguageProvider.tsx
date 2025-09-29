@@ -1,6 +1,12 @@
-import React, { createContext, useContext, useEffect, useState } from 'react'
+import React, { createContext, useCallback, useContext, useEffect, useState } from 'react'
+import i18n, { AppLanguage, supportedLanguages } from '@/lib/i18n'
 
-export type Language = 'is' | 'en'
+export type Language = AppLanguage
+
+const LANGUAGE_STORAGE_KEY = 'app-language'
+
+const isSupportedLanguage = (value: unknown): value is Language =>
+  typeof value === 'string' && supportedLanguages.some((lang) => lang === value)
 
 interface LanguageContextValue {
   language: Language
@@ -11,18 +17,34 @@ const LanguageContext = createContext<LanguageContextValue | undefined>(undefine
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [language, setLanguageState] = useState<Language>(() => {
-    const saved = localStorage.getItem('app-language')
-    return saved === 'en' || saved === 'is' ? (saved as Language) : 'is'
+    if (typeof window === 'undefined') return 'is'
+    const saved = window.localStorage.getItem(LANGUAGE_STORAGE_KEY)
+    return isSupportedLanguage(saved) ? saved : 'is'
   })
 
-  const setLanguage = (lang: Language) => {
-    setLanguageState(lang)
-    localStorage.setItem('app-language', lang)
-  }
+  const applyLanguage = useCallback((lang: Language) => {
+    if (i18n.language !== lang) {
+      void i18n.changeLanguage(lang)
+    }
+    if (typeof document !== 'undefined') {
+      document.documentElement.lang = lang
+    }
+  }, [])
+
+  const setLanguage = useCallback(
+    (lang: Language) => {
+      setLanguageState((prev) => (prev === lang ? prev : lang))
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem(LANGUAGE_STORAGE_KEY, lang)
+      }
+      applyLanguage(lang)
+    },
+    [applyLanguage],
+  )
 
   useEffect(() => {
-    document.documentElement.lang = language
-  }, [language])
+    applyLanguage(language)
+  }, [applyLanguage, language])
 
   return (
     <LanguageContext.Provider value={{ language, setLanguage }}>
