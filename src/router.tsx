@@ -1,28 +1,28 @@
 
 import { createBrowserRouter } from "react-router-dom";
 import { AuthGate } from "@/components/auth/AuthGate";
-import { AppLayout } from "@/components/layout/AppLayout";
-import Dashboard from "@/pages/Dashboard";
-import Compare from "@/pages/Compare";
-import Orders from "@/pages/Orders";
-import Checkout from "@/pages/Checkout";
-import OrderConfirmation from "@/pages/OrderConfirmation";
-import Suppliers from "@/pages/Suppliers";
-import Pantry from "@/pages/Pantry";
-import Settings from "@/pages/Settings";
-import PriceHistory from "@/pages/PriceHistory";
-import Delivery from "@/pages/Delivery";
-import Admin from "@/pages/Admin";
-import Discovery from "@/pages/Discovery";
-import CatalogPage from "@/pages/catalog/CatalogPage";
-import LoginPage from "@/pages/auth/LoginPage";
-import SignupPage from "@/pages/auth/SignupPage";
-import ForgotPassword from "@/pages/auth/ForgotPassword";
-import ResetPassword from "@/pages/auth/ResetPassword";
-import ErrorPage from "@/pages/ErrorPage";
-import NotFound from "@/pages/NotFound";
+import AppLayout from "@/components/layout/AppLayout";
 import { ExistingUserOnboarding } from "@/components/onboarding/ExistingUserOnboarding";
 import { OnboardingWizard } from "@/components/onboarding/OnboardingWizard";
+import Admin from "@/pages/Admin";
+import CatalogPage from "@/pages/catalog/CatalogPage";
+import Checkout from "@/pages/Checkout";
+import Compare from "@/pages/Compare";
+import Dashboard from "@/pages/Dashboard";
+import Delivery from "@/pages/Delivery";
+import Discovery from "@/pages/Discovery";
+import ErrorPage from "@/pages/ErrorPage";
+import ForgotPassword from "@/pages/auth/ForgotPassword";
+import LoginPage from "@/pages/auth/LoginPage";
+import NotFound from "@/pages/NotFound";
+import OrderConfirmation from "@/pages/OrderConfirmation";
+import Orders from "@/pages/Orders";
+import Pantry from "@/pages/Pantry";
+import PriceHistory from "@/pages/PriceHistory";
+import ResetPassword from "@/pages/auth/ResetPassword";
+import Settings from "@/pages/Settings";
+import SignupPage from "@/pages/auth/SignupPage";
+import Suppliers from "@/pages/Suppliers";
 
 export const routes = [
   {
