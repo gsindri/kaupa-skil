@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Image, Store, Upload } from 'lucide-react'
+import { useTranslation } from '@/lib/i18n'
 
 import {
   Form,
@@ -27,7 +28,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 // eslint-disable-next-line react-refresh/only-export-components
 export const BUSINESS_TYPE_VALUES = [
   'restaurant',
-  'cafe', 
+  'cafe',
   'hotel',
   'retail',
   'office',
@@ -36,17 +37,6 @@ export const BUSINESS_TYPE_VALUES = [
 ] as const
 
 export type BusinessTypeValue = (typeof BUSINESS_TYPE_VALUES)[number]
-
-// eslint-disable-next-line react-refresh/only-export-components
-export const BUSINESS_TYPE_OPTIONS: ReadonlyArray<{ value: BusinessTypeValue; label: string }> = [
-  { value: 'restaurant', label: 'Restaurant' },
-  { value: 'cafe', label: 'Cafe / Bakery' },
-  { value: 'hotel', label: 'Hotel / Accommodation' },
-  { value: 'retail', label: 'Retail / Grocery' },
-  { value: 'office', label: 'Office / Workplace' },
-  { value: 'catering', label: 'Catering / Events' },
-  { value: 'other', label: 'Other' }
-]
 
 const LOGO_FILE_TYPES = ['image/png', 'image/jpeg', 'image/svg+xml'] as const
 const LOGO_FILE_EXTENSIONS = ['png', 'jpg', 'jpeg', 'svg'] as const
@@ -59,13 +49,13 @@ const organizationLogoSchema = z.object({
   fileType: z.string().min(1)
 })
 
-const basicsSchema = z.object({
-  name: z.string().trim().min(1, '⚠ Please enter an organization name.'),
+const baseBasicsSchema = z.object({
+  name: z.string().trim().min(1),
   businessType: z.enum(BUSINESS_TYPE_VALUES).optional(),
   logo: organizationLogoSchema.nullable().optional()
 })
 
-export type OrganizationBasicsFormValues = z.infer<typeof basicsSchema>
+export type OrganizationBasicsFormValues = z.infer<typeof baseBasicsSchema>
 export type OrganizationLogoValue = z.infer<typeof organizationLogoSchema>
 
 interface OrganizationBasicsStepProps {
@@ -81,11 +71,29 @@ export function OrganizationBasicsStep({
   onComplete,
   setupError
 }: OrganizationBasicsStepProps) {
+  const { t } = useTranslation(undefined, { keyPrefix: 'onboarding.steps.organizationBasics' })
+  const schema = React.useMemo(
+    () =>
+      z.object({
+        name: z.string().trim().min(1, t('validation.nameRequired')),
+        businessType: z.enum(BUSINESS_TYPE_VALUES).optional(),
+        logo: organizationLogoSchema.nullable().optional()
+      }),
+    [t]
+  )
   const form = useForm<OrganizationBasicsFormValues>({
-    resolver: zodResolver(basicsSchema),
+    resolver: zodResolver(schema),
     mode: 'onBlur',
     defaultValues: value
   })
+  const businessTypeOptions = React.useMemo(
+    () =>
+      BUSINESS_TYPE_VALUES.map((option) => ({
+        value: option,
+        label: t(`businessTypes.${option}`)
+      })),
+    [t]
+  )
 
   const fileInputRef = useRef<HTMLInputElement | null>(null)
 
@@ -168,7 +176,7 @@ export function OrganizationBasicsStep({
                 if (!isValidType) {
                   form.setError('logo', {
                     type: 'validate',
-                    message: 'Logo must be a PNG, JPG, or SVG file.'
+                    message: t('validation.logo.invalidType')
                   })
                   clearFileInput()
                   return
@@ -177,7 +185,7 @@ export function OrganizationBasicsStep({
                 if (file.size > MAX_LOGO_FILE_SIZE) {
                   form.setError('logo', {
                     type: 'validate',
-                    message: 'Logo file size must be 1 MB or smaller.'
+                    message: t('validation.logo.size')
                   })
                   clearFileInput()
                   return
@@ -199,7 +207,7 @@ export function OrganizationBasicsStep({
                   console.error('Unable to read selected logo file', error)
                   form.setError('logo', {
                     type: 'validate',
-                    message: 'We could not read that image. Try a different file.'
+                    message: t('validation.logo.readError')
                   })
                   form.setValue('logo', null, { shouldDirty: true, shouldTouch: true })
                 } finally {
@@ -214,15 +222,19 @@ export function OrganizationBasicsStep({
                 clearFileInput()
               }
 
-              const previewAlt = form.getValues('name')?.trim() || 'Organization logo'
+              const currentName = form.getValues('name')?.trim()
+              const previewAlt = currentName
+                ? t('form.logo.previewAltNamed', { name: currentName })
+                : t('form.logo.previewAlt')
 
               return (
                 <FormItem className="space-y-3">
                   <FormLabel className="text-[13px] font-semibold text-[color:var(--text)]">
-                    Workspace logo <span className="text-[12px] text-[color:var(--text-muted)]">(optional)</span>
+                    {t('form.logo.label')}{' '}
+                    <span className="text-[12px] text-[color:var(--text-muted)]">{t('form.optional')}</span>
                   </FormLabel>
                   <FormDescription className="text-[12px] text-[color:var(--text-muted)]">
-                    Appears in navigation and communications.
+                    {t('form.logo.description')}
                   </FormDescription>
                   <FormControl>
                     <div className="space-y-3 rounded-[12px] border border-dashed border-[color:var(--surface-ring)] bg-[color:var(--surface-pop)]/60 p-4">
@@ -239,10 +251,10 @@ export function OrganizationBasicsStep({
                           </Avatar>
                           <div className="space-y-1">
                             <p className="text-[13px] font-semibold text-[color:var(--text)]">
-                              {logo?.fileName ?? 'Upload a logo'}
+                              {logo?.fileName ?? t('form.logo.fileNameFallback')}
                             </p>
                             <p className="text-[12px] text-[color:var(--text-muted)]">
-                              {logo ? formatFileSize(logo.fileSize) : 'PNG, JPG, or SVG (max 1 MB)'}
+                              {logo ? formatFileSize(logo.fileSize) : t('form.logo.fileInfoFallback')}
                             </p>
                           </div>
                         </div>
@@ -254,7 +266,7 @@ export function OrganizationBasicsStep({
                             className="h-9 gap-2 rounded-[10px] px-3 text-[13px]"
                             onClick={triggerFileDialog}
                           >
-                            <Upload className="h-4 w-4" /> Upload logo
+                            <Upload className="h-4 w-4" /> {t('form.logo.upload')}
                           </Button>
                           {logo && (
                             <Button
@@ -264,7 +276,7 @@ export function OrganizationBasicsStep({
                               className="h-9 rounded-[10px] px-3 text-[13px] text-[color:var(--text-muted)] hover:text-[color:var(--text)]"
                               onClick={handleRemoveLogo}
                             >
-                              Remove
+                              {t('form.logo.remove')}
                             </Button>
                           )}
                         </div>
@@ -292,13 +304,13 @@ export function OrganizationBasicsStep({
                 <FormLabel className="flex items-center gap-2 text-[13px] font-semibold text-[color:var(--text)]">
                   <Store className="h-5 w-5 flex-shrink-0 text-[color:var(--text-muted)] transition-colors group-focus-within:text-[var(--brand-accent)]" />
                   <span className="flex items-center gap-1">
-                    Organization name
+                    {t('form.name.label')}
                     <span aria-hidden="true" className="text-[color:var(--brand-accent)] opacity-80">*</span>
                   </span>
                 </FormLabel>
                 <FormControl>
                   <Input
-                    placeholder="e.g. Reykjavík Restaurant Group"
+                    placeholder={t('form.name.placeholder')}
                     aria-required="true"
                     {...field}
                     onBlur={event => {
@@ -322,8 +334,8 @@ export function OrganizationBasicsStep({
                 <FormLabel className="flex items-center gap-2 text-[13px] font-semibold text-[color:var(--text)]">
                   <Store className="h-5 w-5 flex-shrink-0 text-[color:var(--text-muted)] transition-colors group-focus-within:text-[var(--brand-accent)]" />
                   <span className="flex items-center gap-1">
-                    Business type
-                    <span className="text-[12px] font-normal text-[color:var(--text-muted)]">(optional)</span>
+                    {t('form.businessType.label')}
+                    <span className="text-[12px] font-normal text-[color:var(--text-muted)]">{t('form.optional')}</span>
                   </span>
                 </FormLabel>
                 <Select
@@ -340,14 +352,14 @@ export function OrganizationBasicsStep({
                 >
                   <FormControl>
                     <SelectTrigger className="h-11 rounded-[12px] border-[color:var(--surface-ring)] bg-[color:var(--surface-pop)] text-left text-[13px]">
-                      <SelectValue placeholder="Choose a category" />
+                      <SelectValue placeholder={t('form.businessType.placeholder')} />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent className="rounded-[12px] border-[color:var(--surface-ring)] bg-[color:var(--surface-pop)] text-[13px]">
                     <SelectItem value="__none__" className="text-[13px] text-[color:var(--text-muted)]">
-                      Not specified
+                      {t('form.businessType.none')}
                     </SelectItem>
-                    {BUSINESS_TYPE_OPTIONS.map(option => (
+                    {businessTypeOptions.map(option => (
                       <SelectItem key={option.value} value={option.value} className="text-[13px]">
                         {option.label}
                       </SelectItem>

@@ -3,30 +3,32 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { UserCircle2, Mail, Phone } from 'lucide-react'
+import { useTranslation } from '@/lib/i18n'
 
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { getDefaultCountryCode, normalizePhoneInput } from '@/utils/phone'
 import type { CountryCode } from 'libphonenumber-js'
 
-const contactSchema = (country: CountryCode) => z.object({
-  contactName: z
-    .string()
-    .trim()
-    .min(2, '⚠ Please add a main contact person.'),
-  email: z
-    .string()
-    .trim()
-    .min(1, '⚠ Please add an email address.')
-    .email('⚠ Enter a valid email address.'),
-  phone: z
-    .string()
-    .trim()
-    .min(1, '⚠ Please add a phone number.')
-    .refine(value => normalizePhoneInput(value, country).isValid, {
-      message: '⚠ Enter a valid international phone number.'
-    })
-})
+const contactSchema = (country: CountryCode, t: (key: string, options?: Record<string, unknown>) => string) =>
+  z.object({
+    contactName: z
+      .string()
+      .trim()
+      .min(2, t('validation.nameRequired')),
+    email: z
+      .string()
+      .trim()
+      .min(1, t('validation.emailRequired'))
+      .email(t('validation.emailFormat')),
+    phone: z
+      .string()
+      .trim()
+      .min(1, t('validation.phoneRequired'))
+      .refine(value => normalizePhoneInput(value, country).isValid, {
+        message: t('validation.phoneFormat')
+      })
+  })
 
 export type ContactInformationFormValues = z.infer<ReturnType<typeof contactSchema>>
 
@@ -37,14 +39,15 @@ interface ContactInformationStepProps {
   setupError?: string | null
 }
 
-export function ContactInformationStep({ 
-  value, 
-  onUpdate, 
-  onComplete, 
-  setupError 
+export function ContactInformationStep({
+  value,
+  onUpdate,
+  onComplete,
+  setupError
 }: ContactInformationStepProps) {
+  const { t } = useTranslation(undefined, { keyPrefix: 'onboarding.steps.contactInformation' })
   const defaultCountry = useMemo(() => getDefaultCountryCode(), [])
-  const schema = useMemo(() => contactSchema(defaultCountry), [defaultCountry])
+  const schema = useMemo(() => contactSchema(defaultCountry, t), [defaultCountry, t])
 
   const form = useForm<ContactInformationFormValues>({
     resolver: zodResolver(schema),
@@ -91,13 +94,13 @@ export function ContactInformationStep({
                 <FormLabel className="flex items-center gap-2 text-[13px] font-semibold text-[color:var(--text)]">
                   <UserCircle2 className="h-5 w-5 flex-shrink-0 text-[color:var(--text-muted)] transition-colors group-focus-within:text-[var(--brand-accent)]" />
                   <span className="flex items-center gap-1">
-                    Primary contact name
+                    {t('form.contactName.label')}
                     <span aria-hidden="true" className="text-[color:var(--brand-accent)] opacity-80">*</span>
                   </span>
                 </FormLabel>
                 <FormControl>
                   <Input
-                    placeholder="e.g. Jón Jónsson"
+                    placeholder={t('form.contactName.placeholder')}
                     aria-required="true"
                     {...field}
                     onBlur={event => {
@@ -121,14 +124,14 @@ export function ContactInformationStep({
                 <FormLabel className="flex items-center gap-2 text-[13px] font-semibold text-[color:var(--text)]">
                   <Mail className="h-5 w-5 flex-shrink-0 text-[color:var(--text-muted)] transition-colors group-focus-within:text-[var(--brand-accent)]" />
                   <span className="flex items-center gap-1">
-                    Email address
+                    {t('form.email.label')}
                     <span aria-hidden="true" className="text-[color:var(--brand-accent)] opacity-80">*</span>
                   </span>
                 </FormLabel>
                 <FormControl>
                   <Input
                     type="email"
-                    placeholder="jon@example.com"
+                    placeholder={t('form.email.placeholder')}
                     aria-required="true"
                     {...field}
                     onBlur={event => {
@@ -152,14 +155,14 @@ export function ContactInformationStep({
                 <FormLabel className="flex items-center gap-2 text-[13px] font-semibold text-[color:var(--text)]">
                   <Phone className="h-5 w-5 flex-shrink-0 text-[color:var(--text-muted)] transition-colors group-focus-within:text-[var(--brand-accent)]" />
                   <span className="flex items-center gap-1">
-                    Phone number
+                    {t('form.phone.label')}
                     <span aria-hidden="true" className="text-[color:var(--brand-accent)] opacity-80">*</span>
                   </span>
                 </FormLabel>
                 <FormControl>
                   <Input
                     type="tel"
-                    placeholder="+354 555 1234"
+                    placeholder={t('form.phone.placeholder')}
                     aria-required="true"
                     {...field}
                     onBlur={event => {

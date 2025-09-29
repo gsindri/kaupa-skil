@@ -45,8 +45,8 @@ export function ExistingUserOnboarding() {
   const { toast } = useToast()
   const navigate = useNavigate()
   const location = useLocation()
-  const { t } = useTranslation('onboarding.existing')
-  const { t: tCommon } = useTranslation('common')
+  const { t } = useTranslation(undefined, { keyPrefix: 'onboarding.existing' })
+  const { t: tCommon } = useTranslation(undefined, { keyPrefix: 'common' })
 
   const currentPath = React.useMemo(
     () => `${location.pathname}${location.search}${location.hash}`,
@@ -165,7 +165,7 @@ export function ExistingUserOnboarding() {
       toast({
         title: t('notifications.joinError.title'),
         description: t('notifications.joinError.description', {
-          values: { message: error.message }
+          message: error.message
         }),
         variant: 'destructive'
       })
@@ -196,7 +196,7 @@ export function ExistingUserOnboarding() {
 
       const joined = await handleJoinOrganization(tenant.id)
       if (joined) {
-        setJoinCodeSuccess(t('joinByCode.success', { values: { workspace: tenant.name } }))
+        setJoinCodeSuccess(t('joinByCode.success', { workspace: tenant.name }))
         setJoinCode('')
       }
     } catch (error: any) {

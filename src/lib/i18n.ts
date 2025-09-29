@@ -1,4 +1,5 @@
 import i18n from 'i18next'
+import ICU from 'i18next-icu'
 import { initReactI18next, useTranslation } from 'react-i18next'
 
 import en from '@/locales/en.json'
@@ -16,6 +17,7 @@ const DEFAULT_LANGUAGE: AppLanguage = 'is'
 
 if (!i18n.isInitialized) {
   void i18n
+    .use(new ICU())
     .use(initReactI18next)
     .init({
       resources,

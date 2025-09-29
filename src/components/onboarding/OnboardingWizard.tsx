@@ -101,8 +101,8 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
   const { toast } = useToast()
   const { user, profile, profileLoading, refetch } = useAuth()
   const { language: defaultLanguage, currency: defaultCurrency } = useLocaleDefaults()
-  const { t } = useTranslation('onboarding.wizard')
-  const { t: tCommon } = useTranslation('common')
+  const { t } = useTranslation(undefined, { keyPrefix: 'onboarding.wizard' })
+  const { t: tCommon } = useTranslation(undefined, { keyPrefix: 'common' })
 
   const currentPath = useMemo(
     () => `${location.pathname}${location.search}${location.hash}`,
@@ -295,7 +295,7 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
       toast({
         title: t('notifications.supplierUnavailable.title'),
         description: t('notifications.supplierUnavailable.description', {
-          values: { message: suppliersError.message }
+          message: suppliersError.message
         }),
         variant: 'destructive'
       })
@@ -454,7 +454,7 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
 
       if (existingTenant && existingTenant.created_by !== user.id) {
         const duplicateMessage = t('errors.duplicateOrganization', {
-          values: { name: trimmedName }
+          name: trimmedName
         })
         setSetupError(duplicateMessage)
         setCurrentStep(1)
@@ -471,7 +471,7 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
         if (tenantError) {
           if ((tenantError as any).code === '23505') {
             const duplicateMessage = t('errors.duplicateOrganization', {
-              values: { name: trimmedName }
+              name: trimmedName
             })
             setSetupError(duplicateMessage)
             setCurrentStep(1)
@@ -715,7 +715,7 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
               ))}
             </div>
           <p className="text-sm text-[color:var(--text-muted)]">
-              {t('progress', { values: { current: currentStep, total: TOTAL_STEPS } })}
+              {t('progress', { current: currentStep, total: TOTAL_STEPS })}
             </p>
           </div>
 

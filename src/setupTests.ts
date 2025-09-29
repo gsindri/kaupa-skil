@@ -25,3 +25,24 @@ vi.mock('@/integrations/supabase/client', () => {
     },
   }
 })
+
+if (typeof globalThis.ResizeObserver === 'undefined') {
+  class ResizeObserver {
+    private callback: ResizeObserverCallback
+
+    constructor(callback: ResizeObserverCallback) {
+      this.callback = callback
+    }
+
+    observe(target: Element) {
+      this.callback([{ target, contentRect: target.getBoundingClientRect() }], this)
+    }
+
+    unobserve(_target: Element) {}
+
+    disconnect() {}
+  }
+
+  // @ts-expect-error jsdom doesn't define ResizeObserver
+  globalThis.ResizeObserver = ResizeObserver
+}
