@@ -1,3 +1,4 @@
+import React from 'react'
 import { Check, ChevronDown } from 'lucide-react'
 
 import {
@@ -6,6 +7,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { useLanguage } from '@/contexts/LanguageProvider'
+import { useTranslation } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 
 import { PopCard } from './PopCard'
@@ -21,15 +23,18 @@ interface LanguageSwitcherProps {
   triggerClassName?: string
 }
 
-const languageOptions = [
-  { value: 'is', label: 'Icelandic', flag: 'is' },
-  { value: 'en', label: 'English', flag: 'gb' },
-] as const
-
 export function LanguageSwitcher({ className, triggerClassName }: LanguageSwitcherProps) {
   const { language, setLanguage } = useLanguage()
-  const activeLanguage =
-    languageOptions.find((option) => option.value === language) ?? languageOptions[0]
+  const { t } = useTranslation('common.language')
+  const options = React.useMemo(
+    () => [
+      { value: 'is', label: t('options.is'), flag: 'is' },
+      { value: 'en', label: t('options.en'), flag: 'gb' }
+    ] as const,
+    [t]
+  )
+
+  const activeLanguage = options.find(option => option.value === language) ?? options[0]
 
   return (
     <div className={className}>
@@ -39,8 +44,10 @@ export function LanguageSwitcher({ className, triggerClassName }: LanguageSwitch
             type="button"
             className={cn(navTextButtonClass, 'px-3', triggerClassName)}
             aria-haspopup="menu"
-            title="Language"
-            aria-label={`Change language (currently ${activeLanguage.label})`}
+            title={t('label')}
+            aria-label={t('ariaLabel', {
+              values: { language: activeLanguage.label }
+            })}
           >
             <span className={navTextButtonPillClass} aria-hidden="true" />
             <span
@@ -61,9 +68,9 @@ export function LanguageSwitcher({ className, triggerClassName }: LanguageSwitch
           </button>
         </DropdownMenuTrigger>
         <PopCard className="w-[240px]" sideOffset={12} align="end" withOverlay>
-          <div className="tw-label normal-case">Language</div>
+          <div className="tw-label normal-case">{t('label')}</div>
           <div className="flex flex-col gap-1 px-1">
-            {languageOptions.map((option) => (
+            {options.map((option) => (
               <DropdownMenuItem
                 key={option.value}
                 onSelect={() => setLanguage(option.value as any)}

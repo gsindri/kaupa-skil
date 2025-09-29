@@ -27,6 +27,7 @@ import { HeildaLogo } from '@/components/branding/HeildaLogo'
 import { CartButton } from '@/components/cart/CartButton'
 import { SearchSoft } from '@/components/icons-soft'
 import { useLanguage } from '@/contexts/LanguageProvider'
+import { useTranslation } from '@/lib/i18n'
 import { PopCard } from './PopCard'
 import {
   navTextButtonClass,
@@ -61,15 +62,18 @@ function stringToHslColor(value: string) {
   return `hsl(${hue} 65% 45%)`
 }
 
-const languageOptions = [
-  { value: 'is', label: 'Icelandic', code: 'IS' },
-  { value: 'en', label: 'English', code: 'EN' },
-] as const
-
 export function TopNavigation() {
   const { profile, user, signOut, loading, profileLoading } = useAuth()
   const { setIsDrawerOpen } = useCart()
   const { language, setLanguage } = useLanguage()
+  const { t } = useTranslation()
+  const languageOptions = useMemo(
+    () => [
+      { value: 'is', label: t('common.language.options.is'), code: 'IS' },
+      { value: 'en', label: t('common.language.options.en'), code: 'EN' }
+    ] as const,
+    [t]
+  )
 
   const searchRef = useRef<HTMLInputElement>(null)
   const searchTriggerRef = useRef<HTMLButtonElement>(null)
@@ -180,10 +184,10 @@ export function TopNavigation() {
     }
   }
 
-  const rawDisplayName = profile?.full_name ?? user?.email?.split('@')[0] ?? 'User'
+  const rawDisplayName = profile?.full_name ?? user?.email?.split('@')[0] ?? t('common.user.fallback')
   const displayName = useMemo(() => {
     const trimmed = rawDisplayName?.trim()
-    if (!trimmed) return 'User'
+    if (!trimmed) return t('common.user.fallback')
 
     if (trimmed === trimmed.toLowerCase()) {
       return trimmed
@@ -194,17 +198,20 @@ export function TopNavigation() {
     }
 
     return trimmed
-  }, [rawDisplayName])
+  }, [rawDisplayName, t])
   const displayEmail = profile?.email || user?.email || ''
-  const avatarSeed = displayEmail || displayName || 'User'
-  const userInitials = useMemo(() => getInitials(displayName || 'User'), [displayName])
+  const avatarSeed = displayEmail || displayName || t('common.user.fallback')
+  const userInitials = useMemo(
+    () => getInitials(displayName || t('common.user.fallback')),
+    [displayName, t]
+  )
   const avatarColor = useMemo(() => stringToHslColor(avatarSeed), [avatarSeed])
   const userMetadata = user?.user_metadata as Record<string, unknown> | undefined
   const avatarUrl =
     typeof userMetadata?.avatar_url === 'string' ? (userMetadata.avatar_url as string) : undefined
   const accountMenuLabel = displayName
-    ? `Open account menu for ${displayName}`
-    : 'Open account menu'
+    ? t('navigation.account.openWithName', { values: { name: displayName } })
+    : t('navigation.account.open')
   const isBusy = loading || profileLoading
 
   const { data: userMemberships = [], isLoading: membershipsLoading } = useQuery<Membership[]>({
@@ -236,10 +243,13 @@ export function TopNavigation() {
   const currentTenant = userMemberships.find((membership) => membership.tenant?.id === profile?.tenant_id)?.tenant
   const workspaceLabel = currentTenant
     ? currentTenant.kind === 'personal'
-      ? 'Personal workspace (Private)'
+      ? t('navigation.workspace.personalFull')
       : currentTenant.name
-    : 'Personal workspace (Private)'
-  const workspacePillLabel = currentTenant?.kind === 'personal' ? 'Personal' : 'Workspace'
+    : t('navigation.workspace.personalFull')
+  const workspacePillLabel =
+    currentTenant?.kind === 'personal'
+      ? t('navigation.workspace.personal')
+      : t('navigation.workspace.workspace')
   
   return (
     <div
@@ -258,8 +268,8 @@ export function TopNavigation() {
       <div className="flex items-center gap-3 min-w-0">
         <Link
           to="/"
-          aria-label="Go to dashboard"
-          title="Go to dashboard"
+          aria-label={t('navigation.logo.aria')}
+          title={t('navigation.logo.aria')}
           className="inline-flex shrink-0 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
         >
           <HeildaLogo className="h-8 w-auto shrink-0 drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)]" />
@@ -269,7 +279,7 @@ export function TopNavigation() {
 
       <nav aria-label="Global actions" className="ml-auto flex items-center gap-[12px] lg:gap-[14px]">
         <span className="inline-flex h-9 items-center whitespace-nowrap text-[13px] font-medium text-white/80">
-          Search here →
+          {t('navigation.search.prompt')}
         </span>
         <button
           ref={searchTriggerRef}
@@ -277,12 +287,12 @@ export function TopNavigation() {
           aria-haspopup="dialog"
           aria-keyshortcuts="/ meta+k control+k"
           aria-describedby={searchShortcutDescriptionId}
-          aria-label="Open search dialog"
+          aria-label={t('navigation.search.open')}
           onClick={() => setSearchOpen(true)}
-          title="Search (Ctrl/⌘ + K)"
+          title={t('navigation.search.title')}
           className="group inline-flex size-9 items-center justify-center rounded-full border border-white/10 bg-white/5 transition-[background-color,border-color,transform] duration-fast ease-snap hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-1 focus-visible:ring-offset-transparent motion-safe:hover:-translate-y-[0.5px] motion-reduce:transform-none motion-reduce:hover:translate-y-0"
         >
-          <span className="sr-only">Open search dialog</span>
+          <span className="sr-only">{t('navigation.search.button')}</span>
           <span
             aria-hidden="true"
             className="flex size-full items-center justify-center rounded-full bg-white/10 text-[color:var(--ink-dim,#cfd7e4)] transition-colors duration-fast ease-snap group-hover:bg-white/15 group-hover:text-[color:var(--ink,#eaf0f7)]"
@@ -291,7 +301,7 @@ export function TopNavigation() {
           </span>
         </button>
         <span id={searchShortcutDescriptionId} className="sr-only">
-          Open search dialog. Shortcut: press / or {platformShortcut}.
+          {t('navigation.search.shortcut', { values: { shortcut: platformShortcut } })}
         </span>
         <LanguageSwitcher className="hidden xl:block" />
         <DropdownMenu open={userMenuOpen} onOpenChange={setUserMenuOpen}>
@@ -356,7 +366,9 @@ export function TopNavigation() {
                         {workspacePillLabel}
                       </span>
                       <span className="flex-1 min-w-0 whitespace-normal text-left leading-tight">
-                        {membershipsLoading ? 'Loading workspace…' : workspaceLabel}
+                        {membershipsLoading
+                          ? t('common.status.loadingWorkspace')
+                          : workspaceLabel}
                       </span>
                     </div>
                   </div>
@@ -364,19 +376,19 @@ export function TopNavigation() {
               </div>
             </div>
 
-            <div className="tw-label normal-case opacity-60">Profile</div>
-            <div className="flex flex-col gap-1 px-1">
-              <DropdownMenuItem asChild onSelect={() => setUserMenuOpen(false)}>
-                <button type="button" className="tw-row tw-row-loose w-full text-left">
-                  <CircleUserRound className="size-4 text-[color:var(--text-muted)]" />
-                  <span className="truncate">Profile settings</span>
+              <div className="tw-label normal-case opacity-60">{t('navigation.account.profileSection')}</div>
+              <div className="flex flex-col gap-1 px-1">
+                <DropdownMenuItem asChild onSelect={() => setUserMenuOpen(false)}>
+                  <button type="button" className="tw-row tw-row-loose w-full text-left">
+                    <CircleUserRound className="size-4 text-[color:var(--text-muted)]" />
+                  <span className="truncate">{t('navigation.account.profileSettings')}</span>
                   <span />
                 </button>
               </DropdownMenuItem>
               <DropdownMenuItem asChild onSelect={() => setUserMenuOpen(false)}>
                 <button type="button" className="tw-row tw-row-loose w-full text-left">
                   <Building2 className="size-4 text-[color:var(--text-muted)]" />
-                  <span className="truncate">Organization settings</span>
+                  <span className="truncate">{t('navigation.account.organizationSettings')}</span>
                   <ChevronRight className="size-4 text-[color:var(--text-muted)]" aria-hidden />
                 </button>
               </DropdownMenuItem>
@@ -384,7 +396,7 @@ export function TopNavigation() {
 
             <div className="xl:hidden">
               <div className="pop-div my-2 opacity-70" />
-              <div className="tw-label normal-case opacity-60">Language</div>
+              <div className="tw-label normal-case opacity-60">{t('navigation.account.languageSection')}</div>
               <div className="flex flex-col gap-1 px-1">
                 {languageOptions.map((option) => (
                   <DropdownMenuItem
@@ -420,12 +432,12 @@ export function TopNavigation() {
 
             <div className="pop-div my-2 opacity-70" />
 
-            <div className="tw-label normal-case opacity-60">Help</div>
+            <div className="tw-label normal-case opacity-60">{t('navigation.account.helpSection')}</div>
             <div className="flex flex-col gap-1 px-1">
               <DropdownMenuItem asChild onSelect={() => setUserMenuOpen(false)}>
                 <button type="button" className="tw-row tw-row-loose w-full text-left">
                   <Keyboard className="size-4 text-[color:var(--text-muted)]" />
-                  <span className="truncate">Keyboard shortcuts</span>
+                  <span className="truncate">{t('navigation.account.keyboardShortcuts')}</span>
                   <span className="tw-kbd">?</span>
                 </button>
               </DropdownMenuItem>
@@ -438,7 +450,7 @@ export function TopNavigation() {
                   onClick={() => setUserMenuOpen(false)}
                 >
                   <LifeBuoy className="size-4 text-[color:var(--text-muted)]" />
-                  <span className="truncate">Help center</span>
+                  <span className="truncate">{t('navigation.account.helpCenter')}</span>
                   <ArrowUpRight className="size-4 text-[color:var(--text-muted)]" aria-hidden />
                 </a>
               </DropdownMenuItem>
@@ -449,7 +461,7 @@ export function TopNavigation() {
                   onClick={() => setUserMenuOpen(false)}
                 >
                   <Mail className="size-4 text-[color:var(--text-muted)]" />
-                  <span className="truncate">Contact support</span>
+                  <span className="truncate">{t('navigation.account.contactSupport')}</span>
                   <span />
                 </a>
               </DropdownMenuItem>
@@ -462,7 +474,7 @@ export function TopNavigation() {
                   onClick={() => setUserMenuOpen(false)}
                 >
                   <BookOpen className="size-4 text-[color:var(--text-muted)]" />
-                  <span className="truncate">Documentation</span>
+                  <span className="truncate">{t('navigation.account.documentation')}</span>
                   <ArrowUpRight className="size-4 text-[color:var(--text-muted)]" aria-hidden />
                 </a>
               </DropdownMenuItem>
@@ -482,7 +494,7 @@ export function TopNavigation() {
                 className="tw-row tw-row-loose w-full text-left text-[color:var(--text)]"
               >
                 <LogOut className="size-4 text-[color:var(--text-muted)]" aria-hidden />
-                <span className="truncate">Sign out</span>
+                <span className="truncate">{t('navigation.account.signOut')}</span>
                 <span />
               </button>
             </DropdownMenuItem>
