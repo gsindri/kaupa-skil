@@ -353,6 +353,11 @@ export interface CartItem {
   id: string // This should be supplier_items.id
   supplierId: string
   supplierName: string
+  /**
+   * Optional logo URL for the supplier. Allows cart and checkout views to show
+   * supplier avatars when available.
+   */
+  supplierLogoUrl?: string | null
   itemName: string
   sku: string
   packSize: string

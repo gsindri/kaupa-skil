@@ -613,10 +613,22 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
           }))
         : product.suppliers) || []
 
-  const supplierEntries = rawSuppliers.map((s: any) => {
+  const supplierEntries = rawSuppliers.map((s: any, index: number) => {
+    const fallbackLogo = Array.isArray(product.supplier_logo_urls)
+      ? product.supplier_logo_urls[index] ?? null
+      : null
+
     if (typeof s === 'string') {
-      return { id: s, name: s, connected: true }
+      return {
+        id: s,
+        name: s,
+        connected: true,
+        logoUrl: fallbackLogo,
+        availability: null,
+        updatedAt: null,
+      }
     }
+
     const status =
       s.availability?.status ??
       s.availability_status ??
@@ -624,12 +636,29 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
       null
     const updatedAt =
       s.availability?.updatedAt ?? s.availability_updated_at ?? null
+    const fallbackId =
+      s.supplier_id ||
+      s.id ||
+      s.supplier?.id ||
+      product.supplier_ids?.[index] ||
+      `supplier-${index}`
+    const rawName =
+      s.supplier?.name ||
+      s.name ||
+      s.supplier_name ||
+      product.supplier_names?.[index] ||
+      null
+    const resolvedName = (rawName ?? '').toString().trim() || fallbackId
+
     return {
-      id: s.supplier_id || s.id || s.supplier?.id,
-      name: s.supplier?.name || s.name,
+      id: fallbackId,
+      name: resolvedName,
       connected: s.connected ?? s.supplier?.connected ?? true,
       logoUrl:
-        s.logoUrl || s.logo_url || s.supplier?.logo_url || null,
+        s.logoUrl ||
+        s.logo_url ||
+        s.supplier?.logo_url ||
+        fallbackLogo,
       availability: status,
       updatedAt,
     }
@@ -652,10 +681,12 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
     const packQty = raw?.pack_qty ?? 1
     const sku = raw?.sku || raw?.supplier_sku || product.catalog_id
     const unit = raw?.unit || ''
+    const supplierName = supplier.name?.trim() || supplier.id || 'Supplier'
     return {
       id: product.catalog_id,
       supplierId: supplier.id,
-      supplierName: supplier.name ?? '',
+      supplierName,
+      supplierLogoUrl: supplier.logoUrl ?? null,
       itemName: product.name,
       sku,
       packSize,
