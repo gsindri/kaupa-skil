@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import { cn } from "@/lib/utils";
 
 interface SupplierLogoProps {
@@ -9,6 +9,19 @@ interface SupplierLogoProps {
 
 export function SupplierLogo({ name, logoUrl, className }: SupplierLogoProps) {
   const [error, setError] = useState(false);
+  const [aspectRatio, setAspectRatio] = useState<number | null>(null);
+
+  useEffect(() => {
+    setError(false);
+    setAspectRatio(null);
+  }, [logoUrl]);
+
+  const hasLogo = !!logoUrl && !error;
+  const normalizedRatio = hasLogo && aspectRatio && aspectRatio > 0 ? aspectRatio : 1;
+  const orientation =
+    normalizedRatio > 1.2 ? "landscape" : normalizedRatio < 0.8 ? "portrait" : "square";
+  const aspectStyle: CSSProperties = { aspectRatio: normalizedRatio };
+
   const initials = name
     .split(" ")
     .filter(Boolean)
@@ -20,17 +33,25 @@ export function SupplierLogo({ name, logoUrl, className }: SupplierLogoProps) {
   return (
     <div
       className={cn(
-        "flex h-5 w-5 items-center justify-center rounded-md bg-muted overflow-hidden",
+        "flex h-5 min-w-[0.75rem] max-w-[3.5rem] items-center justify-center overflow-hidden rounded-md bg-muted",
         className,
       )}
       aria-hidden="true"
+      data-orientation={orientation}
+      style={aspectStyle}
     >
-      {logoUrl && !error ? (
+      {hasLogo ? (
         <img
           src={logoUrl}
           alt={`${name} logo`}
           loading="lazy"
-          className="h-full w-full object-contain"
+          className="block h-full w-full object-contain"
+          onLoad={event => {
+            const { naturalWidth, naturalHeight } = event.currentTarget;
+            if (naturalWidth && naturalHeight) {
+              setAspectRatio(naturalWidth / naturalHeight);
+            }
+          }}
           onError={() => setError(true)}
         />
       ) : (

@@ -886,7 +886,7 @@ function ProductDialogRow({
                       key={`${entry.name}-${index}`}
                       name={entry.name}
                       logoUrl={entry.logoUrl}
-                      className="!h-5 !w-5 !rounded-full border border-white/10 bg-white/10 opacity-80"
+                      className="!h-5 !rounded-full border border-white/10 bg-white/10 opacity-80"
                     />
                   ))}
                   {overflowCount > 0 && (
