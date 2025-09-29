@@ -1,10 +1,12 @@
 import * as React from 'react'
 
+import { cn } from '@/lib/utils'
+
 export type CartIconProps = {
   count?: number
   title?: string
   className?: string
-} & React.SVGProps<SVGSVGElement>
+} & Omit<React.HTMLAttributes<HTMLSpanElement>, 'title' | 'children'>
 
 export default function CartIcon({
   count = 0,
@@ -16,62 +18,70 @@ export default function CartIcon({
   const glyphLength = display.length
 
   const fontSize = React.useMemo(() => {
-    if (glyphLength >= 3) return 5.4
-    if (glyphLength === 2) return 6.6
-    return 7.4
+    if (glyphLength >= 3) return 11
+    if (glyphLength === 2) return 12.5
+    return 14
   }, [glyphLength])
 
-  const verticalPosition = React.useMemo(() => {
-    if (glyphLength >= 3) return 11.2
-    if (glyphLength === 2) return 11.5
-    return 11.8
-  }, [glyphLength])
+  const reactId = React.useId()
+  const gradientId = React.useMemo(
+    () => `cartBadgeGradient-${reactId.replace(/:/g, '')}`,
+    [reactId]
+  )
 
   return (
-    <svg
-      viewBox="0 0 24 24"
+    <span
       role="img"
       aria-label={title}
-      className={className}
+      title={title}
+      className={cn(
+        'cart-icon relative inline-flex shrink-0 items-center justify-center',
+        className
+      )}
       {...rest}
     >
-      {title ? <title>{title}</title> : null}
-
-      <g
+      <svg
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+        className="h-full w-full text-current"
         fill="none"
         stroke="currentColor"
-        strokeWidth={1.8}
+        strokeWidth={2}
         strokeLinecap="round"
         strokeLinejoin="round"
-        vectorEffect="non-scaling-stroke"
       >
-        <path d="M6.8 17H18.5" />
-        <path d="M6.8 17L5 7.5 3.4 6.2" />
-        <path d="M3.4 6.2L2.2 5.8" />
-        <path d="M18.5 17L19.4 13 20.2 9" />
-      </g>
+        <circle cx="9" cy="21" r="1" />
+        <circle cx="20" cy="21" r="1" />
+        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+      </svg>
 
-      <g fill="#ffffff" stroke="currentColor" strokeWidth={1.3} vectorEffect="non-scaling-stroke">
-        <circle cx="10" cy="19.2" r="0.7" />
-        <circle cx="16" cy="19.2" r="0.7" />
-      </g>
-
-      <text
-        x="13"
-        y={verticalPosition}
-        textAnchor="middle"
-        dominantBaseline="middle"
-        fontWeight={800}
-        fontSize={fontSize}
-        fill="#f59e0b"
-        style={{
-          fontFamily:
-            "Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Arial",
-          fontVariantNumeric: 'tabular-nums'
-        }}
+      <span
+        className="cart-icon__badge pointer-events-none absolute -right-2.5 -top-2 flex items-center justify-center"
+        aria-hidden="true"
       >
-        {display}
-      </text>
-    </svg>
+        <svg className="cart-icon__badge-svg" width="28" height="28" viewBox="0 0 32 32">
+          <defs>
+            <linearGradient id={gradientId} x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="#FB923C" />
+              <stop offset="100%" stopColor="#F97316" />
+            </linearGradient>
+          </defs>
+          <circle cx="16" cy="16" r="12" fill={`url(#${gradientId})`} />
+          <text
+            x="16"
+            y="16"
+            textAnchor="middle"
+            dominantBaseline="middle"
+            fontFamily="Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Arial"
+            fontWeight={700}
+            fontSize={fontSize}
+            fill="#ffffff"
+            style={{ fontVariantNumeric: 'tabular-nums' }}
+          >
+            {display}
+          </text>
+        </svg>
+      </span>
+    </span>
   )
 }
