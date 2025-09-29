@@ -22,6 +22,12 @@ export default function BasketProvider({ children }: { children: React.ReactNode
       return parsed.map(it => ({
         ...it,
         supplierItemId: it.supplierItemId ?? it.id,
+        supplierLogoUrl:
+          it.supplierLogoUrl ??
+          it.supplier_logo_url ??
+          it.logoUrl ??
+          it.supplierLogo ??
+          null,
         itemName:
           it.itemName ??
           it.name ??
@@ -157,6 +163,7 @@ export default function BasketProvider({ children }: { children: React.ReactNode
         id: item.product_id,
         supplierId: item.supplier_id,
         supplierName: '',
+        supplierLogoUrl: null,
         itemName: 'Item',
         sku: '',
         packSize: '',
