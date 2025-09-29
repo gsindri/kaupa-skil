@@ -25,3 +25,33 @@ vi.mock('@/integrations/supabase/client', () => {
     },
   }
 })
+
+if (typeof globalThis.ResizeObserver === 'undefined') {
+  class ResizeObserver {
+    private callback: ResizeObserverCallback
+
+    constructor(callback: ResizeObserverCallback) {
+      this.callback = callback
+    }
+
+    observe(target: Element) {
+      try {
+        this.callback([{
+          target,
+          contentRect: target.getBoundingClientRect(),
+          borderBoxSize: [],
+          contentBoxSize: [],
+          devicePixelContentBoxSize: []
+        }], this)
+      } catch (error) {
+        // Silently ignore errors to mimic native ResizeObserver behavior
+      }
+    }
+
+    unobserve(_target: Element) {}
+
+    disconnect() {}
+  }
+
+  globalThis.ResizeObserver = ResizeObserver
+}

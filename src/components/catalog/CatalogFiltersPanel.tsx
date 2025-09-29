@@ -4,6 +4,7 @@ import { fetchCatalogFacets, FacetFilters } from '@/services/catalog'
 import { cn } from '@/lib/utils'
 import { useCatalogFilters } from '@/state/catalogFiltersStore'
 import { triStockToAvailability, type TriState } from '@/lib/catalogFilters'
+import { useTranslation } from '@/lib/i18n'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -24,6 +25,7 @@ interface CatalogFiltersPanelProps {
 }
 
 export function CatalogFiltersPanel({ filters, onChange, focusedFacet, onClearFilters }: CatalogFiltersPanelProps) {
+  const { t } = useTranslation(undefined, { keyPrefix: 'catalog.filters' })
   const triStock = useCatalogFilters(s => s.triStock)
   const setTriStock = useCatalogFilters(s => s.setTriStock)
   const triSuppliers = useCatalogFilters(s => s.triSuppliers)
@@ -113,7 +115,7 @@ export function CatalogFiltersPanel({ filters, onChange, focusedFacet, onClearFi
                   }
                 }}
               />
-              <span>{item.name || 'Unknown'}</span>
+              <span>{item.name || t('facets.unknown')}</span>
             </div>
             <span className="text-muted-foreground">{item.count}</span>
           </label>
@@ -125,7 +127,7 @@ export function CatalogFiltersPanel({ filters, onChange, focusedFacet, onClearFi
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-base font-semibold">Filters</h2>
+        <h2 className="text-base font-semibold">{t('title')}</h2>
         <Button
           type="button"
           variant="ghost"
@@ -133,14 +135,14 @@ export function CatalogFiltersPanel({ filters, onChange, focusedFacet, onClearFi
           onClick={onClearFilters}
           disabled={!hasActiveFilters}
         >
-          Clear all
+          {t('actions.clear')}
         </Button>
       </div>
 
       <div className="space-y-4">
         <div className="space-y-1.5">
           <Label htmlFor="catalog-filter-stock" className="text-sm font-medium">
-            Stock
+            {t('stock.label')}
           </Label>
           <Select
             value={triStock}
@@ -150,16 +152,16 @@ export function CatalogFiltersPanel({ filters, onChange, focusedFacet, onClearFi
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="off">All stock</SelectItem>
-              <SelectItem value="include">In stock only</SelectItem>
-              <SelectItem value="exclude">Out of stock only</SelectItem>
+              <SelectItem value="off">{t('stock.options.all')}</SelectItem>
+              <SelectItem value="include">{t('stock.options.include')}</SelectItem>
+              <SelectItem value="exclude">{t('stock.options.exclude')}</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
         <div className="space-y-1.5">
           <Label htmlFor="catalog-filter-suppliers" className="text-sm font-medium">
-            Suppliers
+            {t('suppliers.label')}
           </Label>
           <Select
             value={triSuppliers}
@@ -169,16 +171,16 @@ export function CatalogFiltersPanel({ filters, onChange, focusedFacet, onClearFi
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="off">All suppliers</SelectItem>
-              <SelectItem value="include">My suppliers</SelectItem>
-              <SelectItem value="exclude">Not my suppliers</SelectItem>
+              <SelectItem value="off">{t('suppliers.options.all')}</SelectItem>
+              <SelectItem value="include">{t('suppliers.options.include')}</SelectItem>
+              <SelectItem value="exclude">{t('suppliers.options.exclude')}</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
         <div className="space-y-1.5">
           <Label htmlFor="catalog-filter-specials" className="text-sm font-medium">
-            Specials
+            {t('specials.label')}
           </Label>
           <Select
             value={triSpecial}
@@ -188,9 +190,9 @@ export function CatalogFiltersPanel({ filters, onChange, focusedFacet, onClearFi
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="off">All specials</SelectItem>
-              <SelectItem value="include">On special</SelectItem>
-              <SelectItem value="exclude">Not on special</SelectItem>
+              <SelectItem value="off">{t('specials.options.all')}</SelectItem>
+              <SelectItem value="include">{t('specials.options.include')}</SelectItem>
+              <SelectItem value="exclude">{t('specials.options.exclude')}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -198,15 +200,15 @@ export function CatalogFiltersPanel({ filters, onChange, focusedFacet, onClearFi
 
       {data && (
         <div className="space-y-4">
-          {renderFacet('Categories', data.categories, 'category')}
-          {renderFacet('Suppliers', data.suppliers, 'supplier')}
-          {renderFacet('Brands', data.brands, 'brand')}
+          {renderFacet(t('facets.categories'), data.categories, 'category')}
+          {renderFacet(t('facets.suppliers'), data.suppliers, 'supplier')}
+          {renderFacet(t('facets.brands'), data.brands, 'brand')}
           <div ref={facetRefs.packSizeRange} className="space-y-2">
-            <div className="font-medium text-sm">Pack size</div>
+            <div className="font-medium text-sm">{t('packSize.label')}</div>
             <div className="flex gap-2">
               <Input
                 type="number"
-                placeholder="Min"
+                placeholder={t('packSize.placeholders.min')}
                 value={filters.packSizeRange?.min ?? ''}
                 onChange={e => {
                   const packSizeRange = {
@@ -222,7 +224,7 @@ export function CatalogFiltersPanel({ filters, onChange, focusedFacet, onClearFi
               />
               <Input
                 type="number"
-                placeholder="Max"
+                placeholder={t('packSize.placeholders.max')}
                 value={filters.packSizeRange?.max ?? ''}
                 onChange={e => {
                   const packSizeRange = {

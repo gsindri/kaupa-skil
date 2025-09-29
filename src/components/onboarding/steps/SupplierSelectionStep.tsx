@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react'
 import { Search, Minus, Plus } from 'lucide-react'
+import { useTranslation } from '@/lib/i18n'
 
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -27,9 +28,9 @@ interface SupplierSelectionStepProps {
 }
 
 const FILTERS = [
-  { id: 'all', label: 'All' },
-  { id: 'connected', label: 'Connected' },
-  { id: 'not_connected', label: 'Not connected' }
+  { id: 'all' },
+  { id: 'connected' },
+  { id: 'not_connected' }
 ] as const
 
 type FilterValue = (typeof FILTERS)[number]['id']
@@ -43,8 +44,13 @@ export function SupplierSelectionStep({
   error,
   footer
 }: SupplierSelectionStepProps) {
+  const { t } = useTranslation(undefined, { keyPrefix: 'onboarding.steps.supplierSelection' })
   const [query, setQuery] = useState('')
   const [filter, setFilter] = useState<FilterValue>('all')
+  const filterOptions = useMemo(
+    () => FILTERS.map(option => ({ ...option, label: t(`filters.${option.id}`) })),
+    [t]
+  )
 
   const filtered = useMemo(() => {
     const lowerQuery = query.trim().toLowerCase()
@@ -67,21 +73,21 @@ export function SupplierSelectionStep({
   const renderStatusBadge = (supplier: SupplierOption, isSelected: boolean) => {
     if (supplier.status === 'paused') {
       return (
-        <Badge className="border-amber-400/40 bg-amber-400/10 text-amber-600">Paused</Badge>
+        <Badge className="border-amber-400/40 bg-amber-400/10 text-amber-600">{t('statuses.paused')}</Badge>
       )
     }
     if (supplier.is_verified === false) {
       return (
-        <Badge className="border-slate-400/40 bg-slate-400/10 text-slate-600">Unverified</Badge>
+        <Badge className="border-slate-400/40 bg-slate-400/10 text-slate-600">{t('statuses.unverified')}</Badge>
       )
     }
     if (isSelected) {
       return (
-        <Badge className="border-emerald-400/40 bg-emerald-400/10 text-emerald-600">Connected</Badge>
+        <Badge className="border-emerald-400/40 bg-emerald-400/10 text-emerald-600">{t('statuses.connected')}</Badge>
       )
     }
     return (
-      <Badge className="border-sky-400/40 bg-sky-400/10 text-sky-600">Verified</Badge>
+      <Badge className="border-sky-400/40 bg-sky-400/10 text-sky-600">{t('statuses.verified')}</Badge>
     )
   }
 
@@ -94,12 +100,12 @@ export function SupplierSelectionStep({
             <Input
               value={query}
               onChange={event => setQuery(event.target.value)}
-              placeholder="Search suppliers…"
+              placeholder={t('search.placeholder')}
               className="h-11 rounded-[12px] border-[color:var(--surface-ring)] bg-[color:var(--surface-pop)] pl-10"
             />
           </div>
           <div className="flex gap-2">
-            {FILTERS.map(option => (
+            {filterOptions.map(option => (
               <Button
                 key={option.id}
                 type="button"
@@ -117,13 +123,13 @@ export function SupplierSelectionStep({
           </div>
         </div>
         <p className="text-[13px] text-[color:var(--text-muted)]">
-          We only list verified, active suppliers for your market. Connect the ones you already trade with—more can be added any time.
+          {t('search.helper')}
         </p>
       </div>
 
       {error && (
         <Alert variant="destructive">
-          <AlertTitle>Unable to load suppliers</AlertTitle>
+          <AlertTitle>{t('error.title')}</AlertTitle>
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
@@ -174,7 +180,7 @@ export function SupplierSelectionStep({
                   <div className="min-w-0">
                     <p className="truncate text-[15px] font-medium text-[color:var(--text)]">{supplier.name}</p>
                     <p className="truncate text-[13px] text-[color:var(--text-muted)]">
-                      {supplier.subtitle || 'Trusted supplier partner'}
+                      {supplier.subtitle || t('cards.subtitleFallback')}
                     </p>
                   </div>
                 </div>
@@ -196,11 +202,11 @@ export function SupplierSelectionStep({
               <Minus className="h-5 w-5" />
             </div>
             <div>
-              <p className="text-[15px] font-medium text-[color:var(--text)]">No suppliers yet.</p>
-              <p className="text-[13px] text-[color:var(--text-muted)]">Invite a vendor to get started.</p>
+              <p className="text-[15px] font-medium text-[color:var(--text)]">{t('empty.title')}</p>
+              <p className="text-[13px] text-[color:var(--text-muted)]">{t('empty.subtitle')}</p>
             </div>
             <Button type="button" variant="outline" onClick={onInviteSupplier} className="rounded-full">
-              <Plus className="mr-2 h-4 w-4" /> Invite supplier
+              <Plus className="mr-2 h-4 w-4" /> {t('empty.cta')}
             </Button>
           </div>
         )}

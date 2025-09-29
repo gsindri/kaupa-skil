@@ -58,6 +58,107 @@
       }
     }
   },
+  "cart": {
+    "button": {
+      "label": "Cart",
+      "tooltip": "{label} (C)",
+      "iconTitle": "{label} ({count})",
+      "ariaLabel": {
+        "withItems": "{label}, {count} {count, plural, one {item} other {items}}",
+        "empty": "{label}, {count} {count, plural, one {item} other {items}}"
+      },
+      "status": {
+        "withItems": "{count, plural, one {{count} item in cart} other {{count} items in cart}}",
+        "empty": "Cart is empty"
+      }
+    }
+  },
+  "search": {
+    "header": {
+      "input": {
+        "placeholder": "Search products, suppliers, orders…"
+      },
+      "actions": {
+        "clear": "Clear search query",
+        "close": "Close search",
+        "viewAll": "View all {count} {section}"
+      },
+      "scopes": {
+        "all": "All",
+        "products": "Products",
+        "suppliers": "Suppliers",
+        "orders": "Orders"
+      },
+      "sections": {
+        "products": {
+          "heading": "Products",
+          "meta": "Product",
+          "badge": "P",
+          "label": "{count, plural, one {Product ({count})} other {Products ({count})}}"
+        },
+        "suppliers": {
+          "heading": "Suppliers",
+          "meta": "Supplier",
+          "badge": "S",
+          "label": "{count, plural, one {Supplier ({count})} other {Suppliers ({count})}}"
+        },
+        "orders": {
+          "heading": "Orders",
+          "meta": "Order",
+          "badge": "O",
+          "label": "{count, plural, one {Order ({count})} other {Orders ({count})}}"
+        },
+        "recent": {
+          "label": "Recent searches"
+        }
+      }
+    }
+  },
+  "catalog": {
+    "filters": {
+      "title": "Filters",
+      "actions": {
+        "clear": "Clear all"
+      },
+      "stock": {
+        "label": "Stock",
+        "options": {
+          "all": "All stock",
+          "include": "In stock only",
+          "exclude": "Out of stock only"
+        }
+      },
+      "suppliers": {
+        "label": "Suppliers",
+        "options": {
+          "all": "All suppliers",
+          "include": "My suppliers",
+          "exclude": "Not my suppliers"
+        }
+      },
+      "specials": {
+        "label": "Specials",
+        "options": {
+          "all": "All specials",
+          "include": "On special",
+          "exclude": "Not on special"
+        }
+      },
+      "facets": {
+        "categories": "Categories",
+        "suppliers": "Suppliers",
+        "brands": "Brands",
+        "unknown": "Unknown"
+      },
+      "packSize": {
+        "label": "Pack size",
+        "placeholders": {
+          "min": "Min",
+          "max": "Max"
+        }
+      }
+    }
+  },
   "onboarding": {
     "existing": {
       "notifications": {
@@ -201,8 +302,242 @@
       "errors": {
         "duplicateOrganization": "An organization named \"{name}\" already exists. Try another name.",
         "genericCompletion": "Failed to complete setup. Please try again."
+    },
+    "progress": "Step {current} of {total}"
+  },
+  "steps": {
+    "organizationBasics": {
+      "validation": {
+        "nameRequired": "⚠ Please enter an organization name.",
+        "logo": {
+          "invalidType": "Logo must be a PNG, JPG, or SVG file.",
+          "size": "Logo file size must be 1 MB or smaller.",
+          "readError": "We could not read that image. Try a different file."
+        }
       },
-      "progress": "Step {current} of {total}"
+      "form": {
+        "optional": "(optional)",
+        "logo": {
+          "label": "Workspace logo",
+          "description": "Appears in navigation and communications.",
+          "fileNameFallback": "Upload a logo",
+          "fileInfoFallback": "PNG, JPG, or SVG (max 1 MB)",
+          "upload": "Upload logo",
+          "remove": "Remove",
+          "previewAlt": "Organization logo",
+          "previewAltNamed": "{name} logo"
+        },
+        "name": {
+          "label": "Organization name",
+          "placeholder": "e.g. Reykjavík Restaurant Group"
+        },
+        "businessType": {
+          "label": "Business type",
+          "placeholder": "Choose a category",
+          "none": "Not specified"
+        }
+      },
+      "businessTypes": {
+        "restaurant": "Restaurant",
+        "cafe": "Cafe / Bakery",
+        "hotel": "Hotel / Accommodation",
+        "retail": "Retail / Grocery",
+        "office": "Office / Workplace",
+        "catering": "Catering / Events",
+        "other": "Other"
+      }
+    },
+    "deliveryDetails": {
+      "validation": {
+        "street": "⚠ Please add a street and house number.",
+        "postal": "⚠ Please add a postal code.",
+        "city": "⚠ Please add a city."
+      },
+      "form": {
+        "optional": "(optional)",
+        "street": {
+          "label": "Street address",
+          "placeholder": "e.g. Laugavegur 26"
+        },
+        "addressLine2": {
+          "label": "Apartment, suite, etc.",
+          "placeholder": "e.g. Suite 3B"
+        },
+        "postal": {
+          "label": "Postal code",
+          "placeholder": "e.g. 101"
+        },
+        "city": {
+          "label": "City",
+          "placeholder": "e.g. Reykjavík"
+        }
+      }
+    },
+    "invoicingSetup": {
+      "validation": {
+        "vat": {
+          "required": "⚠ Please add VAT / Kennitala.",
+          "format": "⚠ Use format ########-####."
+        },
+        "invoiceAddress": {
+          "street": "⚠ Please add an invoice street address.",
+          "postal": "⚠ Please add an invoice postal code.",
+          "city": "⚠ Please add an invoice city."
+        }
+      },
+      "form": {
+        "optional": "(optional)",
+        "vat": {
+          "label": "VAT / Kennitala",
+          "placeholder": "e.g. 1234567-1234"
+        },
+        "useSeparate": {
+          "label": "Use different invoice address",
+          "description": "Check this if invoices should be sent to a different address than deliveries."
+        },
+        "invoiceSection": {
+          "title": "Invoice address"
+        },
+        "invoiceAddress": {
+          "street": {
+            "label": "Street address",
+            "placeholder": "e.g. Bankastræti 14"
+          },
+          "line2": {
+            "label": "Apartment, suite, etc.",
+            "placeholder": "e.g. Floor 2"
+          },
+          "postal": {
+            "label": "Postal code",
+            "placeholder": "e.g. 101"
+          },
+          "city": {
+            "label": "City",
+            "placeholder": "e.g. Reykjavík"
+          }
+        }
+      }
+    },
+    "contactInformation": {
+      "validation": {
+        "nameRequired": "⚠ Please add a main contact person.",
+        "emailRequired": "⚠ Please add an email address.",
+        "emailFormat": "⚠ Enter a valid email address.",
+        "phoneRequired": "⚠ Please add a phone number.",
+        "phoneFormat": "⚠ Enter a valid international phone number."
+      },
+      "form": {
+        "contactName": {
+          "label": "Primary contact name",
+          "placeholder": "e.g. Jón Jónsson"
+        },
+        "email": {
+          "label": "Email address",
+          "placeholder": "jon@example.com"
+        },
+        "phone": {
+          "label": "Phone number",
+          "placeholder": "+354 555 1234"
+        }
+      }
+    },
+    "supplierSelection": {
+      "filters": {
+        "all": "All",
+        "connected": "Connected",
+        "not_connected": "Not connected"
+      },
+      "statuses": {
+        "paused": "Paused",
+        "unverified": "Unverified",
+        "connected": "Connected",
+        "verified": "Verified"
+      },
+      "search": {
+        "placeholder": "Search suppliers…",
+        "helper": "We only list verified, active suppliers for your market. Connect the ones you already trade with—more can be added any time."
+      },
+      "error": {
+        "title": "Unable to load suppliers"
+      },
+      "cards": {
+        "subtitleFallback": "Trusted supplier partner"
+      },
+      "empty": {
+        "title": "No suppliers yet.",
+        "subtitle": "Invite a vendor to get started.",
+        "cta": "Invite supplier"
+      }
+    },
+    "review": {
+      "error": {
+        "title": "We couldn’t finish setup"
+      },
+      "organization": {
+        "section": {
+          "heading": "Organization",
+          "emptyName": "Add your organization",
+          "description": "Used for orders and supplier communications.",
+          "logoFallback": "Add a logo to personalize your workspace.",
+          "logoAlt": "{name} logo"
+        },
+        "actions": {
+          "edit": "Edit"
+        },
+        "fields": {
+          "contactName": "Main contact person",
+          "phone": "Phone",
+          "email": "Organization email",
+          "businessType": "Business type",
+          "vat": "VAT / Kennitala",
+          "deliveryAddress": "Delivery address",
+          "invoiceAddress": "Invoice address",
+          "addLater": "Add later",
+          "notSpecified": "Not specified",
+          "missing": "Missing",
+          "sameAsDelivery": "Same as delivery address"
+        }
+      },
+      "suppliers": {
+        "section": {
+          "heading": "Suppliers"
+        },
+        "summary": "{count, plural, =0 {No suppliers connected yet} one {{count} connected} other {{count} connected}}",
+        "description": "You can always add or remove suppliers later from Settings.",
+        "actions": {
+          "edit": "Edit suppliers"
+        },
+        "empty": {
+          "message": "You haven’t connected any suppliers yet. We’ll remind you on the dashboard."
+        }
+      },
+      "preferences": {
+        "language": {
+          "label": "Default language",
+          "placeholder": "Select language",
+          "options": {
+            "is-IS": "Icelandic",
+            "en-IS": "English (Iceland)",
+            "en-GB": "English (UK)",
+            "en-US": "English (US)"
+          }
+        },
+        "currency": {
+          "label": "Default currency",
+          "placeholder": "Select currency",
+          "options": {
+            "ISK": "Icelandic króna (ISK)",
+            "EUR": "Euro (EUR)",
+            "USD": "US dollar (USD)",
+            "GBP": "Pound sterling (GBP)",
+            "SEK": "Swedish krona (SEK)",
+            "DKK": "Danish krone (DKK)",
+            "NOK": "Norwegian krone (NOK)"
+          },
+          "help": "We’ll use this for price displays and future reports."
+        }
+      }
     }
   }
+}
 }

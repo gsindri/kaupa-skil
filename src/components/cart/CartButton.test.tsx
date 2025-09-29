@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 
 import { CartButton } from './CartButton'
+import isLocale from '@/locales/is.json'
 import { BasketContext, type BasketContextType } from '@/contexts/BasketProviderUtils'
 import { SettingsContext, type SettingsContextType } from '@/contexts/SettingsProviderUtils'
 import type { CartItem } from '@/lib/types'
@@ -70,18 +71,22 @@ describe('CartButton', () => {
   it('renders a transparent trigger with no count when the cart is empty', () => {
     renderWithProviders([])
 
-    const button = screen.getByRole('button', { name: /cart, 0 items/i })
+    const label = (isLocale as any).cart.button.label as string
+    const button = screen.getByRole('button', { name: new RegExp(label, 'i') })
     expect(button).toHaveClass('bg-transparent')
-    expect(button).toHaveTextContent(/Cart/i)
+    expect(button).toHaveTextContent(label)
     expect(screen.getByText('0', { selector: 'text' })).toBeInTheDocument()
+    expect(button.getAttribute('aria-label')).toContain('0')
   })
 
   it('renders the count inside the basket when the cart has items', () => {
     renderWithProviders([createCartItem({ quantity: 3 })])
 
-    const button = screen.getByRole('button', { name: /cart, 3 items/i })
+    const label = (isLocale as any).cart.button.label as string
+    const button = screen.getByRole('button', { name: new RegExp(label, 'i') })
     expect(button).not.toHaveClass('bg-blue-600')
-    expect(button.getAttribute('aria-label')).toMatch(/Cart, 3 items/i)
+    expect(button.getAttribute('aria-label')).toContain('3')
+    expect(button.getAttribute('aria-label')).toContain(label)
     expect(screen.getByText('3', { selector: 'text' })).toBeInTheDocument()
   })
 })

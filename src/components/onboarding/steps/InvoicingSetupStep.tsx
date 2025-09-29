@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Receipt, MapPinHouse } from 'lucide-react'
+import { useTranslation } from '@/lib/i18n'
 
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
@@ -17,44 +18,9 @@ const addressSchema = z.object({
 })
 
 const invoicingSchema = z.object({
-  vat: z
-    .string()
-    .trim()
-    .min(1, '⚠ Please add VAT / Kennitala.')
-    .refine(value => isValidVat(value), {
-      message: '⚠ Use format ########-####.'
-    }),
+  vat: z.string().trim(),
   useSeparateInvoiceAddress: z.boolean().default(false),
   invoiceAddress: addressSchema
-}).superRefine((data, ctx) => {
-  if (data.useSeparateInvoiceAddress) {
-    const invoiceLine1 = data.invoiceAddress.line1.trim()
-    if (invoiceLine1.length < 5) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: '⚠ Please add an invoice street address.',
-        path: ['invoiceAddress', 'line1']
-      })
-    }
-
-    const invoicePostal = data.invoiceAddress.postalCode.trim()
-    if (invoicePostal.length < 2) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: '⚠ Please add an invoice postal code.',
-        path: ['invoiceAddress', 'postalCode']
-      })
-    }
-
-    const invoiceCity = data.invoiceAddress.city.trim()
-    if (invoiceCity.length < 2) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: '⚠ Please add an invoice city.',
-        path: ['invoiceAddress', 'city']
-      })
-    }
-  }
 })
 
 export type InvoicingSetupFormValues = z.infer<typeof invoicingSchema>
@@ -73,14 +39,61 @@ interface InvoicingSetupStepProps {
   setupError?: string | null
 }
 
-export function InvoicingSetupStep({ 
-  value, 
-  onUpdate, 
-  onComplete, 
-  setupError 
+export function InvoicingSetupStep({
+  value,
+  onUpdate,
+  onComplete,
+  setupError
 }: InvoicingSetupStepProps) {
+  const { t } = useTranslation(undefined, { keyPrefix: 'onboarding.steps.invoicingSetup' })
+  const schema = React.useMemo(
+    () =>
+      z
+        .object({
+          vat: z
+            .string()
+            .trim()
+            .min(1, t('validation.vat.required'))
+            .refine(value => isValidVat(value), {
+              message: t('validation.vat.format')
+            }),
+          useSeparateInvoiceAddress: z.boolean().default(false),
+          invoiceAddress: addressSchema
+        })
+        .superRefine((data, ctx) => {
+          if (data.useSeparateInvoiceAddress) {
+            const invoiceLine1 = data.invoiceAddress.line1.trim()
+            if (invoiceLine1.length < 5) {
+              ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: t('validation.invoiceAddress.street'),
+                path: ['invoiceAddress', 'line1']
+              })
+            }
+
+            const invoicePostal = data.invoiceAddress.postalCode.trim()
+            if (invoicePostal.length < 2) {
+              ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: t('validation.invoiceAddress.postal'),
+                path: ['invoiceAddress', 'postalCode']
+              })
+            }
+
+            const invoiceCity = data.invoiceAddress.city.trim()
+            if (invoiceCity.length < 2) {
+              ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: t('validation.invoiceAddress.city'),
+                path: ['invoiceAddress', 'city']
+              })
+            }
+          }
+        }),
+    [t]
+  )
   const form = useForm<InvoicingSetupFormValues>({
-    resolver: zodResolver(invoicingSchema),
+    resolver: zodResolver(schema),
     mode: 'onBlur',
     defaultValues: value
   })
@@ -119,13 +132,13 @@ export function InvoicingSetupStep({
                 <FormLabel className="flex items-center gap-2 text-[13px] font-semibold text-[color:var(--text)]">
                   <Receipt className="h-5 w-5 flex-shrink-0 text-[color:var(--text-muted)] transition-colors group-focus-within:text-[var(--brand-accent)]" />
                   <span className="flex items-center gap-1">
-                    VAT / Kennitala
+                    {t('form.vat.label')}
                     <span aria-hidden="true" className="text-[color:var(--brand-accent)] opacity-80">*</span>
                   </span>
                 </FormLabel>
                 <FormControl>
                   <Input
-                    placeholder="e.g. 1234567-1234"
+                    placeholder={t('form.vat.placeholder')}
                     aria-required="true"
                     {...field}
                     onBlur={event => {
@@ -158,10 +171,10 @@ export function InvoicingSetupStep({
                 </FormControl>
                 <div className="space-y-1 leading-none">
                   <FormLabel className="text-[13px] font-medium text-[color:var(--text)]">
-                    Use different invoice address
+                    {t('form.useSeparate.label')}
                   </FormLabel>
                   <p className="text-[12px] text-[color:var(--text-muted)]">
-                    Check this if invoices should be sent to a different address than deliveries.
+                    {t('form.useSeparate.description')}
                   </p>
                 </div>
               </FormItem>
@@ -172,7 +185,7 @@ export function InvoicingSetupStep({
             <div className="space-y-4 rounded-lg border border-[color:var(--surface-ring)] bg-[color:var(--surface-pop)] p-4">
               <div className="flex items-center gap-2">
                 <MapPinHouse className="h-4 w-4 text-[color:var(--text-muted)]" />
-                <h3 className="text-sm font-semibold text-[color:var(--text)]">Invoice address</h3>
+                <h3 className="text-sm font-semibold text-[color:var(--text)]">{t('form.invoiceSection.title')}</h3>
               </div>
 
               <FormField
@@ -182,7 +195,7 @@ export function InvoicingSetupStep({
                   <FormItem className="space-y-2">
                     <FormLabel className="text-[13px] font-semibold text-[color:var(--text)]">
                       <span className="flex items-center gap-1">
-                        Street address
+                        {t('form.invoiceAddress.street.label')}
                         <span aria-hidden="true" className="text-[color:var(--brand-accent)] opacity-80">
                           *
                         </span>
@@ -190,7 +203,7 @@ export function InvoicingSetupStep({
                     </FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="e.g. Bankastræti 14"
+                        placeholder={t('form.invoiceAddress.street.placeholder')}
                         aria-required={useSeparateInvoiceAddress || undefined}
                         {...field}
                         onBlur={event => {
@@ -212,12 +225,12 @@ export function InvoicingSetupStep({
                 render={({ field }) => (
                   <FormItem className="space-y-2">
                     <FormLabel className="text-[13px] font-semibold text-[color:var(--text)]">
-                      Apartment, suite, etc.{' '}
-                      <span className="text-[12px] font-normal text-[color:var(--text-muted)]">(optional)</span>
+                      {t('form.invoiceAddress.line2.label')} {' '}
+                      <span className="text-[12px] font-normal text-[color:var(--text-muted)]">{t('form.optional')}</span>
                     </FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="e.g. Floor 2"
+                        placeholder={t('form.invoiceAddress.line2.placeholder')}
                         {...field}
                         onBlur={event => {
                           field.onBlur()
@@ -240,7 +253,7 @@ export function InvoicingSetupStep({
                     <FormItem className="space-y-2">
                       <FormLabel className="text-[13px] font-semibold text-[color:var(--text)]">
                         <span className="flex items-center gap-1">
-                          Postal code
+                          {t('form.invoiceAddress.postal.label')}
                           <span aria-hidden="true" className="text-[color:var(--brand-accent)] opacity-80">
                             *
                           </span>
@@ -248,7 +261,7 @@ export function InvoicingSetupStep({
                       </FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="e.g. 101"
+                          placeholder={t('form.invoiceAddress.postal.placeholder')}
                           aria-required={useSeparateInvoiceAddress || undefined}
                           {...field}
                           onBlur={event => {
@@ -271,7 +284,7 @@ export function InvoicingSetupStep({
                     <FormItem className="space-y-2">
                       <FormLabel className="text-[13px] font-semibold text-[color:var(--text)]">
                         <span className="flex items-center gap-1">
-                          City
+                          {t('form.invoiceAddress.city.label')}
                           <span aria-hidden="true" className="text-[color:var(--brand-accent)] opacity-80">
                             *
                           </span>
@@ -279,7 +292,7 @@ export function InvoicingSetupStep({
                       </FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="e.g. Reykjavík"
+                          placeholder={t('form.invoiceAddress.city.placeholder')}
                           aria-required={useSeparateInvoiceAddress || undefined}
                           {...field}
                           onBlur={event => {

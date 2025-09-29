@@ -1,5 +1,6 @@
 import React from 'react'
 import { Pencil, Building2, Users2, Languages, Coins } from 'lucide-react'
+import { useTranslation } from '@/lib/i18n'
 
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -13,7 +14,7 @@ import {
 } from '@/components/ui/select'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 
-import { BUSINESS_TYPE_OPTIONS, type OrganizationBasicsFormValues } from './OrganizationBasicsStep'
+import { BUSINESS_TYPE_VALUES, type OrganizationBasicsFormValues } from './OrganizationBasicsStep'
 import type { ContactInformationFormValues } from './ContactInformationStep'
 import type { DeliveryDetailsFormValues } from './DeliveryDetailsStep'
 import type { InvoicingSetupFormValues } from './InvoicingSetupStep'
@@ -43,20 +44,20 @@ interface ReviewStepProps {
 }
 
 const LANGUAGE_OPTIONS = [
-  { value: 'is-IS', label: 'Icelandic' },
-  { value: 'en-IS', label: 'English (Iceland)' },
-  { value: 'en-GB', label: 'English (UK)' },
-  { value: 'en-US', label: 'English (US)' }
+  { value: 'is-IS', labelKey: 'is-IS' },
+  { value: 'en-IS', labelKey: 'en-IS' },
+  { value: 'en-GB', labelKey: 'en-GB' },
+  { value: 'en-US', labelKey: 'en-US' }
 ]
 
 const CURRENCY_OPTIONS = [
-  { value: 'ISK', label: 'Icelandic króna (ISK)' },
-  { value: 'EUR', label: 'Euro (EUR)' },
-  { value: 'USD', label: 'US dollar (USD)' },
-  { value: 'GBP', label: 'Pound sterling (GBP)' },
-  { value: 'SEK', label: 'Swedish krona (SEK)' },
-  { value: 'DKK', label: 'Danish krone (DKK)' },
-  { value: 'NOK', label: 'Norwegian krone (NOK)' }
+  { value: 'ISK', labelKey: 'ISK' },
+  { value: 'EUR', labelKey: 'EUR' },
+  { value: 'USD', labelKey: 'USD' },
+  { value: 'GBP', labelKey: 'GBP' },
+  { value: 'SEK', labelKey: 'SEK' },
+  { value: 'DKK', labelKey: 'DKK' },
+  { value: 'NOK', labelKey: 'NOK' }
 ]
 
 const formatAddress = (address: OrganizationFormValues['deliveryAddress']) => {
@@ -91,14 +92,16 @@ export function ReviewStep({
   footer,
   error
 }: ReviewStepProps) {
+  const { t } = useTranslation(undefined, { keyPrefix: 'onboarding.steps.review' })
+  const { t: tBasics } = useTranslation(undefined, { keyPrefix: 'onboarding.steps.organizationBasics' })
   const selectedSuppliers = selectedSupplierIds
     .map(id => suppliers.find(supplier => supplier.id === id) ?? null)
     .filter(Boolean) as SupplierOption[]
 
   const deliveryAddressText = formatAddress(organization.deliveryAddress)
   const invoiceAddressText = formatAddress(organization.invoiceAddress)
-  const businessTypeOption = organization.businessType
-    ? BUSINESS_TYPE_OPTIONS.find(option => option.value === organization.businessType)
+  const businessTypeLabel = organization.businessType
+    ? tBasics(`businessTypes.${organization.businessType as (typeof BUSINESS_TYPE_VALUES)[number]}`)
     : undefined
 
   const organizationLogo = organization.logo ?? null
@@ -107,7 +110,7 @@ export function ReviewStep({
     <div className="space-y-6">
       {error && (
         <Alert variant="destructive">
-          <AlertTitle>We couldn’t finish setup</AlertTitle>
+          <AlertTitle>{t('error.title')}</AlertTitle>
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
@@ -119,7 +122,9 @@ export function ReviewStep({
               {organizationLogo?.dataUrl ? (
                 <AvatarImage
                   src={organizationLogo.dataUrl}
-                  alt={`${organization.name || 'Organization'} logo`}
+                  alt={t('organization.section.logoAlt', {
+                    name: organization.name || t('organization.section.emptyName')
+                  })}
                   className="h-full w-full object-contain p-1"
                 />
               ) : (
@@ -131,65 +136,65 @@ export function ReviewStep({
             <div className="flex-1">
               <p className="flex items-center gap-2 text-[13px] uppercase tracking-wide text-[color:var(--text-muted)]">
                 <Building2 className="h-4 w-4 text-[color:var(--brand-accent)]" />
-                Organization
+                {t('organization.section.heading')}
               </p>
               <h3 className="text-[17px] font-semibold text-[color:var(--text)]">
-                {organization.name || 'Add your organization'}
+                {organization.name || t('organization.section.emptyName')}
               </h3>
-              <p className="text-[13px] text-[color:var(--text-muted)]">Used for orders and supplier communications.</p>
+              <p className="text-[13px] text-[color:var(--text-muted)]">{t('organization.section.description')}</p>
               <p className="text-[12px] text-[color:var(--text-muted)]">
-                {organizationLogo ? organizationLogo.fileName : 'Add a logo to personalize your workspace.'}
+                {organizationLogo ? organizationLogo.fileName : t('organization.section.logoFallback')}
               </p>
             </div>
           </div>
           <Button variant="ghost" size="sm" className="gap-2 text-[13px]" onClick={onEditOrganization}>
-            <Pencil className="h-4 w-4" /> Edit
+            <Pencil className="h-4 w-4" /> {t('organization.actions.edit')}
           </Button>
         </header>
         <dl className="grid gap-4 text-[13px] text-[color:var(--text-muted)] sm:grid-cols-2">
           <div>
-            <dt className="font-medium text-[color:var(--text)]">Main contact person</dt>
-            <dd>{organization.contactName || 'Add later'}</dd>
+            <dt className="font-medium text-[color:var(--text)]">{t('organization.fields.contactName')}</dt>
+            <dd>{organization.contactName || t('organization.fields.addLater')}</dd>
           </div>
           <div>
-            <dt className="font-medium text-[color:var(--text)]">Phone</dt>
-            <dd>{organization.phone || 'Add later'}</dd>
+            <dt className="font-medium text-[color:var(--text)]">{t('organization.fields.phone')}</dt>
+            <dd>{organization.phone || t('organization.fields.addLater')}</dd>
           </div>
           <div>
-            <dt className="font-medium text-[color:var(--text)]">Organization email</dt>
-            <dd>{organization.email || 'Add later'}</dd>
+            <dt className="font-medium text-[color:var(--text)]">{t('organization.fields.email')}</dt>
+            <dd>{organization.email || t('organization.fields.addLater')}</dd>
           </div>
           <div>
-            <dt className="font-medium text-[color:var(--text)]">Business type</dt>
-            <dd>{businessTypeOption?.label ?? 'Not specified'}</dd>
+            <dt className="font-medium text-[color:var(--text)]">{t('organization.fields.businessType')}</dt>
+            <dd>{businessTypeLabel ?? t('organization.fields.notSpecified')}</dd>
           </div>
           <div>
-            <dt className="font-medium text-[color:var(--text)]">VAT / Kennitala</dt>
-            <dd>{organization.vat || 'Missing'}</dd>
+            <dt className="font-medium text-[color:var(--text)]">{t('organization.fields.vat')}</dt>
+            <dd>{organization.vat || t('organization.fields.missing')}</dd>
           </div>
           <div className="sm:col-span-2">
-            <dt className="font-medium text-[color:var(--text)]">Delivery address</dt>
+            <dt className="font-medium text-[color:var(--text)]">{t('organization.fields.deliveryAddress')}</dt>
             <dd>
               {deliveryAddressText ? (
                 <address className="not-italic whitespace-pre-line">{deliveryAddressText}</address>
               ) : (
-                'Add later'
+                t('organization.fields.addLater')
               )}
             </dd>
           </div>
           <div className="sm:col-span-2">
-            <dt className="font-medium text-[color:var(--text)]">Invoice address</dt>
+            <dt className="font-medium text-[color:var(--text)]">{t('organization.fields.invoiceAddress')}</dt>
             <dd>
               {organization.useSeparateInvoiceAddress ? (
                 invoiceAddressText ? (
                   <address className="not-italic whitespace-pre-line">{invoiceAddressText}</address>
                 ) : (
-                  'Add later'
+                  t('organization.fields.addLater')
                 )
               ) : deliveryAddressText ? (
-                'Same as delivery address'
+                t('organization.fields.sameAsDelivery')
               ) : (
-                'Add later'
+                t('organization.fields.addLater')
               )}
             </dd>
           </div>
@@ -201,19 +206,17 @@ export function ReviewStep({
           <div>
             <p className="flex items-center gap-2 text-[13px] uppercase tracking-wide text-[color:var(--text-muted)]">
               <Users2 className="h-4 w-4 text-[color:var(--brand-accent)]" />
-              Suppliers
+              {t('suppliers.section.heading')}
             </p>
             <h3 className="text-[17px] font-semibold text-[color:var(--text)]">
-              {selectedSuppliers.length > 0
-                ? `${selectedSuppliers.length} connected`
-                : 'No suppliers connected yet'}
+              {t('suppliers.summary', { count: selectedSuppliers.length })}
             </h3>
             <p className="text-[13px] text-[color:var(--text-muted)]">
-              You can always add or remove suppliers later from Settings.
+              {t('suppliers.description')}
             </p>
           </div>
           <Button variant="ghost" size="sm" className="gap-2 text-[13px]" onClick={onEditSuppliers}>
-            <Pencil className="h-4 w-4" /> Edit suppliers
+            <Pencil className="h-4 w-4" /> {t('suppliers.actions.edit')}
           </Button>
         </header>
         {selectedSuppliers.length > 0 ? (
@@ -230,7 +233,7 @@ export function ReviewStep({
           </div>
         ) : (
           <div className="rounded-[12px] border border-dashed border-[color:var(--surface-ring)] bg-[color:var(--surface-pop)]/40 px-4 py-6 text-center text-[13px] text-[color:var(--text-muted)]">
-            You haven’t connected any suppliers yet. We’ll remind you on the dashboard.
+            {t('suppliers.empty.message')}
           </div>
         )}
       </section>
@@ -238,19 +241,19 @@ export function ReviewStep({
       <section className="grid gap-4 rounded-[14px] border border-[color:var(--surface-ring)] bg-[color:var(--surface-pop-2)]/40 p-4 sm:grid-cols-2">
         <div className="space-y-2">
           <label className="flex items-center gap-2 text-[12px] uppercase tracking-wide text-[color:var(--text-muted)]">
-            <Languages className="h-4 w-4 text-[color:var(--brand-accent)]" /> Default language
+            <Languages className="h-4 w-4 text-[color:var(--brand-accent)]" /> {t('preferences.language.label')}
           </label>
           <Select
             value={preferences.language}
             onValueChange={value => onPreferencesChange({ ...preferences, language: value })}
           >
             <SelectTrigger className="h-10 rounded-[10px] border-[color:var(--surface-ring)] bg-[color:var(--surface-pop)] text-left text-[13px]">
-              <SelectValue placeholder="Select language" />
+              <SelectValue placeholder={t('preferences.language.placeholder')} />
             </SelectTrigger>
             <SelectContent className="rounded-[12px] border-[color:var(--surface-ring)] bg-[color:var(--surface-pop)]">
               {LANGUAGE_OPTIONS.map(option => (
                 <SelectItem key={option.value} value={option.value} className="text-[13px]">
-                  {option.label}
+                  {t(`preferences.language.options.${option.labelKey}`)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -258,24 +261,24 @@ export function ReviewStep({
         </div>
         <div className="space-y-2">
           <label className="flex items-center gap-2 text-[12px] uppercase tracking-wide text-[color:var(--text-muted)]">
-            <Coins className="h-4 w-4 text-[color:var(--brand-accent)]" /> Default currency
+            <Coins className="h-4 w-4 text-[color:var(--brand-accent)]" /> {t('preferences.currency.label')}
           </label>
           <Select
             value={preferences.currency}
             onValueChange={value => onPreferencesChange({ ...preferences, currency: value })}
           >
             <SelectTrigger className="h-10 rounded-[10px] border-[color:var(--surface-ring)] bg-[color:var(--surface-pop)] text-left text-[13px]">
-              <SelectValue placeholder="Select currency" />
+              <SelectValue placeholder={t('preferences.currency.placeholder')} />
             </SelectTrigger>
             <SelectContent className="rounded-[12px] border-[color:var(--surface-ring)] bg-[color:var(--surface-pop)]">
               {CURRENCY_OPTIONS.map(option => (
                 <SelectItem key={option.value} value={option.value} className="text-[13px]">
-                  {option.label}
+                  {t(`preferences.currency.options.${option.labelKey}`)}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
-          <p className="text-[12px] text-[color:var(--text-muted)]">We’ll use this for price displays and future reports.</p>
+          <p className="text-[12px] text-[color:var(--text-muted)]">{t('preferences.currency.help')}</p>
         </div>
       </section>
 

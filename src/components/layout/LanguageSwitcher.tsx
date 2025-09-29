@@ -25,7 +25,7 @@ interface LanguageSwitcherProps {
 
 export function LanguageSwitcher({ className, triggerClassName }: LanguageSwitcherProps) {
   const { language, setLanguage } = useLanguage()
-  const { t } = useTranslation('common.language')
+  const { t } = useTranslation(undefined, { keyPrefix: 'common.language' })
   const options = React.useMemo(
     () => [
       { value: 'is', label: t('options.is'), flag: 'is' },
@@ -46,7 +46,7 @@ export function LanguageSwitcher({ className, triggerClassName }: LanguageSwitch
             aria-haspopup="menu"
             title={t('label')}
             aria-label={t('ariaLabel', {
-              values: { language: activeLanguage.label }
+              language: activeLanguage.label
             })}
           >
             <span className={navTextButtonPillClass} aria-hidden="true" />

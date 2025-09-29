@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { useTranslation } from '@/lib/i18n'
 import { useCart } from '@/contexts/useBasket'
 import { cn } from '@/lib/utils'
 import CartIcon from './CartIcon'
@@ -20,9 +21,10 @@ export function CartButton({
   size = 'default',
   className,
   hideLabel = false,
-  label = 'Cart'
+  label
 }: CartButtonProps) {
   const { items, isDrawerOpen, cartPulseSignal } = useCart()
+  const { t } = useTranslation(undefined, { keyPrefix: 'cart.button' })
 
   const totalItems = React.useMemo(() => {
     return items.reduce((accumulator, item) => {
@@ -31,10 +33,12 @@ export function CartButton({
     }, 0)
   }, [items])
 
-  const displayLabel = label?.trim() || 'Cart'
+  const displayLabel = label?.trim() || t('label')
   const hasItems = totalItems > 0
-  const ariaLabel = `${displayLabel}, ${totalItems} item${totalItems === 1 ? '' : 's'}`
-  const tooltipLabel = `${displayLabel} (C)`
+  const ariaLabel = hasItems
+    ? t('ariaLabel.withItems', { label: displayLabel, count: totalItems })
+    : t('ariaLabel.empty', { label: displayLabel, count: totalItems })
+  const tooltipLabel = t('tooltip', { label: displayLabel })
 
   const [isPulsing, setIsPulsing] = React.useState(false)
 
@@ -80,7 +84,7 @@ export function CartButton({
         <CartIcon
           count={totalItems}
           className={cn('shrink-0 text-current', iconSizeClass)}
-          title={`${displayLabel} (${totalItems})`}
+          title={t('iconTitle', { label: displayLabel, count: totalItems })}
         />
       </span>
       {!hideLabel && (
@@ -95,7 +99,9 @@ export function CartButton({
         </span>
       )}
       <span className="sr-only" aria-live="polite">
-        {hasItems ? `${totalItems} item${totalItems === 1 ? '' : 's'} in cart` : 'Cart is empty'}
+        {hasItems
+          ? t('status.withItems', { count: totalItems })
+          : t('status.empty')}
       </span>
     </button>
   )

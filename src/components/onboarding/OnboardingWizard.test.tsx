@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { createMemoryRouter, RouterProvider, Outlet, useLocation } from "react-router-dom"
 
 import { OnboardingWizard } from "./OnboardingWizard"
+import isLocale from "@/locales/is.json"
 import { TooltipProvider } from "@/components/ui/tooltip"
 
 const mockToast = vi.fn()
@@ -109,7 +110,7 @@ describe("OnboardingWizard completion navigation", () => {
       JSON.stringify({
         organization: { name: "Test Org" },
         selectedSupplierIds: [],
-        currentStep: 3,
+        currentStep: 6,
         preferences: { language: "is-IS", currency: "ISK" }
       })
     )
@@ -148,7 +149,8 @@ describe("OnboardingWizard completion navigation", () => {
       </QueryClientProvider>
     )
 
-    const finishButton = await screen.findByRole("button", { name: /finish setup/i })
+    const finishLabel = (isLocale as any).onboarding.wizard.actions.finish as string
+    const finishButton = await screen.findByRole("button", { name: new RegExp(finishLabel, "i") })
 
     await user.click(finishButton)
 
