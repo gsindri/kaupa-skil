@@ -66,7 +66,7 @@ export function DashboardHero() {
 
   const heroHasActivity = (spendData?.thisWeek ?? 0) > 0 || ordersThisWeek > 0 || deliveriesDue > 0
 
-  const headline = heroHasActivity ? 'This week, at a glance.' : 'Ready when you are.'
+  const headline = 'This week, at a glance.'
   const subheadline = heroHasActivity
     ? 'Stay on top of spend and arrivals without diving into reports.'
     : 'Connect suppliers and place your first order to see live numbers here.'
