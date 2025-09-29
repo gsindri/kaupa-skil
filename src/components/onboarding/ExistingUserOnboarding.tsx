@@ -10,6 +10,7 @@ import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { ArrowLeft, Building2, ChevronRight } from 'lucide-react'
+import { useTranslation } from '@/lib/i18n'
 
 type TenantSummary = {
   id: string
@@ -44,6 +45,8 @@ export function ExistingUserOnboarding() {
   const { toast } = useToast()
   const navigate = useNavigate()
   const location = useLocation()
+  const { t } = useTranslation('onboarding.existing')
+  const { t: tCommon } = useTranslation('common')
 
   const currentPath = React.useMemo(
     () => `${location.pathname}${location.search}${location.hash}`,
@@ -151,8 +154,8 @@ export function ExistingUserOnboarding() {
       if (membershipError) throw membershipError
 
       toast({
-        title: 'Joined workspace',
-        description: 'Access granted.'
+        title: t('notifications.joined.title'),
+        description: t('notifications.joined.description')
       })
 
       await refetch()
@@ -160,8 +163,10 @@ export function ExistingUserOnboarding() {
     } catch (error: any) {
       console.error('Failed to join organization:', error)
       toast({
-        title: 'Could not join',
-        description: error.message,
+        title: t('notifications.joinError.title'),
+        description: t('notifications.joinError.description', {
+          values: { message: error.message }
+        }),
         variant: 'destructive'
       })
       return false
@@ -175,7 +180,7 @@ export function ExistingUserOnboarding() {
 
     const codeValue = joinCode.trim()
     if (!codeValue) {
-      setJoinCodeError('Enter a code.')
+      setJoinCodeError(t('joinByCode.errors.empty'))
       return
     }
 
@@ -185,18 +190,18 @@ export function ExistingUserOnboarding() {
       const tenant = await tryFindTenantByCode(codeValue)
 
       if (!tenant) {
-        setJoinCodeError('No workspace matches that code.')
+        setJoinCodeError(t('joinByCode.errors.notFound'))
         return
       }
 
       const joined = await handleJoinOrganization(tenant.id)
       if (joined) {
-        setJoinCodeSuccess(`Joined ${tenant.name}.`)
+        setJoinCodeSuccess(t('joinByCode.success', { values: { workspace: tenant.name } }))
         setJoinCode('')
       }
     } catch (error: any) {
       console.error('Failed to join with code:', error)
-      setJoinCodeError(error.message || 'Something went wrong while joining by code.')
+      setJoinCodeError(error.message || t('joinByCode.errors.unexpected'))
     } finally {
       setIsJoiningByCode(false)
     }
@@ -207,8 +212,8 @@ export function ExistingUserOnboarding() {
     setTimeout(() => {
       setIsCheckingInvites(false)
       toast({
-        title: 'No invites found',
-        description: 'Ask your admin if you were expecting one.'
+        title: t('notifications.noInvites.title'),
+        description: t('notifications.noInvites.description')
       })
     }, 300)
   }
@@ -218,8 +223,8 @@ export function ExistingUserOnboarding() {
       localStorage.setItem('onboardingSkipped', 'true')
     }
     toast({
-      title: 'Saved for later',
-      description: 'You can finish from Settings anytime.'
+      title: t('notifications.saved.title'),
+      description: t('notifications.saved.description')
     })
     navigateBack()
   }
@@ -234,9 +239,9 @@ export function ExistingUserOnboarding() {
           <div className="space-y-2">
             <div className="flex items-center justify-center gap-2 text-[color:var(--text)]">
               <Building2 className="h-6 w-6 text-[var(--brand-accent)]" aria-hidden="true" />
-              <h1 className="text-3xl font-semibold">Join a workspace</h1>
+              <h1 className="text-3xl font-semibold">{t('header.title')}</h1>
             </div>
-            <p className="text-[15px] text-[color:var(--text-muted)]">Use a code or accept your invite.</p>
+            <p className="text-[15px] text-[color:var(--text-muted)]">{t('header.subtitle')}</p>
           </div>
         </header>
 
@@ -252,12 +257,10 @@ export function ExistingUserOnboarding() {
                   htmlFor="join-code"
                   className="text-[12px] font-semibold uppercase tracking-[0.28em] text-[color:var(--text-muted)]"
                 >
-                  Invite code
+                  {t('joinByCode.label')}
                 </Label>
-                <h2 className="text-[22px] font-semibold text-[color:var(--text)]">Join by code</h2>
-                <p className="text-[14px] text-[color:var(--text-muted)]">
-                  Paste the code to join instantly.
-                </p>
+                <h2 className="text-[22px] font-semibold text-[color:var(--text)]">{t('joinByCode.title')}</h2>
+                <p className="text-[14px] text-[color:var(--text-muted)]">{t('joinByCode.description')}</p>
               </section>
               <form className="space-y-4" onSubmit={handleJoinWithCode}>
                 <div className="flex flex-col gap-3 sm:flex-row">
@@ -266,9 +269,9 @@ export function ExistingUserOnboarding() {
                     type="text"
                     value={joinCode}
                     onChange={(event) => setJoinCode(event.target.value.toUpperCase())}
-                    placeholder="E.g. DEILDA-4829"
+                    placeholder={t('joinByCode.placeholder')}
                     className="h-12 flex-1 rounded-[12px] border-[color:var(--surface-ring)] bg-[color:var(--surface-pop-2)]/60 px-4 text-base font-medium uppercase tracking-[0.32em]"
-                    aria-label="Workspace invite code"
+                    aria-label={t('joinByCode.ariaLabel')}
                     aria-invalid={Boolean(joinCodeError)}
                     aria-describedby={joinCodeFeedbackId}
                     autoComplete="off"
@@ -279,7 +282,7 @@ export function ExistingUserOnboarding() {
                     disabled={isJoiningByCode || !joinCode.trim()}
                     className="h-12 rounded-[12px] bg-[var(--brand-accent)] px-6 text-[color:var(--brand-accent-fg)] hover:bg-[var(--brand-accent)]/90 sm:w-auto"
                   >
-                    {isJoiningByCode ? 'Joining…' : 'Join workspace'}
+                    {isJoiningByCode ? t('joinByCode.joining') : t('joinByCode.submit')}
                   </Button>
                 </div>
                 {joinCodeError && (
@@ -299,10 +302,8 @@ export function ExistingUserOnboarding() {
           <section className="rounded-[16px] border border-dashed border-[color:var(--surface-ring)] bg-[color:var(--surface-pop-2)]/45 px-5 py-5">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="space-y-1">
-                <p className="text-sm font-semibold text-[color:var(--text)]">Pending invites</p>
-                <p className="text-[13px] text-[color:var(--text-muted)]">
-                  We’ll check if your team already added you.
-                </p>
+                <p className="text-sm font-semibold text-[color:var(--text)]">{t('pendingInvites.title')}</p>
+                <p className="text-[13px] text-[color:var(--text-muted)]">{t('pendingInvites.description')}</p>
               </div>
               <Button
                 type="button"
@@ -312,10 +313,10 @@ export function ExistingUserOnboarding() {
                 className="h-auto justify-start gap-1 p-0 text-[15px] font-semibold text-[var(--brand-accent)] sm:justify-end"
               >
                 {isCheckingInvites ? (
-                  'Checking…'
+                  t('pendingInvites.checking')
                 ) : (
                   <span className="inline-flex items-center gap-1">
-                    <span>View pending invites</span>
+                    <span>{t('pendingInvites.cta')}</span>
                     <ChevronRight className="h-4 w-4" aria-hidden="true" />
                   </span>
                 )}
@@ -331,7 +332,7 @@ export function ExistingUserOnboarding() {
             className="inline-flex items-center gap-2 text-[15px] text-[color:var(--text-muted)] hover:text-[color:var(--text)]"
           >
             <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-            <span>Back</span>
+            <span>{tCommon('actions.back')}</span>
           </Button>
         </div>
       </div>

@@ -1,0 +1,208 @@
+{
+  "common": {
+    "language": {
+      "label": "Language",
+      "ariaLabel": "Change language (currently {language})",
+      "options": {
+        "is": "Icelandic",
+        "en": "English"
+      }
+    },
+    "actions": {
+      "back": "Back",
+      "cancel": "Cancel",
+      "continue": "Continue",
+      "confirm": "Confirm",
+      "close": "Close"
+    },
+    "user": {
+      "fallback": "User"
+    },
+    "status": {
+      "loadingWorkspace": "Loading workspace…"
+    }
+  },
+  "navigation": {
+    "logo": {
+      "aria": "Go to dashboard"
+    },
+    "search": {
+      "prompt": "Search here →",
+      "open": "Open search dialog",
+      "title": "Search (Ctrl/⌘ + K)",
+      "shortcut": "Open search dialog. Shortcut: press / or {shortcut}.",
+      "button": "Open search dialog"
+    },
+    "workspace": {
+      "personal": "Personal",
+      "workspace": "Workspace",
+      "personalFull": "Personal workspace (Private)"
+    },
+    "account": {
+      "open": "Open account menu",
+      "openWithName": "Open account menu for {name}",
+      "profileSection": "Profile",
+      "profileSettings": "Profile settings",
+      "organizationSettings": "Organization settings",
+      "languageSection": "Language",
+      "helpSection": "Help",
+      "keyboardShortcuts": "Keyboard shortcuts",
+      "helpCenter": "Help center",
+      "contactSupport": "Contact support",
+      "documentation": "Documentation",
+      "signOut": "Sign out"
+    },
+    "languageMenu": {
+      "columns": {
+        "code": "Code"
+      }
+    }
+  },
+  "onboarding": {
+    "existing": {
+      "notifications": {
+        "joined": {
+          "title": "Joined workspace",
+          "description": "Access granted."
+        },
+        "joinError": {
+          "title": "Could not join",
+          "description": "{message}"
+        },
+        "noInvites": {
+          "title": "No invites found",
+          "description": "Ask your admin if you were expecting one."
+        },
+        "saved": {
+          "title": "Saved for later",
+          "description": "You can finish from Settings anytime."
+        }
+      },
+      "header": {
+        "title": "Join a workspace",
+        "subtitle": "Use a code or accept your invite."
+      },
+      "joinByCode": {
+        "label": "Invite code",
+        "title": "Join by code",
+        "description": "Paste the code to join instantly.",
+        "placeholder": "E.g. DEILDA-4829",
+        "joining": "Joining…",
+        "submit": "Join workspace",
+        "ariaLabel": "Workspace invite code",
+        "errors": {
+          "empty": "Enter a code.",
+          "notFound": "No workspace matches that code.",
+          "unexpected": "Something went wrong while joining by code."
+        },
+        "success": "Joined {workspace}."
+      },
+      "pendingInvites": {
+        "title": "Pending invites",
+        "description": "We’ll check if your team already added you.",
+        "cta": "View pending invites",
+        "checking": "Checking…"
+      },
+      "exit": {
+        "back": "Back"
+      }
+    },
+    "wizard": {
+      "supplierLabels": {
+        "api": "API-connected partner",
+        "portal": "Portal upload ready",
+        "email": "Email order flow",
+        "marketplace": "Marketplace supplier"
+      },
+      "steps": {
+        "1": {
+          "title": "Organization basics",
+          "description": "Name your organization and categorize your business."
+        },
+        "2": {
+          "title": "Delivery details",
+          "description": "Tell us where orders should be delivered."
+        },
+        "3": {
+          "title": "Invoicing setup",
+          "description": "Set invoice preferences and required tax details."
+        },
+        "4": {
+          "title": "Contact information",
+          "description": "Share who suppliers should reach out to."
+        },
+        "5": {
+          "title": "Connect suppliers",
+          "description": "Select suppliers to connect now. You can add more later."
+        },
+        "6": {
+          "title": "Review & finish",
+          "description": "Confirm details before you start."
+        }
+      },
+      "notifications": {
+        "setupComplete": {
+          "title": "Setup already complete!",
+          "description": "Your workspace is ready to use."
+        },
+        "supplierUnavailable": {
+          "title": "Supplier directory unavailable",
+          "description": "{message}"
+        },
+        "noSuppliersSelected": {
+          "title": "No suppliers selected",
+          "description": "You haven't connected any suppliers yet."
+        },
+        "needContact": {
+          "title": "Add contact details",
+          "description": "Share who suppliers should reach out to before continuing."
+        },
+        "savedDraft": {
+          "title": "Draft saved",
+          "description": "We’ll keep your progress so you can continue later."
+        },
+        "completed": {
+          "title": "Workspace created",
+          "description": "Everything looks good—welcome aboard!"
+        },
+        "failed": {
+          "title": "Setup failed"
+        }
+      },
+      "exitDialog": {
+        "title": "Leave workspace setup?",
+        "blockedDescription": "Your progress has been saved. Leaving now will keep your draft ready for when you return.",
+        "manualDescription": "Your progress has been saved. You can finish setup anytime from your dashboard.",
+        "beforeUnload": "Your setup progress is saved. Exit setup?",
+        "cancel": "Stay and finish",
+        "confirm": "Leave setup"
+      },
+      "actions": {
+        "skip": "Skip for now",
+        "save": "Save & exit",
+        "finish": "Finish setup",
+        "previous": "Back",
+        "next": "Continue",
+        "checking": "Checking…",
+        "saving": "Saving…",
+        "exit": "Exit setup"
+      },
+      "status": {
+        "loading": "Loading…",
+        "saving": "Saving draft…",
+        "completing": "Finishing setup…"
+      },
+      "labels": {
+        "selected": {
+          "one": "{count} selected",
+          "other": "{count} selected"
+        }
+      },
+      "errors": {
+        "duplicateOrganization": "An organization named \"{name}\" already exists. Try another name.",
+        "genericCompletion": "Failed to complete setup. Please try again."
+      },
+      "progress": "Step {current} of {total}"
+    }
+  }
+}

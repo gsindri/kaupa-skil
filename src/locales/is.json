@@ -1,0 +1,208 @@
+{
+  "common": {
+    "language": {
+      "label": "Tungumál",
+      "ariaLabel": "Breyta tungumáli (núna {language})",
+      "options": {
+        "is": "Íslenska",
+        "en": "Enska"
+      }
+    },
+    "actions": {
+      "back": "Til baka",
+      "cancel": "Hætta við",
+      "continue": "Halda áfram",
+      "confirm": "Staðfesta",
+      "close": "Loka"
+    },
+    "user": {
+      "fallback": "Notandi"
+    },
+    "status": {
+      "loadingWorkspace": "Hleð vinnusvæði…"
+    }
+  },
+  "navigation": {
+    "logo": {
+      "aria": "Fara á stjórnborð"
+    },
+    "search": {
+      "prompt": "Leita hér →",
+      "open": "Opna leitarglugga",
+      "title": "Leit (Ctrl/⌘ + K)",
+      "shortcut": "Opna leitarglugga. Flýtilykill: ýttu á / eða {shortcut}.",
+      "button": "Opna leitarglugga"
+    },
+    "workspace": {
+      "personal": "Einka",
+      "workspace": "Vinnusvæði",
+      "personalFull": "Einka vinnusvæði (Lokað)"
+    },
+    "account": {
+      "open": "Opna notandavalmynd",
+      "openWithName": "Opna notandavalmynd fyrir {name}",
+      "profileSection": "Prófíll",
+      "profileSettings": "Stillingar prófíls",
+      "organizationSettings": "Stillingar fyrirtækis",
+      "languageSection": "Tungumál",
+      "helpSection": "Hjálp",
+      "keyboardShortcuts": "Flýtilyklar",
+      "helpCenter": "Hjálparvefur",
+      "contactSupport": "Hafa samband við stuðning",
+      "documentation": "Leiðbeiningar",
+      "signOut": "Skrá út"
+    },
+    "languageMenu": {
+      "columns": {
+        "code": "Kóði"
+      }
+    }
+  },
+  "onboarding": {
+    "existing": {
+      "notifications": {
+        "joined": {
+          "title": "Gengið í vinnusvæði",
+          "description": "Aðgangur veittur."
+        },
+        "joinError": {
+          "title": "Ekki tókst að ganga í",
+          "description": "{message}"
+        },
+        "noInvites": {
+          "title": "Engar boðskort fundust",
+          "description": "Hafðu samband við stjórnandann ef þú bjóst við boði."
+        },
+        "saved": {
+          "title": "Vistað til síðar",
+          "description": "Þú getur klárað í Stillingum hvenær sem er."
+        }
+      },
+      "header": {
+        "title": "Gakktu í vinnusvæði",
+        "subtitle": "Notaðu kóða eða samþykktu boð."
+      },
+      "joinByCode": {
+        "label": "Boðskóði",
+        "title": "Ganga í með kóða",
+        "description": "Límdu kóðann til að fá aðgang strax.",
+        "placeholder": "T.d. DEILDA-4829",
+        "joining": "Geng í…",
+        "submit": "Ganga í vinnusvæði",
+        "ariaLabel": "Boðskóði vinnusvæðis",
+        "errors": {
+          "empty": "Sláðu inn kóða.",
+          "notFound": "Ekkert vinnusvæði passar við þann kóða.",
+          "unexpected": "Eitthvað fór úrskeiðis þegar reynt var að ganga í með kóða."
+        },
+        "success": "Gengið í {workspace}."
+      },
+      "pendingInvites": {
+        "title": "Boð í bið",
+        "description": "Við skoðum hvort teymið hafi þegar bætt þér við.",
+        "cta": "Skoða boð",
+        "checking": "Athuga…"
+      },
+      "exit": {
+        "back": "Til baka"
+      }
+    },
+    "wizard": {
+      "supplierLabels": {
+        "api": "API-tengdur samstarfsaðili",
+        "portal": "Vefgátt tilbúin",
+        "email": "Pöntun í tölvupósti",
+        "marketplace": "Birgir á markaðstorgi"
+      },
+      "steps": {
+        "1": {
+          "title": "Grunnupplýsingar fyrirtækis",
+          "description": "Nefndu fyrirtækið og skilgreindu starfsemina."
+        },
+        "2": {
+          "title": "Afhendingarupplýsingar",
+          "description": "Segðu okkur hvert pöntunum skal skila."
+        },
+        "3": {
+          "title": "Innheimtustillingar",
+          "description": "Veldu innheimtustillingar og nauðsynleg skattaupplýsingar."
+        },
+        "4": {
+          "title": "Tengiliður",
+          "description": "Deildu hverjir eigi að fá skilaboð frá birgjum."
+        },
+        "5": {
+          "title": "Tengja birgja",
+          "description": "Veldu birgja til að tengja núna. Þú getur bætt við síðar."
+        },
+        "6": {
+          "title": "Yfirlit og klára",
+          "description": "Farðu yfir allar upplýsingar áður en þú byrjar."
+        }
+      },
+      "notifications": {
+        "setupComplete": {
+          "title": "Uppsetningu þegar lokið!",
+          "description": "Vinnusvæðið er tilbúið til notkunar."
+        },
+        "supplierUnavailable": {
+          "title": "Ekki tókst að hlaða birgjalista",
+          "description": "{message}"
+        },
+        "noSuppliersSelected": {
+          "title": "Engir birgjar valdir",
+          "description": "Þú hefur ekki tengt neina birgja ennþá."
+        },
+        "needContact": {
+          "title": "Bættu við tengilið",
+          "description": "Deildu hver birgjar eigi að hafa samband við áður en þú heldur áfram."
+        },
+        "savedDraft": {
+          "title": "Drög vistuð",
+          "description": "Við geymum framvinduna svo þú getir haldið áfram síðar."
+        },
+        "completed": {
+          "title": "Vinnusvæði tilbúið",
+          "description": "Allt lítur vel út—velkomin/n um borð!"
+        },
+        "failed": {
+          "title": "Uppsetning mistókst"
+        }
+      },
+      "exitDialog": {
+        "title": "Hætta í uppsetningu?",
+        "blockedDescription": "Framvindan þín er vistuð. Þú getur haldið áfram síðar án þess að tapa gögnum.",
+        "manualDescription": "Framvindan þín er vistuð. Þú getur klárað uppsetninguna síðar á stjórnborðinu.",
+        "beforeUnload": "Framvindan þín er vistuð. Viltu hætta í uppsetningunni?",
+        "cancel": "Halda áfram",
+        "confirm": "Hætta"
+      },
+      "actions": {
+        "skip": "Sleppa í bili",
+        "save": "Vista og hætta",
+        "finish": "Ljúka uppsetningu",
+        "previous": "Til baka",
+        "next": "Halda áfram",
+        "checking": "Athuga…",
+        "saving": "Vista…",
+        "exit": "Hætta í uppsetningu"
+      },
+      "status": {
+        "loading": "Hleð…",
+        "saving": "Vista drög…",
+        "completing": "Lýk uppsetningu…"
+      },
+      "labels": {
+        "selected": {
+          "one": "{count} valinn",
+          "other": "{count} valdir"
+        }
+      },
+      "errors": {
+        "duplicateOrganization": "Fyrirtæki með heitinu \"{name}\" er þegar til. Prófaðu annað nafn.",
+        "genericCompletion": "Ekki tókst að ljúka uppsetningu. Reyndu aftur."
+      },
+      "progress": "Skref {current} af {total}"
+    }
+  }
+}

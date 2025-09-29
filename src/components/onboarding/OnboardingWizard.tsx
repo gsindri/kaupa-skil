@@ -28,6 +28,7 @@ import { SupplierSelectionStep, type SupplierOption } from './steps/SupplierSele
 import { ReviewStep, type ReviewPreferences } from './steps/ReviewStep'
 import { useLocaleDefaults } from '@/utils/locale'
 import type { Database } from '@/lib/types'
+import { useTranslation } from '@/lib/i18n'
 
 const DRAFT_STORAGE_KEY = 'workspace_setup_draft'
 const STATUS_STORAGE_KEY = 'workspace_setup_status'
@@ -94,25 +95,14 @@ interface OnboardingWizardProps {
 
 type SupplierRow = Database['public']['Tables']['suppliers']['Row']
 
-function mapConnectorType(connectorType?: string | null) {
-  switch (connectorType) {
-    case 'api':
-      return 'API-connected partner'
-    case 'portal':
-      return 'Portal upload ready'
-    case 'email':
-      return 'Email order flow'
-    default:
-      return 'Marketplace supplier'
-  }
-}
-
 export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) {
   const navigate = useNavigate()
   const location = useLocation()
   const { toast } = useToast()
   const { user, profile, profileLoading, refetch } = useAuth()
   const { language: defaultLanguage, currency: defaultCurrency } = useLocaleDefaults()
+  const { t } = useTranslation('onboarding.wizard')
+  const { t: tCommon } = useTranslation('common')
 
   const currentPath = useMemo(
     () => `${location.pathname}${location.search}${location.hash}`,
@@ -143,6 +133,22 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
     navigate(target, { replace: true })
   }, [currentPath, navigate, previousPath])
 
+  const mapConnectorType = useCallback(
+    (connectorType?: string | null) => {
+      switch (connectorType) {
+        case 'api':
+          return t('supplierLabels.api')
+        case 'portal':
+          return t('supplierLabels.portal')
+        case 'email':
+          return t('supplierLabels.email')
+        default:
+          return t('supplierLabels.marketplace')
+      }
+    },
+    [t]
+  )
+
   const [currentStep, setCurrentStep] = useState(1)
   const [combinedValues, setCombinedValues] = useState<CombinedFormValues>(EMPTY_COMBINED_VALUES)
   const [selectedSupplierIds, setSelectedSupplierIds] = useState<string[]>([])
@@ -169,48 +175,48 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
     () => [
       {
         id: 1,
-        title: 'Organization basics',
-        description: 'Name your organization and categorize your business.'
+        title: t('steps.1.title'),
+        description: t('steps.1.description')
       },
       {
         id: 2,
-        title: 'Delivery details',
-        description: 'Tell us where orders should be delivered.'
+        title: t('steps.2.title'),
+        description: t('steps.2.description')
       },
       {
         id: 3,
-        title: 'Invoicing setup',
-        description: 'Set invoice preferences and required tax details.'
+        title: t('steps.3.title'),
+        description: t('steps.3.description')
       },
       {
         id: 4,
-        title: 'Contact information',
-        description: 'Share who suppliers should reach out to.'
+        title: t('steps.4.title'),
+        description: t('steps.4.description')
       },
       {
         id: 5,
-        title: 'Connect suppliers',
-        description: 'Select suppliers to connect now. You can add more later.'
+        title: t('steps.5.title'),
+        description: t('steps.5.description')
       },
       {
         id: 6,
-        title: 'Review & finish',
-        description: 'Confirm details before you start.'
+        title: t('steps.6.title'),
+        description: t('steps.6.description')
       }
     ],
-    []
+    [t]
   )
 
   useEffect(() => {
     if (profileLoading) return
     if (profile?.tenant_id && !allowExistingWorkspaceCreation) {
       toast({
-        title: 'Setup already complete!',
-        description: 'Your workspace is ready to use.'
+        title: t('notifications.setupComplete.title'),
+        description: t('notifications.setupComplete.description')
       })
       navigateToPrevious()
     }
-  }, [profile, profileLoading, toast, navigateToPrevious, allowExistingWorkspaceCreation])
+  }, [profile, profileLoading, toast, navigateToPrevious, allowExistingWorkspaceCreation, t])
 
   useEffect(() => {
     if (typeof window === 'undefined' || draftLoaded) return
@@ -287,12 +293,14 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
   useEffect(() => {
     if (suppliersError instanceof Error) {
       toast({
-        title: 'Supplier directory unavailable',
-        description: suppliersError.message,
+        title: t('notifications.supplierUnavailable.title'),
+        description: t('notifications.supplierUnavailable.description', {
+          values: { message: suppliersError.message }
+        }),
         variant: 'destructive'
       })
     }
-  }, [suppliersError, toast])
+  }, [suppliersError, toast, t])
 
   const hasFormDetails = useMemo(() => {
     return (
@@ -345,11 +353,11 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
     if (!shouldBlockNavigation) return
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
       event.preventDefault()
-      event.returnValue = 'Your setup progress is saved. Exit setup?'
+      event.returnValue = t('exitDialog.beforeUnload')
     }
     window.addEventListener('beforeunload', handleBeforeUnload)
     return () => window.removeEventListener('beforeunload', handleBeforeUnload)
-  }, [shouldBlockNavigation])
+  }, [shouldBlockNavigation, t])
 
   const currentStepDefinition = useMemo(
     () => steps.find(step => step.id === currentStep),
@@ -395,13 +403,14 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
   const handleSupplierContinue = useCallback(() => {
     if (selectedSupplierIds.length === 0) {
       toast({
-        title: "No suppliers selected",
-        description: "You haven't connected any suppliers yet.",
+        title: t('notifications.noSuppliersSelected.title'),
+        description: t('notifications.noSuppliersSelected.description'),
         duration: 4000
       })
+      return
     }
     setCurrentStep(prev => Math.min(prev + 1, TOTAL_STEPS))
-  }, [selectedSupplierIds.length, toast])
+  }, [selectedSupplierIds.length, toast, t])
 
   const handleBack = useCallback(() => {
     if (currentStep === 1) {
@@ -444,7 +453,10 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
       let tenant = existingTenant
 
       if (existingTenant && existingTenant.created_by !== user.id) {
-        setSetupError(`An organization named "${trimmedName}" already exists. Try another name.`)
+        const duplicateMessage = t('errors.duplicateOrganization', {
+          values: { name: trimmedName }
+        })
+        setSetupError(duplicateMessage)
         setCurrentStep(1)
         return
       }
@@ -458,7 +470,10 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
 
         if (tenantError) {
           if ((tenantError as any).code === '23505') {
-            setSetupError(`An organization named "${trimmedName}" already exists. Try another name.`)
+            const duplicateMessage = t('errors.duplicateOrganization', {
+              values: { name: trimmedName }
+            })
+            setSetupError(duplicateMessage)
             setCurrentStep(1)
             return
           }
@@ -502,26 +517,27 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
       }
 
       toast({
-        title: 'Workspace ready.',
-        description: 'You can tweak settings anytime.'
+        title: t('notifications.completed.title'),
+        description: t('notifications.completed.description')
       })
 
       await refetch()
       setAllowNavigation(true)
       setPendingExitAction('complete')
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Failed to complete setup. Please try again.'
+      const message =
+        error instanceof Error ? error.message : t('errors.genericCompletion')
       setSetupError(message)
       setCurrentStep(1)
       toast({
-        title: 'Setup failed',
+        title: t('notifications.failed.title'),
         description: message,
         variant: 'destructive'
       })
     } finally {
       setIsCompleting(false)
     }
-  }, [combinedValues, preferences, refetch, selectedSupplierIds, toast, user])
+  }, [combinedValues, preferences, refetch, selectedSupplierIds, toast, user, t])
 
   const emphasizedPrimaryClass =
     'justify-center bg-[var(--brand-accent)] text-[color:var(--brand-accent-fg)] hover:bg-[var(--brand-accent)]/90'
@@ -535,14 +551,12 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
   const exitDialogCopy =
     exitDialogContext === 'blocked'
       ? {
-          title: 'Leave workspace setup?',
-          description:
-            'Your progress has been saved. Leaving now will keep your draft ready for when you return.'
+          title: t('exitDialog.title'),
+          description: t('exitDialog.blockedDescription')
         }
       : {
-          title: 'Leave workspace setup?',
-          description:
-            'Your progress has been saved. You can finish setup anytime from your dashboard.'
+          title: t('exitDialog.title'),
+          description: t('exitDialog.manualDescription')
         }
 
   // Step-specific footers
@@ -562,7 +576,7 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
               onClick={handleBack}
               disabled={isCompleting}
             >
-              <ArrowLeft className="mr-2 h-4 w-4" /> Back
+              <ArrowLeft className="mr-2 h-4 w-4" /> {tCommon('actions.back')}
             </Button>
             <button
               type="button"
@@ -570,7 +584,7 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
               onClick={requestExit}
               disabled={isCompleting}
             >
-              Exit setup
+              {t('actions.exit')}
             </button>
           </div>
           <Button
@@ -582,12 +596,12 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
             {isCompleting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Creating workspace...
+                {t('status.completing')}
               </>
             ) : (
               <>
                 <Check className="mr-2 h-4 w-4" />
-                Finish setup
+                {t('actions.finish')}
               </>
             )}
           </Button>
@@ -607,7 +621,7 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
               onClick={handleBack}
               disabled={isCompleting}
             >
-              <ArrowLeft className="mr-2 h-4 w-4" /> Back
+              <ArrowLeft className="mr-2 h-4 w-4" /> {tCommon('actions.back')}
             </Button>
             <button
               type="button"
@@ -615,12 +629,12 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
               onClick={requestExit}
               disabled={isCompleting}
             >
-              Exit setup
+              {t('actions.exit')}
             </button>
           </div>
           <div className="flex flex-col items-center gap-2 sm:flex-row sm:items-center sm:justify-end sm:gap-3">
             <span className="text-center text-[13px] text-[color:var(--text-muted)] sm:text-left">
-              {selectedSupplierIds.length} selected
+              {t('labels.selected', { count: selectedSupplierIds.length })}
             </span>
             <Button
               size="lg"
@@ -628,7 +642,7 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
               onClick={handleSupplierContinue}
               disabled={isCompleting}
             >
-              Continue
+              {t('actions.next')}
             </Button>
           </div>
         </div>
@@ -647,7 +661,7 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
               onClick={handleBack}
               disabled={isCompleting}
             >
-              <ArrowLeft className="mr-2 h-4 w-4" /> Back
+              <ArrowLeft className="mr-2 h-4 w-4" /> {tCommon('actions.back')}
             </Button>
           )}
           <button
@@ -656,7 +670,7 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
             onClick={requestExit}
             disabled={isCompleting}
           >
-            Exit setup
+            {t('actions.exit')}
           </button>
         </div>
         <Button
@@ -665,11 +679,11 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
           onClick={handleStepComplete}
           disabled={isCompleting}
         >
-          Continue
+          {t('actions.next')}
         </Button>
       </div>
     )
-  }, [currentStep, isCompleting, handleBack, requestExit, handleStepComplete, handleSupplierContinue, completeOnboarding, selectedSupplierIds.length])
+  }, [currentStep, isCompleting, handleBack, requestExit, handleStepComplete, handleSupplierContinue, completeOnboarding, selectedSupplierIds.length, t, tCommon])
 
   return (
     <div className="flex min-h-screen w-full flex-col">
@@ -700,8 +714,8 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
                 />
               ))}
             </div>
-            <p className="text-sm text-[color:var(--text-muted)]">
-              Step {currentStep} of {TOTAL_STEPS}
+          <p className="text-sm text-[color:var(--text-muted)]">
+              {t('progress', { values: { current: currentStep, total: TOTAL_STEPS } })}
             </p>
           </div>
 
@@ -822,9 +836,9 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
                 }
               }}
             >
-              Stay and finish
+              {t('exitDialog.cancel')}
             </AlertDialogCancel>
-            <AlertDialogAction onClick={exitSetup}>Leave setup</AlertDialogAction>
+            <AlertDialogAction onClick={exitSetup}>{t('exitDialog.confirm')}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
