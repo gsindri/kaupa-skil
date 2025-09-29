@@ -8,6 +8,74 @@ import { getCachedImageUrl } from '@/services/ImageCache'
 
 const CART_STORAGE_KEY = 'procurewise-basket'
 const CART_PIN_STORAGE_KEY = 'procurewise-cart-pinned'
+
+const PLACEHOLDER_SUPPLIER_NAMES = new Set([
+  '??',
+  'unknown',
+  'unknown supplier',
+  'unknown vendor',
+  'n/a',
+  'na',
+  'tbd',
+  'none',
+  'unspecified'
+])
+
+const sanitizeSupplierName = (
+  candidate: unknown,
+  fallbackId?: unknown
+): string => {
+  const normalize = (value: unknown) =>
+    typeof value === 'string' ? value.trim().replace(/\s+/g, ' ') : ''
+
+  const candidateName = normalize(candidate)
+  const fallbackCandidate = normalize(fallbackId)
+  const fallback =
+    fallbackCandidate &&
+    !PLACEHOLDER_SUPPLIER_NAMES.has(fallbackCandidate.toLowerCase())
+      ? fallbackCandidate
+      : 'Supplier'
+
+  if (!candidateName) {
+    return fallback
+  }
+
+  const lowerCandidate = candidateName.toLowerCase()
+  if (PLACEHOLDER_SUPPLIER_NAMES.has(lowerCandidate)) {
+    return fallback
+  }
+
+  return candidateName
+}
+
+const extractLegacySupplierName = (it: any): string => {
+  const supplierIdCandidate =
+    it?.supplierId ??
+    it?.supplier_id ??
+    it?.supplier?.id ??
+    it?.vendorId ??
+    it?.vendor_id ??
+    it?.vendor?.id ??
+    it?.supplierItemId ??
+    it?.id
+
+  const supplierNameCandidate =
+    it?.supplierName ??
+    it?.supplier_name ??
+    it?.supplier?.name ??
+    it?.supplier?.supplierName ??
+    it?.supplier?.displayName ??
+    it?.supplier?.company?.name ??
+    it?.supplier?.company_name ??
+    it?.vendorName ??
+    it?.vendor_name ??
+    it?.vendor?.name ??
+    it?.vendor?.companyName ??
+    it?.companyName ??
+    it?.metadata?.supplierName
+
+  return sanitizeSupplierName(supplierNameCandidate, supplierIdCandidate)
+}
 export default function BasketProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>(() => {
     const saved = localStorage.getItem(CART_STORAGE_KEY)
@@ -28,6 +96,7 @@ export default function BasketProvider({ children }: { children: React.ReactNode
           it.logoUrl ??
           it.supplierLogo ??
           null,
+        supplierName: extractLegacySupplierName(it),
         itemName:
           it.itemName ??
           it.name ??
@@ -159,10 +228,14 @@ export default function BasketProvider({ children }: { children: React.ReactNode
     let finalQuantity = quantity
 
     if ('product_id' in item && 'supplier_id' in item) {
+      const supplierName = sanitizeSupplierName(
+        (item as any)?.supplier_name ?? (item as any)?.supplierName,
+        item.supplier_id
+      )
       normalizedItem = {
         id: item.product_id,
         supplierId: item.supplier_id,
-        supplierName: '',
+        supplierName,
         supplierLogoUrl: null,
         itemName: 'Item',
         sku: '',
@@ -183,6 +256,7 @@ export default function BasketProvider({ children }: { children: React.ReactNode
     } else {
       normalizedItem = {
         ...item,
+        supplierName: sanitizeSupplierName(item.supplierName, item.supplierId),
         itemName: item.itemName ?? item.displayName ?? 'Item',
         displayName: item.displayName ?? item.itemName ?? 'Item',
         image: item.image ? getCachedImageUrl(item.image) : null
