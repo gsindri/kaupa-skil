@@ -73,7 +73,7 @@ export default function SupplierChips({ suppliers }: SupplierChipsProps) {
         <SupplierLogo
           name={s.supplier_name}
           logoUrl={s.supplier_logo_url}
-          className="h-4 w-4"
+          className="h-4"
         />
         <span className="truncate text-xs">
           {s.supplier_name}

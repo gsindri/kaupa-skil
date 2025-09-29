@@ -295,7 +295,7 @@ export function ProductQuickPeekDrawer({
                     key={`${option.id}-${index}`}
                     name={option.name}
                     logoUrl={option.logoUrl}
-                    className="!h-7 !w-7 !rounded-full border border-white/10 bg-white/10 opacity-80"
+                    className="!h-7 !rounded-full border border-white/10 bg-white/10 opacity-80"
                   />
                 ))}
                 {supplierOverflow > 0 && (
@@ -324,7 +324,7 @@ export function ProductQuickPeekDrawer({
                       <SupplierLogo
                         name={selectedSupplierOption.name}
                         logoUrl={selectedSupplierOption.logoUrl}
-                        className="!h-6 !w-6 !rounded-full border border-white/10 bg-white/10 opacity-80"
+                        className="!h-6 !rounded-full border border-white/10 bg-white/10 opacity-80"
                       />
                     )}
                     <SelectValue placeholder="Choose supplier" />
@@ -337,7 +337,7 @@ export function ProductQuickPeekDrawer({
                         <SupplierLogo
                           name={option.name}
                           logoUrl={option.logoUrl}
-                          className="!h-5 !w-5 !rounded-full border border-white/10 bg-white/10 opacity-80"
+                          className="!h-5 !rounded-full border border-white/10 bg-white/10 opacity-80"
                         />
                         <span>{option.name}</span>
                       </div>

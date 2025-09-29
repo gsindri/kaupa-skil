@@ -543,7 +543,7 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
                       <SupplierLogo
                         name={primarySupplierName}
                         logoUrl={primarySupplier?.supplier_logo_url ?? undefined}
-                        className="!h-6 !w-6 flex-none !rounded-md border border-slate-200/60 bg-white p-1 shadow-sm dark:border-white/10 dark:bg-white/10"
+                        className="!h-6 flex-none !rounded-md border border-slate-200/60 bg-white p-1 shadow-sm dark:border-white/10 dark:bg-white/10"
                       />
                       <div className="min-w-0 space-y-0.5 text-left">
                         <div className="flex items-center gap-1 truncate text-[13px] font-medium text-slate-700 dark:text-slate-200">

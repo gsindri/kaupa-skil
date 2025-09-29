@@ -459,7 +459,7 @@ export const ProductCard = memo(function ProductCard({
               <SupplierLogo
                 name={primarySupplierName || supplierLabel}
                 logoUrl={primarySupplierLogo}
-                className="!h-5 !w-5 flex-shrink-0 !rounded-full bg-background shadow-sm"
+                className="!h-5 flex-shrink-0 !rounded-full bg-background shadow-sm"
               />
               <span
                 className="catalog-card__supplier-label truncate text-xs text-muted-foreground"
