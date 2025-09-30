@@ -2,7 +2,6 @@ import React, { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowRight, ClipboardList, Factory, LineChart, PiggyBank, Truck, Users2 } from 'lucide-react'
 import { Card } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useSupplierConnections } from '@/hooks/useSupplierConnections'
 import { usePantrySignals } from '@/hooks/usePantrySignals'
@@ -16,93 +15,98 @@ import { differenceInCalendarDays, format } from 'date-fns'
 import { getNextDeliveryDate } from './delivery-helpers'
 import { cn } from '@/lib/utils'
 
-type BadgeVariant = React.ComponentProps<typeof Badge>['variant']
+type TileTone = 'neutral' | 'positive' | 'warning' | 'alert'
 
-interface CategoryStatus {
+interface TileStatus {
   label: string
-  variant?: BadgeVariant
+  tone?: TileTone
   isLoading?: boolean
 }
 
-interface CategoryAction {
-  label: string
-  description?: string
-  to: string
-}
-
-interface DashboardCategory {
+interface DashboardTile {
   id: string
   title: string
-  description: string
+  tagline: string
+  to: string
+  ctaLabel: string
   icon: React.ComponentType<React.SVGProps<SVGSVGElement>>
   accent: {
-    icon: string
-    line: string
+    background: string
+    bubble: string
   }
-  status: CategoryStatus
-  actions: CategoryAction[]
+  status?: TileStatus
 }
 
-function CategoryStatusBadge({ status }: { status: CategoryStatus }) {
+interface DashboardSection {
+  id: string
+  title: string
+  tiles: DashboardTile[]
+}
+
+const toneClass: Record<TileTone, string> = {
+  neutral: 'bg-white/10 text-white',
+  positive: 'bg-emerald-400/35 text-white',
+  warning: 'bg-amber-400/35 text-white',
+  alert: 'bg-rose-500/40 text-white',
+}
+
+function TileStatusBadge({ status }: { status?: TileStatus }) {
+  if (!status) return null
   if (status.isLoading) {
-    return <Skeleton className="h-6 w-32 rounded-full bg-muted" />
+    return <Skeleton className="h-6 w-28 rounded-full bg-white/10" />
   }
 
-  return status.label ? (
-    <Badge variant={status.variant ?? 'secondary'}>{status.label}</Badge>
-  ) : null
+  if (!status.label) return null
+
+  const tone = status.tone ?? 'neutral'
+
+  return (
+    <span
+      className={cn(
+        'inline-flex items-center rounded-full px-3 py-1 text-xs font-medium uppercase tracking-wide backdrop-blur',
+        toneClass[tone]
+      )}
+    >
+      {status.label}
+    </span>
+  )
 }
 
-function DashboardCategoryCard({
-  title,
-  description,
-  icon: Icon,
-  accent,
-  status,
-  actions,
-}: DashboardCategory) {
+function DashboardTileCard({ tile }: { tile: DashboardTile }) {
+  const { title, tagline, to, ctaLabel, icon: Icon, accent, status } = tile
+
   return (
-    <Card className="group relative flex h-full flex-col gap-4 border-border/60 bg-background/70 p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md">
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <span
-            className={cn(
-              'grid h-12 w-12 place-items-center rounded-xl text-base font-semibold ring-1 ring-inset',
-              accent.icon
-            )}
-          >
-            <Icon className="h-5 w-5" aria-hidden="true" />
-          </span>
-          <div>
-            <h3 className="text-lg font-semibold text-foreground">{title}</h3>
-            <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground/80">Snapshot</p>
-          </div>
+    <Card
+      className={cn(
+        'group relative overflow-hidden rounded-3xl border-none p-6 text-white shadow-lg transition-all hover:-translate-y-0.5 hover:shadow-2xl',
+        accent.background
+      )}
+    >
+      <div className="flex items-start justify-between">
+        <div className={cn('grid h-14 w-14 place-items-center rounded-2xl text-xl font-semibold', accent.bubble)}>
+          <Icon className="h-7 w-7" aria-hidden="true" />
         </div>
-        <CategoryStatusBadge status={status} />
+        <TileStatusBadge status={status} />
       </div>
 
-      <div className={cn('h-0.5 w-full rounded-full border-t-2 border-dashed', accent.line)} aria-hidden="true" />
+      <div className="mt-8 space-y-4">
+        <div>
+          <h3 className="text-2xl font-semibold tracking-tight">{title}</h3>
+          <p className="mt-3 max-w-xs text-sm text-white/80">{tagline}</p>
+        </div>
 
-      <p className="text-sm text-muted-foreground">{description}</p>
+        <Link
+          to={to}
+          className="inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-sm font-medium text-white transition hover:bg-white hover:text-slate-900"
+        >
+          {ctaLabel}
+          <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
+        </Link>
+      </div>
 
-      <ul className="flex flex-1 flex-col gap-2 text-sm">
-        {actions.map((action) => (
-          <li key={action.label}>
-            <Link
-              to={action.to}
-              className="group/link flex items-start justify-between gap-3 rounded-md px-3 py-2 transition hover:bg-muted/40"
-            >
-              <div className="space-y-1">
-                <p className="font-medium text-foreground group-hover/link:text-primary">{action.label}</p>
-                {action.description ? (
-                  <p className="text-xs text-muted-foreground">{action.description}</p>
-                ) : null}
-              </div>
-              <ArrowRight className="mt-1 h-4 w-4 flex-shrink-0 text-muted-foreground transition group-hover/link:translate-x-1 group-hover/link:text-primary" />
-            </Link>
-          </li>
-        ))}
-      </ul>
+      <div className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+        <div className="absolute -top-12 -right-12 h-40 w-40 rounded-full bg-white/10 blur-3xl" />
+      </div>
     </Card>
   )
 }
@@ -166,249 +170,184 @@ export default function DashboardOverview() {
     return { ordersThisWeek, uniqueUsers, lastActivity }
   }, [auditLogs, referenceDate])
 
-  const categories: DashboardCategory[] = useMemo(() => {
-    const supplierStatus: CategoryStatus = suppliersLoading
-      ? { label: 'Checking connections…', isLoading: true }
+  const sections: DashboardSection[] = useMemo(() => {
+    const supplierStatus: TileStatus = suppliersLoading
+      ? { label: 'Checking…', isLoading: true }
       : suppliers.length === 0
-        ? { label: 'Add your first supplier', variant: 'secondary' }
+        ? { label: 'Add supplier', tone: 'neutral' }
         : needsAttention > 0
-          ? { label: `${needsAttention} need reconnecting`, variant: 'destructive' }
-          : { label: `${connectedSuppliers} supplier${connectedSuppliers === 1 ? '' : 's'} synced`, variant: 'default' }
+          ? { label: `Reconnect ${needsAttention}`, tone: 'alert' }
+          : { label: `${connectedSuppliers} linked`, tone: 'positive' }
 
-    const pantryStatus: CategoryStatus = pantryLoading
-      ? { label: 'Scanning pantry…', isLoading: true }
+    const pantryStatus: TileStatus = pantryLoading
+      ? { label: 'Scanning…', isLoading: true }
       : pantryItems.length > 0
-        ? { label: `${pantryItems.length} flagged for reorder`, variant: 'default' }
-        : { label: 'Nothing needs topping up', variant: 'secondary' }
+        ? { label: `${pantryItems.length} low`, tone: 'warning' }
+        : { label: 'All stocked', tone: 'positive' }
 
-    const spendStatus: CategoryStatus = spendLoading
-      ? { label: 'Calculating spend…', isLoading: true }
+    const spendStatus: TileStatus = spendLoading
+      ? { label: 'Calculating…', isLoading: true }
       : spendData && spendData.thisWeek > 0
         ? {
             label: `${formatCurrency(spendData.thisWeek)} this week`,
-            variant: spendData.change > 15 ? 'destructive' : 'default',
+            tone: spendData.change > 15 ? 'alert' : 'positive',
           }
-        : { label: 'Awaiting your first order', variant: 'secondary' }
+        : { label: 'Awaiting orders', tone: 'neutral' }
 
-    const deliveriesStatus: CategoryStatus = deliveriesLoading
-      ? { label: 'Syncing schedule…', isLoading: true }
+    const deliveriesStatus: TileStatus = deliveriesLoading
+      ? { label: 'Syncing…', isLoading: true }
       : deliveriesSummary.deliveriesDue > 0
         ? {
-            label: `${deliveriesSummary.deliveriesDue} due within 7 days`,
-            variant: 'default',
+            label: `${deliveriesSummary.deliveriesDue} incoming`,
+            tone: 'positive',
           }
-        : { label: 'No deliveries scheduled', variant: 'secondary' }
+        : { label: 'No deliveries set', tone: 'neutral' }
 
-    const teamStatus: CategoryStatus = auditLoading
-      ? { label: 'Reviewing activity…', isLoading: true }
+    const teamStatus: TileStatus = auditLoading
+      ? { label: 'Reviewing…', isLoading: true }
       : teamInsights.uniqueUsers > 0
         ? {
-            label: `${teamInsights.uniqueUsers} active this week`,
-            variant: 'default',
+            label: `${teamInsights.uniqueUsers} active`,
+            tone: 'positive',
           }
-        : { label: 'Invite your team', variant: 'secondary' }
+        : { label: 'Invite teammates', tone: 'neutral' }
 
-    const analyticsStatus: CategoryStatus = alertsLoading
-      ? { label: 'Gathering insights…', isLoading: true }
+    const analyticsStatus: TileStatus = alertsLoading
+      ? { label: 'Gathering…', isLoading: true }
       : alerts.length > 0
-        ? { label: `${alerts.length} alerts waiting`, variant: 'destructive' }
+        ? { label: `${alerts.length} alerts`, tone: 'alert' }
         : spendData?.categories?.length
           ? {
-              label: `${spendData.categories[0].name} leading spend`,
-              variant: 'default',
+              label: `${spendData.categories[0].name} leading`,
+              tone: 'positive',
             }
-          : { label: 'Insights will appear soon', variant: 'secondary' }
+          : { label: 'Insights soon', tone: 'neutral' }
 
     return [
       {
-        id: 'suppliers',
-        title: 'Suppliers',
-        description: 'Keep integrations healthy and surface the best partner offers in one place.',
-        icon: Factory,
-        accent: {
-          icon: 'bg-orange-500/10 text-orange-500 ring-orange-500/30',
-          line: 'border-orange-500/50',
-        },
-        status: supplierStatus,
-        actions: [
+        id: 'operations',
+        title: 'Operations',
+        tiles: [
           {
-            label: 'Manage suppliers',
-            description: suppliers.length > 0
-              ? 'Review connections and add new partners.'
-              : 'Set up supplier integrations to unlock live data.',
+            id: 'suppliers',
+            title: 'Suppliers',
+            tagline:
+              suppliers.length > 0
+                ? 'Manage connections and discovery in one hub.'
+                : 'Connect the partners you buy from every week.',
             to: '/suppliers',
+            ctaLabel: suppliers.length > 0 ? 'Open supplier hub' : 'Add your first supplier',
+            icon: Factory,
+            accent: {
+              background: 'bg-gradient-to-br from-amber-500 to-amber-700',
+              bubble: 'bg-white/15 text-white',
+            },
+            status: supplierStatus,
           },
           {
-            label: 'Reconnect integrations',
-            description: needsAttention > 0
-              ? `${needsAttention} supplier${needsAttention === 1 ? '' : 's'} need a login refresh.`
-              : 'All integrations are currently healthy.',
-            to: '/suppliers',
-          },
-          {
-            label: 'See special offers',
-            description: 'Browse promotions from connected suppliers.',
-            to: '/discovery',
-          },
-        ],
-      },
-      {
-        id: 'pantry',
-        title: 'Pantry',
-        description: 'Spot low stock items before they run out and keep shelves organised.',
-        icon: ClipboardList,
-        accent: {
-          icon: 'bg-emerald-500/10 text-emerald-500 ring-emerald-500/30',
-          line: 'border-emerald-500/50',
-        },
-        status: pantryStatus,
-        actions: [
-          {
-            label: 'Check low stock items',
-            description: pantryItems.length > 0
-              ? `${pantryItems.length} item${pantryItems.length === 1 ? '' : 's'} need attention.`
-              : 'We’ll highlight reorder suggestions here.',
-            to: '/pantry',
-          },
-          {
-            label: 'Expiry watch',
-            description: 'Track best-before dates to avoid waste.',
-            to: '/pantry',
-          },
-          {
-            label: 'Flagged for reorder',
-            description: pantryItems.length > 0
-              ? 'Review the latest reorder signals now.'
-              : 'Signals will appear once orders are flowing.',
-            to: '/pantry',
+            id: 'deliveries',
+            title: 'Deliveries',
+            tagline: deliveriesSummary.nextDeliveryDate
+              ? `Next drop on ${format(deliveriesSummary.nextDeliveryDate, 'MMM d')}.`
+              : 'Plan the week ahead with shared delivery windows.',
+            to: '/delivery',
+            ctaLabel: 'Review schedule',
+            icon: Truck,
+            accent: {
+              background: 'bg-gradient-to-br from-purple-500 to-indigo-600',
+              bubble: 'bg-white/15 text-white',
+            },
+            status: deliveriesStatus,
           },
         ],
       },
       {
-        id: 'spend',
-        title: 'Spend & budgets',
-        description: 'Keep an eye on weekly spend and stay within your plan.',
-        icon: PiggyBank,
-        accent: {
-          icon: 'bg-sky-500/10 text-sky-500 ring-sky-500/30',
-          line: 'border-sky-500/50',
-        },
-        status: spendStatus,
-        actions: [
+        id: 'inventory',
+        title: 'Inventory',
+        tiles: [
           {
-            label: "This week's spend",
-            description: spendData && spendData.thisWeek > 0
-              ? `${formatCurrency(spendData.thisWeek)} so far with ${spendData.ordersThisWeek} order${spendData.ordersThisWeek === 1 ? '' : 's'}.`
-              : 'Place an order to start tracking budgets.',
+            id: 'pantry',
+            title: 'Pantry',
+            tagline:
+              pantryItems.length > 0
+                ? `${pantryItems.length} items ready for reorder.`
+                : 'Signals appear once we see order history.',
+            to: '/pantry',
+            ctaLabel: 'View pantry signals',
+            icon: ClipboardList,
+            accent: {
+              background: 'bg-gradient-to-br from-emerald-500 to-teal-600',
+              bubble: 'bg-white/15 text-white',
+            },
+            status: pantryStatus,
+          },
+        ],
+      },
+      {
+        id: 'finance',
+        title: 'Finance',
+        tiles: [
+          {
+            id: 'spend',
+            title: 'Spend & Budgets',
+            tagline:
+              spendData && spendData.thisWeek > 0
+                ? `${formatCurrency(spendData.thisWeek)} across ${spendData.ordersThisWeek} orders.`
+                : 'Track spend the moment your first order lands.',
             to: '/orders',
-          },
-          {
-            label: 'Compare vs last week',
-            description: spendData && spendData.lastWeek > 0
-              ? `${spendData.change >= 0 ? '+' : ''}${spendData.change.toFixed(1)}% change week over week.`
-              : 'We’ll compare your spend once data is available.',
-            to: '/orders',
-          },
-          {
-            label: 'Alerts for over-budget',
-            description: 'Set notification rules to stay on target.',
-            to: '/settings',
-          },
-        ],
-      },
-      {
-        id: 'deliveries',
-        title: 'Deliveries',
-        description: 'Know what is arriving and plan your receiving crew in advance.',
-        icon: Truck,
-        accent: {
-          icon: 'bg-purple-500/10 text-purple-500 ring-purple-500/30',
-          line: 'border-purple-500/50',
-        },
-        status: deliveriesStatus,
-        actions: [
-          {
-            label: "Today's deliveries",
-            description: deliveriesSummary.deliveriesDue > 0
-              ? 'Review today’s drop-offs and prepare receiving.'
-              : 'No deliveries expected today.',
-            to: '/delivery',
-          },
-          {
-            label: 'Next 7 days',
-            description: deliveriesSummary.nextDeliveryDate
-              ? `Next arrival on ${format(deliveriesSummary.nextDeliveryDate, 'EEEE, MMM d')}.`
-              : 'Set delivery windows to build the schedule.',
-            to: '/delivery',
-          },
-          {
-            label: 'Set delivery windows',
-            description: 'Adjust supplier cut-offs and drop slots.',
-            to: '/delivery',
+            ctaLabel: 'Open spend view',
+            icon: PiggyBank,
+            accent: {
+              background: 'bg-gradient-to-br from-sky-500 to-cyan-600',
+              bubble: 'bg-white/15 text-white',
+            },
+            status: spendStatus,
           },
         ],
       },
       {
         id: 'team',
-        title: 'Team activity',
-        description: 'Keep everyone aligned on who ordered what and manage permissions.',
-        icon: Users2,
-        accent: {
-          icon: 'bg-pink-500/10 text-pink-500 ring-pink-500/30',
-          line: 'border-pink-500/50',
-        },
-        status: teamStatus,
-        actions: [
+        title: 'Team',
+        tiles: [
           {
-            label: 'Who ordered what',
-            description: teamInsights.ordersThisWeek > 0
-              ? `${teamInsights.ordersThisWeek} order${teamInsights.ordersThisWeek === 1 ? '' : 's'} placed in the past week.`
-              : 'Orders will appear once your team starts buying.',
-            to: '/orders',
-          },
-          {
-            label: 'Roles & permissions',
-            description: 'Control access to ordering and budgets.',
+            id: 'team-activity',
+            title: 'Team Activity',
+            tagline:
+              teamInsights.ordersThisWeek > 0
+                ? `${teamInsights.ordersThisWeek} orders placed in the last 7 days.`
+                : teamInsights.lastActivity
+                  ? `Last activity ${format(teamInsights.lastActivity, 'MMM d, HH:mm')}.`
+                  : 'See who is ordering and manage roles.',
             to: '/settings',
-          },
-          {
-            label: 'Invite new member',
-            description: teamInsights.lastActivity
-              ? `Last activity recorded ${format(teamInsights.lastActivity, 'MMM d, HH:mm')}.`
-              : 'Bring your team in to collaborate.',
-            to: '/settings',
+            ctaLabel: teamInsights.uniqueUsers > 0 ? 'Manage team' : 'Invite teammates',
+            icon: Users2,
+            accent: {
+              background: 'bg-gradient-to-br from-pink-500 to-rose-600',
+              bubble: 'bg-white/15 text-white',
+            },
+            status: teamStatus,
           },
         ],
       },
       {
-        id: 'analytics',
-        title: 'Analytics & insights',
-        description: 'Spot price changes, category trends and savings opportunities.',
-        icon: LineChart,
-        accent: {
-          icon: 'bg-blue-500/10 text-blue-500 ring-blue-500/30',
-          line: 'border-blue-500/50',
-        },
-        status: analyticsStatus,
-        actions: [
+        id: 'intelligence',
+        title: 'Intelligence',
+        tiles: [
           {
-            label: 'Top purchased categories',
-            description: spendData?.categories?.length
-              ? `${spendData.categories[0].name} is leading your spend.`
-              : 'Insights unlock after your first orders.',
+            id: 'analytics',
+            title: 'Analytics',
+            tagline:
+              alerts.length > 0
+                ? `Spot ${alerts.length} new price movement${alerts.length === 1 ? '' : 's'}.`
+                : 'Dig into price trends and supplier performance.',
             to: '/price-history',
-          },
-          {
-            label: 'Price changes spotted',
-            description: alerts.length > 0
-              ? `Review ${alerts.length} recent price alert${alerts.length === 1 ? '' : 's'}.`
-              : 'We’ll notify you when suppliers adjust pricing.',
-            to: '/compare',
-          },
-          {
-            label: 'Trends this month',
-            description: 'Explore spend patterns and supplier performance.',
-            to: '/price-history',
+            ctaLabel: 'Launch analytics',
+            icon: LineChart,
+            accent: {
+              background: 'bg-gradient-to-br from-blue-500 to-slate-700',
+              bubble: 'bg-white/15 text-white',
+            },
+            status: analyticsStatus,
           },
         ],
       },
@@ -431,12 +370,21 @@ export default function DashboardOverview() {
   ])
 
   return (
-    <div className="space-y-8">
-      <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-        {categories.map((category) => (
-          <DashboardCategoryCard key={category.id} {...category} />
-        ))}
-      </div>
+    <div className="space-y-12">
+      {sections.map((section) => (
+        <section key={section.id} className="space-y-6">
+          <header>
+            <h2 className="text-sm font-semibold uppercase tracking-[0.35em] text-muted-foreground/70">
+              {section.title}
+            </h2>
+          </header>
+          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+            {section.tiles.map((tile) => (
+              <DashboardTileCard key={tile.id} tile={tile} />
+            ))}
+          </div>
+        </section>
+      ))}
     </div>
   )
 }
