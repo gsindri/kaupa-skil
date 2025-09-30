@@ -35,7 +35,10 @@ interface DashboardCategory {
   title: string
   description: string
   icon: React.ComponentType<React.SVGProps<SVGSVGElement>>
-  accentClass: string
+  accent: {
+    icon: string
+    line: string
+  }
   status: CategoryStatus
   actions: CategoryAction[]
 }
@@ -54,50 +57,52 @@ function DashboardCategoryCard({
   title,
   description,
   icon: Icon,
-  accentClass,
+  accent,
   status,
   actions,
 }: DashboardCategory) {
   return (
-    <Card
-      className={cn(
-        'group relative overflow-hidden border-none bg-gradient-to-br from-background/80 via-background/60 to-background/40 shadow-sm',
-        accentClass
-      )}
-    >
-      <div className="absolute inset-0 bg-gradient-to-br from-background/70 via-background/30 to-transparent" aria-hidden="true" />
-      <div className="relative flex h-full flex-col p-6">
-        <div className="flex items-start justify-between gap-4">
-          <div className="space-y-3">
-            <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-              <span className="grid h-9 w-9 place-items-center rounded-full bg-primary/10 text-primary">
-                <Icon className="h-5 w-5" aria-hidden="true" />
-              </span>
-              {title}
-            </div>
-            <p className="max-w-sm text-sm text-muted-foreground">{description}</p>
+    <Card className="group relative flex h-full flex-col gap-4 border-border/60 bg-background/70 p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md">
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <span
+            className={cn(
+              'grid h-12 w-12 place-items-center rounded-xl text-base font-semibold ring-1 ring-inset',
+              accent.icon
+            )}
+          >
+            <Icon className="h-5 w-5" aria-hidden="true" />
+          </span>
+          <div>
+            <h3 className="text-lg font-semibold text-foreground">{title}</h3>
+            <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground/80">Snapshot</p>
           </div>
-          <CategoryStatusBadge status={status} />
         </div>
+        <CategoryStatusBadge status={status} />
+      </div>
 
-        <div className="mt-6 flex flex-1 flex-col justify-end gap-2">
-          {actions.map((action) => (
+      <div className={cn('h-0.5 w-full rounded-full border-t-2 border-dashed', accent.line)} aria-hidden="true" />
+
+      <p className="text-sm text-muted-foreground">{description}</p>
+
+      <ul className="flex flex-1 flex-col gap-2 text-sm">
+        {actions.map((action) => (
+          <li key={action.label}>
             <Link
-              key={action.label}
               to={action.to}
-              className="group/action flex items-center justify-between gap-4 rounded-lg border border-transparent bg-background/80 px-4 py-3 text-left transition hover:border-primary/40 hover:bg-primary/5"
+              className="group/link flex items-start justify-between gap-3 rounded-md px-3 py-2 transition hover:bg-muted/40"
             >
               <div className="space-y-1">
-                <p className="text-sm font-medium text-foreground">{action.label}</p>
+                <p className="font-medium text-foreground group-hover/link:text-primary">{action.label}</p>
                 {action.description ? (
                   <p className="text-xs text-muted-foreground">{action.description}</p>
                 ) : null}
               </div>
-              <ArrowRight className="h-4 w-4 flex-shrink-0 text-muted-foreground transition group-hover/action:translate-x-1 group-hover/action:text-primary" />
+              <ArrowRight className="mt-1 h-4 w-4 flex-shrink-0 text-muted-foreground transition group-hover/link:translate-x-1 group-hover/link:text-primary" />
             </Link>
-          ))}
-        </div>
-      </div>
+          </li>
+        ))}
+      </ul>
     </Card>
   )
 }
@@ -220,7 +225,10 @@ export default function DashboardOverview() {
         title: 'Suppliers',
         description: 'Keep integrations healthy and surface the best partner offers in one place.',
         icon: Factory,
-        accentClass: 'from-orange-500/10 via-orange-500/5 to-background/30',
+        accent: {
+          icon: 'bg-orange-500/10 text-orange-500 ring-orange-500/30',
+          line: 'border-orange-500/50',
+        },
         status: supplierStatus,
         actions: [
           {
@@ -249,7 +257,10 @@ export default function DashboardOverview() {
         title: 'Pantry',
         description: 'Spot low stock items before they run out and keep shelves organised.',
         icon: ClipboardList,
-        accentClass: 'from-emerald-500/10 via-emerald-500/5 to-background/30',
+        accent: {
+          icon: 'bg-emerald-500/10 text-emerald-500 ring-emerald-500/30',
+          line: 'border-emerald-500/50',
+        },
         status: pantryStatus,
         actions: [
           {
@@ -278,7 +289,10 @@ export default function DashboardOverview() {
         title: 'Spend & budgets',
         description: 'Keep an eye on weekly spend and stay within your plan.',
         icon: PiggyBank,
-        accentClass: 'from-sky-500/10 via-sky-500/5 to-background/30',
+        accent: {
+          icon: 'bg-sky-500/10 text-sky-500 ring-sky-500/30',
+          line: 'border-sky-500/50',
+        },
         status: spendStatus,
         actions: [
           {
@@ -307,7 +321,10 @@ export default function DashboardOverview() {
         title: 'Deliveries',
         description: 'Know what is arriving and plan your receiving crew in advance.',
         icon: Truck,
-        accentClass: 'from-purple-500/10 via-purple-500/5 to-background/30',
+        accent: {
+          icon: 'bg-purple-500/10 text-purple-500 ring-purple-500/30',
+          line: 'border-purple-500/50',
+        },
         status: deliveriesStatus,
         actions: [
           {
@@ -336,7 +353,10 @@ export default function DashboardOverview() {
         title: 'Team activity',
         description: 'Keep everyone aligned on who ordered what and manage permissions.',
         icon: Users2,
-        accentClass: 'from-pink-500/10 via-pink-500/5 to-background/30',
+        accent: {
+          icon: 'bg-pink-500/10 text-pink-500 ring-pink-500/30',
+          line: 'border-pink-500/50',
+        },
         status: teamStatus,
         actions: [
           {
@@ -365,7 +385,10 @@ export default function DashboardOverview() {
         title: 'Analytics & insights',
         description: 'Spot price changes, category trends and savings opportunities.',
         icon: LineChart,
-        accentClass: 'from-blue-500/10 via-blue-500/5 to-background/30',
+        accent: {
+          icon: 'bg-blue-500/10 text-blue-500 ring-blue-500/30',
+          line: 'border-blue-500/50',
+        },
         status: analyticsStatus,
         actions: [
           {
@@ -409,7 +432,7 @@ export default function DashboardOverview() {
 
   return (
     <div className="space-y-8">
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
         {categories.map((category) => (
           <DashboardCategoryCard key={category.id} {...category} />
         ))}
