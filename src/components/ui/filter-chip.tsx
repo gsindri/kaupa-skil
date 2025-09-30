@@ -5,7 +5,7 @@ import { X } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const filterChipVariants = cva(
-  "inline-flex h-[var(--ctrl-h,40px)] items-center justify-center whitespace-nowrap rounded-[var(--ctrl-r,12px)] px-3 text-sm font-semibold text-[color:var(--ink-hi)] ring-1 ring-inset ring-[color:var(--ring-idle)] bg-[color:var(--chip-bg)] transition duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-4 focus-visible:ring-offset-[color:var(--toolbar-bg)] cursor-pointer select-none hover:bg-[color:var(--chip-bg-hover)] hover:text-[color:var(--ink-hi)] hover:ring-[color:var(--ring-hover)] motion-reduce:transition-none data-[selected=true]:bg-[color:var(--accent-fill)] data-[selected=true]:text-[color:var(--accent-ink)] data-[selected=true]:ring-[color:var(--accent-fill)]/55 data-[selected=true]:hover:bg-[color:var(--accent-fill)]/90 data-[selected=true]:focus-visible:ring-offset-[color:var(--accent-fill)]"
+  "inline-flex h-[var(--ctrl-h,36px)] items-center justify-center whitespace-nowrap rounded-[var(--ctrl-r,12px)] border border-[color:var(--ring-idle)]/60 bg-white/70 px-3 text-sm font-medium text-[color:var(--ink-dim)] transition duration-150 ease-out backdrop-blur-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-3 focus-visible:ring-offset-[color:var(--toolbar-bg)] cursor-pointer select-none hover:bg-white/85 hover:text-[color:var(--ink)] hover:border-[color:var(--ring-hover)] motion-reduce:transition-none data-[selected=true]:border-[color:var(--accent-fill)]/60 data-[selected=true]:bg-[color:var(--accent-fill)]/15 data-[selected=true]:text-[color:var(--accent-ink)] data-[selected=true]:hover:bg-[color:var(--accent-fill)]/25"
 )
 
 export interface FilterChipProps
@@ -69,7 +69,7 @@ const FilterChip = React.forwardRef<HTMLButtonElement, FilterChipProps>(
             tabIndex={0}
             aria-label={removeLabel}
             data-selected={selected}
-            className="ml-1 rounded-full p-1 text-[color:var(--ink-hi)]/80 transition-colors hover:bg-[color:var(--chip-bg-hover)] hover:text-[color:var(--ink-hi)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent data-[selected=true]:text-[color:var(--accent-ink)]/80 data-[selected=true]:hover:text-[color:var(--accent-ink)] data-[selected=true]:focus-visible:ring-offset-[color:var(--accent-fill)]"
+            className="ml-1 rounded-full p-1 text-[color:var(--ink-dim)]/80 transition-colors hover:bg-white/70 hover:text-[color:var(--ink)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent data-[selected=true]:text-[color:var(--accent-ink)]/80 data-[selected=true]:hover:text-[color:var(--accent-ink)] data-[selected=true]:focus-visible:ring-offset-[color:var(--accent-fill)]"
             onClick={handleRemove as any}
             onKeyDown={handleRemoveKeyDown}
           >
