@@ -11,7 +11,7 @@ import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover
 import { useCart } from "@/contexts/useBasket";
 import type { CartItem } from "@/lib/types";
 import { CatalogQuantityStepper } from "./CatalogQuantityStepper";
-import { BellRing, HelpCircle, Loader2, Lock, Plus } from "lucide-react";
+import { BellRing, Loader2, Lock, Plus } from "lucide-react";
 
 type SupplierEntry = {
   supplier_id?: string | null;
@@ -46,6 +46,7 @@ export const ProductCard = memo(function ProductCard({
     | "OUT_OF_STOCK"
     | "UNKNOWN";
   const img = resolveImage(product.sample_image_url, availability);
+
   const normalizeString = (value: unknown): string | null => {
     if (typeof value !== "string") return null;
     const trimmed = value.trim();
@@ -160,11 +161,6 @@ export const ProductCard = memo(function ProductCard({
     ? Math.max(...supplierCountCandidates)
     : 0;
 
-  const supplierLabel =
-    supplierCount > 0
-      ? `${supplierCount} supplier${supplierCount === 1 ? "" : "s"}`
-      : "0 suppliers";
-
   const primarySupplierName =
     (supplierDisplayNames[0] && supplierDisplayNames[0].length
       ? supplierDisplayNames[0]
@@ -177,34 +173,41 @@ export const ProductCard = memo(function ProductCard({
   const defaultSupplierName =
     (supplierDisplayNames[0] && supplierDisplayNames[0].length
       ? supplierDisplayNames[0]
-      : supplierIds[0]) ?? supplierLabel;
+      : supplierIds[0]) ?? primarySupplierName;
   const orderedSuppliers = supplierRecords.map(record => ({
     id: record.id,
     name: record.name && record.name.length ? record.name : record.id,
   }));
-  const overflowSupplierCount = Math.max(0, supplierCount - 1);
 
-  const metaLine = useMemo(() => {
-    const parts: string[] = [];
-    if (packInfo) parts.push(packInfo);
-    if (brand) parts.push(brand);
-    return parts.join(" • ");
+  const secondaryInfo = useMemo(() => {
+    if (packInfo) return packInfo;
+    if (brand) return brand;
+    return "";
   }, [packInfo, brand]);
 
-  const bestSupplierLabel = useMemo(() => {
-    if (hasMultipleSuppliers) {
-      return primarySupplierName
-        ? `Best from ${primarySupplierName}`
-        : `Best option · ${supplierLabel}`;
-    }
-    return primarySupplierName || supplierLabel;
-  }, [hasMultipleSuppliers, primarySupplierName, supplierLabel]);
+  const supplierSummary = useMemo(() => {
+    if (supplierCount === 0) return "No suppliers yet";
+    if (supplierCount === 1) return primarySupplierName || "Supplier";
+    return `${supplierCount} suppliers`;
+  }, [primarySupplierName, supplierCount]);
 
-  const supportingLine = useMemo(() => {
-    if (metaLine) return metaLine;
-    if (supplierCount > 0) return supplierLabel;
-    return "";
-  }, [metaLine, supplierCount, supplierLabel]);
+  const availabilityLabel = useMemo(() => {
+    return (
+      {
+        IN_STOCK: "In stock",
+        LOW_STOCK: "Low stock",
+        OUT_OF_STOCK: "Out of stock",
+        UNKNOWN: "Availability unknown",
+      } as const
+    )[availability];
+  }, [availability]);
+
+  const availabilitySummary = useMemo(() => {
+    if (product.active_supplier_count === 0 && supplierCount > 0) {
+      return "Not seen recently";
+    }
+    return availabilityLabel;
+  }, [availabilityLabel, product.active_supplier_count, supplierCount]);
 
   const { cartItem, cartQuantity } = useMemo(() => {
     let total = 0;
@@ -272,15 +275,17 @@ export const ProductCard = memo(function ProductCard({
     : null;
 
   const renderPrimaryAction = () => {
+    const buttonClass = "catalog-card__action h-10 w-full justify-center gap-2";
     if (isUnavailable && !isInCart) {
       return (
         <Button
           type="button"
-          variant="ghost"
+          variant="outline"
           size="default"
-          className="catalog-card__cta catalog-card__cta--muted h-9"
+          className={buttonClass}
           disabled
           aria-disabled="true"
+          title="Out of stock"
         >
           <BellRing className="h-4 w-4" aria-hidden="true" />
           Notify me
@@ -297,12 +302,7 @@ export const ProductCard = memo(function ProductCard({
       );
       if (detailLink) {
         return (
-          <Button
-            asChild
-            variant="default"
-            size="default"
-            className="catalog-card__cta catalog-card__cta--primary h-9"
-          >
+          <Button asChild variant="outline" size="default" className={buttonClass}>
             <a {...detailLink} aria-label={`See price for ${product.name}`}>
               {content}
             </a>
@@ -312,9 +312,9 @@ export const ProductCard = memo(function ProductCard({
       return (
         <Button
           type="button"
-          variant="default"
+          variant="outline"
           size="default"
-          className="catalog-card__cta catalog-card__cta--primary h-9"
+          className={buttonClass}
           disabled
           aria-disabled="true"
         >
@@ -325,13 +325,15 @@ export const ProductCard = memo(function ProductCard({
 
     if (isInCart && cartItem) {
       return (
-        <CatalogQuantityStepper
-          quantity={cartQuantity}
-          onChange={qty => updateQuantity(cartItem.supplierItemId, qty)}
-          onRemove={() => removeItem(cartItem.supplierItemId)}
-          itemLabel={product.name}
-          canIncrease={!isUnavailable}
-        />
+        <div className="w-full">
+          <CatalogQuantityStepper
+            quantity={cartQuantity}
+            onChange={qty => updateQuantity(cartItem.supplierItemId, qty)}
+            onRemove={() => removeItem(cartItem.supplierItemId)}
+            itemLabel={product.name}
+            canIncrease={!isUnavailable}
+          />
+        </div>
       );
     }
 
@@ -340,15 +342,20 @@ export const ProductCard = memo(function ProductCard({
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
             <Button
-              size="icon"
-              className="catalog-card__cta h-9 w-9"
+              variant="outline"
+              size="default"
+              className={buttonClass}
               disabled={isAdding || isUnavailable}
               aria-label={`Choose supplier for ${product.name}`}
+              title={isUnavailable ? "Out of stock" : undefined}
             >
               {isAdding ? (
-                <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" />
+                <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
               ) : (
-                <HelpCircle className="h-5 w-5" aria-hidden="true" />
+                <>
+                  <Plus className="h-4 w-4" aria-hidden="true" />
+                  Select supplier
+                </>
               )}
             </Button>
           </PopoverTrigger>
@@ -373,16 +380,21 @@ export const ProductCard = memo(function ProductCard({
 
     return (
       <Button
-        size="icon"
-        className="catalog-card__cta h-9 w-9"
+        variant="outline"
+        size="default"
+        className={buttonClass}
         onClick={() => handleAdd(defaultSupplierId, defaultSupplierName)}
         disabled={isAdding || isUnavailable}
         aria-label={`Add ${product.name}`}
+        title={isUnavailable ? "Out of stock" : undefined}
       >
         {isAdding ? (
-          <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" />
+          <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
         ) : (
-          <Plus className="h-5 w-5" aria-hidden="true" />
+          <>
+            <Plus className="h-4 w-4" aria-hidden="true" />
+            Add
+          </>
         )}
       </Button>
     );
@@ -393,103 +405,88 @@ export const ProductCard = memo(function ProductCard({
       data-grid-card
       data-in-cart={isInCart ? "true" : undefined}
       className={cn(
-        "catalog-card group isolate flex h-[400px] w-full flex-col overflow-hidden border-0 bg-card shadow-sm",
-        "rounded-2xl transition-all duration-200 ease-out hover:shadow-md hover:scale-[1.02]",
-        "focus-within:shadow-md focus-within:scale-[1.02]",
-        "motion-reduce:transition-none motion-reduce:hover:scale-100 motion-reduce:focus-within:scale-100",
+        "catalog-card group isolate flex w-full flex-col overflow-hidden border bg-card",
+        "rounded-2xl transition-shadow duration-200 ease-out hover:shadow-md focus-within:shadow-md",
+        "motion-reduce:transition-none",
         isInCart && "ring-2 ring-primary/20",
         className,
       )}
     >
       <CardContent className="catalog-card__content flex flex-1 flex-col p-0">
-        <div className="catalog-card__media relative px-5 pt-5">
-          <div className="catalog-card__surface aspect-[4/3] w-full bg-muted/30 rounded-xl overflow-hidden">
-            <div className="catalog-card__badge-layer" data-badge-slot>
-              {isInCart && (
-                <span className="absolute top-2 right-2 bg-primary text-primary-foreground rounded-full h-6 w-6 flex items-center justify-center text-xs font-medium z-10" aria-hidden="true">
-                  {cartQuantity}
-                </span>
-              )}
-            </div>
-            <div className="catalog-card__image-frame h-full w-full bg-gradient-to-b from-background/50 to-muted/50">
+        <div className="catalog-card__media relative px-4 pt-4">
+          <div className="catalog-card__surface">
+            {isInCart && (
+              <span className="catalog-card__count-chip" aria-hidden="true">
+                {cartQuantity}
+              </span>
+            )}
+            <div className="catalog-card__image-frame">
               <img
                 src={img}
                 alt={product.name}
                 loading="lazy"
                 decoding="async"
                 fetchPriority="low"
-                className="catalog-card__image h-full w-full object-cover transition-transform duration-200 ease-out group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+                className="catalog-card__image"
               />
             </div>
           </div>
         </div>
-        <div className="catalog-card__details flex min-h-[4.25rem] flex-col gap-1.5 px-4 pb-1 pt-4">
+        <div className="catalog-card__details flex flex-col gap-2 px-4 pb-2 pt-3">
           {detailLink ? (
-            <a
-              {...detailLink}
-              title={product.name}
-              className="catalog-card__title mb-1 line-clamp-2 tracking-tight"
-            >
+            <a {...detailLink} title={product.name} className="catalog-card__title line-clamp-2">
               {product.name}
             </a>
           ) : (
-            <div
-              title={product.name}
-              className="catalog-card__title mb-1 line-clamp-2 tracking-tight"
-            >
+            <div title={product.name} className="catalog-card__title line-clamp-2">
               {product.name}
             </div>
           )}
-          {supportingLine ? (
-            <div className="catalog-card__meta line-clamp-1" title={supportingLine}>
-              {supportingLine}
+          {secondaryInfo ? (
+            <div className="catalog-card__meta truncate" title={secondaryInfo}>
+              {secondaryInfo}
+            </div>
+          ) : null}
+          <AvailabilityBadge
+            status={availability}
+            updatedAt={product.availability_updated_at}
+            className="catalog-card__availability"
+          />
+          {priceLabel ? (
+            <div className="catalog-card__price" aria-live="polite">
+              {priceLabel}
             </div>
           ) : null}
         </div>
       </CardContent>
-      <CardFooter className="catalog-card__footer mt-auto flex w-full flex-wrap items-center gap-x-4 gap-y-3 px-4 pb-4 pt-5">
-        <div className="catalog-card__footer-meta flex min-w-0 flex-1 flex-nowrap items-center gap-3 overflow-hidden">
-          <AvailabilityBadge
-            status={availability}
-            updatedAt={product.availability_updated_at}
-            className="flex-shrink-0"
-          />
-          {supplierCount > 0 && (
-            <span className="catalog-chip flex min-w-0 items-center gap-2 bg-muted/50 rounded-full px-2 py-1">
-              <SupplierLogo
-                name={primarySupplierName || supplierLabel}
-                logoUrl={primarySupplierLogo}
-                className="!h-5 flex-shrink-0 !rounded-full bg-background shadow-sm"
-              />
-              <span
-                className="catalog-card__supplier-label truncate text-xs text-muted-foreground"
-                title={bestSupplierLabel}
-              >
-                {bestSupplierLabel}
+      <CardFooter className="catalog-card__footer mt-auto flex w-full flex-col gap-3 px-4 pb-4 pt-4">
+        <div className="catalog-card__footer-meta flex w-full items-center justify-between gap-3 text-xs text-muted-foreground">
+          <div className="flex min-w-0 items-center gap-2">
+            {supplierCount === 1 ? (
+              <>
+                <SupplierLogo
+                  name={primarySupplierName || supplierSummary}
+                  logoUrl={primarySupplierLogo}
+                  className="h-6 w-6 flex-shrink-0 rounded-full border border-border/60 bg-white"
+                />
+                <span className="truncate" title={primarySupplierName}>
+                  {primarySupplierName || supplierSummary}
+                </span>
+              </>
+            ) : (
+              <span className="truncate" title={supplierSummary}>
+                {supplierSummary}
               </span>
-            </span>
-          )}
-          {overflowSupplierCount > 0 && (
-            <span className="catalog-chip bg-muted/50 text-muted-foreground rounded-full px-2 py-1 text-xs flex-shrink-0">
-              +{overflowSupplierCount}
-            </span>
-          )}
-          {product.active_supplier_count === 0 && (
-            <span className="catalog-chip bg-muted/50 text-muted-foreground rounded-full px-2 py-1 text-xs flex-shrink-0">
-              Not seen recently
-            </span>
-          )}
+            )}
+          </div>
+          <span className="whitespace-nowrap" title={availabilitySummary}>
+            {availabilitySummary}
+          </span>
         </div>
-        <div className="catalog-card__footer-actions flex flex-shrink-0 items-center gap-3 md:ml-auto md:pl-4">
-          {priceLabel && (
-            <div className="catalog-card__price text-sm font-medium tabular-nums" aria-live="polite">
-              {priceLabel}
-            </div>
-          )}
+        <div className="catalog-card__footer-actions flex w-full justify-end">
           {renderPrimaryAction()}
         </div>
       </CardFooter>
     </Card>
   );
 });
-
