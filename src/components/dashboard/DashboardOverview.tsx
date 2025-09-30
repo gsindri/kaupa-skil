@@ -4,7 +4,6 @@ import { ArrowRight, ClipboardList, Factory, LineChart, PiggyBank, Truck, Users2
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
-import { DashboardHero } from './DashboardHero'
 import { useSupplierConnections } from '@/hooks/useSupplierConnections'
 import { usePantrySignals } from '@/hooks/usePantrySignals'
 import { useSpendSnapshot } from '@/hooks/useSpendSnapshot'
@@ -410,7 +409,6 @@ export default function DashboardOverview() {
 
   return (
     <div className="space-y-8">
-      <DashboardHero />
       <div className="grid gap-6 lg:grid-cols-2">
         {categories.map((category) => (
           <DashboardCategoryCard key={category.id} {...category} />
