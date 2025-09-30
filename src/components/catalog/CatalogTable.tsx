@@ -437,20 +437,20 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
     <div className="overflow-hidden rounded-xl border border-slate-200/70 bg-white text-slate-900 shadow-sm dark:border-white/10 dark:bg-[rgba(13,19,32,0.86)] dark:text-slate-100">
       <Table className="min-w-full text-[13px] text-slate-600 dark:text-slate-300">
         <TableHeader className="sticky top-0 z-10 bg-slate-50/70 backdrop-blur-sm dark:bg-white/5">
-          <TableRow className="border-b border-slate-200/70 bg-transparent dark:border-white/10">
-            <TableHead className="px-3 py-3 text-left align-middle">
+          <TableRow className="border-b border-slate-200/50 bg-transparent dark:border-white/10">
+            <TableHead className="px-3 py-2.5 text-left align-middle">
               {renderSortButton('name', 'Product', 'left', true)}
             </TableHead>
-            <TableHead className="w-32 px-3 py-3 text-left align-middle">
+            <TableHead className="w-32 px-3 py-2.5 text-left align-middle">
               {renderSortButton('availability', 'Availability')}
             </TableHead>
-            <TableHead className="w-52 px-3 py-3 text-left align-middle">
+            <TableHead className="w-52 px-3 py-2.5 text-left align-middle">
               {renderSortButton('supplier', 'Supplier')}
             </TableHead>
-            <TableHead className="w-32 px-3 py-3 text-right align-middle">
+            <TableHead className="w-32 px-3 py-2.5 text-right align-middle">
               {renderSortButton('price', 'Price', 'right')}
             </TableHead>
-            <TableHead className="w-36 px-3 py-3 text-right align-middle text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+            <TableHead className="w-36 px-3 py-2.5 text-right align-middle text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
               Actions
             </TableHead>
           </TableRow>
@@ -484,9 +484,9 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
             return (
               <TableRow
                 key={id}
-                className="group border-b border-slate-200/60 bg-white transition-colors hover:bg-slate-50 focus-visible:bg-slate-100 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10 dark:focus-visible:bg-white/15"
+                className="group border-b border-slate-200/40 odd:bg-white even:bg-slate-50/50 transition-colors hover:bg-slate-100 focus-visible:bg-slate-100 dark:border-white/10 dark:odd:bg-white/5 dark:even:bg-white/10 dark:hover:bg-white/12 dark:focus-visible:bg-white/12"
               >
-                <TableCell className="px-3 py-2.5 align-middle">
+                <TableCell className="px-3 py-1.5 align-middle">
                   <div className="flex items-center gap-2.5">
                     <ProductThumb
                       className="h-10 w-10 flex-none overflow-hidden rounded-lg border border-slate-200/80 bg-white object-cover dark:border-white/15 dark:bg-white/10"
@@ -501,16 +501,16 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
                       <a
                         href={`#${p.catalog_id}`}
                         aria-label={`View details for ${p.name}`}
-                        className="truncate text-sm font-semibold text-slate-900 transition-colors hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 dark:text-white dark:hover:text-slate-200"
+                        className="truncate text-[15px] font-semibold text-slate-900 transition-colors hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 dark:text-white dark:hover:text-slate-200"
                       >
                         {p.name}
                       </a>
                       {(p.brand || p.canonical_pack) && (
-                        <div className="mt-0.5 flex flex-wrap items-center gap-x-1 gap-y-0.5 text-[11px] text-muted-foreground">
-                          {p.brand && <span className="font-medium text-muted-foreground/90">{p.brand}</span>}
+                        <div className="mt-0.5 flex flex-wrap items-center gap-x-1 gap-y-0.5 text-xs text-muted-foreground/80">
+                          {p.brand && <span className="font-medium text-muted-foreground">{p.brand}</span>}
                           {p.brand && p.canonical_pack && <span aria-hidden>·</span>}
                           {p.canonical_pack && (
-                            <span className="text-muted-foreground">
+                            <span className="text-muted-foreground/80">
                               {p.canonical_pack}
                             </span>
                           )}
@@ -519,7 +519,7 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
                     </div>
                   </div>
                 </TableCell>
-                <TableCell className="w-32 px-3 py-2.5 align-middle text-xs text-muted-foreground">
+                <TableCell className="w-32 px-3 py-1.5 align-middle text-xs text-muted-foreground">
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <AvailabilityBadge
@@ -537,7 +537,7 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
                     </TooltipContent>
                   </Tooltip>
                 </TableCell>
-                <TableCell className="w-52 px-3 py-2.5 align-middle text-xs text-muted-foreground">
+                <TableCell className="w-52 px-3 py-1.5 align-middle text-xs text-muted-foreground/80">
                   {suppliers.length ? (
                     <div className="flex items-center gap-2.5">
                       <SupplierLogo
@@ -546,14 +546,14 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
                         className="!h-6 flex-none !rounded-md border border-slate-200/60 bg-white p-1 shadow-sm dark:border-white/10 dark:bg-white/10"
                       />
                       <div className="min-w-0 space-y-0.5 text-left">
-                        <div className="flex items-center gap-1 truncate text-[13px] font-medium text-slate-700 dark:text-slate-200">
-                          <span className="truncate text-slate-700 dark:text-slate-200">{primarySupplierName}</span>
+                        <div className="flex items-center gap-1 truncate text-[13px] font-medium text-slate-600 dark:text-slate-200">
+                          <span className="truncate text-slate-600 dark:text-slate-200">{primarySupplierName}</span>
                           {primarySupplier && !primarySupplier.is_connected && (
                             <Lock className="h-3.5 w-3.5 text-muted-foreground" />
                           )}
                         </div>
                         {remainingSupplierCount > 0 && (
-                          <div className="text-[11px] text-muted-foreground">
+                          <div className="text-[11px] text-muted-foreground/80">
                             +{remainingSupplierCount} more
                           </div>
                         )}
@@ -563,10 +563,10 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
                     <span className="text-xs text-muted-foreground">No supplier data</span>
                   )}
                 </TableCell>
-                <TableCell className="w-32 px-3 py-2.5 text-right align-middle">
+                <TableCell className="w-32 px-3 py-1.5 text-right align-middle">
                   <PriceCell product={p} />
                 </TableCell>
-                <TableCell className="w-36 px-3 py-2.5 text-right align-middle">
+                <TableCell className="w-36 px-3 py-1.5 text-right align-middle">
                   <AddToCartButton product={p} />
                 </TableCell>
               </TableRow>
@@ -706,7 +706,8 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
   }
 
   const slotClasses = cn('flex justify-end min-w-[8.5rem]', className)
-  const actionButtonClasses = 'h-10 w-full justify-center rounded-full px-4 text-sm font-semibold shadow-[0_14px_28px_-18px_rgba(15,23,42,0.35)] transition-shadow hover:shadow-[0_18px_36px_-16px_rgba(15,23,42,0.4)] dark:shadow-[0_14px_28px_-18px_rgba(3,10,26,0.55)] dark:hover:shadow-[0_20px_38px_-16px_rgba(3,10,26,0.6)]'
+  const actionButtonClasses =
+    'h-10 w-full justify-center rounded-full border border-[color:var(--brand-accent)] bg-white px-4 text-sm font-semibold text-[color:var(--brand-accent)] shadow-none transition-colors duration-150 ease-out hover:bg-[color:var(--brand-accent)] hover:text-[color:var(--brand-accent-fg)] focus-visible:ring-2 focus-visible:ring-[color:var(--brand-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-white active:bg-[color:var(--brand-accent)]/90 active:text-[color:var(--brand-accent-fg)] dark:bg-transparent dark:text-[color:var(--brand-accent)] dark:hover:bg-[color:var(--brand-accent)] dark:hover:text-[color:var(--brand-accent-fg)] dark:active:bg-[color:var(--brand-accent)]/85 dark:active:text-[color:var(--brand-accent-fg)] dark:focus-visible:ring-offset-slate-950'
 
   if (existingItem)
     return (
@@ -734,12 +735,13 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
             <span className="flex w-full cursor-not-allowed">
               <Button
                 size="default"
+                variant="outline"
                 disabled
                 aria-disabled="true"
                 aria-label={`Add ${product.name} to cart`}
                 className={cn(
                   actionButtonClasses,
-                  'pointer-events-none bg-slate-200 text-slate-500 dark:bg-white/10 dark:text-slate-400',
+                  'pointer-events-none border-slate-200 text-slate-400 hover:bg-white dark:border-white/20 dark:text-slate-400 dark:hover:bg-transparent',
                 )}
               >
                 Add
@@ -758,6 +760,7 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
       <div className={slotClasses}>
         <Button
           size="default"
+          variant="outline"
           className={actionButtonClasses}
           onClick={() => {
             addItem(buildCartItem(s, 0))
@@ -778,6 +781,7 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
         <PopoverTrigger asChild>
           <Button
             size="default"
+            variant="outline"
             className={actionButtonClasses}
             aria-label={`Add ${product.name} to cart`}
           >
@@ -857,7 +861,7 @@ function PriceCell({
   const isLocked = product.prices_locked ?? product.price_locked ?? false
 
   const fallbackPriceNode = (
-    <span className="tabular-nums text-sm text-muted-foreground">
+    <span className="tabular-nums text-sm text-muted-foreground/70">
       <span aria-hidden="true">—</span>
       <span className="sr-only">Price unavailable</span>
     </span>
@@ -868,7 +872,7 @@ function PriceCell({
 
   if (isLocked) {
     priceNode = (
-      <div className="flex items-center justify-end gap-2 text-sm text-muted-foreground">
+      <div className="flex items-center justify-end gap-2 text-sm text-muted-foreground/80">
         <Lock className="h-4 w-4" />
         <span aria-hidden="true" className="tabular-nums">
           —

@@ -1169,8 +1169,8 @@ function FiltersBar({
       )}
 
       <div className={containerClass}>
-        <div className="flex h-[var(--toolbar-h,56px)] flex-wrap items-center gap-3">
-          <div className="flex min-w-0 flex-1 items-center gap-3">
+        <div className="flex flex-col gap-2 py-3">
+          <div className="flex flex-wrap items-center gap-3">
             <div className="relative min-w-0 flex-1">
               <label className="sr-only" htmlFor="catalog-search">
                 Search products
@@ -1188,7 +1188,7 @@ function FiltersBar({
                     onKeyDown={handleSearchKeyDown}
                     onFocus={() => onLockChange?.(true)}
                     onBlur={() => onLockChange?.(false)}
-                    className="h-[var(--ctrl-h,40px)] w-full rounded-[var(--ctrl-r,12px)] bg-white pl-12 pr-12 text-sm font-medium text-slate-900 placeholder:text-slate-500 ring-1 ring-inset ring-[color:var(--ring-idle)] shadow-[0_10px_32px_rgba(7,18,30,0.28)] transition duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent hover:ring-[color:var(--ring-hover)] motion-reduce:transition-none"
+                    className="h-12 w-full rounded-[var(--ctrl-r,14px)] bg-white pl-12 pr-12 text-base font-semibold text-slate-900 placeholder:text-slate-500 ring-1 ring-inset ring-[color:var(--ring-idle)] shadow-[0_12px_38px_rgba(7,18,30,0.26)] transition duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent hover:ring-[color:var(--ring-hover)] motion-reduce:transition-none"
                   />
                 </TooltipTrigger>
                 <TooltipContent sideOffset={8}>Search (Ctrl/⌘+K)</TooltipContent>
@@ -1207,60 +1207,59 @@ function FiltersBar({
                 </button>
               )}
             </div>
-            {formattedTotal && (
-              <span className="flex-none text-xs font-medium leading-none text-[color:var(--ink-dim)] tabular-nums">
-                {formattedTotal} results
-              </span>
-            )}
+            <div className="flex flex-shrink-0 items-center gap-3 sm:pl-3">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    onClick={toggleFilters}
+                    aria-pressed={showFilters}
+                    aria-expanded={showFilters}
+                    aria-controls="catalog-filters-panel"
+                    aria-keyshortcuts="f"
+                    className={cn(
+                      'inline-flex h-[var(--ctrl-h,40px)] items-center gap-3 rounded-[var(--ctrl-r,12px)] bg-[color:var(--chip-bg)] px-3 text-sm font-semibold text-[color:var(--ink-hi)] ring-1 ring-inset ring-[color:var(--ring-idle)] backdrop-blur-xl transition duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-4 focus-visible:ring-offset-[color:var(--toolbar-bg)] hover:bg-[color:var(--chip-bg-hover)] hover:text-[color:var(--ink-hi)] hover:ring-[color:var(--ring-hover)] motion-reduce:transition-none',
+                      showFilters && 'bg-[color:var(--seg-active-bg)] text-[color:var(--ink-hi)] ring-[color:var(--ring-hover)]',
+                    )}
+                  >
+                    <FunnelSimple
+                      size={24}
+                      weight="fill"
+                      className={cn('transition-opacity text-[color:var(--ink-hi)]', !showFilters && 'opacity-80')}
+                    />
+                    <span className="hidden sm:inline">
+                      {activeCount ? `Filters (${activeCount})` : 'Filters'}
+                    </span>
+                    <span className="sm:hidden">Filters</span>
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent sideOffset={8}>Filters (F)</TooltipContent>
+              </Tooltip>
+
+              <SortDropdown
+                value={sortOrder}
+                onChange={setSortOrder}
+                onOpenChange={onLockChange}
+                className="whitespace-nowrap"
+              />
+
+              <ViewToggle
+                value={view}
+                onChange={v => {
+                  rememberScroll(`catalog:${view}`)
+                  setView(v)
+                }}
+              />
+            </div>
           </div>
-
-          <div className="flex flex-shrink-0 items-center gap-3 sm:pl-3">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  type="button"
-                  onClick={toggleFilters}
-                  aria-pressed={showFilters}
-                  aria-expanded={showFilters}
-                  aria-controls="catalog-filters-panel"
-                  aria-keyshortcuts="f"
-                  className={cn(
-                    'inline-flex h-[var(--ctrl-h,40px)] items-center gap-3 rounded-[var(--ctrl-r,12px)] bg-[color:var(--chip-bg)] px-3 text-sm font-semibold text-[color:var(--ink-hi)] ring-1 ring-inset ring-[color:var(--ring-idle)] backdrop-blur-xl transition duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-4 focus-visible:ring-offset-[color:var(--toolbar-bg)] hover:bg-[color:var(--chip-bg-hover)] hover:text-[color:var(--ink-hi)] hover:ring-[color:var(--ring-hover)] motion-reduce:transition-none',
-                    showFilters && 'bg-[color:var(--seg-active-bg)] text-[color:var(--ink-hi)] ring-[color:var(--ring-hover)]',
-                  )}
-                >
-                  <FunnelSimple
-                    size={24}
-                    weight="fill"
-                    className={cn('transition-opacity text-[color:var(--ink-hi)]', !showFilters && 'opacity-80')}
-                  />
-                  <span className="hidden sm:inline">
-                    {activeCount ? `Filters (${activeCount})` : 'Filters'}
-                  </span>
-                  <span className="sm:hidden">Filters</span>
-                </button>
-              </TooltipTrigger>
-              <TooltipContent sideOffset={8}>Filters (F)</TooltipContent>
-            </Tooltip>
-
-            <SortDropdown
-              value={sortOrder}
-              onChange={setSortOrder}
-              onOpenChange={onLockChange}
-              className="whitespace-nowrap"
-            />
-
-            <ViewToggle
-              value={view}
-              onChange={v => {
-                rememberScroll(`catalog:${view}`)
-                setView(v)
-              }}
-            />
-          </div>
+          {formattedTotal && (
+            <div className="flex items-center justify-between text-xs font-medium leading-none text-[color:var(--ink-dim)]/80">
+              <span className="tabular-nums">{formattedTotal} results</span>
+            </div>
+          )}
         </div>
 
-        <div className="py-3">
+        <div className="pb-3 pt-1">
           <div className="flex flex-nowrap items-center gap-3 overflow-x-auto">
             <TriStateChip
               state={triStock}
