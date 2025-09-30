@@ -72,7 +72,14 @@ export function useCatalogProducts(filters: PublicCatalogFilters, sort: SortOrde
     return pages.flatMap(page => page.items)
   }, [pages])
 
-  const total = pages?.[0]?.total ?? items.length
+  const total = useMemo(() => {
+    if (!pages?.length) return items.length
+    const totalFromPages = pages.reduce(
+      (acc, page) => Math.max(acc, page.total ?? 0),
+      0,
+    )
+    return Math.max(totalFromPages, items.length)
+  }, [items, pages])
   const nextCursor =
     pages && pages.length ? pages[pages.length - 1]?.nextCursor ?? null : null
 
