@@ -13,7 +13,7 @@ import { formatCutoffTime, getNextDeliveryDate } from './delivery-helpers'
 
 type DeliveryEntry = {
   rule: DeliveryRule
-  supplier?: SupplierConnection
+  supplier: SupplierConnection
   nextDelivery: Date
 }
 
@@ -43,7 +43,9 @@ export function UpcomingDeliveriesCard() {
           nextDelivery,
         }
       })
-      .filter((entry): entry is DeliveryEntry => Boolean(entry))
+      .filter((entry): entry is DeliveryEntry => 
+        Boolean(entry && entry.rule && entry.supplier && entry.nextDelivery)
+      )
       .sort((a, b) => a.nextDelivery.getTime() - b.nextDelivery.getTime())
   }, [referenceDate, rules, supplierMap])
 
