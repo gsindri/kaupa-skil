@@ -8,11 +8,6 @@ importers:
 
   .:
     dependencies:
-<<<<<<< HEAD
-      '@formatjs/icu-messageformat-parser':
-        specifier: ^2.11.2
-        version: 2.11.2
-=======
       '@dnd-kit/core':
         specifier: ^6.3.1
         version: 6.3.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -22,7 +17,6 @@ importers:
       '@dnd-kit/utilities':
         specifier: ^3.2.2
         version: 3.2.2(react@18.3.1)
->>>>>>> ea8093fc6ac3ef9fb0cbf4914eff884511964241
       '@hookform/resolvers':
         specifier: ^3.10.0
         version: 3.10.0(react-hook-form@7.63.0(react@18.3.1))

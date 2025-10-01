@@ -22,8 +22,6 @@ interface DashboardLayoutState {
 
 interface MoveTilePayload {
   tileId: string
-  toSectionId: string
-  targetIndex: number
 }
 
 interface DashboardLayoutContextValue extends DashboardLayoutState {
@@ -129,19 +127,11 @@ function reducer(state: DashboardLayoutState, action: DashboardLayoutAction): Da
       }
     }
     case 'MOVE_TILE': {
-      const { tileId, toSectionId, targetIndex } = action.payload
-      const sections = state.sections.map((section) => ({ ...section, tileIds: [...section.tileIds] }))
-
-      const fromSection = sections.find((section) => section.tileIds.includes(tileId))
       const toSection = sections.find((section) => section.id === toSectionId)
       if (!fromSection || !toSection) {
         return state
       }
 
-      fromSection.tileIds = fromSection.tileIds.filter((id) => id !== tileId)
-
-      const insertIndex = Math.max(0, Math.min(targetIndex, toSection.tileIds.length))
-      toSection.tileIds.splice(insertIndex, 0, tileId)
 
       return {
         ...state,
