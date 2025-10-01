@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@formatjs/icu-messageformat-parser':
+        specifier: ^2.11.2
+        version: 2.11.2
       '@hookform/resolvers':
         specifier: ^3.10.0
         version: 3.10.0(react-hook-form@7.63.0(react@18.3.1))
@@ -137,6 +140,9 @@ importers:
       input-otp:
         specifier: ^1.4.2
         version: 1.4.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      intl-messageformat:
+        specifier: ^10.7.16
+        version: 10.7.16
       libphonenumber-js:
         specifier: ^1.12.17
         version: 1.12.23
