@@ -84,6 +84,9 @@ export function TopNavigation() {
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [platformShortcut, setPlatformShortcut] = useState<'⌘ + K' | 'Ctrl + K'>('Ctrl + K')
   const searchShortcutDescriptionId = useId()
+  const searchOpenedByKeyboardRef = useRef(false)
+  const accountOpenedByKeyboardRef = useRef(false)
+  const accountTriggerRef = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 0)
@@ -125,12 +128,14 @@ export function TopNavigation() {
         !editable
       ) {
         e.preventDefault()
+        searchOpenedByKeyboardRef.current = true
         setSearchOpen(true)
         return
       }
 
       if (key === '?' && !editable) {
         e.preventDefault()
+        accountOpenedByKeyboardRef.current = true
         setUserMenuOpen(true)
         return
       }
@@ -157,7 +162,13 @@ export function TopNavigation() {
   const previousSearchOpen = useRef(searchOpen)
   useEffect(() => {
     if (previousSearchOpen.current && !searchOpen) {
-      searchTriggerRef.current?.focus()
+      const openedByKeyboard = searchOpenedByKeyboardRef.current
+      if (openedByKeyboard) {
+        searchTriggerRef.current?.focus()
+      } else {
+        searchTriggerRef.current?.blur()
+      }
+      searchOpenedByKeyboardRef.current = false
     }
     previousSearchOpen.current = searchOpen
   }, [searchOpen])
@@ -288,6 +299,14 @@ export function TopNavigation() {
           aria-keyshortcuts="/ meta+k control+k"
           aria-describedby={searchShortcutDescriptionId}
           aria-label={t('navigation.search.open')}
+          onPointerDown={() => {
+            searchOpenedByKeyboardRef.current = false
+          }}
+          onKeyDown={(event) => {
+            if (event.key === ' ' || event.key === 'Enter') {
+              searchOpenedByKeyboardRef.current = true
+            }
+          }}
           onClick={() => setSearchOpen(true)}
           title={t('navigation.search.title')}
           className="group inline-flex size-9 items-center justify-center rounded-full border border-white/10 bg-white/5 transition-[background-color,border-color,transform] duration-fast ease-snap hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-1 focus-visible:ring-offset-transparent motion-safe:hover:-translate-y-[0.5px] motion-reduce:transform-none motion-reduce:hover:translate-y-0"
@@ -304,9 +323,21 @@ export function TopNavigation() {
           {t('navigation.search.shortcut', { shortcut: platformShortcut })}
         </span>
         <LanguageSwitcher className="hidden xl:block" />
-        <DropdownMenu open={userMenuOpen} onOpenChange={setUserMenuOpen}>
+        <DropdownMenu
+          open={userMenuOpen}
+          onOpenChange={(open) => {
+            if (!open && !accountOpenedByKeyboardRef.current) {
+              accountTriggerRef.current?.blur()
+            }
+            if (!open) {
+              accountOpenedByKeyboardRef.current = false
+            }
+            setUserMenuOpen(open)
+          }}
+        >
           <DropdownMenuTrigger asChild>
             <button
+              ref={accountTriggerRef}
               type="button"
               className={cn(
                 navTextButtonClass,
@@ -318,6 +349,14 @@ export function TopNavigation() {
               aria-label={accountMenuLabel}
               aria-haspopup="menu"
               title={displayName || undefined}
+              onPointerDown={() => {
+                accountOpenedByKeyboardRef.current = false
+              }}
+              onKeyDown={(event) => {
+                if (event.key === ' ' || event.key === 'Enter' || event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+                  accountOpenedByKeyboardRef.current = true
+                }
+              }}
             >
               <span className={navTextButtonPillClass} aria-hidden="true" />
               {isBusy ? (
