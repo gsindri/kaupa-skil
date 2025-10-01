@@ -124,6 +124,47 @@ export type Database = {
         }
         Relationships: []
       }
+      categories: {
+        Row: {
+          created_at: string | null
+          id: string
+          name: string
+          name_is: string | null
+          parent_id: string | null
+          slug: string
+          sort_order: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          name: string
+          name_is?: string | null
+          parent_id?: string | null
+          slug: string
+          sort_order?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          name?: string
+          name_is?: string | null
+          parent_id?: string | null
+          slug?: string
+          sort_order?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "categories_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       grants: {
         Row: {
           capability: string
@@ -400,6 +441,39 @@ export type Database = {
         }
         Relationships: []
       }
+      supplier_categories: {
+        Row: {
+          category_id: string
+          created_at: string | null
+          supplier_id: string
+        }
+        Insert: {
+          category_id: string
+          created_at?: string | null
+          supplier_id: string
+        }
+        Update: {
+          category_id?: string
+          created_at?: string | null
+          supplier_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_categories_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supplier_categories_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       supplier_credentials: {
         Row: {
           created_at: string | null
@@ -556,25 +630,64 @@ export type Database = {
       }
       suppliers: {
         Row: {
+          avg_lead_time_days: number | null
+          badges: string[] | null
+          contact_email: string | null
+          contact_phone: string | null
+          coverage_areas: string[] | null
           created_at: string | null
+          display_name: string | null
           id: string
+          is_featured: boolean | null
+          kennitala: string | null
+          legal_name: string | null
           logo_url: string | null
+          min_order_isk: number | null
           name: string
+          short_description: string | null
           updated_at: string | null
+          verification_status: string | null
+          website: string | null
         }
         Insert: {
+          avg_lead_time_days?: number | null
+          badges?: string[] | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          coverage_areas?: string[] | null
           created_at?: string | null
+          display_name?: string | null
           id: string
+          is_featured?: boolean | null
+          kennitala?: string | null
+          legal_name?: string | null
           logo_url?: string | null
+          min_order_isk?: number | null
           name: string
+          short_description?: string | null
           updated_at?: string | null
+          verification_status?: string | null
+          website?: string | null
         }
         Update: {
+          avg_lead_time_days?: number | null
+          badges?: string[] | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          coverage_areas?: string[] | null
           created_at?: string | null
+          display_name?: string | null
           id?: string
+          is_featured?: boolean | null
+          kennitala?: string | null
+          legal_name?: string | null
           logo_url?: string | null
+          min_order_isk?: number | null
           name?: string
+          short_description?: string | null
           updated_at?: string | null
+          verification_status?: string | null
+          website?: string | null
         }
         Relationships: []
       }
@@ -799,6 +912,36 @@ export type Database = {
       revoke_elevation: {
         Args: { elevation_id: string }
         Returns: boolean
+      }
+      search_suppliers: {
+        Args: {
+          category_ids?: string[]
+          featured_only?: boolean
+          limit_count?: number
+          min_rating?: number
+          offset_count?: number
+          search_query?: string
+        }
+        Returns: {
+          avg_lead_time_days: number
+          badges: string[]
+          categories: Json
+          contact_email: string
+          contact_phone: string
+          coverage_areas: string[]
+          display_name: string
+          id: string
+          is_featured: boolean
+          kennitala: string
+          legal_name: string
+          logo_url: string
+          min_order_isk: number
+          name: string
+          short_description: string
+          similarity_score: number
+          verification_status: string
+          website: string
+        }[]
       }
       set_limit: {
         Args: { "": number }

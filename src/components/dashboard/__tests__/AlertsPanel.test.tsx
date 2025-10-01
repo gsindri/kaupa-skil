@@ -13,10 +13,11 @@ import { AlertsPanel } from '../AlertsPanel'
 const mockUseAlerts = useAlerts as unknown as Mock
 
 function renderComponent() {
+  mockUseAlerts.mockReturnValue({ alerts: [], isLoading: false })
   const queryClient = new QueryClient()
   return render(
     <QueryClientProvider client={queryClient}>
-      <AlertsPanel />
+      <AlertsPanel alerts={[]} isLoading={false} />
     </QueryClientProvider>
   )
 }
@@ -28,12 +29,18 @@ test('shows empty state', () => {
 })
 
 test('shows alerts', () => {
+  const alerts = [
+    { id: '1', supplier: 'Test', sku: 'SKU', summary: 'msg', severity: 'high' as const, created_at: '2024-01-01' },
+  ]
   mockUseAlerts.mockReturnValue({
-    alerts: [
-      { id: '1', supplier: 'Test', sku: 'SKU', summary: 'msg', severity: 'high', created_at: '2024-01-01' },
-    ],
+    alerts,
     isLoading: false,
   })
-  renderComponent()
+  const queryClient = new QueryClient()
+  render(
+    <QueryClientProvider client={queryClient}>
+      <AlertsPanel alerts={alerts} isLoading={false} />
+    </QueryClientProvider>
+  )
   expect(screen.getByText('Test')).toBeInTheDocument()
 })

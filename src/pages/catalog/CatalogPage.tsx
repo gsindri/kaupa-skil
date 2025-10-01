@@ -476,12 +476,8 @@ export default function CatalogPage() {
             (value): value is string => typeof value === 'string' && value.length > 0,
           )
         : []
-      const supplierEntries = Array.isArray(product?.suppliers)
-        ? product.suppliers.filter(Boolean)
-        : []
-      const supplierProducts = Array.isArray(product?.supplier_products)
-        ? product.supplier_products.filter(Boolean)
-        : []
+      const supplierEntries: string[] = []
+      const supplierProducts: string[] = []
       return (
         supplierIds.length === 0 &&
         supplierEntries.length === 0 &&

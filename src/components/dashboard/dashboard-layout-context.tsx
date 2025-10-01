@@ -22,9 +22,6 @@ interface DashboardLayoutState {
 
 interface MoveTilePayload {
   tileId: string
-  fromSectionId: string
-  toSectionId: string
-  overIndex: number | null
 }
 
 interface DashboardLayoutContextValue extends DashboardLayoutState {
@@ -57,30 +54,6 @@ type DashboardLayoutAction =
   | { type: 'SET_TILE_SIZE'; tileId: string; size: DashboardTileSize }
   | { type: 'SET_TILE_VISIBILITY'; tileId: string; visible: boolean }
   | { type: 'MOVE_TILE'; payload: MoveTilePayload }
-
-function getVisibleInsertIndex(
-  tileIds: string[],
-  tileMeta: Record<string, DashboardTileMeta>,
-  targetVisibleIndex: number | null
-) {
-  if (targetVisibleIndex === null) {
-    return tileIds.length
-  }
-
-  let visibleCounter = 0
-  for (let index = 0; index < tileIds.length; index += 1) {
-    const tileId = tileIds[index]
-    if (tileMeta[tileId]?.visible === false) continue
-
-    if (visibleCounter === targetVisibleIndex) {
-      return index
-    }
-
-    visibleCounter += 1
-  }
-
-  return tileIds.length
-}
 
 function normalizeState(state: DashboardLayoutState): DashboardLayoutState {
   const sections = DEFAULT_LAYOUT.sections.map((section) => {
@@ -154,25 +127,11 @@ function reducer(state: DashboardLayoutState, action: DashboardLayoutAction): Da
       }
     }
     case 'MOVE_TILE': {
-      const { tileId, fromSectionId, toSectionId, overIndex } = action.payload
-      const sections = state.sections.map((section) => ({ ...section, tileIds: [...section.tileIds] }))
-
-      const fromSection = sections.find((section) => section.id === fromSectionId)
       const toSection = sections.find((section) => section.id === toSectionId)
       if (!fromSection || !toSection) {
         return state
       }
 
-      const currentIndex = fromSection.tileIds.indexOf(tileId)
-      if (currentIndex === -1) {
-        return state
-      }
-
-      fromSection.tileIds.splice(currentIndex, 1)
-
-      const destinationSection = fromSection.id === toSection.id ? fromSection : toSection
-      const insertIndex = getVisibleInsertIndex(destinationSection.tileIds, state.tileMeta, overIndex)
-      destinationSection.tileIds.splice(insertIndex, 0, tileId)
 
       return {
         ...state,

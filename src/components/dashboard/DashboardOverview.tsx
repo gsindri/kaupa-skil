@@ -419,88 +419,6 @@ function DashboardOverviewContent() {
           bubble: 'bg-white/15 text-white',
         },
         status: supplierStatus,
-      },
-      deliveries: {
-        id: 'deliveries',
-        title: 'Deliveries',
-        tagline: deliveriesSummary.nextDeliveryDate
-          ? `Next drop on ${format(deliveriesSummary.nextDeliveryDate, 'MMM d')}.`
-          : 'Plan the week ahead with shared delivery windows.',
-        to: '/delivery',
-        ctaLabel: 'Review schedule',
-        icon: Truck,
-        accent: {
-          background: 'bg-gradient-to-br from-purple-500 to-indigo-600',
-          bubble: 'bg-white/15 text-white',
-        },
-        status: deliveriesStatus,
-      },
-      pantry: {
-        id: 'pantry',
-        title: 'Pantry',
-        tagline:
-          pantryItems.length > 0
-            ? `${pantryItems.length} items ready for reorder.`
-            : 'Signals appear once we see order history.',
-        to: '/pantry',
-        ctaLabel: 'View pantry signals',
-        icon: ClipboardList,
-        accent: {
-          background: 'bg-gradient-to-br from-emerald-500 to-teal-600',
-          bubble: 'bg-white/15 text-white',
-        },
-        status: pantryStatus,
-      },
-      spend: {
-        id: 'spend',
-        title: 'Spend & Budgets',
-        tagline:
-          spendData && spendData.thisWeek > 0
-            ? `${formatCurrency(spendData.thisWeek)} across ${spendData.ordersThisWeek} orders.`
-            : 'Track spend the moment your first order lands.',
-        to: '/orders',
-        ctaLabel: 'Open spend view',
-        icon: PiggyBank,
-        accent: {
-          background: 'bg-gradient-to-br from-sky-500 to-cyan-600',
-          bubble: 'bg-white/15 text-white',
-        },
-        status: spendStatus,
-      },
-      'team-activity': {
-        id: 'team-activity',
-        title: 'Team Activity',
-        tagline:
-          teamInsights.ordersThisWeek > 0
-            ? `${teamInsights.ordersThisWeek} orders placed in the last 7 days.`
-            : teamInsights.lastActivity
-              ? `Last activity ${format(teamInsights.lastActivity, 'MMM d, HH:mm')}.`
-              : 'See who is ordering and manage roles.',
-        to: '/settings',
-        ctaLabel: teamInsights.uniqueUsers > 0 ? 'Manage team' : 'Invite teammates',
-        icon: Users2,
-        accent: {
-          background: 'bg-gradient-to-br from-pink-500 to-rose-600',
-          bubble: 'bg-white/15 text-white',
-        },
-        status: teamStatus,
-      },
-      analytics: {
-        id: 'analytics',
-        title: 'Analytics',
-        tagline:
-          alerts.length > 0
-            ? `Spot ${alerts.length} new price movement${alerts.length === 1 ? '' : 's'}.`
-            : 'Dig into price trends and supplier performance.',
-        to: '/price-history',
-        ctaLabel: 'Launch analytics',
-        icon: LineChart,
-        accent: {
-          background: 'bg-gradient-to-br from-blue-500 to-slate-700',
-          bubble: 'bg-white/15 text-white',
-        },
-        status: analyticsStatus,
-      },
     }
   }, [
     suppliersLoading,
@@ -546,29 +464,6 @@ function DashboardOverviewContent() {
     setActiveId(null)
     if (!over) return
 
-    const activeId = String(active.id)
-    if (over.id === active.id) return
-
-    const fromSectionId = active.data.current?.sortable?.containerId as string | undefined
-    if (!fromSectionId) return
-
-    const overId = String(over.id)
-
-    if (overId.startsWith('section:')) {
-      const toSectionId = overId.replace('section:', '')
-      moveTile({ tileId: activeId, fromSectionId, toSectionId, overIndex: null })
-      return
-    }
-
-    const toSectionId =
-      (over.data.current?.sortable?.containerId as string | undefined) ??
-      sectionTiles.find((section) => section.tileIds.includes(overId))?.id
-    if (!toSectionId) return
-
-    const overIndex =
-      typeof over.data.current?.sortable?.index === 'number' ? over.data.current?.sortable?.index : null
-
-    moveTile({ tileId: activeId, fromSectionId, toSectionId, overIndex })
   }
 
   const handleDragCancel = () => {
