@@ -18,8 +18,8 @@ export function ProductCardSkeleton({ className }: ProductCardSkeletonProps) {
       aria-hidden="true"
     >
       <div className="flex flex-1 flex-col p-3 md:p-4 lg:p-5">
-        <div className="aspect-square rounded-xl bg-[color:var(--panel,#FAFBFC)] p-4 md:p-5 grid place-items-center">
-          <Skeleton className="h-[80%] w-[90%] rounded-lg" />
+        <div className="aspect-square overflow-hidden rounded-xl">
+          <Skeleton className="h-full w-full" />
         </div>
         <div className="mt-3 space-y-2">
           <Skeleton className="h-4 w-5/6" />
