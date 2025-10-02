@@ -1,17 +1,24 @@
-import { memo, useMemo, useState } from "react";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import {
+  memo,
+  useCallback,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+  type KeyboardEvent,
+} from "react";
+import { Card } from "@/components/ui/card";
 import SupplierLogo from "./SupplierLogo";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/lib/format";
-import AvailabilityBadge from "./AvailabilityBadge";
 import type { PublicCatalogItem } from "@/services/catalog";
 import { resolveImage } from "@/lib/images";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { useCart } from "@/contexts/useBasket";
 import type { CartItem } from "@/lib/types";
 import { CatalogQuantityStepper } from "./CatalogQuantityStepper";
-import { BellRing, Loader2, Lock, Plus } from "lucide-react";
+import { BellRing, Loader2, Lock, ShoppingCart } from "lucide-react";
 
 type SupplierEntry = {
   supplier_id?: string | null;
@@ -40,6 +47,16 @@ export const ProductCard = memo(function ProductCard({
 }: ProductCardProps) {
   const { addItem, items, updateQuantity, removeItem } = useCart();
   const [open, setOpen] = useState(false);
+  const titleId = useId();
+  const imageRef = useRef<HTMLImageElement | null>(null);
+  const cartButtonRef = useRef<HTMLButtonElement | HTMLAnchorElement | null>(null);
+  const setCartButtonRef = useCallback(
+    (node: HTMLButtonElement | HTMLAnchorElement | null) => {
+      cartButtonRef.current = node;
+    },
+    [],
+  );
+
   const availability = (product.availability_status ?? "UNKNOWN") as
     | "IN_STOCK"
     | "LOW_STOCK"
@@ -179,12 +196,6 @@ export const ProductCard = memo(function ProductCard({
     name: record.name && record.name.length ? record.name : record.id,
   }));
 
-  const secondaryInfo = useMemo(() => {
-    if (packInfo) return packInfo;
-    if (brand) return brand;
-    return "";
-  }, [packInfo, brand]);
-
   const supplierSummary = useMemo(() => {
     if (supplierCount === 0) return "No suppliers yet";
     if (supplierCount === 1) return primarySupplierName || "Supplier";
@@ -252,6 +263,7 @@ export const ProductCard = memo(function ProductCard({
         image: img,
       },
       1,
+      { animateElement: imageRef.current ?? undefined },
     );
   };
 
@@ -270,70 +282,68 @@ export const ProductCard = memo(function ProductCard({
   const allowPrice = showPrice !== false;
   const hasVisiblePrice = allowPrice && product.best_price != null;
   const isPriceLocked = allowPrice && product.best_price == null;
-  const priceLabel = hasVisiblePrice
-    ? formatCurrency(product.best_price ?? 0)
-    : null;
+  const priceLabel = hasVisiblePrice ? formatCurrency(product.best_price ?? 0) : null;
 
-  const renderPrimaryAction = () => {
-    const buttonClass = "catalog-card__action h-10 w-full justify-center gap-2";
-    if (isUnavailable && !isInCart) {
-      return (
-        <Button
-          type="button"
-          variant="outline"
-          size="default"
-          className={buttonClass}
-          disabled
-          aria-disabled="true"
-          title="Out of stock"
-        >
-          <BellRing className="h-4 w-4" aria-hidden="true" />
-          Notify me
-        </Button>
-      );
-    }
+  const headerSubline = packInfo || brand || "";
+  const unitHint = packInfo && brand ? brand : packInfo || brand || "";
+  const imageAlt = headerSubline ? `${product.name} – ${headerSubline}` : product.name;
 
+  const availabilityDotClass = cn(
+    "h-3.5 w-3.5 rounded-full border border-white/40 shadow-sm",
+    {
+      "bg-success": availability === "IN_STOCK",
+      "bg-warning": availability === "LOW_STOCK",
+      "bg-error": availability === "OUT_OF_STOCK",
+      "bg-muted": availability === "UNKNOWN",
+    },
+  );
+
+  const cartButtonClassName = cn(
+    "relative h-10 w-10 rounded-full bg-primary text-primary-foreground shadow-[0_14px_26px_rgba(45,155,192,0.35)] transition-transform duration-200 ease-out",
+    "hover:-translate-y-0.5 hover:shadow-[0_20px_34px_rgba(45,155,192,0.45)]",
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/45 focus-visible:ring-offset-1 focus-visible:ring-offset-background",
+    "after:pointer-events-none after:absolute after:-top-1 after:-right-1 after:rounded-full after:bg-primary/95 after:px-[6px] after:py-[1px] after:text-[10px] after:font-semibold after:uppercase after:tracking-wide after:text-primary-foreground after:opacity-0 after:transition-all after:duration-200 after:content-['+1']",
+    "group-hover/card:after:-translate-y-0.5 group-hover/card:after:opacity-100",
+    "disabled:translate-y-0 disabled:bg-muted disabled:text-muted-foreground disabled:shadow-none disabled:after:opacity-0",
+  );
+
+  const handleSeePrice = useCallback(() => {
+    if (!detailLink) return;
+    if (typeof window === "undefined") return;
+    const target = detailLink.target ?? "_self";
+    const features = target === "_blank" ? "noopener,noreferrer" : undefined;
+    window.open(detailLink.href, target, features);
+  }, [detailLink]);
+
+  const handleCardKeyDown = useCallback(
+    (event: KeyboardEvent<HTMLDivElement>) => {
+      if (event.key !== "Enter" || event.defaultPrevented) return;
+      event.preventDefault();
+      cartButtonRef.current?.focus();
+    },
+    [],
+  );
+
+  const renderActionButton = () => {
     if (isPriceLocked) {
-      const content = (
-        <>
-          <Lock className="h-4 w-4" aria-hidden="true" />
-          See price
-        </>
-      );
-      if (detailLink) {
-        return (
-          <Button asChild variant="outline" size="default" className={buttonClass}>
-            <a {...detailLink} aria-label={`See price for ${product.name}`}>
-              {content}
-            </a>
-          </Button>
-        );
-      }
+      const disabled = !detailLink;
       return (
         <Button
+          ref={setCartButtonRef}
           type="button"
           variant="outline"
-          size="default"
-          className={buttonClass}
-          disabled
-          aria-disabled="true"
+          size="icon"
+          className="h-10 w-10 rounded-full border border-border/70 bg-card text-muted-foreground transition-colors duration-200 ease-out hover:bg-muted/60 focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-1"
+          onClick={disabled ? undefined : handleSeePrice}
+          disabled={disabled}
+          aria-label={
+            detailLink
+              ? `See price for ${product.name}`
+              : `Price unavailable for ${product.name}`
+          }
         >
-          {content}
+          <Lock className="h-4 w-4" aria-hidden="true" />
         </Button>
-      );
-    }
-
-    if (isInCart && cartItem) {
-      return (
-        <div className="w-full">
-          <CatalogQuantityStepper
-            quantity={cartQuantity}
-            onChange={qty => updateQuantity(cartItem.supplierItemId, qty)}
-            onRemove={() => removeItem(cartItem.supplierItemId)}
-            itemLabel={product.name}
-            canIncrease={!isUnavailable}
-          />
-        </div>
       );
     }
 
@@ -342,9 +352,10 @@ export const ProductCard = memo(function ProductCard({
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
             <Button
-              variant="outline"
-              size="default"
-              className={buttonClass}
+              ref={setCartButtonRef}
+              type="button"
+              size="icon"
+              className={cartButtonClassName}
               disabled={isAdding || isUnavailable}
               aria-label={`Choose supplier for ${product.name}`}
               title={isUnavailable ? "Out of stock" : undefined}
@@ -352,14 +363,11 @@ export const ProductCard = memo(function ProductCard({
               {isAdding ? (
                 <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
               ) : (
-                <>
-                  <Plus className="h-4 w-4" aria-hidden="true" />
-                  Select supplier
-                </>
+                <ShoppingCart className="h-4 w-4" aria-hidden="true" />
               )}
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-56 space-y-2 p-2" align="end">
+          <PopoverContent className="w-56 space-y-2 p-2" align="end" sideOffset={8}>
             {orderedSuppliers.map(supplier => (
               <Button
                 key={supplier.id}
@@ -380,9 +388,10 @@ export const ProductCard = memo(function ProductCard({
 
     return (
       <Button
-        variant="outline"
-        size="default"
-        className={buttonClass}
+        ref={setCartButtonRef}
+        type="button"
+        size="icon"
+        className={cartButtonClassName}
         onClick={() => handleAdd(defaultSupplierId, defaultSupplierName)}
         disabled={isAdding || isUnavailable}
         aria-label={`Add ${product.name}`}
@@ -391,10 +400,7 @@ export const ProductCard = memo(function ProductCard({
         {isAdding ? (
           <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
         ) : (
-          <>
-            <Plus className="h-4 w-4" aria-hidden="true" />
-            Add
-          </>
+          <ShoppingCart className="h-4 w-4" aria-hidden="true" />
         )}
       </Button>
     );
@@ -404,89 +410,150 @@ export const ProductCard = memo(function ProductCard({
     <Card
       data-grid-card
       data-in-cart={isInCart ? "true" : undefined}
+      data-unavailable={isUnavailable ? "true" : undefined}
+      tabIndex={0}
+      role="group"
+      aria-labelledby={titleId}
+      onKeyDown={handleCardKeyDown}
       className={cn(
-        "catalog-card group isolate flex w-full flex-col overflow-hidden border bg-card",
-        "rounded-2xl transition-shadow duration-200 ease-out hover:shadow-md focus-within:shadow-md",
-        "motion-reduce:transition-none",
-        isInCart && "ring-2 ring-primary/20",
+        "group/card relative flex h-full w-full flex-col overflow-hidden rounded-[16px] border border-border bg-card p-3 pb-0 text-left",
+        "shadow-[0_16px_36px_rgba(15,23,42,0.1)] transition-all duration-200 ease-out",
+        "hover:-translate-y-0.5 hover:shadow-[0_26px_46px_rgba(15,23,42,0.14)]",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/35 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+        "motion-reduce:transform-none motion-reduce:transition-none",
+        isInCart && "ring-1 ring-primary/25",
         className,
       )}
     >
-      <CardContent className="catalog-card__content flex flex-1 flex-col p-0">
-        <div className="catalog-card__media relative px-4 pt-4">
-          <div className="catalog-card__surface">
-            {isInCart && (
-              <span className="catalog-card__count-chip" aria-hidden="true">
-                {cartQuantity}
-              </span>
-            )}
-            <div className="catalog-card__image-frame">
-              <img
-                src={img}
-                alt={product.name}
-                loading="lazy"
-                decoding="async"
-                fetchPriority="low"
-                className="catalog-card__image"
-              />
-            </div>
-          </div>
-        </div>
-        <div className="catalog-card__details flex flex-col gap-2 px-4 pb-2 pt-3">
+      <div className="flex flex-1 flex-col">
+        <div className="flex flex-col gap-[6px]">
           {detailLink ? (
-            <a {...detailLink} title={product.name} className="catalog-card__title line-clamp-2">
+            <a
+              {...detailLink}
+              id={titleId}
+              title={product.name}
+              className="line-clamp-1 text-[15px] font-medium text-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            >
               {product.name}
             </a>
           ) : (
-            <div title={product.name} className="catalog-card__title line-clamp-2">
+            <p
+              id={titleId}
+              title={product.name}
+              className="line-clamp-1 text-[15px] font-medium text-foreground"
+            >
               {product.name}
-            </div>
+            </p>
           )}
-          {secondaryInfo ? (
-            <div className="catalog-card__meta truncate" title={secondaryInfo}>
-              {secondaryInfo}
-            </div>
-          ) : null}
-          <AvailabilityBadge
-            status={availability}
-            updatedAt={product.availability_updated_at}
-            className="catalog-card__availability"
-          />
-          {priceLabel ? (
-            <div className="catalog-card__price" aria-live="polite">
-              {priceLabel}
-            </div>
+          {headerSubline ? (
+            <p className="text-xs font-medium text-muted-foreground">{headerSubline}</p>
           ) : null}
         </div>
-      </CardContent>
-      <CardFooter className="catalog-card__footer mt-auto flex w-full flex-col gap-3 px-4 pb-4 pt-4">
-        <div className="catalog-card__footer-meta flex w-full items-center justify-between gap-3 text-xs text-muted-foreground">
-          <div className="flex min-w-0 items-center gap-2">
+        <div
+          className="relative mt-3 flex aspect-square w-full items-center justify-center overflow-hidden rounded-[12px] shadow-[inset_0_0_0_1px_rgba(15,23,42,0.06)]"
+          style={{ background: "var(--catalog-image-surface, #f7f8fd)" }}
+        >
+          <img
+            ref={imageRef}
+            src={img}
+            alt={imageAlt}
+            loading="lazy"
+            decoding="async"
+            fetchPriority="low"
+            draggable={false}
+            className={cn(
+              "max-h-[82%] w-auto max-w-[82%] object-contain",
+              "transition-transform duration-200 ease-out",
+              "drop-shadow-[0_18px_32px_rgba(15,23,42,0.18)]",
+              "group-hover/card:-translate-y-0.5 group-hover/card:scale-[1.01]",
+              "motion-reduce:transition-none",
+              isUnavailable && "grayscale-[30%] opacity-70",
+            )}
+          />
+        </div>
+        <div
+          className={cn(
+            "mt-3 flex items-center justify-between gap-3 rounded-[10px] px-1.5 py-2 text-[13px] text-muted-foreground transition-all duration-200 ease-out",
+            "sm:px-1.5",
+            "lg:pointer-events-none lg:opacity-0 lg:group-hover/card:pointer-events-auto lg:group-hover/card:opacity-100",
+          )}
+        >
+          <div className="flex min-w-0 items-center gap-2 text-foreground/80">
             {supplierCount === 1 ? (
               <>
                 <SupplierLogo
                   name={primarySupplierName || supplierSummary}
                   logoUrl={primarySupplierLogo}
-                  className="h-6 w-6 flex-shrink-0 rounded-full border border-border/60 bg-white"
+                  className="h-6 w-6 flex-shrink-0 rounded-full border border-border/60 bg-white shadow-sm"
                 />
-                <span className="truncate" title={primarySupplierName}>
+                <span className="truncate font-medium" title={primarySupplierName || supplierSummary}>
                   {primarySupplierName || supplierSummary}
                 </span>
               </>
             ) : (
-              <span className="truncate" title={supplierSummary}>
+              <span className="truncate font-medium" title={supplierSummary}>
                 {supplierSummary}
               </span>
             )}
           </div>
-          <span className="whitespace-nowrap" title={availabilitySummary}>
-            {availabilitySummary}
-          </span>
+          <div className="flex flex-shrink-0 items-center gap-2 text-muted-foreground">
+            <span className={availabilityDotClass} aria-hidden="true" />
+            <span className="truncate text-xs font-medium" title={availabilitySummary}>
+              {availabilitySummary}
+            </span>
+          </div>
         </div>
-        <div className="catalog-card__footer-actions flex w-full justify-end">
-          {renderPrimaryAction()}
+        <div className="mt-auto w-full pt-3">
+          {isUnavailable && !isInCart ? (
+            <div className="rounded-t-[12px] border border-dashed border-border/80 bg-background/85 px-3 py-2 shadow-inner">
+              <Button
+                ref={setCartButtonRef}
+                type="button"
+                variant="outline"
+                className="h-12 w-full justify-center rounded-full border border-border/80 text-sm font-medium"
+                aria-label={`Notify me when ${product.name} is back`}
+              >
+                <BellRing className="h-4 w-4" aria-hidden="true" />
+                Notify me
+              </Button>
+            </div>
+          ) : (
+            <div className="flex h-12 items-center justify-between rounded-t-[12px] border border-border/70 bg-background/95 px-3 shadow-sm backdrop-blur">
+              <div className="min-w-0" aria-live="polite">
+                {priceLabel ? (
+                  <>
+                    <div className="text-base font-semibold text-foreground tabular-nums">{priceLabel}</div>
+                    {unitHint ? (
+                      <div className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                        {unitHint}
+                      </div>
+                    ) : null}
+                  </>
+                ) : (
+                  <div className="text-sm font-medium text-muted-foreground">
+                    {isPriceLocked ? "See price" : "Price unavailable"}
+                  </div>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                {isInCart && cartItem ? (
+                  <CatalogQuantityStepper
+                    quantity={cartQuantity}
+                    onChange={qty => updateQuantity(cartItem.supplierItemId, qty)}
+                    onRemove={() => removeItem(cartItem.supplierItemId)}
+                    itemLabel={product.name}
+                    canIncrease={!isUnavailable}
+                    className="bg-card/95"
+                  />
+                ) : null}
+                {renderActionButton()}
+              </div>
+            </div>
+          )}
         </div>
-      </CardFooter>
+      </div>
     </Card>
   );
 });
+
+export default ProductCard;

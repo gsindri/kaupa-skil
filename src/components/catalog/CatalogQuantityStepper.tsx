@@ -109,13 +109,19 @@ export function CatalogQuantityStepper({
     <div
       role="group"
       aria-label={`Quantity controls for ${itemLabel}`}
-      className={cn("catalog-card__stepper", className)}
+      className={cn(
+        "inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/95 px-2 py-1 text-sm font-medium text-foreground shadow-sm backdrop-blur",
+        className,
+      )}
     >
       <Button
         type="button"
         variant="ghost"
         size="icon"
-        className="catalog-card__stepper-btn h-9 w-9"
+        className={cn(
+          "catalog-card__stepper-btn h-10 w-10 rounded-full border border-border/60 bg-card/90 text-foreground transition-transform duration-150 ease-out",
+          "hover:-translate-y-0.5 hover:bg-muted/60 focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-1",
+        )}
         aria-label={`Decrease quantity of ${itemLabel}`}
         onPointerDown={() => {
           scheduleHold("dec");
@@ -127,14 +133,20 @@ export function CatalogQuantityStepper({
       >
         <Minus className="h-4 w-4" aria-hidden="true" />
       </Button>
-      <span className="catalog-card__stepper-count" aria-live="polite">
+      <span
+        className="catalog-card__stepper-count min-w-[2.75rem] text-center text-sm font-semibold tabular-nums"
+        aria-live="polite"
+      >
         {quantity}
       </span>
       <Button
         type="button"
         variant="ghost"
         size="icon"
-        className="catalog-card__stepper-btn h-9 w-9"
+        className={cn(
+          "catalog-card__stepper-btn h-10 w-10 rounded-full border border-border/60 bg-card/90 text-foreground transition-transform duration-150 ease-out",
+          "hover:-translate-y-0.5 hover:bg-muted/60 focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-1",
+        )}
         aria-label={`Increase quantity of ${itemLabel}`}
         disabled={!canIncrease}
         onPointerDown={() => {

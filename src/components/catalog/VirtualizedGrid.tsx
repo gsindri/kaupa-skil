@@ -1,6 +1,13 @@
 import * as React from 'react'
 import { useWindowVirtualizer } from '@tanstack/react-virtual'
 
+export interface GridBreakpoint {
+  minWidth: number
+  columns: number
+  minCardWidth?: number
+  gap?: number
+}
+
 export interface VirtualizedGridProps<T> {
   items: T[]
   /** Render a single card. Receive the item and its absolute index. */
@@ -17,6 +24,7 @@ export interface VirtualizedGridProps<T> {
   onNearEnd?: () => void
   className?: string
   style?: React.CSSProperties
+  breakpoints?: GridBreakpoint[]
 }
 
 /** Measure container width and keep it reactive. */
@@ -78,13 +86,43 @@ export function VirtualizedGrid<T>({
   onNearEnd,
   className,
   style,
+  breakpoints,
 }: VirtualizedGridProps<T>) {
   const scrollerRef = React.useRef<HTMLDivElement>(null)
   const innerRef = React.useRef<HTMLDivElement>(null)
 
   const { width } = useContainerSize(scrollerRef)
 
-  const safeGap = Math.max(0, gap)
+  const sortedBreakpoints = React.useMemo(() => {
+    if (!breakpoints || breakpoints.length === 0) return null
+    return [...breakpoints].sort((a, b) => a.minWidth - b.minWidth)
+  }, [breakpoints])
+
+  const baseGap = Math.max(0, gap)
+
+  const layout = React.useMemo(() => {
+    if (!sortedBreakpoints || sortedBreakpoints.length === 0) {
+      return { gap: baseGap, minCardWidth, columns: undefined as number | undefined }
+    }
+
+    let active = sortedBreakpoints[0]
+    for (const candidate of sortedBreakpoints) {
+      if (width >= candidate.minWidth) {
+        active = candidate
+      }
+    }
+
+    return {
+      gap: active.gap ?? baseGap,
+      minCardWidth: active.minCardWidth ?? minCardWidth,
+      columns: active.columns,
+    }
+  }, [sortedBreakpoints, width, baseGap, minCardWidth])
+
+  const safeGap = Math.max(0, layout.gap ?? baseGap)
+  const effectiveMinCardWidth = Math.max(0, layout.minCardWidth ?? minCardWidth)
+  const explicitColumns = layout.columns && layout.columns > 0 ? layout.columns : undefined
+
   const cardHeight = Math.max(0, rowHeight)
   const rowStride = Math.max(1, cardHeight + safeGap)
 
@@ -175,10 +213,14 @@ export function VirtualizedGrid<T>({
 
   // Derive column count from width.
   const getCols = React.useCallback(() => {
+    if (explicitColumns) return explicitColumns
     if (!width) return 1
-    const cols = Math.max(1, Math.floor((width + safeGap) / (minCardWidth + safeGap)))
+    const cols = Math.max(
+      1,
+      Math.floor((width + safeGap) / (effectiveMinCardWidth + safeGap)),
+    )
     return cols
-  }, [width, safeGap, minCardWidth])
+  }, [explicitColumns, width, safeGap, effectiveMinCardWidth])
 
   // Keep anchored when cols change
   const { beforeColsChange, afterColsChange } = useAnchoredGridScroll({
@@ -268,7 +310,9 @@ export function VirtualizedGrid<T>({
   }, [virtualRows, rowCount, onNearEnd, items.length, rowStride])
 
   // Grid CSS sizes
-  const cardWidth = Math.max(1, Math.floor((width - safeGap * (cols - 1)) / cols))
+  const cardWidth = cols
+    ? Math.max(1, Math.floor((width - safeGap * (cols - 1)) / cols))
+    : effectiveMinCardWidth || 1
   const totalHeight = rowVirtualizer.getTotalSize()
 
   return (

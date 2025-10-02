@@ -37,10 +37,16 @@ export function CatalogGrid({
     <VirtualizedGrid
       items={products}
       renderItem={renderItem}
-      itemKey={(item) => item.catalog_id}
-      minCardWidth={280}
-      rowHeight={400}
-      gap={20}
+      itemKey={item => item.catalog_id}
+      minCardWidth={220}
+      rowHeight={520}
+      gap={12}
+      breakpoints={[
+        { minWidth: 0, columns: 2, minCardWidth: 180, gap: 12 },
+        { minWidth: 768, columns: 3, minCardWidth: 220, gap: 16 },
+        { minWidth: 1024, columns: 4, minCardWidth: 240, gap: 24 },
+        { minWidth: 1440, columns: 5, minCardWidth: 260, gap: 24 },
+      ]}
       onNearEnd={onNearEnd}
       className={cn('catalog-grid', className)}
     />
