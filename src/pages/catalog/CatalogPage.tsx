@@ -38,6 +38,11 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 
 const FILTER_PANEL_LS_KEY = 'catalog-filters-open'
 const CATALOG_CONTAINER_CLASS = 'mx-auto w-full max-w-[1600px] px-6 sm:px-10 lg:px-16'
+const COMPACT_TOOLBAR_TOKENS = {
+  '--ctrl-h': '36px',
+  '--ctrl-r': '10px',
+  '--icon-btn': '36px',
+} as React.CSSProperties
 
 interface DerivedChip {
   key: string
@@ -1147,6 +1152,7 @@ function FiltersBar({
 
   return (
     <section
+      style={COMPACT_TOOLBAR_TOKENS}
       className={cn(
         'relative bg-[color:var(--toolbar-bg)] backdrop-blur-xl ring-1 ring-inset ring-[color:var(--ring-idle)] after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-white/12 after:content-[""]',
         scrolled && 'before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-white/16 before:opacity-70 before:content-[""]',
@@ -1165,7 +1171,7 @@ function FiltersBar({
       )}
 
       <div className={containerClass}>
-        <div className="flex flex-col gap-2 py-3">
+        <div className="flex flex-col gap-1.5 py-2.5 sm:py-3">
           <div className="flex flex-wrap items-center gap-3">
             <div className="relative min-w-0 flex-1">
               <label className="sr-only" htmlFor="catalog-search">
@@ -1249,13 +1255,13 @@ function FiltersBar({
             </div>
           </div>
           {formattedTotal && (
-            <div className="flex items-center justify-between text-xs font-medium leading-none text-[color:var(--ink-dim)]/80">
+            <div className="flex items-center justify-between text-xs font-semibold leading-none text-[color:var(--ink-hi)]/85">
               <span className="tabular-nums">{formattedTotal} results</span>
             </div>
           )}
         </div>
 
-        <div className="pb-3 pt-1">
+        <div className="pb-2.5 pt-1">
           <div className="flex flex-nowrap items-center gap-3 overflow-x-auto">
             <TriStateChip
               state={triStock}
