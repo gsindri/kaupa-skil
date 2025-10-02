@@ -1171,8 +1171,6 @@ function FiltersBar({
       )}
 
       <div className={containerClass}>
-        <div className="flex flex-col gap-1.5 py-2.5 sm:py-3">
-          <div className="flex flex-wrap items-center gap-3">
             <div className="relative min-w-0 flex-1">
               <label className="sr-only" htmlFor="catalog-search">
                 Search products
@@ -1190,7 +1188,7 @@ function FiltersBar({
                     onKeyDown={handleSearchKeyDown}
                     onFocus={() => onLockChange?.(true)}
                     onBlur={() => onLockChange?.(false)}
-                    className="h-12 w-full rounded-[var(--ctrl-r,14px)] bg-white pl-12 pr-12 text-base font-semibold text-slate-900 placeholder:text-slate-500 ring-1 ring-inset ring-[color:var(--ring-idle)] shadow-[0_12px_38px_rgba(7,18,30,0.26)] transition duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent hover:ring-[color:var(--ring-hover)] motion-reduce:transition-none"
+                    className="h-11 w-full rounded-[var(--ctrl-r,14px)] bg-white pl-12 pr-12 text-base font-semibold text-slate-900 placeholder:text-slate-500 ring-1 ring-inset ring-[color:var(--ring-idle)] shadow-[0_12px_38px_rgba(7,18,30,0.26)] transition duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent hover:ring-[color:var(--ring-hover)] motion-reduce:transition-none"
                   />
                 </TooltipTrigger>
                 <TooltipContent sideOffset={8}>Search (Ctrl/⌘+K)</TooltipContent>
@@ -1209,7 +1207,7 @@ function FiltersBar({
                 </button>
               )}
             </div>
-            <div className="flex flex-shrink-0 items-center gap-3 sm:pl-3">
+            <div className="flex flex-shrink-0 items-center gap-2.5 sm:pl-3">
               <Tooltip>
                 <TooltipTrigger asChild>
                   <button
@@ -1255,14 +1253,11 @@ function FiltersBar({
             </div>
           </div>
           {formattedTotal && (
-            <div className="flex items-center justify-between text-xs font-semibold leading-none text-[color:var(--ink-hi)]/85">
               <span className="tabular-nums">{formattedTotal} results</span>
             </div>
           )}
         </div>
 
-        <div className="pb-2.5 pt-1">
-          <div className="flex flex-nowrap items-center gap-3 overflow-x-auto">
             <TriStateChip
               state={triStock}
               onStateChange={setTriStock}
