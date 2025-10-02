@@ -39,7 +39,7 @@ export function CatalogGrid({
       renderItem={renderItem}
       itemKey={item => item.catalog_id}
       minCardWidth={220}
-      rowHeight={520}
+      rowHeight={440}
       gap={12}
       breakpoints={[
         { minWidth: 0, columns: 2, minCardWidth: 180, gap: 12 },
