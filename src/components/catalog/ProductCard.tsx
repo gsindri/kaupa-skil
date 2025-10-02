@@ -1,6 +1,7 @@
 import {
   memo,
   useCallback,
+  useEffect,
   useId,
   useMemo,
   useRef,
@@ -237,6 +238,12 @@ export const ProductCard = memo(function ProductCard({
 
   const isInCart = cartQuantity > 0;
 
+  useEffect(() => {
+    if (isInCart && cartItem) {
+      cartButtonRef.current = null;
+    }
+  }, [isInCart, cartItem]);
+
   const handleAdd = (supplierId: string, supplierName: string) => {
     if (onAdd) {
       onAdd(supplierId);
@@ -289,13 +296,14 @@ export const ProductCard = memo(function ProductCard({
   const headerSubline = packInfo || brand || "";
   const unitHint = packInfo && brand ? brand : packInfo || brand || "";
   const imageAlt = headerSubline ? `${product.name} – ${headerSubline}` : product.name;
+  const sublineText = headerSubline || "\u00A0";
 
   const availabilityDotClass = cn(
-    "h-3 w-3 rounded-full border border-white/40 shadow-sm",
+    "size-2 rounded-full",
     {
-      "bg-success": availability === "IN_STOCK",
-      "bg-warning": availability === "LOW_STOCK",
-      "bg-error": availability === "OUT_OF_STOCK",
+      "bg-emerald-500": availability === "IN_STOCK",
+      "bg-amber-500": availability === "LOW_STOCK",
+      "bg-rose-500": availability === "OUT_OF_STOCK",
       "bg-muted": availability === "UNKNOWN",
     },
   );
@@ -335,9 +343,8 @@ export const ProductCard = memo(function ProductCard({
         <Button
           ref={setCartButtonRef}
           type="button"
-          variant="outline"
           size="sm"
-          className="h-9 px-3"
+          className="h-9"
           onClick={disabled ? undefined : handleSeePrice}
           disabled={disabled}
           aria-label={
@@ -346,7 +353,6 @@ export const ProductCard = memo(function ProductCard({
               : `Price unavailable for ${product.name}`
           }
         >
-          <Lock className="mr-2 h-4 w-4" aria-hidden="true" />
           See price
         </Button>
       );
@@ -360,7 +366,7 @@ export const ProductCard = memo(function ProductCard({
               ref={setCartButtonRef}
               type="button"
               size="sm"
-              className="h-9 px-3"
+              className="h-9"
               disabled={isAdding || isUnavailable}
               aria-label={`Choose supplier for ${product.name}`}
               title={isUnavailable ? "Out of stock" : undefined}
@@ -392,7 +398,7 @@ export const ProductCard = memo(function ProductCard({
         ref={setCartButtonRef}
         type="button"
         size="sm"
-        className="h-9 px-3"
+        className="h-9"
         onClick={() => handleAdd(defaultSupplierId, defaultSupplierName)}
         disabled={isAdding || isUnavailable}
         aria-label={`Add ${product.name}`}
@@ -414,7 +420,7 @@ export const ProductCard = memo(function ProductCard({
       aria-labelledby={titleId}
       onKeyDown={handleCardKeyDown}
       className={cn(
-        "group/card relative flex h-full w-full flex-col overflow-hidden rounded-2xl border border-border/30 bg-card text-left shadow-sm transition-shadow duration-200",
+        "group relative flex h-full w-full flex-col overflow-hidden rounded-2xl border border-border bg-card text-left shadow-sm transition-shadow duration-200",
         "hover:shadow-md",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/35 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
         "motion-reduce:transform-none motion-reduce:transition-none",
@@ -422,39 +428,10 @@ export const ProductCard = memo(function ProductCard({
         className,
       )}
     >
-      <div className="flex flex-1 flex-col px-3 pb-3 pt-3 md:px-4 md:pb-4 md:pt-4 lg:px-6 lg:pb-6 lg:pt-6">
-        <div className="flex min-h-[44px] flex-col gap-1">
-          {detailLink ? (
-            <a
-              {...detailLink}
-              id={titleId}
-              title={product.name}
-              className="line-clamp-1 text-[14px] font-medium text-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-            >
-              {product.name}
-            </a>
-          ) : (
-            <p
-              id={titleId}
-              title={product.name}
-              className="line-clamp-1 text-[14px] font-medium text-foreground"
-            >
-              {product.name}
-            </p>
-          )}
-          {headerSubline ? (
-            <p className="text-[12px] font-normal text-muted-foreground">{headerSubline}</p>
-          ) : (
-            <span
-              aria-hidden="true"
-              className="block text-[12px] text-transparent"
-            >
-              {"\u00A0"}
-            </span>
-          )}
-        </div>
+      <div className="flex flex-1 flex-col p-3 md:p-4 lg:p-5">
         <div
-          className="relative mt-4 flex aspect-square w-full items-center justify-center rounded-xl bg-[color:var(--panel,#FAFBFC)] p-3 md:p-4 lg:p-6"
+          data-oos={isUnavailable ? "true" : undefined}
+          className="aspect-square rounded-xl bg-[color:var(--panel,#FAFBFC)] p-4 md:p-5 grid place-items-center"
         >
           <img
             ref={imageRef}
@@ -465,23 +442,44 @@ export const ProductCard = memo(function ProductCard({
             fetchPriority="low"
             draggable={false}
             className={cn(
-              "max-h-[75%] w-auto max-w-[92%] object-contain",
-              "transition-transform duration-200 ease-out",
-              "[filter:var(--product-card-image-filter,drop-shadow(0_2px_6px_rgba(0,0,0,0.08)))]",
-              "hover:-translate-y-0.5 hover:scale-[1.01]",
+              "max-h-[80%] max-w-[90%] object-contain",
+              "[filter:drop-shadow(0_2px_6px_rgba(0,0,0,.08))]",
+              "transition-transform duration-150",
+              "group-hover:translate-y-0.5 group-hover:scale-[1.01]",
               "motion-reduce:transition-none",
-              isUnavailable && "[--product-card-image-filter:grayscale(30%)_opacity(0.7)_drop-shadow(0_2px_6px_rgba(0,0,0,0.08))]",
+              isUnavailable && "grayscale opacity-70",
             )}
           />
         </div>
-        <div className="mt-2 flex items-center justify-between text-[12px] text-muted-foreground">
-          <div className="flex min-w-0 items-center gap-1.5">
+        <div className="mt-3 flex flex-col gap-1">
+          {detailLink ? (
+            <a
+              {...detailLink}
+              id={titleId}
+              title={product.name}
+              className="line-clamp-1 text-[14px] font-medium text-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            >
+              {product.name}
+            </a>
+          ) : (
+            <h3
+              id={titleId}
+              title={product.name}
+              className="line-clamp-1 text-[14px] font-medium text-foreground"
+            >
+              {product.name}
+            </h3>
+          )}
+          <p className="text-[12px] text-muted-foreground">{sublineText}</p>
+        </div>
+        <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
+          <span className="inline-flex min-w-0 items-center gap-1">
             {supplierCount === 1 ? (
               <>
                 <SupplierLogo
                   name={primarySupplierName || supplierSummary}
                   logoUrl={primarySupplierLogo}
-                  className="h-5 w-5 flex-shrink-0 rounded-full border border-border/60 bg-white shadow-sm"
+                  className="size-4 flex-shrink-0 rounded-full border border-border/60 bg-white shadow-sm"
                 />
                 <span className="truncate" title={primarySupplierName || supplierSummary}>
                   {primarySupplierName || supplierSummary}
@@ -492,17 +490,17 @@ export const ProductCard = memo(function ProductCard({
                 {supplierSummary}
               </span>
             )}
-          </div>
-          <div className="inline-flex flex-shrink-0 items-center gap-1.5">
+          </span>
+          <span className="inline-flex flex-shrink-0 items-center gap-1">
             <span className={availabilityDotClass} aria-hidden="true" />
             <span className="truncate" title={availabilitySummary}>
               {availabilitySummary}
             </span>
-          </div>
+          </span>
         </div>
         <div className="mt-auto w-full">
           {isUnavailable && !isInCart ? (
-            <div className="mt-4 border-t border-border/30 pt-2">
+            <div className="mt-3 border-t border-border pt-2">
               <Button
                 ref={setCartButtonRef}
                 type="button"
@@ -514,12 +512,12 @@ export const ProductCard = memo(function ProductCard({
               </Button>
             </div>
           ) : (
-            <div className="mt-4 border-t border-border/30 pt-2">
+            <div className="mt-3 border-t border-border pt-2">
               <div className="flex h-12 items-center justify-between gap-3" aria-live="polite">
                 {priceLabel ? (
-                  <div className="flex min-w-0 flex-1 flex-col justify-center gap-1 text-left">
+                  <div className="flex min-w-0 flex-1 flex-col justify-center text-left">
                     <div className="flex items-center gap-2">
-                      <div className="text-base font-semibold text-foreground tabular-nums">{priceLabel}</div>
+                      <span className="text-base font-semibold text-foreground tabular-nums">{priceLabel}</span>
                       <PriceBenchmarkBadge
                         supplierId={defaultSupplierId}
                         catalogProductId={product.catalog_id}
@@ -527,20 +525,20 @@ export const ProductCard = memo(function ProductCard({
                       />
                     </div>
                     {unitHint ? (
-                      <div className="text-[11px] text-muted-foreground">{unitHint}</div>
+                      <span className="text-[12px] text-muted-foreground">{unitHint}</span>
                     ) : null}
                   </div>
                 ) : (
-                  <span className="flex min-w-0 flex-1 items-center gap-1 text-sm text-muted-foreground">
+                  <div className="flex min-w-0 flex-1 items-center gap-1 text-sm text-muted-foreground">
                     {isPriceLocked ? (
                       <>
-                        <Lock className="h-4 w-4" aria-hidden="true" />
+                        <Lock className="size-3.5" aria-hidden="true" />
                         <span>Price locked</span>
                       </>
                     ) : (
                       "Price unavailable"
                     )}
-                  </span>
+                  </div>
                 )}
                 <div className="flex flex-shrink-0 items-center gap-2">
                   {isInCart && cartItem ? (
@@ -550,10 +548,10 @@ export const ProductCard = memo(function ProductCard({
                       onRemove={() => removeItem(cartItem.supplierItemId)}
                       itemLabel={product.name}
                       canIncrease={!isUnavailable}
-                      className="rounded-lg border border-border/30 bg-background/90 px-2 py-1 shadow-none"
+                      className="rounded-lg border border-border/60 bg-background/90 px-2 py-1 shadow-none"
                     />
                   ) : null}
-                  {renderActionButton()}
+                  {!isInCart || !cartItem ? renderActionButton() : null}
                 </div>
               </div>
             </div>
