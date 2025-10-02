@@ -271,13 +271,14 @@ export const ProductCard = memo(function ProductCard({
     availability === "OUT_OF_STOCK" ||
     (availability === "UNKNOWN" && product.active_supplier_count === 0);
 
-  const detailLink = product.sample_source_url
-    ? {
-        href: product.sample_source_url,
-        target: "_blank" as const,
-        rel: "noreferrer" as const,
-      }
-    : undefined;
+  const detailLink = useMemo(() => {
+    if (!product.sample_source_url) return undefined;
+    return {
+      href: product.sample_source_url,
+      target: "_blank" as const,
+      rel: "noreferrer" as const,
+    };
+  }, [product.sample_source_url]);
 
   const allowPrice = showPrice !== false;
   const hasVisiblePrice = allowPrice && product.best_price != null;
@@ -298,15 +299,6 @@ export const ProductCard = memo(function ProductCard({
     },
   );
 
-  const cartButtonClassName = cn(
-    "relative h-10 w-10 rounded-full bg-primary text-primary-foreground shadow-[0_14px_26px_rgba(45,155,192,0.35)] transition-transform duration-200 ease-out",
-    "hover:-translate-y-0.5 hover:shadow-[0_20px_34px_rgba(45,155,192,0.45)]",
-    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/45 focus-visible:ring-offset-1 focus-visible:ring-offset-background",
-    "after:pointer-events-none after:absolute after:-top-1 after:-right-1 after:rounded-full after:bg-primary/95 after:px-[6px] after:py-[1px] after:text-[10px] after:font-semibold after:uppercase after:tracking-wide after:text-primary-foreground after:opacity-0 after:transition-all after:duration-200 after:content-['+1']",
-    "group-hover/card:after:-translate-y-0.5 group-hover/card:after:opacity-100",
-    "disabled:translate-y-0 disabled:bg-muted disabled:text-muted-foreground disabled:shadow-none disabled:after:opacity-0",
-  );
-
   const handleSeePrice = useCallback(() => {
     if (!detailLink) return;
     if (typeof window === "undefined") return;
@@ -325,6 +317,17 @@ export const ProductCard = memo(function ProductCard({
   );
 
   const renderActionButton = () => {
+    const buttonContent = (
+      <>
+        {isAdding ? (
+          <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
+        ) : (
+          <ShoppingCart className="mr-2 h-4 w-4" aria-hidden="true" />
+        )}
+        <span>Add</span>
+      </>
+    );
+
     if (isPriceLocked) {
       const disabled = !detailLink;
       return (
@@ -332,8 +335,8 @@ export const ProductCard = memo(function ProductCard({
           ref={setCartButtonRef}
           type="button"
           variant="outline"
-          size="icon"
-          className="h-10 w-10 rounded-full border border-border/70 bg-card text-muted-foreground transition-colors duration-200 ease-out hover:bg-muted/60 focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-1"
+          size="sm"
+          className="h-9 px-3"
           onClick={disabled ? undefined : handleSeePrice}
           disabled={disabled}
           aria-label={
@@ -342,7 +345,8 @@ export const ProductCard = memo(function ProductCard({
               : `Price unavailable for ${product.name}`
           }
         >
-          <Lock className="h-4 w-4" aria-hidden="true" />
+          <Lock className="mr-2 h-4 w-4" aria-hidden="true" />
+          See price
         </Button>
       );
     }
@@ -354,17 +358,13 @@ export const ProductCard = memo(function ProductCard({
             <Button
               ref={setCartButtonRef}
               type="button"
-              size="icon"
-              className={cartButtonClassName}
+              size="sm"
+              className="h-9 px-3"
               disabled={isAdding || isUnavailable}
               aria-label={`Choose supplier for ${product.name}`}
               title={isUnavailable ? "Out of stock" : undefined}
             >
-              {isAdding ? (
-                <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-              ) : (
-                <ShoppingCart className="h-4 w-4" aria-hidden="true" />
-              )}
+              {buttonContent}
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-56 space-y-2 p-2" align="end" sideOffset={8}>
@@ -390,18 +390,14 @@ export const ProductCard = memo(function ProductCard({
       <Button
         ref={setCartButtonRef}
         type="button"
-        size="icon"
-        className={cartButtonClassName}
+        size="sm"
+        className="h-9 px-3"
         onClick={() => handleAdd(defaultSupplierId, defaultSupplierName)}
         disabled={isAdding || isUnavailable}
         aria-label={`Add ${product.name}`}
         title={isUnavailable ? "Out of stock" : undefined}
       >
-        {isAdding ? (
-          <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-        ) : (
-          <ShoppingCart className="h-4 w-4" aria-hidden="true" />
-        )}
+        {buttonContent}
       </Button>
     );
   };
@@ -416,23 +412,22 @@ export const ProductCard = memo(function ProductCard({
       aria-labelledby={titleId}
       onKeyDown={handleCardKeyDown}
       className={cn(
-        "group/card relative flex h-full w-full flex-col overflow-hidden rounded-[16px] border border-border bg-card p-3 pb-0 text-left",
-        "shadow-[0_16px_36px_rgba(15,23,42,0.1)] transition-all duration-200 ease-out",
-        "hover:-translate-y-0.5 hover:shadow-[0_26px_46px_rgba(15,23,42,0.14)]",
+        "group/card relative flex h-full w-full flex-col overflow-hidden rounded-2xl border border-border bg-card text-left shadow-sm transition-shadow duration-200",
+        "hover:shadow-md",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/35 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
         "motion-reduce:transform-none motion-reduce:transition-none",
         isInCart && "ring-1 ring-primary/25",
         className,
       )}
     >
-      <div className="flex flex-1 flex-col">
-        <div className="flex flex-col gap-[6px]">
+      <div className="flex flex-1 flex-col px-4 pb-4 pt-4 md:px-5 md:pb-5 md:pt-5">
+        <div className="flex flex-col gap-1">
           {detailLink ? (
             <a
               {...detailLink}
               id={titleId}
               title={product.name}
-              className="line-clamp-1 text-[15px] font-medium text-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              className="line-clamp-1 text-[14px] font-medium text-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
               {product.name}
             </a>
@@ -440,18 +435,17 @@ export const ProductCard = memo(function ProductCard({
             <p
               id={titleId}
               title={product.name}
-              className="line-clamp-1 text-[15px] font-medium text-foreground"
+              className="line-clamp-1 text-[14px] font-medium text-foreground"
             >
               {product.name}
             </p>
           )}
           {headerSubline ? (
-            <p className="text-xs font-medium text-muted-foreground">{headerSubline}</p>
+            <p className="text-[12px] text-muted-foreground">{headerSubline}</p>
           ) : null}
         </div>
         <div
-          className="relative mt-3 flex aspect-square w-full items-center justify-center overflow-hidden rounded-[12px] shadow-[inset_0_0_0_1px_rgba(15,23,42,0.06)]"
-          style={{ background: "var(--catalog-image-surface, #f7f8fd)" }}
+          className="relative mt-3 flex aspect-square w-full items-center justify-center rounded-xl bg-[color:var(--catalog-image-surface,var(--panel,#FAFBFC))] p-4 md:p-5"
         >
           <img
             ref={imageRef}
@@ -462,23 +456,17 @@ export const ProductCard = memo(function ProductCard({
             fetchPriority="low"
             draggable={false}
             className={cn(
-              "max-h-[82%] w-auto max-w-[82%] object-contain",
+              "max-h-[80%] w-auto max-w-[90%] object-contain",
               "transition-transform duration-200 ease-out",
-              "drop-shadow-[0_18px_32px_rgba(15,23,42,0.18)]",
+              "[filter:drop-shadow(0_2px_6px_rgba(0,0,0,0.08))]",
               "group-hover/card:-translate-y-0.5 group-hover/card:scale-[1.01]",
               "motion-reduce:transition-none",
-              isUnavailable && "grayscale-[30%] opacity-70",
+              isUnavailable && "grayscale opacity-70",
             )}
           />
         </div>
-        <div
-          className={cn(
-            "mt-3 flex items-center justify-between gap-3 rounded-[10px] px-1.5 py-2 text-[13px] text-muted-foreground transition-all duration-200 ease-out",
-            "sm:px-1.5",
-            "lg:pointer-events-none lg:opacity-0 lg:group-hover/card:pointer-events-auto lg:group-hover/card:opacity-100",
-          )}
-        >
-          <div className="flex min-w-0 items-center gap-2 text-foreground/80">
+        <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
+          <div className="flex min-w-0 items-center gap-2 text-foreground">
             {supplierCount === 1 ? (
               <>
                 <SupplierLogo
@@ -486,31 +474,31 @@ export const ProductCard = memo(function ProductCard({
                   logoUrl={primarySupplierLogo}
                   className="h-6 w-6 flex-shrink-0 rounded-full border border-border/60 bg-white shadow-sm"
                 />
-                <span className="truncate font-medium" title={primarySupplierName || supplierSummary}>
+                <span className="truncate text-[13px] font-medium" title={primarySupplierName || supplierSummary}>
                   {primarySupplierName || supplierSummary}
                 </span>
               </>
             ) : (
-              <span className="truncate font-medium" title={supplierSummary}>
+              <span className="truncate text-[13px] font-medium" title={supplierSummary}>
                 {supplierSummary}
               </span>
             )}
           </div>
-          <div className="flex flex-shrink-0 items-center gap-2 text-muted-foreground">
+          <div className="flex flex-shrink-0 items-center gap-1">
             <span className={availabilityDotClass} aria-hidden="true" />
-            <span className="truncate text-xs font-medium" title={availabilitySummary}>
+            <span className="truncate font-medium" title={availabilitySummary}>
               {availabilitySummary}
             </span>
           </div>
         </div>
-        <div className="mt-auto w-full pt-3">
+        <div className="mt-auto w-full">
           {isUnavailable && !isInCart ? (
-            <div className="rounded-t-[12px] border border-dashed border-border/80 bg-background/85 px-3 py-2 shadow-inner">
+            <div className="mt-3 border-t border-border pt-3">
               <Button
                 ref={setCartButtonRef}
                 type="button"
                 variant="outline"
-                className="h-12 w-full justify-center rounded-full border border-border/80 text-sm font-medium"
+                className="h-9 w-full justify-center gap-2"
                 aria-label={`Notify me when ${product.name} is back`}
               >
                 <BellRing className="h-4 w-4" aria-hidden="true" />
@@ -518,20 +506,25 @@ export const ProductCard = memo(function ProductCard({
               </Button>
             </div>
           ) : (
-            <div className="flex h-12 items-center justify-between rounded-t-[12px] border border-border/70 bg-background/95 px-3 shadow-sm backdrop-blur">
-              <div className="min-w-0" aria-live="polite">
+            <div className="mt-3 flex items-center justify-between gap-3 border-t border-border pt-3">
+              <div className="min-w-0 leading-tight" aria-live="polite">
                 {priceLabel ? (
                   <>
                     <div className="text-base font-semibold text-foreground tabular-nums">{priceLabel}</div>
                     {unitHint ? (
-                      <div className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-                        {unitHint}
-                      </div>
+                      <div className="text-[11px] text-muted-foreground">{unitHint}</div>
                     ) : null}
                   </>
                 ) : (
-                  <div className="text-sm font-medium text-muted-foreground">
-                    {isPriceLocked ? "See price" : "Price unavailable"}
+                  <div className="flex items-center gap-1 text-sm font-medium text-muted-foreground">
+                    {isPriceLocked ? (
+                      <>
+                        <Lock className="h-4 w-4" aria-hidden="true" />
+                        See price
+                      </>
+                    ) : (
+                      "Price unavailable"
+                    )}
                   </div>
                 )}
               </div>
@@ -543,7 +536,7 @@ export const ProductCard = memo(function ProductCard({
                     onRemove={() => removeItem(cartItem.supplierItemId)}
                     itemLabel={product.name}
                     canIncrease={!isUnavailable}
-                    className="bg-card/95"
+                    className="rounded-lg border border-border bg-background/90 px-2 py-1 shadow-none"
                   />
                 ) : null}
                 {renderActionButton()}
