@@ -587,7 +587,10 @@ function DashboardOverviewContent() {
         >
           {sectionTiles.map((section) => {
             const sectionTileMeta = Object.fromEntries(
-              section.tiles.map((tile) => [tile.id, tileMeta[tile.id] ?? { size: 'medium', visible: true }])
+              section.tiles.map((tile) => [
+                tile.id,
+                tileMeta[tile.id] ?? { size: 'medium' as const, visible: true },
+              ])
             )
             return (
               <DashboardSection
