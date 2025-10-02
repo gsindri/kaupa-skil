@@ -1150,27 +1150,28 @@ function FiltersBar({
     return () => window.removeEventListener('keydown', handleShortcuts)
   }, [toggleFilters, setView, view, onLockChange])
 
-  return (
-    <section
-      style={COMPACT_TOOLBAR_TOKENS}
-      className={cn(
-        'relative bg-[color:var(--toolbar-bg)] backdrop-blur-xl ring-1 ring-inset ring-[color:var(--ring-idle)] after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-white/12 after:content-[""]',
-        scrolled && 'before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-white/16 before:opacity-70 before:content-[""]',
-      )}
-    >
-      {error && (
-        <div className={cn(containerClass, 'py-3')}>
-          <Alert
-            variant="destructive"
-            className="rounded-[var(--ctrl-r,12px)] bg-white/12 text-[color:var(--ink)] ring-1 ring-inset ring-white/15 shadow-[0_16px_36px_rgba(3,10,22,0.45)] backdrop-blur-xl"
-          >
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>{String(error)}</AlertDescription>
-          </Alert>
-        </div>
-      )}
+    return (
+      <section
+        style={COMPACT_TOOLBAR_TOKENS}
+        className={cn(
+          'relative bg-[color:var(--toolbar-bg)] backdrop-blur-xl ring-1 ring-inset ring-[color:var(--ring-idle)] after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-white/12 after:content-[""]',
+          scrolled && 'before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-white/16 before:opacity-70 before:content-[""]',
+        )}
+      >
+        {error && (
+          <div className={cn(containerClass, 'py-3')}>
+            <Alert
+              variant="destructive"
+              className="rounded-[var(--ctrl-r,12px)] bg-white/12 text-[color:var(--ink)] ring-1 ring-inset ring-white/15 shadow-[0_16px_36px_rgba(3,10,22,0.45)] backdrop-blur-xl"
+            >
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{String(error)}</AlertDescription>
+            </Alert>
+          </div>
+        )}
 
-      <div className={containerClass}>
+        <div className={containerClass}>
+          <div className="flex flex-col gap-3 py-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="relative min-w-0 flex-1">
               <label className="sr-only" htmlFor="catalog-search">
                 Search products
@@ -1252,12 +1253,14 @@ function FiltersBar({
               />
             </div>
           </div>
+
           {formattedTotal && (
+            <div className="pb-3 text-sm font-semibold text-[color:var(--ink-hi)]">
               <span className="tabular-nums">{formattedTotal} results</span>
             </div>
           )}
-        </div>
 
+          <div className="flex flex-wrap items-center gap-2 pb-3">
             <TriStateChip
               state={triStock}
               onStateChange={setTriStock}
@@ -1316,7 +1319,6 @@ function FiltersBar({
             )}
           </div>
         </div>
-      </div>
-    </section>
-  )
+      </section>
+    )
 }
