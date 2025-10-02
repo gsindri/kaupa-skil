@@ -467,7 +467,9 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
               }[p.availability_status ?? 'UNKNOWN']
 
             const connectedSupplierIds = new Set(
-              connectedSuppliers?.map(cs => cs.supplier_id) ?? [],
+              Array.isArray(connectedSuppliers)
+                ? connectedSuppliers.map(cs => cs.supplier_id)
+                : [],
             )
 
             const suppliers = buildSupplierChipData(
