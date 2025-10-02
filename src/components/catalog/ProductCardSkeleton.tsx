@@ -18,10 +18,11 @@ export function ProductCardSkeleton({ className }: ProductCardSkeletonProps) {
     >
       <CardContent className="catalog-card__content flex flex-1 flex-col gap-3 px-5 pb-4 pt-5">
         <div className="catalog-card__media relative">
-          <div className="catalog-card__surface aspect-[4/3] w-full bg-muted/30 rounded-xl overflow-hidden" aria-hidden="true">
-            <div className="catalog-card__image-frame h-full w-full bg-gradient-to-b from-background/50 to-muted/50">
-              <Skeleton className="catalog-card__image h-full w-full rounded-none" />
-            </div>
+          <div
+            className="relative flex aspect-square w-full items-center justify-center rounded-xl bg-card p-3 md:p-4"
+            aria-hidden="true"
+          >
+            <Skeleton className="h-full w-full rounded-lg" />
           </div>
         </div>
         <div className="catalog-card__details flex flex-col gap-2 px-4">

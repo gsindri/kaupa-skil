@@ -452,7 +452,7 @@ export const ProductCard = memo(function ProductCard({
           )}
         </div>
         <div
-          className="relative mt-3 flex aspect-square w-full items-center justify-center rounded-xl bg-[color:var(--catalog-image-surface,var(--panel,#FAFBFC))] p-3 shadow-[inset_0_1px_2px_rgba(15,23,42,0.06)] md:p-4"
+          className="relative mt-3 flex aspect-square w-full items-center justify-center rounded-xl bg-card p-3 md:p-4"
         >
           <img
             ref={imageRef}
