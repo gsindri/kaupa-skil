@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Shield, Users, Activity, AlertTriangle, TestTube, BookOpen, PackageSearch } from 'lucide-react'
+import { Shield, Users, Activity, AlertTriangle, TestTube, BookOpen, PackageSearch, TrendingUp, ShieldCheck } from 'lucide-react'
 import { ElevationBanner } from '@/components/layout/ElevationBanner'
 import { SupportSessionBanner } from '@/components/admin/SupportSessionBanner'
 import { ElevationDialog } from '@/components/admin/ElevationDialog'
@@ -17,6 +17,7 @@ import { SecurityDocumentation } from '@/components/admin/SecurityDocumentation'
 import { Button } from '@/components/ui/button'
 import { UnmatchedProductsTable } from '@/components/admin/UnmatchedProductsTable'
 import { PlatformAdminSetup } from '@/components/admin/PlatformAdminSetup'
+import { Link } from 'react-router-dom'
 
 export default function Admin() {
   const [elevationDialogOpen, setElevationDialogOpen] = useState(false)
@@ -44,7 +45,7 @@ export default function Admin() {
       </div>
 
       <Tabs defaultValue="monitoring" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-8">
+        <TabsList className="grid w-full grid-cols-10">
           <TabsTrigger value="setup" className="flex items-center gap-2">
             <Shield className="h-4 w-4" />
             Setup
@@ -64,6 +65,14 @@ export default function Admin() {
           <TabsTrigger value="jobs" className="flex items-center gap-2">
             <Activity className="h-4 w-4" />
             Jobs
+          </TabsTrigger>
+          <TabsTrigger value="benchmarks" className="flex items-center gap-2">
+            <TrendingUp className="h-4 w-4" />
+            Benchmarks
+          </TabsTrigger>
+          <TabsTrigger value="consent" className="flex items-center gap-2">
+            <ShieldCheck className="h-4 w-4" />
+            Consent
           </TabsTrigger>
           <TabsTrigger value="unmatched" className="flex items-center gap-2">
             <PackageSearch className="h-4 w-4" />
@@ -127,6 +136,36 @@ export default function Admin() {
 
         <TabsContent value="jobs" className="space-y-6">
           <JobManagement />
+        </TabsContent>
+
+        <TabsContent value="benchmarks" className="space-y-6">
+          <div className="space-y-4">
+            <p className="text-muted-foreground">
+              The Benchmark Management feature allows you to configure privacy thresholds,
+              run monthly price aggregations, and view benchmark data.
+            </p>
+            <Link to="/admin/benchmarks">
+              <Button>
+                <TrendingUp className="mr-2 h-4 w-4" />
+                Open Benchmark Management
+              </Button>
+            </Link>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="consent" className="space-y-6">
+          <div className="space-y-4">
+            <p className="text-muted-foreground">
+              Manage which suppliers participate in price aggregation. Suppliers can opt out
+              to exclude their data from benchmark calculations.
+            </p>
+            <Link to="/admin/supplier-consent">
+              <Button>
+                <ShieldCheck className="mr-2 h-4 w-4" />
+                Open Supplier Consent Management
+              </Button>
+            </Link>
+          </div>
         </TabsContent>
 
         <TabsContent value="unmatched" className="space-y-6">

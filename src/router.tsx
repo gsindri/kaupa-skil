@@ -23,6 +23,8 @@ import ResetPassword from "@/pages/auth/ResetPassword";
 import Settings from "@/pages/Settings";
 import SignupPage from "@/pages/auth/SignupPage";
 import Suppliers from "@/pages/Suppliers";
+import BenchmarkManagement from "@/pages/admin/BenchmarkManagement";
+import SupplierOptOut from "@/pages/admin/SupplierOptOut";
 
 export const routes = [
   {
@@ -73,6 +75,14 @@ export const routes = [
       {
         path: "admin",
         element: <Admin />,
+      },
+      {
+        path: "admin/benchmarks",
+        element: <BenchmarkManagement />,
+      },
+      {
+        path: "admin/supplier-consent",
+        element: <SupplierOptOut />,
       },
       {
         path: "settings",
