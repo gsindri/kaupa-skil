@@ -2,6 +2,7 @@ import {
   useCallback,
   useEffect,
   useRef,
+  useState,
   type MouseEvent,
 } from "react";
 import { Button } from "@/components/ui/button";
@@ -33,9 +34,11 @@ export function CatalogQuantityStepper({
   const holdTimeoutRef = useRef<number>();
   const holdIntervalRef = useRef<number>();
   const latestQuantity = useRef(quantity);
+  const [optimisticQuantity, setOptimisticQuantity] = useState(quantity);
 
   useEffect(() => {
     latestQuantity.current = quantity;
+    setOptimisticQuantity(quantity);
   }, [quantity]);
 
   const stopHold = useCallback(() => {
@@ -56,13 +59,21 @@ export function CatalogQuantityStepper({
       const current = latestQuantity.current;
       if (next <= 0) {
         if (current > 0) {
+          latestQuantity.current = 0;
+          setOptimisticQuantity(0);
           onRemove();
         }
         return;
       }
+
       if (next !== current) {
+        latestQuantity.current = next;
+        setOptimisticQuantity(next);
         onChange(next);
+        return;
       }
+
+      setOptimisticQuantity(next);
     },
     [onChange, onRemove],
   );
@@ -137,7 +148,7 @@ export function CatalogQuantityStepper({
         className="catalog-card__stepper-count min-w-[2.75rem] text-center text-sm font-semibold tabular-nums"
         aria-live="polite"
       >
-        {quantity}
+        {optimisticQuantity}
       </span>
       <Button
         type="button"
