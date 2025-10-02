@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Shield, Users, Activity, AlertTriangle, TestTube, BookOpen, PackageSearch, TrendingUp, ShieldCheck } from 'lucide-react'
+import { Shield, Users, Activity, AlertTriangle, TestTube, BookOpen, PackageSearch, TrendingUp, ShieldCheck, Monitor } from 'lucide-react'
 import { ElevationBanner } from '@/components/layout/ElevationBanner'
 import { SupportSessionBanner } from '@/components/admin/SupportSessionBanner'
 import { ElevationDialog } from '@/components/admin/ElevationDialog'
@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/button'
 import { UnmatchedProductsTable } from '@/components/admin/UnmatchedProductsTable'
 import { PlatformAdminSetup } from '@/components/admin/PlatformAdminSetup'
 import { Link } from 'react-router-dom'
+import { BenchmarkDocumentation } from '@/components/admin/BenchmarkDocumentation'
 
 export default function Admin() {
   const [elevationDialogOpen, setElevationDialogOpen] = useState(false)
@@ -45,7 +46,7 @@ export default function Admin() {
       </div>
 
       <Tabs defaultValue="monitoring" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-10">
+        <TabsList className="grid w-full grid-cols-11">
           <TabsTrigger value="setup" className="flex items-center gap-2">
             <Shield className="h-4 w-4" />
             Setup
@@ -69,6 +70,10 @@ export default function Admin() {
           <TabsTrigger value="benchmarks" className="flex items-center gap-2">
             <TrendingUp className="h-4 w-4" />
             Benchmarks
+          </TabsTrigger>
+          <TabsTrigger value="bench-monitor" className="flex items-center gap-2">
+            <Monitor className="h-4 w-4" />
+            Monitor
           </TabsTrigger>
           <TabsTrigger value="consent" className="flex items-center gap-2">
             <ShieldCheck className="h-4 w-4" />
@@ -153,6 +158,21 @@ export default function Admin() {
           </div>
         </TabsContent>
 
+        <TabsContent value="bench-monitor" className="space-y-6">
+          <div className="space-y-4">
+            <p className="text-muted-foreground">
+              Monitor the benchmark computation system in real-time, including computation history,
+              success rates, and system health metrics.
+            </p>
+            <Link to="/admin/benchmark-monitoring">
+              <Button>
+                <Monitor className="mr-2 h-4 w-4" />
+                Open Benchmark Monitoring
+              </Button>
+            </Link>
+          </div>
+        </TabsContent>
+
         <TabsContent value="consent" className="space-y-6">
           <div className="space-y-4">
             <p className="text-muted-foreground">
@@ -177,7 +197,7 @@ export default function Admin() {
         </TabsContent>
 
         <TabsContent value="docs" className="space-y-6">
-          <SecurityDocumentation />
+          <BenchmarkDocumentation />
         </TabsContent>
       </Tabs>
 

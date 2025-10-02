@@ -25,6 +25,7 @@ import SignupPage from "@/pages/auth/SignupPage";
 import Suppliers from "@/pages/Suppliers";
 import BenchmarkManagement from "@/pages/admin/BenchmarkManagement";
 import SupplierOptOut from "@/pages/admin/SupplierOptOut";
+import BenchmarkDashboard from "@/pages/admin/BenchmarkDashboard";
 
 export const routes = [
   {
@@ -79,6 +80,10 @@ export const routes = [
       {
         path: "admin/benchmarks",
         element: <BenchmarkManagement />,
+      },
+      {
+        path: "admin/benchmark-monitoring",
+        element: <BenchmarkDashboard />,
       },
       {
         path: "admin/supplier-consent",
