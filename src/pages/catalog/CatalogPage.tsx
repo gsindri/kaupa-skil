@@ -1172,12 +1172,13 @@ function FiltersBar({
 
         <div className={containerClass}>
           <div className="flex flex-col gap-3 py-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="relative min-w-0 flex-1">
-              <label className="sr-only" htmlFor="catalog-search">
-                Search products
-              </label>
-              <Tooltip>
-                <TooltipTrigger asChild>
+            <div className="flex flex-col gap-1 sm:flex-1 sm:flex-row sm:items-center sm:gap-4">
+              <div className="relative min-w-0 flex-1">
+                <label className="sr-only" htmlFor="catalog-search">
+                  Search products
+                </label>
+                <Tooltip>
+                  <TooltipTrigger asChild>
                   <input
                     id="catalog-search"
                     ref={searchRef}
@@ -1206,6 +1207,12 @@ function FiltersBar({
                 >
                   <XCircle size={20} weight="fill" />
                 </button>
+              )}
+              </div>
+              {formattedTotal && (
+                <div className="flex items-center justify-between text-sm font-semibold text-[color:var(--ink-hi)] sm:flex-shrink-0 sm:justify-end">
+                  <span className="tabular-nums">{formattedTotal} results</span>
+                </div>
               )}
             </div>
             <div className="flex flex-shrink-0 items-center gap-2.5 sm:pl-3">
@@ -1253,12 +1260,6 @@ function FiltersBar({
               />
             </div>
           </div>
-
-          {formattedTotal && (
-            <div className="pb-3 text-sm font-semibold text-[color:var(--ink-hi)]">
-              <span className="tabular-nums">{formattedTotal} results</span>
-            </div>
-          )}
 
           <div className="flex flex-wrap items-center gap-2 pb-3">
             <TriStateChip
