@@ -18,7 +18,7 @@ import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover
 import { useCart } from "@/contexts/useBasket";
 import type { CartItem } from "@/lib/types";
 import { CatalogQuantityStepper } from "./CatalogQuantityStepper";
-import { BellRing, Loader2, Lock, ShoppingCart } from "lucide-react";
+import { Loader2, Lock, ShoppingCart } from "lucide-react";
 import { PriceBenchmarkBadge } from "./PriceBenchmarkBadge";
 
 type SupplierEntry = {
@@ -291,7 +291,7 @@ export const ProductCard = memo(function ProductCard({
   const imageAlt = headerSubline ? `${product.name} – ${headerSubline}` : product.name;
 
   const availabilityDotClass = cn(
-    "h-3.5 w-3.5 rounded-full border border-white/40 shadow-sm",
+    "h-3 w-3 rounded-full border border-white/40 shadow-sm",
     {
       "bg-success": availability === "IN_STOCK",
       "bg-warning": availability === "LOW_STOCK",
@@ -408,6 +408,7 @@ export const ProductCard = memo(function ProductCard({
       data-grid-card
       data-in-cart={isInCart ? "true" : undefined}
       data-unavailable={isUnavailable ? "true" : undefined}
+      data-oos={isUnavailable ? "true" : undefined}
       tabIndex={0}
       role="group"
       aria-labelledby={titleId}
@@ -421,7 +422,7 @@ export const ProductCard = memo(function ProductCard({
         className,
       )}
     >
-      <div className="flex flex-1 flex-col px-4 pb-4 pt-4 md:px-5 md:pb-5 md:pt-5">
+      <div className="flex flex-1 flex-col px-3 pb-3 pt-3 md:px-4 md:pb-4 md:pt-4 lg:px-6 lg:pb-6 lg:pt-6">
         <div className="flex min-h-[44px] flex-col gap-1">
           {detailLink ? (
             <a
@@ -442,7 +443,7 @@ export const ProductCard = memo(function ProductCard({
             </p>
           )}
           {headerSubline ? (
-            <p className="text-[12px] text-muted-foreground">{headerSubline}</p>
+            <p className="text-[12px] font-normal text-muted-foreground">{headerSubline}</p>
           ) : (
             <span
               aria-hidden="true"
@@ -453,7 +454,7 @@ export const ProductCard = memo(function ProductCard({
           )}
         </div>
         <div
-          className="relative mt-3 flex aspect-square w-full items-center justify-center rounded-xl bg-card p-3 md:p-4"
+          className="relative mt-4 flex aspect-square w-full items-center justify-center rounded-xl bg-[color:var(--panel,#FAFBFC)] p-3 md:p-4 lg:p-6"
         >
           <img
             ref={imageRef}
@@ -464,60 +465,59 @@ export const ProductCard = memo(function ProductCard({
             fetchPriority="low"
             draggable={false}
             className={cn(
-              "max-h-[88%] w-auto max-w-[94%] object-contain",
+              "max-h-[75%] w-auto max-w-[92%] object-contain",
               "transition-transform duration-200 ease-out",
-              "[filter:drop-shadow(0_2px_6px_rgba(0,0,0,0.08))]",
-              "group-hover/card:-translate-y-0.5 group-hover/card:scale-[1.01]",
+              "[filter:var(--product-card-image-filter,drop-shadow(0_2px_6px_rgba(0,0,0,0.08)))]",
+              "hover:-translate-y-0.5 hover:scale-[1.01]",
               "motion-reduce:transition-none",
-              isUnavailable && "grayscale opacity-70",
+              isUnavailable && "[--product-card-image-filter:grayscale(30%)_opacity(0.7)_drop-shadow(0_2px_6px_rgba(0,0,0,0.08))]",
             )}
           />
         </div>
-        <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
-          <div className="flex min-w-0 items-center gap-2 text-foreground">
+        <div className="mt-2 flex items-center justify-between text-[12px] text-muted-foreground">
+          <div className="flex min-w-0 items-center gap-1.5">
             {supplierCount === 1 ? (
               <>
                 <SupplierLogo
                   name={primarySupplierName || supplierSummary}
                   logoUrl={primarySupplierLogo}
-                  className="h-6 w-6 flex-shrink-0 rounded-full border border-border/60 bg-white shadow-sm"
+                  className="h-5 w-5 flex-shrink-0 rounded-full border border-border/60 bg-white shadow-sm"
                 />
-                <span className="truncate text-[13px] font-medium" title={primarySupplierName || supplierSummary}>
+                <span className="truncate" title={primarySupplierName || supplierSummary}>
                   {primarySupplierName || supplierSummary}
                 </span>
               </>
             ) : (
-              <span className="truncate text-[13px] font-medium" title={supplierSummary}>
+              <span className="truncate" title={supplierSummary}>
                 {supplierSummary}
               </span>
             )}
           </div>
-          <div className="flex flex-shrink-0 items-center gap-1">
+          <div className="inline-flex flex-shrink-0 items-center gap-1.5">
             <span className={availabilityDotClass} aria-hidden="true" />
-            <span className="truncate font-medium" title={availabilitySummary}>
+            <span className="truncate" title={availabilitySummary}>
               {availabilitySummary}
             </span>
           </div>
         </div>
         <div className="mt-auto w-full">
           {isUnavailable && !isInCart ? (
-            <div className="mt-3 border-t border-border/30 pt-3">
+            <div className="mt-4 border-t border-border/30 pt-2">
               <Button
                 ref={setCartButtonRef}
                 type="button"
                 variant="outline"
-                className="h-9 w-full justify-center gap-2"
+                className="h-9 w-full"
                 aria-label={`Notify me when ${product.name} is back`}
               >
-                <BellRing className="h-4 w-4" aria-hidden="true" />
                 Notify me
               </Button>
             </div>
           ) : (
-            <div className="mt-3 flex items-center justify-between gap-3 border-t border-border/30 pt-3">
-              <div className="min-w-0 leading-tight" aria-live="polite">
+            <div className="mt-4 border-t border-border/30 pt-2">
+              <div className="flex h-12 items-center justify-between gap-3" aria-live="polite">
                 {priceLabel ? (
-                  <div className="flex min-h-[44px] flex-col justify-between gap-1">
+                  <div className="flex min-w-0 flex-1 flex-col justify-center gap-1 text-left">
                     <div className="flex items-center gap-2">
                       <div className="text-base font-semibold text-foreground tabular-nums">{priceLabel}</div>
                       <PriceBenchmarkBadge
@@ -528,17 +528,10 @@ export const ProductCard = memo(function ProductCard({
                     </div>
                     {unitHint ? (
                       <div className="text-[11px] text-muted-foreground">{unitHint}</div>
-                    ) : (
-                      <span
-                        aria-hidden="true"
-                        className="block text-[11px] text-transparent"
-                      >
-                        {"\u00A0"}
-                      </span>
-                    )}
+                    ) : null}
                   </div>
                 ) : (
-                  <div className="flex items-center gap-1 text-sm font-medium text-muted-foreground">
+                  <span className="flex min-w-0 flex-1 items-center gap-1 text-sm text-muted-foreground">
                     {isPriceLocked ? (
                       <>
                         <Lock className="h-4 w-4" aria-hidden="true" />
@@ -547,21 +540,21 @@ export const ProductCard = memo(function ProductCard({
                     ) : (
                       "Price unavailable"
                     )}
-                  </div>
+                  </span>
                 )}
-              </div>
-              <div className="flex items-center gap-2">
-                {isInCart && cartItem ? (
-                  <CatalogQuantityStepper
-                    quantity={cartQuantity}
-                    onChange={qty => updateQuantity(cartItem.supplierItemId, qty)}
-                    onRemove={() => removeItem(cartItem.supplierItemId)}
-                    itemLabel={product.name}
-                    canIncrease={!isUnavailable}
-                    className="rounded-lg border border-border/30 bg-background/90 px-2 py-1 shadow-none"
-                  />
-                ) : null}
-                {renderActionButton()}
+                <div className="flex flex-shrink-0 items-center gap-2">
+                  {isInCart && cartItem ? (
+                    <CatalogQuantityStepper
+                      quantity={cartQuantity}
+                      onChange={qty => updateQuantity(cartItem.supplierItemId, qty)}
+                      onRemove={() => removeItem(cartItem.supplierItemId)}
+                      itemLabel={product.name}
+                      canIncrease={!isUnavailable}
+                      className="rounded-lg border border-border/30 bg-background/90 px-2 py-1 shadow-none"
+                    />
+                  ) : null}
+                  {renderActionButton()}
+                </div>
               </div>
             </div>
           )}
