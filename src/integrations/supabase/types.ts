@@ -94,6 +94,44 @@ export type Database = {
           },
         ]
       }
+      benchmark_settings: {
+        Row: {
+          id: string
+          min_distinct_orgs: number
+          min_orders_count: number
+          updated_at: string
+          updated_by: string | null
+          winsor_lower_percentile: number
+          winsor_upper_percentile: number
+        }
+        Insert: {
+          id?: string
+          min_distinct_orgs?: number
+          min_orders_count?: number
+          updated_at?: string
+          updated_by?: string | null
+          winsor_lower_percentile?: number
+          winsor_upper_percentile?: number
+        }
+        Update: {
+          id?: string
+          min_distinct_orgs?: number
+          min_orders_count?: number
+          updated_at?: string
+          updated_by?: string | null
+          winsor_lower_percentile?: number
+          winsor_upper_percentile?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "benchmark_settings_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       catalog_product: {
         Row: {
           base_qty_per_pack: number | null
@@ -567,6 +605,85 @@ export type Database = {
         }
         Relationships: []
       }
+      price_benchmarks: {
+        Row: {
+          avg_kr_per_unit: number | null
+          benchmark_month: string
+          catalog_product_id: string
+          computed_at: string
+          distinct_orgs_count: number | null
+          id: string
+          is_displayable: boolean
+          median_kr_per_unit: number | null
+          orders_count: number | null
+          p25_kr_per_unit: number | null
+          p75_kr_per_unit: number | null
+          settings_snapshot: Json | null
+          stddev_kr_per_unit: number | null
+          supplier_id: string
+          total_base_units: number | null
+          winsor_applied: boolean
+        }
+        Insert: {
+          avg_kr_per_unit?: number | null
+          benchmark_month: string
+          catalog_product_id: string
+          computed_at?: string
+          distinct_orgs_count?: number | null
+          id?: string
+          is_displayable?: boolean
+          median_kr_per_unit?: number | null
+          orders_count?: number | null
+          p25_kr_per_unit?: number | null
+          p75_kr_per_unit?: number | null
+          settings_snapshot?: Json | null
+          stddev_kr_per_unit?: number | null
+          supplier_id: string
+          total_base_units?: number | null
+          winsor_applied?: boolean
+        }
+        Update: {
+          avg_kr_per_unit?: number | null
+          benchmark_month?: string
+          catalog_product_id?: string
+          computed_at?: string
+          distinct_orgs_count?: number | null
+          id?: string
+          is_displayable?: boolean
+          median_kr_per_unit?: number | null
+          orders_count?: number | null
+          p25_kr_per_unit?: number | null
+          p75_kr_per_unit?: number | null
+          settings_snapshot?: Json | null
+          stddev_kr_per_unit?: number | null
+          supplier_id?: string
+          total_base_units?: number | null
+          winsor_applied?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "price_benchmarks_catalog_product_id_fkey"
+            columns: ["catalog_product_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_product"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "price_benchmarks_catalog_product_id_fkey"
+            columns: ["catalog_product_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_catalog"
+            referencedColumns: ["catalog_id"]
+          },
+          {
+            foreignKeyName: "price_benchmarks_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string | null
@@ -789,6 +906,8 @@ export type Database = {
       }
       suppliers: {
         Row: {
+          aggregation_opt_out_date: string | null
+          allow_price_aggregation: boolean | null
           avg_lead_time_days: number | null
           badges: string[] | null
           contact_email: string | null
@@ -809,6 +928,8 @@ export type Database = {
           website: string | null
         }
         Insert: {
+          aggregation_opt_out_date?: string | null
+          allow_price_aggregation?: boolean | null
           avg_lead_time_days?: number | null
           badges?: string[] | null
           contact_email?: string | null
@@ -829,6 +950,8 @@ export type Database = {
           website?: string | null
         }
         Update: {
+          aggregation_opt_out_date?: string | null
+          allow_price_aggregation?: boolean | null
           avg_lead_time_days?: number | null
           badges?: string[] | null
           contact_email?: string | null
@@ -963,6 +1086,14 @@ export type Database = {
           vat_included_val: boolean
         }
         Returns: number
+      }
+      compute_monthly_benchmarks: {
+        Args: { target_month: string }
+        Returns: {
+          displayable_count: number
+          processed_count: number
+          skipped_count: number
+        }[]
       }
       create_elevation: {
         Args: { duration_minutes?: number; reason_text: string }

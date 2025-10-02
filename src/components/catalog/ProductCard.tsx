@@ -412,7 +412,7 @@ export const ProductCard = memo(function ProductCard({
       aria-labelledby={titleId}
       onKeyDown={handleCardKeyDown}
       className={cn(
-        "group/card relative flex h-full w-full flex-col overflow-hidden rounded-2xl border border-border bg-card text-left shadow-sm transition-shadow duration-200",
+        "group/card relative flex h-full w-full flex-col overflow-hidden rounded-2xl border border-border/30 bg-card text-left shadow-sm transition-shadow duration-200",
         "hover:shadow-md",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/35 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
         "motion-reduce:transform-none motion-reduce:transition-none",
@@ -445,7 +445,7 @@ export const ProductCard = memo(function ProductCard({
           ) : null}
         </div>
         <div
-          className="relative mt-3 flex aspect-square w-full items-center justify-center rounded-xl bg-[color:var(--catalog-image-surface,var(--panel,#FAFBFC))] p-4 md:p-5"
+          className="relative mt-3 flex aspect-square w-full items-center justify-center rounded-xl bg-[color:var(--catalog-image-surface,var(--panel,#FAFBFC))] p-3 shadow-[inset_0_1px_2px_rgba(15,23,42,0.06)] md:p-4"
         >
           <img
             ref={imageRef}
@@ -456,7 +456,7 @@ export const ProductCard = memo(function ProductCard({
             fetchPriority="low"
             draggable={false}
             className={cn(
-              "max-h-[80%] w-auto max-w-[90%] object-contain",
+              "max-h-[88%] w-auto max-w-[94%] object-contain",
               "transition-transform duration-200 ease-out",
               "[filter:drop-shadow(0_2px_6px_rgba(0,0,0,0.08))]",
               "group-hover/card:-translate-y-0.5 group-hover/card:scale-[1.01]",
@@ -493,7 +493,7 @@ export const ProductCard = memo(function ProductCard({
         </div>
         <div className="mt-auto w-full">
           {isUnavailable && !isInCart ? (
-            <div className="mt-3 border-t border-border pt-3">
+            <div className="mt-3 border-t border-border/30 pt-3">
               <Button
                 ref={setCartButtonRef}
                 type="button"
@@ -506,7 +506,7 @@ export const ProductCard = memo(function ProductCard({
               </Button>
             </div>
           ) : (
-            <div className="mt-3 flex items-center justify-between gap-3 border-t border-border pt-3">
+            <div className="mt-3 flex items-center justify-between gap-3 border-t border-border/30 pt-3">
               <div className="min-w-0 leading-tight" aria-live="polite">
                 {priceLabel ? (
                   <>
@@ -536,7 +536,7 @@ export const ProductCard = memo(function ProductCard({
                     onRemove={() => removeItem(cartItem.supplierItemId)}
                     itemLabel={product.name}
                     canIncrease={!isUnavailable}
-                    className="rounded-lg border border-border bg-background/90 px-2 py-1 shadow-none"
+                    className="rounded-lg border border-border/30 bg-background/90 px-2 py-1 shadow-none"
                   />
                 ) : null}
                 {renderActionButton()}

@@ -1171,8 +1171,6 @@ function FiltersBar({
       )}
 
       <div className={containerClass}>
-        <div className="flex flex-col gap-1 py-1.5 sm:py-2">
-          <div className="flex flex-wrap items-center gap-2.5">
             <div className="relative min-w-0 flex-1">
               <label className="sr-only" htmlFor="catalog-search">
                 Search products
@@ -1255,14 +1253,11 @@ function FiltersBar({
             </div>
           </div>
           {formattedTotal && (
-            <div className="flex items-center justify-between text-xs font-semibold leading-none text-white/90">
               <span className="tabular-nums">{formattedTotal} results</span>
             </div>
           )}
         </div>
 
-        <div className="py-1.5">
-          <div className="flex flex-nowrap items-center gap-2.5 overflow-x-auto">
             <TriStateChip
               state={triStock}
               onStateChange={setTriStock}
