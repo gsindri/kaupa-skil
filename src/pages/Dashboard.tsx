@@ -1,5 +1,5 @@
-
-import React from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import DashboardOverview from '@/components/dashboard/DashboardOverview'
 import { PriceAnomalyAlert } from '@/components/dashboard/PriceAnomalyAlert'
 import { PriceAnalyticsDashboard } from '@/components/analytics/PriceAnalyticsDashboard'
@@ -7,16 +7,47 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { usePriceAnalytics } from '@/hooks/usePriceAnalytics'
 import { usePriceAnomalies } from '@/hooks/usePriceAnomalies'
 import { PostSetupNudge } from '@/components/dashboard/PostSetupNudge'
+import { useDashboardTelemetry } from '@/hooks/useDashboardTelemetry'
 
 export default function Dashboard() {
   const { data: analyticsData, isLoading: analyticsLoading } = usePriceAnalytics()
   const { anomalies = [], isLoading: anomaliesLoading } = usePriceAnomalies()
+  const trackTelemetry = useDashboardTelemetry()
+  const [searchParams, setSearchParams] = useSearchParams()
+
+  const initialTab = useMemo(() => {
+    const tab = searchParams.get('tab')
+    if (tab === 'analytics' || tab === 'alerts') return tab
+    return 'overview'
+  }, [searchParams])
+
+  const [tab, setTab] = useState(initialTab)
+
+  useEffect(() => {
+    setTab(initialTab)
+  }, [initialTab])
+
+  useEffect(() => {
+    trackTelemetry('dashboard_enter')
+  }, [trackTelemetry])
+
   const handleViewAnomaly = (id: string) => {
     console.log('View anomaly:', id)
   }
 
   const handleDismissAnomaly = (id: string) => {
     console.log('Dismiss anomaly:', id)
+  }
+
+  const handleTabChange = (value: string) => {
+    setTab(value)
+    const next = new URLSearchParams(searchParams)
+    if (value === 'overview') {
+      next.delete('tab')
+    } else {
+      next.set('tab', value)
+    }
+    setSearchParams(next, { replace: true })
   }
 
   return (
@@ -30,7 +61,7 @@ export default function Dashboard() {
 
       <PostSetupNudge />
 
-      <Tabs defaultValue="overview" className="space-y-6">
+      <Tabs value={tab} onValueChange={handleTabChange} className="space-y-6">
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
@@ -59,7 +90,7 @@ export default function Dashboard() {
                 Automatically detected price changes that require attention
               </p>
             </div>
-            
+
             {anomaliesLoading ? (
               <div className="flex items-center justify-center py-12">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>

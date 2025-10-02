@@ -102,6 +102,11 @@ export const queryKeys = {
     spend: () => ['dashboard', 'spend'] as const,
     pantry: () => ['dashboard', 'pantry'] as const,
     deliveries: () => ['dashboard', 'deliveries'] as const,
+    approvals: () => ['dashboard', 'approvals'] as const,
+    layout: (userId?: string | null, workspaceId?: string | null, preset?: string) =>
+      ['dashboard', 'layout', userId, workspaceId, preset] as const,
+    presets: (userId?: string | null, workspaceId?: string | null) =>
+      ['dashboard', 'presets', userId, workspaceId] as const,
   },
 
   // Mutation keys for optimistic updates

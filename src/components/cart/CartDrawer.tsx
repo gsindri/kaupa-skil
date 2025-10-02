@@ -25,7 +25,7 @@ function useMediaQuery(query: string) {
     if ("addEventListener" in mediaQuery) {
       mediaQuery.addEventListener("change", handleChange)
     } else {
-      // @ts-ignore - Legacy browsers
+      // @ts-expect-error - Legacy browsers
       mediaQuery.addListener(handleChange)
     }
 
@@ -35,7 +35,7 @@ function useMediaQuery(query: string) {
       if ("removeEventListener" in mediaQuery) {
         mediaQuery.removeEventListener("change", handleChange)
       } else {
-        // @ts-ignore - Legacy browsers
+        // @ts-expect-error - Legacy browsers
         mediaQuery.removeListener(handleChange)
       }
     }
