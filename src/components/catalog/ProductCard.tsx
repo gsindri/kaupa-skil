@@ -431,7 +431,7 @@ export const ProductCard = memo(function ProductCard({
       <div className="flex flex-1 flex-col p-3 md:p-4 lg:p-5">
         <div
           data-oos={isUnavailable ? "true" : undefined}
-          className="aspect-square rounded-xl bg-[color:var(--panel,#FAFBFC)] p-4 md:p-5 grid place-items-center"
+          className="aspect-square overflow-hidden rounded-xl"
         >
           <img
             ref={imageRef}
@@ -442,7 +442,7 @@ export const ProductCard = memo(function ProductCard({
             fetchPriority="low"
             draggable={false}
             className={cn(
-              "max-h-[80%] max-w-[90%] object-contain",
+              "h-full w-full object-cover",
               "[filter:drop-shadow(0_2px_6px_rgba(0,0,0,.08))]",
               "transition-transform duration-150",
               "group-hover:translate-y-0.5 group-hover:scale-[1.01]",
