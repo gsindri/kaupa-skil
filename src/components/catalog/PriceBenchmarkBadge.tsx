@@ -31,7 +31,7 @@ export const PriceBenchmarkBadge = memo(function PriceBenchmarkBadge({
   // Determine badge variant and icon
   let variant: 'default' | 'secondary' | 'outline' | 'destructive' = 'secondary';
   let Icon = Minus;
-  let message = comparison.message;
+  const message = comparison.message;
 
   if (vsMedian < -10) {
     // Significantly below market (good deal)
