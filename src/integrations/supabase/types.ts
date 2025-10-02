@@ -96,29 +96,38 @@ export type Database = {
       }
       catalog_product: {
         Row: {
+          base_qty_per_pack: number | null
+          base_uom: string | null
           brand: string | null
           created_at: string
           gtin: string | null
           id: string
           name: string
+          pack_composition: string | null
           size: string | null
           updated_at: string
         }
         Insert: {
+          base_qty_per_pack?: number | null
+          base_uom?: string | null
           brand?: string | null
           created_at?: string
           gtin?: string | null
           id?: string
           name: string
+          pack_composition?: string | null
           size?: string | null
           updated_at?: string
         }
         Update: {
+          base_qty_per_pack?: number | null
+          base_uom?: string | null
           brand?: string | null
           created_at?: string
           gtin?: string | null
           id?: string
           name?: string
+          pack_composition?: string | null
           size?: string | null
           updated_at?: string
         }
@@ -342,6 +351,150 @@ export type Database = {
           },
         ]
       }
+      order_lines: {
+        Row: {
+          base_units_ordered: number | null
+          catalog_product_id: string | null
+          created_at: string
+          currency: string
+          id: string
+          kr_per_base_unit: number | null
+          line_total: number
+          order_id: string
+          pack_size: string | null
+          quantity_packs: number
+          supplier_product_id: string | null
+          unit_price_per_pack: number
+          vat_included: boolean
+        }
+        Insert: {
+          base_units_ordered?: number | null
+          catalog_product_id?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          kr_per_base_unit?: number | null
+          line_total: number
+          order_id: string
+          pack_size?: string | null
+          quantity_packs: number
+          supplier_product_id?: string | null
+          unit_price_per_pack: number
+          vat_included?: boolean
+        }
+        Update: {
+          base_units_ordered?: number | null
+          catalog_product_id?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          kr_per_base_unit?: number | null
+          line_total?: number
+          order_id?: string
+          pack_size?: string | null
+          quantity_packs?: number
+          supplier_product_id?: string | null
+          unit_price_per_pack?: number
+          vat_included?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_lines_catalog_product_id_fkey"
+            columns: ["catalog_product_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_product"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_lines_catalog_product_id_fkey"
+            columns: ["catalog_product_id"]
+            isOneToOne: false
+            referencedRelation: "v_public_catalog"
+            referencedColumns: ["catalog_id"]
+          },
+          {
+            foreignKeyName: "order_lines_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_lines_supplier_product_id_fkey"
+            columns: ["supplier_product_id"]
+            isOneToOne: false
+            referencedRelation: "supplier_product"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          currency: string
+          delivery_date: string | null
+          id: string
+          order_date: string
+          order_number: string | null
+          status: string
+          supplier_id: string
+          tenant_id: string
+          updated_at: string
+          vat_included: boolean
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          delivery_date?: string | null
+          id?: string
+          order_date: string
+          order_number?: string | null
+          status?: string
+          supplier_id: string
+          tenant_id: string
+          updated_at?: string
+          vat_included?: boolean
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          delivery_date?: string | null
+          id?: string
+          order_date?: string
+          order_number?: string | null
+          status?: string
+          supplier_id?: string
+          tenant_id?: string
+          updated_at?: string
+          vat_included?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pending_admin_actions: {
         Row: {
           action_data: Json | null
@@ -533,8 +686,10 @@ export type Database = {
           raw_hash: string | null
           source_url: string | null
           stale_since: string | null
+          supplier_base_qty: number | null
           supplier_id: string
           supplier_sku: string
+          supplier_uom: string | null
           updated_at: string
         }
         Insert: {
@@ -554,8 +709,10 @@ export type Database = {
           raw_hash?: string | null
           source_url?: string | null
           stale_since?: string | null
+          supplier_base_qty?: number | null
           supplier_id: string
           supplier_sku: string
+          supplier_uom?: string | null
           updated_at?: string
         }
         Update: {
@@ -575,8 +732,10 @@ export type Database = {
           raw_hash?: string | null
           source_url?: string | null
           stale_since?: string | null
+          supplier_base_qty?: number | null
           supplier_id?: string
           supplier_sku?: string
+          supplier_uom?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -794,6 +953,16 @@ export type Database = {
       check_password_strength: {
         Args: { password_text: string }
         Returns: boolean
+      }
+      compute_kr_per_base_unit: {
+        Args: {
+          base_qty_per_pack_val: number
+          currency_val: string
+          line_total_val: number
+          quantity_packs_val: number
+          vat_included_val: boolean
+        }
+        Returns: number
       }
       create_elevation: {
         Args: { duration_minutes?: number; reason_text: string }
