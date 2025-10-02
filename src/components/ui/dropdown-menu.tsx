@@ -7,7 +7,12 @@ import { cn } from "@/lib/utils"
 const dropdownItemStyles =
   "relative flex cursor-pointer select-none items-center rounded-sm text-sm outline-none transition-colors focus-visible:bg-[color:var(--surface-pop-2)]/80 focus-visible:text-[color:var(--text)] data-[highlighted]:bg-[color:var(--surface-pop-2)]/80 data-[highlighted]:text-[color:var(--text)] data-[state=open]:bg-[color:var(--surface-pop-2)]/80 data-[state=open]:text-[color:var(--text)] data-[state=checked]:bg-[color:var(--surface-pop-2)]/80 data-[state=checked]:text-[color:var(--text)] data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
 
-const DropdownMenu = DropdownMenuPrimitive.Root
+const DropdownMenu = ({
+  modal = false,
+  ...props
+}: React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Root>) => (
+  <DropdownMenuPrimitive.Root modal={modal} {...props} />
+)
 
 const DropdownMenuTrigger = DropdownMenuPrimitive.Trigger
 
