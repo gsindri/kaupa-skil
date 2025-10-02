@@ -534,7 +534,7 @@ export const ProductCard = memo(function ProductCard({
                     {isPriceLocked ? (
                       <>
                         <Lock className="h-4 w-4" aria-hidden="true" />
-                        See price
+                        <span>Price locked</span>
                       </>
                     ) : (
                       "Price unavailable"
