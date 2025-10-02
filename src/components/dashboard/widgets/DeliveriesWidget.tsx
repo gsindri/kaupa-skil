@@ -47,7 +47,7 @@ export function DeliveriesWidget({ isInEditMode }: DashboardWidgetComponentProps
     if (!rules || rules.length === 0) return [] as DeliverySlot[]
     const today = new Date()
 
-    return rules
+    return (rules
       .map((rule) => {
         const date = getNextDeliveryDate(rule.delivery_days, rule.cutoff_time, today)
         if (!date) return null
@@ -59,7 +59,7 @@ export function DeliveriesWidget({ isInEditMode }: DashboardWidgetComponentProps
           cutoffTime: rule.cutoff_time,
         }
       })
-      .filter((entry): entry is DeliverySlot => Boolean(entry))
+      .filter((entry) => entry !== null) as DeliverySlot[])
       .filter((entry) => differenceInCalendarDays(entry.date, today) <= 7)
       .sort((a, b) => a.date.getTime() - b.date.getTime())
   }, [rules, suppliers])

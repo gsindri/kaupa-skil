@@ -20,7 +20,7 @@ interface ManageDashboardPanelProps {
 }
 
 export function ManageDashboardPanel({ open, onOpenChange, tiles }: ManageDashboardPanelProps) {
-  const { sections, tileMeta, setTileVisibility } = useDashboardLayout()
+  const { sections, widgetMeta, setWidgetVisibility } = useDashboardLayout()
 
   const tileLookup = useMemo(() => {
     return Object.fromEntries(tiles.map((tile) => [tile.id, tile]))
@@ -44,10 +44,10 @@ export function ManageDashboardPanel({ open, onOpenChange, tiles }: ManageDashbo
               </h3>
 
               <div className="space-y-3">
-                {section.tileIds.map((tileId) => {
+                {section.widgetIds.map((tileId) => {
                   const tile = tileLookup[tileId]
                   if (!tile) return null
-                  const isVisible = tileMeta[tileId]?.visible !== false
+                  const isVisible = widgetMeta[tileId]?.visible !== false
 
                   return (
                     <label
@@ -60,7 +60,7 @@ export function ManageDashboardPanel({ open, onOpenChange, tiles }: ManageDashbo
                       </div>
                       <Switch
                         checked={isVisible}
-                        onCheckedChange={(checked) => setTileVisibility(tileId, checked)}
+                        onCheckedChange={(checked) => setWidgetVisibility(tileId, checked)}
                         aria-label={`Toggle ${tile.title}`}
                       />
                     </label>

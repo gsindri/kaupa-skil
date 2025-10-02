@@ -8,6 +8,7 @@ import { usePriceAnalytics } from '@/hooks/usePriceAnalytics'
 import { usePriceAnomalies } from '@/hooks/usePriceAnomalies'
 import { PostSetupNudge } from '@/components/dashboard/PostSetupNudge'
 import { useDashboardTelemetry } from '@/hooks/useDashboardTelemetry'
+import { DashboardLayoutProvider } from '@/components/dashboard/dashboard-layout-context'
 
 export default function Dashboard() {
   const { data: analyticsData, isLoading: analyticsLoading } = usePriceAnalytics()
@@ -69,7 +70,9 @@ export default function Dashboard() {
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
-          <DashboardOverview />
+          <DashboardLayoutProvider>
+            <DashboardOverview />
+          </DashboardLayoutProvider>
         </TabsContent>
 
         <TabsContent value="analytics" className="space-y-6">

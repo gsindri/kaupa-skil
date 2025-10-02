@@ -54,7 +54,7 @@ export function AlertsWidget({ isInEditMode }: DashboardWidgetComponentProps) {
               className="flex items-start justify-between rounded-2xl bg-muted/50 px-4 py-3"
             >
               <div>
-                <p className="text-sm font-medium text-foreground">{alert.message}</p>
+                <p className="text-sm font-medium text-foreground">{alert.summary}</p>
                 <p className="text-xs text-muted-foreground">
                   {formatDistanceToNow(new Date(alert.created_at), { addSuffix: true })}
                 </p>
