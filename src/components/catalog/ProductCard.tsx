@@ -421,7 +421,7 @@ export const ProductCard = memo(function ProductCard({
       )}
     >
       <div className="flex flex-1 flex-col px-4 pb-4 pt-4 md:px-5 md:pb-5 md:pt-5">
-        <div className="flex flex-col gap-1">
+        <div className="flex min-h-[44px] flex-col gap-1">
           {detailLink ? (
             <a
               {...detailLink}
@@ -442,7 +442,14 @@ export const ProductCard = memo(function ProductCard({
           )}
           {headerSubline ? (
             <p className="text-[12px] text-muted-foreground">{headerSubline}</p>
-          ) : null}
+          ) : (
+            <span
+              aria-hidden="true"
+              className="block text-[12px] text-transparent"
+            >
+              {"\u00A0"}
+            </span>
+          )}
         </div>
         <div
           className="relative mt-3 flex aspect-square w-full items-center justify-center rounded-xl bg-[color:var(--catalog-image-surface,var(--panel,#FAFBFC))] p-3 shadow-[inset_0_1px_2px_rgba(15,23,42,0.06)] md:p-4"
@@ -509,12 +516,19 @@ export const ProductCard = memo(function ProductCard({
             <div className="mt-3 flex items-center justify-between gap-3 border-t border-border/30 pt-3">
               <div className="min-w-0 leading-tight" aria-live="polite">
                 {priceLabel ? (
-                  <>
+                  <div className="flex min-h-[44px] flex-col justify-between gap-1">
                     <div className="text-base font-semibold text-foreground tabular-nums">{priceLabel}</div>
                     {unitHint ? (
                       <div className="text-[11px] text-muted-foreground">{unitHint}</div>
-                    ) : null}
-                  </>
+                    ) : (
+                      <span
+                        aria-hidden="true"
+                        className="block text-[11px] text-transparent"
+                      >
+                        {"\u00A0"}
+                      </span>
+                    )}
+                  </div>
                 ) : (
                   <div className="flex items-center gap-1 text-sm font-medium text-muted-foreground">
                     {isPriceLocked ? (
