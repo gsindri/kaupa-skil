@@ -18,6 +18,8 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Input } from '@/components/ui/input'
 import type { CartItem } from '@/lib/types'
+import { useSuppliers } from '@/hooks/useSuppliers'
+import { SendOrderButton } from '@/components/cart/SendOrderButton'
 
 function formatPriceISK(price: number) {
   return new Intl.NumberFormat('is-IS', {
@@ -173,6 +175,7 @@ export function OrderComposer() {
   const { data: optimization } = useDeliveryOptimization()
   const { toast } = useToast()
   const navigate = useNavigate()
+  const { suppliers } = useSuppliers()
   const [orderApproved, setOrderApproved] = useState(false)
   const [showPromoField, setShowPromoField] = useState(false)
   const [promoCode, setPromoCode] = useState('')
@@ -484,6 +487,16 @@ export function OrderComposer() {
                     </p>
                   )}
                 </div>
+
+                <SendOrderButton
+                  supplierId={supplierId}
+                  supplierName={group.supplierName}
+                  supplierEmail={(suppliers?.find(s => s.id === supplierId) as any)?.order_email}
+                  supplierLogoUrl={supplierLogo}
+                  cartItems={group.items}
+                  subtotal={supplierSubtotal}
+                  minOrderValue={(suppliers?.find(s => s.id === supplierId) as any)?.min_order_isk || 0}
+                />
               </CardContent>
             </Card>
           )
