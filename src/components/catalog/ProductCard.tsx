@@ -19,6 +19,7 @@ import { useCart } from "@/contexts/useBasket";
 import type { CartItem } from "@/lib/types";
 import { CatalogQuantityStepper } from "./CatalogQuantityStepper";
 import { BellRing, Loader2, Lock, ShoppingCart } from "lucide-react";
+import { PriceBenchmarkBadge } from "./PriceBenchmarkBadge";
 
 type SupplierEntry = {
   supplier_id?: string | null;
@@ -517,7 +518,14 @@ export const ProductCard = memo(function ProductCard({
               <div className="min-w-0 leading-tight" aria-live="polite">
                 {priceLabel ? (
                   <div className="flex min-h-[44px] flex-col justify-between gap-1">
-                    <div className="text-base font-semibold text-foreground tabular-nums">{priceLabel}</div>
+                    <div className="flex items-center gap-2">
+                      <div className="text-base font-semibold text-foreground tabular-nums">{priceLabel}</div>
+                      <PriceBenchmarkBadge
+                        supplierId={defaultSupplierId}
+                        catalogProductId={product.catalog_id}
+                        currentPrice={product.best_price ?? undefined}
+                      />
+                    </div>
                     {unitHint ? (
                       <div className="text-[11px] text-muted-foreground">{unitHint}</div>
                     ) : (
