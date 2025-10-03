@@ -1261,7 +1261,7 @@ function FiltersBar({
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 pb-3">
+          <div className="flex flex-wrap items-center gap-2 pb-3 md:pb-4 lg:pb-6">
             <TriStateChip
               state={triStock}
               onStateChange={setTriStock}
