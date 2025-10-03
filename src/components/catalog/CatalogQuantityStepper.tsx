@@ -38,14 +38,15 @@ export function CatalogQuantityStepper({
   const [optimisticQuantity, setOptimisticQuantity] = useState(quantity);
 
   useEffect(() => {
-    latestQuantity.current = quantity;
     if (pendingQuantityRef.current === null) {
+      latestQuantity.current = quantity;
       setOptimisticQuantity(quantity);
       return;
     }
 
     if (pendingQuantityRef.current === quantity) {
       pendingQuantityRef.current = null;
+      latestQuantity.current = quantity;
       setOptimisticQuantity(quantity);
     }
   }, [quantity]);
