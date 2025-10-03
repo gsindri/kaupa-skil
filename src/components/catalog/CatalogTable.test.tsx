@@ -53,7 +53,7 @@ describe('CatalogTable', () => {
     const user = userEvent.setup()
     await user.hover(hidden.parentElement as HTMLElement)
 
-    const tooltip = await screen.findAllByText('Connect Acme to unlock pricing.')
+    const tooltip = await screen.findAllByText('Connect Acme to see price.')
     expect(tooltip.length).toBeGreaterThan(0)
   })
 
@@ -103,7 +103,7 @@ describe('CatalogTable', () => {
     )
 
     expect(
-      screen.getByLabelText(/Decrease quantity of Stepper Product/),
+      screen.getByLabelText('Decrease quantity of Stepper Product'),
     ).toBeInTheDocument()
   })
 
@@ -116,6 +116,8 @@ describe('CatalogTable', () => {
       suppliers: ['Acme'],
       availability_status: 'IN_STOCK',
     }
+
+    const user = userEvent.setup()
 
     render(
       <TooltipProvider>
@@ -143,13 +145,15 @@ describe('CatalogTable', () => {
     })
   })
 
-  it('shows notify action when product is out of stock', async () => {
+  it('disables Add button when product is out of stock', async () => {
     const product = {
       catalog_id: '1',
       name: 'Unavailable Product',
       suppliers: ['Acme'],
       availability_status: 'OUT_OF_STOCK',
     }
+
+    const user = userEvent.setup()
 
     render(
       <TooltipProvider>
@@ -161,8 +165,13 @@ describe('CatalogTable', () => {
       </TooltipProvider>,
     )
 
-    const notifyButton = screen.getByRole('button', { name: 'Notify me' })
-    expect(notifyButton).toBeEnabled()
+    const button = screen.getByRole('button', {
+      name: `Add ${product.name} to cart`,
+    })
+    expect(button).toBeDisabled()
+    await user.hover(button.parentElement as HTMLElement)
+    const tooltip = await screen.findAllByText('Out of stock')
+    expect(tooltip.length).toBeGreaterThan(0)
   })
 })
 

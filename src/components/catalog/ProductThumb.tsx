@@ -8,7 +8,6 @@ interface ProductThumbProps {
   name: string
   brand?: string | null
   className?: string
-  imageFit?: 'cover' | 'contain'
 }
 
 export default function ProductThumb({
@@ -16,7 +15,6 @@ export default function ProductThumb({
   name,
   brand,
   className,
-  imageFit = 'cover',
 }: ProductThumbProps) {
   const [loaded, setLoaded] = useState(false)
   const [error, setError] = useState(false)
@@ -60,8 +58,7 @@ export default function ProductThumb({
             onLoad={() => setLoaded(true)}
             onError={() => setError(true)}
             className={cn(
-              'h-full w-full transition-opacity duration-300',
-              imageFit === 'contain' ? 'object-contain' : 'object-cover',
+              'h-full w-full object-cover transition-opacity duration-300',
               loaded ? 'opacity-100' : 'opacity-0'
             )}
           />
