@@ -1,4 +1,5 @@
-import { useState, isValidElement } from 'react'
+import { useState, useRef, useLayoutEffect, useEffect, useCallback } from 'react'
+import type { KeyboardEvent } from 'react'
 import {
   Table,
   TableBody,
@@ -26,6 +27,7 @@ import { toast } from '@/hooks/use-toast'
 import { cn } from '@/lib/utils'
 import { useSupplierConnections } from '@/hooks/useSupplierConnections'
 import { useSuppliers } from '@/hooks/useSuppliers'
+import { useWindowVirtualizer } from '@tanstack/react-virtual'
 
 type AvailabilityState = 'IN_STOCK' | 'LOW_STOCK' | 'OUT_OF_STOCK' | 'UNKNOWN' | null | undefined
 
@@ -58,6 +60,8 @@ interface SupplierChipInfo {
   location_city?: string | null
   location_country_code?: string | null
 }
+
+const ROW_HEIGHT = 62
 
 const normalizeString = (value: unknown): string | null => {
   if (typeof value !== 'string') return null
@@ -433,38 +437,107 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
     )
   }
 
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [scrollMargin, setScrollMargin] = useState(0)
+
+  useLayoutEffect(() => {
+    if (typeof window === 'undefined') return
+
+    const updateMargin = () => {
+      if (!containerRef.current) return
+      const rect = containerRef.current.getBoundingClientRect()
+      const next = Math.round(rect.top + window.scrollY)
+      if (!Number.isFinite(next)) return
+      setScrollMargin(prev => (Math.abs(prev - next) > 1 ? next : prev))
+    }
+
+    updateMargin()
+    window.addEventListener('resize', updateMargin)
+
+    let resizeObserver: ResizeObserver | undefined
+    if (typeof ResizeObserver !== 'undefined') {
+      resizeObserver = new ResizeObserver(updateMargin)
+      if (containerRef.current) {
+        resizeObserver.observe(containerRef.current)
+      }
+      if (document.body) {
+        resizeObserver.observe(document.body)
+      }
+    }
+
+    return () => {
+      window.removeEventListener('resize', updateMargin)
+      resizeObserver?.disconnect()
+    }
+  }, [])
+
+  const virtualizer = useWindowVirtualizer({
+    count: products.length,
+    estimateSize: () => ROW_HEIGHT,
+    overscan: 8,
+    scrollMargin,
+    scrollToFn: (offset, options) => {
+      if (typeof window === 'undefined') return
+      if (typeof window.scrollTo !== 'function') return
+      window.scrollTo({ top: offset, behavior: options?.behavior })
+    },
+  })
+
+  const virtualItems = virtualizer.getVirtualItems()
+  const totalSize = virtualizer.getTotalSize()
+  const paddingTop = virtualItems.length > 0 ? virtualItems[0].start : 0
+  const paddingBottom =
+    virtualItems.length > 0
+      ? totalSize - virtualItems[virtualItems.length - 1].end
+      : 0
+
   return (
-    <div className="overflow-hidden rounded-xl border border-slate-200/70 bg-white text-slate-900 shadow-sm dark:border-white/10 dark:bg-[rgba(13,19,32,0.86)] dark:text-slate-100">
-      <Table className="min-w-full text-[13px] text-slate-600 dark:text-slate-300">
-        <TableHeader className="sticky top-0 z-10 bg-slate-50/70 backdrop-blur-sm dark:bg-white/5">
-          <TableRow className="border-b border-slate-200/50 bg-transparent dark:border-white/10">
-            <TableHead className="px-3 py-2.5 text-left align-middle">
+    <div
+      ref={containerRef}
+      className="overflow-hidden rounded-2xl border border-border/60 bg-card text-foreground shadow-sm dark:border-white/15 dark:bg-[rgba(13,19,32,0.86)]"
+    >
+      <Table className="min-w-full text-[13px] text-muted-foreground">
+        <TableHeader className="sticky top-0 z-10 bg-card/85 backdrop-blur-sm supports-[backdrop-filter]:bg-card/70">
+          <TableRow className="border-b border-border/60 dark:border-white/10">
+            <TableHead className="px-4 py-3 text-left align-middle">
               {renderSortButton('name', 'Product', 'left', true)}
             </TableHead>
-            <TableHead className="w-32 px-3 py-2.5 text-left align-middle">
+            <TableHead className="w-32 px-4 py-3 text-left align-middle">
               {renderSortButton('availability', 'Availability')}
             </TableHead>
-            <TableHead className="w-52 px-3 py-2.5 text-left align-middle">
+            <TableHead className="w-52 px-4 py-3 text-left align-middle">
               {renderSortButton('supplier', 'Supplier')}
             </TableHead>
-            <TableHead className="w-32 px-3 py-2.5 text-right align-middle">
+            <TableHead className="w-32 px-4 py-3 text-right align-middle">
               {renderSortButton('price', 'Price', 'right')}
             </TableHead>
-            <TableHead className="w-36 px-3 py-2.5 text-right align-middle text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-              Actions
+            <TableHead className="w-[220px] px-4 py-3 text-right align-middle">
+              <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                Actions
+              </span>
             </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody className="[&_tr:last-child]:border-b-0">
-          {products.map(p => {
+          {paddingTop > 0 && (
+            <TableRow aria-hidden className="pointer-events-none border-0">
+              <TableCell
+                colSpan={5}
+                style={{ height: paddingTop, padding: 0, borderBottom: 'none' }}
+              />
+            </TableRow>
+          )}
+          {virtualItems.map(virtualRow => {
+            const p = products[virtualRow.index]
             const id = p.catalog_id
+            const availabilityStatus = (p.availability_status ?? 'UNKNOWN') as AvailabilityState
             const availabilityLabel =
               {
                 IN_STOCK: 'In',
                 LOW_STOCK: 'Low',
                 OUT_OF_STOCK: 'Out',
                 UNKNOWN: 'Unknown',
-              }[p.availability_status ?? 'UNKNOWN']
+              }[availabilityStatus]
 
             const connectedSupplierIds = new Set(
               Array.isArray(connectedSuppliers)
@@ -482,53 +555,61 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
             const primarySupplier = suppliers[0]
             const primarySupplierName = primarySupplier?.supplier_name || 'Unknown supplier'
             const remainingSupplierCount = Math.max(0, suppliers.length - 1)
+            const isOutOfStock = availabilityStatus === 'OUT_OF_STOCK'
 
             return (
               <TableRow
                 key={id}
-                className="group border-b border-slate-200/40 odd:bg-white even:bg-slate-50/50 transition-colors hover:bg-slate-100 focus-visible:bg-slate-100 dark:border-white/10 dark:odd:bg-white/5 dark:even:bg-white/10 dark:hover:bg-white/12 dark:focus-visible:bg-white/12"
+                data-index={virtualRow.index}
+                style={{ height: ROW_HEIGHT }}
+                className={cn(
+                  'group border-b border-border/60 transition-colors hover:bg-muted/40 focus-visible:bg-muted/40 dark:border-white/10 dark:hover:bg-white/10 dark:focus-visible:bg-white/10',
+                  virtualRow.index % 2 === 0
+                    ? 'bg-background dark:bg-transparent'
+                    : 'bg-muted/20 dark:bg-white/5',
+                )}
               >
-                <TableCell className="px-3 py-1.5 align-middle">
-                  <div className="flex items-center gap-2.5">
+                <TableCell className="px-4 py-2 align-middle">
+                  <div className="flex h-full items-center gap-3">
                     <ProductThumb
-                      className="h-10 w-10 flex-none overflow-hidden rounded-lg border border-slate-200/80 bg-white object-cover dark:border-white/15 dark:bg-white/10"
+                      className={cn(
+                        'size-14 flex-none overflow-hidden rounded-xl bg-muted/10 transition-opacity duration-150',
+                        isOutOfStock && 'opacity-70',
+                      )}
                       src={resolveImage(
                         p.sample_image_url ?? p.image_main,
                         p.availability_status,
                       )}
                       name={p.name}
                       brand={p.brand}
+                      imageFit="contain"
                     />
-                    <div className="min-w-0">
+                    <div className="min-w-0 space-y-1">
                       <a
                         href={`#${p.catalog_id}`}
                         aria-label={`View details for ${p.name}`}
-                        className="truncate text-[15px] font-semibold text-slate-900 transition-colors hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 dark:text-white dark:hover:text-slate-200"
+                        className="line-clamp-1 text-[15px] font-medium text-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2"
                       >
                         {p.name}
                       </a>
                       {(p.brand || p.canonical_pack) && (
-                        <div className="mt-0.5 flex flex-wrap items-center gap-x-1 gap-y-0.5 text-xs text-muted-foreground/80">
+                        <div className="flex flex-wrap items-center gap-x-1 gap-y-0.5 text-[12.5px] text-muted-foreground">
                           {p.brand && <span className="font-medium text-muted-foreground">{p.brand}</span>}
                           {p.brand && p.canonical_pack && <span aria-hidden>·</span>}
-                          {p.canonical_pack && (
-                            <span className="text-muted-foreground/80">
-                              {p.canonical_pack}
-                            </span>
-                          )}
+                          {p.canonical_pack && <span>{p.canonical_pack}</span>}
                         </div>
                       )}
                     </div>
                   </div>
                 </TableCell>
-                <TableCell className="w-32 px-3 py-1.5 align-middle text-xs text-muted-foreground">
+                <TableCell className="w-32 px-4 py-2 align-middle text-xs text-muted-foreground">
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <AvailabilityBadge
                         tabIndex={-1}
                         status={p.availability_status}
                         updatedAt={p.availability_updated_at}
-                        className="scale-90 transform"
+                        className="h-6 px-2 text-[11px]"
                       />
                     </TooltipTrigger>
                     <TooltipContent className="space-y-1 text-sm">
@@ -539,23 +620,23 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
                     </TooltipContent>
                   </Tooltip>
                 </TableCell>
-                <TableCell className="w-52 px-3 py-1.5 align-middle text-xs text-muted-foreground/80">
+                <TableCell className="w-52 px-4 py-2 align-middle">
                   {suppliers.length ? (
-                    <div className="flex items-center gap-2.5">
+                    <div className="flex items-center gap-2">
                       <SupplierLogo
                         name={primarySupplierName}
                         logoUrl={primarySupplier?.supplier_logo_url ?? undefined}
-                        className="!h-6 flex-none !rounded-md border border-slate-200/60 bg-white p-1 shadow-sm dark:border-white/10 dark:bg-white/10"
+                        className="size-4 flex-none rounded-full border border-border/60 bg-background dark:border-white/20"
                       />
                       <div className="min-w-0 space-y-0.5 text-left">
-                        <div className="flex items-center gap-1 truncate text-[13px] font-medium text-slate-600 dark:text-slate-200">
-                          <span className="truncate text-slate-600 dark:text-slate-200">{primarySupplierName}</span>
+                        <div className="flex items-center gap-1 text-[13px] font-medium text-foreground">
+                          <span className="truncate">{primarySupplierName}</span>
                           {primarySupplier && !primarySupplier.is_connected && (
                             <Lock className="h-3.5 w-3.5 text-muted-foreground" />
                           )}
                         </div>
                         {remainingSupplierCount > 0 && (
-                          <div className="text-[11px] text-muted-foreground/80">
+                          <div className="text-[11px] text-muted-foreground">
                             +{remainingSupplierCount} more
                           </div>
                         )}
@@ -565,15 +646,23 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
                     <span className="text-xs text-muted-foreground">No supplier data</span>
                   )}
                 </TableCell>
-                <TableCell className="w-32 px-3 py-1.5 text-right align-middle">
+                <TableCell className="w-32 px-4 py-2 text-right align-middle">
                   <PriceCell product={p} />
                 </TableCell>
-                <TableCell className="w-36 px-3 py-1.5 text-right align-middle">
-                  <AddToCartButton product={p} />
+                <TableCell className="w-[220px] px-4 py-2 text-right align-middle">
+                  <AddToCartButton product={p} suppliers={suppliers} />
                 </TableCell>
               </TableRow>
             )
           })}
+          {paddingBottom > 0 && (
+            <TableRow aria-hidden className="pointer-events-none border-0">
+              <TableCell
+                colSpan={5}
+                style={{ height: paddingBottom, padding: 0, borderBottom: 'none' }}
+              />
+            </TableRow>
+          )}
         </TableBody>
       </Table>
     </div>
@@ -582,264 +671,334 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
 
   function AddToCartButton({
     product,
-    className,
+    suppliers,
   }: {
     product: any
-    className?: string
+    suppliers: SupplierChipInfo[]
   }) {
-  const { items, addItem, updateQuantity, removeItem } = useCart()
-  const existingItem = items.find(
-    (i: any) => i.supplierItemId === product.catalog_id,
-  )
+    const { items, addItem, updateQuantity, removeItem } = useCart()
+    const existingItem = items.find(
+      (i: any) => i.supplierItemId === product.catalog_id,
+    )
+    const [open, setOpen] = useState(false)
+    const [draftQty, setDraftQty] = useState(existingItem?.quantity ?? 1)
 
-  const [open, setOpen] = useState(false)
+    useEffect(() => {
+      if (existingItem) {
+        setDraftQty(existingItem.quantity)
+      } else {
+        setDraftQty(prev => (prev > 0 ? prev : 1))
+      }
+    }, [existingItem])
 
-  const availability = (product.availability_status ?? 'UNKNOWN') as
-    | 'IN_STOCK'
-    | 'LOW_STOCK'
-    | 'OUT_OF_STOCK'
-    | 'UNKNOWN'
-  const isUnavailable =
-    availability === 'OUT_OF_STOCK' ||
-    (availability === 'UNKNOWN' &&
-      (product.active_supplier_count ?? 0) === 0)
+    const availability = (product.availability_status ?? 'UNKNOWN') as
+      | 'IN_STOCK'
+      | 'LOW_STOCK'
+      | 'OUT_OF_STOCK'
+      | 'UNKNOWN'
+    const isOutOfStock = availability === 'OUT_OF_STOCK'
+    const isUnavailable =
+      isOutOfStock ||
+      (availability === 'UNKNOWN' && (product.active_supplier_count ?? 0) === 0)
 
-  const rawSuppliers =
-    (product.supplier_products && product.supplier_products.length
-      ? product.supplier_products
-      : product.supplier_ids && product.supplier_names
-        ? product.supplier_ids.map((id: string, idx: number) => ({
-            supplier_id: id,
-            supplier_name: product.supplier_names[idx] || id,
-            is_connected: true,
-          }))
-        : product.suppliers) || []
+    const rawSuppliers =
+      (product.supplier_products && product.supplier_products.length
+        ? product.supplier_products
+        : product.supplier_ids && product.supplier_names
+            ? product.supplier_ids.map((id: string, idx: number) => ({
+                supplier_id: id,
+                supplier_name: product.supplier_names[idx] || id,
+                is_connected: true,
+              }))
+            : product.suppliers) || []
 
-  const supplierEntries = rawSuppliers.map((s: any, index: number) => {
-    const fallbackLogo = Array.isArray(product.supplier_logo_urls)
-      ? product.supplier_logo_urls[index] ?? null
-      : null
+    const supplierEntries = rawSuppliers.map((s: any, index: number) => {
+      const fallbackLogo = Array.isArray(product.supplier_logo_urls)
+        ? product.supplier_logo_urls[index] ?? null
+        : null
 
-    if (typeof s === 'string') {
+      if (typeof s === 'string') {
+        return {
+          id: s,
+          name: s,
+          connected: true,
+          logoUrl: fallbackLogo,
+          availability: null,
+          updatedAt: null,
+        }
+      }
+
+      const status =
+        s.availability?.status ??
+        s.availability_status ??
+        s.status ??
+        null
+      const updatedAt =
+        s.availability?.updatedAt ?? s.availability_updated_at ?? null
+      const fallbackId =
+        s.supplier_id ||
+        s.id ||
+        s.supplier?.id ||
+        product.supplier_ids?.[index] ||
+        `supplier-${index}`
+      const rawName =
+        s.supplier?.name ||
+        s.name ||
+        s.supplier_name ||
+        product.supplier_names?.[index] ||
+        null
+      const resolvedName = (rawName ?? '').toString().trim() || fallbackId
+
       return {
-        id: s,
-        name: s,
-        connected: true,
-        logoUrl: fallbackLogo,
-        availability: null,
-        updatedAt: null,
+        id: fallbackId,
+        name: resolvedName,
+        connected: s.connected ?? s.supplier?.connected ?? true,
+        logoUrl:
+          s.logoUrl ||
+          s.logo_url ||
+          s.supplier?.logo_url ||
+          fallbackLogo,
+        availability: status,
+        updatedAt,
+      }
+    })
+
+    const buildCartItem = (
+      supplier: (typeof supplierEntries)[number],
+      index: number,
+    ): Omit<CartItem, 'quantity'> => {
+      const raw = rawSuppliers[index] as any
+      const priceEntry = Array.isArray(product.prices)
+        ? product.prices[index]
+        : raw?.price ?? raw?.unit_price_ex_vat ?? null
+      const priceValue =
+        typeof priceEntry === 'number' ? priceEntry : priceEntry?.price ?? null
+      const unitPriceExVat = raw?.unit_price_ex_vat ?? priceValue ?? null
+      const unitPriceIncVat = raw?.unit_price_inc_vat ?? priceValue ?? null
+      const packSize =
+        raw?.pack_size || raw?.packSize || product.canonical_pack || ''
+      const packQty = raw?.pack_qty ?? 1
+      const sku = raw?.sku || raw?.supplier_sku || product.catalog_id
+      const unit = raw?.unit || ''
+      const supplierName = supplier.name?.trim() || supplier.id || 'Supplier'
+      return {
+        id: product.catalog_id,
+        supplierId: supplier.id,
+        supplierName,
+        supplierLogoUrl: supplier.logoUrl ?? null,
+        itemName: product.name,
+        sku,
+        packSize,
+        packPrice: priceValue,
+        unitPriceExVat,
+        unitPriceIncVat,
+        vatRate: raw?.vat_rate ?? 0,
+        unit,
+        supplierItemId: product.catalog_id,
+        displayName: product.name,
+        packQty,
+        image: resolveImage(
+          product.sample_image_url ?? product.image_main,
+          product.availability_status,
+        ),
       }
     }
 
-    const status =
-      s.availability?.status ??
-      s.availability_status ??
-      s.status ??
-      null
-    const updatedAt =
-      s.availability?.updatedAt ?? s.availability_updated_at ?? null
-    const fallbackId =
-      s.supplier_id ||
-      s.id ||
-      s.supplier?.id ||
-      product.supplier_ids?.[index] ||
-      `supplier-${index}`
-    const rawName =
-      s.supplier?.name ||
-      s.name ||
-      s.supplier_name ||
-      product.supplier_names?.[index] ||
-      null
-    const resolvedName = (rawName ?? '').toString().trim() || fallbackId
+    const handleQuantityChange = useCallback(
+      (next: number) => {
+        const safe = Math.max(1, next)
+        if (existingItem) {
+          updateQuantity(existingItem.supplierItemId, safe)
+        } else {
+          setDraftQty(safe)
+        }
+      },
+      [existingItem, updateQuantity],
+    )
 
-    return {
-      id: fallbackId,
-      name: resolvedName,
-      connected: s.connected ?? s.supplier?.connected ?? true,
-      logoUrl:
-        s.logoUrl ||
-        s.logo_url ||
-        s.supplier?.logo_url ||
-        fallbackLogo,
-      availability: status,
-      updatedAt,
-    }
-  })
+    const handleRemove = useCallback(() => {
+      if (existingItem) {
+        removeItem(existingItem.supplierItemId)
+      } else {
+        setDraftQty(1)
+      }
+    }, [existingItem, removeItem])
 
-  const buildCartItem = (
-    supplier: (typeof supplierEntries)[number],
-    index: number
-  ): Omit<CartItem, 'quantity'> => {
-    const raw = rawSuppliers[index] as any
-    const priceEntry = Array.isArray(product.prices)
-      ? product.prices[index]
-      : raw?.price ?? raw?.unit_price_ex_vat ?? null
-    const priceValue =
-      typeof priceEntry === 'number' ? priceEntry : priceEntry?.price ?? null
-    const unitPriceExVat = raw?.unit_price_ex_vat ?? priceValue ?? null
-    const unitPriceIncVat = raw?.unit_price_inc_vat ?? priceValue ?? null
-    const packSize =
-      raw?.pack_size || raw?.packSize || product.canonical_pack || ''
-    const packQty = raw?.pack_qty ?? 1
-    const sku = raw?.sku || raw?.supplier_sku || product.catalog_id
-    const unit = raw?.unit || ''
-    const supplierName = supplier.name?.trim() || supplier.id || 'Supplier'
-    return {
-      id: product.catalog_id,
-      supplierId: supplier.id,
-      supplierName,
-      supplierLogoUrl: supplier.logoUrl ?? null,
-      itemName: product.name,
-      sku,
-      packSize,
-      packPrice: priceValue,
-      unitPriceExVat,
-      unitPriceIncVat,
-      vatRate: raw?.vat_rate ?? 0,
-      unit,
-      supplierItemId: product.catalog_id,
-      displayName: product.name,
-      packQty,
-      image: resolveImage(
-        product.sample_image_url ?? product.image_main,
-        product.availability_status
+    const commitAdd = useCallback(
+      (supplierIndex: number) => {
+        const supplier = supplierEntries[supplierIndex]
+        if (!supplier) return
+        if (existingItem) {
+          updateQuantity(existingItem.supplierItemId, draftQty)
+        } else {
+          addItem(buildCartItem(supplier, supplierIndex), draftQty)
+        }
+        if (supplier.availability === 'OUT_OF_STOCK') {
+          toast({ description: 'Out of stock at selected supplier.' })
+        }
+        setOpen(false)
+      },
+      [addItem, draftQty, existingItem, supplierEntries, updateQuantity],
+    )
+
+    const handleAddAction = useCallback(() => {
+      if (isUnavailable || supplierEntries.length === 0) return
+      if (supplierEntries.length === 1) {
+        commitAdd(0)
+      } else {
+        setOpen(true)
+      }
+    }, [commitAdd, isUnavailable, supplierEntries.length])
+
+    const currentQuantity = existingItem?.quantity ?? draftQty
+    const primarySupplierName =
+      existingItem?.supplierName || suppliers[0]?.supplier_name || 'Supplier'
+
+    const handleKeyDown = useCallback(
+      (event: KeyboardEvent<HTMLDivElement>) => {
+        if (event.target !== event.currentTarget) return
+        if (event.key === 'ArrowRight' || event.key === 'ArrowUp') {
+          event.preventDefault()
+          handleQuantityChange(currentQuantity + 1)
+        } else if (event.key === 'ArrowLeft' || event.key === 'ArrowDown') {
+          event.preventDefault()
+          handleQuantityChange(currentQuantity - 1)
+        } else if (event.key === 'Enter') {
+          event.preventDefault()
+          handleAddAction()
+        }
+      },
+      [currentQuantity, handleAddAction, handleQuantityChange],
+    )
+
+    if (supplierEntries.length === 0) {
+      return (
+        <div className="flex justify-end">
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-9 min-w-[120px] rounded-full border-dashed border-muted-foreground/50 text-muted-foreground"
+            disabled
+          >
+            Unavailable
+          </Button>
+        </div>
       )
     }
-  }
 
-  const slotClasses = cn('flex justify-end min-w-[8.5rem]', className)
-  const actionButtonClasses =
-    'h-10 w-full justify-center rounded-full border border-[color:var(--brand-accent)] bg-white px-4 text-sm font-semibold text-[color:var(--brand-accent)] shadow-none transition-colors duration-150 ease-out hover:bg-[color:var(--brand-accent)] hover:text-[color:var(--brand-accent-fg)] focus-visible:ring-2 focus-visible:ring-[color:var(--brand-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-white active:bg-[color:var(--brand-accent)]/90 active:text-[color:var(--brand-accent-fg)] dark:bg-transparent dark:text-[color:var(--brand-accent)] dark:hover:bg-[color:var(--brand-accent)] dark:hover:text-[color:var(--brand-accent-fg)] dark:active:bg-[color:var(--brand-accent)]/85 dark:active:text-[color:var(--brand-accent-fg)] dark:focus-visible:ring-offset-slate-950'
-
-  if (existingItem)
-    return (
-      <div className={slotClasses}>
-        <QuantityStepper
-          className="w-full max-w-[8.5rem] justify-end"
-          quantity={existingItem.quantity}
-          onChange={qty =>
-            updateQuantity(existingItem.supplierItemId, qty)
-          }
-          onRemove={() => removeItem(existingItem.supplierItemId)}
-          label={product.name}
-          supplier={existingItem.supplierName}
-        />
-      </div>
-    )
-
-  if (supplierEntries.length === 0) return null
-
-  if (isUnavailable) {
-    return (
-      <div className={slotClasses}>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <span className="flex w-full cursor-not-allowed">
-              <Button
-                size="default"
-                variant="outline"
-                disabled
-                aria-disabled="true"
-                aria-label={`Add ${product.name} to cart`}
-                className={cn(
-                  actionButtonClasses,
-                  'pointer-events-none border-slate-200 text-slate-400 hover:bg-white dark:border-white/20 dark:text-slate-400 dark:hover:bg-transparent',
-                )}
-              >
-                Add
-              </Button>
-            </span>
-          </TooltipTrigger>
-          <TooltipContent>Out of stock</TooltipContent>
-        </Tooltip>
-      </div>
-    )
-  }
-
-  if (supplierEntries.length === 1) {
-    const s = supplierEntries[0]
-    return (
-      <div className={slotClasses}>
-        <Button
-          size="default"
-          variant="outline"
-          className={actionButtonClasses}
-          onClick={() => {
-            addItem(buildCartItem(s, 0))
-            if (s.availability === 'OUT_OF_STOCK') {
-              toast({ description: 'Out of stock at selected supplier.' })
-            }
-          }}
-          aria-label={`Add ${product.name} to cart`}
-        >
-          Add
-        </Button>
-      </div>
-    )
-  }
-  return (
-    <div className={slotClasses}>
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
+    if (isUnavailable) {
+      return (
+        <div className="flex justify-end">
           <Button
-            size="default"
+            size="sm"
             variant="outline"
-            className={actionButtonClasses}
+            className="h-9 min-w-[128px] rounded-full border-dashed border-muted-foreground/60 text-muted-foreground"
+          >
+            Notify me
+          </Button>
+        </div>
+      )
+    }
+
+    const quantityStepper = (
+      <QuantityStepper
+        className="h-9 min-w-[108px] rounded-full border-border/60 bg-background/80"
+        quantity={currentQuantity}
+        onChange={handleQuantityChange}
+        onRemove={existingItem ? handleRemove : undefined}
+        min={1}
+        label={product.name}
+        supplier={primarySupplierName}
+      />
+    )
+
+    const renderAddButton = () => {
+      if (supplierEntries.length === 1) {
+        return (
+          <Button
+            type="button"
+            size="sm"
+            className="h-9 min-w-[88px] rounded-full px-4 text-sm font-semibold shadow-sm"
+            onClick={handleAddAction}
             aria-label={`Add ${product.name} to cart`}
           >
             Add
           </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-64 space-y-1 p-2">
-          {supplierEntries.map((s, index) => {
-            const initials = s.name
-              ? s.name
-                  .split(' ')
-                  .map((n: string) => n[0])
-                  .join('')
-                  .slice(0, 2)
-                  .toUpperCase()
-              : '?'
-            return (
-              <Button
-                key={s.id}
-                variant="ghost"
-                className="w-full justify-start gap-2 px-2"
-                onClick={() => {
-                  addItem(buildCartItem(s, index))
-                  if (s.availability === 'OUT_OF_STOCK') {
-                    toast({ description: 'Out of stock at selected supplier.' })
-                  }
-                  setOpen(false)
-                }}
-              >
-                {s.logoUrl ? (
-                  <img
-                    src={s.logoUrl}
-                    alt=""
-                    className="h-6 w-6 rounded-sm"
-                  />
-                ) : (
-                  <span className="flex h-6 w-6 items-center justify-center rounded-sm bg-muted text-xs font-medium">
-                    {initials}
-                  </span>
-                )}
-                <span className="flex-1 text-left">{s.name}</span>
-                {s.availability && (
-                  <AvailabilityBadge
-                    status={s.availability}
-                    updatedAt={s.updatedAt}
-                  />
-                )}
-                {!s.connected && <Lock className="h-4 w-4" />}
-              </Button>
-            )
-          })}
-        </PopoverContent>
-      </Popover>
-    </div>
-  )
-}
+        )
+      }
+
+      return (
+        <Popover open={open} onOpenChange={setOpen}>
+          <PopoverTrigger asChild>
+            <Button
+              type="button"
+              size="sm"
+              className="h-9 min-w-[88px] rounded-full px-4 text-sm font-semibold shadow-sm"
+              onClick={handleAddAction}
+              aria-label={`Add ${product.name} to cart`}
+            >
+              Add
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-64 space-y-1 p-2" align="end" side="top">
+            {supplierEntries.map((s, index) => {
+              const initials = s.name
+                ? s.name
+                    .split(' ')
+                    .map((n: string) => n[0])
+                    .join('')
+                    .slice(0, 2)
+                    .toUpperCase()
+                : '?'
+              return (
+                <Button
+                  key={s.id}
+                  variant="ghost"
+                  className="w-full justify-start gap-2 px-2 py-1.5 text-sm"
+                  onClick={() => commitAdd(index)}
+                >
+                  {s.logoUrl ? (
+                    <img
+                      src={s.logoUrl}
+                      alt=""
+                      className="size-6 rounded-sm object-contain"
+                    />
+                  ) : (
+                    <span className="flex size-6 items-center justify-center rounded-sm bg-muted text-xs font-medium">
+                      {initials}
+                    </span>
+                  )}
+                  <span className="flex-1 truncate text-left">{s.name}</span>
+                  {s.availability && (
+                    <AvailabilityBadge
+                      status={s.availability}
+                      updatedAt={s.updatedAt}
+                    />
+                  )}
+                  {!s.connected && <Lock className="h-4 w-4" />}
+                </Button>
+              )
+            })}
+          </PopoverContent>
+        </Popover>
+      )
+    }
+
+    return (
+      <div className="flex justify-end">
+        <div
+          tabIndex={0}
+          role="group"
+          aria-label={`Add ${product.name} to cart`}
+          onKeyDown={handleKeyDown}
+          className="flex items-center gap-3 rounded-full px-1 py-1 outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+        >
+          {quantityStepper}
+          {renderAddButton()}
+        </div>
+      </div>
+    )
+  }
 
 function PriceCell({
   product,
@@ -861,37 +1020,49 @@ function PriceCell({
         .filter((p: any) => typeof p === 'number')
     : []
   const isLocked = product.prices_locked ?? product.price_locked ?? false
-
-  const fallbackPriceNode = (
-    <span className="tabular-nums text-sm text-muted-foreground/70">
-      <span aria-hidden="true">—</span>
-      <span className="sr-only">Price unavailable</span>
-    </span>
-  )
-
-  let priceNode: React.ReactNode = fallbackPriceNode
-  let tooltip: React.ReactNode | null = null
+  const detailLink =
+    typeof product.sample_source_url === 'string'
+      ? product.sample_source_url
+      : null
 
   if (isLocked) {
-    priceNode = (
-      <div className="flex items-center justify-end gap-2 text-sm text-muted-foreground/80">
-        <Lock className="h-4 w-4" />
-        <span aria-hidden="true" className="tabular-nums">
-          —
-        </span>
-        <span className="sr-only">Price locked</span>
+    const linkNode = detailLink ? (
+      <a
+        href={detailLink}
+        target="_blank"
+        rel="noreferrer"
+        className="text-sm font-medium text-primary hover:underline"
+      >
+        See price
+      </a>
+    ) : (
+      <span className="text-sm font-medium text-primary">See price</span>
+    )
+
+    const content = (
+      <div className="flex items-center justify-end gap-2 text-sm text-muted-foreground">
+        <Lock className="h-4 w-4" aria-hidden="true" />
+        {linkNode}
       </div>
     )
+
     if (sources.length) {
-      tooltip = (
-        <>
-          {sources.map((s: string) => (
-            <div key={s}>{`Connect ${s} to see price.`}</div>
-          ))}
-        </>
+      return (
+        <Tooltip>
+          <TooltipTrigger asChild>{content}</TooltipTrigger>
+          <TooltipContent className="space-y-1">
+            {sources.map(source => (
+              <div key={source}>{`Connect ${source} to unlock pricing.`}</div>
+            ))}
+          </TooltipContent>
+        </Tooltip>
       )
     }
-  } else if (priceValues.length) {
+
+    return content
+  }
+
+  if (priceValues.length) {
     priceValues.sort((a, b) => a - b)
     const min = priceValues[0]
     const max = priceValues[priceValues.length - 1]
@@ -901,32 +1072,20 @@ function PriceCell({
       min === max
         ? formatCurrency(min, currency)
         : `${formatCurrency(min, currency)}–${formatCurrency(max, currency)}`
-    priceNode = (
-      <span className="tabular-nums text-sm font-semibold text-slate-900 dark:text-white">
-        {text}
-      </span>
+
+    return (
+      <div className="flex items-center justify-end gap-2">
+        <span className="tabular-nums text-sm font-semibold text-foreground">
+          {text}
+        </span>
+      </div>
     )
-  } else {
-    priceNode = fallbackPriceNode
-    tooltip = 'No supplier data'
   }
 
-  const triggerNode = isValidElement(priceNode)
-    ? priceNode
-    : fallbackPriceNode
-
-  const priceContent = tooltip ? (
-    <Tooltip>
-      <TooltipTrigger asChild>{triggerNode}</TooltipTrigger>
-      <TooltipContent className="space-y-1">{tooltip}</TooltipContent>
-    </Tooltip>
-  ) : (
-    triggerNode
-  )
-
   return (
-    <div className="flex items-center justify-end gap-2">
-      {priceContent}
+    <div className="flex items-center justify-end gap-2 text-sm text-muted-foreground">
+      <span aria-hidden="true">—</span>
+      <span className="sr-only">Price unavailable</span>
     </div>
   )
 }
