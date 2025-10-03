@@ -34,11 +34,20 @@ export function CatalogQuantityStepper({
   const holdTimeoutRef = useRef<number>();
   const holdIntervalRef = useRef<number>();
   const latestQuantity = useRef(quantity);
+  const pendingQuantityRef = useRef<number | null>(null);
   const [optimisticQuantity, setOptimisticQuantity] = useState(quantity);
 
   useEffect(() => {
     latestQuantity.current = quantity;
-    setOptimisticQuantity(quantity);
+    if (pendingQuantityRef.current === null) {
+      setOptimisticQuantity(quantity);
+      return;
+    }
+
+    if (pendingQuantityRef.current === quantity) {
+      pendingQuantityRef.current = null;
+      setOptimisticQuantity(quantity);
+    }
   }, [quantity]);
 
   const stopHold = useCallback(() => {
@@ -60,19 +69,23 @@ export function CatalogQuantityStepper({
       if (next <= 0) {
         if (current > 0) {
           latestQuantity.current = 0;
+          pendingQuantityRef.current = 0;
           setOptimisticQuantity(0);
           onRemove();
+          pendingQuantityRef.current = null;
         }
         return;
       }
 
       if (next !== current) {
         latestQuantity.current = next;
+        pendingQuantityRef.current = next;
         setOptimisticQuantity(next);
         onChange(next);
         return;
       }
 
+      pendingQuantityRef.current = next;
       setOptimisticQuantity(next);
     },
     [onChange, onRemove],
