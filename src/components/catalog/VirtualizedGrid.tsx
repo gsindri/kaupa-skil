@@ -314,6 +314,10 @@ export function VirtualizedGrid<T>({
     ? Math.max(1, Math.floor((width - safeGap * (cols - 1)) / cols))
     : effectiveMinCardWidth || 1
   const totalHeight = rowVirtualizer.getTotalSize()
+  const normalizedScrollMargin = Number.isFinite(scrollMargin)
+    ? scrollMargin
+    : 0
+  const contentHeight = Math.max(0, totalHeight - normalizedScrollMargin)
 
   return (
     <div
@@ -328,7 +332,7 @@ export function VirtualizedGrid<T>({
       {/* The inner spacer sets the full height for the virtualizer */}
       <div
         ref={innerRef}
-        style={{ height: totalHeight, position: 'relative' }}
+        style={{ height: contentHeight, position: 'relative' }}
       >
         {virtualRows.map(vr => {
           const startIndex = vr.index * cols
@@ -343,7 +347,7 @@ export function VirtualizedGrid<T>({
                 top: 0,
                 left: 0,
                 width: '100%',
-                transform: `translate3d(0, ${vr.start}px, 0)`,
+                transform: `translate3d(0, ${Math.max(0, vr.start - normalizedScrollMargin)}px, 0)`,
                 height: cardHeight,
                 display: 'grid',
                 gridTemplateColumns: `repeat(${cols}, minmax(${cardWidth}px, 1fr))`,

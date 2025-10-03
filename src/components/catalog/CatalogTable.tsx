@@ -485,11 +485,19 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
 
   const virtualItems = virtualizer.getVirtualItems()
   const totalSize = virtualizer.getTotalSize()
-  const paddingTop = virtualItems.length > 0 ? virtualItems[0].start : 0
-  const paddingBottom =
-    virtualItems.length > 0
-      ? totalSize - virtualItems[virtualItems.length - 1].end
-      : 0
+  const normalizedScrollMargin = Number.isFinite(scrollMargin)
+    ? scrollMargin
+    : 0
+  const firstVirtual = virtualItems[0]
+  const lastVirtual = virtualItems[virtualItems.length - 1]
+  const contentHeight = Math.max(0, totalSize - normalizedScrollMargin)
+  const paddingTop = firstVirtual
+    ? Math.max(0, firstVirtual.start - normalizedScrollMargin)
+    : 0
+  const lastEnd = lastVirtual
+    ? Math.max(0, lastVirtual.end - normalizedScrollMargin)
+    : 0
+  const paddingBottom = Math.max(0, contentHeight - lastEnd)
 
   return (
     <div
