@@ -12,10 +12,13 @@ import { cn } from "@/lib/utils";
 interface CatalogQuantityStepperProps {
   quantity: number;
   onChange: (quantity: number) => void;
-  onRemove: () => void;
+  onRemove?: () => void;
   itemLabel: string;
   className?: string;
   canIncrease?: boolean;
+  minQuantity?: number;
+  maxQuantity?: number;
+  size?: "sm" | "md";
 }
 
 type StepDirection = "inc" | "dec";
@@ -30,6 +33,9 @@ export function CatalogQuantityStepper({
   itemLabel,
   className,
   canIncrease = true,
+  minQuantity = 0,
+  maxQuantity,
+  size = "md",
 }: CatalogQuantityStepperProps) {
   const holdTimeoutRef = useRef<number>();
   const holdIntervalRef = useRef<number>();
@@ -37,6 +43,17 @@ export function CatalogQuantityStepper({
   const pendingQuantitiesRef = useRef<number[]>([]);
   const resolvedQuantitiesRef = useRef<Set<number>>(new Set());
   const [optimisticQuantity, setOptimisticQuantity] = useState(quantity);
+
+  const effectiveMax = typeof maxQuantity === "number" ? Math.max(minQuantity, maxQuantity) : undefined;
+  const clampToBounds = useCallback(
+    (value: number) => {
+      const clampedMax = effectiveMax !== undefined ? Math.min(value, effectiveMax) : value;
+      return Math.max(0, clampedMax);
+    },
+    [effectiveMax],
+  );
+
+  const effectiveCanIncrease = canIncrease && (effectiveMax === undefined || optimisticQuantity < effectiveMax);
 
   useEffect(() => {
     const pendingQuantities = pendingQuantitiesRef.current;
@@ -89,6 +106,7 @@ export function CatalogQuantityStepper({
 
   const applyQuantity = useCallback(
     (next: number) => {
+      const boundedNext = clampToBounds(next);
       const current = latestQuantity.current;
       const pendingQuantities = pendingQuantitiesRef.current;
       const resolvedQuantities = resolvedQuantitiesRef.current;
@@ -129,25 +147,25 @@ export function CatalogQuantityStepper({
 
       setOptimisticQuantity(next);
     },
-    [onChange, onRemove],
+    [clampToBounds, onChange, onRemove],
   );
 
   const step = useCallback(
     (direction: StepDirection, magnitude = 1) => {
       const current = latestQuantity.current;
-      if (direction === "inc" && !canIncrease) {
+      if (direction === "inc" && !effectiveCanIncrease) {
         return;
       }
       const delta = direction === "inc" ? magnitude : -magnitude;
-      const next = Math.max(0, current + delta);
+      const next = clampToBounds(current + delta);
       applyQuantity(next);
     },
-    [applyQuantity, canIncrease],
+    [applyQuantity, clampToBounds, effectiveCanIncrease],
   );
 
   const scheduleHold = useCallback(
     (direction: StepDirection) => {
-      if (direction === "inc" && !canIncrease) {
+      if (direction === "inc" && !effectiveCanIncrease) {
         return;
       }
       stopHold();
@@ -158,7 +176,7 @@ export function CatalogQuantityStepper({
       }, HOLD_DELAY_MS);
       window.addEventListener("pointerup", stopHold, { once: true });
     },
-    [canIncrease, step, stopHold],
+    [effectiveCanIncrease, step, stopHold],
   );
 
   const handleClick = useCallback(
@@ -170,12 +188,30 @@ export function CatalogQuantityStepper({
     [step],
   );
 
+  const sizeStyles =
+    size === "sm"
+      ? {
+          root:
+            "h-9 gap-1 rounded-md border-border/60 bg-background/90 px-1.5 py-0.5 text-xs text-foreground shadow-sm",
+          button:
+            "h-8 w-8 rounded-md border border-border/60 bg-card/80 text-foreground",
+          count: "min-w-[2.25rem] text-center text-sm",
+        }
+      : {
+          root:
+            "gap-2 rounded-full border border-border/70 bg-background/95 px-2 py-1 text-sm font-medium text-foreground shadow-sm",
+          button:
+            "h-10 w-10 rounded-full border border-border/60 bg-card/90 text-foreground",
+          count: "min-w-[2.75rem] text-center text-sm font-semibold",
+        };
+
   return (
     <div
       role="group"
       aria-label={`Quantity controls for ${itemLabel}`}
       className={cn(
-        "inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/95 px-2 py-1 text-sm font-medium text-foreground shadow-sm backdrop-blur",
+        "inline-flex items-center backdrop-blur",
+        sizeStyles.root,
         className,
       )}
     >
@@ -184,7 +220,8 @@ export function CatalogQuantityStepper({
         variant="ghost"
         size="icon"
         className={cn(
-          "catalog-card__stepper-btn h-10 w-10 rounded-full border border-border/60 bg-card/90 text-foreground transition-transform duration-150 ease-out",
+          "catalog-card__stepper-btn transition-transform duration-150 ease-out",
+          sizeStyles.button,
           "hover:-translate-y-0.5 hover:bg-muted/60 focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-1",
         )}
         aria-label={`Decrease quantity of ${itemLabel}`}
@@ -199,7 +236,10 @@ export function CatalogQuantityStepper({
         <Minus className="h-4 w-4" aria-hidden="true" />
       </Button>
       <span
-        className="catalog-card__stepper-count min-w-[2.75rem] text-center text-sm font-semibold tabular-nums"
+        className={cn(
+          "catalog-card__stepper-count tabular-nums",
+          sizeStyles.count,
+        )}
         aria-live="polite"
       >
         {optimisticQuantity}
@@ -209,11 +249,12 @@ export function CatalogQuantityStepper({
         variant="ghost"
         size="icon"
         className={cn(
-          "catalog-card__stepper-btn h-10 w-10 rounded-full border border-border/60 bg-card/90 text-foreground transition-transform duration-150 ease-out",
+          "catalog-card__stepper-btn transition-transform duration-150 ease-out",
+          sizeStyles.button,
           "hover:-translate-y-0.5 hover:bg-muted/60 focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-1",
         )}
         aria-label={`Increase quantity of ${itemLabel}`}
-        disabled={!canIncrease}
+        disabled={!effectiveCanIncrease}
         onPointerDown={() => {
           scheduleHold("inc");
         }}
