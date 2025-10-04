@@ -313,11 +313,11 @@ export function SendOrderButton({
           )}
         </div>
 
-        {/* Gmail Auth Button (if not authorized) */}
-        {!isGmailAuthorized && <GmailAuthButton />}
+        {/* Gmail Auth Button */}
+        <GmailAuthButton />
 
-        {/* Outlook Auth Button (if not authorized) */}
-        {!isOutlookAuthorized && <OutlookAuthButton />}
+        {/* Outlook Auth Button */}
+        <OutlookAuthButton />
 
         {/* Primary Send Options */}
         <div className="space-y-2">
