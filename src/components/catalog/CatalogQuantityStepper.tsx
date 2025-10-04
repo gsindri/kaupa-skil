@@ -117,7 +117,7 @@ export function CatalogQuantityStepper({
         }
       };
 
-      if (boundedNext <= 0) {
+      if (next <= 0) {
         if (current > 0) {
           if (pendingQuantities.length > 0) {
             markResolved(pendingQuantities);
@@ -130,26 +130,22 @@ export function CatalogQuantityStepper({
           pendingQuantities.push(0);
           latestQuantity.current = 0;
           setOptimisticQuantity(0);
-          if (onRemove) {
-            onRemove();
-          } else {
-            onChange(0);
-          }
+          onRemove();
           pendingQuantities.pop();
         }
         return;
       }
 
-      if (boundedNext !== current) {
-        latestQuantity.current = boundedNext;
-        resolvedQuantities.delete(boundedNext);
-        pendingQuantities.push(boundedNext);
-        setOptimisticQuantity(boundedNext);
-        onChange(boundedNext);
+      if (next !== current) {
+        latestQuantity.current = next;
+        resolvedQuantities.delete(next);
+        pendingQuantities.push(next);
+        setOptimisticQuantity(next);
+        onChange(next);
         return;
       }
 
-      setOptimisticQuantity(boundedNext);
+      setOptimisticQuantity(next);
     },
     [clampToBounds, onChange, onRemove],
   );

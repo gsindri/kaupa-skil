@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { CatalogTable } from './CatalogTable'
 
@@ -108,6 +108,7 @@ describe('CatalogTable', () => {
   })
 
   it('passes full product info to addItem', async () => {
+    const user = userEvent.setup()
     const product = {
       catalog_id: 'p1',
       name: 'Full Info Product',
@@ -165,4 +166,3 @@ describe('CatalogTable', () => {
     expect(notifyButton).toBeEnabled()
   })
 })
-

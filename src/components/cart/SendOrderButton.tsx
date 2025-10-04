@@ -1,21 +1,23 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { Mail, ChevronDown, Copy, CheckCircle2, AlertCircle } from 'lucide-react'
+import { Mail, Copy, CheckCircle2, AlertCircle, Star } from 'lucide-react'
 import { useEmailComposer } from '@/hooks/useEmailComposer'
+import { GmailAuthButton } from '@/components/gmail/GmailAuthButton'
+import { OutlookAuthButton } from '@/components/cart/OutlookAuthButton'
+import { supabase } from '@/integrations/supabase/client'
+import { useToast } from '@/hooks/use-toast'
+import { useBasket } from '@/contexts/useBasket'
+import { useOrders } from '@/hooks/useOrders'
+import { useAuth } from '@/contexts/useAuth'
+import { MarkAsSentDialog } from './MarkAsSentDialog'
 import type { CartItem } from '@/lib/types'
 import type { EmailLanguage } from '@/lib/emailTemplates'
 
@@ -39,39 +41,241 @@ export function SendOrderButton({
   minOrderValue = 0
 }: SendOrderButtonProps) {
   const [language, setLanguage] = useState<EmailLanguage>('en')
+  const [isGmailAuthorized, setIsGmailAuthorized] = useState(false)
+  const [isOutlookAuthorized, setIsOutlookAuthorized] = useState(false)
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false)
+  const [pendingSendMethod, setPendingSendMethod] = useState<string | null>(null)
+  const { toast } = useToast()
+  const { items, removeItem } = useBasket()
+  const { createOrder, addOrderLine } = useOrders()
+  const { profile } = useAuth()
   const {
     createEmailData,
     createMailtoLink,
     createGmailLink,
     createOutlookLink,
-    copyToClipboard
+    copyToClipboard,
+    generatePONumber
   } = useEmailComposer()
 
   const meetsMinimum = subtotal >= minOrderValue
   const shortfall = minOrderValue - subtotal
 
+  useEffect(() => {
+    checkGmailAuth()
+    checkOutlookAuth()
+  }, [])
+
+  async function checkGmailAuth() {
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('gmail_authorized')
+        .eq('id', user.id)
+        .single()
+
+      setIsGmailAuthorized(profile?.gmail_authorized || false)
+    } catch (error) {
+      console.error('Error checking Gmail auth:', error)
+    }
+  }
+
+  async function checkOutlookAuth() {
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('outlook_authorized')
+        .eq('id', user.id)
+        .single()
+
+      setIsOutlookAuthorized(profile?.outlook_authorized || false)
+    } catch (error) {
+      console.error('Error checking Outlook auth:', error)
+    }
+  }
+
   const emailData = createEmailData(supplierName, cartItems, subtotal)
 
-  const handleSendEmail = (method: 'mailto' | 'gmail' | 'outlook') => {
-    if (!supplierEmail) {
+  const handleSendEmail = async (method: 'mailto' | 'gmail' | 'outlook' | 'gmail-draft' | 'outlook-draft' | 'clipboard') => {
+    if (!supplierEmail && method !== 'clipboard') {
       alert(language === 'is' ? 'Netfang ekki stillt fyrir þennan birgja' : 'Email not configured for this supplier')
       return
     }
 
-    let link = ''
-    if (method === 'mailto') {
-      link = createMailtoLink(supplierEmail, emailData, language)
-    } else if (method === 'gmail') {
-      link = createGmailLink(supplierEmail, emailData, language)
-    } else if (method === 'outlook') {
-      link = createOutlookLink(supplierEmail, emailData, language)
+    // Gmail draft auto-clears cart on success
+    if (method === 'gmail-draft') {
+      const success = await handleCreateGmailDraft()
+      if (success) {
+        await handleMarkAsSent('gmail_draft')
+      }
+      return
     }
 
-    window.open(link, '_blank')
+    // Outlook draft auto-clears cart on success
+    if (method === 'outlook-draft') {
+      const success = await handleCreateOutlookDraft()
+      if (success) {
+        await handleMarkAsSent('outlook_draft')
+      }
+      return
+    }
+
+    // For other methods, open the email client then show confirmation dialog
+    let link = ''
+    if (method === 'mailto') {
+      link = createMailtoLink(supplierEmail!, emailData, language)
+      window.location.href = link
+    } else if (method === 'gmail') {
+      link = createGmailLink(supplierEmail!, emailData, language)
+      window.open(link, '_blank')
+    } else if (method === 'outlook') {
+      link = createOutlookLink(supplierEmail!, emailData, language)
+      window.open(link, '_blank')
+    } else if (method === 'clipboard') {
+      copyToClipboard(emailData, language)
+    }
+
+    // Show confirmation dialog
+    setPendingSendMethod(method)
+    setShowConfirmDialog(true)
   }
 
-  const handleCopy = () => {
-    copyToClipboard(emailData, language)
+  async function handleCreateGmailDraft(): Promise<boolean> {
+    try {
+      const { data, error } = await supabase.functions.invoke('create-gmail-draft', {
+        body: {
+          ...emailData,
+          supplierEmail,
+          language,
+        },
+      })
+
+      if (error) throw error
+
+      toast({
+        title: language === 'is' ? 'Drög búin til' : 'Draft Created',
+        description: language === 'is' 
+          ? 'Gmail drög hafa verið búin til og pöntun vistuð.' 
+          : 'Gmail draft has been created and order saved.',
+      })
+
+      if (data?.draftUrl) {
+        window.open(data.draftUrl, '_blank')
+      }
+
+      return true
+    } catch (error) {
+      console.error('Failed to create Gmail draft:', error)
+      toast({
+        title: language === 'is' ? 'Villa' : 'Error',
+        description: language === 'is'
+          ? 'Ekki tókst að búa til Gmail drög. Vinsamlegast tengdu Gmail fyrst.'
+          : 'Failed to create Gmail draft. Please connect Gmail first.',
+        variant: 'destructive',
+      })
+      return false
+    }
+  }
+
+  async function handleCreateOutlookDraft(): Promise<boolean> {
+    try {
+      const subject = `PO-${generatePONumber()} - Order from ${profile?.full_name || 'Your Company'}`
+      const body = `Order details:\n\nSupplier: ${supplierName}\n\n` +
+        cartItems.map(item => `${item.itemName} - ${item.quantity} x ${item.packSize}`).join('\n') +
+        `\n\nSubtotal: ${subtotal.toLocaleString()} kr.`
+
+      const { data, error } = await supabase.functions.invoke('create-outlook-draft', {
+        body: {
+          to: supplierEmail!,
+          subject,
+          body,
+        },
+      })
+
+      if (error) throw error
+
+      toast({
+        title: language === 'is' ? 'Drög búin til' : 'Draft Created',
+        description: language === 'is' 
+          ? 'Outlook drög hafa verið búin til og pöntun vistuð.' 
+          : 'Outlook draft has been created and order saved.',
+      })
+
+      if (data?.webLink) {
+        window.open(data.webLink, '_blank')
+      }
+
+      return true
+    } catch (error) {
+      console.error('Failed to create Outlook draft:', error)
+      toast({
+        title: language === 'is' ? 'Villa' : 'Error',
+        description: language === 'is'
+          ? 'Ekki tókst að búa til Outlook drög. Vinsamlegast tengdu Outlook fyrst.'
+          : 'Failed to create Outlook draft. Please connect Outlook first.',
+        variant: 'destructive',
+      })
+      return false
+    }
+  }
+
+  async function handleMarkAsSent(sendMethod: string) {
+    try {
+      // Create order record
+      const orderData = await createOrder.mutateAsync({
+        supplier_id: supplierId,
+        order_number: generatePONumber(),
+        order_date: new Date().toISOString(),
+        status: 'sent',
+        vat_included: true,
+        currency: 'ISK'
+      })
+
+      // Add order lines
+      for (const item of cartItems) {
+        const orderLine = {
+          order_id: orderData.id,
+          supplier_product_id: item.id,
+          pack_size: item.packSize || null,
+          quantity_packs: item.quantity,
+          unit_price_per_pack: item.unitPriceExVat || 0,
+          line_total: (item.unitPriceExVat || 0) * item.quantity,
+          currency: 'ISK',
+          vat_included: false
+        }
+        await addOrderLine.mutateAsync(orderLine)
+      }
+
+      // Clear cart items for this supplier
+      cartItems.forEach(item => {
+        removeItem(item.id)
+      })
+
+      toast({
+        title: language === 'is' ? 'Pöntun send' : 'Order Sent',
+        description: language === 'is'
+          ? `Pöntun til ${supplierName} hefur verið vistuð og fjarlægð úr körfu.`
+          : `Order to ${supplierName} has been saved and removed from cart.`,
+      })
+
+      setShowConfirmDialog(false)
+      setPendingSendMethod(null)
+    } catch (error) {
+      console.error('Error saving order:', error)
+      toast({
+        title: language === 'is' ? 'Villa' : 'Error',
+        description: language === 'is'
+          ? 'Ekki tókst að vista pöntun'
+          : 'Failed to save order',
+        variant: 'destructive',
+      })
+    }
   }
 
   const toggleLanguage = () => {
@@ -79,94 +283,196 @@ export function SendOrderButton({
   }
 
   return (
-    <div className="flex items-center gap-3 pt-4 border-t">
-      <Avatar className="h-10 w-10">
-        <AvatarImage src={supplierLogoUrl || undefined} alt={supplierName} />
-        <AvatarFallback>{supplierName.slice(0, 2).toUpperCase()}</AvatarFallback>
-      </Avatar>
+    <>
+      <div className="space-y-4 pt-4 border-t">
+        {/* Header with supplier info and language toggle */}
+        <div className="flex items-center gap-3">
+          <Avatar className="h-10 w-10">
+            <AvatarImage src={supplierLogoUrl || undefined} alt={supplierName} />
+            <AvatarFallback>{supplierName.slice(0, 2).toUpperCase()}</AvatarFallback>
+          </Avatar>
+          <div className="flex-1 font-medium">{supplierName}</div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={toggleLanguage}
+            className="h-8 px-3"
+          >
+            {language === 'en' ? '🇬🇧 EN' : '🇮🇸 IS'}
+          </Button>
+          {meetsMinimum ? (
+            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+              <CheckCircle2 className="h-3 w-3 mr-1" />
+              {language === 'is' ? 'Tilbúið' : 'Ready'}
+            </Badge>
+          ) : (
+            <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
+              <AlertCircle className="h-3 w-3 mr-1" />
+              {minOrderValue > 0 && `+${(minOrderValue - subtotal).toLocaleString()} kr.`}
+            </Badge>
+          )}
+        </div>
 
-      <div className="flex-1 flex items-center gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={toggleLanguage}
-          className="h-8 px-2"
-        >
-          {language === 'en' ? '🇬🇧 EN' : '🇮🇸 IS'}
-        </Button>
+        {/* Gmail Auth Button */}
+        <GmailAuthButton />
 
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div className="flex-1">
+        {/* Outlook Auth Button */}
+        <OutlookAuthButton />
+
+        {/* Primary Send Options */}
+        <div className="space-y-2">
+          <TooltipProvider>
+            {isGmailAuthorized && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    onClick={() => handleSendEmail('gmail-draft')}
+                    disabled={!meetsMinimum || !supplierEmail}
+                    className="w-full"
+                    size="default"
+                  >
+                    <Star className="h-4 w-4 mr-2" />
+                    {language === 'is' ? 'Búa til Gmail drög' : 'Create Gmail Draft'}
+                  </Button>
+                </TooltipTrigger>
+                {!meetsMinimum && (
+                  <TooltipContent>
+                    <p>
+                      {language === 'is' 
+                        ? `Bæta við ${shortfall.toLocaleString('is-IS')} kr. til að ná lágmarki`
+                        : `Add ${shortfall.toLocaleString('en-US')} kr. more to meet minimum`
+                      }
+                    </p>
+                  </TooltipContent>
+                )}
+              </Tooltip>
+            )}
+
+            {isOutlookAuthorized && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    onClick={() => handleSendEmail('outlook-draft')}
+                    disabled={!meetsMinimum || !supplierEmail}
+                    className="w-full"
+                    size="default"
+                    variant="secondary"
+                  >
+                    <Mail className="h-4 w-4 mr-2" />
+                    {language === 'is' ? 'Búa til Outlook drög' : 'Create Outlook Draft'}
+                  </Button>
+                </TooltipTrigger>
+                {!meetsMinimum && (
+                  <TooltipContent>
+                    <p>
+                      {language === 'is' 
+                        ? `Bæta við ${shortfall.toLocaleString('is-IS')} kr. til að ná lágmarki`
+                        : `Add ${shortfall.toLocaleString('en-US')} kr. more to meet minimum`
+                      }
+                    </p>
+                  </TooltipContent>
+                )}
+              </Tooltip>
+            )}
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  onClick={() => handleSendEmail('gmail')}
+                  disabled={!meetsMinimum || !supplierEmail}
+                  variant="outline"
+                  className="w-full"
+                  size="default"
+                >
+                  <Mail className="h-4 w-4 mr-2" />
+                  {language === 'is' ? 'Opna í Gmail' : 'Open in Gmail Web'}
+                </Button>
+              </TooltipTrigger>
+              {!meetsMinimum && (
+                <TooltipContent>
+                  <p>
+                    {language === 'is' 
+                      ? `Bæta við ${shortfall.toLocaleString('is-IS')} kr. til að ná lágmarki`
+                      : `Add ${shortfall.toLocaleString('en-US')} kr. more to meet minimum`
+                    }
+                  </p>
+                </TooltipContent>
+              )}
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  onClick={() => handleSendEmail('outlook')}
+                  disabled={!meetsMinimum || !supplierEmail}
+                  variant="outline"
+                  className="w-full"
+                  size="default"
+                >
+                  <Mail className="h-4 w-4 mr-2" />
+                  {language === 'is' ? 'Opna í Outlook' : 'Open in Outlook Web'}
+                </Button>
+              </TooltipTrigger>
+              {!meetsMinimum && (
+                <TooltipContent>
+                  <p>
+                    {language === 'is' 
+                      ? `Bæta við ${shortfall.toLocaleString('is-IS')} kr. til að ná lágmarki`
+                      : `Add ${shortfall.toLocaleString('en-US')} kr. more to meet minimum`
+                    }
+                  </p>
+                </TooltipContent>
+              )}
+            </Tooltip>
+
+            <Button
+              onClick={() => handleSendEmail('clipboard')}
+              disabled={!meetsMinimum}
+              variant="outline"
+              className="w-full"
+              size="default"
+            >
+              <Copy className="h-4 w-4 mr-2" />
+              {language === 'is' ? 'Afrita á klemmuspjald' : 'Copy to Clipboard'}
+            </Button>
+          </TooltipProvider>
+
+          {/* Secondary option */}
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
                 <Button
                   onClick={() => handleSendEmail('mailto')}
                   disabled={!meetsMinimum || !supplierEmail}
-                  className="w-full"
+                  variant="ghost"
+                  className="w-full text-sm"
                   size="sm"
                 >
-                  <Mail className="h-4 w-4 mr-2" />
-                  {language === 'is' ? 'Senda Pöntun' : 'Send Order'}
+                  {language === 'is' ? 'Opna í sjálfgefnu póstforriti' : 'Open in default email app'}
                 </Button>
-              </div>
-            </TooltipTrigger>
-            {!meetsMinimum && (
-              <TooltipContent>
-                <p>
-                  {language === 'is' 
-                    ? `Bæta við ${shortfall.toLocaleString('is-IS')} kr. til að ná lágmarki`
-                    : `Add ${shortfall.toLocaleString('en-US')} kr. more to meet minimum`
-                  }
-                </p>
-              </TooltipContent>
-            )}
-            {!supplierEmail && (
-              <TooltipContent>
-                <p>
-                  {language === 'is' 
-                    ? 'Netfang ekki stillt'
-                    : 'Email not configured'
-                  }
-                </p>
-              </TooltipContent>
-            )}
-          </Tooltip>
-        </TooltipProvider>
-
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" className="h-8 px-2">
-              <ChevronDown className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => handleSendEmail('gmail')} disabled={!supplierEmail}>
-              <Mail className="h-4 w-4 mr-2" />
-              {language === 'is' ? 'Opna í Gmail' : 'Open in Gmail'}
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleSendEmail('outlook')} disabled={!supplierEmail}>
-              <Mail className="h-4 w-4 mr-2" />
-              {language === 'is' ? 'Opna í Outlook' : 'Open in Outlook'}
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={handleCopy}>
-              <Copy className="h-4 w-4 mr-2" />
-              {language === 'is' ? 'Afrita á klemmuspjald' : 'Copy to Clipboard'}
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+              </TooltipTrigger>
+              {!meetsMinimum && (
+                <TooltipContent>
+                  <p>
+                    {language === 'is' 
+                      ? `Bæta við ${shortfall.toLocaleString('is-IS')} kr. til að ná lágmarki`
+                      : `Add ${shortfall.toLocaleString('en-US')} kr. more to meet minimum`
+                    }
+                  </p>
+                </TooltipContent>
+              )}
+            </Tooltip>
+          </TooltipProvider>
+        </div>
       </div>
 
-      {meetsMinimum ? (
-        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-          <CheckCircle2 className="h-3 w-3 mr-1" />
-          {language === 'is' ? 'Tilbúið' : 'Ready'}
-        </Badge>
-      ) : (
-        <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
-          <AlertCircle className="h-3 w-3 mr-1" />
-          {minOrderValue > 0 && `${(minOrderValue - subtotal).toLocaleString()} kr.`}
-        </Badge>
-      )}
-    </div>
+      <MarkAsSentDialog
+        open={showConfirmDialog}
+        onOpenChange={setShowConfirmDialog}
+        onConfirm={() => handleMarkAsSent(pendingSendMethod || 'unknown')}
+        language={language}
+        supplierName={supplierName}
+      />
+    </>
   )
 }
