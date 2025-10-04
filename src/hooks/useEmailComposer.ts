@@ -122,7 +122,7 @@ export function useEmailComposer() {
     const subject = generateOrderSubject(emailData.poNumber, emailData.organizationName, language)
     const body = generateOrderEmailBody(emailData, language)
     
-    return `https://outlook.live.com/mail/deeplink/compose?to=${encodeURIComponent(supplierEmail)}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
+    return `https://outlook.office.com/mail/deeplink/compose?to=${encodeURIComponent(supplierEmail)}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
   }
 
   async function copyToClipboard(
