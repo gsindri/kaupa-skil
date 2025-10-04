@@ -43,7 +43,7 @@ export function OutlookAuthButton() {
       
       // For now, we'll need to store the client ID in the database or fetch it from the backend
       // This is a placeholder - in production, this should come from your Azure app registration
-      const clientId = 'YOUR_AZURE_CLIENT_ID';
+      const clientId = '979669cd-129b-4971-9470-401f3989a394';
       
       const authUrl = `https://login.microsoftonline.com/common/oauth2/v2.0/authorize?` +
         `client_id=${clientId}&` +
