@@ -103,7 +103,16 @@ serve(async (req) => {
           <script>
             if (window.opener) {
               window.opener.postMessage({ type: 'GMAIL_AUTH_SUCCESS' }, '*');
-              window.close();
+              
+              setTimeout(() => {
+                window.close();
+                
+                setTimeout(() => {
+                  if (!window.closed) {
+                    document.body.innerHTML = '<div style="text-align: center; padding: 40px; font-family: system-ui;"><h2>Gmail connected successfully!</h2><button onclick="window.close()" style="padding: 10px 20px; font-size: 16px; cursor: pointer; margin-top: 20px; background: #4285f4; color: white; border: none; border-radius: 4px;">Close Window</button></div>';
+                  }
+                }, 1000);
+              }, 300);
             } else {
               document.body.innerHTML = '<h2>Gmail connected successfully! You can close this window.</h2>';
             }
