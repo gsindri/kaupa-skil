@@ -34,18 +34,41 @@ export function CatalogQuantityStepper({
   const holdTimeoutRef = useRef<number>();
   const holdIntervalRef = useRef<number>();
   const latestQuantity = useRef(quantity);
-  const pendingQuantityRef = useRef<number | null>(null);
+  const pendingQuantitiesRef = useRef<number[]>([]);
+  const resolvedQuantitiesRef = useRef<Set<number>>(new Set());
   const [optimisticQuantity, setOptimisticQuantity] = useState(quantity);
 
   useEffect(() => {
-    if (pendingQuantityRef.current === null) {
+    const pendingQuantities = pendingQuantitiesRef.current;
+    const resolvedQuantities = resolvedQuantitiesRef.current;
+
+    if (pendingQuantities.length === 0) {
+      if (resolvedQuantities.delete(quantity)) {
+        return;
+      }
+
       latestQuantity.current = quantity;
       setOptimisticQuantity(quantity);
       return;
     }
 
-    if (pendingQuantityRef.current === quantity) {
-      pendingQuantityRef.current = null;
+    const pendingCount = pendingQuantities.length;
+    const matchIndex = pendingQuantities.lastIndexOf(quantity);
+
+    if (matchIndex === -1) {
+      return;
+    }
+
+    const resolvedEntries = pendingQuantities.splice(0, matchIndex + 1);
+
+    if (resolvedEntries.length > 1) {
+      for (let index = 0; index < resolvedEntries.length - 1; index += 1) {
+        resolvedQuantities.add(resolvedEntries[index]);
+      }
+    }
+
+    if (matchIndex === pendingCount - 1) {
+      resolvedQuantities.delete(quantity);
       latestQuantity.current = quantity;
       setOptimisticQuantity(quantity);
     }
@@ -67,26 +90,43 @@ export function CatalogQuantityStepper({
   const applyQuantity = useCallback(
     (next: number) => {
       const current = latestQuantity.current;
+      const pendingQuantities = pendingQuantitiesRef.current;
+      const resolvedQuantities = resolvedQuantitiesRef.current;
+
+      const markResolved = (values: number[]) => {
+        for (const value of values) {
+          resolvedQuantities.add(value);
+        }
+      };
+
       if (next <= 0) {
         if (current > 0) {
+          if (pendingQuantities.length > 0) {
+            markResolved(pendingQuantities);
+            pendingQuantities.splice(0, pendingQuantities.length);
+          }
+
+          resolvedQuantities.add(current);
+          resolvedQuantities.delete(0);
+
+          pendingQuantities.push(0);
           latestQuantity.current = 0;
-          pendingQuantityRef.current = 0;
           setOptimisticQuantity(0);
           onRemove();
-          pendingQuantityRef.current = null;
+          pendingQuantities.pop();
         }
         return;
       }
 
       if (next !== current) {
         latestQuantity.current = next;
-        pendingQuantityRef.current = next;
+        resolvedQuantities.delete(next);
+        pendingQuantities.push(next);
         setOptimisticQuantity(next);
         onChange(next);
         return;
       }
 
-      pendingQuantityRef.current = next;
       setOptimisticQuantity(next);
     },
     [onChange, onRemove],
