@@ -88,7 +88,10 @@ export function CatalogQuantityStepper({
       resolvedQuantities.delete(quantity);
       latestQuantity.current = quantity;
       setOptimisticQuantity(quantity);
+      return;
     }
+
+    resolvedQuantities.add(quantity);
   }, [quantity]);
 
   const stopHold = useCallback(() => {

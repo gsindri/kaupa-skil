@@ -61,4 +61,66 @@ describe('CatalogQuantityStepper', () => {
 
     expect(screen.getByText('3')).toBeInTheDocument()
   })
+
+  it('maintains optimistic quantity when stale duplicate arrives after removal', () => {
+    const handleChange = vi.fn()
+    const handleRemove = vi.fn()
+
+    const { rerender } = render(
+      <CatalogQuantityStepper
+        quantity={1}
+        onChange={handleChange}
+        onRemove={handleRemove}
+        itemLabel="Test product"
+      />,
+    )
+
+    const incrementButton = screen.getByRole('button', {
+      name: /increase quantity of test product/i,
+    })
+    const decrementButton = screen.getByRole('button', {
+      name: /decrease quantity of test product/i,
+    })
+
+    fireEvent.click(incrementButton)
+    expect(handleChange).toHaveBeenCalledWith(2)
+    expect(screen.getByText('2')).toBeInTheDocument()
+
+    fireEvent.click(decrementButton)
+    expect(handleChange).toHaveBeenCalledWith(1)
+    expect(screen.getByText('1')).toBeInTheDocument()
+
+    rerender(
+      <CatalogQuantityStepper
+        quantity={2}
+        onChange={handleChange}
+        onRemove={handleRemove}
+        itemLabel="Test product"
+      />,
+    )
+
+    expect(screen.getByText('1')).toBeInTheDocument()
+
+    rerender(
+      <CatalogQuantityStepper
+        quantity={1}
+        onChange={handleChange}
+        onRemove={handleRemove}
+        itemLabel="Test product"
+      />,
+    )
+
+    expect(screen.getByText('1')).toBeInTheDocument()
+
+    rerender(
+      <CatalogQuantityStepper
+        quantity={2}
+        onChange={handleChange}
+        onRemove={handleRemove}
+        itemLabel="Test product"
+      />,
+    )
+
+    expect(screen.getByText('1')).toBeInTheDocument()
+  })
 })
