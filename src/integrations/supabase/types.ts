@@ -694,6 +694,10 @@ export type Database = {
           gmail_refresh_token: string | null
           gmail_token_expires_at: string | null
           id: string
+          outlook_access_token: string | null
+          outlook_authorized: boolean | null
+          outlook_refresh_token: string | null
+          outlook_token_expires_at: string | null
           tenant_id: string | null
           updated_at: string | null
         }
@@ -706,6 +710,10 @@ export type Database = {
           gmail_refresh_token?: string | null
           gmail_token_expires_at?: string | null
           id: string
+          outlook_access_token?: string | null
+          outlook_authorized?: boolean | null
+          outlook_refresh_token?: string | null
+          outlook_token_expires_at?: string | null
           tenant_id?: string | null
           updated_at?: string | null
         }
@@ -718,6 +726,10 @@ export type Database = {
           gmail_refresh_token?: string | null
           gmail_token_expires_at?: string | null
           id?: string
+          outlook_access_token?: string | null
+          outlook_authorized?: boolean | null
+          outlook_refresh_token?: string | null
+          outlook_token_expires_at?: string | null
           tenant_id?: string | null
           updated_at?: string | null
         }

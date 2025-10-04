@@ -11,6 +11,7 @@ import {
 import { Mail, Copy, CheckCircle2, AlertCircle, Star } from 'lucide-react'
 import { useEmailComposer } from '@/hooks/useEmailComposer'
 import { GmailAuthButton } from '@/components/gmail/GmailAuthButton'
+import { OutlookAuthButton } from '@/components/cart/OutlookAuthButton'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
 import { useBasket } from '@/contexts/useBasket'
@@ -41,6 +42,7 @@ export function SendOrderButton({
 }: SendOrderButtonProps) {
   const [language, setLanguage] = useState<EmailLanguage>('en')
   const [isGmailAuthorized, setIsGmailAuthorized] = useState(false)
+  const [isOutlookAuthorized, setIsOutlookAuthorized] = useState(false)
   const [showConfirmDialog, setShowConfirmDialog] = useState(false)
   const [pendingSendMethod, setPendingSendMethod] = useState<string | null>(null)
   const { toast } = useToast()
@@ -61,6 +63,7 @@ export function SendOrderButton({
 
   useEffect(() => {
     checkGmailAuth()
+    checkOutlookAuth()
   }, [])
 
   async function checkGmailAuth() {
@@ -80,9 +83,26 @@ export function SendOrderButton({
     }
   }
 
+  async function checkOutlookAuth() {
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('outlook_authorized')
+        .eq('id', user.id)
+        .single()
+
+      setIsOutlookAuthorized(profile?.outlook_authorized || false)
+    } catch (error) {
+      console.error('Error checking Outlook auth:', error)
+    }
+  }
+
   const emailData = createEmailData(supplierName, cartItems, subtotal)
 
-  const handleSendEmail = async (method: 'mailto' | 'gmail' | 'outlook' | 'gmail-draft' | 'clipboard') => {
+  const handleSendEmail = async (method: 'mailto' | 'gmail' | 'outlook' | 'gmail-draft' | 'outlook-draft' | 'clipboard') => {
     if (!supplierEmail && method !== 'clipboard') {
       alert(language === 'is' ? 'Netfang ekki stillt fyrir þennan birgja' : 'Email not configured for this supplier')
       return
@@ -93,6 +113,15 @@ export function SendOrderButton({
       const success = await handleCreateGmailDraft()
       if (success) {
         await handleMarkAsSent('gmail_draft')
+      }
+      return
+    }
+
+    // Outlook draft auto-clears cart on success
+    if (method === 'outlook-draft') {
+      const success = await handleCreateOutlookDraft()
+      if (success) {
+        await handleMarkAsSent('outlook_draft')
       }
       return
     }
@@ -148,6 +177,48 @@ export function SendOrderButton({
         description: language === 'is'
           ? 'Ekki tókst að búa til Gmail drög. Vinsamlegast tengdu Gmail fyrst.'
           : 'Failed to create Gmail draft. Please connect Gmail first.',
+        variant: 'destructive',
+      })
+      return false
+    }
+  }
+
+  async function handleCreateOutlookDraft(): Promise<boolean> {
+    try {
+      const subject = `PO-${generatePONumber()} - Order from ${profile?.full_name || 'Your Company'}`
+      const body = `Order details:\n\nSupplier: ${supplierName}\n\n` +
+        cartItems.map(item => `${item.itemName} - ${item.quantity} x ${item.packSize}`).join('\n') +
+        `\n\nSubtotal: ${subtotal.toLocaleString()} kr.`
+
+      const { data, error } = await supabase.functions.invoke('create-outlook-draft', {
+        body: {
+          to: supplierEmail!,
+          subject,
+          body,
+        },
+      })
+
+      if (error) throw error
+
+      toast({
+        title: language === 'is' ? 'Drög búin til' : 'Draft Created',
+        description: language === 'is' 
+          ? 'Outlook drög hafa verið búin til og pöntun vistuð.' 
+          : 'Outlook draft has been created and order saved.',
+      })
+
+      if (data?.webLink) {
+        window.open(data.webLink, '_blank')
+      }
+
+      return true
+    } catch (error) {
+      console.error('Failed to create Outlook draft:', error)
+      toast({
+        title: language === 'is' ? 'Villa' : 'Error',
+        description: language === 'is'
+          ? 'Ekki tókst að búa til Outlook drög. Vinsamlegast tengdu Outlook fyrst.'
+          : 'Failed to create Outlook draft. Please connect Outlook first.',
         variant: 'destructive',
       })
       return false
@@ -245,6 +316,9 @@ export function SendOrderButton({
         {/* Gmail Auth Button (if not authorized) */}
         {!isGmailAuthorized && <GmailAuthButton />}
 
+        {/* Outlook Auth Button (if not authorized) */}
+        {!isOutlookAuthorized && <OutlookAuthButton />}
+
         {/* Primary Send Options */}
         <div className="space-y-2">
           <TooltipProvider>
@@ -259,6 +333,33 @@ export function SendOrderButton({
                   >
                     <Star className="h-4 w-4 mr-2" />
                     {language === 'is' ? 'Búa til Gmail drög' : 'Create Gmail Draft'}
+                  </Button>
+                </TooltipTrigger>
+                {!meetsMinimum && (
+                  <TooltipContent>
+                    <p>
+                      {language === 'is' 
+                        ? `Bæta við ${shortfall.toLocaleString('is-IS')} kr. til að ná lágmarki`
+                        : `Add ${shortfall.toLocaleString('en-US')} kr. more to meet minimum`
+                      }
+                    </p>
+                  </TooltipContent>
+                )}
+              </Tooltip>
+            )}
+
+            {isOutlookAuthorized && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    onClick={() => handleSendEmail('outlook-draft')}
+                    disabled={!meetsMinimum || !supplierEmail}
+                    className="w-full"
+                    size="default"
+                    variant="secondary"
+                  >
+                    <Mail className="h-4 w-4 mr-2" />
+                    {language === 'is' ? 'Búa til Outlook drög' : 'Create Outlook Draft'}
                   </Button>
                 </TooltipTrigger>
                 {!meetsMinimum && (

@@ -26,6 +26,7 @@ import Suppliers from "@/pages/Suppliers";
 import BenchmarkManagement from "@/pages/admin/BenchmarkManagement";
 import SupplierOptOut from "@/pages/admin/SupplierOptOut";
 import BenchmarkDashboard from "@/pages/admin/BenchmarkDashboard";
+import OutlookCallback from "@/pages/OutlookCallback";
 
 export const routes = [
   {
@@ -145,6 +146,14 @@ export const routes = [
     element: (
       <AuthGate>
         <ExistingUserOnboarding />
+      </AuthGate>
+    ),
+  },
+  {
+    path: "/outlook-callback",
+    element: (
+      <AuthGate>
+        <OutlookCallback />
       </AuthGate>
     ),
   },
