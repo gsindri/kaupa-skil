@@ -689,6 +689,10 @@ export type Database = {
           created_at: string | null
           email: string | null
           full_name: string | null
+          gmail_access_token: string | null
+          gmail_authorized: boolean | null
+          gmail_refresh_token: string | null
+          gmail_token_expires_at: string | null
           id: string
           tenant_id: string | null
           updated_at: string | null
@@ -697,6 +701,10 @@ export type Database = {
           created_at?: string | null
           email?: string | null
           full_name?: string | null
+          gmail_access_token?: string | null
+          gmail_authorized?: boolean | null
+          gmail_refresh_token?: string | null
+          gmail_token_expires_at?: string | null
           id: string
           tenant_id?: string | null
           updated_at?: string | null
@@ -705,6 +713,10 @@ export type Database = {
           created_at?: string | null
           email?: string | null
           full_name?: string | null
+          gmail_access_token?: string | null
+          gmail_authorized?: boolean | null
+          gmail_refresh_token?: string | null
+          gmail_token_expires_at?: string | null
           id?: string
           tenant_id?: string | null
           updated_at?: string | null
@@ -922,6 +934,7 @@ export type Database = {
           logo_url: string | null
           min_order_isk: number | null
           name: string
+          order_email: string | null
           short_description: string | null
           updated_at: string | null
           verification_status: string | null
@@ -944,6 +957,7 @@ export type Database = {
           logo_url?: string | null
           min_order_isk?: number | null
           name: string
+          order_email?: string | null
           short_description?: string | null
           updated_at?: string | null
           verification_status?: string | null
@@ -966,6 +980,7 @@ export type Database = {
           logo_url?: string | null
           min_order_isk?: number | null
           name?: string
+          order_email?: string | null
           short_description?: string | null
           updated_at?: string | null
           verification_status?: string | null
@@ -1262,6 +1277,10 @@ export type Database = {
       show_trgm: {
         Args: { "": string }
         Returns: string[]
+      }
+      trigger_benchmark_computation: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
       v_org_catalog: {
         Args: { _org: string }
