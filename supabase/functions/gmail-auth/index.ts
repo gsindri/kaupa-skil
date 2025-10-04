@@ -29,8 +29,21 @@ serve(async (req) => {
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
+    console.log('Gmail Auth - Environment check:', {
+      hasClientId: !!GOOGLE_CLIENT_ID,
+      hasClientSecret: !!GOOGLE_CLIENT_SECRET,
+      hasRedirectUri: !!GOOGLE_REDIRECT_URI,
+      redirectUri: GOOGLE_REDIRECT_URI
+    });
+
     if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET || !GOOGLE_REDIRECT_URI) {
-      throw new Error('Missing Google OAuth credentials');
+      const missingVars = [];
+      if (!GOOGLE_CLIENT_ID) missingVars.push('GOOGLE_CLIENT_ID');
+      if (!GOOGLE_CLIENT_SECRET) missingVars.push('GOOGLE_CLIENT_SECRET');
+      if (!GOOGLE_REDIRECT_URI) missingVars.push('GOOGLE_REDIRECT_URI');
+      
+      console.error('Missing Google OAuth credentials:', missingVars);
+      throw new Error(`Missing Google OAuth credentials: ${missingVars.join(', ')}`);
     }
 
     // Exchange authorization code for tokens
