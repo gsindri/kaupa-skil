@@ -12,17 +12,20 @@ serve(async (req) => {
   }
 
   try {
-    const { code } = await req.json();
+    const { code, redirect_uri } = await req.json();
     
     if (!code) {
       throw new Error('Authorization code is required');
     }
 
+    if (!redirect_uri) {
+      throw new Error('Redirect URI is required');
+    }
+
     const clientId = Deno.env.get('MICROSOFT_CLIENT_ID');
     const clientSecret = Deno.env.get('MICROSOFT_CLIENT_SECRET');
-    const redirectUri = Deno.env.get('MICROSOFT_REDIRECT_URI');
     
-    if (!clientId || !clientSecret || !redirectUri) {
+    if (!clientId || !clientSecret) {
       throw new Error('Microsoft OAuth credentials not configured');
     }
 
@@ -36,7 +39,7 @@ serve(async (req) => {
         client_id: clientId,
         client_secret: clientSecret,
         code: code,
-        redirect_uri: redirectUri,
+        redirect_uri: redirect_uri,
         grant_type: 'authorization_code',
       }),
     });

@@ -38,10 +38,15 @@ export default function OutlookCallback() {
       }
 
       try {
+        const redirectUri = `${window.location.origin}/outlook-callback`;
+        
         const { data, error: invokeError } = await supabase.functions.invoke(
           'microsoft-oauth-callback',
           {
-            body: { code },
+            body: { 
+              code,
+              redirect_uri: redirectUri 
+            },
           }
         );
 
