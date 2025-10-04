@@ -92,12 +92,30 @@ serve(async (req) => {
       throw new Error('Failed to store tokens');
     }
 
-    // Redirect back to the app with success message
-    return new Response(null, {
-      status: 302,
+    // Return HTML that notifies parent window and closes popup
+    const html = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Gmail Connected</title>
+        </head>
+        <body>
+          <script>
+            if (window.opener) {
+              window.opener.postMessage({ type: 'GMAIL_AUTH_SUCCESS' }, '*');
+              window.close();
+            } else {
+              document.body.innerHTML = '<h2>Gmail connected successfully! You can close this window.</h2>';
+            }
+          </script>
+        </body>
+      </html>
+    `;
+
+    return new Response(html, {
       headers: {
         ...corsHeaders,
-        'Location': `${SUPABASE_URL}/auth/v1/callback?type=gmail_auth_success`,
+        'Content-Type': 'text/html',
       },
     });
 

@@ -44,7 +44,7 @@ export function GmailAuthButton() {
         return;
       }
 
-      // Get the OAuth URL (you'll need to set these environment variables)
+      // Get the OAuth URL
       const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
       const redirectUri = `https://hcrjkziycryuugzbixhq.supabase.co/functions/v1/gmail-auth/callback`;
       const scope = 'https://www.googleapis.com/auth/gmail.compose';
@@ -58,6 +58,19 @@ export function GmailAuthButton() {
         `&prompt=consent` +
         `&state=${user.id}`;
 
+      // Listen for postMessage from OAuth popup
+      const messageHandler = (event: MessageEvent) => {
+        if (event.data.type === 'GMAIL_AUTH_SUCCESS') {
+          window.removeEventListener('message', messageHandler);
+          checkGmailAuth();
+          toast({
+            title: 'Success',
+            description: 'Gmail connected successfully!',
+          });
+        }
+      };
+      window.addEventListener('message', messageHandler);
+
       // Open OAuth popup
       const width = 500;
       const height = 600;
@@ -70,18 +83,11 @@ export function GmailAuthButton() {
         `width=${width},height=${height},left=${left},top=${top}`
       );
 
-      // Poll for popup close
-      const pollTimer = setInterval(() => {
+      // Fallback: detect if popup was closed without success
+      const checkClosed = setInterval(() => {
         if (popup?.closed) {
-          clearInterval(pollTimer);
-          // Recheck auth status after popup closes
-          setTimeout(() => {
-            checkGmailAuth();
-            toast({
-              title: 'Success',
-              description: 'Gmail connected successfully!',
-            });
-          }, 1000);
+          clearInterval(checkClosed);
+          window.removeEventListener('message', messageHandler);
         }
       }, 500);
 
@@ -97,25 +103,33 @@ export function GmailAuthButton() {
 
   async function handleDisconnect() {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      setIsLoading(true);
+      
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast({
+          title: 'Error',
+          description: 'You must be logged in',
+          variant: 'destructive',
+        });
+        return;
+      }
 
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          gmail_access_token: null,
-          gmail_refresh_token: null,
-          gmail_token_expires_at: null,
-          gmail_authorized: false,
-        })
-        .eq('id', user.id);
+      // Call the revoke function to properly disconnect at Google
+      const { data, error } = await supabase.functions.invoke('gmail-revoke', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
 
       if (error) throw error;
 
       setIsAuthorized(false);
       toast({
         title: 'Disconnected',
-        description: 'Gmail disconnected successfully',
+        description: data.revoked 
+          ? 'Gmail access revoked at Google and disconnected successfully'
+          : 'Gmail disconnected successfully',
       });
     } catch (error) {
       console.error('Disconnect error:', error);
@@ -124,6 +138,8 @@ export function GmailAuthButton() {
         description: 'Failed to disconnect Gmail',
         variant: 'destructive',
       });
+    } finally {
+      setIsLoading(false);
     }
   }
 
