@@ -92,29 +92,91 @@ serve(async (req) => {
       throw new Error('Failed to store tokens');
     }
 
-    // Return HTML that notifies parent window and closes popup
+    // Return HTML with clean success screen
     const html = `
       <!DOCTYPE html>
       <html>
         <head>
           <title>Gmail Connected</title>
+          <style>
+            body {
+              margin: 0;
+              padding: 0;
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              min-height: 100vh;
+              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            }
+            .container {
+              background: white;
+              border-radius: 16px;
+              padding: 48px 40px;
+              text-align: center;
+              box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+              max-width: 400px;
+            }
+            .icon {
+              width: 64px;
+              height: 64px;
+              background: #34A853;
+              border-radius: 50%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              margin: 0 auto 24px;
+            }
+            .checkmark {
+              width: 32px;
+              height: 32px;
+              border: 3px solid white;
+              border-top: none;
+              border-left: none;
+              transform: rotate(45deg);
+              margin-top: -8px;
+            }
+            h1 {
+              margin: 0 0 12px;
+              font-size: 24px;
+              font-weight: 600;
+              color: #1f2937;
+            }
+            p {
+              margin: 0 0 32px;
+              color: #6b7280;
+              font-size: 14px;
+            }
+            button {
+              background: #4285f4;
+              color: white;
+              border: none;
+              border-radius: 8px;
+              padding: 14px 32px;
+              font-size: 16px;
+              font-weight: 500;
+              cursor: pointer;
+              transition: background 0.2s;
+              width: 100%;
+            }
+            button:hover {
+              background: #3367d6;
+            }
+          </style>
         </head>
         <body>
+          <div class="container">
+            <div class="icon">
+              <div class="checkmark"></div>
+            </div>
+            <h1>Gmail Connected!</h1>
+            <p>Your Gmail account has been successfully connected.</p>
+            <button onclick="window.close()">Close Window</button>
+          </div>
           <script>
+            // Notify parent window
             if (window.opener) {
               window.opener.postMessage({ type: 'GMAIL_AUTH_SUCCESS' }, '*');
-              
-              setTimeout(() => {
-                window.close();
-                
-                setTimeout(() => {
-                  if (!window.closed) {
-                    document.body.innerHTML = '<div style="text-align: center; padding: 40px; font-family: system-ui;"><h2>Gmail connected successfully!</h2><button onclick="window.close()" style="padding: 10px 20px; font-size: 16px; cursor: pointer; margin-top: 20px; background: #4285f4; color: white; border: none; border-radius: 4px;">Close Window</button></div>';
-                  }
-                }, 1000);
-              }, 300);
-            } else {
-              document.body.innerHTML = '<h2>Gmail connected successfully! You can close this window.</h2>';
             }
           </script>
         </body>
