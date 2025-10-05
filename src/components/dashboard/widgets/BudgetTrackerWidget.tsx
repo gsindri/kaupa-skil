@@ -7,6 +7,7 @@ import { useSpendSnapshot } from '@/hooks/useSpendSnapshot'
 import { formatCurrency } from '@/lib/format'
 import { useDashboardTelemetry } from '@/hooks/useDashboardTelemetry'
 import { useNavigate } from 'react-router-dom'
+import { CART_ROUTE } from '@/lib/featureFlags'
 
 export function BudgetTrackerWidget({ isInEditMode }: DashboardWidgetComponentProps) {
   const { data, isLoading } = useSpendSnapshot()
@@ -65,7 +66,7 @@ export function BudgetTrackerWidget({ isInEditMode }: DashboardWidgetComponentPr
         disabled={isInEditMode}
         onClick={() => {
           trackTelemetry('cta_clicked', { widget: 'budget-tracker', action: 'manage' })
-          navigate('/orders')
+          navigate(CART_ROUTE)
         }}
       >
         Manage budgets

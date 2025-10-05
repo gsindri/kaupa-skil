@@ -2,6 +2,7 @@
 import React from 'react'
 import { AlertTriangle, RefreshCw, ShoppingCart } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { CART_ROUTE } from '@/lib/featureFlags'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 interface QuickOrderErrorFallbackProps {
@@ -51,7 +52,7 @@ export function QuickOrderErrorFallback({
             Try Again
           </Button>
           
-          <Button variant="outline" onClick={() => window.location.href = '/orders'} className="w-full">
+          <Button variant="outline" onClick={() => window.location.href = CART_ROUTE} className="w-full">
             <ShoppingCart className="h-4 w-4 mr-2" />
             Go to Cart Instead
           </Button>

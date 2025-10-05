@@ -7,6 +7,7 @@ import { useSpendSnapshot } from '@/hooks/useSpendSnapshot'
 import { formatCurrency } from '@/lib/format'
 import { useDashboardTelemetry } from '@/hooks/useDashboardTelemetry'
 import { useNavigate } from 'react-router-dom'
+import { CART_ROUTE } from '@/lib/featureFlags'
 
 export function SpendMtdWidget({ isInEditMode }: DashboardWidgetComponentProps) {
   const { data, isLoading } = useSpendSnapshot()
@@ -25,7 +26,7 @@ export function SpendMtdWidget({ isInEditMode }: DashboardWidgetComponentProps) 
         actionLabel="Open spend report"
         onAction={() => {
           trackTelemetry('cta_clicked', { widget: 'spend-mtd', action: 'connect' })
-          navigate('/orders')
+          navigate(CART_ROUTE)
         }}
       />
     )
@@ -64,7 +65,7 @@ export function SpendMtdWidget({ isInEditMode }: DashboardWidgetComponentProps) 
         disabled={isInEditMode}
         onClick={() => {
           trackTelemetry('cta_clicked', { widget: 'spend-mtd', action: 'report' })
-          navigate('/orders')
+          navigate(CART_ROUTE)
         }}
       >
         Open spend report
