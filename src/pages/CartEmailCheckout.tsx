@@ -57,6 +57,7 @@ import { useEmailComposer } from '@/hooks/useEmailComposer'
 import { useSuppliers } from '@/hooks/useSuppliers'
 import { cn } from '@/lib/utils'
 import type { CartItem } from '@/lib/types'
+import type { DeliveryCalculation } from '@/lib/types/delivery'
 import {
   generateOrderEmailBody,
   generateOrderSubject,
@@ -260,11 +261,17 @@ export default function CartEmailCheckout() {
     return map
   }, [supplierDirectory])
 
+  const deliveryCalculationBySupplier = useMemo(() => {
+    const map = new Map<string, DeliveryCalculation>()
+    deliveryCalculations?.forEach(calc => {
+      map.set(calc.supplier_id, calc)
+    })
+    return map
+  }, [deliveryCalculations])
+
   const supplierSections: SupplierSectionData[] = useMemo(() => {
     return supplierGroups.map(([supplierId, group]) => {
-      const supplierDelivery = deliveryCalculations?.find(
-        calc => calc.supplier_id === supplierId,
-      )
+      const supplierDelivery = deliveryCalculationBySupplier.get(supplierId)
       const supplierSubtotal = group.items.reduce((sum, item) => {
         const price = includeVat ? item.unitPriceIncVat : item.unitPriceExVat
         return price != null ? sum + price * item.quantity : sum
@@ -328,7 +335,7 @@ export default function CartEmailCheckout() {
     })
   }, [
     supplierGroups,
-    deliveryCalculations,
+    deliveryCalculationBySupplier,
     includeVat,
     isLoadingDelivery,
     supplierLookup,
