@@ -4,6 +4,7 @@ import {
   useRef,
   useState,
   type MouseEvent,
+  type RefObject,
 } from "react";
 import { Button } from "@/components/ui/button";
 import { Minus, Plus } from "lucide-react";
@@ -19,6 +20,7 @@ interface CatalogQuantityStepperProps {
   minQuantity?: number;
   maxQuantity?: number;
   size?: "sm" | "md";
+  increaseButtonRef?: RefObject<HTMLButtonElement>;
 }
 
 type StepDirection = "inc" | "dec";
@@ -36,6 +38,7 @@ export function CatalogQuantityStepper({
   minQuantity = 0,
   maxQuantity,
   size = "md",
+  increaseButtonRef,
 }: CatalogQuantityStepperProps) {
   const holdTimeoutRef = useRef<number>();
   const holdIntervalRef = useRef<number>();
@@ -47,10 +50,14 @@ export function CatalogQuantityStepper({
   const effectiveMax = typeof maxQuantity === "number" ? Math.max(minQuantity, maxQuantity) : undefined;
   const clampToBounds = useCallback(
     (value: number) => {
+      if (value <= 0) {
+        return 0;
+      }
+
       const clampedMax = effectiveMax !== undefined ? Math.min(value, effectiveMax) : value;
-      return Math.max(0, clampedMax);
+      return Math.max(minQuantity, clampedMax);
     },
-    [effectiveMax],
+    [effectiveMax, minQuantity],
   );
 
   const effectiveCanIncrease = canIncrease && (effectiveMax === undefined || optimisticQuantity < effectiveMax);
@@ -126,6 +133,7 @@ export function CatalogQuantityStepper({
       const current = latestQuantity.current;
       const pendingQuantities = pendingQuantitiesRef.current;
       const resolvedQuantities = resolvedQuantitiesRef.current;
+      const allowRemoval = onRemove !== undefined || minQuantity <= 0;
 
       const markResolved = (values: number[]) => {
         for (const value of values) {
@@ -133,7 +141,22 @@ export function CatalogQuantityStepper({
         }
       };
 
-      if (next <= 0) {
+      if (boundedNext <= 0) {
+        if (!allowRemoval) {
+          const fallback = Math.max(1, minQuantity);
+          if (current !== fallback) {
+            latestQuantity.current = fallback;
+            resolvedQuantities.delete(fallback);
+            pendingQuantities.push(fallback);
+            setOptimisticQuantity(fallback);
+            onChange(fallback);
+            pendingQuantities.pop();
+          } else {
+            setOptimisticQuantity(fallback);
+          }
+          return;
+        }
+
         if (current > 0) {
           if (pendingQuantities.length > 0) {
             markResolved(pendingQuantities);
@@ -146,24 +169,28 @@ export function CatalogQuantityStepper({
           pendingQuantities.push(0);
           latestQuantity.current = 0;
           setOptimisticQuantity(0);
-          onRemove();
+          if (onRemove) {
+            onRemove();
+          } else {
+            onChange(0);
+          }
           pendingQuantities.pop();
         }
         return;
       }
 
-      if (next !== current) {
-        latestQuantity.current = next;
-        resolvedQuantities.delete(next);
-        pendingQuantities.push(next);
-        setOptimisticQuantity(next);
-        onChange(next);
+      if (boundedNext !== current) {
+        latestQuantity.current = boundedNext;
+        resolvedQuantities.delete(boundedNext);
+        pendingQuantities.push(boundedNext);
+        setOptimisticQuantity(boundedNext);
+        onChange(boundedNext);
         return;
       }
 
-      setOptimisticQuantity(next);
+      setOptimisticQuantity(boundedNext);
     },
-    [clampToBounds, onChange, onRemove],
+    [clampToBounds, minQuantity, onChange, onRemove],
   );
 
   const step = useCallback(
@@ -271,6 +298,7 @@ export function CatalogQuantityStepper({
         )}
         aria-label={`Increase quantity of ${itemLabel}`}
         disabled={!effectiveCanIncrease}
+        ref={increaseButtonRef}
         onPointerDown={() => {
           scheduleHold("inc");
         }}
