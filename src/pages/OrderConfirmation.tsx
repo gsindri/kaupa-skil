@@ -1,5 +1,6 @@
 import React from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { CART_ROUTE } from '@/lib/featureFlags'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -82,7 +83,7 @@ export default function OrderConfirmation() {
                 Browse catalog
                 <ArrowRight className="h-4 w-4" />
               </Button>
-              <Button variant="outline" onClick={() => navigate('/orders')}>Back to cart</Button>
+              <Button variant="outline" onClick={() => navigate(CART_ROUTE)}>Back to cart</Button>
             </div>
           </CardContent>
         </Card>
@@ -282,7 +283,7 @@ export default function OrderConfirmation() {
           Continue shopping
           <ArrowRight className="h-4 w-4" />
         </Button>
-        <Button variant="outline" onClick={() => navigate('/orders')}>
+        <Button variant="outline" onClick={() => navigate(CART_ROUTE)}>
           View cart
         </Button>
       </div>

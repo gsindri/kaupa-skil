@@ -5,6 +5,7 @@ import type { DashboardWidgetComponentProps } from '../widget-types'
 import { useApprovalsSummary } from '@/hooks/useApprovalsSummary'
 import { useDashboardTelemetry } from '@/hooks/useDashboardTelemetry'
 import { useNavigate } from 'react-router-dom'
+import { CART_ROUTE } from '@/lib/featureFlags'
 
 export function ApprovalsWidget({ isInEditMode }: DashboardWidgetComponentProps) {
   const { data, isPending } = useApprovalsSummary()
@@ -23,7 +24,7 @@ export function ApprovalsWidget({ isInEditMode }: DashboardWidgetComponentProps)
         actionLabel="Review approvals"
         onAction={() => {
           trackTelemetry('cta_clicked', { widget: 'approvals', action: 'review' })
-          navigate('/orders')
+          navigate(CART_ROUTE)
         }}
       />
     )
@@ -52,7 +53,7 @@ export function ApprovalsWidget({ isInEditMode }: DashboardWidgetComponentProps)
         disabled={isInEditMode}
         onClick={() => {
           trackTelemetry('cta_clicked', { widget: 'approvals', action: 'review' })
-          navigate('/orders')
+          navigate(CART_ROUTE)
         }}
       >
         Open approvals

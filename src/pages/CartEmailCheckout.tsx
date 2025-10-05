@@ -1,6 +1,5 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { CART_ROUTE } from '@/lib/featureFlags'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -15,6 +14,16 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -26,12 +35,19 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
+import { Separator } from '@/components/ui/separator'
 import { useAuth } from '@/contexts/useAuth'
 import { useCart } from '@/contexts/useBasket'
 import { useSettings } from '@/contexts/useSettings'
@@ -46,16 +62,19 @@ import {
   generateOrderSubject,
   type EmailLanguage,
 } from '@/lib/emailTemplates'
+import { trackCheckoutEvent } from '@/lib/checkoutTelemetry'
 import {
   ArrowRight,
   Check,
   ChevronDown,
+  ClipboardList,
   Copy,
   FileDown,
   Info,
   Mail,
   MoreHorizontal,
   Pencil,
+  Send,
 } from 'lucide-react'
 
 type SupplierStatus =
@@ -105,19 +124,19 @@ const statusConfig: Record<
     label: 'Pricing pending',
     badgeClass:
       'border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-400/40 dark:bg-amber-500/10 dark:text-amber-300',
-    tooltip: 'We’re missing prices on some items.',
+    tooltip: 'Waiting for supplier to confirm pricing.',
   },
   minimum_not_met: {
     label: 'Minimum not met',
     badgeClass:
       'border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-400/40 dark:bg-rose-500/10 dark:text-rose-300',
-    tooltip: 'Add items to reach the supplier’s delivery minimum.',
+    tooltip: 'Add more items to reach the supplier minimum.',
   },
   draft_created: {
     label: 'Draft created',
     badgeClass:
       'border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-400/40 dark:bg-blue-500/10 dark:text-blue-300',
-    tooltip: 'Draft saved—check your email client and press send.',
+    tooltip: 'Draft created—check your email and press Send.',
   },
   sent: {
     label: 'Sent',
@@ -155,43 +174,6 @@ function formatPriceISK(price: number) {
 function buildCollapsedItemLine(item: CartItem) {
   const displayName = item.displayName || item.itemName
   return `${displayName} — ${item.quantity} ${item.unit || ''}`.trim()
-}
-
-function DownloadEmlButton({
-  subject,
-  body,
-  fileName,
-  onComplete,
-}: {
-  subject: string
-  body: string
-  fileName: string
-  onComplete?: () => void
-}) {
-  function handleDownload() {
-    const emlContent = `Subject: ${subject}\nContent-Type: text/plain; charset=utf-8\n\n${body}`
-    const blob = new Blob([emlContent], { type: 'message/rfc822' })
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = `${fileName}.eml`
-    document.body.appendChild(link)
-    link.click()
-    link.remove()
-    URL.revokeObjectURL(url)
-    onComplete?.()
-  }
-
-  return (
-    <button
-      type="button"
-      className="flex w-full items-center gap-2 px-2 py-1.5 text-left text-sm hover:bg-[color:var(--surface-pop-2)]/60"
-      onClick={handleDownload}
-    >
-      <FileDown className="h-4 w-4" />
-      Download .eml
-    </button>
-  )
 }
 
 interface EditableFieldProps {
@@ -308,7 +290,7 @@ function EditableContact({ value, onChange }: EditableContactProps) {
   )
 }
 
-export default function Checkout() {
+export default function CartEmailCheckout() {
   const navigate = useNavigate()
   const { items, getTotalPrice, getMissingPriceCount } = useCart()
   const { includeVat } = useSettings()
@@ -444,6 +426,9 @@ export default function Checkout() {
   const [modalSupplierId, setModalSupplierId] = useState<string | null>(null)
   const [modalTab, setModalTab] = useState<'summary' | 'email'>('summary')
   const [pendingSendApprovals, setPendingSendApprovals] = useState<Record<string, boolean>>({})
+  const [sendAllDialogOpen, setSendAllDialogOpen] = useState(false)
+  const [sendAllProcessing, setSendAllProcessing] = useState(false)
+  const trackedBlockersRef = useRef<Record<string, SupplierStatus>>({})
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -659,6 +644,44 @@ export default function Checkout() {
     })
   }, [getDisplayStatus, supplierSections])
 
+  const readySupplierIds = useMemo(
+    () =>
+      sortedSupplierSections
+        .filter(section => getDisplayStatus(section.supplierId, section.status) === 'ready')
+        .map(section => section.supplierId),
+    [getDisplayStatus, sortedSupplierSections],
+  )
+
+  const allSuppliersReady =
+    sortedSupplierSections.length > 0 && readySupplierIds.length === sortedSupplierSections.length
+
+  const readySupplierNames = useMemo(
+    () =>
+      sortedSupplierSections
+        .filter(section => readySupplierIds.includes(section.supplierId))
+        .map(section => section.supplierName),
+    [readySupplierIds, sortedSupplierSections],
+  )
+
+  useEffect(() => {
+    const nextSeen: Record<string, SupplierStatus> = { ...trackedBlockersRef.current }
+    sortedSupplierSections.forEach(section => {
+      const status = getDisplayStatus(section.supplierId, section.status)
+      if (status === 'pricing_pending' || status === 'minimum_not_met') {
+        if (nextSeen[section.supplierId] !== status) {
+          nextSeen[section.supplierId] = status
+          trackCheckoutEvent(
+            status === 'pricing_pending' ? 'blocked_pricing' : 'blocked_minimum',
+            { supplierId: section.supplierId },
+          )
+        }
+      } else if (nextSeen[section.supplierId]) {
+        delete nextSeen[section.supplierId]
+      }
+    })
+    trackedBlockersRef.current = nextSeen
+  }, [getDisplayStatus, sortedSupplierSections])
+
   const deliveryDisplay = isLoadingDelivery
     ? 'Calculating…'
     : deliveryCalculations
@@ -681,6 +704,181 @@ export default function Checkout() {
         ? formatPriceISK(modalSupplier.total)
         : 'Pending'
     : grandTotalDisplay
+
+  const composeEmailForSupplier = useCallback(
+    (supplierId: string) => {
+      const supplier = supplierSections.find(section => section.supplierId === supplierId)
+      if (!supplier) {
+        return null
+      }
+
+      const language = languageOverrides[supplierId] ?? 'en'
+      const note = notes[supplierId] ?? ''
+      const deliveryDateValue = deliveryDates[supplierId] ?? ''
+      const deliveryAddressValue = deliveryAddresses[supplierId] ?? ''
+      const contactValue = contacts[supplierId] ?? { name: '', email: '', phone: '' }
+
+      const emailData = createEmailData(
+        supplier.supplierName,
+        supplier.items,
+        supplier.subtotal,
+        {
+          includeVat,
+          deliveryDate: deliveryDateValue || undefined,
+          notes: note || undefined,
+        },
+      )
+
+      if (!emailData) {
+        return null
+      }
+
+      const subject = generateOrderSubject(
+        emailData.poNumber,
+        emailData.organizationName,
+        language,
+      )
+      const body = generateOrderEmailBody(
+        {
+          ...emailData,
+          deliveryAddress: deliveryAddressValue || undefined,
+          contactName: contactValue.name || undefined,
+          contactEmail: contactValue.email || undefined,
+          contactPhone: contactValue.phone || undefined,
+        },
+        language,
+      )
+
+      return {
+        supplier,
+        emailData,
+        subject,
+        body,
+        language,
+      }
+    },
+    [
+      contacts,
+      createEmailData,
+      deliveryAddresses,
+      deliveryDates,
+      includeVat,
+      languageOverrides,
+      notes,
+      supplierSections,
+    ],
+  )
+
+  const triggerDownloadEml = useCallback((fileName: string, subject: string, body: string) => {
+    const emlContent = `Subject: ${subject}\nContent-Type: text/plain; charset=utf-8\n\n${body}`
+    const blob = new Blob([emlContent], { type: 'message/rfc822' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `${fileName}.eml`
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+    URL.revokeObjectURL(url)
+  }, [])
+
+  const openEmailForSupplier = useCallback(
+    (supplierId: string, method?: SendMethod) => {
+      const context = composeEmailForSupplier(supplierId)
+      if (!context) {
+        return false
+      }
+
+      const selectedMethod = method ?? preferredMethods[supplierId] ?? 'default'
+      const supplierEmail = context.supplier.orderEmail
+      const priorStatus = getDisplayStatus(supplierId, context.supplier.status)
+
+      if (method) {
+        setPreferredMethods(prev => ({
+          ...prev,
+          [supplierId]: method,
+        }))
+      }
+
+      if (!supplierEmail && selectedMethod !== 'copy' && selectedMethod !== 'eml') {
+        toast({
+          title: 'Supplier email missing',
+          description: 'Add an order email for this supplier to send from here.',
+          variant: 'destructive',
+        })
+        return false
+      }
+
+      if (selectedMethod === 'default' && supplierEmail) {
+        const link = createMailtoLink(supplierEmail, context.emailData, context.language)
+        window.location.href = link
+      } else if (selectedMethod === 'gmail' && supplierEmail) {
+        const link = createGmailLink(supplierEmail, context.emailData, context.language)
+        window.open(link, '_blank', 'noopener')
+      } else if (selectedMethod === 'outlook' && supplierEmail) {
+        const link = createOutlookLink(supplierEmail, context.emailData, context.language)
+        window.open(link, '_blank', 'noopener')
+      } else if (selectedMethod === 'copy') {
+        copyToClipboard(context.emailData, context.language)
+      } else if (selectedMethod === 'eml') {
+        const fileName = `${context.supplier.supplierName.replace(/\s+/g, '_')}-${context.emailData.poNumber}`
+        triggerDownloadEml(fileName, context.subject, context.body)
+        setStatusOverrides(prev => ({
+          ...prev,
+          [supplierId]: 'draft_created',
+        }))
+        setPendingSendApprovals(prev => ({
+          ...prev,
+          [supplierId]: true,
+        }))
+        toast({
+          title: 'Draft created',
+          description: 'Draft created—check your downloads and open it in your mail client.',
+        })
+        trackCheckoutEvent('open_email_method', {
+          supplierId,
+          method: selectedMethod,
+        })
+        if (priorStatus === 'sent') {
+          trackCheckoutEvent('resend', { supplierId })
+        }
+        return true
+      }
+
+      setStatusOverrides(prev => ({
+        ...prev,
+        [supplierId]: 'draft_created',
+      }))
+      setPendingSendApprovals(prev => ({
+        ...prev,
+        [supplierId]: false,
+      }))
+      toast({
+        title: 'Draft created',
+        description: 'Draft created—check your email and press send.',
+      })
+      trackCheckoutEvent('open_email_method', {
+        supplierId,
+        method: selectedMethod,
+      })
+      if (priorStatus === 'sent') {
+        trackCheckoutEvent('resend', { supplierId })
+      }
+
+      return true
+    },
+    [
+      composeEmailForSupplier,
+      copyToClipboard,
+      createGmailLink,
+      createMailtoLink,
+      createOutlookLink,
+      getDisplayStatus,
+      preferredMethods,
+      toast,
+      triggerDownloadEml,
+    ],
+  )
 
   const modalLanguage = modalSupplierId
     ? languageOverrides[modalSupplierId] ?? 'en'
@@ -736,6 +934,7 @@ export default function Checkout() {
       ...prev,
       [supplierId]: false,
     }))
+    trackCheckoutEvent('open_modal', { supplierId })
   }
 
   const handleCloseModal = () => {
@@ -766,6 +965,29 @@ export default function Checkout() {
     handleOpenModal(supplierId)
   }
 
+  const handleConfirmSendAll = () => {
+    setSendAllDialogOpen(false)
+    if (!allSuppliersReady) {
+      return
+    }
+    setSendAllProcessing(true)
+    let completed = 0
+    readySupplierIds.forEach(supplierId => {
+      if (openEmailForSupplier(supplierId)) {
+        completed += 1
+      }
+    })
+    setSendAllProcessing(false)
+    if (completed === 0) {
+      toast({
+        title: 'Unable to send all orders',
+        description: 'Resolve supplier blockers to continue.',
+        variant: 'destructive',
+      })
+    }
+    trackCheckoutEvent('send_all_completed_count', { count: completed })
+  }
+
   const handleDownloadEml = () => {
     if (!modalSupplier || !emailData) return
     const fileName = `${modalSupplier.supplierName.replace(/\s+/g, '_')}-${emailData.poNumber}`
@@ -794,52 +1016,11 @@ export default function Checkout() {
   }
 
   const handleOpenEmail = (method?: SendMethod) => {
-    if (!modalSupplier || !emailData) return
-    const supplierId = modalSupplier.supplierId
-    const supplierEmail = modalSupplier.orderEmail
-    const language = modalLanguage
-    const selectedMethod = method ?? (preferredMethods[supplierId] ?? 'default')
-
-    if (!supplierEmail && selectedMethod !== 'copy' && selectedMethod !== 'eml') {
-      toast({
-        title: 'Supplier email missing',
-        description: 'Add an order email for this supplier to send from here.',
-        variant: 'destructive',
-      })
-      return
+    if (!modalSupplier) return
+    const success = openEmailForSupplier(modalSupplier.supplierId, method)
+    if (success) {
+      handleCloseModal()
     }
-
-    if (selectedMethod === 'default') {
-      if (supplierEmail) {
-        const link = createMailtoLink(supplierEmail, emailData, language)
-        window.location.href = link
-      }
-    } else if (selectedMethod === 'gmail') {
-      if (supplierEmail) {
-        const link = createGmailLink(supplierEmail, emailData, language)
-        window.open(link, '_blank', 'noopener')
-      }
-    } else if (selectedMethod === 'outlook') {
-      if (supplierEmail) {
-        const link = createOutlookLink(supplierEmail, emailData, language)
-        window.open(link, '_blank', 'noopener')
-      }
-    } else if (selectedMethod === 'copy') {
-      copyToClipboard(emailData, language)
-    } else if (selectedMethod === 'eml') {
-      handleDownloadEml()
-      return
-    }
-
-    setStatusOverrides(prev => ({
-      ...prev,
-      [supplierId]: 'draft_created',
-    }))
-    toast({
-      title: 'Draft created',
-      description: 'Draft created—check your email and press send.',
-    })
-    handleCloseModal()
   }
 
   const handleMarkAsSent = (supplierId: string, checked: boolean) => {
@@ -851,6 +1032,9 @@ export default function Checkout() {
       ...prev,
       [supplierId]: checked ? 'sent' : 'draft_created',
     }))
+    if (checked) {
+      trackCheckoutEvent('mark_sent', { supplierId })
+    }
   }
 
   const handleAddToMinimum = (supplier: SupplierSectionData) => {
@@ -864,16 +1048,11 @@ export default function Checkout() {
   if (items.length === 0) {
     return (
       <div className="space-y-6">
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Checkout</h1>
-            <p className="text-sm text-muted-foreground">
-              Your cart is empty. Add items to review supplier emails.
-            </p>
-          </div>
-          <Button variant="outline" onClick={() => navigate('/catalog')}>
-            Browse catalog
-          </Button>
+        <div className="space-y-1">
+          <h1 className="text-3xl font-semibold text-foreground">Cart</h1>
+          <p className="text-sm text-muted-foreground">
+            Your cart is empty. Add items to start composing supplier emails.
+          </p>
         </div>
         <Card className="overflow-hidden text-center">
           <CardContent className="flex flex-col items-center gap-6 py-16">
@@ -881,16 +1060,18 @@ export default function Checkout() {
             <div className="space-y-2">
               <p className="text-xl font-semibold text-foreground">Nothing to review yet</p>
               <p className="text-sm text-muted-foreground">
-                Add items to your cart and return here to draft supplier emails.
+                Browse the catalog to fill your cart and preview order emails here.
               </p>
             </div>
             <div className="flex flex-col gap-3 sm:flex-row">
-              <Button onClick={() => navigate('/catalog')} className="inline-flex items-center gap-2">
-                Browse catalog
-                <ArrowRight className="h-4 w-4" />
+              <Button asChild className="inline-flex items-center gap-2">
+                <Link to="/catalog">
+                  Browse catalog
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
               </Button>
-              <Button variant="outline" onClick={() => navigate(CART_ROUTE)}>
-                Back to cart
+              <Button variant="outline" asChild>
+                <Link to="/discovery">Discover suppliers</Link>
               </Button>
             </div>
           </CardContent>
@@ -902,16 +1083,11 @@ export default function Checkout() {
   return (
     <TooltipProvider delayDuration={200}>
       <div className="space-y-6">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="space-y-1">
-            <h1 className="text-3xl font-bold text-foreground">Checkout</h1>
-            <p className="text-sm text-muted-foreground">
-              Your cart is split by supplier. Each email is one order.
-            </p>
-          </div>
-          <Button variant="outline" onClick={() => navigate(CART_ROUTE)}>
-            Return to cart
-          </Button>
+        <div className="space-y-1">
+          <h1 className="text-3xl font-semibold text-foreground">Cart</h1>
+          <p className="text-sm text-muted-foreground">
+            Your cart is split by supplier. Each email is one order.
+          </p>
         </div>
 
         <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
@@ -919,7 +1095,6 @@ export default function Checkout() {
             {sortedSupplierSections.map(section => {
               const status = getDisplayStatus(section.supplierId, section.status)
               const isExpanded = expandedSuppliers[section.supplierId]
-              const language = languageOverrides[section.supplierId] ?? 'en'
               const preferredMethod = preferredMethods[section.supplierId] ?? 'default'
               const collapsedItems = section.items.slice(0, isExpanded ? section.items.length : 2)
               const pendingPrices = section.items.filter(item => {
@@ -944,10 +1119,19 @@ export default function Checkout() {
                   : 'Pending'
 
               const badge = statusConfig[status]
+              const statusAriaLabel = `${badge.label}: ${badge.tooltip}`
 
               const supplierEmailMissing = !section.orderEmail
               const isPricingPending = status === 'pricing_pending'
               const isMinimumNotMet = status === 'minimum_not_met'
+              const primaryEnabled =
+                status === 'ready' || status === 'draft_created' || status === 'sent'
+              const buttonText =
+                status === 'sent'
+                  ? `Resend order to ${section.supplierName}`
+                  : status === 'draft_created'
+                    ? `Open draft for ${section.supplierName}`
+                    : `Send order to ${section.supplierName}`
 
               return (
                 <section
@@ -982,32 +1166,18 @@ export default function Checkout() {
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <ToggleGroup
-                        type="single"
-                        value={language}
-                        onValueChange={value => {
-                          if (!value) return
-                          setLanguageOverrides(prev => ({
-                            ...prev,
-                            [section.supplierId]: value as EmailLanguage,
-                          }))
-                        }}
-                        size="sm"
-                        className="rounded-full bg-muted px-1 py-1 text-xs"
-                      >
-                        <ToggleGroupItem value="is" className="px-2 py-1 text-xs">IS</ToggleGroupItem>
-                        <ToggleGroupItem value="en" className="px-2 py-1 text-xs">EN</ToggleGroupItem>
-                      </ToggleGroup>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Badge variant="outline" className={cn('px-2 py-1 text-xs font-semibold', badge.badgeClass)}>
-                            {badge.label}
-                          </Badge>
-                        </TooltipTrigger>
-                        <TooltipContent>{badge.tooltip}</TooltipContent>
-                      </Tooltip>
-                    </div>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Badge
+                          variant="outline"
+                          aria-label={statusAriaLabel}
+                          className={cn('px-2 py-1 text-xs font-semibold', badge.badgeClass)}
+                        >
+                          {badge.label}
+                        </Badge>
+                      </TooltipTrigger>
+                      <TooltipContent>{badge.tooltip}</TooltipContent>
+                    </Tooltip>
                   </header>
 
                   <div className="space-y-4 px-4 py-4">
@@ -1016,44 +1186,35 @@ export default function Checkout() {
                     </p>
 
                     <div className="flex flex-wrap items-center gap-2">
-                      {isMinimumNotMet && section.shortfallAmount ? (
-                        <Button
-                          type="button"
-                          size="lg"
-                          className="flex-1 justify-center gap-2"
-                          variant="secondary"
-                          onClick={() => handleAddToMinimum(section)}
-                        >
-                          Add {formatPriceISK(Math.ceil(section.shortfallAmount))} to enable sending
-                        </Button>
-                      ) : (
-                        <Tooltip open={isPricingPending ? undefined : false}>
-                          <TooltipTrigger asChild>
-                            <span className="flex-1">
-                              <Button
-                                type="button"
-                                size="lg"
-                                className={cn(
-                                  'w-full justify-center gap-2',
-                                  isPricingPending
-                                    ? 'border border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100 focus-visible:ring-amber-500 dark:border-amber-400/40 dark:bg-amber-500/10 dark:text-amber-200 dark:hover:bg-amber-500/20'
-                                    : '',
-                                )}
-                                onClick={() => handleSendClick(section.supplierId)}
-                                aria-disabled={isPricingPending}
-                              >
-                                <Mail className="h-4 w-4" />
-                                Send order to {section.supplierName}
-                              </Button>
-                            </span>
-                          </TooltipTrigger>
-                          {isPricingPending ? (
-                            <TooltipContent className="max-w-xs text-sm">
-                              Waiting for price on {pendingPrices.length} item{pendingPrices.length === 1 ? '' : 's'}.
-                            </TooltipContent>
-                          ) : null}
-                        </Tooltip>
-                      )}
+                      <Tooltip open={primaryEnabled ? false : undefined}>
+                        <TooltipTrigger asChild>
+                          <span className="flex-1">
+                            <Button
+                              type="button"
+                              size="lg"
+                              className="w-full justify-center gap-2"
+                              disabled={!primaryEnabled}
+                              onClick={() => handleSendClick(section.supplierId)}
+                            >
+                              {status === 'sent' ? (
+                                <Send className="h-4 w-4" />
+                              ) : (
+                                <span aria-hidden="true">📧</span>
+                              )}
+                              {buttonText}
+                            </Button>
+                          </span>
+                        </TooltipTrigger>
+                        {!primaryEnabled ? (
+                          <TooltipContent className="max-w-xs text-sm">
+                            {status === 'pricing_pending'
+                              ? `Waiting for supplier to confirm price on ${pendingPrices.length} item${pendingPrices.length === 1 ? '' : 's'}.`
+                              : status === 'minimum_not_met' && section.shortfallAmount
+                                ? `Add ${formatPriceISK(Math.ceil(section.shortfallAmount))} to enable sending.`
+                                : 'Complete the required details to continue.'}
+                          </TooltipContent>
+                        ) : null}
+                      </Tooltip>
 
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -1068,7 +1229,15 @@ export default function Checkout() {
                             <ChevronDown className="h-3 w-3" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-44">
+                        <DropdownMenuContent align="end" className="w-52">
+                          <DropdownMenuItem
+                            className="flex items-center gap-2 text-sm"
+                            onSelect={() => handleSendClick(section.supplierId)}
+                          >
+                            <ClipboardList className="h-4 w-4 text-muted-foreground" />
+                            Preview summary
+                          </DropdownMenuItem>
+                          <Separator className="my-1" />
                           {(Object.keys(methodLabels) as SendMethod[]).map(method => (
                             <DropdownMenuItem
                               key={method}
@@ -1080,9 +1249,50 @@ export default function Checkout() {
                               {preferredMethod === method ? <Check className="h-3.5 w-3.5 text-primary" /> : null}
                             </DropdownMenuItem>
                           ))}
+                          {status === 'sent' ? (
+                            <>
+                              <Separator className="my-1" />
+                              <DropdownMenuItem
+                                onSelect={() => handleMarkAsSent(section.supplierId, false)}
+                                className="text-sm text-muted-foreground"
+                              >
+                                Mark as unsent
+                              </DropdownMenuItem>
+                            </>
+                          ) : null}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </div>
+
+                    {!primaryEnabled ? (
+                      <div className="space-y-2 rounded-xl border border-dashed border-muted-foreground/40 bg-muted/10 p-3 text-xs text-muted-foreground">
+                        {status === 'pricing_pending' ? (
+                          <div className="space-y-1">
+                            <p className="font-medium text-foreground">Pricing pending</p>
+                            <ul className="space-y-1">
+                              {pendingPrices.slice(0, 2).map(item => (
+                                <li key={item.supplierItemId} className="truncate">
+                                  {item.displayName || item.itemName}
+                                </li>
+                              ))}
+                            </ul>
+                            {pendingPrices.length > 2 ? (
+                              <p>+{pendingPrices.length - 2} more</p>
+                            ) : null}
+                          </div>
+                        ) : null}
+                        {status === 'minimum_not_met' && section.shortfallAmount ? (
+                          <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-foreground">
+                            <span>
+                              Add {formatPriceISK(Math.ceil(section.shortfallAmount))} to enable sending.
+                            </span>
+                            <Button variant="link" size="sm" className="h-auto px-0" onClick={() => handleAddToMinimum(section)}>
+                              Open catalog
+                            </Button>
+                          </div>
+                        ) : null}
+                      </div>
+                    ) : null}
 
                     <div className="space-y-3">
                       <div className="space-y-2 rounded-xl border border-dashed border-muted-foreground/20 bg-muted/10 p-3">
@@ -1103,7 +1313,7 @@ export default function Checkout() {
                           className="h-auto px-0 text-xs"
                           onClick={() => handleToggleExpanded(section.supplierId)}
                         >
-                          {isExpanded ? 'Hide details' : 'View details'}
+                          {isExpanded ? 'Collapse all' : 'Expand all'}
                         </Button>
                       </div>
 
@@ -1194,25 +1404,27 @@ export default function Checkout() {
           <aside className="space-y-4 xl:sticky xl:top-28 xl:self-start">
             <div className="rounded-2xl border border-border/60 bg-background p-4 shadow-sm">
               <div className="space-y-3">
-                {sortedSupplierSections.map(section => {
-                  const status = getDisplayStatus(section.supplierId, section.status)
-                  const badge = statusConfig[status]
-                  const summaryDisplay = section.hasUnknownPrices
-                    ? 'Pending'
-                    : section.total > 0
-                      ? formatPriceISK(section.total)
-                      : 'Pending'
-                  return (
-                    <div key={section.supplierId} className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="text-sm font-semibold text-foreground">{section.supplierName}</p>
-                        <p className="text-xs text-muted-foreground">{badge.label}</p>
+                <div className="space-y-3">
+                  {sortedSupplierSections.map(section => {
+                    const status = getDisplayStatus(section.supplierId, section.status)
+                    const badge = statusConfig[status]
+                    const summaryDisplay = section.hasUnknownPrices
+                      ? 'Pending'
+                      : section.total > 0
+                        ? formatPriceISK(section.total)
+                        : 'Pending'
+                    return (
+                      <div key={section.supplierId} className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="text-sm font-semibold text-foreground">{section.supplierName}</p>
+                          <p className="text-xs text-muted-foreground">{badge.label}</p>
+                        </div>
+                        <p className="text-sm font-medium tabular-nums text-foreground">{summaryDisplay}</p>
                       </div>
-                      <p className="text-sm font-medium tabular-nums text-foreground">{summaryDisplay}</p>
-                    </div>
-                  )
-                })}
-                <hr className="border-dashed border-border/60" />
+                    )
+                  })}
+                </div>
+                <Separator className="border-dashed" />
                 <div className="space-y-1 text-sm">
                   <div className="flex items-center justify-between text-muted-foreground">
                     <span>Delivery fees</span>
@@ -1227,22 +1439,61 @@ export default function Checkout() {
                 </div>
                 <div className="pt-2">
                   <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                    {missingPriceCount > 0 ? 'Estimated total' : 'Estimated total'}
+                    Estimated total
                   </p>
                   <p className="text-2xl font-semibold tabular-nums text-foreground">{grandTotalDisplay}</p>
                 </div>
                 <Button
                   type="button"
-                  variant="outline"
-                  className="w-full justify-center"
-                  onClick={() => navigate('/checkout/confirmation')}
+                  className="w-full justify-center gap-2"
+                  disabled={!allSuppliersReady || sendAllProcessing}
+                  onClick={() => {
+                    trackCheckoutEvent('send_all_clicked', {
+                      count: readySupplierIds.length,
+                    })
+                    setSendAllDialogOpen(true)
+                  }}
                 >
-                  Proceed to checkout
+                  <Send className="h-4 w-4" />
+                  {sendAllProcessing ? 'Sending…' : 'Send all orders'}
                 </Button>
+                {!allSuppliersReady ? (
+                  <p className="text-center text-xs text-muted-foreground">
+                    All suppliers must be Ready to send all at once.
+                  </p>
+                ) : null}
               </div>
             </div>
           </aside>
         </div>
+
+        <AlertDialog
+          open={sendAllDialogOpen}
+          onOpenChange={open => {
+            if (sendAllProcessing) return
+            setSendAllDialogOpen(open)
+          }}
+        >
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Send all orders?</AlertDialogTitle>
+              <AlertDialogDescription>
+                {readySupplierNames.length > 0
+                  ? `We'll open email drafts for ${readySupplierNames.join(', ')} using your preferred method.`
+                  : 'We’ll open an email draft for each ready supplier using your preferred method.'}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={sendAllProcessing}>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                disabled={sendAllProcessing || !allSuppliersReady}
+                onClick={handleConfirmSendAll}
+              >
+                Send all
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
 
         <Dialog open={Boolean(modalSupplier)} onOpenChange={open => (open ? null : handleCloseModal())}>
           <DialogContent className="max-w-3xl">
@@ -1263,6 +1514,26 @@ export default function Checkout() {
                     <TabsTrigger value="email">Email</TabsTrigger>
                   </TabsList>
                   <TabsContent value="summary" className="space-y-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Language</p>
+                      <Select
+                        value={modalLanguage}
+                        onValueChange={value =>
+                          setLanguageOverrides(prev => ({
+                            ...prev,
+                            [modalSupplier.supplierId]: value as EmailLanguage,
+                          }))
+                        }
+                      >
+                        <SelectTrigger className="h-8 w-32 text-xs">
+                          <SelectValue placeholder="Select" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="en">English</SelectItem>
+                          <SelectItem value="is">Íslenska</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                     <div className="grid gap-3 sm:grid-cols-2">
                       <EditableField
                         label="Delivery date"
@@ -1365,6 +1636,13 @@ export default function Checkout() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
                   <DropdownMenuItem
+                    onSelect={() => handleOpenEmail('default')}
+                    className="flex items-center gap-2 text-sm"
+                  >
+                    <Mail className="h-4 w-4" />
+                    Default email app
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
                     onSelect={() => handleOpenEmail('gmail')}
                     className="flex items-center gap-2 text-sm"
                   >
@@ -1386,7 +1664,7 @@ export default function Checkout() {
                     Copy to clipboard
                   </DropdownMenuItem>
                   <DropdownMenuItem
-                    onSelect={handleDownloadEml}
+                    onSelect={() => handleOpenEmail('eml')}
                     className="flex items-center gap-2 text-sm"
                   >
                     <FileDown className="h-4 w-4" />

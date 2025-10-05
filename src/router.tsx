@@ -1,5 +1,5 @@
 
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter, redirect } from "react-router-dom";
 import { AuthGate } from "@/components/auth/AuthGate";
 import AppLayout from "@/components/layout/AppLayout";
 import { ExistingUserOnboarding } from "@/components/onboarding/ExistingUserOnboarding";
@@ -27,6 +27,12 @@ import BenchmarkManagement from "@/pages/admin/BenchmarkManagement";
 import SupplierOptOut from "@/pages/admin/SupplierOptOut";
 import BenchmarkDashboard from "@/pages/admin/BenchmarkDashboard";
 import OutlookCallback from "@/pages/OutlookCallback";
+import {
+  FEATURE_EMAIL_CHECKOUT_ONE_PAGE,
+  FEATURE_TRADITIONAL_CHECKOUT,
+} from "@/lib/featureFlags";
+
+const shouldRedirectCheckout = FEATURE_EMAIL_CHECKOUT_ONE_PAGE && !FEATURE_TRADITIONAL_CHECKOUT;
 
 export const routes = [
   {
@@ -47,7 +53,20 @@ export const routes = [
         element: <Orders />,
       },
       {
+        path: "cart",
+        element: <Orders />,
+      },
+      {
         path: "checkout",
+        loader: shouldRedirectCheckout
+          ? ({ request }) => {
+              const url = new URL(request.url);
+              const params = new URLSearchParams(url.search);
+              params.set("mode", "email");
+              const search = params.toString();
+              return redirect(`/cart${search ? `?${search}` : ""}`);
+            }
+          : undefined,
         element: <Checkout />,
       },
       {
