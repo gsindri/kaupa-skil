@@ -56,6 +56,7 @@ import {
   Mail,
   MoreHorizontal,
   Pencil,
+  Rocket,
 } from 'lucide-react'
 
 type SupplierStatus =
@@ -93,37 +94,42 @@ interface SupplierSectionData {
 
 const statusConfig: Record<
   SupplierStatus,
-  { label: string; badgeClass: string; tooltip: string }
+  { label: string; badgeClass: string; tooltip: string; sidebarLabel: string }
 > = {
   ready: {
     label: 'Ready',
     badgeClass:
       'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-400/40 dark:bg-emerald-500/10 dark:text-emerald-300',
     tooltip: 'All set—opens your email with a draft.',
+    sidebarLabel: 'Ready',
   },
   pricing_pending: {
     label: 'Pricing pending',
     badgeClass:
       'border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-400/40 dark:bg-amber-500/10 dark:text-amber-300',
     tooltip: 'We’re missing prices on some items.',
+    sidebarLabel: 'Pending',
   },
   minimum_not_met: {
     label: 'Minimum not met',
     badgeClass:
       'border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-400/40 dark:bg-rose-500/10 dark:text-rose-300',
     tooltip: 'Add items to reach the supplier’s delivery minimum.',
+    sidebarLabel: 'Minimum not met',
   },
   draft_created: {
     label: 'Draft created',
     badgeClass:
       'border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-400/40 dark:bg-blue-500/10 dark:text-blue-300',
     tooltip: 'Draft saved—check your email client and press send.',
+    sidebarLabel: 'Draft created',
   },
   sent: {
     label: 'Sent',
     badgeClass:
       'border-muted bg-muted text-muted-foreground dark:border-slate-600/50 dark:bg-slate-800/60 dark:text-slate-200/90',
     tooltip: 'Marked as sent. Supplier will reply directly.',
+    sidebarLabel: 'Sent',
   },
 }
 
@@ -659,17 +665,13 @@ export default function Checkout() {
     })
   }, [getDisplayStatus, supplierSections])
 
-  const deliveryDisplay = isLoadingDelivery
-    ? 'Calculating…'
-    : deliveryCalculations
-      ? totalDeliveryFees > 0
-        ? formatPriceISK(totalDeliveryFees)
-        : 'Included'
-      : '—'
-
   const grandTotalDisplay = missingPriceCount > 0 && grandTotal === 0
     ? 'Pending'
     : formatPriceISK(grandTotal)
+
+  const allSuppliersReady = sortedSupplierSections.every(
+    section => getDisplayStatus(section.supplierId, section.status) === 'ready',
+  )
 
   const modalSupplier = modalSupplierId
     ? supplierSections.find(section => section.supplierId === modalSupplierId)
@@ -921,7 +923,7 @@ export default function Checkout() {
               const isExpanded = expandedSuppliers[section.supplierId]
               const language = languageOverrides[section.supplierId] ?? 'en'
               const preferredMethod = preferredMethods[section.supplierId] ?? 'default'
-              const collapsedItems = section.items.slice(0, isExpanded ? section.items.length : 2)
+              const summaryItems = section.items.slice(0, 3)
               const pendingPrices = section.items.filter(item => {
                 const price = includeVat ? item.unitPriceIncVat : item.unitPriceExVat
                 return price == null
@@ -948,6 +950,21 @@ export default function Checkout() {
               const supplierEmailMissing = !section.orderEmail
               const isPricingPending = status === 'pricing_pending'
               const isMinimumNotMet = status === 'minimum_not_met'
+              const pendingPriceNames = pendingPrices
+                .map(item => item.displayName || item.itemName)
+                .filter(Boolean)
+              const remainingPendingNames = Math.max(pendingPriceNames.length - 2, 0)
+              const pendingPriceMessage = pendingPrices.length
+                ? pendingPriceNames.length
+                  ? `Waiting for price: ${[
+                      pendingPriceNames.slice(0, 2).join(', '),
+                      remainingPendingNames > 0 ? `+${remainingPendingNames} more` : null,
+                    ]
+                      .filter(Boolean)
+                      .join(', ')} (${pendingPrices.length} item${pendingPrices.length === 1 ? '' : 's'})`
+                  : `Waiting for price on ${pendingPrices.length} item${pendingPrices.length === 1 ? '' : 's'}`
+                : null
+              const hiddenItemCount = Math.max(section.items.length - summaryItems.length, 0)
 
               return (
                 <section
@@ -1010,17 +1027,19 @@ export default function Checkout() {
                     </div>
                   </header>
 
-                  <div className="space-y-4 px-4 py-4">
-                    <p className="text-xs text-muted-foreground">
-                      Subtotal: {subtotalDisplay} · Delivery: {deliveryDisplayPerSupplier} · Est. total: {totalDisplay}
-                    </p>
+                  <div className="space-y-5 px-4 py-4">
+                    {isPricingPending && pendingPriceMessage ? (
+                      <p className="text-sm font-medium text-amber-700">
+                        {pendingPriceMessage}
+                      </p>
+                    ) : null}
 
-                    <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                       {isMinimumNotMet && section.shortfallAmount ? (
                         <Button
                           type="button"
                           size="lg"
-                          className="flex-1 justify-center gap-2"
+                          className="w-full justify-center gap-2 sm:w-auto"
                           variant="secondary"
                           onClick={() => handleAddToMinimum(section)}
                         >
@@ -1029,23 +1048,21 @@ export default function Checkout() {
                       ) : (
                         <Tooltip open={isPricingPending ? undefined : false}>
                           <TooltipTrigger asChild>
-                            <span className="flex-1">
-                              <Button
-                                type="button"
-                                size="lg"
-                                className={cn(
-                                  'w-full justify-center gap-2',
-                                  isPricingPending
-                                    ? 'border border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100 focus-visible:ring-amber-500 dark:border-amber-400/40 dark:bg-amber-500/10 dark:text-amber-200 dark:hover:bg-amber-500/20'
-                                    : '',
-                                )}
-                                onClick={() => handleSendClick(section.supplierId)}
-                                aria-disabled={isPricingPending}
-                              >
-                                <Mail className="h-4 w-4" />
-                                Send order to {section.supplierName}
-                              </Button>
-                            </span>
+                            <Button
+                              type="button"
+                              size="lg"
+                              className={cn(
+                                'w-full justify-center gap-2 sm:w-auto',
+                                isPricingPending
+                                  ? 'border border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100 focus-visible:ring-amber-500 dark:border-amber-400/40 dark:bg-amber-500/10 dark:text-amber-200 dark:hover:bg-amber-500/20'
+                                  : '',
+                              )}
+                              onClick={() => handleSendClick(section.supplierId)}
+                              aria-disabled={isPricingPending}
+                            >
+                              <Mail className="h-4 w-4" />
+                              Send order to {section.supplierName}
+                            </Button>
                           </TooltipTrigger>
                           {isPricingPending ? (
                             <TooltipContent className="max-w-xs text-sm">
@@ -1085,17 +1102,65 @@ export default function Checkout() {
                     </div>
 
                     <div className="space-y-3">
-                      <div className="space-y-2 rounded-xl border border-dashed border-muted-foreground/20 bg-muted/10 p-3">
-                        {collapsedItems.map(item => (
-                          <p key={item.supplierItemId} className="truncate text-sm text-foreground">
-                            • {buildCollapsedItemLine(item)}
-                          </p>
-                        ))}
-                        {section.items.length > 2 && !isExpanded ? (
-                          <p className="text-xs text-muted-foreground">
-                            +{section.items.length - 2} more item{section.items.length - 2 === 1 ? '' : 's'} hidden
-                          </p>
-                        ) : null}
+                      <div className="space-y-2">
+                        <p className="text-sm font-semibold text-foreground">Items</p>
+                        {isExpanded ? (
+                          <div className="space-y-3">
+                            {section.items.map(item => {
+                              const displayName = item.displayName || item.itemName
+                              const unitPrice = includeVat ? item.unitPriceIncVat : item.unitPriceExVat
+                              const unitLabel = item.unit ? `per ${item.unit}` : 'per unit'
+                              const pricePerUnit = unitPrice != null ? formatPriceISK(unitPrice) : 'Pending'
+                              const lineTotal = unitPrice != null ? unitPrice * item.quantity : null
+                              const lineTotalDisplay = lineTotal != null ? formatPriceISK(lineTotal) : 'Pending'
+
+                              return (
+                                <div
+                                  key={item.supplierItemId}
+                                  className="flex items-center gap-3 rounded-xl border border-muted/40 bg-background/90 p-3"
+                                >
+                                  <div className="h-12 w-12 shrink-0 overflow-hidden rounded-md bg-muted">
+                                    {item.image ? (
+                                      <LazyImage
+                                        src={item.image}
+                                        alt={displayName}
+                                        className="h-full w-full"
+                                        imgClassName="object-contain"
+                                      />
+                                    ) : (
+                                      <div className="flex h-full w-full items-center justify-center text-[11px] text-muted-foreground">
+                                        No image
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div className="min-w-0 flex-1">
+                                    <p className="truncate text-sm font-medium text-foreground">{displayName}</p>
+                                    <p className="text-xs text-muted-foreground">
+                                      {item.quantity} × {pricePerUnit} {unitLabel}
+                                    </p>
+                                    {item.packSize ? (
+                                      <p className="text-xs text-muted-foreground">Pack: {item.packSize}</p>
+                                    ) : null}
+                                  </div>
+                                  <div className="text-sm font-medium tabular-nums text-foreground">{lineTotalDisplay}</div>
+                                </div>
+                              )
+                            })}
+                          </div>
+                        ) : (
+                          <div className="space-y-2 rounded-xl border border-dashed border-muted-foreground/20 bg-muted/10 p-3">
+                            {summaryItems.map(item => (
+                              <p key={item.supplierItemId} className="truncate text-sm text-foreground">
+                                • {buildCollapsedItemLine(item)}
+                              </p>
+                            ))}
+                            {hiddenItemCount > 0 ? (
+                              <p className="text-xs text-muted-foreground">
+                                +{hiddenItemCount} more item{hiddenItemCount === 1 ? '' : 's'} (expand to view)
+                              </p>
+                            ) : null}
+                          </div>
+                        )}
                         <Button
                           type="button"
                           variant="link"
@@ -1106,51 +1171,9 @@ export default function Checkout() {
                           {isExpanded ? 'Hide details' : 'View details'}
                         </Button>
                       </div>
-
-                      {isExpanded ? (
-                        <div className="space-y-3">
-                          {section.items.map(item => {
-                            const displayName = item.displayName || item.itemName
-                            const unitPrice = includeVat ? item.unitPriceIncVat : item.unitPriceExVat
-                            const unitLabel = item.unit ? `per ${item.unit}` : 'per unit'
-                            const pricePerUnit = unitPrice != null ? formatPriceISK(unitPrice) : 'Pending'
-                            const lineTotal = unitPrice != null ? unitPrice * item.quantity : null
-                            const lineTotalDisplay = lineTotal != null ? formatPriceISK(lineTotal) : 'Pending'
-
-                            return (
-                              <div
-                                key={item.supplierItemId}
-                                className="flex items-center gap-3 rounded-xl border border-muted/40 bg-background/90 p-3"
-                              >
-                                <div className="h-12 w-12 shrink-0 overflow-hidden rounded-md bg-muted">
-                                  {item.image ? (
-                                    <LazyImage
-                                      src={item.image}
-                                      alt={displayName}
-                                      className="h-full w-full"
-                                      imgClassName="object-contain"
-                                    />
-                                  ) : (
-                                    <div className="flex h-full w-full items-center justify-center text-[11px] text-muted-foreground">
-                                      No image
-                                    </div>
-                                  )}
-                                </div>
-                                <div className="min-w-0 flex-1">
-                                  <p className="truncate text-sm font-medium text-foreground">{displayName}</p>
-                                  <p className="text-xs text-muted-foreground">
-                                    {item.quantity} × {pricePerUnit} {unitLabel}
-                                  </p>
-                                  {item.packSize ? (
-                                    <p className="text-xs text-muted-foreground">Pack: {item.packSize}</p>
-                                  ) : null}
-                                </div>
-                                <div className="text-sm font-medium tabular-nums text-foreground">{lineTotalDisplay}</div>
-                              </div>
-                            )
-                          })}
-                        </div>
-                      ) : null}
+                      <p className="text-xs text-muted-foreground">
+                        Subtotal: {subtotalDisplay} · Delivery: {deliveryDisplayPerSupplier} · Est. total: {totalDisplay}
+                      </p>
                     </div>
 
                     {status === 'draft_created' || status === 'sent' ? (
@@ -1193,52 +1216,42 @@ export default function Checkout() {
 
           <aside className="space-y-4 xl:sticky xl:top-28 xl:self-start">
             <div className="rounded-2xl border border-border/60 bg-background p-4 shadow-sm">
-              <div className="space-y-3">
-                {sortedSupplierSections.map(section => {
-                  const status = getDisplayStatus(section.supplierId, section.status)
-                  const badge = statusConfig[status]
-                  const summaryDisplay = section.hasUnknownPrices
-                    ? 'Pending'
-                    : section.total > 0
-                      ? formatPriceISK(section.total)
-                      : 'Pending'
-                  return (
-                    <div key={section.supplierId} className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="text-sm font-semibold text-foreground">{section.supplierName}</p>
-                        <p className="text-xs text-muted-foreground">{badge.label}</p>
-                      </div>
-                      <p className="text-sm font-medium tabular-nums text-foreground">{summaryDisplay}</p>
-                    </div>
-                  )
-                })}
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <h2 className="text-sm font-semibold text-foreground">Order summary</h2>
+                  <div className="space-y-2">
+                    {sortedSupplierSections.map(section => {
+                      const status = getDisplayStatus(section.supplierId, section.status)
+                      const badge = statusConfig[status]
+                      return (
+                        <div key={section.supplierId} className="flex items-center justify-between gap-3">
+                          <p className="text-sm font-medium text-foreground">{section.supplierName}</p>
+                          <span className="text-xs font-semibold text-muted-foreground">{badge.sidebarLabel}</span>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
                 <hr className="border-dashed border-border/60" />
-                <div className="space-y-1 text-sm">
-                  <div className="flex items-center justify-between text-muted-foreground">
-                    <span>Delivery fees</span>
-                    <span className="font-medium text-foreground">{deliveryDisplay}</span>
-                  </div>
-                  <div className="flex items-center justify-between text-muted-foreground">
-                    <span>VAT</span>
-                    <span className="font-medium text-foreground">
-                      {includeVat ? 'Included' : 'Calculated at settlement'}
-                    </span>
-                  </div>
-                </div>
-                <div className="pt-2">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                    {missingPriceCount > 0 ? 'Estimated total' : 'Estimated total'}
-                  </p>
+                <div className="space-y-1">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Estimated total</p>
                   <p className="text-2xl font-semibold tabular-nums text-foreground">{grandTotalDisplay}</p>
+                  <p className="text-xs text-muted-foreground">Delivery fees &amp; VAT included in totals.</p>
                 </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full justify-center"
-                  onClick={() => navigate('/checkout/confirmation')}
-                >
-                  Proceed to checkout
-                </Button>
+                <div className="space-y-2">
+                  <Button
+                    type="button"
+                    className="w-full justify-center gap-2"
+                    disabled={!allSuppliersReady}
+                    onClick={() => navigate('/checkout/confirmation')}
+                  >
+                    <Rocket className="h-4 w-4" />
+                    Send all orders
+                  </Button>
+                  <p className="text-xs text-muted-foreground">
+                    All suppliers must be Ready to send at once.
+                  </p>
+                </div>
               </div>
             </div>
           </aside>
