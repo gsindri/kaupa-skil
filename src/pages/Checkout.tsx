@@ -655,6 +655,14 @@ export default function Checkout() {
   const modalSupplier = modalSupplierId
     ? supplierSections.find(section => section.supplierId === modalSupplierId)
     : null
+  const modalSupplierTotalDisplay = modalSupplier
+    ? modalSupplier.hasUnknownPrices
+      ? 'Pending'
+      : modalSupplier.total > 0
+        ? formatPriceISK(modalSupplier.total)
+        : 'Pending'
+    : grandTotalDisplay
+
   const modalLanguage = modalSupplierId
     ? languageOverrides[modalSupplierId] ?? 'en'
     : 'en'
@@ -1250,7 +1258,7 @@ export default function Checkout() {
                     <div className="space-y-3 rounded-xl border border-dashed border-muted-foreground/30 p-3">
                       <div className="flex items-center justify-between">
                         <p className="text-sm font-semibold text-foreground">Items ({modalSupplier.items.length})</p>
-                        <p className="text-sm text-muted-foreground">Estimated total {grandTotalDisplay}</p>
+                        <p className="text-sm text-muted-foreground">Estimated total {modalSupplierTotalDisplay}</p>
                       </div>
                       <ul className="space-y-2 text-sm text-muted-foreground">
                         {modalSupplier.items.map(item => (
