@@ -1,12 +1,12 @@
 
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { ItemBadges, PriceDisplay } from './ItemCardEnhancements'
-import { QuantityControls } from './QuantityControls'
 import { useSettings } from '@/contexts/useSettings'
 import { useCart } from '@/contexts/useBasket'
 import { MiniCompareDrawer } from './MiniCompareDrawer'
 import { resolveImage } from '@/lib/images'
+import { CatalogQuantityStepper } from '@/components/catalog/CatalogQuantityStepper'
 
 interface ItemCardProps {
   item: {
@@ -35,46 +35,43 @@ interface ItemCardProps {
 }
 
 export function ItemCard({ item, onCompareItem, userMode, compact = false }: ItemCardProps) {
-  const [quantity, setQuantity] = useState(0);
-  const [showFlyout, setShowFlyout] = useState(false);
   const [isCompareOpen, setIsCompareOpen] = useState(false);
   const pressTimer = useRef<number>();
   const { includeVat } = useSettings();
-  const { addItem, items: cartItems } = useCart();
+  const { addItem, items: cartItems, updateQuantity, removeItem } = useCart();
   const addButtonRef = useRef<HTMLButtonElement>(null);
+  const flyoutTimerRef = useRef<number>();
+  const [flyoutAmount, setFlyoutAmount] = useState<number | null>(null);
 
   const cartItem = cartItems.find(i => i.supplierItemId === item.id);
   const cartQuantity = cartItem?.quantity ?? 0;
-
-  useEffect(() => {
-    setQuantity(cartQuantity);
-  }, [cartQuantity]);
+  const latestQuantityRef = useRef(cartQuantity);
+  const supplierItemId = cartItem?.supplierItemId ?? item.id;
 
   const unitPrice = includeVat ? item.unitPriceIncVat : item.unitPriceExVat;
   const packPrice = includeVat ? item.packPriceIncVat : item.packPriceExVat;
 
-  const startPress = () => {
-    pressTimer.current = window.setTimeout(() => {
-      setIsCompareOpen(true);
-    }, 600);
-  };
+  useEffect(() => {
+    return () => {
+      if (flyoutTimerRef.current) {
+        window.clearTimeout(flyoutTimerRef.current);
+      }
+    };
+  }, []);
 
-  const endPress = () => {
-    if (pressTimer.current) {
-      clearTimeout(pressTimer.current);
-      pressTimer.current = undefined;
+  const triggerFlyout = useCallback((amount: number) => {
+    setFlyoutAmount(amount);
+    if (flyoutTimerRef.current) {
+      window.clearTimeout(flyoutTimerRef.current);
     }
-  };
+    flyoutTimerRef.current = window.setTimeout(() => {
+      setFlyoutAmount(null);
+      flyoutTimerRef.current = undefined;
+    }, 1200);
+  }, []);
 
-  const handleAdd = () => {
-    const newQty = quantity + 1;
-    setQuantity(newQty);
-
-    // Show flyout animation
-    setShowFlyout(true);
-    setTimeout(() => setShowFlyout(false), 1200);
-
-    addItem({
+  const cartPayload = useMemo(
+    () => ({
       id: item.id,
       supplierId: item.suppliers[0],
       supplierName: item.suppliers[0],
@@ -90,28 +87,80 @@ export function ItemCard({ item, onCompareItem, userMode, compact = false }: Ite
       displayName: item.name,
       packQty: 1,
       image: resolveImage(item.image)
-    }, 1, { animateElement: addButtonRef.current || undefined });
+    }),
+    [item.id, item.image, item.name, item.packSize, item.suppliers, item.unit, item.unitPriceExVat, item.unitPriceIncVat, packPrice]
+  );
+
+  const startPress = () => {
+    pressTimer.current = window.setTimeout(() => {
+      setIsCompareOpen(true);
+    }, 600);
   };
 
-  const handleRemove = () => {
-    if (quantity > 0) {
-      setQuantity(Math.max(0, quantity - 1));
+  const endPress = () => {
+    if (pressTimer.current) {
+      clearTimeout(pressTimer.current);
+      pressTimer.current = undefined;
     }
   };
 
-  const handleQuantityChange = (newQuantity: number) => {
-    setQuantity(newQuantity);
-  };
+  useEffect(() => {
+    latestQuantityRef.current = cartQuantity;
+  }, [cartQuantity]);
+
+  const handleQuantityChange = useCallback(
+    (requestedQuantity: number) => {
+      const nextQuantity = Math.max(0, requestedQuantity);
+      const current = latestQuantityRef.current;
+
+      if (nextQuantity === current) {
+        return;
+      }
+
+      latestQuantityRef.current = nextQuantity;
+
+      if (nextQuantity === 0) {
+        removeItem(supplierItemId);
+        return;
+      }
+
+      const delta = nextQuantity - current;
+
+      if (delta > 0) {
+        triggerFlyout(delta);
+        addItem(cartPayload, delta, {
+          animateElement: addButtonRef.current || undefined
+        });
+        return;
+      }
+
+      updateQuantity(supplierItemId, nextQuantity);
+    },
+    [addItem, cartPayload, removeItem, supplierItemId, triggerFlyout, updateQuantity]
+  );
+
+  const handleRemoveFromCart = useCallback(() => {
+    latestQuantityRef.current = 0;
+    removeItem(supplierItemId);
+  }, [removeItem, supplierItemId]);
+
+  const handleIncrement = useCallback(() => {
+    handleQuantityChange(latestQuantityRef.current + 1);
+  }, [handleQuantityChange]);
+
+  const handleDecrement = useCallback(() => {
+    handleQuantityChange(Math.max(0, latestQuantityRef.current - 1));
+  }, [handleQuantityChange]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
-      handleAdd();
+      handleIncrement();
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
-      handleAdd();
+      handleIncrement();
     } else if (e.key === 'ArrowDown') {
       e.preventDefault();
-      handleRemove();
+      handleDecrement();
     }
   };
 
@@ -150,7 +199,7 @@ export function ItemCard({ item, onCompareItem, userMode, compact = false }: Ite
           src={resolveImage(item.image)}
           alt={item.name}
           className={`${compact ? 'w-16 h-16' : 'w-20 h-20'} rounded-md object-cover select-none`}
-          onDoubleClick={handleAdd}
+          onDoubleClick={handleIncrement}
           onMouseDown={startPress}
           onMouseUp={endPress}
           onMouseLeave={endPress}
@@ -202,16 +251,22 @@ export function ItemCard({ item, onCompareItem, userMode, compact = false }: Ite
           />
         </div>
 
-        <div className="flex-shrink-0">
-          <QuantityControls
-            quantity={quantity}
-            onQuantityChange={handleQuantityChange}
-            disabled={!item.stock}
-            showFlyout={showFlyout}
-            onAdd={handleAdd}
-            onRemove={handleRemove}
-            addButtonRef={addButtonRef}
+        <div className="relative flex-shrink-0">
+          <CatalogQuantityStepper
+            quantity={cartQuantity}
+            onChange={handleQuantityChange}
+            onRemove={cartItem ? handleRemoveFromCart : undefined}
+            itemLabel={item.name}
+            canIncrease={item.stock}
+            className="rounded-full border border-border/60 bg-background/90 px-2 py-1 shadow-none"
+            size="sm"
+            increaseButtonRef={addButtonRef}
           />
+          {flyoutAmount != null && (
+            <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-xs font-medium text-brand-600 animate-flyout pointer-events-none">
+              +{flyoutAmount}
+            </div>
+          )}
         </div>
       </div>
     </div>

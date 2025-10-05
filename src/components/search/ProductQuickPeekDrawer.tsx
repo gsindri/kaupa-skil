@@ -1,7 +1,8 @@
-import { Fragment, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { Fragment, useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { Drawer, DrawerClose, DrawerContent } from '@/components/ui/drawer'
 import { Button } from '@/components/ui/button'
 import { LazyImage } from '@/components/ui/LazyImage'
+import { CatalogQuantityStepper } from '@/components/catalog/CatalogQuantityStepper'
 import {
   Select,
   SelectContent,
@@ -9,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { ArrowUpRight, Loader2, Minus, Plus } from 'lucide-react'
+import { ArrowUpRight, Loader2 } from 'lucide-react'
 import { formatCurrency } from '@/lib/format'
 import { useCart } from '@/contexts/useBasket'
 import type { AvailabilityStatus, PublicCatalogItem } from '@/services/catalog'
@@ -373,9 +374,21 @@ export function ProductQuickPeekDrawer({
     )
   })()
 
-  const addButtonLabel = quantity > 1 ? `Add ${quantity} to cart` : 'Add to cart'
-  const canDecreaseQuantity = quantity > 1 && !isAdding
-  const canIncreaseQuantity = quantity < 999 && !isAdding
+const addButtonLabel = quantity > 1 ? `Add ${quantity} to cart` : 'Add to cart'
+
+const handleStepperChange = useCallback(
+  (next: number) => {
+    if (isAdding) {
+      return
+    }
+
+    const clamped = Math.max(1, Math.min(999, next))
+    if (clamped !== quantity) {
+      setQuantity(clamped)
+    }
+  },
+  [isAdding, quantity],
+)
 
   return (
     <Drawer
@@ -455,29 +468,16 @@ export function ProductQuickPeekDrawer({
               </div>
             )}
             <div className="flex items-center gap-3">
-              <div className="flex items-center rounded-full border border-white/12 bg-white/[0.04] px-1.5">
-                <button
-                  type="button"
-                  className="flex h-9 w-9 items-center justify-center text-[color:var(--text)] transition-opacity hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-40"
-                  onClick={() => setQuantity(prev => Math.max(1, prev - 1))}
-                  disabled={!canDecreaseQuantity}
-                  aria-label="Decrease quantity"
-                >
-                  <Minus className="h-4 w-4" />
-                </button>
-                <span className="min-w-[2.5rem] text-center text-sm font-semibold text-[color:var(--text)]">
-                  {quantity}
-                </span>
-                <button
-                  type="button"
-                  className="flex h-9 w-9 items-center justify-center text-[color:var(--text)] transition-opacity hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-40"
-                  onClick={() => setQuantity(prev => Math.min(999, prev + 1))}
-                  disabled={!canIncreaseQuantity}
-                  aria-label="Increase quantity"
-                >
-                  <Plus className="h-4 w-4" />
-                </button>
-              </div>
+              <CatalogQuantityStepper
+                quantity={quantity}
+                onChange={handleStepperChange}
+                itemLabel={displayName}
+                minQuantity={1}
+                maxQuantity={999}
+                canIncrease={!isAdding}
+                className="rounded-full border border-white/12 bg-white/[0.04] px-1.5 text-[color:var(--text)]"
+                size="sm"
+              />
               <Button
                 type="button"
                 onClick={handleAddToCart}
