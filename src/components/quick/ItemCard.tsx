@@ -47,9 +47,25 @@ export function ItemCard({ item, onCompareItem, userMode, compact = false }: Ite
   const cartQuantity = cartItem?.quantity ?? 0;
   const supplierItemId = cartItem?.supplierItemId ?? item.id;
   const latestRequestedQuantityRef = useRef(cartQuantity);
+  const latestConfirmedQuantityRef = useRef(cartQuantity);
+  const pendingAddsRef = useRef(0);
 
   useEffect(() => {
-    latestRequestedQuantityRef.current = cartQuantity;
+    const previousConfirmed = latestConfirmedQuantityRef.current;
+    latestConfirmedQuantityRef.current = cartQuantity;
+
+    if (pendingAddsRef.current > 0) {
+      const fulfilled = cartQuantity - previousConfirmed;
+      if (fulfilled > 0) {
+        pendingAddsRef.current = Math.max(0, pendingAddsRef.current - fulfilled);
+      } else if (fulfilled < 0) {
+        pendingAddsRef.current = 0;
+      }
+    }
+
+    if (pendingAddsRef.current === 0 || cartQuantity !== latestRequestedQuantityRef.current) {
+      latestRequestedQuantityRef.current = cartQuantity;
+    }
   }, [cartQuantity]);
 
   const unitPrice = includeVat ? item.unitPriceIncVat : item.unitPriceExVat;
@@ -109,54 +125,53 @@ export function ItemCard({ item, onCompareItem, userMode, compact = false }: Ite
   };
 
   const handleQuantityChange = useCallback(
-    (nextQuantity: number) => {
-      if (nextQuantity <= 0) {
-        latestRequestedQuantityRef.current = 0;
-        if (cartItem) {
-          removeItem(cartItem.supplierItemId);
-        }
+    (requestedQuantity: number) => {
+      const nextQuantity = Math.max(0, requestedQuantity);
+      const previousRequested = latestRequestedQuantityRef.current;
+      latestRequestedQuantityRef.current = nextQuantity;
+
+      if (nextQuantity === previousRequested) {
         return;
       }
 
-      const previousTarget = latestRequestedQuantityRef.current;
+      if (nextQuantity > previousRequested) {
+        const delta = nextQuantity - previousRequested;
+        pendingAddsRef.current += delta;
+        triggerFlyout(delta);
+        addItem(cartPayload, delta, {
+          animateElement: addButtonRef.current || undefined
+        });
+        return;
+      }
+
+      if (nextQuantity === 0) {
+        pendingAddsRef.current = 0;
+        latestConfirmedQuantityRef.current = 0;
+        removeItem(supplierItemId);
+        return;
+      }
+
+      pendingAddsRef.current = 0;
 
       if (cartItem) {
-        if (nextQuantity === previousTarget) {
-          return;
-        }
-
-        const delta = nextQuantity - previousTarget;
-        latestRequestedQuantityRef.current = nextQuantity;
-
-        if (delta > 0) {
-          triggerFlyout(delta);
-        }
-
-        updateQuantity(cartItem.supplierItemId, nextQuantity);
-        return;
+        updateQuantity(supplierItemId, nextQuantity);
+      } else {
+        pendingAddsRef.current = nextQuantity;
+        addItem(cartPayload, nextQuantity, {
+          animateElement: addButtonRef.current || undefined
+        });
       }
-
-      const delta = nextQuantity - previousTarget;
-      if (delta <= 0) {
-        latestRequestedQuantityRef.current = nextQuantity;
-        return;
-      }
-
-      latestRequestedQuantityRef.current = nextQuantity;
-      triggerFlyout(delta);
-      addItem(cartPayload, delta, {
-        animateElement: addButtonRef.current || undefined
-      });
     },
-    [addItem, cartItem, cartPayload, removeItem, triggerFlyout, updateQuantity]
+    [addItem, cartItem, cartPayload, removeItem, supplierItemId, triggerFlyout, updateQuantity]
   );
 
   const handleRemoveFromCart = useCallback(() => {
-    if (cartItem) {
-      latestRequestedQuantityRef.current = 0;
-      removeItem(cartItem.supplierItemId);
-    }
-  }, [cartItem, removeItem]);
+    latestRequestedQuantityRef.current = 0;
+    latestConfirmedQuantityRef.current = 0;
+    pendingAddsRef.current = 0;
+
+    removeItem(supplierItemId);
+  }, [removeItem, supplierItemId]);
 
   const handleIncrement = useCallback(() => {
     handleQuantityChange(latestRequestedQuantityRef.current + 1);
