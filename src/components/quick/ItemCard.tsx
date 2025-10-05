@@ -45,6 +45,11 @@ export function ItemCard({ item, onCompareItem, userMode, compact = false }: Ite
 
   const cartItem = cartItems.find(i => i.supplierItemId === item.id);
   const cartQuantity = cartItem?.quantity ?? 0;
+  const latestRequestedQuantityRef = useRef(cartQuantity);
+
+  useEffect(() => {
+    latestRequestedQuantityRef.current = cartQuantity;
+  }, [cartQuantity]);
 
   const unitPrice = includeVat ? item.unitPriceIncVat : item.unitPriceExVat;
   const packPrice = includeVat ? item.packPriceIncVat : item.packPriceExVat;
@@ -105,45 +110,60 @@ export function ItemCard({ item, onCompareItem, userMode, compact = false }: Ite
   const handleQuantityChange = useCallback(
     (nextQuantity: number) => {
       if (nextQuantity <= 0) {
+        latestRequestedQuantityRef.current = 0;
         if (cartItem) {
           removeItem(cartItem.supplierItemId);
         }
         return;
       }
 
-      const delta = nextQuantity - cartQuantity;
-      if (delta === 0) {
-        return;
-      }
-
-      if (delta > 0) {
-        triggerFlyout(delta);
-        addItem(cartPayload, delta, {
-          animateElement: addButtonRef.current || undefined
-        });
-        return;
-      }
+      const previousTarget = latestRequestedQuantityRef.current;
 
       if (cartItem) {
+        if (nextQuantity === previousTarget) {
+          return;
+        }
+
+        const delta = nextQuantity - previousTarget;
+        latestRequestedQuantityRef.current = nextQuantity;
+
+        if (delta > 0) {
+          triggerFlyout(delta);
+        }
+
         updateQuantity(cartItem.supplierItemId, nextQuantity);
+        return;
       }
+
+      const delta = nextQuantity - previousTarget;
+      if (delta <= 0) {
+        latestRequestedQuantityRef.current = nextQuantity;
+        return;
+      }
+
+      latestRequestedQuantityRef.current = nextQuantity;
+      triggerFlyout(delta);
+      addItem(cartPayload, delta, {
+        animateElement: addButtonRef.current || undefined
+      });
     },
-    [addItem, cartItem, cartPayload, cartQuantity, removeItem, triggerFlyout, updateQuantity]
+    [addItem, cartItem, cartPayload, removeItem, triggerFlyout, updateQuantity]
   );
 
   const handleRemoveFromCart = useCallback(() => {
     if (cartItem) {
+      latestRequestedQuantityRef.current = 0;
       removeItem(cartItem.supplierItemId);
     }
   }, [cartItem, removeItem]);
 
   const handleIncrement = useCallback(() => {
-    handleQuantityChange(cartQuantity + 1);
-  }, [cartQuantity, handleQuantityChange]);
+    handleQuantityChange(latestRequestedQuantityRef.current + 1);
+  }, [handleQuantityChange]);
 
   const handleDecrement = useCallback(() => {
-    handleQuantityChange(cartQuantity - 1);
-  }, [cartQuantity, handleQuantityChange]);
+    handleQuantityChange(latestRequestedQuantityRef.current - 1);
+  }, [handleQuantityChange]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
