@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { CART_ROUTE } from '@/lib/featureFlags'
 import { useGlobalSearch, SearchScope } from '@/hooks/useGlobalSearch'
 import type { SearchItem, SearchSections } from '@/hooks/useGlobalSearch'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
@@ -275,7 +276,7 @@ export const HeaderSearch = React.forwardRef<HTMLInputElement, HeaderSearchProps
           navigate(`/suppliers?search=${encodeURIComponent(searchQuery)}`)
           break
         case 'orders':
-          navigate(`/orders?search=${encodeURIComponent(searchQuery)}`)
+          navigate(`${CART_ROUTE}?search=${encodeURIComponent(searchQuery)}`)
           break
       }
     }

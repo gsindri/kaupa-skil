@@ -1,5 +1,6 @@
 
 import { Link, isRouteErrorResponse, useRouteError } from "react-router-dom"
+import { CART_ROUTE } from "@/lib/featureFlags"
 import { AlertTriangle, Home, RefreshCw, ShoppingCart } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -62,7 +63,7 @@ export default function ErrorPage() {
                 </Link>
               </Button>
               <Button variant="outline" asChild className="flex-1">
-                <Link to="/orders">
+                <Link to={CART_ROUTE}>
                   <ShoppingCart className="h-4 w-4 mr-2" />
                   Cart
                 </Link>

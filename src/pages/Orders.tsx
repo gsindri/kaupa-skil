@@ -5,6 +5,8 @@ import { ErrorBoundary } from '@/components/common/ErrorBoundary'
 import { AlertTriangle, RefreshCw, ShoppingCart } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import CartEmailCheckout from './CartEmailCheckout'
+import { FEATURE_EMAIL_CHECKOUT_ONE_PAGE } from '@/lib/featureFlags'
 
 function OrdersErrorFallback({ resetErrorBoundary }: { resetErrorBoundary: () => void }) {
   return (
@@ -47,6 +49,10 @@ function OrdersContent() {
 }
 
 export default function Orders() {
+  if (FEATURE_EMAIL_CHECKOUT_ONE_PAGE) {
+    return <CartEmailCheckout />
+  }
+
   return (
     <ErrorBoundary fallback={<OrdersErrorFallback resetErrorBoundary={() => window.location.reload()} />}>
       <OrdersContent />

@@ -2,6 +2,7 @@ import * as React from 'react'
 import { useTranslation } from '@/lib/i18n'
 import { useCart } from '@/contexts/useBasket'
 import { cn } from '@/lib/utils'
+import { CART_ROUTE } from '@/lib/featureFlags'
 import CartIcon from './CartIcon'
 
 type CartButtonVariant = 'toolbar' | 'ghost' | 'primary'
@@ -55,7 +56,7 @@ export function CartButton({
   }, [cartPulseSignal, isDrawerOpen])
 
   const handleOpenCart = React.useCallback(() => {
-    window.location.assign('/orders')
+    window.location.assign(CART_ROUTE)
   }, [])
 
   const iconSizeClass = size === 'sm' ? 'h-8 w-8' : 'h-9 w-9'

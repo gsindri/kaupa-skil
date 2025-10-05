@@ -6,6 +6,7 @@ import type { DashboardWidgetComponentProps } from '../widget-types'
 import { usePantrySignals } from '@/hooks/usePantrySignals'
 import { useDashboardTelemetry } from '@/hooks/useDashboardTelemetry'
 import { useNavigate } from 'react-router-dom'
+import { CART_ROUTE } from '@/lib/featureFlags'
 
 export function SmartReorderWidget({ isInEditMode }: DashboardWidgetComponentProps) {
   const { items, isLoading } = usePantrySignals()
@@ -24,7 +25,7 @@ export function SmartReorderWidget({ isInEditMode }: DashboardWidgetComponentPro
         actionLabel="Generate order"
         onAction={() => {
           trackTelemetry('cta_clicked', { widget: 'smart-reorder', action: 'generate' })
-          navigate('/orders')
+          navigate(CART_ROUTE)
         }}
       />
     )
@@ -72,7 +73,7 @@ export function SmartReorderWidget({ isInEditMode }: DashboardWidgetComponentPro
         disabled={isInEditMode}
         onClick={() => {
           trackTelemetry('cta_clicked', { widget: 'smart-reorder', action: 'generate' })
-          navigate('/orders')
+          navigate(CART_ROUTE)
         }}
       >
         Generate order
