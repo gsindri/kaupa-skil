@@ -69,9 +69,14 @@ export function useEmailComposer() {
     supplierName: string,
     items: CartItem[],
     subtotal: number,
-    deliveryDate?: string,
-    notes?: string
+    options: {
+      includeVat?: boolean
+      deliveryDate?: string
+      notes?: string
+    } = {}
   ): OrderEmailData {
+    const { includeVat = false, deliveryDate, notes } = options
+
     return {
       poNumber: generatePONumber(),
       supplierName,
@@ -82,10 +87,11 @@ export function useEmailComposer() {
         sku: item.sku,
         quantity: item.quantity,
         packSize: item.packSize,
-        unitPrice: item.unitPriceExVat
+        unitPrice: includeVat ? item.unitPriceIncVat ?? null : item.unitPriceExVat ?? null
       })),
       subtotal,
       notes,
+      pricesIncludeVat: includeVat,
       contactName: userProfile?.full_name || undefined,
       contactEmail: userProfile?.email || undefined,
       deliveryAddress: undefined

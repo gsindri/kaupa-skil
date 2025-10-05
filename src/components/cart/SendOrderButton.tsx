@@ -15,6 +15,7 @@ import { OutlookAuthButton } from '@/components/cart/OutlookAuthButton'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
 import { useBasket } from '@/contexts/useBasket'
+import { useSettings } from '@/contexts/useSettings'
 import { useOrders } from '@/hooks/useOrders'
 import { useAuth } from '@/contexts/useAuth'
 import { MarkAsSentDialog } from './MarkAsSentDialog'
@@ -57,6 +58,7 @@ export function SendOrderButton({
     copyToClipboard,
     generatePONumber
   } = useEmailComposer()
+  const { includeVat } = useSettings()
 
   const meetsMinimum = subtotal >= minOrderValue
   const shortfall = minOrderValue - subtotal
@@ -100,7 +102,7 @@ export function SendOrderButton({
     }
   }
 
-  const emailData = createEmailData(supplierName, cartItems, subtotal)
+  const emailData = createEmailData(supplierName, cartItems, subtotal, { includeVat })
 
   const handleSendEmail = async (method: 'mailto' | 'gmail' | 'outlook' | 'gmail-draft' | 'outlook-draft' | 'clipboard') => {
     if (!supplierEmail && method !== 'clipboard') {

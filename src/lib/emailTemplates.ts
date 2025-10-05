@@ -11,6 +11,7 @@ export interface OrderEmailData {
     unitPrice: number | null
   }>
   subtotal: number
+  pricesIncludeVat: boolean
   notes?: string
   contactName?: string
   contactEmail?: string
@@ -46,8 +47,25 @@ export function generateOrderEmailBody(
     contactName,
     contactEmail,
     contactPhone,
-    deliveryAddress
+    deliveryAddress,
+    pricesIncludeVat
   } = data
+
+  const subtotalVatLabel = pricesIncludeVat
+    ? language === 'is'
+      ? '(með VSK)'
+      : '(incl. VAT)'
+    : language === 'is'
+      ? '(án VSK)'
+      : '(excl. VAT)'
+
+  const priceLabel = pricesIncludeVat
+    ? language === 'is'
+      ? 'Verð (með VSK)'
+      : 'Price (incl. VAT)'
+    : language === 'is'
+      ? 'Verð (án VSK)'
+      : 'Price (excl. VAT)'
 
   if (language === 'is') {
     let body = `Góðan daginn,\n\n`
@@ -61,15 +79,15 @@ export function generateOrderEmailBody(
       body += `Afhendingarstaður: ${deliveryAddress}\n`
     }
     body += `\n--- Vörur ---\n\n`
-    
+
     items.forEach(item => {
       const price = item.unitPrice ? `${item.unitPrice.toLocaleString('is-IS')} kr.` : 'Verð ekki til'
       body += `• ${item.name}\n`
-      body += `  SKU: ${item.sku} | Magn: ${item.quantity} ${item.packSize} | Verð: ${price}\n\n`
+      body += `  SKU: ${item.sku} | Magn: ${item.quantity} ${item.packSize} | ${priceLabel}: ${price}\n\n`
     })
-    
-    body += `\nSamtals: ${subtotal.toLocaleString('is-IS')} kr. (án VSK)\n\n`
-    
+
+    body += `\nSamtals: ${subtotal.toLocaleString('is-IS')} kr. ${subtotalVatLabel}\n\n`
+
     if (notes) {
       body += `Athugasemdir:\n${notes}\n\n`
     }
@@ -97,14 +115,14 @@ export function generateOrderEmailBody(
     body += `Delivery Address: ${deliveryAddress}\n`
   }
   body += `\n--- Items ---\n\n`
-  
+
   items.forEach(item => {
     const price = item.unitPrice ? `${item.unitPrice.toLocaleString('en-US')} kr.` : 'Price not available'
     body += `• ${item.name}\n`
-    body += `  SKU: ${item.sku} | Quantity: ${item.quantity} ${item.packSize} | Price: ${price}\n\n`
+    body += `  SKU: ${item.sku} | Quantity: ${item.quantity} ${item.packSize} | ${priceLabel}: ${price}\n\n`
   })
-  
-  body += `\nSubtotal: ${subtotal.toLocaleString('en-US')} kr. (excl. VAT)\n\n`
+
+  body += `\nSubtotal: ${subtotal.toLocaleString('en-US')} kr. ${subtotalVatLabel}\n\n`
   
   if (notes) {
     body += `Notes:\n${notes}\n\n`

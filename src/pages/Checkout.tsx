@@ -675,8 +675,11 @@ export default function Checkout() {
       modalSupplier.supplierName,
       modalSupplier.items,
       modalSupplier.subtotal,
-      modalDeliveryDate || undefined,
-      modalNotes || undefined,
+      {
+        includeVat,
+        deliveryDate: modalDeliveryDate || undefined,
+        notes: modalNotes || undefined,
+      },
     )
     : null
 
