@@ -1,4 +1,4 @@
-import { useState, useRef, useLayoutEffect, useEffect, useCallback } from 'react'
+import { useState, useRef, useLayoutEffect, useEffect, useCallback, useMemo } from 'react'
 import type { KeyboardEvent } from 'react'
 import {
   Table,
@@ -709,16 +709,21 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
       isOutOfStock ||
       (availability === 'UNKNOWN' && (product.active_supplier_count ?? 0) === 0)
 
-    const rawSuppliers =
-      (product.supplier_products && product.supplier_products.length
-        ? product.supplier_products
-        : product.supplier_ids && product.supplier_names
-            ? product.supplier_ids.map((id: string, idx: number) => ({
-                supplier_id: id,
-                supplier_name: product.supplier_names[idx] || id,
-                is_connected: true,
-              }))
-            : product.suppliers) || []
+    const rawSuppliers = useMemo(() => {
+      if (product.supplier_products && product.supplier_products.length) {
+        return product.supplier_products
+      }
+
+      if (product.supplier_ids && product.supplier_names) {
+        return product.supplier_ids.map((id: string, idx: number) => ({
+          supplier_id: id,
+          supplier_name: product.supplier_names[idx] || id,
+          is_connected: true,
+        }))
+      }
+
+      return product.suppliers || []
+    }, [product])
 
     const supplierEntries = rawSuppliers.map((s: any, index: number) => {
       const fallbackLogo = Array.isArray(product.supplier_logo_urls)
@@ -771,46 +776,49 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
       }
     })
 
-    const buildCartItem = (
-      supplier: (typeof supplierEntries)[number],
-      index: number,
-    ): Omit<CartItem, 'quantity'> => {
-      const raw = rawSuppliers[index] as any
-      const priceEntry = Array.isArray(product.prices)
-        ? product.prices[index]
-        : raw?.price ?? raw?.unit_price_ex_vat ?? null
-      const priceValue =
-        typeof priceEntry === 'number' ? priceEntry : priceEntry?.price ?? null
-      const unitPriceExVat = raw?.unit_price_ex_vat ?? priceValue ?? null
-      const unitPriceIncVat = raw?.unit_price_inc_vat ?? priceValue ?? null
-      const packSize =
-        raw?.pack_size || raw?.packSize || product.canonical_pack || ''
-      const packQty = raw?.pack_qty ?? 1
-      const sku = raw?.sku || raw?.supplier_sku || product.catalog_id
-      const unit = raw?.unit || ''
-      const supplierName = supplier.name?.trim() || supplier.id || 'Supplier'
-      return {
-        id: product.catalog_id,
-        supplierId: supplier.id,
-        supplierName,
-        supplierLogoUrl: supplier.logoUrl ?? null,
-        itemName: product.name,
-        sku,
-        packSize,
-        packPrice: priceValue,
-        unitPriceExVat,
-        unitPriceIncVat,
-        vatRate: raw?.vat_rate ?? 0,
-        unit,
-        supplierItemId: product.catalog_id,
-        displayName: product.name,
-        packQty,
-        image: resolveImage(
-          product.sample_image_url ?? product.image_main,
-          product.availability_status,
-        ),
-      }
-    }
+    const buildCartItem = useCallback(
+      (
+        supplier: (typeof supplierEntries)[number],
+        index: number,
+      ): Omit<CartItem, 'quantity'> => {
+        const raw = rawSuppliers[index] as any
+        const priceEntry = Array.isArray(product.prices)
+          ? product.prices[index]
+          : raw?.price ?? raw?.unit_price_ex_vat ?? null
+        const priceValue =
+          typeof priceEntry === 'number' ? priceEntry : priceEntry?.price ?? null
+        const unitPriceExVat = raw?.unit_price_ex_vat ?? priceValue ?? null
+        const unitPriceIncVat = raw?.unit_price_inc_vat ?? priceValue ?? null
+        const packSize =
+          raw?.pack_size || raw?.packSize || product.canonical_pack || ''
+        const packQty = raw?.pack_qty ?? 1
+        const sku = raw?.sku || raw?.supplier_sku || product.catalog_id
+        const unit = raw?.unit || ''
+        const supplierName = supplier.name?.trim() || supplier.id || 'Supplier'
+        return {
+          id: product.catalog_id,
+          supplierId: supplier.id,
+          supplierName,
+          supplierLogoUrl: supplier.logoUrl ?? null,
+          itemName: product.name,
+          sku,
+          packSize,
+          packPrice: priceValue,
+          unitPriceExVat,
+          unitPriceIncVat,
+          vatRate: raw?.vat_rate ?? 0,
+          unit,
+          supplierItemId: product.catalog_id,
+          displayName: product.name,
+          packQty,
+          image: resolveImage(
+            product.sample_image_url ?? product.image_main,
+            product.availability_status,
+          ),
+        }
+      },
+      [product, rawSuppliers],
+    )
 
     const handleQuantityChange = useCallback(
       (next: number) => {
@@ -846,7 +854,7 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
         }
         setOpen(false)
       },
-      [addItem, draftQty, existingItem, supplierEntries, updateQuantity],
+      [addItem, buildCartItem, draftQty, existingItem, supplierEntries, updateQuantity],
     )
 
     const handleAddAction = useCallback(() => {
