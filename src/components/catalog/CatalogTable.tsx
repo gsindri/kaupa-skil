@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
 import { useCart } from '@/contexts/useBasket'
-import { QuantityStepper } from '@/components/cart/QuantityStepper'
+import { CatalogQuantityStepper } from '@/components/catalog/CatalogQuantityStepper'
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover'
 import { useVendors } from '@/hooks/useVendors'
 import type { Vendor } from '@/hooks/useVendors'
@@ -917,14 +917,13 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
     }
 
     const quantityStepper = (
-      <QuantityStepper
+      <CatalogQuantityStepper
         className="h-9 min-w-[108px] rounded-full border-border/60 bg-background/80"
         quantity={currentQuantity}
         onChange={handleQuantityChange}
         onRemove={existingItem ? handleRemove : undefined}
-        min={1}
-        label={product.name}
-        supplier={primarySupplierName}
+        itemLabel={`${product.name} from ${primarySupplierName}`}
+        minQuantity={1}
       />
     )
 

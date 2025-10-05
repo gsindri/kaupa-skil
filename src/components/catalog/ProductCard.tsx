@@ -19,6 +19,7 @@ import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover
 import { useCart } from "@/contexts/useBasket";
 import type { CartItem } from "@/lib/types";
 import { CatalogQuantityStepper } from "./CatalogQuantityStepper";
+import { useCartQuantityController } from "@/contexts/useCartQuantityController";
 import { Loader2, Lock, ShoppingCart } from "lucide-react";
 import { PriceBenchmarkBadge } from "./PriceBenchmarkBadge";
 
@@ -40,6 +41,39 @@ interface ProductCardProps {
   showPrice?: boolean;
 }
 
+function ProductCardCartQuantityStepper({
+  cartItem,
+  productName,
+  isUnavailable,
+}: {
+  cartItem: CartItem;
+  productName: string;
+  isUnavailable: boolean;
+}) {
+  const { requestQuantity, remove, canIncrease } = useCartQuantityController(
+    cartItem.supplierItemId,
+    cartItem.quantity
+  );
+
+  const handleChange = useCallback(
+    (next: number) => {
+      requestQuantity(next);
+    },
+    [requestQuantity]
+  );
+
+  return (
+    <CatalogQuantityStepper
+      quantity={cartItem.quantity}
+      onChange={handleChange}
+      onRemove={remove}
+      itemLabel={productName}
+      canIncrease={!isUnavailable && canIncrease}
+      className="rounded-lg border border-border/60 bg-background/90 px-2 py-1 shadow-none"
+    />
+  );
+}
+
 export const ProductCard = memo(function ProductCard({
   product,
   onAdd,
@@ -47,7 +81,7 @@ export const ProductCard = memo(function ProductCard({
   className,
   showPrice,
 }: ProductCardProps) {
-  const { addItem, items, updateQuantity, removeItem } = useCart();
+  const { addItem, items } = useCart();
   const [open, setOpen] = useState(false);
   const titleId = useId();
   const imageRef = useRef<HTMLImageElement | null>(null);
@@ -542,13 +576,10 @@ export const ProductCard = memo(function ProductCard({
                 )}
                 <div className="flex flex-shrink-0 items-center gap-2">
                   {isInCart && cartItem ? (
-                    <CatalogQuantityStepper
-                      quantity={cartQuantity}
-                      onChange={qty => updateQuantity(cartItem.supplierItemId, qty)}
-                      onRemove={() => removeItem(cartItem.supplierItemId)}
-                      itemLabel={product.name}
-                      canIncrease={!isUnavailable}
-                      className="rounded-lg border border-border/60 bg-background/90 px-2 py-1 shadow-none"
+                    <ProductCardCartQuantityStepper
+                      cartItem={cartItem}
+                      productName={product.name}
+                      isUnavailable={isUnavailable}
                     />
                   ) : null}
                   {!isInCart || !cartItem ? renderActionButton() : null}

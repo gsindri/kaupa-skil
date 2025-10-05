@@ -34,11 +34,10 @@ interface SupplierItemRowProps {
   item: CartItem
   includeVat: boolean
   formatPrice: (price: number) => string
-  onUpdateQuantity: (supplierItemId: string, quantity: number) => void
   onRemoveItem: (supplierItemId: string) => void
 }
 
-function SupplierItemRow({ item, includeVat, formatPrice, onUpdateQuantity, onRemoveItem }: SupplierItemRowProps) {
+function SupplierItemRow({ item, includeVat, formatPrice, onRemoveItem }: SupplierItemRowProps) {
   const [open, setOpen] = useState(false)
 
   const displayName = item.displayName || item.itemName
@@ -101,11 +100,11 @@ function SupplierItemRow({ item, includeVat, formatPrice, onUpdateQuantity, onRe
           </div>
           <div className="flex items-center justify-end gap-2">
             <QuantityStepper
+              supplierItemId={item.supplierItemId}
               quantity={item.quantity}
-              onChange={qty => onUpdateQuantity(item.supplierItemId, qty)}
-              onRemove={() => onRemoveItem(item.supplierItemId)}
               min={1}
               label={displayName}
+              supplier={item.supplierName ?? undefined}
             />
             <Button
               type="button"
@@ -161,7 +160,6 @@ function SummaryRow({ label, value }: { label: string; value: React.ReactNode })
 export function OrderComposer() {
   const {
     items,
-    updateQuantity,
     removeItem,
     clearCart,
     getTotalPrice,
@@ -402,7 +400,6 @@ export function OrderComposer() {
                       item={item}
                       includeVat={includeVat}
                       formatPrice={formatPrice}
-                      onUpdateQuantity={updateQuantity}
                       onRemoveItem={removeItem}
                     />
                   ))}

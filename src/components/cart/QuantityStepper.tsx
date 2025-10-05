@@ -1,12 +1,12 @@
-import { useMemo } from "react";
+import { useMemo, useCallback } from "react";
 import { CatalogQuantityStepper } from "@/components/catalog/CatalogQuantityStepper";
+import { useCartQuantityController } from "@/contexts/useCartQuantityController";
 
 interface QuantityStepperProps {
+  supplierItemId: string;
   quantity: number;
-  onChange: (qty: number) => void;
   label: string;
   supplier?: string;
-  onRemove?: () => void;
   min?: number;
   max?: number;
   className?: string;
@@ -14,11 +14,10 @@ interface QuantityStepperProps {
 }
 
 export function QuantityStepper({
+  supplierItemId,
   quantity,
-  onChange,
   label,
   supplier,
-  onRemove,
   min = 0,
   max,
   className,
@@ -35,27 +34,33 @@ export function QuantityStepper({
   const maxQuantity =
     max !== undefined && Number.isFinite(max) ? Math.max(minQuantity, Math.floor(max)) : undefined;
 
-  const handleRemove = () => {
-    if (onRemove) {
-      onRemove();
+  const { requestQuantity, remove, canIncrease: controllerCanIncrease } = useCartQuantityController(
+    supplierItemId,
+    quantity
+  );
+
+  const handleRemove = useCallback(() => {
+    if (minQuantity > 0) {
+      requestQuantity(minQuantity);
       return;
     }
+    remove();
+  }, [minQuantity, remove, requestQuantity]);
 
-    const fallback = minQuantity > 0 ? minQuantity : 0;
-    onChange(fallback);
-  };
+  const handleChange = useCallback(
+    (next: number) => {
+      if (next <= 0) {
+        handleRemove();
+        return;
+      }
 
-  const handleChange = (next: number) => {
-    if (next <= 0) {
-      handleRemove();
-      return;
-    }
+      requestQuantity(next);
+    },
+    [handleRemove, requestQuantity]
+  );
 
-    const bounded = maxQuantity !== undefined ? Math.min(next, maxQuantity) : next;
-    onChange(bounded);
-  };
-
-  const effectiveCanIncrease = canIncrease && (maxQuantity === undefined || quantity < maxQuantity);
+  const effectiveCanIncrease =
+    canIncrease && controllerCanIncrease && (maxQuantity === undefined || quantity < maxQuantity);
 
   return (
     <CatalogQuantityStepper

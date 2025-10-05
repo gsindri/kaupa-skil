@@ -55,7 +55,6 @@ function formatCurrency(value: number) {
 export function CartDrawer() {
   const {
     items,
-    updateQuantity,
     removeItem,
     getTotalPrice,
     isDrawerOpen,
@@ -138,13 +137,8 @@ export function CartDrawer() {
                 <div className="cart-item__price">{formatCurrency(lineTotal)}</div>
                 <div className="cart-item__actions">
                   <QuantityStepper
+                    supplierItemId={item.supplierItemId}
                     quantity={item.quantity}
-                    onChange={qty =>
-                      qty === 0
-                        ? removeItem(item.supplierItemId)
-                        : updateQuantity(item.supplierItemId, qty)
-                    }
-                    onRemove={() => removeItem(item.supplierItemId)}
                     label={name}
                     supplier={item.supplierName}
                     className="cart-item__stepper"
