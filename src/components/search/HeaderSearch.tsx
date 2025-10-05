@@ -996,7 +996,7 @@ function DialogBadge({ children }: { children: React.ReactNode }) {
 }
 
 function ProductQuickAddButton({ item }: { item: SearchResultItem }) {
-  const { items, addItem, updateQuantity, removeItem } = useCart()
+  const { items, addItem } = useCart()
   const [isAdding, setIsAdding] = useState(false)
 
   const supplierIds = item.metadata?.supplierIds ?? []
@@ -1021,9 +1021,8 @@ function ProductQuickAddButton({ item }: { item: SearchResultItem }) {
         className="flex items-center"
       >
         <QuantityStepper
+          supplierItemId={existingItem.supplierItemId}
           quantity={existingItem.quantity}
-          onChange={(qty) => updateQuantity(existingItem.supplierItemId, qty)}
-          onRemove={() => removeItem(existingItem.supplierItemId)}
           label={item.name}
           supplier={existingItem.supplierName}
         />

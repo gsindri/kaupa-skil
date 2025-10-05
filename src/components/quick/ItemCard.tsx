@@ -7,6 +7,7 @@ import { useCart } from '@/contexts/useBasket'
 import { MiniCompareDrawer } from './MiniCompareDrawer'
 import { resolveImage } from '@/lib/images'
 import { CatalogQuantityStepper } from '@/components/catalog/CatalogQuantityStepper'
+import { useCartQuantityController } from '@/contexts/useCartQuantityController'
 
 interface ItemCardProps {
   item: {
@@ -38,7 +39,7 @@ export function ItemCard({ item, onCompareItem, userMode, compact = false }: Ite
   const [isCompareOpen, setIsCompareOpen] = useState(false);
   const pressTimer = useRef<number>();
   const { includeVat } = useSettings();
-  const { addItem, items: cartItems, updateQuantity, removeItem } = useCart();
+  const { addItem, items: cartItems } = useCart();
   const addButtonRef = useRef<HTMLButtonElement>(null);
   const flyoutTimerRef = useRef<number>();
   const [flyoutAmount, setFlyoutAmount] = useState<number | null>(null);
@@ -46,6 +47,12 @@ export function ItemCard({ item, onCompareItem, userMode, compact = false }: Ite
   const cartItem = cartItems.find(i => i.supplierItemId === item.id);
   const cartQuantity = cartItem?.quantity ?? 0;
   const supplierItemId = cartItem?.supplierItemId ?? item.id;
+  const {
+    requestQuantity,
+    remove: removeFromCart,
+    canIncrease: canRequestIncrease,
+    requested: requestedQuantity,
+  } = useCartQuantityController(supplierItemId, cartQuantity);
   const latestRequestedQuantityRef = useRef(cartQuantity);
   const latestConfirmedQuantityRef = useRef(cartQuantity);
   const pendingAddsRef = useRef(0);
@@ -124,6 +131,19 @@ export function ItemCard({ item, onCompareItem, userMode, compact = false }: Ite
     }
   };
 
+  const handleQuantityRequest = useCallback(
+    (nextQuantity: number) => {
+      requestQuantity(nextQuantity, {
+        addItemPayload: cartPayload,
+        addItemOptions: {
+          animateElement: addButtonRef.current || undefined
+        },
+        onIncrease: triggerFlyout
+      });
+    },
+    [cartPayload, requestQuantity, triggerFlyout]
+  );
+
   const handleQuantityChange = useCallback(
     (requestedQuantity: number) => {
       const nextQuantity = Math.max(0, requestedQuantity);
@@ -174,12 +194,12 @@ export function ItemCard({ item, onCompareItem, userMode, compact = false }: Ite
   }, [removeItem, supplierItemId]);
 
   const handleIncrement = useCallback(() => {
-    handleQuantityChange(latestRequestedQuantityRef.current + 1);
-  }, [handleQuantityChange]);
+    handleQuantityRequest(requestedQuantity.current + 1);
+  }, [handleQuantityRequest, requestedQuantity]);
 
   const handleDecrement = useCallback(() => {
-    handleQuantityChange(latestRequestedQuantityRef.current - 1);
-  }, [handleQuantityChange]);
+    handleQuantityRequest(requestedQuantity.current - 1);
+  }, [handleQuantityRequest, requestedQuantity]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
@@ -283,10 +303,10 @@ export function ItemCard({ item, onCompareItem, userMode, compact = false }: Ite
         <div className="relative flex-shrink-0">
           <CatalogQuantityStepper
             quantity={cartQuantity}
-            onChange={handleQuantityChange}
-            onRemove={cartItem ? handleRemoveFromCart : undefined}
+            onChange={handleQuantityRequest}
+            onRemove={removeFromCart}
             itemLabel={item.name}
-            canIncrease={item.stock}
+            canIncrease={item.stock && canRequestIncrease}
             className="rounded-full border border-border/60 bg-background/90 px-2 py-1 shadow-none"
             size="sm"
             increaseButtonRef={addButtonRef}

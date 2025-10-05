@@ -16,7 +16,7 @@ interface AddToCartButtonProps {
 }
 
 export default function AddToCartButton({ product, vendors }: AddToCartButtonProps) {
-  const { items, addItem, updateQuantity, removeItem } = useCart()
+  const { items, addItem } = useCart()
   const cartItem = items.find(i => i.supplierItemId === product.catalog_id)
 
   const [vendorId, setVendorId] = useState(
@@ -26,9 +26,8 @@ export default function AddToCartButton({ product, vendors }: AddToCartButtonPro
   if (cartItem) {
     return (
       <QuantityStepper
+        supplierItemId={cartItem.supplierItemId}
         quantity={cartItem.quantity}
-        onChange={qty => updateQuantity(cartItem.supplierItemId, qty)}
-        onRemove={() => removeItem(cartItem.supplierItemId)}
         label={product.name}
       />
     )

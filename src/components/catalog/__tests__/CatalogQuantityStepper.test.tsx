@@ -1,7 +1,11 @@
+import React from 'react'
 import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
 import { CatalogQuantityStepper } from '../CatalogQuantityStepper'
+import { BasketContext } from '@/contexts/BasketProviderUtils'
+import { useCartQuantityController } from '@/contexts/useCartQuantityController'
+import type { CartItem } from '@/lib/types'
 
 describe('CatalogQuantityStepper', () => {
   it('ignores stale confirmations from superseded optimistic updates', () => {
@@ -167,5 +171,92 @@ describe('CatalogQuantityStepper', () => {
     )
 
     expect(screen.getByText('5')).toBeInTheDocument()
+  })
+
+  it('queues add requests via the cart controller when incremented rapidly', () => {
+    const addItem = vi.fn()
+    const updateQuantity = vi.fn()
+    const removeItem = vi.fn()
+
+    const basketValue: React.ContextType<typeof BasketContext> = {
+      items: [],
+      addItem,
+      updateQuantity,
+      removeItem,
+      clearBasket: vi.fn(),
+      clearCart: vi.fn(),
+      restoreItems: vi.fn(),
+      getTotalItems: () => 0,
+      getTotalPrice: () => 0,
+      getMissingPriceCount: () => 0,
+      isDrawerOpen: false,
+      setIsDrawerOpen: vi.fn(),
+      isDrawerPinned: false,
+      setIsDrawerPinned: vi.fn() as React.Dispatch<React.SetStateAction<boolean>>,
+      cartPulseSignal: 0,
+    }
+
+    const payload: Omit<CartItem, 'quantity'> = {
+      id: 'item-1',
+      supplierId: 'supplier-1',
+      supplierName: 'Supplier',
+      itemName: 'Test product',
+      sku: 'sku-1',
+      packSize: '1',
+      packPrice: 100,
+      unitPriceExVat: 100,
+      unitPriceIncVat: 124,
+      vatRate: 0.24,
+      unit: 'each',
+      supplierItemId: 'item-1',
+      displayName: 'Test product',
+      packQty: 1,
+      image: null,
+    }
+
+    function ControllerHarness({ quantity }: { quantity: number }) {
+      const controller = useCartQuantityController('item-1', quantity)
+
+      return (
+        <CatalogQuantityStepper
+          quantity={quantity}
+          onChange={next =>
+            controller.requestQuantity(next, {
+              addItemPayload: payload,
+            })
+          }
+          onRemove={controller.remove}
+          itemLabel="Test product"
+        />
+      )
+    }
+
+    const { rerender } = render(
+      <BasketContext.Provider value={basketValue}>
+        <ControllerHarness quantity={0} />
+      </BasketContext.Provider>,
+    )
+
+    const incrementButton = screen.getByRole('button', {
+      name: /increase quantity of test product/i,
+    })
+
+    fireEvent.click(incrementButton)
+    fireEvent.click(incrementButton)
+    fireEvent.click(incrementButton)
+
+    expect(addItem).toHaveBeenCalledTimes(3)
+    expect(addItem).toHaveBeenNthCalledWith(1, payload, 1, undefined)
+    expect(addItem).toHaveBeenNthCalledWith(2, payload, 1, undefined)
+    expect(addItem).toHaveBeenNthCalledWith(3, payload, 1, undefined)
+    expect(updateQuantity).not.toHaveBeenCalled()
+
+    rerender(
+      <BasketContext.Provider value={basketValue}>
+        <ControllerHarness quantity={3} />
+      </BasketContext.Provider>,
+    )
+
+    expect(addItem).toHaveBeenCalledTimes(3)
   })
 })
