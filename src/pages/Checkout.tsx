@@ -442,7 +442,7 @@ export default function Checkout() {
   const [markAsSentState, setMarkAsSentState] = useState<Record<string, boolean>>({})
   const [modalSupplierId, setModalSupplierId] = useState<string | null>(null)
   const [modalTab, setModalTab] = useState<'summary' | 'email'>('summary')
-  const [allowPendingSend, setAllowPendingSend] = useState(false)
+  const [pendingSendApprovals, setPendingSendApprovals] = useState<Record<string, boolean>>({})
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -579,6 +579,24 @@ export default function Checkout() {
       return changed ? next : prev
     })
 
+    setPendingSendApprovals(prev => {
+      const next = { ...prev }
+      let changed = false
+      supplierSections.forEach(section => {
+        if (!(section.supplierId in next)) {
+          next[section.supplierId] = false
+          changed = true
+        }
+      })
+      Object.keys(next).forEach(id => {
+        if (!supplierIds.has(id)) {
+          delete next[id]
+          changed = true
+        }
+      })
+      return changed ? next : prev
+    })
+
     setStatusOverrides(prev => {
       const next = { ...prev }
       let changed = false
@@ -669,6 +687,9 @@ export default function Checkout() {
   const modalPreferredMethod = modalSupplierId
     ? preferredMethods[modalSupplierId] ?? 'default'
     : 'default'
+  const modalPendingApproval = modalSupplierId
+    ? pendingSendApprovals[modalSupplierId] ?? false
+    : false
 
   const emailData = modalSupplier
     ? createEmailData(
@@ -699,12 +720,20 @@ export default function Checkout() {
   const handleOpenModal = (supplierId: string, tab: 'summary' | 'email' = 'summary') => {
     setModalSupplierId(supplierId)
     setModalTab(tab)
-    setAllowPendingSend(false)
+    setPendingSendApprovals(prev => ({
+      ...prev,
+      [supplierId]: false,
+    }))
   }
 
   const handleCloseModal = () => {
+    if (modalSupplierId) {
+      setPendingSendApprovals(prev => ({
+        ...prev,
+        [modalSupplierId]: false,
+      }))
+    }
     setModalSupplierId(null)
-    setAllowPendingSend(false)
   }
 
   const handleToggleExpanded = (supplierId: string) => {
@@ -742,7 +771,10 @@ export default function Checkout() {
       ...prev,
       [modalSupplier.supplierId]: 'draft_created',
     }))
-    setAllowPendingSend(true)
+    setPendingSendApprovals(prev => ({
+      ...prev,
+      [modalSupplier.supplierId]: true,
+    }))
     toast({
       title: 'Draft created',
       description: 'Draft created—check your downloads and open it in your mail client.',
@@ -989,9 +1021,14 @@ export default function Checkout() {
                               <Button
                                 type="button"
                                 size="lg"
-                                className="w-full justify-center gap-2"
+                                className={cn(
+                                  'w-full justify-center gap-2',
+                                  isPricingPending
+                                    ? 'border border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100 focus-visible:ring-amber-500 dark:border-amber-400/40 dark:bg-amber-500/10 dark:text-amber-200 dark:hover:bg-amber-500/20'
+                                    : '',
+                                )}
                                 onClick={() => handleSendClick(section.supplierId)}
-                                disabled={isMinimumNotMet || (isPricingPending && !allowPendingSend)}
+                                aria-disabled={isPricingPending}
                               >
                                 <Mail className="h-4 w-4" />
                                 Send order to {section.supplierName}
@@ -1350,20 +1387,26 @@ export default function Checkout() {
                 onClick={() => handleOpenEmail()}
                 disabled={
                   modalSupplier?.status === 'minimum_not_met' ||
-                  (modalSupplier?.status === 'pricing_pending' && !allowPendingSend)
+                  (modalSupplier?.status === 'pricing_pending' && !modalPendingApproval)
                 }
               >
                 Open email ({methodLabels[modalPreferredMethod]})
               </Button>
             </DialogFooter>
-            {modalSupplier?.status === 'pricing_pending' && !allowPendingSend ? (
+            {modalSupplier?.status === 'pricing_pending' && !modalPendingApproval ? (
               <div className="px-1 pb-1">
                 <Button
                   type="button"
                   variant="link"
                   size="sm"
                   className="h-auto px-0 text-xs"
-                  onClick={() => setAllowPendingSend(true)}
+                  onClick={() => {
+                    if (!modalSupplier) return
+                    setPendingSendApprovals(prev => ({
+                      ...prev,
+                      [modalSupplier.supplierId]: true,
+                    }))
+                  }}
                 >
                   Send anyway
                 </Button>
