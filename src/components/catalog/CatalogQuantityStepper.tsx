@@ -73,6 +73,19 @@ export function CatalogQuantityStepper({
     const matchIndex = pendingQuantities.lastIndexOf(quantity);
 
     if (matchIndex === -1) {
+      if (resolvedQuantities.delete(quantity)) {
+        return;
+      }
+
+      if (pendingQuantities.length > 0) {
+        for (const value of pendingQuantities) {
+          resolvedQuantities.add(value);
+        }
+        pendingQuantities.splice(0, pendingQuantities.length);
+      }
+
+      latestQuantity.current = quantity;
+      setOptimisticQuantity(quantity);
       return;
     }
 
