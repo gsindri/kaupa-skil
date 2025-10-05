@@ -88,6 +88,14 @@ import {
   type SupplierStatus,
 } from './checkoutShared'
 
+const statusSidebarLabels: Record<SupplierStatus, string> = {
+  ready: 'Ready',
+  pricing_pending: 'Pending',
+  minimum_not_met: 'Minimum not met',
+  draft_created: 'Draft created',
+  sent: 'Sent',
+}
+
 interface EditableFieldProps {
   label: string
   value: string
@@ -1008,7 +1016,7 @@ export default function CartEmailCheckout() {
               const status = getDisplayStatus(section.supplierId, section.status)
               const isExpanded = expandedSuppliers[section.supplierId]
               const preferredMethod = preferredMethods[section.supplierId] ?? 'default'
-              const collapsedItems = section.items.slice(0, isExpanded ? section.items.length : 2)
+              const summaryItems = section.items.slice(0, 3)
               const pendingPrices = section.items.filter(item => {
                 const price = includeVat ? item.unitPriceIncVat : item.unitPriceExVat
                 return price == null
@@ -1044,6 +1052,22 @@ export default function CartEmailCheckout() {
                   : status === 'draft_created'
                     ? `Open draft for ${section.supplierName}`
                     : `Send order to ${section.supplierName}`
+
+              const pendingPriceNames = pendingPrices
+                .map(item => item.displayName || item.itemName)
+                .filter(Boolean)
+              const remainingPendingNames = Math.max(pendingPriceNames.length - 2, 0)
+              const pendingPriceMessage = pendingPrices.length
+                ? pendingPriceNames.length
+                  ? `Waiting for price: ${[
+                      pendingPriceNames.slice(0, 2).join(', '),
+                      remainingPendingNames > 0 ? `+${remainingPendingNames} more` : null,
+                    ]
+                      .filter(Boolean)
+                      .join(', ')} (${pendingPrices.length} item${pendingPrices.length === 1 ? '' : 's'})`
+                  : `Waiting for price on ${pendingPrices.length} item${pendingPrices.length === 1 ? '' : 's'}`
+                : null
+              const hiddenItemCount = Math.max(section.items.length - summaryItems.length, 0)
 
               return (
                 <section
@@ -1092,41 +1116,54 @@ export default function CartEmailCheckout() {
                     </Tooltip>
                   </header>
 
-                  <div className="space-y-4 px-4 py-4">
-                    <p className="text-xs text-muted-foreground">
-                      Subtotal: {subtotalDisplay} · Delivery: {deliveryDisplayPerSupplier} · Est. total: {totalDisplay}
-                    </p>
+                  <div className="space-y-5 px-4 py-4">
+                    {isPricingPending && pendingPriceMessage ? (
+                      <p className="text-sm font-medium text-amber-700">{pendingPriceMessage}</p>
+                    ) : null}
 
-                    <div className="flex flex-wrap items-center gap-2">
-                      <Tooltip open={primaryEnabled ? false : undefined}>
-                        <TooltipTrigger asChild>
-                          <span className="flex-1">
-                            <Button
-                              type="button"
-                              size="lg"
-                              className="w-full justify-center gap-2"
-                              disabled={!primaryEnabled}
-                              onClick={() => handleSendClick(section.supplierId)}
-                            >
-                              {status === 'sent' ? (
-                                <Send className="h-4 w-4" />
-                              ) : (
-                                <span aria-hidden="true">📧</span>
-                              )}
-                              {buttonText}
-                            </Button>
-                          </span>
-                        </TooltipTrigger>
-                        {!primaryEnabled ? (
-                          <TooltipContent className="max-w-xs text-sm">
-                            {status === 'pricing_pending'
-                              ? `Waiting for supplier to confirm price on ${pendingPrices.length} item${pendingPrices.length === 1 ? '' : 's'}.`
-                              : status === 'minimum_not_met' && section.shortfallAmount
-                                ? `Add ${formatPriceISK(Math.ceil(section.shortfallAmount))} to enable sending.`
-                                : 'Complete the required details to continue.'}
-                          </TooltipContent>
-                        ) : null}
-                      </Tooltip>
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                      {isMinimumNotMet && section.shortfallAmount ? (
+                        <Button
+                          type="button"
+                          size="lg"
+                          className="w-full justify-center gap-2 sm:w-auto"
+                          variant="secondary"
+                          onClick={() => handleAddToMinimum(section)}
+                        >
+                          Add {formatPriceISK(Math.ceil(section.shortfallAmount))} to enable sending
+                        </Button>
+                      ) : (
+                        <Tooltip open={primaryEnabled && !isPricingPending ? false : undefined}>
+                          <TooltipTrigger asChild>
+                            <span className="flex-1 sm:flex-none">
+                              <Button
+                                type="button"
+                                size="lg"
+                                className={cn(
+                                  'w-full justify-center gap-2 sm:w-auto',
+                                  isPricingPending
+                                    ? 'border border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100 focus-visible:ring-amber-500 dark:border-amber-400/40 dark:bg-amber-500/10 dark:text-amber-200 dark:hover:bg-amber-500/20'
+                                    : '',
+                                )}
+                                disabled={!primaryEnabled}
+                                onClick={() => handleSendClick(section.supplierId)}
+                              >
+                                {status === 'sent' ? <Send className="h-4 w-4" /> : <span aria-hidden="true">📧</span>}
+                                {buttonText}
+                              </Button>
+                            </span>
+                          </TooltipTrigger>
+                          {!primaryEnabled || isPricingPending ? (
+                            <TooltipContent className="max-w-xs text-sm">
+                              {status === 'pricing_pending'
+                                ? `Waiting for supplier to confirm price on ${pendingPrices.length} item${pendingPrices.length === 1 ? '' : 's'}.`
+                                : status === 'minimum_not_met' && section.shortfallAmount
+                                  ? `Add ${formatPriceISK(Math.ceil(section.shortfallAmount))} to enable sending.`
+                                  : 'Complete the required details to continue.'}
+                            </TooltipContent>
+                          ) : null}
+                        </Tooltip>
+                      )}
 
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -1176,48 +1213,66 @@ export default function CartEmailCheckout() {
                       </DropdownMenu>
                     </div>
 
-                    {!primaryEnabled ? (
-                      <div className="space-y-2 rounded-xl border border-dashed border-muted-foreground/40 bg-muted/10 p-3 text-xs text-muted-foreground">
-                        {status === 'pricing_pending' ? (
-                          <div className="space-y-1">
-                            <p className="font-medium text-foreground">Pricing pending</p>
-                            <ul className="space-y-1">
-                              {pendingPrices.slice(0, 2).map(item => (
-                                <li key={item.supplierItemId} className="truncate">
-                                  {item.displayName || item.itemName}
-                                </li>
-                              ))}
-                            </ul>
-                            {pendingPrices.length > 2 ? (
-                              <p>+{pendingPrices.length - 2} more</p>
+                    <div className="space-y-3">
+                      <div className="space-y-2">
+                        <p className="text-sm font-semibold text-foreground">Items</p>
+                        {isExpanded ? (
+                          <div className="space-y-3">
+                            {section.items.map(item => {
+                              const displayName = item.displayName || item.itemName
+                              const unitPrice = includeVat ? item.unitPriceIncVat : item.unitPriceExVat
+                              const unitLabel = item.unit ? `per ${item.unit}` : 'per unit'
+                              const pricePerUnit = unitPrice != null ? formatPriceISK(unitPrice) : 'Pending'
+                              const lineTotal = unitPrice != null ? unitPrice * item.quantity : null
+                              const lineTotalDisplay = lineTotal != null ? formatPriceISK(lineTotal) : 'Pending'
+
+                              return (
+                                <div
+                                  key={item.supplierItemId}
+                                  className="flex items-center gap-3 rounded-xl border border-muted/40 bg-background/90 p-3"
+                                >
+                                  <div className="h-12 w-12 shrink-0 overflow-hidden rounded-md bg-muted">
+                                    {item.image ? (
+                                      <LazyImage
+                                        src={item.image}
+                                        alt={displayName}
+                                        className="h-full w-full"
+                                        imgClassName="object-contain"
+                                      />
+                                    ) : (
+                                      <div className="flex h-full w-full items-center justify-center text-[11px] text-muted-foreground">
+                                        No image
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div className="min-w-0 flex-1">
+                                    <p className="truncate text-sm font-medium text-foreground">{displayName}</p>
+                                    <p className="text-xs text-muted-foreground">
+                                      {item.quantity} × {pricePerUnit} {unitLabel}
+                                    </p>
+                                    {item.packSize ? (
+                                      <p className="text-xs text-muted-foreground">Pack: {item.packSize}</p>
+                                    ) : null}
+                                  </div>
+                                  <div className="text-sm font-medium tabular-nums text-foreground">{lineTotalDisplay}</div>
+                                </div>
+                              )
+                            })}
+                          </div>
+                        ) : (
+                          <div className="space-y-2 rounded-xl border border-dashed border-muted-foreground/20 bg-muted/10 p-3">
+                            {summaryItems.map(item => (
+                              <p key={item.supplierItemId} className="truncate text-sm text-foreground">
+                                • {buildCollapsedItemLine(item)}
+                              </p>
+                            ))}
+                            {hiddenItemCount > 0 ? (
+                              <p className="text-xs text-muted-foreground">
+                                +{hiddenItemCount} more item{hiddenItemCount === 1 ? '' : 's'} (expand to view)
+                              </p>
                             ) : null}
                           </div>
-                        ) : null}
-                        {status === 'minimum_not_met' && section.shortfallAmount ? (
-                          <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-foreground">
-                            <span>
-                              Add {formatPriceISK(Math.ceil(section.shortfallAmount))} to enable sending.
-                            </span>
-                            <Button variant="link" size="sm" className="h-auto px-0" onClick={() => handleAddToMinimum(section)}>
-                              Open catalog
-                            </Button>
-                          </div>
-                        ) : null}
-                      </div>
-                    ) : null}
-
-                    <div className="space-y-3">
-                      <div className="space-y-2 rounded-xl border border-dashed border-muted-foreground/20 bg-muted/10 p-3">
-                        {collapsedItems.map(item => (
-                          <p key={item.supplierItemId} className="truncate text-sm text-foreground">
-                            • {buildCollapsedItemLine(item)}
-                          </p>
-                        ))}
-                        {section.items.length > 2 && !isExpanded ? (
-                          <p className="text-xs text-muted-foreground">
-                            +{section.items.length - 2} more item{section.items.length - 2 === 1 ? '' : 's'} hidden
-                          </p>
-                        ) : null}
+                        )}
                         <Button
                           type="button"
                           variant="link"
@@ -1225,54 +1280,12 @@ export default function CartEmailCheckout() {
                           className="h-auto px-0 text-xs"
                           onClick={() => handleToggleExpanded(section.supplierId)}
                         >
-                          {isExpanded ? 'Collapse all' : 'Expand all'}
+                          {isExpanded ? 'Hide details' : 'View details'}
                         </Button>
                       </div>
-
-                      {isExpanded ? (
-                        <div className="space-y-3">
-                          {section.items.map(item => {
-                            const displayName = item.displayName || item.itemName
-                            const unitPrice = includeVat ? item.unitPriceIncVat : item.unitPriceExVat
-                            const unitLabel = item.unit ? `per ${item.unit}` : 'per unit'
-                            const pricePerUnit = unitPrice != null ? formatPriceISK(unitPrice) : 'Pending'
-                            const lineTotal = unitPrice != null ? unitPrice * item.quantity : null
-                            const lineTotalDisplay = lineTotal != null ? formatPriceISK(lineTotal) : 'Pending'
-
-                            return (
-                              <div
-                                key={item.supplierItemId}
-                                className="flex items-center gap-3 rounded-xl border border-muted/40 bg-background/90 p-3"
-                              >
-                                <div className="h-12 w-12 shrink-0 overflow-hidden rounded-md bg-muted">
-                                  {item.image ? (
-                                    <LazyImage
-                                      src={item.image}
-                                      alt={displayName}
-                                      className="h-full w-full"
-                                      imgClassName="object-contain"
-                                    />
-                                  ) : (
-                                    <div className="flex h-full w-full items-center justify-center text-[11px] text-muted-foreground">
-                                      No image
-                                    </div>
-                                  )}
-                                </div>
-                                <div className="min-w-0 flex-1">
-                                  <p className="truncate text-sm font-medium text-foreground">{displayName}</p>
-                                  <p className="text-xs text-muted-foreground">
-                                    {item.quantity} × {pricePerUnit} {unitLabel}
-                                  </p>
-                                  {item.packSize ? (
-                                    <p className="text-xs text-muted-foreground">Pack: {item.packSize}</p>
-                                  ) : null}
-                                </div>
-                                <div className="text-sm font-medium tabular-nums text-foreground">{lineTotalDisplay}</div>
-                              </div>
-                            )
-                          })}
-                        </div>
-                      ) : null}
+                      <p className="text-xs text-muted-foreground">
+                        Subtotal: {subtotalDisplay} · Delivery: {deliveryDisplayPerSupplier} · Est. total: {totalDisplay}
+                      </p>
                     </div>
 
                     {status === 'draft_created' || status === 'sent' ? (
@@ -1315,26 +1328,21 @@ export default function CartEmailCheckout() {
 
           <aside className="space-y-4 xl:sticky xl:top-28 xl:self-start">
             <div className="rounded-2xl border border-border/60 bg-background p-4 shadow-sm">
-              <div className="space-y-3">
-                <div className="space-y-3">
-                  {sortedSupplierSections.map(section => {
-                    const status = getDisplayStatus(section.supplierId, section.status)
-                    const badge = statusConfig[status]
-                    const summaryDisplay = section.hasUnknownPrices
-                      ? 'Pending'
-                      : section.total > 0
-                        ? formatPriceISK(section.total)
-                        : 'Pending'
-                    return (
-                      <div key={section.supplierId} className="flex items-start justify-between gap-3">
-                        <div>
-                          <p className="text-sm font-semibold text-foreground">{section.supplierName}</p>
-                          <p className="text-xs text-muted-foreground">{badge.label}</p>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <h2 className="text-sm font-semibold text-foreground">Order summary</h2>
+                  <div className="space-y-2">
+                    {sortedSupplierSections.map(section => {
+                      const status = getDisplayStatus(section.supplierId, section.status)
+                      const sidebarLabel = statusSidebarLabels[status]
+                      return (
+                        <div key={section.supplierId} className="flex items-center justify-between gap-3">
+                          <p className="text-sm font-medium text-foreground">{section.supplierName}</p>
+                          <span className="text-xs font-semibold text-muted-foreground">{sidebarLabel}</span>
                         </div>
-                        <p className="text-sm font-medium tabular-nums text-foreground">{summaryDisplay}</p>
-                      </div>
-                    )
-                  })}
+                      )
+                    })}
+                  </div>
                 </div>
                 <Separator className="border-dashed" />
                 <div className="space-y-1 text-sm">
