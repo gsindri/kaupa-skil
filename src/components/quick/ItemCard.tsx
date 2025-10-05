@@ -45,7 +45,6 @@ export function ItemCard({ item, onCompareItem, userMode, compact = false }: Ite
 
   const cartItem = cartItems.find(i => i.supplierItemId === item.id);
   const cartQuantity = cartItem?.quantity ?? 0;
-  const latestQuantityRef = useRef(cartQuantity);
   const supplierItemId = cartItem?.supplierItemId ?? item.id;
   const latestRequestedQuantityRef = useRef(cartQuantity);
 
@@ -109,52 +108,6 @@ export function ItemCard({ item, onCompareItem, userMode, compact = false }: Ite
     }
   };
 
-  useEffect(() => {
-    latestQuantityRef.current = cartQuantity;
-  }, [cartQuantity]);
-
-  const handleQuantityChange = useCallback(
-    (requestedQuantity: number) => {
-      const nextQuantity = Math.max(0, requestedQuantity);
-      const current = latestQuantityRef.current;
-
-      if (nextQuantity === current) {
-        return;
-      }
-
-      latestQuantityRef.current = nextQuantity;
-
-      if (nextQuantity === 0) {
-        removeItem(supplierItemId);
-        return;
-      }
-
-      const delta = nextQuantity - current;
-
-      if (delta > 0) {
-        triggerFlyout(delta);
-        addItem(cartPayload, delta, {
-          animateElement: addButtonRef.current || undefined
-        });
-        return;
-      }
-
-      updateQuantity(supplierItemId, nextQuantity);
-    },
-    [addItem, cartPayload, removeItem, supplierItemId, triggerFlyout, updateQuantity]
-  );
-
-  const handleRemoveFromCart = useCallback(() => {
-    latestQuantityRef.current = 0;
-    removeItem(supplierItemId);
-  }, [removeItem, supplierItemId]);
-
-  const handleIncrement = useCallback(() => {
-    handleQuantityChange(latestQuantityRef.current + 1);
-  }, [handleQuantityChange]);
-
-  const handleDecrement = useCallback(() => {
-    handleQuantityChange(Math.max(0, latestQuantityRef.current - 1));
   const handleQuantityChange = useCallback(
     (nextQuantity: number) => {
       if (nextQuantity <= 0) {
