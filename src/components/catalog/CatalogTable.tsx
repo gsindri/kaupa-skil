@@ -1044,16 +1044,6 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
               Notify me
             </Button>
           </div>
-          <Button
-            size="sm"
-            variant="outline"
-            className={cn(
-              compactAddButtonClasses,
-              'border-muted-foreground/60 text-muted-foreground shadow-none',
-            )}
-          >
-            Notify me
-          </Button>
         </div>
       )
     }
@@ -1165,7 +1155,7 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
     const stepper = (
       <div className="flex w-full flex-col items-end gap-1.5">
         <CatalogQuantityStepper
-          className="w-full shadow-sm"
+          className="w-[148px] shadow-sm"
           quantity={currentQuantity}
           onChange={handleQuantityChange}
           onRemove={handleRemove}
