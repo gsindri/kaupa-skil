@@ -22,9 +22,16 @@ interface CatalogFiltersPanelProps {
   onChange: (f: Partial<FacetFilters>) => void
   focusedFacet?: keyof FacetFilters | null
   onClearFilters: () => void
+  headingRef?: React.Ref<HTMLHeadingElement>
 }
 
-export function CatalogFiltersPanel({ filters, onChange, focusedFacet, onClearFilters }: CatalogFiltersPanelProps) {
+export function CatalogFiltersPanel({
+  filters,
+  onChange,
+  focusedFacet,
+  onClearFilters,
+  headingRef
+}: CatalogFiltersPanelProps) {
   const { t } = useTranslation(undefined, { keyPrefix: 'catalog.filters' })
   const triStock = useCatalogFilters(s => s.triStock)
   const setTriStock = useCatalogFilters(s => s.setTriStock)
@@ -127,7 +134,14 @@ export function CatalogFiltersPanel({ filters, onChange, focusedFacet, onClearFi
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-base font-semibold">{t('title')}</h2>
+        <h2
+          id="catalog-filters-title"
+          ref={headingRef}
+          tabIndex={-1}
+          className="text-base font-semibold focus-visible:outline-none"
+        >
+          {t('title')}
+        </h2>
         <Button
           type="button"
           variant="ghost"

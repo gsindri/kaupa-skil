@@ -224,6 +224,14 @@ export default function CatalogPage() {
   const [bannerDismissed, setBannerDismissed] = useState(false)
   const headerRef = useRef<HTMLDivElement>(null)
   const [scrolled, setScrolled] = useState(false)
+  const filtersButtonRef = useRef<HTMLButtonElement>(null)
+  const filtersHeadingRef = useRef<HTMLHeadingElement>(null)
+  const wasFiltersOpen = useRef(showFilters)
+
+  const closeFilters = useCallback(() => {
+    setFocusedFacet(null)
+    setShowFilters(false)
+  }, [setFocusedFacet, setShowFilters])
 
   useEffect(() => {
     try {
@@ -247,6 +255,43 @@ export default function CatalogPage() {
     window.addEventListener('scroll', updateScrolled, { passive: true })
     return () => window.removeEventListener('scroll', updateScrolled)
   }, [])
+
+  useEffect(() => {
+    if (showFilters) {
+      requestAnimationFrame(() => filtersHeadingRef.current?.focus())
+    } else if (wasFiltersOpen.current) {
+      requestAnimationFrame(() => filtersButtonRef.current?.focus())
+    }
+    wasFiltersOpen.current = showFilters
+  }, [showFilters])
+
+  useEffect(() => {
+    if (!showFilters) return
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault()
+        closeFilters()
+      }
+    }
+
+    const handlePointerDown = (event: PointerEvent) => {
+      const panel = document.getElementById('catalog-filters-panel')
+      if (!panel) return
+      const target = event.target as Node | null
+      if (target && panel.contains(target)) return
+      const toggleButton = filtersButtonRef.current
+      if (toggleButton && target && toggleButton.contains(target)) return
+      closeFilters()
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    document.addEventListener('pointerdown', handlePointerDown)
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+      document.removeEventListener('pointerdown', handlePointerDown)
+    }
+  }, [showFilters, closeFilters])
 
   // Will be calculated after products are defined
   // hideConnectPill will be calculated after products are defined
@@ -807,18 +852,18 @@ export default function CatalogPage() {
           setFocusedFacet={setFocusedFacet}
           total={total}
           scrolled={scrolled}
+          filtersButtonRef={filtersButtonRef}
         />
       }
       secondary={
         showFilters ? (
-          <div id="catalog-filters-panel">
-            <CatalogFiltersPanel
-              filters={filters}
-              onChange={setFilters}
-              focusedFacet={focusedFacet}
-              onClearFilters={clearAllFilters}
-            />
-          </div>
+          <CatalogFiltersPanel
+            filters={filters}
+            onChange={setFilters}
+            focusedFacet={focusedFacet}
+            onClearFilters={clearAllFilters}
+            headingRef={filtersHeadingRef}
+          />
         ) : null
       }
       panelOpen={showFilters}
@@ -974,6 +1019,7 @@ interface FiltersBarProps {
   onLockChange?: (locked: boolean) => void
   total: number | null
   scrolled: boolean
+  filtersButtonRef?: React.RefObject<HTMLButtonElement>
 }
 
 function FiltersBar({
@@ -999,6 +1045,7 @@ function FiltersBar({
   onLockChange,
   total,
   scrolled,
+  filtersButtonRef,
 }: FiltersBarProps) {
   const containerClass = CATALOG_CONTAINER_CLASS
   const { search: _search, ...facetFilters } = filters
@@ -1112,6 +1159,7 @@ function FiltersBar({
             aria-expanded={showFilters}
             aria-controls="catalog-filters-panel"
             aria-keyshortcuts="f"
+            ref={extraClassName ? undefined : filtersButtonRef}
             className={cn(
               'inline-flex h-[var(--ctrl-h,40px)] items-center gap-3 rounded-[var(--ctrl-r,12px)] bg-[color:var(--chip-bg)] px-3 text-sm font-semibold text-[color:var(--ink-hi)] ring-1 ring-inset ring-[color:var(--ring-idle)] backdrop-blur-xl transition duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-4 focus-visible:ring-offset-[color:var(--toolbar-bg)] hover:bg-[color:var(--chip-bg-hover)] hover:text-[color:var(--ink-hi)] hover:ring-[color:var(--ring-hover)] motion-reduce:transition-none',
               showFilters && 'bg-[color:var(--seg-active-bg)] text-[color:var(--ink-hi)] ring-[color:var(--ring-hover)]',
