@@ -7,7 +7,6 @@ import { useCart } from '@/contexts/useBasket'
 import { MiniCompareDrawer } from './MiniCompareDrawer'
 import { resolveImage } from '@/lib/images'
 import { CatalogQuantityStepper } from '@/components/catalog/CatalogQuantityStepper'
-import { useCartQuantityController } from '@/contexts/useCartQuantityController'
 
 interface ItemCardProps {
   item: {
@@ -47,31 +46,38 @@ export function ItemCard({ item, onCompareItem, userMode, compact = false }: Ite
   const cartItem = cartItems.find(i => i.supplierItemId === item.id);
   const cartQuantity = cartItem?.quantity ?? 0;
   const supplierItemId = cartItem?.supplierItemId ?? item.id;
-  const {
-    requestQuantity,
-    remove: removeFromCart,
-    canIncrease: canRequestIncrease,
-    requested: requestedQuantity,
-  } = useCartQuantityController(supplierItemId, cartQuantity);
   const latestRequestedQuantityRef = useRef(cartQuantity);
   const latestConfirmedQuantityRef = useRef(cartQuantity);
   const pendingAddsRef = useRef(0);
 
   useEffect(() => {
     const previousConfirmed = latestConfirmedQuantityRef.current;
+    const previousRequested = latestRequestedQuantityRef.current;
+    const previousPendingAdds = pendingAddsRef.current;
+    const confirmedDelta = cartQuantity - previousConfirmed;
+
     latestConfirmedQuantityRef.current = cartQuantity;
 
-    if (pendingAddsRef.current > 0) {
-      const fulfilled = cartQuantity - previousConfirmed;
-      if (fulfilled > 0) {
-        pendingAddsRef.current = Math.max(0, pendingAddsRef.current - fulfilled);
-      } else if (fulfilled < 0) {
+    if (previousPendingAdds > 0) {
+      if (confirmedDelta > 0) {
+        pendingAddsRef.current = Math.max(0, previousPendingAdds - confirmedDelta);
+      } else if (confirmedDelta < 0) {
         pendingAddsRef.current = 0;
       }
     }
 
-    if (pendingAddsRef.current === 0 || cartQuantity !== latestRequestedQuantityRef.current) {
+    const hasPendingAdds = pendingAddsRef.current > 0;
+    const cartOutpacedRequest = cartQuantity > previousRequested;
+    const cartDropped = confirmedDelta < 0;
+    const quantityChangedExternally =
+      previousRequested !== cartQuantity && (cartOutpacedRequest || cartDropped);
+
+    if (!hasPendingAdds || quantityChangedExternally) {
       latestRequestedQuantityRef.current = cartQuantity;
+
+      if (quantityChangedExternally) {
+        pendingAddsRef.current = 0;
+      }
     }
   }, [cartQuantity]);
 
@@ -131,19 +137,6 @@ export function ItemCard({ item, onCompareItem, userMode, compact = false }: Ite
     }
   };
 
-  const handleQuantityRequest = useCallback(
-    (nextQuantity: number) => {
-      requestQuantity(nextQuantity, {
-        addItemPayload: cartPayload,
-        addItemOptions: {
-          animateElement: addButtonRef.current || undefined
-        },
-        onIncrease: triggerFlyout
-      });
-    },
-    [cartPayload, requestQuantity, triggerFlyout]
-  );
-
   const handleQuantityChange = useCallback(
     (requestedQuantity: number) => {
       const nextQuantity = Math.max(0, requestedQuantity);
@@ -172,17 +165,9 @@ export function ItemCard({ item, onCompareItem, userMode, compact = false }: Ite
       }
 
       pendingAddsRef.current = 0;
-
-      if (cartItem) {
-        updateQuantity(supplierItemId, nextQuantity);
-      } else {
-        pendingAddsRef.current = nextQuantity;
-        addItem(cartPayload, nextQuantity, {
-          animateElement: addButtonRef.current || undefined
-        });
-      }
+      updateQuantity(supplierItemId, nextQuantity);
     },
-    [addItem, cartItem, cartPayload, removeItem, supplierItemId, triggerFlyout, updateQuantity]
+    [addItem, cartPayload, removeItem, supplierItemId, triggerFlyout, updateQuantity]
   );
 
   const handleRemoveFromCart = useCallback(() => {
@@ -194,12 +179,12 @@ export function ItemCard({ item, onCompareItem, userMode, compact = false }: Ite
   }, [removeItem, supplierItemId]);
 
   const handleIncrement = useCallback(() => {
-    handleQuantityRequest(requestedQuantity.current + 1);
-  }, [handleQuantityRequest, requestedQuantity]);
+    handleQuantityChange(latestRequestedQuantityRef.current + 1);
+  }, [handleQuantityChange]);
 
   const handleDecrement = useCallback(() => {
-    handleQuantityRequest(requestedQuantity.current - 1);
-  }, [handleQuantityRequest, requestedQuantity]);
+    handleQuantityChange(latestRequestedQuantityRef.current - 1);
+  }, [handleQuantityChange]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
@@ -303,10 +288,10 @@ export function ItemCard({ item, onCompareItem, userMode, compact = false }: Ite
         <div className="relative flex-shrink-0">
           <CatalogQuantityStepper
             quantity={cartQuantity}
-            onChange={handleQuantityRequest}
-            onRemove={removeFromCart}
+            onChange={handleQuantityChange}
+            onRemove={handleRemoveFromCart}
             itemLabel={item.name}
-            canIncrease={item.stock && canRequestIncrease}
+            canIncrease={Boolean(item.stock)}
             className="rounded-full border border-border/60 bg-background/90 px-2 py-1 shadow-none"
             size="sm"
             increaseButtonRef={addButtonRef}
