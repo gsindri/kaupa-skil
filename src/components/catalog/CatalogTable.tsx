@@ -965,6 +965,9 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
       }
     }, [commitAdd, disableAddReason, supplierEntries.length])
 
+    const addButtonClasses =
+      'h-9 w-[148px] justify-center rounded-full px-4 text-sm font-semibold shadow-sm'
+
     if (supplierEntries.length === 0 || isTemporarilyUnavailable) {
       return (
         <div className="flex min-h-[48px] items-center justify-end">
@@ -986,7 +989,10 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
           <Button
             size="sm"
             variant="outline"
-            className="h-9 w-[148px] justify-center rounded-full border-muted-foreground/60 text-muted-foreground"
+            className={cn(
+              addButtonClasses,
+              'border-muted-foreground/60 text-muted-foreground shadow-none',
+            )}
           >
             Notify me
           </Button>
@@ -1000,9 +1006,6 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
       ) : null
 
     const renderAddButton = () => {
-      const buttonClasses =
-        'h-9 w-[148px] justify-center rounded-full px-4 text-sm font-semibold shadow-sm'
-
       if (disableAddReason) {
         return (
           <Tooltip>
@@ -1015,7 +1018,7 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
                 <Button
                   type="button"
                   size="sm"
-                  className={buttonClasses}
+                  className={addButtonClasses}
                   aria-label={`Add ${product.name} to cart. ${disableAddReason}`}
                   disabled
                 >
@@ -1034,7 +1037,7 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
           <Button
             type="button"
             size="sm"
-            className={buttonClasses}
+            className={addButtonClasses}
             onClick={handleAddAction}
             aria-label={`Add ${product.name} to cart`}
           >
