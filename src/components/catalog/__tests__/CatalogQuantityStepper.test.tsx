@@ -1,5 +1,6 @@
 import React from 'react'
 import { fireEvent, render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 
 import { CatalogQuantityStepper } from '../CatalogQuantityStepper'
@@ -30,7 +31,7 @@ describe('CatalogQuantityStepper', () => {
 
     expect(handleChange).toHaveBeenCalledWith(2)
     expect(handleChange).toHaveBeenCalledWith(3)
-    expect(screen.getByText('3')).toBeInTheDocument()
+    expect(screen.getByDisplayValue('3')).toBeInTheDocument()
 
     rerender(
       <CatalogQuantityStepper
@@ -41,7 +42,7 @@ describe('CatalogQuantityStepper', () => {
       />,
     )
 
-    expect(screen.getByText('3')).toBeInTheDocument()
+    expect(screen.getByDisplayValue('3')).toBeInTheDocument()
 
     rerender(
       <CatalogQuantityStepper
@@ -52,7 +53,7 @@ describe('CatalogQuantityStepper', () => {
       />,
     )
 
-    expect(screen.getByText('3')).toBeInTheDocument()
+    expect(screen.getByDisplayValue('3')).toBeInTheDocument()
 
     rerender(
       <CatalogQuantityStepper
@@ -63,7 +64,7 @@ describe('CatalogQuantityStepper', () => {
       />,
     )
 
-    expect(screen.getByText('3')).toBeInTheDocument()
+    expect(screen.getByDisplayValue('3')).toBeInTheDocument()
   })
 
   it('maintains optimistic quantity when stale duplicate arrives after removal', () => {
@@ -83,16 +84,16 @@ describe('CatalogQuantityStepper', () => {
       name: /increase quantity of test product/i,
     })
     const decrementButton = screen.getByRole('button', {
-      name: /decrease quantity of test product/i,
+      name: /remove test product from cart/i,
     })
 
     fireEvent.click(incrementButton)
     expect(handleChange).toHaveBeenCalledWith(2)
-    expect(screen.getByText('2')).toBeInTheDocument()
+    expect(screen.getByDisplayValue('2')).toBeInTheDocument()
 
     fireEvent.click(decrementButton)
     expect(handleChange).toHaveBeenCalledWith(1)
-    expect(screen.getByText('1')).toBeInTheDocument()
+    expect(screen.getByDisplayValue('1')).toBeInTheDocument()
 
     rerender(
       <CatalogQuantityStepper
@@ -103,7 +104,7 @@ describe('CatalogQuantityStepper', () => {
       />,
     )
 
-    expect(screen.getByText('1')).toBeInTheDocument()
+    expect(screen.getByDisplayValue('1')).toBeInTheDocument()
 
     rerender(
       <CatalogQuantityStepper
@@ -114,7 +115,7 @@ describe('CatalogQuantityStepper', () => {
       />,
     )
 
-    expect(screen.getByText('1')).toBeInTheDocument()
+    expect(screen.getByDisplayValue('1')).toBeInTheDocument()
 
     rerender(
       <CatalogQuantityStepper
@@ -148,7 +149,7 @@ describe('CatalogQuantityStepper', () => {
     fireEvent.click(incrementButton)
 
     expect(handleChange).toHaveBeenCalledWith(2)
-    expect(screen.getByText('2')).toBeInTheDocument()
+    expect(screen.getByDisplayValue('2')).toBeInTheDocument()
 
     rerender(
       <CatalogQuantityStepper
@@ -159,7 +160,7 @@ describe('CatalogQuantityStepper', () => {
       />,
     )
 
-    expect(screen.getByText('5')).toBeInTheDocument()
+    expect(screen.getByDisplayValue('5')).toBeInTheDocument()
 
     rerender(
       <CatalogQuantityStepper
@@ -170,7 +171,29 @@ describe('CatalogQuantityStepper', () => {
       />,
     )
 
-    expect(screen.getByText('5')).toBeInTheDocument()
+    expect(screen.getByDisplayValue('5')).toBeInTheDocument()
+  })
+
+  it('applies typed quantity changes on commit', async () => {
+    const handleChange = vi.fn()
+    const handleRemove = vi.fn()
+    const user = userEvent.setup()
+
+    render(
+      <CatalogQuantityStepper
+        quantity={2}
+        onChange={handleChange}
+        onRemove={handleRemove}
+        itemLabel="Test product"
+      />,
+    )
+
+    const input = screen.getByLabelText(/quantity for test product/i)
+    await user.clear(input)
+    await user.type(input, '5')
+    await user.type(input, '{enter}')
+
+    expect(handleChange).toHaveBeenCalledWith(5)
   })
 
   it('queues add requests via the cart controller when incremented rapidly', () => {

@@ -23,8 +23,15 @@ vi.mock('@/hooks/useSupplierConnections', () => ({
 }))
 
 describe('CatalogTable', () => {
+  beforeAll(() => {
+    // jsdom does not implement scrollTo; stub to avoid errors from virtualization scrollFn
+    window.scrollTo = vi.fn()
+  })
+
   beforeEach(() => {
     cartState.items = []
+    cartState.addItem.mockReset()
+    cartState.updateQuantity.mockReset()
   })
   it('shows lock icon and tooltip when price is locked', async () => {
     const product = {
@@ -46,12 +53,12 @@ describe('CatalogTable', () => {
       </TooltipProvider>,
     )
 
-    const hidden = screen.getByText('Price locked')
-    const lockIcon = hidden.parentElement?.querySelector('svg') as SVGElement
+    const priceCallout = await screen.findByText('See price')
+    const lockIcon = priceCallout.parentElement?.querySelector('svg') as SVGElement
     expect(lockIcon).toBeInTheDocument()
 
     const user = userEvent.setup()
-    await user.hover(hidden.parentElement as HTMLElement)
+    await user.hover(priceCallout.parentElement as HTMLElement)
 
     const tooltip = await screen.findAllByText('Connect Acme to unlock pricing.')
     expect(tooltip.length).toBeGreaterThan(0)
@@ -103,7 +110,7 @@ describe('CatalogTable', () => {
     )
 
     expect(
-      screen.getByLabelText(/Decrease quantity of Stepper Product/),
+      screen.getByLabelText(/Quantity for Stepper Product/i),
     ).toBeInTheDocument()
   })
 
@@ -142,6 +149,47 @@ describe('CatalogTable', () => {
       image: 'http://example.com/img.jpg',
       packSize: '1kg',
     })
+  })
+
+  it('switches from add button to stepper when item enters the cart', () => {
+    const product = {
+      catalog_id: '1',
+      name: 'Switch Product',
+      suppliers: ['Acme'],
+      availability_status: 'IN_STOCK',
+    }
+
+    const { rerender } = render(
+      <TooltipProvider>
+        <CatalogTable
+          products={[product]}
+          sort={null}
+          onSort={() => {}}
+        />
+      </TooltipProvider>,
+    )
+
+    expect(
+      screen.getByRole('button', { name: `Add ${product.name} to cart` }),
+    ).toBeInTheDocument()
+
+    cartState.items = [
+      { supplierItemId: '1', quantity: 3, supplierName: 'Acme' },
+    ]
+
+    rerender(
+      <TooltipProvider>
+        <CatalogTable
+          products={[product]}
+          sort={null}
+          onSort={() => {}}
+        />
+      </TooltipProvider>,
+    )
+
+    expect(
+      screen.getByLabelText(/Quantity for Switch Product from Acme/i),
+    ).toBeInTheDocument()
   })
 
   it('shows notify action when product is out of stock', async () => {

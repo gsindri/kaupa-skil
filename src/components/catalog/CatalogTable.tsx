@@ -1,5 +1,4 @@
 import { useState, useRef, useLayoutEffect, useEffect, useCallback, useMemo } from 'react'
-import type { KeyboardEvent } from 'react'
 import {
   Table,
   TableBody,
@@ -28,6 +27,7 @@ import { cn } from '@/lib/utils'
 import { useSupplierConnections } from '@/hooks/useSupplierConnections'
 import { useSuppliers } from '@/hooks/useSuppliers'
 import { useWindowVirtualizer } from '@tanstack/react-virtual'
+import { announceToScreenReader } from '@/components/quick/AccessibilityEnhancementsUtils'
 
 type AvailabilityState = 'IN_STOCK' | 'LOW_STOCK' | 'OUT_OF_STOCK' | 'UNKNOWN' | null | undefined
 
@@ -688,16 +688,8 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
     const existingItem = items.find(
       (i: any) => i.supplierItemId === product.catalog_id,
     )
-    const [open, setOpen] = useState(false)
-    const [draftQty, setDraftQty] = useState(existingItem?.quantity ?? 1)
-
-    useEffect(() => {
-      if (existingItem) {
-        setDraftQty(existingItem.quantity)
-      } else {
-        setDraftQty(prev => (prev > 0 ? prev : 1))
-      }
-    }, [existingItem])
+    const [isPickerOpen, setIsPickerOpen] = useState(false)
+    const previousQuantityRef = useRef(existingItem?.quantity ?? 0)
 
     const availability = (product.availability_status ?? 'UNKNOWN') as
       | 'IN_STOCK'
@@ -705,9 +697,22 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
       | 'OUT_OF_STOCK'
       | 'UNKNOWN'
     const isOutOfStock = availability === 'OUT_OF_STOCK'
-    const isUnavailable =
-      isOutOfStock ||
-      (availability === 'UNKNOWN' && (product.active_supplier_count ?? 0) === 0)
+    const isTemporarilyUnavailable =
+      availability === 'UNKNOWN' && (product.active_supplier_count ?? 0) === 0
+
+    const disableAddReason = useMemo(() => {
+      const rawReason =
+        product?.add_disabled_reason ??
+        product?.addDisabledReason ??
+        product?.disabled_reason ??
+        product?.disabledReason ??
+        null
+      if (typeof rawReason === 'string') {
+        const trimmed = rawReason.trim()
+        return trimmed.length ? trimmed : null
+      }
+      return null
+    }, [product])
 
     const rawSuppliers = useMemo(() => {
       if (product.supplier_products && product.supplier_products.length) {
@@ -776,6 +781,72 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
       }
     })
 
+    const activeSupplierIndex = useMemo(() => {
+      if (existingItem?.supplierId) {
+        const index = supplierEntries.findIndex(
+          supplier => supplier.id === existingItem.supplierId,
+        )
+        if (index >= 0) {
+          return index
+        }
+      }
+
+      return supplierEntries.length === 1 ? 0 : -1
+    }, [existingItem?.supplierId, supplierEntries])
+
+    const maxQuantity = useMemo(() => {
+      const parseQuantity = (value: unknown): number | null => {
+        if (typeof value === 'number') {
+          return Number.isFinite(value) ? value : null
+        }
+        if (typeof value === 'string') {
+          const parsed = Number.parseFloat(value)
+          return Number.isFinite(parsed) ? parsed : null
+        }
+        return null
+      }
+
+      const candidates: Array<number | null> = [
+        parseQuantity(product?.max_order_quantity),
+        parseQuantity(product?.max_quantity),
+        parseQuantity(product?.maximum_quantity),
+        parseQuantity(product?.order_limit),
+        parseQuantity(product?.available_quantity),
+        parseQuantity(product?.available_stock),
+        parseQuantity(product?.stock_quantity),
+        parseQuantity(product?.stock_qty),
+        parseQuantity(product?.quantity_available),
+        parseQuantity(product?.max_purchase_quantity),
+        parseQuantity(product?.max_purchase_qty),
+        parseQuantity(product?.inventory_quantity),
+      ]
+
+      if (activeSupplierIndex >= 0) {
+        const raw = rawSuppliers[activeSupplierIndex] as any
+        candidates.push(
+          parseQuantity(raw?.available_quantity),
+          parseQuantity(raw?.available_qty),
+          parseQuantity(raw?.stock_quantity),
+          parseQuantity(raw?.stock_qty),
+          parseQuantity(raw?.quantity_available),
+          parseQuantity(raw?.max_order_quantity),
+          parseQuantity(raw?.maximum_quantity),
+          parseQuantity(raw?.order_limit),
+        )
+      }
+
+      const normalized = candidates
+        .filter((value): value is number => value !== null && Number.isFinite(value))
+        .map(value => Math.floor(Math.max(0, value)))
+        .filter(value => value > 0)
+
+      if (!normalized.length) {
+        return undefined
+      }
+
+      return Math.min(...normalized)
+    }, [activeSupplierIndex, product, rawSuppliers])
+
     const buildCartItem = useCallback(
       (
         supplier: (typeof supplierEntries)[number],
@@ -820,80 +891,87 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
       [product, rawSuppliers],
     )
 
+    const currentQuantity = existingItem?.quantity ?? 0
+    const primarySupplierName =
+      existingItem?.supplierName || suppliers[0]?.supplier_name || 'Supplier'
+
+    useEffect(() => {
+      const previous = previousQuantityRef.current
+      const next = existingItem?.quantity ?? 0
+      if (previous === next) {
+        return
+      }
+
+      if (previous === 0 && next > 0) {
+        announceToScreenReader(`Added ${next} × ${product.name} to cart`)
+      } else if (next === 0 && previous > 0) {
+        announceToScreenReader(`Removed ${product.name} from cart`)
+      } else if (next > 0) {
+        announceToScreenReader(`Quantity set to ${next} for ${product.name}`)
+      }
+
+      previousQuantityRef.current = next
+    }, [existingItem?.quantity, product.name])
+
     const handleQuantityChange = useCallback(
       (next: number) => {
-        const safe = Math.max(1, next)
-        if (existingItem) {
-          updateQuantity(existingItem.supplierItemId, safe)
-        } else {
-          setDraftQty(safe)
+        if (!existingItem) return
+        const numeric = Number.isFinite(next) ? Math.floor(next) : 0
+        const bounded = (() => {
+          const clamped = Math.max(0, numeric)
+          if (maxQuantity !== undefined) {
+            return Math.min(clamped, maxQuantity)
+          }
+          return clamped
+        })()
+
+        if (bounded <= 0) {
+          removeItem(existingItem.supplierItemId)
+          return
+        }
+
+        if (bounded !== existingItem.quantity) {
+          updateQuantity(existingItem.supplierItemId, bounded)
         }
       },
-      [existingItem, updateQuantity],
+      [existingItem, maxQuantity, removeItem, updateQuantity],
     )
 
     const handleRemove = useCallback(() => {
-      if (existingItem) {
-        removeItem(existingItem.supplierItemId)
-      } else {
-        setDraftQty(1)
-      }
+      if (!existingItem) return
+      removeItem(existingItem.supplierItemId)
     }, [existingItem, removeItem])
 
     const commitAdd = useCallback(
       (supplierIndex: number) => {
         const supplier = supplierEntries[supplierIndex]
         if (!supplier) return
-        if (existingItem) {
-          updateQuantity(existingItem.supplierItemId, draftQty)
-        } else {
-          addItem(buildCartItem(supplier, supplierIndex), draftQty)
-        }
+
+        addItem(buildCartItem(supplier, supplierIndex), 1)
         if (supplier.availability === 'OUT_OF_STOCK') {
           toast({ description: 'Out of stock at selected supplier.' })
         }
-        setOpen(false)
+        setIsPickerOpen(false)
       },
-      [addItem, buildCartItem, draftQty, existingItem, supplierEntries, updateQuantity],
+      [addItem, buildCartItem, supplierEntries],
     )
 
     const handleAddAction = useCallback(() => {
-      if (isUnavailable || supplierEntries.length === 0) return
+      if (supplierEntries.length === 0 || disableAddReason) return
       if (supplierEntries.length === 1) {
         commitAdd(0)
       } else {
-        setOpen(true)
+        setIsPickerOpen(true)
       }
-    }, [commitAdd, isUnavailable, supplierEntries.length])
+    }, [commitAdd, disableAddReason, supplierEntries.length])
 
-    const currentQuantity = existingItem?.quantity ?? draftQty
-    const primarySupplierName =
-      existingItem?.supplierName || suppliers[0]?.supplier_name || 'Supplier'
-
-    const handleKeyDown = useCallback(
-      (event: KeyboardEvent<HTMLDivElement>) => {
-        if (event.target !== event.currentTarget) return
-        if (event.key === 'ArrowRight' || event.key === 'ArrowUp') {
-          event.preventDefault()
-          handleQuantityChange(currentQuantity + 1)
-        } else if (event.key === 'ArrowLeft' || event.key === 'ArrowDown') {
-          event.preventDefault()
-          handleQuantityChange(currentQuantity - 1)
-        } else if (event.key === 'Enter') {
-          event.preventDefault()
-          handleAddAction()
-        }
-      },
-      [currentQuantity, handleAddAction, handleQuantityChange],
-    )
-
-    if (supplierEntries.length === 0) {
+    if (supplierEntries.length === 0 || isTemporarilyUnavailable) {
       return (
-        <div className="flex justify-end">
+        <div className="flex min-h-[48px] items-center justify-end">
           <Button
             size="sm"
             variant="outline"
-            className="h-9 min-w-[120px] rounded-full border-dashed border-muted-foreground/50 text-muted-foreground"
+            className="h-9 w-[148px] justify-center rounded-full border-dashed border-muted-foreground/50 text-muted-foreground"
             disabled
           >
             Unavailable
@@ -902,13 +980,13 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
       )
     }
 
-    if (isUnavailable) {
+    if (isOutOfStock) {
       return (
-        <div className="flex justify-end">
+        <div className="flex min-h-[48px] items-center justify-end">
           <Button
             size="sm"
             variant="outline"
-            className="h-9 min-w-[128px] rounded-full border-dashed border-muted-foreground/60 text-muted-foreground"
+            className="h-9 w-[148px] justify-center rounded-full border-muted-foreground/60 text-muted-foreground"
           >
             Notify me
           </Button>
@@ -916,24 +994,47 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
       )
     }
 
-    const quantityStepper = (
-      <CatalogQuantityStepper
-        className="h-9 min-w-[108px] rounded-full border-border/60 bg-background/80"
-        quantity={currentQuantity}
-        onChange={handleQuantityChange}
-        onRemove={existingItem ? handleRemove : undefined}
-        itemLabel={`${product.name} from ${primarySupplierName}`}
-        minQuantity={1}
-      />
-    )
+    const maxHint =
+      maxQuantity !== undefined ? (
+        <span className="text-xs text-muted-foreground">Max {maxQuantity}</span>
+      ) : null
 
     const renderAddButton = () => {
+      const buttonClasses =
+        'h-9 w-[148px] justify-center rounded-full px-4 text-sm font-semibold shadow-sm'
+
+      if (disableAddReason) {
+        return (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span
+                className="inline-flex w-[148px] justify-end"
+                tabIndex={0}
+                aria-label={disableAddReason}
+              >
+                <Button
+                  type="button"
+                  size="sm"
+                  className={buttonClasses}
+                  aria-label={`Add ${product.name} to cart. ${disableAddReason}`}
+                  disabled
+                >
+                  Add
+                  <span className="sr-only">{disableAddReason}</span>
+                </Button>
+              </span>
+            </TooltipTrigger>
+            <TooltipContent className="max-w-xs text-sm">{disableAddReason}</TooltipContent>
+          </Tooltip>
+        )
+      }
+
       if (supplierEntries.length === 1) {
         return (
           <Button
             type="button"
             size="sm"
-            className="h-9 min-w-[88px] rounded-full px-4 text-sm font-semibold shadow-sm"
+            className={buttonClasses}
             onClick={handleAddAction}
             aria-label={`Add ${product.name} to cart`}
           >
@@ -943,12 +1044,12 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
       }
 
       return (
-        <Popover open={open} onOpenChange={setOpen}>
+        <Popover open={isPickerOpen} onOpenChange={setIsPickerOpen}>
           <PopoverTrigger asChild>
             <Button
               type="button"
               size="sm"
-              className="h-9 min-w-[88px] rounded-full px-4 text-sm font-semibold shadow-sm"
+              className={buttonClasses}
               onClick={handleAddAction}
               aria-label={`Add ${product.name} to cart`}
             >
@@ -999,18 +1100,30 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
       )
     }
 
+    const stepper = (
+      <div className="inline-flex min-w-[176px] items-center justify-end gap-2">
+        <CatalogQuantityStepper
+          className="h-9 min-w-[132px] rounded-full border border-border/60 bg-background/80"
+          quantity={currentQuantity}
+          onChange={handleQuantityChange}
+          onRemove={handleRemove}
+          itemLabel={`${product.name} from ${primarySupplierName}`}
+          minQuantity={0}
+          maxQuantity={maxQuantity}
+          canIncrease={maxQuantity === undefined || currentQuantity < maxQuantity}
+          size="sm"
+        />
+        {maxHint}
+      </div>
+    )
+
     return (
-      <div className="flex justify-end">
-        <div
-          tabIndex={0}
-          role="group"
-          aria-label={`Add ${product.name} to cart`}
-          onKeyDown={handleKeyDown}
-          className="flex items-center gap-3 rounded-full px-1 py-1 outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-        >
-          {quantityStepper}
-          {renderAddButton()}
-        </div>
+      <div className="flex min-h-[48px] items-center justify-end">
+        {currentQuantity > 0 ? (
+          stepper
+        ) : (
+          <div className="inline-flex min-w-[176px] justify-end">{renderAddButton()}</div>
+        )}
       </div>
     )
   }
