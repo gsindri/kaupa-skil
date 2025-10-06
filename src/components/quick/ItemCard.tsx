@@ -49,6 +49,7 @@ export function ItemCard({ item, onCompareItem, userMode, compact = false }: Ite
   const requestedQuantityRef = useRef(cartQuantity);
   const confirmedQuantityRef = useRef(cartQuantity);
   const pendingIncrementRef = useRef(0);
+  const optimisticQuantity = Math.max(cartQuantity, requestedQuantityRef.current);
 
   useEffect(() => {
     const previousConfirmed = confirmedQuantityRef.current;
@@ -60,26 +61,33 @@ export function ItemCard({ item, onCompareItem, userMode, compact = false }: Ite
 
     if (previousPending > 0) {
       if (confirmedDelta > 0) {
-        pendingIncrementRef.current = Math.max(0, previousPending - confirmedDelta);
-      } else if (confirmedDelta < 0) {
-        pendingIncrementRef.current = 0;
+        const remaining = Math.max(0, previousPending - confirmedDelta);
+        pendingIncrementRef.current = remaining;
+        if (remaining === 0) {
+          requestedQuantityRef.current = cartQuantity;
+        }
+        return;
       }
+
+      if (confirmedDelta < 0) {
+        pendingIncrementRef.current = 0;
+        requestedQuantityRef.current = cartQuantity;
+        return;
+      }
+
+      return;
     }
 
-    const pending = pendingIncrementRef.current;
-    const pendingResolved = previousPending > 0 && pending === 0;
-    const cartDropped = cartQuantity < previousConfirmed;
-    const overshotRequested = previousPending > 0 && confirmedDelta > previousPending && cartQuantity > previousRequested;
-    const changedWhileIdle = previousPending === 0 && cartQuantity !== previousRequested;
-    const quantityChangedExternally = cartDropped || overshotRequested || changedWhileIdle;
+    const requestedMatchedPreviousConfirmed = previousRequested === previousConfirmed;
+    const cartQuantityDecreased = cartQuantity < previousConfirmed;
+    const cartChangedExternally = (requestedMatchedPreviousConfirmed && cartQuantity !== previousRequested) || cartQuantityDecreased;
 
-    if (quantityChangedExternally) {
-      pendingIncrementRef.current = 0;
+    if (cartChangedExternally) {
       requestedQuantityRef.current = cartQuantity;
       return;
     }
 
-    if (pendingResolved) {
+    if (cartQuantity === previousRequested) {
       requestedQuantityRef.current = cartQuantity;
     }
   }, [cartQuantity]);
@@ -140,15 +148,24 @@ export function ItemCard({ item, onCompareItem, userMode, compact = false }: Ite
     }
   };
 
+  const handleRemoveFromCart = useCallback(() => {
+    requestedQuantityRef.current = 0;
+    confirmedQuantityRef.current = 0;
+    pendingIncrementRef.current = 0;
+
+    removeItem(supplierItemId);
+  }, [removeItem, supplierItemId]);
+
   const handleQuantityChange = useCallback(
     (requestedQuantity: number) => {
       const nextQuantity = Math.max(0, requestedQuantity);
       const previousRequested = requestedQuantityRef.current;
-      requestedQuantityRef.current = nextQuantity;
 
       if (nextQuantity === previousRequested) {
         return;
       }
+
+      requestedQuantityRef.current = nextQuantity;
 
       if (nextQuantity > previousRequested) {
         const delta = nextQuantity - previousRequested;
@@ -161,25 +178,15 @@ export function ItemCard({ item, onCompareItem, userMode, compact = false }: Ite
       }
 
       if (nextQuantity === 0) {
-        pendingIncrementRef.current = 0;
-        confirmedQuantityRef.current = 0;
-        removeItem(supplierItemId);
+        handleRemoveFromCart();
         return;
       }
 
       pendingIncrementRef.current = 0;
       updateQuantity(supplierItemId, nextQuantity);
     },
-    [addItem, cartPayload, removeItem, supplierItemId, triggerFlyout, updateQuantity]
+    [addItem, cartPayload, handleRemoveFromCart, supplierItemId, triggerFlyout, updateQuantity]
   );
-
-  const handleRemoveFromCart = useCallback(() => {
-    requestedQuantityRef.current = 0;
-    confirmedQuantityRef.current = 0;
-    pendingIncrementRef.current = 0;
-
-    removeItem(supplierItemId);
-  }, [removeItem, supplierItemId]);
 
   const handleIncrement = useCallback(() => {
     handleQuantityChange(requestedQuantityRef.current + 1);
@@ -216,9 +223,9 @@ export function ItemCard({ item, onCompareItem, userMode, compact = false }: Ite
       role="article"
       aria-label={`${item.name}, ${new Intl.NumberFormat('is-IS', { style: 'currency', currency: 'ISK' }).format(unitPrice)} per ${item.unit}, ${includeVat ? 'including' : 'excluding'} VAT`}
     >
-      {cartQuantity > 0 && (
+      {optimisticQuantity > 0 && (
         <span className="absolute top-2 right-2 z-20 flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-600 px-1 text-xs text-white">
-          {cartQuantity}
+          {optimisticQuantity}
         </span>
       )}
       {/* Stock overlay */}
