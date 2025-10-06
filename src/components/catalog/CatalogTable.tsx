@@ -1005,6 +1005,8 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
       controlBaseClasses,
       'border border-dashed border-muted-foreground/60 bg-background/70 text-muted-foreground shadow-none',
     )
+    const addButtonClasses =
+      'h-9 w-[148px] justify-center rounded-full px-4 text-sm font-semibold shadow-sm'
 
     if (supplierEntries.length === 0 || isTemporarilyUnavailable) {
       return (
@@ -1033,6 +1035,16 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
               Notify me
             </Button>
           </div>
+          <Button
+            size="sm"
+            variant="outline"
+            className={cn(
+              addButtonClasses,
+              'border-muted-foreground/60 text-muted-foreground shadow-none',
+            )}
+          >
+            Notify me
+          </Button>
         </div>
       )
     }
@@ -1057,6 +1069,8 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
                 <Button
                   type="button"
                   className={disabledButtonClasses}
+                  size="sm"
+                  className={addButtonClasses}
                   aria-label={`Add ${product.name} to cart. ${disableAddReason}`}
                   disabled
                 >
@@ -1074,6 +1088,7 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
         return (
           <Button
             type="button"
+            size="sm"
             className={addButtonClasses}
             onClick={handleAddAction}
             aria-label={`Add ${product.name} to cart`}

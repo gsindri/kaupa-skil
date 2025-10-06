@@ -66,18 +66,21 @@ export function ItemCard({ item, onCompareItem, userMode, compact = false }: Ite
       }
     }
 
-    const hasPendingAdds = pendingAddsRef.current > 0;
-    const cartCaughtUp = !hasPendingAdds && cartQuantity === previousRequested;
-    const cartJumpedPastRequest = cartQuantity > previousRequested;
-    const cartDropped = cartQuantity < previousRequested;
-    const quantityChangedExternally = cartJumpedPastRequest || cartDropped;
+    const pendingAdds = pendingAddsRef.current;
+    const pendingResolved = pendingAdds === 0 && previousPendingAdds > 0 && cartQuantity === previousRequested;
+    const cartDropped = confirmedDelta < 0;
+    const overshotRequested = confirmedDelta > previousPendingAdds && cartQuantity > previousRequested;
+    const changedWhileIdle = previousPendingAdds === 0 && cartQuantity !== previousRequested;
+    const quantityChangedExternally = cartDropped || overshotRequested || changedWhileIdle;
 
-    if (cartCaughtUp || quantityChangedExternally) {
+    if (quantityChangedExternally) {
+      pendingAddsRef.current = 0;
       latestRequestedQuantityRef.current = cartQuantity;
+      return;
+    }
 
-      if (quantityChangedExternally) {
-        pendingAddsRef.current = 0;
-      }
+    if (pendingResolved) {
+      latestRequestedQuantityRef.current = cartQuantity;
     }
   }, [cartQuantity]);
 
