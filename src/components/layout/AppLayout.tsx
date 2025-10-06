@@ -116,17 +116,10 @@ export function AppLayout({
               className={clsx(
                 'page-grid__content mx-auto grid w-full items-start gap-6 max-w-none',
                 showSecondary
-                  ? 'lg:max-w-[1600px] lg:grid-cols-[minmax(0,1fr)_minmax(280px,360px)]'
+                  ? 'lg:max-w-[1600px] lg:grid-cols-[minmax(280px,360px)_minmax(0,1fr)]'
                   : 'lg:grid-cols-1'
               )}
             >
-              <main
-                id="main-content"
-                className="w-full min-w-0"
-                style={{ minHeight: 'calc(100vh - var(--header-h, 56px))' }}
-              >
-                {children ?? <Outlet />}
-              </main>
               {hasSecondary && (
                 <aside
                   className={clsx('min-w-0', showSecondary ? 'block' : 'hidden')}
@@ -135,6 +128,13 @@ export function AppLayout({
                   {secondary}
                 </aside>
               )}
+              <main
+                id="main-content"
+                className="w-full min-w-0"
+                style={{ minHeight: 'calc(100vh - var(--header-h, 56px))' }}
+              >
+                {children ?? <Outlet />}
+              </main>
             </div>
             <CartDrawer />
           </div>
