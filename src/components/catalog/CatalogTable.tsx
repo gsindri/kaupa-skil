@@ -519,7 +519,7 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
             <TableHead className="w-32 px-4 py-3 text-right align-middle">
               {renderSortButton('price', 'Price', 'right')}
             </TableHead>
-            <TableHead className="w-[220px] px-4 py-3 text-right align-middle">
+            <TableHead className="w-[240px] px-4 py-3 text-right align-middle">
               <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                 Actions
               </span>
@@ -657,7 +657,7 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
                 <TableCell className="w-32 px-4 py-2 text-right align-middle">
                   <PriceCell product={p} />
                 </TableCell>
-                <TableCell className="w-[220px] px-4 py-2 text-right align-middle">
+                <TableCell className="w-[240px] px-4 py-2 text-right align-middle">
                   <AddToCartButton product={p} suppliers={suppliers} />
                 </TableCell>
               </TableRow>
@@ -689,7 +689,9 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
       (i: any) => i.supplierItemId === product.catalog_id,
     )
     const [isPickerOpen, setIsPickerOpen] = useState(false)
+    const [showAddedFeedback, setShowAddedFeedback] = useState(false)
     const previousQuantityRef = useRef(existingItem?.quantity ?? 0)
+    const addedFeedbackTimeoutRef = useRef<number | null>(null)
 
     const availability = (product.availability_status ?? 'UNKNOWN') as
       | 'IN_STOCK'
@@ -895,6 +897,13 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
     const primarySupplierName =
       existingItem?.supplierName || suppliers[0]?.supplier_name || 'Supplier'
 
+    useEffect(() => () => {
+      if (addedFeedbackTimeoutRef.current) {
+        window.clearTimeout(addedFeedbackTimeoutRef.current)
+        addedFeedbackTimeoutRef.current = null
+      }
+    }, [])
+
     useEffect(() => {
       const previous = previousQuantityRef.current
       const next = existingItem?.quantity ?? 0
@@ -904,8 +913,21 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
 
       if (previous === 0 && next > 0) {
         announceToScreenReader(`Added ${next} × ${product.name} to cart`)
+        setShowAddedFeedback(true)
+        if (addedFeedbackTimeoutRef.current) {
+          window.clearTimeout(addedFeedbackTimeoutRef.current)
+        }
+        addedFeedbackTimeoutRef.current = window.setTimeout(() => {
+          setShowAddedFeedback(false)
+          addedFeedbackTimeoutRef.current = null
+        }, 1000)
       } else if (next === 0 && previous > 0) {
         announceToScreenReader(`Removed ${product.name} from cart`)
+        setShowAddedFeedback(false)
+        if (addedFeedbackTimeoutRef.current) {
+          window.clearTimeout(addedFeedbackTimeoutRef.current)
+          addedFeedbackTimeoutRef.current = null
+        }
       } else if (next > 0) {
         announceToScreenReader(`Quantity set to ${next} for ${product.name}`)
       }
@@ -965,20 +987,39 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
       }
     }, [commitAdd, disableAddReason, supplierEntries.length])
 
+    const controlBaseClasses =
+      'h-11 w-full justify-center rounded-full px-4 text-sm font-semibold shadow-sm transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2'
+    const addButtonClasses = cn(
+      controlBaseClasses,
+      'bg-secondary text-secondary-foreground hover:bg-secondary/80',
+    )
+    const disabledButtonClasses = cn(
+      controlBaseClasses,
+      'bg-muted text-muted-foreground shadow-none',
+    )
+    const passiveButtonClasses = cn(
+      controlBaseClasses,
+      'border border-border/70 bg-background/80 text-muted-foreground shadow-none backdrop-blur-sm',
+    )
+    const unavailableButtonClasses = cn(
+      controlBaseClasses,
+      'border border-dashed border-muted-foreground/60 bg-background/70 text-muted-foreground shadow-none',
+    )
     const addButtonClasses =
       'h-9 w-[148px] justify-center rounded-full px-4 text-sm font-semibold shadow-sm'
 
     if (supplierEntries.length === 0 || isTemporarilyUnavailable) {
       return (
         <div className="flex min-h-[48px] items-center justify-end">
-          <Button
-            size="sm"
-            variant="outline"
-            className="h-9 w-[148px] justify-center rounded-full border-dashed border-muted-foreground/50 text-muted-foreground"
-            disabled
-          >
-            Unavailable
-          </Button>
+          <div className="inline-flex w-full max-w-[208px] justify-end">
+            <Button
+              variant="outline"
+              className={unavailableButtonClasses}
+              disabled
+            >
+              Unavailable
+            </Button>
+          </div>
         </div>
       )
     }
@@ -986,6 +1027,14 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
     if (isOutOfStock) {
       return (
         <div className="flex min-h-[48px] items-center justify-end">
+          <div className="inline-flex w-full max-w-[208px] justify-end">
+            <Button
+              variant="outline"
+              className={passiveButtonClasses}
+            >
+              Notify me
+            </Button>
+          </div>
           <Button
             size="sm"
             variant="outline"
@@ -1002,7 +1051,9 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
 
     const maxHint =
       maxQuantity !== undefined ? (
-        <span className="text-xs text-muted-foreground">Max {maxQuantity}</span>
+        <span className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+          Max {maxQuantity}
+        </span>
       ) : null
 
     const renderAddButton = () => {
@@ -1011,12 +1062,13 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
           <Tooltip>
             <TooltipTrigger asChild>
               <span
-                className="inline-flex w-[148px] justify-end"
+                className="inline-flex w-full max-w-[208px] justify-end"
                 tabIndex={0}
                 aria-label={disableAddReason}
               >
                 <Button
                   type="button"
+                  className={disabledButtonClasses}
                   size="sm"
                   className={addButtonClasses}
                   aria-label={`Add ${product.name} to cart. ${disableAddReason}`}
@@ -1051,8 +1103,7 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
           <PopoverTrigger asChild>
             <Button
               type="button"
-              size="sm"
-              className={buttonClasses}
+              className={addButtonClasses}
               onClick={handleAddAction}
               aria-label={`Add ${product.name} to cart`}
             >
@@ -1104,9 +1155,9 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
     }
 
     const stepper = (
-      <div className="inline-flex min-w-[176px] items-center justify-end gap-2">
+      <div className="flex w-full flex-col items-end gap-1.5">
         <CatalogQuantityStepper
-          className="h-9 min-w-[132px] rounded-full border border-border/60 bg-background/80"
+          className="w-full shadow-sm"
           quantity={currentQuantity}
           onChange={handleQuantityChange}
           onRemove={handleRemove}
@@ -1120,13 +1171,28 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
       </div>
     )
 
+    const addedFeedback = (
+      <div
+        role="status"
+        aria-live="polite"
+        className="flex h-11 w-full items-center justify-center rounded-full border border-emerald-300/60 bg-emerald-500/10 text-sm font-semibold text-emerald-700 shadow-sm backdrop-blur-sm dark:border-emerald-400/40 dark:bg-emerald-500/15 dark:text-emerald-200"
+      >
+        Added
+        <span aria-hidden className="ml-1 text-base">
+          ✓
+        </span>
+      </div>
+    )
+
     return (
       <div className="flex min-h-[48px] items-center justify-end">
-        {currentQuantity > 0 ? (
-          stepper
-        ) : (
-          <div className="inline-flex min-w-[176px] justify-end">{renderAddButton()}</div>
-        )}
+        <div className="inline-flex w-full max-w-[208px] justify-end">
+          {currentQuantity > 0 ? (
+            showAddedFeedback ? addedFeedback : stepper
+          ) : (
+            renderAddButton()
+          )}
+        </div>
       </div>
     )
   }
