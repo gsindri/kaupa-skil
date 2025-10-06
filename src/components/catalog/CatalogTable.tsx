@@ -1005,7 +1005,7 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
       controlBaseClasses,
       'border border-dashed border-muted-foreground/60 bg-background/70 text-muted-foreground shadow-none',
     )
-    const addButtonClasses =
+    const compactAddButtonClasses =
       'h-9 w-[148px] justify-center rounded-full px-4 text-sm font-semibold shadow-sm'
 
     if (supplierEntries.length === 0 || isTemporarilyUnavailable) {
@@ -1039,7 +1039,7 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
             size="sm"
             variant="outline"
             className={cn(
-              addButtonClasses,
+              compactAddButtonClasses,
               'border-muted-foreground/60 text-muted-foreground shadow-none',
             )}
           >
@@ -1068,9 +1068,8 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
               >
                 <Button
                   type="button"
-                  className={disabledButtonClasses}
+                  className={cn(disabledButtonClasses, compactAddButtonClasses)}
                   size="sm"
-                  className={addButtonClasses}
                   aria-label={`Add ${product.name} to cart. ${disableAddReason}`}
                   disabled
                 >
@@ -1089,7 +1088,7 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
           <Button
             type="button"
             size="sm"
-            className={addButtonClasses}
+            className={cn(addButtonClasses, compactAddButtonClasses)}
             onClick={handleAddAction}
             aria-label={`Add ${product.name} to cart`}
           >
@@ -1103,7 +1102,7 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
           <PopoverTrigger asChild>
             <Button
               type="button"
-              className={addButtonClasses}
+              className={cn(addButtonClasses, compactAddButtonClasses)}
               onClick={handleAddAction}
               aria-label={`Add ${product.name} to cart`}
             >
