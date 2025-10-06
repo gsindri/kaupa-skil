@@ -74,7 +74,7 @@ export function QuantityControls({
           value={localQuantity}
           onChange={handleInputChange}
           onBlur={handleInputBlur}
-          className="h-9 w-16 text-center text-sm font-medium rounded-md border focus:outline-none focus:ring-2 focus:ring-brand-400/60 focus:border-brand-500"
+          className="h-9 w-12 min-w-[2.75rem] text-center text-sm font-medium rounded-md border focus:outline-none focus:ring-2 focus:ring-brand-400/60 focus:border-brand-500"
           style={{ fontFeatureSettings: '"tnum" 1' }}
           disabled={disabled}
         />
