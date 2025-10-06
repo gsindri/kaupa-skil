@@ -1156,7 +1156,7 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
     const stepper = (
       <div className="flex w-full flex-col items-end gap-1.5">
         <CatalogQuantityStepper
-          className="w-full shadow-sm"
+          className="w-[148px] shadow-sm"
           quantity={currentQuantity}
           onChange={handleQuantityChange}
           onRemove={handleRemove}
