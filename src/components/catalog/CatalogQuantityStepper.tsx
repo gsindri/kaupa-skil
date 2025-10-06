@@ -291,19 +291,19 @@ export function CatalogQuantityStepper({
     size === "sm"
       ? {
           root:
-            "h-11 gap-1.5 rounded-full border border-border/60 bg-background/95 px-2 text-sm font-medium text-foreground shadow-sm",
+            "h-11 gap-2 rounded-full border border-border/60 bg-background/95 px-3 text-sm font-medium text-foreground shadow-sm",
           button:
-            "h-10 w-10 rounded-full border border-border/60 bg-card/90 text-foreground",
+            "h-9 w-9 rounded-full border border-border/60 bg-card/90 text-foreground",
           count:
-            "catalog-card__stepper-count h-9 min-w-[3.25rem] rounded-full border border-transparent bg-transparent px-2 text-center text-sm font-semibold text-foreground",
+            "catalog-card__stepper-count h-9 min-w-[3.25rem] rounded-full border border-transparent bg-transparent px-3 text-center text-sm font-medium text-foreground",
         }
       : {
           root:
-            "h-12 gap-2 rounded-full border border-border/60 bg-background px-2.5 text-sm font-medium text-foreground shadow-sm",
+            "h-12 gap-2 rounded-full border border-border/60 bg-background px-3 text-sm font-medium text-foreground shadow-sm",
           button:
-            "h-11 w-11 rounded-full border border-border/60 bg-card/90 text-foreground",
+            "h-10 w-10 rounded-full border border-border/60 bg-card/90 text-foreground",
           count:
-            "catalog-card__stepper-count h-10 min-w-[3.5rem] rounded-full border border-transparent bg-transparent px-2 text-center text-sm font-semibold text-foreground",
+            "catalog-card__stepper-count h-10 min-w-[3.5rem] rounded-full border border-transparent bg-transparent px-3 text-center text-sm font-medium text-foreground",
         };
 
   const showRemoveIcon = allowRemoval && optimisticQuantity <= Math.max(1, minQuantity || 0);

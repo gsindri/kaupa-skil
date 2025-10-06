@@ -520,7 +520,7 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
             <TableHead className="w-32 px-4 py-3 text-right align-middle">
               {renderSortButton('price', 'Price', 'right')}
             </TableHead>
-            <TableHead className="w-[240px] px-4 py-3 text-right align-middle">
+            <TableHead className="w-[220px] px-4 py-3 text-center align-middle">
               <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                 Actions
               </span>
@@ -658,7 +658,7 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
                 <TableCell className="w-32 px-4 py-2 text-right align-middle">
                   <PriceCell product={p} />
                 </TableCell>
-                <TableCell className="w-[240px] px-4 py-2 text-right align-middle">
+                <TableCell className="w-[220px] px-4 py-2 text-center align-middle">
                   <AddToCartButton product={p} suppliers={suppliers} />
                 </TableCell>
               </TableRow>
@@ -997,7 +997,7 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
     }, [commitAdd, disableAddReason, supplierEntries.length])
 
     const controlBaseClasses =
-      'h-11 w-full justify-center rounded-full px-4 text-sm font-semibold shadow-sm transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2'
+      'inline-flex h-11 w-full items-center justify-center rounded-full px-4 text-sm font-medium shadow-sm transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2'
     const addButtonClasses = cn(
       controlBaseClasses,
       'bg-secondary text-secondary-foreground hover:bg-secondary/80',
@@ -1014,13 +1014,10 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
       controlBaseClasses,
       'border border-dashed border-muted-foreground/60 bg-background/70 text-muted-foreground shadow-none',
     )
-    const compactAddButtonClasses =
-      'h-9 w-[148px] justify-center rounded-full px-4 text-sm font-semibold shadow-sm'
-
     if (supplierEntries.length === 0 || isTemporarilyUnavailable) {
       return (
-        <div className="flex min-h-[48px] items-center justify-end">
-          <div className="inline-flex w-full max-w-[208px] justify-end">
+        <div className="flex min-h-[44px] items-center justify-center">
+          <div className="inline-flex w-[220px] justify-center">
             <Button
               variant="outline"
               className={unavailableButtonClasses}
@@ -1035,8 +1032,8 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
 
     if (isOutOfStock) {
       return (
-        <div className="flex min-h-[48px] items-center justify-end">
-          <div className="inline-flex w-full max-w-[208px] justify-end">
+        <div className="flex min-h-[44px] items-center justify-center">
+          <div className="inline-flex w-[220px] justify-center">
             <Button
               variant="outline"
               className={passiveButtonClasses}
@@ -1061,14 +1058,13 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
           <Tooltip>
             <TooltipTrigger asChild>
               <span
-                className="inline-flex w-full max-w-[208px] justify-end"
+                className="inline-flex w-[220px] justify-center"
                 tabIndex={0}
                 aria-label={disableAddReason}
               >
                 <Button
                   type="button"
-                  className={cn(disabledButtonClasses, compactAddButtonClasses)}
-                  size="sm"
+                  className={disabledButtonClasses}
                   aria-label={`Add ${product.name} to cart. ${disableAddReason}`}
                   disabled
                 >
@@ -1086,8 +1082,7 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
         return (
           <Button
             type="button"
-            size="sm"
-            className={cn(addButtonClasses, compactAddButtonClasses)}
+            className={addButtonClasses}
             onClick={handleAddAction}
             aria-label={`Add ${product.name} to cart`}
           >
@@ -1101,7 +1096,7 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
           <PopoverTrigger asChild>
             <Button
               type="button"
-              className={cn(addButtonClasses, compactAddButtonClasses)}
+              className={addButtonClasses}
               onClick={handleAddAction}
               aria-label={`Add ${product.name} to cart`}
             >
@@ -1153,45 +1148,45 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
     }
 
     const stepper = (
-      <div className="flex w-full flex-col items-end gap-1.5">
-        <CatalogQuantityStepper
-          className="w-[148px] shadow-sm"
-          quantity={currentQuantity}
-          onChange={handleQuantityChange}
-          onRemove={handleRemove}
-          itemLabel={`${product.name} from ${primarySupplierName}`}
-          minQuantity={0}
-          maxQuantity={maxQuantity}
-          canIncrease={
-            (maxQuantity === undefined || currentQuantity < maxQuantity) && controller.canIncrease
-          }
-          size="sm"
-        />
+      <div className="flex w-full flex-col items-center gap-1.5">
+        <div className="relative w-full">
+          <CatalogQuantityStepper
+            className={cn(
+              "w-full justify-center shadow-sm transition-opacity",
+              showAddedFeedback && "pointer-events-none opacity-0",
+            )}
+            quantity={currentQuantity}
+            onChange={handleQuantityChange}
+            onRemove={handleRemove}
+            itemLabel={`${product.name} from ${primarySupplierName}`}
+            minQuantity={0}
+            maxQuantity={maxQuantity}
+            canIncrease={
+              (maxQuantity === undefined || currentQuantity < maxQuantity) && controller.canIncrease
+            }
+            size="sm"
+          />
+          {showAddedFeedback && (
+            <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+              <div
+                role="status"
+                aria-live="polite"
+                className="flex h-11 w-full items-center justify-center rounded-full border border-emerald-300/60 bg-emerald-500/10 text-sm font-medium text-emerald-700 shadow-sm backdrop-blur-sm dark:border-emerald-400/40 dark:bg-emerald-500/15 dark:text-emerald-200"
+              >
+                Added
+                <span aria-hidden className="ml-1 text-base">✓</span>
+              </div>
+            </div>
+          )}
+        </div>
         {maxHint}
       </div>
     )
 
-    const addedFeedback = (
-      <div
-        role="status"
-        aria-live="polite"
-        className="flex h-11 w-full items-center justify-center rounded-full border border-emerald-300/60 bg-emerald-500/10 text-sm font-semibold text-emerald-700 shadow-sm backdrop-blur-sm dark:border-emerald-400/40 dark:bg-emerald-500/15 dark:text-emerald-200"
-      >
-        Added
-        <span aria-hidden className="ml-1 text-base">
-          ✓
-        </span>
-      </div>
-    )
-
     return (
-      <div className="flex min-h-[48px] items-center justify-end">
-        <div className="inline-flex w-full max-w-[208px] justify-end">
-          {currentQuantity > 0 ? (
-            showAddedFeedback ? addedFeedback : stepper
-          ) : (
-            renderAddButton()
-          )}
+      <div className="flex min-h-[44px] items-center justify-center">
+        <div className="inline-flex w-[220px] justify-center">
+          {currentQuantity > 0 ? stepper : renderAddButton()}
         </div>
       </div>
     )
