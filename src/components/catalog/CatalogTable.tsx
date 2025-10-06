@@ -1,4 +1,12 @@
-import { useState, useRef, useLayoutEffect, useEffect, useCallback, useMemo } from 'react'
+import {
+  useState,
+  useRef,
+  useLayoutEffect,
+  useEffect,
+  useCallback,
+  useMemo,
+  type ReactNode,
+} from 'react'
 import {
   Table,
   TableBody,
@@ -1001,8 +1009,20 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
       }
     }, [commitAdd, disableAddReason, supplierEntries.length])
 
+    const actionCellWrapperClasses =
+      'flex h-full w-full items-center justify-center'
+    const actionContainerClasses =
+      'flex h-[68%] w-[78%] max-w-[220px] items-stretch justify-center'
+    const renderActionContainer = (content: ReactNode) => (
+      <div className={actionCellWrapperClasses}>
+        <div className={actionContainerClasses}>
+          <div className="flex h-full w-full items-stretch justify-center">{content}</div>
+        </div>
+      </div>
+    )
+
     const controlBaseClasses =
-      'inline-flex h-11 w-full items-center justify-center rounded-full px-4 text-sm font-medium shadow-sm transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2'
+      'inline-flex h-full w-full items-center justify-center rounded-full px-3 text-[13px] font-medium shadow-sm transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2'
     const addButtonClasses = cn(
       controlBaseClasses,
       'bg-secondary text-secondary-foreground hover:bg-secondary/80',
@@ -1020,42 +1040,23 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
       'border border-dashed border-muted-foreground/60 bg-background/70 text-muted-foreground shadow-none',
     )
     if (supplierEntries.length === 0 || isTemporarilyUnavailable) {
-      return (
-        <div className="flex min-h-[44px] items-center justify-center">
-          <div className="inline-flex w-[220px] justify-center">
-            <Button
-              variant="outline"
-              className={unavailableButtonClasses}
-              disabled
-            >
-              Unavailable
-            </Button>
-          </div>
-        </div>
+      return renderActionContainer(
+        <Button variant="outline" className={unavailableButtonClasses} disabled>
+          Unavailable
+        </Button>,
       )
     }
 
     if (isOutOfStock) {
-      return (
-        <div className="flex min-h-[44px] items-center justify-center">
-          <div className="inline-flex w-[220px] justify-center">
-            <Button
-              variant="outline"
-              className={passiveButtonClasses}
-            >
-              Notify me
-            </Button>
-          </div>
-        </div>
+      return renderActionContainer(
+        <Button variant="outline" className={passiveButtonClasses}>
+          Notify me
+        </Button>,
       )
     }
 
     const maxHint =
-      maxQuantity !== undefined ? (
-        <span className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-          Max {maxQuantity}
-        </span>
-      ) : null
+      maxQuantity !== undefined ? `Max ${maxQuantity}` : null
 
     const renderAddButton = () => {
       if (disableAddReason) {
@@ -1063,7 +1064,7 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
           <Tooltip>
             <TooltipTrigger asChild>
               <span
-                className="inline-flex w-[220px] justify-center"
+                className="inline-flex h-full w-full"
                 tabIndex={0}
                 aria-label={disableAddReason}
               >
@@ -1097,17 +1098,17 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
       }
 
       return (
-        <Popover open={isPickerOpen} onOpenChange={setIsPickerOpen}>
-          <PopoverTrigger asChild>
-            <Button
-              type="button"
-              className={addButtonClasses}
-              onClick={handleAddAction}
-              aria-label={`Add ${product.name} to cart`}
-            >
-              Add
-            </Button>
-          </PopoverTrigger>
+          <Popover open={isPickerOpen} onOpenChange={setIsPickerOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                type="button"
+                className={addButtonClasses}
+                onClick={handleAddAction}
+                aria-label={`Add ${product.name} to cart`}
+              >
+                Add
+              </Button>
+            </PopoverTrigger>
           <PopoverContent className="w-64 space-y-1 p-2" align="end" side="top">
             {supplierEntries.map((s, index) => {
               const initials = s.name
@@ -1153,11 +1154,11 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
     }
 
     const stepper = (
-      <div className="flex w-full flex-col items-center gap-1.5">
-        <div className="relative w-full">
+      <div className="flex h-full w-full flex-col justify-center gap-1">
+        <div className="relative flex h-full w-full items-center justify-center">
           <CatalogQuantityStepper
             className={cn(
-              "w-full justify-center shadow-sm transition-opacity",
+              "h-full w-full justify-center shadow-sm transition-opacity",
               showAddedFeedback && "pointer-events-none opacity-0",
             )}
             quantity={currentQuantity}
@@ -1176,7 +1177,7 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
               <div
                 role="status"
                 aria-live="polite"
-                className="flex h-11 w-full items-center justify-center rounded-full border border-emerald-300/60 bg-emerald-500/10 text-sm font-medium text-emerald-700 shadow-sm backdrop-blur-sm dark:border-emerald-400/40 dark:bg-emerald-500/15 dark:text-emerald-200"
+                className="flex h-full w-full items-center justify-center rounded-full border border-emerald-300/60 bg-emerald-500/10 text-sm font-medium text-emerald-700 shadow-sm backdrop-blur-sm dark:border-emerald-400/40 dark:bg-emerald-500/15 dark:text-emerald-200"
               >
                 Added
                 <span aria-hidden className="ml-1 text-base">✓</span>
@@ -1184,17 +1185,15 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
             </div>
           )}
         </div>
-        {maxHint}
+        {maxHint && (
+          <div className="pt-0.5 text-center text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+            {maxHint}
+          </div>
+        )}
       </div>
     )
 
-    return (
-      <div className="flex min-h-[44px] items-center justify-center">
-        <div className="inline-flex w-[220px] justify-center">
-          {currentQuantity > 0 ? stepper : renderAddButton()}
-        </div>
-      </div>
-    )
+    return renderActionContainer(currentQuantity > 0 ? stepper : renderAddButton())
   }
 
 function PriceCell({
