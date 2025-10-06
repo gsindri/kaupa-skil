@@ -472,9 +472,11 @@ export const ProductCard = memo(function ProductCard({
         <div
           data-oos={isUnavailable ? "true" : undefined}
           className={cn(
-            "aspect-square rounded-2xl",
-            "flex items-center justify-center",
+            "relative aspect-square w-full overflow-hidden rounded-xl",
+            "grid place-items-center",
+            "bg-muted/20",
             "transition-colors duration-200",
+            "data-[oos=true]:bg-muted/30",
           )}
         >
           <img
@@ -486,8 +488,7 @@ export const ProductCard = memo(function ProductCard({
             fetchPriority="low"
             draggable={false}
             className={cn(
-              "max-h-[80%] w-full object-contain",
-              "[filter:drop-shadow(0_2px_6px_rgba(0,0,0,.08))]",
+              "h-full w-full object-contain",
               "transition-transform duration-150",
               "group-hover:translate-y-0.5 group-hover:scale-[1.01]",
               "motion-reduce:transition-none",

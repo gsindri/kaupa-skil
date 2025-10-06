@@ -17,20 +17,20 @@ export function ProductCardSkeleton({ className }: ProductCardSkeletonProps) {
       data-grid-card
       aria-hidden="true"
     >
-      <div className="flex flex-1 flex-col p-3 md:p-4 lg:p-5">
-        <div className="aspect-square overflow-hidden rounded-xl">
+      <div className="flex flex-1 flex-col gap-4 p-4 sm:p-5">
+        <div className="relative aspect-square w-full overflow-hidden rounded-xl bg-muted/20">
           <Skeleton className="h-full w-full" />
         </div>
-        <div className="mt-3 space-y-2">
+        <div className="space-y-2">
           <Skeleton className="h-4 w-5/6" />
           <Skeleton className="h-3 w-1/2" />
         </div>
-        <div className="mt-2 flex items-center justify-between">
+        <div className="flex items-center justify-between text-[12px]">
           <Skeleton className="h-3 w-24" />
           <Skeleton className="h-3 w-16" />
         </div>
         <div className="mt-auto w-full">
-          <div className="mt-3 border-t border-border pt-2">
+          <div className="mt-4 border-t border-border pt-3">
             <div className="flex h-12 items-center justify-between">
               <Skeleton className="h-4 w-24" />
               <Skeleton className="h-9 w-24 rounded-full" />
