@@ -4,7 +4,9 @@ import React, {
   useLayoutEffect,
   useRef,
   MutableRefObject,
-  ReactElement
+  ReactElement,
+  useMemo,
+  type CSSProperties
 } from 'react'
 import clsx from 'clsx'
 import { Outlet } from 'react-router-dom'
@@ -23,6 +25,8 @@ interface AppLayoutProps {
   headerRef?: React.Ref<HTMLDivElement>
   headerClassName?: string
 }
+
+type GridVars = CSSProperties & { '--filters-w'?: string }
 
 export function AppLayout({
   header,
@@ -67,6 +71,20 @@ export function AppLayout({
   const hasSecondary = !!secondary
   const showSecondary = hasSecondary && panelOpen
 
+  const filtersWidth = useMemo(
+    () => (showSecondary ? 'clamp(280px, 24vw, 360px)' : '0px'),
+    [showSecondary]
+  )
+
+  const gridStyle = useMemo<GridVars | undefined>(() => {
+    if (!hasSecondary) return undefined
+    return {
+      '--filters-w': filtersWidth,
+      gridTemplateColumns: 'var(--filters-w, 0px) minmax(0, 1fr)',
+      transition: 'grid-template-columns var(--enter)',
+    }
+  }, [hasSecondary, filtersWidth])
+
   return (
     <div className="relative min-h-screen">
       {/* Left rail - fixed position */}
@@ -109,20 +127,29 @@ export function AppLayout({
         {/* Main content */}
         <div className="px-4 pb-8 pt-2 sm:px-6 lg:px-8">
           <div
-            className={clsx('page-grid items-start gap-3', showSecondary && 'page-grid--with-secondary')}
+            className={clsx(
+              'page-grid items-start gap-3',
+              hasSecondary && 'page-grid--with-secondary'
+            )}
             data-has-secondary={showSecondary ? 'true' : undefined}
           >
             <div
               className={clsx(
                 'page-grid__content mx-auto grid w-full items-start gap-6 max-w-none',
-                showSecondary
-                  ? 'lg:max-w-[1600px] lg:grid-cols-[minmax(280px,360px)_minmax(0,1fr)]'
-                  : 'lg:grid-cols-1'
+                hasSecondary ? 'lg:max-w-[1600px]' : 'lg:grid-cols-1'
               )}
+              style={gridStyle}
             >
               {hasSecondary && (
                 <aside
-                  className={clsx('min-w-0', showSecondary ? 'block' : 'hidden')}
+                  className={clsx(
+                    'relative hidden min-w-0 overflow-hidden lg:flex lg:flex-col',
+                    showSecondary ? 'lg:pointer-events-auto' : 'lg:pointer-events-none'
+                  )}
+                  style={{
+                    width: 'var(--filters-w, 0px)',
+                    transition: 'width var(--enter)',
+                  }}
                   aria-hidden={!showSecondary}
                 >
                   {secondary}
