@@ -3,11 +3,13 @@ import {
   useEffect,
   useRef,
   useState,
+  type ChangeEvent,
+  type KeyboardEvent as ReactKeyboardEvent,
   type MouseEvent,
   type RefObject,
 } from "react";
 import { Button } from "@/components/ui/button";
-import { Minus, Plus } from "lucide-react";
+import { Minus, Plus, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface CatalogQuantityStepperProps {
@@ -46,6 +48,8 @@ export function CatalogQuantityStepper({
   const pendingQuantitiesRef = useRef<number[]>([]);
   const resolvedQuantitiesRef = useRef<Set<number>>(new Set());
   const [optimisticQuantity, setOptimisticQuantity] = useState(quantity);
+  const [inputValue, setInputValue] = useState(() => `${quantity}`);
+  const [isInputFocused, setIsInputFocused] = useState(false);
 
   const effectiveMax = typeof maxQuantity === "number" ? Math.max(minQuantity, maxQuantity) : undefined;
   const clampToBounds = useCallback(
@@ -61,6 +65,7 @@ export function CatalogQuantityStepper({
   );
 
   const effectiveCanIncrease = canIncrease && (effectiveMax === undefined || optimisticQuantity < effectiveMax);
+  const allowRemoval = onRemove !== undefined || minQuantity <= 0;
 
   useEffect(() => {
     const pendingQuantities = pendingQuantitiesRef.current;
@@ -73,6 +78,9 @@ export function CatalogQuantityStepper({
 
       latestQuantity.current = quantity;
       setOptimisticQuantity(quantity);
+      if (!isInputFocused) {
+        setInputValue(`${quantity}`);
+      }
       return;
     }
 
@@ -93,6 +101,9 @@ export function CatalogQuantityStepper({
 
       latestQuantity.current = quantity;
       setOptimisticQuantity(quantity);
+      if (!isInputFocused) {
+        setInputValue(`${quantity}`);
+      }
       return;
     }
 
@@ -108,11 +119,14 @@ export function CatalogQuantityStepper({
       resolvedQuantities.delete(quantity);
       latestQuantity.current = quantity;
       setOptimisticQuantity(quantity);
+      if (!isInputFocused) {
+        setInputValue(`${quantity}`);
+      }
       return;
     }
 
     resolvedQuantities.add(quantity);
-  }, [quantity]);
+  }, [isInputFocused, quantity]);
 
   const stopHold = useCallback(() => {
     if (holdTimeoutRef.current) {
@@ -149,10 +163,12 @@ export function CatalogQuantityStepper({
             resolvedQuantities.delete(fallback);
             pendingQuantities.push(fallback);
             setOptimisticQuantity(fallback);
+            setInputValue(`${fallback}`);
             onChange(fallback);
             pendingQuantities.pop();
           } else {
             setOptimisticQuantity(fallback);
+            setInputValue(`${fallback}`);
           }
           return;
         }
@@ -169,6 +185,7 @@ export function CatalogQuantityStepper({
           pendingQuantities.push(0);
           latestQuantity.current = 0;
           setOptimisticQuantity(0);
+          setInputValue("0");
           if (onRemove) {
             onRemove();
           } else {
@@ -184,11 +201,13 @@ export function CatalogQuantityStepper({
         resolvedQuantities.delete(boundedNext);
         pendingQuantities.push(boundedNext);
         setOptimisticQuantity(boundedNext);
+        setInputValue(`${boundedNext}`);
         onChange(boundedNext);
         return;
       }
 
       setOptimisticQuantity(boundedNext);
+      setInputValue(`${boundedNext}`);
     },
     [clampToBounds, minQuantity, onChange, onRemove],
   );
@@ -231,22 +250,66 @@ export function CatalogQuantityStepper({
     [step],
   );
 
+  const commitInputValue = useCallback(() => {
+    const parsed = Number.parseInt(inputValue, 10);
+    if (Number.isNaN(parsed)) {
+      setInputValue(`${optimisticQuantity}`);
+      return;
+    }
+
+    applyQuantity(parsed);
+  }, [applyQuantity, inputValue, optimisticQuantity]);
+
+  const handleInputChange = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => {
+      const raw = event.target.value.replace(/[^0-9]/g, "");
+      if (!raw.length) {
+        setInputValue("");
+        return;
+      }
+      setInputValue(raw);
+    },
+    [],
+  );
+
+  const handleInputKeyDown = useCallback(
+    (event: ReactKeyboardEvent<HTMLInputElement>) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        commitInputValue();
+        (event.currentTarget as HTMLInputElement).blur();
+      } else if (event.key === "Escape") {
+        event.preventDefault();
+        setInputValue(`${optimisticQuantity}`);
+        (event.currentTarget as HTMLInputElement).blur();
+      }
+    },
+    [commitInputValue, optimisticQuantity],
+  );
+
   const sizeStyles =
     size === "sm"
       ? {
           root:
-            "h-9 gap-1 rounded-md border-border/60 bg-background/90 px-1.5 py-0.5 text-xs text-foreground shadow-sm",
+            "h-9 gap-1 rounded-full border border-border/60 bg-background/90 px-1.5 text-sm font-medium text-foreground shadow-sm",
           button:
-            "h-8 w-8 rounded-md border border-border/60 bg-card/80 text-foreground",
-          count: "min-w-[2.25rem] text-center text-sm",
+            "h-9 w-9 rounded-full border border-border/60 bg-card/80 text-foreground",
+          count:
+            "catalog-card__stepper-count h-9 min-w-[3rem] rounded-full border border-transparent bg-transparent px-2 text-center text-sm font-semibold text-foreground",
         }
       : {
           root:
             "gap-2 rounded-full border border-border/70 bg-background/95 px-2 py-1 text-sm font-medium text-foreground shadow-sm",
           button:
             "h-10 w-10 rounded-full border border-border/60 bg-card/90 text-foreground",
-          count: "min-w-[2.75rem] text-center text-sm font-semibold",
+          count:
+            "catalog-card__stepper-count h-10 min-w-[3.25rem] rounded-full border border-transparent bg-transparent px-2 text-center text-sm font-semibold text-foreground",
         };
+
+  const showRemoveIcon = allowRemoval && optimisticQuantity <= Math.max(1, minQuantity || 0);
+  const decrementLabel = showRemoveIcon
+    ? `Remove ${itemLabel} from cart`
+    : `Decrease quantity of ${itemLabel}`;
 
   return (
     <div
@@ -267,7 +330,7 @@ export function CatalogQuantityStepper({
           sizeStyles.button,
           "hover:-translate-y-0.5 hover:bg-muted/60 focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-1",
         )}
-        aria-label={`Decrease quantity of ${itemLabel}`}
+        aria-label={decrementLabel}
         onPointerDown={() => {
           scheduleHold("dec");
         }}
@@ -276,17 +339,35 @@ export function CatalogQuantityStepper({
         onPointerCancel={stopHold}
         onClick={event => handleClick("dec", event)}
       >
-        <Minus className="h-4 w-4" aria-hidden="true" />
-      </Button>
-      <span
-        className={cn(
-          "catalog-card__stepper-count tabular-nums",
-          sizeStyles.count,
+        {showRemoveIcon ? (
+          <Trash2 className="h-4 w-4" aria-hidden="true" />
+        ) : (
+          <Minus className="h-4 w-4" aria-hidden="true" />
         )}
-        aria-live="polite"
-      >
-        {optimisticQuantity}
-      </span>
+      </Button>
+      <div className="relative">
+        <input
+          type="text"
+          inputMode="numeric"
+          pattern="[0-9]*"
+          value={inputValue}
+          onChange={handleInputChange}
+          onKeyDown={handleInputKeyDown}
+          onFocus={() => setIsInputFocused(true)}
+          onBlur={() => {
+            setIsInputFocused(false);
+            commitInputValue();
+          }}
+          aria-label={`Quantity for ${itemLabel}`}
+          className={cn(
+            "tabular-nums outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2",
+            sizeStyles.count,
+          )}
+        />
+        <span className="sr-only" aria-live="polite">
+          {optimisticQuantity}
+        </span>
+      </div>
       <Button
         type="button"
         variant="ghost"

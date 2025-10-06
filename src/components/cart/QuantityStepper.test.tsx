@@ -44,7 +44,7 @@ describe("QuantityStepper", () => {
       { removeItem },
     );
 
-    await userEvent.click(screen.getByRole("button", { name: /decrease quantity of test item/i }));
+    await userEvent.click(screen.getByRole("button", { name: /remove test item from cart/i }));
 
     expect(removeItem).toHaveBeenCalledWith("item-1");
   });
