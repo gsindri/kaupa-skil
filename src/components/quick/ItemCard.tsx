@@ -67,12 +67,12 @@ export function ItemCard({ item, onCompareItem, userMode, compact = false }: Ite
     }
 
     const hasPendingAdds = pendingAddsRef.current > 0;
-    const cartOutpacedRequest = cartQuantity > previousRequested;
-    const cartDropped = confirmedDelta < 0;
-    const quantityChangedExternally =
-      previousRequested !== cartQuantity && (cartOutpacedRequest || cartDropped);
+    const cartCaughtUp = !hasPendingAdds && cartQuantity === previousRequested;
+    const cartJumpedPastRequest = cartQuantity > previousRequested;
+    const cartDropped = cartQuantity < previousRequested;
+    const quantityChangedExternally = cartJumpedPastRequest || cartDropped;
 
-    if (!hasPendingAdds || quantityChangedExternally) {
+    if (cartCaughtUp || quantityChangedExternally) {
       latestRequestedQuantityRef.current = cartQuantity;
 
       if (quantityChangedExternally) {
