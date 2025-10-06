@@ -34,7 +34,7 @@ export function QuantityStepper({
   const maxQuantity =
     max !== undefined && Number.isFinite(max) ? Math.max(minQuantity, Math.floor(max)) : undefined;
 
-  const { requestQuantity, remove, canIncrease: controllerCanIncrease } = useCartQuantityController(
+  const { requestQuantity, remove, canIncrease: controllerCanIncrease, optimisticQuantity } = useCartQuantityController(
     supplierItemId,
     quantity
   );
@@ -60,11 +60,11 @@ export function QuantityStepper({
   );
 
   const effectiveCanIncrease =
-    canIncrease && controllerCanIncrease && (maxQuantity === undefined || quantity < maxQuantity);
+    canIncrease && controllerCanIncrease && (maxQuantity === undefined || optimisticQuantity < maxQuantity);
 
   return (
     <CatalogQuantityStepper
-      quantity={quantity}
+      quantity={optimisticQuantity}
       onChange={handleChange}
       onRemove={handleRemove}
       itemLabel={itemLabel}

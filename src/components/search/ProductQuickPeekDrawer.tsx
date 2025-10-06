@@ -13,6 +13,7 @@ import {
 import { ArrowUpRight, Loader2 } from 'lucide-react'
 import { formatCurrency } from '@/lib/format'
 import { useCart } from '@/contexts/useBasket'
+import { useCartQuantityController } from '@/contexts/useCartQuantityController'
 import type { AvailabilityStatus, PublicCatalogItem } from '@/services/catalog'
 import { fetchCatalogItemById } from '@/services/catalog'
 import type { SearchItem } from '@/hooks/useGlobalSearch'
@@ -40,7 +41,7 @@ export function ProductQuickPeekDrawer({
   onOpenChange,
   onViewDetails,
 }: ProductQuickPeekDrawerProps) {
-  const { addItem } = useCart()
+  const { addItem, items: cartItems } = useCart()
   const [product, setProduct] = useState<PublicCatalogItem | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -185,39 +186,83 @@ export function ProductQuickPeekDrawer({
     supplierOptions.find(option => option.id === selectedSupplier) ?? null
   const selectedSupplierName = selectedSupplierOption?.name ?? null
 
+  const cartItemForSelection = useMemo(() => {
+    if (!productId) return null
+    return (
+      cartItems.find(item => {
+        if (item.supplierItemId !== productId) return false
+        if (!selectedSupplier) return true
+        return item.supplierId === selectedSupplier
+      }) ?? null
+    )
+  }, [cartItems, productId, selectedSupplier])
+
+  const fallbackSupplierItemId = useMemo(() => {
+    const base = productId ?? item?.id ?? 'quick-peek'
+    return `${base}:${selectedSupplier ?? 'default'}`
+  }, [item?.id, productId, selectedSupplier])
+
+  const controllerSupplierItemId = cartItemForSelection?.supplierItemId ?? fallbackSupplierItemId
+  const controllerQuantity = cartItemForSelection?.quantity ?? 0
+  const controller = useCartQuantityController(controllerSupplierItemId, controllerQuantity)
+  const hasCartItem = Boolean(cartItemForSelection)
+
+  const effectiveQuantity = hasCartItem ? controller.optimisticQuantity : quantity
+
+  const cartPayload = useMemo(() => {
+    if (!productId || !selectedSupplier) {
+      return null
+    }
+
+    const packSizeLabel = packInfo ?? (packSizes.length ? packSizes.join(', ') : 'Pack')
+    const numericPrice = priceValue ?? null
+
+    return {
+      id: productId,
+      supplierId: selectedSupplier,
+      supplierName: selectedSupplierName ?? selectedSupplier,
+      itemName: displayName || 'Item',
+      sku: productId,
+      packSize: packSizeLabel,
+      packPrice: numericPrice,
+      unitPriceExVat: numericPrice,
+      unitPriceIncVat: numericPrice,
+      vatRate: 0,
+      unit: 'unit',
+      supplierItemId: productId,
+      displayName: displayName || 'Item',
+      packQty: 1,
+      image: imageUrl ?? null,
+    }
+  }, [
+    displayName,
+    imageUrl,
+    packInfo,
+    packSizes,
+    priceValue,
+    productId,
+    selectedSupplier,
+    selectedSupplierName,
+  ])
+
   const totalPriceLabel =
-    priceValue != null ? formatCurrency(priceValue * quantity) : null
+    priceValue != null ? formatCurrency(priceValue * effectiveQuantity) : null
 
   const additionalPackSizes = packSizes.slice(1)
   const canAddToCart = Boolean(productId && selectedSupplier)
+
   const handleAddToCart = () => {
-    if (!productId || !selectedSupplier || isAdding) return
+    if (hasCartItem) {
+      onOpenChange(false)
+      return
+    }
+
+    if (!cartPayload || isAdding) return
     setIsAdding(true)
 
     try {
-      const packSizeLabel = packInfo ?? (packSizes.length ? packSizes.join(', ') : 'Pack')
-      const numericPrice = priceValue ?? null
-
-      addItem(
-        {
-          id: productId,
-          supplierId: selectedSupplier,
-          supplierName: selectedSupplierName ?? selectedSupplier,
-          itemName: displayName || 'Item',
-          sku: productId,
-          packSize: packSizeLabel,
-          packPrice: numericPrice,
-          unitPriceExVat: numericPrice,
-          unitPriceIncVat: numericPrice,
-          vatRate: 0,
-          unit: 'unit',
-          supplierItemId: productId,
-          displayName: displayName || 'Item',
-          packQty: 1,
-          image: imageUrl ?? null,
-        },
-        quantity,
-      )
+      addItem(cartPayload, effectiveQuantity)
+      onOpenChange(false)
     } finally {
       setIsAdding(false)
     }
@@ -374,21 +419,46 @@ export function ProductQuickPeekDrawer({
     )
   })()
 
-const addButtonLabel = quantity > 1 ? `Add ${quantity} to cart` : 'Add to cart'
+  const addButtonLabel = hasCartItem
+    ? 'In cart'
+    : effectiveQuantity > 1
+      ? `Add ${effectiveQuantity} to cart`
+      : 'Add to cart'
 
-const handleStepperChange = useCallback(
-  (next: number) => {
-    if (isAdding) {
+  const handleStepperChange = useCallback(
+    (next: number) => {
+      const numeric = Number.isFinite(next) ? Math.floor(next) : 0
+      const bounded = Math.min(999, Math.max(hasCartItem ? 0 : 1, numeric))
+
+      if (hasCartItem) {
+        controller.requestQuantity(bounded, {
+          addItemPayload: cartPayload ?? undefined,
+        })
+        return
+      }
+
+      if (bounded !== quantity) {
+        setQuantity(bounded)
+      }
+    },
+    [cartPayload, controller, hasCartItem, quantity],
+  )
+
+  const handleStepperRemove = useCallback(() => {
+    if (hasCartItem) {
+      controller.remove()
       return
     }
 
-    const clamped = Math.max(1, Math.min(999, next))
-    if (clamped !== quantity) {
-      setQuantity(clamped)
+    setQuantity(1)
+  }, [controller, hasCartItem])
+
+  useEffect(() => {
+    if (!hasCartItem) {
+      return
     }
-  },
-  [isAdding, quantity],
-)
+    setIsAdding(false)
+  }, [hasCartItem])
 
   return (
     <Drawer
@@ -460,7 +530,7 @@ const handleStepperChange = useCallback(
                     {priceLabel}
                   </div>
                 </div>
-                {totalPriceLabel && quantity > 1 && (
+                {totalPriceLabel && effectiveQuantity > 1 && (
                   <div className="pt-2 text-right text-[12px] text-[color:var(--text-muted)]">
                     Total {totalPriceLabel}
                   </div>
@@ -469,19 +539,20 @@ const handleStepperChange = useCallback(
             )}
             <div className="flex items-center gap-3">
               <CatalogQuantityStepper
-                quantity={quantity}
+                quantity={effectiveQuantity}
                 onChange={handleStepperChange}
+                onRemove={handleStepperRemove}
                 itemLabel={displayName}
-                minQuantity={1}
+                minQuantity={hasCartItem ? 0 : 1}
                 maxQuantity={999}
-                canIncrease={!isAdding}
+                canIncrease={hasCartItem ? controller.canIncrease : !isAdding}
                 className="rounded-full border border-white/12 bg-white/[0.04] px-1.5 text-[color:var(--text)]"
                 size="sm"
               />
               <Button
                 type="button"
                 onClick={handleAddToCart}
-                disabled={!canAddToCart || isAdding}
+                disabled={!canAddToCart || isAdding || hasCartItem}
                 className="h-11 flex-1 rounded-[14px]"
               >
                 {isAdding ? <Loader2 className="h-4 w-4 animate-spin" /> : addButtonLabel}

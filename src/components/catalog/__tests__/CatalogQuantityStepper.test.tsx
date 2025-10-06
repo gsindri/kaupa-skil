@@ -242,7 +242,7 @@ describe('CatalogQuantityStepper', () => {
 
       return (
         <CatalogQuantityStepper
-          quantity={quantity}
+          quantity={controller.optimisticQuantity}
           onChange={next =>
             controller.requestQuantity(next, {
               addItemPayload: payload,
@@ -281,5 +281,103 @@ describe('CatalogQuantityStepper', () => {
     )
 
     expect(addItem).toHaveBeenCalledTimes(3)
+  })
+
+  it('never shows a lower quantity while controller increments are pending', () => {
+    const addItem = vi.fn()
+    const updateQuantity = vi.fn()
+
+    const basketValue: React.ContextType<typeof BasketContext> = {
+      items: [],
+      addItem,
+      updateQuantity,
+      removeItem: vi.fn(),
+      clearBasket: vi.fn(),
+      clearCart: vi.fn(),
+      restoreItems: vi.fn(),
+      getTotalItems: () => 0,
+      getTotalPrice: () => 0,
+      getMissingPriceCount: () => 0,
+      isDrawerOpen: false,
+      setIsDrawerOpen: vi.fn(),
+      isDrawerPinned: false,
+      setIsDrawerPinned: vi.fn() as React.Dispatch<React.SetStateAction<boolean>>,
+      cartPulseSignal: 0,
+    }
+
+    const payload: Omit<CartItem, 'quantity'> = {
+      id: 'item-1',
+      supplierId: 'supplier-1',
+      supplierName: 'Supplier',
+      itemName: 'Test product',
+      sku: 'sku-1',
+      packSize: '1',
+      packPrice: 100,
+      unitPriceExVat: 100,
+      unitPriceIncVat: 124,
+      vatRate: 0.24,
+      unit: 'each',
+      supplierItemId: 'item-1',
+      displayName: 'Test product',
+      packQty: 1,
+      image: null,
+    }
+
+    function ControllerHarness({ quantity }: { quantity: number }) {
+      const controller = useCartQuantityController('item-1', quantity)
+
+      return (
+        <CatalogQuantityStepper
+          quantity={controller.optimisticQuantity}
+          onChange={next =>
+            controller.requestQuantity(next, {
+              addItemPayload: payload,
+            })
+          }
+          onRemove={controller.remove}
+          itemLabel="Test product"
+        />
+      )
+    }
+
+    const { rerender } = render(
+      <BasketContext.Provider value={basketValue}>
+        <ControllerHarness quantity={0} />
+      </BasketContext.Provider>,
+    )
+
+    const incrementButton = screen.getByRole('button', {
+      name: /increase quantity of test product/i,
+    })
+
+    fireEvent.click(incrementButton)
+    fireEvent.click(incrementButton)
+    fireEvent.click(incrementButton)
+
+    expect(screen.getByDisplayValue('3')).toBeInTheDocument()
+
+    rerender(
+      <BasketContext.Provider value={basketValue}>
+        <ControllerHarness quantity={1} />
+      </BasketContext.Provider>,
+    )
+
+    expect(screen.getByDisplayValue('3')).toBeInTheDocument()
+
+    rerender(
+      <BasketContext.Provider value={basketValue}>
+        <ControllerHarness quantity={2} />
+      </BasketContext.Provider>,
+    )
+
+    expect(screen.getByDisplayValue('3')).toBeInTheDocument()
+
+    rerender(
+      <BasketContext.Provider value={basketValue}>
+        <ControllerHarness quantity={3} />
+      </BasketContext.Provider>,
+    )
+
+    expect(screen.getByDisplayValue('3')).toBeInTheDocument()
   })
 })
