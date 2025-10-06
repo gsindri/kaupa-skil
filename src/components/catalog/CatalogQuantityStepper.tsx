@@ -204,19 +204,19 @@ export function CatalogQuantityStepper({
     size === "sm"
       ? {
           root:
-            "h-11 gap-2 rounded-full border border-border/60 bg-background/95 px-3 text-sm font-medium text-foreground shadow-sm",
+            "h-full min-h-[2.25rem] gap-2 rounded-full border border-border/60 bg-background/95 px-3 text-[13px] font-medium text-foreground shadow-sm",
           button:
-            "h-9 w-9 rounded-full border border-border/60 bg-card/90 text-foreground",
+            "flex aspect-square h-full min-h-[2.25rem] min-w-[2.25rem] items-center justify-center rounded-full border border-border/60 bg-card/90 text-foreground",
           count:
-            "catalog-card__stepper-count h-9 min-w-[3.25rem] rounded-full border border-transparent bg-transparent px-3 text-center text-sm font-medium text-foreground",
+            "catalog-card__stepper-count flex h-full min-h-[2.25rem] min-w-[3rem] items-center justify-center rounded-full border border-transparent bg-transparent px-2 text-center text-[13px] font-medium text-foreground",
         }
       : {
           root:
-            "h-12 gap-2 rounded-full border border-border/60 bg-background px-3 text-sm font-medium text-foreground shadow-sm",
+            "h-full min-h-[2.5rem] gap-2 rounded-full border border-border/60 bg-background px-3 text-sm font-medium text-foreground shadow-sm",
           button:
-            "h-10 w-10 rounded-full border border-border/60 bg-card/90 text-foreground",
+            "flex aspect-square h-full min-h-[2.5rem] min-w-[2.5rem] items-center justify-center rounded-full border border-border/60 bg-card/90 text-foreground",
           count:
-            "catalog-card__stepper-count h-10 min-w-[3.5rem] rounded-full border border-transparent bg-transparent px-3 text-center text-sm font-medium text-foreground",
+            "catalog-card__stepper-count flex h-full min-h-[2.5rem] min-w-[3.25rem] items-center justify-center rounded-full border border-transparent bg-transparent px-3 text-center text-sm font-medium text-foreground",
         };
 
   const showRemoveIcon = allowRemoval && optimisticQuantity <= Math.max(1, minQuantity || 0);
@@ -229,7 +229,7 @@ export function CatalogQuantityStepper({
       role="group"
       aria-label={`Quantity controls for ${itemLabel}`}
       className={cn(
-        "inline-flex items-center backdrop-blur",
+        "inline-flex w-full items-stretch backdrop-blur",
         sizeStyles.root,
         className,
       )}
@@ -258,7 +258,7 @@ export function CatalogQuantityStepper({
           <Minus className="h-4 w-4" aria-hidden="true" />
         )}
       </Button>
-      <div className="relative">
+      <div className="relative flex-1">
         <input
           type="text"
           inputMode="numeric"
@@ -289,6 +289,7 @@ export function CatalogQuantityStepper({
           "catalog-card__stepper-btn transition-transform duration-150 ease-out",
           sizeStyles.button,
           "hover:-translate-y-0.5 hover:bg-muted/60 focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-1",
+          !effectiveCanIncrease && "opacity-60",
         )}
         aria-label={`Increase quantity of ${itemLabel}`}
         disabled={!effectiveCanIncrease}
