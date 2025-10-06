@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { CartItem } from '@/lib/types'
 import { useCart } from './useBasket'
 
@@ -10,152 +10,137 @@ type RequestQuantityMeta = {
   onIncrease?: (delta: number) => void
 }
 
-const FLYOUT_DURATION_MS = 1200
+type Controller = {
+  requestQuantity: (next: number, meta?: RequestQuantityMeta) => void
+  remove: () => void
+  optimisticQuantity: number
+  isPending: boolean
+  pendingIncrement: number
+  canIncrease: boolean
+  flyoutAmount: number
+}
 
-export function useCartQuantityController(supplierItemId: string, cartQuantity: number) {
+const FLYOUT_DURATION_MS = 800
+
+export function useCartQuantityController(supplierItemId: string, cartQuantity: number): Controller {
   const { addItem, updateQuantity, removeItem } = useCart()
 
-  const requestedRef = useRef(cartQuantity)
-  const confirmedRef = useRef(cartQuantity)
-  const pendingIncrementRef = useRef(0)
-  const [optimisticQuantity, setOptimisticQuantity] = useState(cartQuantity)
+  const initialQuantity = Math.max(0, Math.floor(cartQuantity || 0))
+
+  const [optimistic, setOptimistic] = useState(initialQuantity)
   const [pendingIncrement, setPendingIncrement] = useState(0)
-  const [isPending, setIsPending] = useState(false)
-  const [flyoutAmount, setFlyoutAmount] = useState<number | null>(null)
-  const flyoutTimerRef = useRef<number>()
+  const [flyoutAmount, setFlyoutAmount] = useState(0)
 
-  const updatePendingIncrement = useCallback((value: number) => {
-    pendingIncrementRef.current = value
-    setPendingIncrement(value)
+  const targetRef = useRef<number>(initialQuantity)
+  const committedRef = useRef<number>(initialQuantity)
+  const versionRef = useRef(0)
+  const lastPropSeenRef = useRef<{ version: number; quantity: number }>({
+    version: 0,
+    quantity: initialQuantity,
+  })
+  const rafRef = useRef<number | null>(null)
+  const flyoutTimeoutRef = useRef<number | null>(null)
+
+  const clearFlyout = useCallback(() => {
+    if (flyoutTimeoutRef.current != null) {
+      window.clearTimeout(flyoutTimeoutRef.current)
+      flyoutTimeoutRef.current = null
+    }
+    setFlyoutAmount(0)
   }, [])
 
-  const updatePendingState = useCallback(() => {
-    setIsPending(requestedRef.current !== confirmedRef.current)
-  }, [])
+  const flush = useCallback(() => {
+    rafRef.current = null
+    const next = targetRef.current
+    if (next === committedRef.current) return
 
-  const triggerFlyout = useCallback((amount: number) => {
-    if (amount <= 0) return
-    setFlyoutAmount(amount)
-    if (flyoutTimerRef.current) {
-      window.clearTimeout(flyoutTimerRef.current)
-    }
-    flyoutTimerRef.current = window.setTimeout(() => {
-      setFlyoutAmount(null)
-      flyoutTimerRef.current = undefined
-    }, FLYOUT_DURATION_MS)
-  }, [])
+    const version = ++versionRef.current
 
-  useEffect(() => () => {
-    if (flyoutTimerRef.current) {
-      window.clearTimeout(flyoutTimerRef.current)
-      flyoutTimerRef.current = undefined
-    }
-  }, [])
-
-  useEffect(() => {
-    const previousConfirmed = confirmedRef.current
-    const previousRequested = requestedRef.current
-    const previousPending = pendingIncrementRef.current
-    const confirmedDelta = cartQuantity - previousConfirmed
-
-    confirmedRef.current = cartQuantity
-
-    if (previousPending > 0) {
-      let nextPending = previousPending
-      if (confirmedDelta > 0) {
-        nextPending = Math.max(0, previousPending - confirmedDelta)
-      } else if (confirmedDelta < 0) {
-        nextPending = 0
-      }
-
-      if (nextPending !== pendingIncrementRef.current) {
-        updatePendingIncrement(nextPending)
-      }
-    } else if (previousPending !== 0) {
-      updatePendingIncrement(0)
+    if (next <= 0) {
+      removeItem(supplierItemId)
+    } else {
+      updateQuantity(supplierItemId, next)
     }
 
-    const pending = pendingIncrementRef.current
-    const pendingResolved = previousPending > 0 && pending === 0
-    const cartDropped = cartQuantity < previousConfirmed
-    const overshotRequested =
-      previousPending > 0 && confirmedDelta > previousPending && cartQuantity > previousRequested
-    const changedWhileIdle = previousPending === 0 && cartQuantity !== previousRequested
-    const quantityChangedExternally = cartDropped || overshotRequested || changedWhileIdle
+    committedRef.current = next
+    lastPropSeenRef.current = { version, quantity: next }
+    setPendingIncrement(0)
+  }, [removeItem, supplierItemId, updateQuantity])
 
-    if (quantityChangedExternally) {
-      if (pendingIncrementRef.current !== 0) {
-        updatePendingIncrement(0)
-      }
-      requestedRef.current = cartQuantity
-      setOptimisticQuantity(cartQuantity)
-      updatePendingState()
-      return
-    }
-
-    if (pendingResolved) {
-      requestedRef.current = cartQuantity
-    }
-
-    setOptimisticQuantity(requestedRef.current)
-    updatePendingState()
-  }, [cartQuantity, updatePendingIncrement, updatePendingState])
+  const scheduleFlush = useCallback(() => {
+    if (rafRef.current != null) return
+    rafRef.current = window.requestAnimationFrame(flush)
+  }, [flush])
 
   const requestQuantity = useCallback(
-    (rawNext: number, meta: RequestQuantityMeta = {}) => {
-      const next = Math.max(0, Number.isFinite(rawNext) ? Math.floor(rawNext) : 0)
-      const previousRequested = requestedRef.current
+    (rawNext: number, meta?: RequestQuantityMeta) => {
+      const next = Math.max(0, Math.floor(rawNext || 0))
+      const previousTarget = targetRef.current
+      if (next === previousTarget) return
 
-      if (next === previousRequested) {
+      targetRef.current = next
+      setOptimistic(next)
+      setPendingIncrement(next - committedRef.current)
+
+      const increaseDelta = Math.max(0, next - previousTarget)
+      if (increaseDelta > 0) {
+        clearFlyout()
+        setFlyoutAmount(increaseDelta)
+        flyoutTimeoutRef.current = window.setTimeout(() => {
+          setFlyoutAmount(0)
+          flyoutTimeoutRef.current = null
+        }, FLYOUT_DURATION_MS)
+        meta?.onIncrease?.(increaseDelta)
+      }
+
+      if (committedRef.current <= 0 && next > 0 && meta?.addItemPayload) {
+        const version = ++versionRef.current
+        addItem(meta.addItemPayload, next, meta.addItemOptions)
+        committedRef.current = next
+        lastPropSeenRef.current = { version, quantity: next }
+        setPendingIncrement(0)
         return
       }
 
-      const currentConfirmed = confirmedRef.current
-      requestedRef.current = next
-      setOptimisticQuantity(next)
-
-      const delta = next - previousRequested
-      const nextPending = Math.max(0, next - currentConfirmed)
-      if (pendingIncrementRef.current !== nextPending) {
-        updatePendingIncrement(nextPending)
-      }
-
-      if (delta > 0) {
-        triggerFlyout(delta)
-        meta.onIncrease?.(delta)
-      }
-
-      updatePendingState()
-
-      if (next <= 0) {
-        removeItem(supplierItemId)
-        return
-      }
-
-      if (delta > 0 && meta.addItemPayload) {
-        addItem(meta.addItemPayload, delta, meta.addItemOptions)
-        return
-      }
-
-      updateQuantity(supplierItemId, next)
+      scheduleFlush()
     },
-    [addItem, removeItem, supplierItemId, triggerFlyout, updatePendingIncrement, updatePendingState, updateQuantity]
+    [addItem, clearFlyout, scheduleFlush]
   )
 
   const remove = useCallback(() => {
-    requestedRef.current = 0
-    setOptimisticQuantity(0)
-    updatePendingIncrement(0)
-    updatePendingState()
-    removeItem(supplierItemId)
-  }, [removeItem, supplierItemId, updatePendingIncrement, updatePendingState])
+    targetRef.current = 0
+    setOptimistic(0)
+    setPendingIncrement(-committedRef.current)
+    scheduleFlush()
+  }, [scheduleFlush])
 
-  const canIncrease = useMemo(() => pendingIncrement <= 0, [pendingIncrement])
+  useEffect(() => {
+    const external = Math.max(0, Math.floor(cartQuantity || 0))
+    const { version, quantity } = lastPropSeenRef.current
+    if (external === quantity) {
+      targetRef.current = external
+      committedRef.current = external
+      lastPropSeenRef.current = { version, quantity: external }
+      setOptimistic(external)
+      setPendingIncrement(0)
+    }
+  }, [cartQuantity])
+
+  useEffect(() => () => {
+    if (rafRef.current != null) {
+      cancelAnimationFrame(rafRef.current)
+      rafRef.current = null
+    }
+    clearFlyout()
+  }, [clearFlyout])
+
+  const canIncrease = targetRef.current <= committedRef.current
+  const isPending = targetRef.current !== committedRef.current
 
   return {
     requestQuantity,
     remove,
-    optimisticQuantity,
+    optimisticQuantity: optimistic,
     isPending,
     pendingIncrement,
     canIncrease,
