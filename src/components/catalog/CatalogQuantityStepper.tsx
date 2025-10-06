@@ -45,8 +45,6 @@ export function CatalogQuantityStepper({
   const holdTimeoutRef = useRef<number>();
   const holdIntervalRef = useRef<number>();
   const latestQuantity = useRef(quantity);
-  const pendingQuantitiesRef = useRef<number[]>([]);
-  const resolvedQuantitiesRef = useRef<Set<number>>(new Set());
   const [optimisticQuantity, setOptimisticQuantity] = useState(quantity);
   const [inputValue, setInputValue] = useState(() => `${quantity}`);
   const [isInputFocused, setIsInputFocused] = useState(false);
@@ -68,64 +66,11 @@ export function CatalogQuantityStepper({
   const allowRemoval = onRemove !== undefined || minQuantity <= 0;
 
   useEffect(() => {
-    const pendingQuantities = pendingQuantitiesRef.current;
-    const resolvedQuantities = resolvedQuantitiesRef.current;
-
-    if (pendingQuantities.length === 0) {
-      if (resolvedQuantities.delete(quantity)) {
-        return;
-      }
-
-      latestQuantity.current = quantity;
-      setOptimisticQuantity(quantity);
-      if (!isInputFocused) {
-        setInputValue(`${quantity}`);
-      }
-      return;
+    latestQuantity.current = quantity;
+    setOptimisticQuantity(quantity);
+    if (!isInputFocused) {
+      setInputValue(String(quantity));
     }
-
-    const pendingCount = pendingQuantities.length;
-    const matchIndex = pendingQuantities.lastIndexOf(quantity);
-
-    if (matchIndex === -1) {
-      if (resolvedQuantities.delete(quantity)) {
-        return;
-      }
-
-      if (pendingQuantities.length > 0) {
-        for (const value of pendingQuantities) {
-          resolvedQuantities.add(value);
-        }
-        pendingQuantities.splice(0, pendingQuantities.length);
-      }
-
-      latestQuantity.current = quantity;
-      setOptimisticQuantity(quantity);
-      if (!isInputFocused) {
-        setInputValue(`${quantity}`);
-      }
-      return;
-    }
-
-    const resolvedEntries = pendingQuantities.splice(0, matchIndex + 1);
-
-    if (resolvedEntries.length > 1) {
-      for (let index = 0; index < resolvedEntries.length - 1; index += 1) {
-        resolvedQuantities.add(resolvedEntries[index]);
-      }
-    }
-
-    if (matchIndex === pendingCount - 1) {
-      resolvedQuantities.delete(quantity);
-      latestQuantity.current = quantity;
-      setOptimisticQuantity(quantity);
-      if (!isInputFocused) {
-        setInputValue(`${quantity}`);
-      }
-      return;
-    }
-
-    resolvedQuantities.add(quantity);
   }, [isInputFocused, quantity]);
 
   const stopHold = useCallback(() => {
@@ -144,70 +89,38 @@ export function CatalogQuantityStepper({
   const applyQuantity = useCallback(
     (next: number) => {
       const boundedNext = clampToBounds(next);
-      const current = latestQuantity.current;
-      const pendingQuantities = pendingQuantitiesRef.current;
-      const resolvedQuantities = resolvedQuantitiesRef.current;
       const allowRemoval = onRemove !== undefined || minQuantity <= 0;
-
-      const markResolved = (values: number[]) => {
-        for (const value of values) {
-          resolvedQuantities.add(value);
-        }
-      };
 
       if (boundedNext <= 0) {
         if (!allowRemoval) {
           const fallback = Math.max(1, minQuantity);
-          if (current !== fallback) {
-            latestQuantity.current = fallback;
-            resolvedQuantities.delete(fallback);
-            pendingQuantities.push(fallback);
+          if (latestQuantity.current === fallback) {
             setOptimisticQuantity(fallback);
-            setInputValue(`${fallback}`);
-            onChange(fallback);
-            pendingQuantities.pop();
-          } else {
-            setOptimisticQuantity(fallback);
-            setInputValue(`${fallback}`);
+            setInputValue(String(fallback));
+            return;
           }
+          latestQuantity.current = fallback;
+          setOptimisticQuantity(fallback);
+          setInputValue(String(fallback));
+          onChange(fallback);
           return;
         }
 
-        if (current > 0) {
-          if (pendingQuantities.length > 0) {
-            markResolved(pendingQuantities);
-            pendingQuantities.splice(0, pendingQuantities.length);
-          }
-
-          resolvedQuantities.add(current);
-          resolvedQuantities.delete(0);
-
-          pendingQuantities.push(0);
-          latestQuantity.current = 0;
-          setOptimisticQuantity(0);
-          setInputValue("0");
-          if (onRemove) {
-            onRemove();
-          } else {
-            onChange(0);
-          }
-          pendingQuantities.pop();
+        latestQuantity.current = 0;
+        setOptimisticQuantity(0);
+        setInputValue("0");
+        if (onRemove) {
+          onRemove();
+        } else {
+          onChange(0);
         }
         return;
       }
 
-      if (boundedNext !== current) {
-        latestQuantity.current = boundedNext;
-        resolvedQuantities.delete(boundedNext);
-        pendingQuantities.push(boundedNext);
-        setOptimisticQuantity(boundedNext);
-        setInputValue(`${boundedNext}`);
-        onChange(boundedNext);
-        return;
-      }
-
+      latestQuantity.current = boundedNext;
       setOptimisticQuantity(boundedNext);
-      setInputValue(`${boundedNext}`);
+      setInputValue(String(boundedNext));
+      onChange(boundedNext);
     },
     [clampToBounds, minQuantity, onChange, onRemove],
   );
