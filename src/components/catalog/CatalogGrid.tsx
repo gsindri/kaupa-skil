@@ -38,17 +38,21 @@ export function CatalogGrid({
       items={products}
       renderItem={renderItem}
       itemKey={item => item.catalog_id}
-      minCardWidth={220}
-      rowHeight={440}
-      gap={12}
+      minCardWidth={180}
+      rowHeight={520}
+      gapX={12}
+      gapY={16}
       breakpoints={[
-        { minWidth: 0, columns: 2, minCardWidth: 180, gap: 12 },
-        { minWidth: 768, columns: 3, minCardWidth: 220, gap: 16 },
-        { minWidth: 1024, columns: 4, minCardWidth: 240, gap: 24 },
-        { minWidth: 1440, columns: 5, minCardWidth: 260, gap: 24 },
+        { minWidth: 0, columns: 2, minCardWidth: 176, gapX: 12, gapY: 16 },
+        { minWidth: 768, columns: 3, minCardWidth: 248, gapX: 16, gapY: 20 },
+        { minWidth: 1024, columns: 4, minCardWidth: 288, gapX: 24, gapY: 28 },
+        { minWidth: 1440, columns: 4, minCardWidth: 328, gapX: 24, gapY: 28 },
       ]}
       onNearEnd={onNearEnd}
-      className={cn('catalog-grid', className)}
+      className={cn(
+        'catalog-grid mt-8 scroll-mt-[calc(var(--header-h,64px)+32px)]',
+        className,
+      )}
     />
   )
 }

@@ -468,10 +468,15 @@ export const ProductCard = memo(function ProductCard({
         className,
       )}
     >
-      <div className="flex flex-1 flex-col p-3 md:p-4 lg:p-5">
+      <div className="flex flex-1 flex-col gap-4 p-4 sm:p-5">
         <div
           data-oos={isUnavailable ? "true" : undefined}
-          className="aspect-square overflow-hidden rounded-xl"
+          className={cn(
+            "aspect-square rounded-2xl bg-slate-50/90 p-3 sm:p-4 lg:p-5",
+            "flex items-center justify-center",
+            "shadow-[inset_0_1px_0_rgba(15,23,42,0.06)]",
+            "transition-colors duration-200",
+          )}
         >
           <img
             ref={imageRef}
@@ -482,7 +487,7 @@ export const ProductCard = memo(function ProductCard({
             fetchPriority="low"
             draggable={false}
             className={cn(
-              "h-full w-full object-cover",
+              "max-h-[80%] w-full object-contain",
               "[filter:drop-shadow(0_2px_6px_rgba(0,0,0,.08))]",
               "transition-transform duration-150",
               "group-hover:translate-y-0.5 group-hover:scale-[1.01]",
@@ -491,13 +496,13 @@ export const ProductCard = memo(function ProductCard({
             )}
           />
         </div>
-        <div className="mt-3 flex flex-col gap-1">
+        <div className="flex flex-col gap-1.5">
           {detailLink ? (
             <a
               {...detailLink}
               id={titleId}
               title={product.name}
-              className="line-clamp-1 text-[14px] font-medium text-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              className="line-clamp-1 text-[15px] font-semibold text-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
               {product.name}
             </a>
@@ -505,14 +510,14 @@ export const ProductCard = memo(function ProductCard({
             <h3
               id={titleId}
               title={product.name}
-              className="line-clamp-1 text-[14px] font-medium text-foreground"
+              className="line-clamp-1 text-[15px] font-semibold text-foreground"
             >
               {product.name}
             </h3>
           )}
-          <p className="text-[12px] text-muted-foreground">{sublineText}</p>
+          <p className="text-[13px] text-muted-foreground">{sublineText}</p>
         </div>
-        <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
+        <div className="flex items-center justify-between text-[12px] text-muted-foreground">
           <span className="inline-flex min-w-0 items-center gap-1">
             {supplierCount === 1 ? (
               <>
@@ -540,24 +545,24 @@ export const ProductCard = memo(function ProductCard({
         </div>
         <div className="mt-auto w-full">
           {isUnavailable && !isInCart ? (
-            <div className="mt-3 border-t border-border pt-2">
+            <div className="mt-4 border-t border-border pt-3">
               <Button
                 ref={setCartButtonRef}
                 type="button"
                 variant="outline"
-                className="h-9 w-full"
+                className="h-12 w-full justify-center text-sm font-semibold"
                 aria-label={`Notify me when ${product.name} is back`}
               >
                 Notify me
               </Button>
             </div>
           ) : (
-            <div className="mt-3 border-t border-border pt-2">
+            <div className="mt-4 border-t border-border pt-3">
               <div className="flex h-12 items-center justify-between gap-3" aria-live="polite">
                 {priceLabel ? (
                   <div className="flex min-w-0 flex-1 flex-col justify-center text-left">
                     <div className="flex items-center gap-2">
-                      <span className="text-base font-semibold text-foreground tabular-nums">{priceLabel}</span>
+                      <span className="text-lg font-semibold text-foreground tabular-nums">{priceLabel}</span>
                       <PriceBenchmarkBadge
                         supplierId={defaultSupplierId}
                         catalogProductId={product.catalog_id}
