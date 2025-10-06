@@ -46,41 +46,41 @@ export function ItemCard({ item, onCompareItem, userMode, compact = false }: Ite
   const cartItem = cartItems.find(i => i.supplierItemId === item.id);
   const cartQuantity = cartItem?.quantity ?? 0;
   const supplierItemId = cartItem?.supplierItemId ?? item.id;
-  const latestRequestedQuantityRef = useRef(cartQuantity);
-  const latestConfirmedQuantityRef = useRef(cartQuantity);
-  const pendingAddsRef = useRef(0);
+  const requestedQuantityRef = useRef(cartQuantity);
+  const confirmedQuantityRef = useRef(cartQuantity);
+  const pendingIncrementRef = useRef(0);
 
   useEffect(() => {
-    const previousConfirmed = latestConfirmedQuantityRef.current;
-    const previousRequested = latestRequestedQuantityRef.current;
-    const previousPendingAdds = pendingAddsRef.current;
+    const previousConfirmed = confirmedQuantityRef.current;
+    const previousRequested = requestedQuantityRef.current;
+    const previousPending = pendingIncrementRef.current;
     const confirmedDelta = cartQuantity - previousConfirmed;
 
-    latestConfirmedQuantityRef.current = cartQuantity;
+    confirmedQuantityRef.current = cartQuantity;
 
-    if (previousPendingAdds > 0) {
+    if (previousPending > 0) {
       if (confirmedDelta > 0) {
-        pendingAddsRef.current = Math.max(0, previousPendingAdds - confirmedDelta);
+        pendingIncrementRef.current = Math.max(0, previousPending - confirmedDelta);
       } else if (confirmedDelta < 0) {
-        pendingAddsRef.current = 0;
+        pendingIncrementRef.current = 0;
       }
     }
 
-    const pendingAdds = pendingAddsRef.current;
-    const pendingResolved = pendingAdds === 0 && previousPendingAdds > 0 && cartQuantity === previousRequested;
-    const cartDropped = confirmedDelta < 0;
-    const overshotRequested = confirmedDelta > previousPendingAdds && cartQuantity > previousRequested;
-    const changedWhileIdle = previousPendingAdds === 0 && cartQuantity !== previousRequested;
+    const pending = pendingIncrementRef.current;
+    const pendingResolved = previousPending > 0 && pending === 0;
+    const cartDropped = cartQuantity < previousConfirmed;
+    const overshotRequested = previousPending > 0 && confirmedDelta > previousPending && cartQuantity > previousRequested;
+    const changedWhileIdle = previousPending === 0 && cartQuantity !== previousRequested;
     const quantityChangedExternally = cartDropped || overshotRequested || changedWhileIdle;
 
     if (quantityChangedExternally) {
-      pendingAddsRef.current = 0;
-      latestRequestedQuantityRef.current = cartQuantity;
+      pendingIncrementRef.current = 0;
+      requestedQuantityRef.current = cartQuantity;
       return;
     }
 
     if (pendingResolved) {
-      latestRequestedQuantityRef.current = cartQuantity;
+      requestedQuantityRef.current = cartQuantity;
     }
   }, [cartQuantity]);
 
@@ -143,8 +143,8 @@ export function ItemCard({ item, onCompareItem, userMode, compact = false }: Ite
   const handleQuantityChange = useCallback(
     (requestedQuantity: number) => {
       const nextQuantity = Math.max(0, requestedQuantity);
-      const previousRequested = latestRequestedQuantityRef.current;
-      latestRequestedQuantityRef.current = nextQuantity;
+      const previousRequested = requestedQuantityRef.current;
+      requestedQuantityRef.current = nextQuantity;
 
       if (nextQuantity === previousRequested) {
         return;
@@ -152,7 +152,7 @@ export function ItemCard({ item, onCompareItem, userMode, compact = false }: Ite
 
       if (nextQuantity > previousRequested) {
         const delta = nextQuantity - previousRequested;
-        pendingAddsRef.current += delta;
+        pendingIncrementRef.current += delta;
         triggerFlyout(delta);
         addItem(cartPayload, delta, {
           animateElement: addButtonRef.current || undefined
@@ -161,32 +161,32 @@ export function ItemCard({ item, onCompareItem, userMode, compact = false }: Ite
       }
 
       if (nextQuantity === 0) {
-        pendingAddsRef.current = 0;
-        latestConfirmedQuantityRef.current = 0;
+        pendingIncrementRef.current = 0;
+        confirmedQuantityRef.current = 0;
         removeItem(supplierItemId);
         return;
       }
 
-      pendingAddsRef.current = 0;
+      pendingIncrementRef.current = 0;
       updateQuantity(supplierItemId, nextQuantity);
     },
     [addItem, cartPayload, removeItem, supplierItemId, triggerFlyout, updateQuantity]
   );
 
   const handleRemoveFromCart = useCallback(() => {
-    latestRequestedQuantityRef.current = 0;
-    latestConfirmedQuantityRef.current = 0;
-    pendingAddsRef.current = 0;
+    requestedQuantityRef.current = 0;
+    confirmedQuantityRef.current = 0;
+    pendingIncrementRef.current = 0;
 
     removeItem(supplierItemId);
   }, [removeItem, supplierItemId]);
 
   const handleIncrement = useCallback(() => {
-    handleQuantityChange(latestRequestedQuantityRef.current + 1);
+    handleQuantityChange(requestedQuantityRef.current + 1);
   }, [handleQuantityChange]);
 
   const handleDecrement = useCallback(() => {
-    handleQuantityChange(latestRequestedQuantityRef.current - 1);
+    handleQuantityChange(requestedQuantityRef.current - 1);
   }, [handleQuantityChange]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
