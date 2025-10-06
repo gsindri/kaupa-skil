@@ -49,51 +49,6 @@ export function ItemCard({ item, onCompareItem, userMode, compact = false }: Ite
     supplierItemId,
     cartQuantity
   );
-  const requestedQuantityRef = useRef(cartQuantity);
-  const confirmedQuantityRef = useRef(cartQuantity);
-  const pendingIncrementRef = useRef(0);
-  const optimisticQuantity = Math.max(cartQuantity, requestedQuantityRef.current);
-
-  useEffect(() => {
-    const previousConfirmed = confirmedQuantityRef.current;
-    const previousRequested = requestedQuantityRef.current;
-    const previousPending = pendingIncrementRef.current;
-    const confirmedDelta = cartQuantity - previousConfirmed;
-
-    confirmedQuantityRef.current = cartQuantity;
-
-    if (previousPending > 0) {
-      if (confirmedDelta > 0) {
-        const remaining = Math.max(0, previousPending - confirmedDelta);
-        pendingIncrementRef.current = remaining;
-        if (remaining === 0) {
-          requestedQuantityRef.current = cartQuantity;
-        }
-        return;
-      }
-
-      if (confirmedDelta < 0) {
-        pendingIncrementRef.current = 0;
-        requestedQuantityRef.current = cartQuantity;
-        return;
-      }
-
-      return;
-    }
-
-    const requestedMatchedPreviousConfirmed = previousRequested === previousConfirmed;
-    const cartQuantityDecreased = cartQuantity < previousConfirmed;
-    const cartChangedExternally = (requestedMatchedPreviousConfirmed && cartQuantity !== previousRequested) || cartQuantityDecreased;
-
-    if (cartChangedExternally) {
-      requestedQuantityRef.current = cartQuantity;
-      return;
-    }
-
-    if (cartQuantity === previousRequested) {
-      requestedQuantityRef.current = cartQuantity;
-    }
-  }, [cartQuantity]);
 
   const unitPrice = includeVat ? item.unitPriceIncVat : item.unitPriceExVat;
   const packPrice = includeVat ? item.packPriceIncVat : item.packPriceExVat;
@@ -144,14 +99,6 @@ export function ItemCard({ item, onCompareItem, userMode, compact = false }: Ite
     }
   };
 
-  const handleRemoveFromCart = useCallback(() => {
-    requestedQuantityRef.current = 0;
-    confirmedQuantityRef.current = 0;
-    pendingIncrementRef.current = 0;
-
-    removeItem(supplierItemId);
-  }, [removeItem, supplierItemId]);
-
   const handleQuantityChange = useCallback(
     (requestedQuantity: number) => {
       applyQuantity(requestedQuantity);
@@ -162,36 +109,6 @@ export function ItemCard({ item, onCompareItem, userMode, compact = false }: Ite
   const handleRemoveFromCart = useCallback(() => {
     remove();
   }, [remove]);
-
-      const nextQuantity = Math.max(0, requestedQuantity);
-      const previousRequested = requestedQuantityRef.current;
-
-      if (nextQuantity === previousRequested) {
-        return;
-      }
-
-      requestedQuantityRef.current = nextQuantity;
-
-      if (nextQuantity > previousRequested) {
-        const delta = nextQuantity - previousRequested;
-        pendingIncrementRef.current += delta;
-        triggerFlyout(delta);
-        addItem(cartPayload, delta, {
-          animateElement: addButtonRef.current || undefined
-        });
-        return;
-      }
-
-      if (nextQuantity === 0) {
-        handleRemoveFromCart();
-        return;
-      }
-
-      pendingIncrementRef.current = 0;
-      updateQuantity(supplierItemId, nextQuantity);
-    },
-    [addItem, cartPayload, handleRemoveFromCart, supplierItemId, triggerFlyout, updateQuantity]
-  );
 
   const handleIncrement = useCallback(() => {
     applyQuantity(optimisticQuantity + 1);
