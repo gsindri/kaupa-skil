@@ -5,10 +5,12 @@ import { Input } from '@/components/ui/input'
 import { Card } from '@/components/ui/card'
 import { toast } from '@/hooks/use-toast'
 import { useDebounce } from '@/hooks/useDebounce'
-import { useSupplierSearch, useFeaturedSuppliers, useCategories } from '@/hooks/useSupplierSearch'
+import { useFeaturedSuppliers, useCategories } from '@/hooks/useSupplierSearch'
+import { useInfiniteSupplierSearch } from '@/hooks/useInfiniteSupplierSearch'
 import { FeaturedSuppliersCarousel } from '@/components/discovery/FeaturedSuppliersCarousel'
 import { CategoryChips } from '@/components/discovery/CategoryChips'
 import { SupplierDiscoveryCard } from '@/components/discovery/SupplierDiscoveryCard'
+import { InfiniteSentinel } from '@/components/common/InfiniteSentinel'
 import type { EnhancedSupplier } from '@/hooks/useSupplierSearch'
 
 export default function Discovery() {
@@ -20,7 +22,13 @@ export default function Discovery() {
 
   const { data: categories = [], isLoading: categoriesLoading } = useCategories()
   const { data: featuredSuppliers = [], isLoading: featuredLoading } = useFeaturedSuppliers()
-  const { data: searchResults = [], isLoading: searchLoading } = useSupplierSearch({
+  const { 
+    data: searchResults = [], 
+    isLoading: searchLoading,
+    isFetchingNextPage,
+    hasMore,
+    loadMore
+  } = useInfiniteSupplierSearch({
     query: debouncedSearch || undefined,
     categoryIds: selectedCategories.length > 0 ? selectedCategories : undefined,
   })
@@ -118,18 +126,35 @@ export default function Discovery() {
             </p>
           </Card>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {searchResults.map((supplier) => (
-              <SupplierDiscoveryCard
-                key={supplier.id}
-                supplier={supplier}
-                onRequestAccess={
-                  requestedSuppliers.has(supplier.id) ? undefined : handleRequestAccess
-                }
-                onViewDetails={handleSupplierClick}
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {searchResults.map((supplier) => (
+                <SupplierDiscoveryCard
+                  key={supplier.id}
+                  supplier={supplier}
+                  onRequestAccess={
+                    requestedSuppliers.has(supplier.id) ? undefined : handleRequestAccess
+                  }
+                  onViewDetails={handleSupplierClick}
+                />
+              ))}
+            </div>
+            
+            {isFetchingNextPage && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+                {[...Array(3)].map((_, i) => (
+                  <Card key={i} className="h-80 animate-pulse" />
+                ))}
+              </div>
+            )}
+            
+            {hasMore && !isFetchingNextPage && (
+              <InfiniteSentinel
+                onVisible={loadMore}
+                rootMargin="400px"
               />
-            ))}
-          </div>
+            )}
+          </>
         )}
       </div>
     </div>
