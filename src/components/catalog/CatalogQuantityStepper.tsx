@@ -204,19 +204,23 @@ export function CatalogQuantityStepper({
     size === "sm"
       ? {
           root:
-            "h-full min-h-[2.25rem] gap-2 rounded-full border border-border/60 bg-background/95 px-3 text-[13px] font-medium text-foreground shadow-sm",
+            "h-full min-h-[2.25rem] overflow-hidden rounded-full border border-border/60 bg-background/95 text-[13px] font-medium text-foreground shadow-sm",
           button:
-            "flex aspect-square h-full min-h-[2.25rem] min-w-[2.25rem] items-center justify-center rounded-full border border-border/60 bg-card/90 text-foreground",
+            "flex h-full min-h-[2.25rem] min-w-[2.25rem] items-center justify-center rounded-none bg-transparent text-foreground first:rounded-l-full last:rounded-r-full",
+          countWrapper:
+            "relative flex h-full flex-1 items-center border-x border-border/50 bg-background/70 px-2",
           count:
-            "catalog-card__stepper-count flex h-full min-h-[2.25rem] min-w-[3rem] items-center justify-center rounded-full border border-transparent bg-transparent px-2 text-center text-[13px] font-medium text-foreground",
+            "catalog-card__stepper-count h-full w-full min-w-[3rem] text-center text-[13px] font-medium text-foreground",
         }
       : {
           root:
-            "h-full min-h-[2.5rem] gap-2 rounded-full border border-border/60 bg-background px-3 text-sm font-medium text-foreground shadow-sm",
+            "h-full min-h-[2.5rem] overflow-hidden rounded-full border border-border/60 bg-background text-sm font-medium text-foreground shadow-sm",
           button:
-            "flex aspect-square h-full min-h-[2.5rem] min-w-[2.5rem] items-center justify-center rounded-full border border-border/60 bg-card/90 text-foreground",
+            "flex h-full min-h-[2.5rem] min-w-[2.5rem] items-center justify-center rounded-none bg-transparent text-foreground first:rounded-l-full last:rounded-r-full",
+          countWrapper:
+            "relative flex h-full flex-1 items-center border-x border-border/50 bg-background/80 px-3",
           count:
-            "catalog-card__stepper-count flex h-full min-h-[2.5rem] min-w-[3.25rem] items-center justify-center rounded-full border border-transparent bg-transparent px-3 text-center text-sm font-medium text-foreground",
+            "catalog-card__stepper-count h-full w-full min-w-[3.25rem] text-center text-sm font-medium text-foreground",
         };
 
   const showRemoveIcon = allowRemoval && optimisticQuantity <= Math.max(1, minQuantity || 0);
@@ -248,7 +252,6 @@ export function CatalogQuantityStepper({
           scheduleHold("dec");
         }}
         onPointerUp={stopHold}
-        onPointerLeave={stopHold}
         onPointerCancel={stopHold}
         onClick={event => handleClick("dec", event)}
       >
@@ -258,7 +261,12 @@ export function CatalogQuantityStepper({
           <Minus className="h-4 w-4" aria-hidden="true" />
         )}
       </Button>
-      <div className="relative flex-1">
+      <div
+        className={cn(
+          "relative flex-1",
+          sizeStyles.countWrapper,
+        )}
+      >
         <input
           type="text"
           inputMode="numeric"
@@ -273,7 +281,7 @@ export function CatalogQuantityStepper({
           }}
           aria-label={`Quantity for ${itemLabel}`}
           className={cn(
-            "tabular-nums outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2",
+            "h-full w-full tabular-nums outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2",
             sizeStyles.count,
           )}
         />
@@ -298,7 +306,6 @@ export function CatalogQuantityStepper({
           scheduleHold("inc");
         }}
         onPointerUp={stopHold}
-        onPointerLeave={stopHold}
         onPointerCancel={stopHold}
         onClick={event => handleClick("inc", event)}
       >
