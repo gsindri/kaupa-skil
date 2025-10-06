@@ -6,6 +6,8 @@ export interface GridBreakpoint {
   columns: number
   minCardWidth?: number
   gap?: number
+  gapX?: number
+  gapY?: number
 }
 
 export interface VirtualizedGridProps<T> {
@@ -16,6 +18,10 @@ export interface VirtualizedGridProps<T> {
   minCardWidth?: number
   /** Horizontal/vertical gap between cards (px). */
   gap?: number
+  /** Horizontal gap between cards (px). */
+  gapX?: number
+  /** Vertical gap between cards (px). */
+  gapY?: number
   /** Fixed card height (px). Vertical gap is added automatically. */
   rowHeight?: number
   /** Optional: unique key field to reduce key churn (defaults to index). */
@@ -81,6 +87,8 @@ export function VirtualizedGrid<T>({
   renderItem,
   minCardWidth = 260,
   gap = 16,
+  gapX,
+  gapY,
   rowHeight = 320,
   itemKey,
   onNearEnd,
@@ -98,11 +106,17 @@ export function VirtualizedGrid<T>({
     return [...breakpoints].sort((a, b) => a.minWidth - b.minWidth)
   }, [breakpoints])
 
-  const baseGap = Math.max(0, gap)
+  const baseGapX = Math.max(0, gapX ?? gap)
+  const baseGapY = Math.max(0, gapY ?? gap)
 
   const layout = React.useMemo(() => {
     if (!sortedBreakpoints || sortedBreakpoints.length === 0) {
-      return { gap: baseGap, minCardWidth, columns: undefined as number | undefined }
+      return {
+        gapX: baseGapX,
+        gapY: baseGapY,
+        minCardWidth,
+        columns: undefined as number | undefined,
+      }
     }
 
     let active = sortedBreakpoints[0]
@@ -113,18 +127,20 @@ export function VirtualizedGrid<T>({
     }
 
     return {
-      gap: active.gap ?? baseGap,
+      gapX: active.gapX ?? active.gap ?? baseGapX,
+      gapY: active.gapY ?? active.gap ?? baseGapY,
       minCardWidth: active.minCardWidth ?? minCardWidth,
       columns: active.columns,
     }
-  }, [sortedBreakpoints, width, baseGap, minCardWidth])
+  }, [sortedBreakpoints, width, baseGapX, baseGapY, minCardWidth])
 
-  const safeGap = Math.max(0, layout.gap ?? baseGap)
+  const safeGapX = Math.max(0, layout.gapX ?? baseGapX)
+  const safeGapY = Math.max(0, layout.gapY ?? baseGapY)
   const effectiveMinCardWidth = Math.max(0, layout.minCardWidth ?? minCardWidth)
   const explicitColumns = layout.columns && layout.columns > 0 ? layout.columns : undefined
 
   const cardHeight = Math.max(0, rowHeight)
-  const rowStride = Math.max(1, cardHeight + safeGap)
+  const rowStride = Math.max(1, cardHeight + safeGapY)
 
   // Use consistent fixed row height - no dynamic measurement
 
@@ -217,10 +233,10 @@ export function VirtualizedGrid<T>({
     if (!width) return 1
     const cols = Math.max(
       1,
-      Math.floor((width + safeGap) / (effectiveMinCardWidth + safeGap)),
+      Math.floor((width + safeGapX) / (effectiveMinCardWidth + safeGapX)),
     )
     return cols
-  }, [explicitColumns, width, safeGap, effectiveMinCardWidth])
+  }, [explicitColumns, width, safeGapX, effectiveMinCardWidth])
 
   // Keep anchored when cols change
   const { beforeColsChange, afterColsChange } = useAnchoredGridScroll({
@@ -311,7 +327,7 @@ export function VirtualizedGrid<T>({
 
   // Grid CSS sizes
   const cardWidth = cols
-    ? Math.max(1, Math.floor((width - safeGap * (cols - 1)) / cols))
+    ? Math.max(1, Math.floor((width - safeGapX * (cols - 1)) / cols))
     : effectiveMinCardWidth || 1
   const totalHeight = rowVirtualizer.getTotalSize()
   const normalizedScrollMargin = Number.isFinite(scrollMargin)
@@ -351,8 +367,9 @@ export function VirtualizedGrid<T>({
                 height: cardHeight,
                 display: 'grid',
                 gridTemplateColumns: `repeat(${cols}, minmax(${cardWidth}px, 1fr))`,
-                gap: safeGap,
-                paddingBottom: safeGap,
+                columnGap: safeGapX,
+                rowGap: safeGapY,
+                paddingBottom: safeGapY,
                 alignContent: 'start',
                 paddingInline: 0,
               }}
