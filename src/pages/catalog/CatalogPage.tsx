@@ -11,7 +11,6 @@ import { CatalogTable } from '@/components/catalog/CatalogTable'
 import { CatalogGrid } from '@/components/catalog/CatalogGrid'
 import { InfiniteSentinel } from '@/components/common/InfiniteSentinel'
 import { FilterChip } from '@/components/ui/filter-chip'
-import { TriStateChip } from '@/components/ui/tri-state-chip'
 import { CatalogFiltersPanel } from '@/components/catalog/CatalogFiltersPanel'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -1102,6 +1101,40 @@ function FiltersBar({
     onLockChange?.(next)
   }, [showFilters, facetFilters, setFocusedFacet, setShowFilters, onLockChange])
 
+  const renderFiltersToggleButton = useCallback(
+    (extraClassName?: string) => (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            type="button"
+            onClick={toggleFilters}
+            aria-pressed={showFilters}
+            aria-expanded={showFilters}
+            aria-controls="catalog-filters-panel"
+            aria-keyshortcuts="f"
+            className={cn(
+              'inline-flex h-[var(--ctrl-h,40px)] items-center gap-3 rounded-[var(--ctrl-r,12px)] bg-[color:var(--chip-bg)] px-3 text-sm font-semibold text-[color:var(--ink-hi)] ring-1 ring-inset ring-[color:var(--ring-idle)] backdrop-blur-xl transition duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-4 focus-visible:ring-offset-[color:var(--toolbar-bg)] hover:bg-[color:var(--chip-bg-hover)] hover:text-[color:var(--ink-hi)] hover:ring-[color:var(--ring-hover)] motion-reduce:transition-none',
+              showFilters && 'bg-[color:var(--seg-active-bg)] text-[color:var(--ink-hi)] ring-[color:var(--ring-hover)]',
+              extraClassName,
+            )}
+          >
+            <FunnelSimple
+              size={24}
+              weight="fill"
+              className={cn('transition-opacity text-[color:var(--ink-hi)]', !showFilters && 'opacity-80')}
+            />
+            <span className="hidden sm:inline">
+              {activeCount ? `Filters (${activeCount})` : 'Filters'}
+            </span>
+            <span className="sm:hidden">Filters</span>
+          </button>
+        </TooltipTrigger>
+        <TooltipContent sideOffset={8}>Filters (F)</TooltipContent>
+      </Tooltip>
+    ),
+    [toggleFilters, showFilters, activeCount],
+  )
+
   const isEditableElement = (el: Element | null) => {
     if (!el) return false
     return (
@@ -1216,41 +1249,13 @@ function FiltersBar({
               )}
             </div>
             <div className="flex flex-shrink-0 items-center gap-2.5 sm:pl-3">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button
-                    type="button"
-                    onClick={toggleFilters}
-                    aria-pressed={showFilters}
-                    aria-expanded={showFilters}
-                    aria-controls="catalog-filters-panel"
-                    aria-keyshortcuts="f"
-                    className={cn(
-                      'inline-flex h-[var(--ctrl-h,40px)] items-center gap-3 rounded-[var(--ctrl-r,12px)] bg-[color:var(--chip-bg)] px-3 text-sm font-semibold text-[color:var(--ink-hi)] ring-1 ring-inset ring-[color:var(--ring-idle)] backdrop-blur-xl transition duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-4 focus-visible:ring-offset-[color:var(--toolbar-bg)] hover:bg-[color:var(--chip-bg-hover)] hover:text-[color:var(--ink-hi)] hover:ring-[color:var(--ring-hover)] motion-reduce:transition-none',
-                      showFilters && 'bg-[color:var(--seg-active-bg)] text-[color:var(--ink-hi)] ring-[color:var(--ring-hover)]',
-                    )}
-                  >
-                    <FunnelSimple
-                      size={24}
-                      weight="fill"
-                      className={cn('transition-opacity text-[color:var(--ink-hi)]', !showFilters && 'opacity-80')}
-                    />
-                    <span className="hidden sm:inline">
-                      {activeCount ? `Filters (${activeCount})` : 'Filters'}
-                    </span>
-                    <span className="sm:hidden">Filters</span>
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent sideOffset={8}>Filters (F)</TooltipContent>
-              </Tooltip>
-
+              {renderFiltersToggleButton()}
               <SortDropdown
                 value={sortOrder}
                 onChange={setSortOrder}
                 onOpenChange={onLockChange}
                 className="whitespace-nowrap"
               />
-
               <ViewToggle
                 value={view}
                 onChange={v => {
@@ -1262,42 +1267,7 @@ function FiltersBar({
           </div>
 
           <div className="flex flex-wrap items-center gap-2 pb-3">
-            <TriStateChip
-              state={triStock}
-              onStateChange={setTriStock}
-              includeLabel="In stock"
-              excludeLabel="Out of stock"
-              offLabel="All stock"
-              includeAriaLabel="Filter: only in stock"
-              excludeAriaLabel="Filter: out of stock"
-              includeClassName="bg-emerald-400/25 text-emerald-50 ring-emerald-300/60 hover:bg-emerald-400/35"
-              excludeClassName="bg-rose-400/25 text-rose-50 ring-rose-300/60 hover:bg-rose-400/35"
-              className="shrink-0"
-            />
-            <TriStateChip
-              state={triSuppliers}
-              onStateChange={setTriSuppliers}
-              includeLabel="My suppliers"
-              excludeLabel="Not my suppliers"
-              offLabel="All suppliers"
-              includeAriaLabel="Filter: my suppliers only"
-              excludeAriaLabel="Filter: not my suppliers"
-              includeClassName="bg-sky-400/25 text-sky-50 ring-sky-300/60 hover:bg-sky-400/35"
-              excludeClassName="bg-indigo-400/25 text-indigo-50 ring-indigo-300/60 hover:bg-indigo-400/35"
-              className="shrink-0"
-            />
-            <TriStateChip
-              state={triSpecial}
-              onStateChange={setTriSpecial}
-              includeLabel="On special"
-              excludeLabel="Not on special"
-              offLabel="All specials"
-              includeAriaLabel="Filter: on special only"
-              excludeAriaLabel="Filter: not on special"
-              includeClassName="bg-amber-400/25 text-amber-50 ring-amber-300/60 hover:bg-amber-400/35"
-              excludeClassName="bg-slate-500/30 text-slate-100 ring-slate-300/60 hover:bg-slate-500/40"
-              className="shrink-0"
-            />
+            {renderFiltersToggleButton('shrink-0')}
             {chips.map(chip => (
               <FilterChip
                 key={chip.key}
