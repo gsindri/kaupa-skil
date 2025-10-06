@@ -685,7 +685,7 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
     product: any
     suppliers: SupplierChipInfo[]
   }) {
-    const { items, addItem } = useCart()
+    const { items } = useCart()
     const existingItem = items.find(
       (i: any) => i.supplierItemId === product.catalog_id,
     )
@@ -898,7 +898,10 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
       [product, rawSuppliers],
     )
 
-    const currentQuantity = controller.optimisticQuantity
+    const currentQuantity =
+      controller.isPending || controller.optimisticQuantity > 0
+        ? controller.optimisticQuantity
+        : existingItem?.quantity ?? 0
     const primarySupplierName =
       existingItem?.supplierName || suppliers[0]?.supplier_name || 'Supplier'
 
@@ -978,13 +981,15 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
         const supplier = supplierEntries[supplierIndex]
         if (!supplier) return
 
-        addItem(buildCartItem(supplier, supplierIndex), 1)
+        controller.requestQuantity(1, {
+          addItemPayload: buildCartItem(supplier, supplierIndex),
+        })
         if (supplier.availability === 'OUT_OF_STOCK') {
           toast({ description: 'Out of stock at selected supplier.' })
         }
         setIsPickerOpen(false)
       },
-      [addItem, buildCartItem, supplierEntries],
+      [buildCartItem, controller, supplierEntries],
     )
 
     const handleAddAction = useCallback(() => {
