@@ -472,9 +472,8 @@ export const ProductCard = memo(function ProductCard({
         <div
           data-oos={isUnavailable ? "true" : undefined}
           className={cn(
-            "aspect-square rounded-2xl bg-slate-50/90",
+            "aspect-square rounded-2xl",
             "flex items-center justify-center",
-            "shadow-[inset_0_1px_0_rgba(15,23,42,0.06)]",
             "transition-colors duration-200",
           )}
         >
