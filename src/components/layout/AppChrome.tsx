@@ -6,7 +6,7 @@ export function AppChrome() {
       {/* Cyan stripe - moves with the chrome */}
       <div
         data-chrome-layer
-        className="fixed top-0 z-[var(--z-stripe,56)] h-[2px] pointer-events-none"
+        className="fixed top-0 z-[var(--z-stripe,56)] h-[2px] pointer-events-none transition-transform duration-200 ease-in-out motion-reduce:transition-none"
         style={{
           left: 'var(--header-left, 0px)',
           right: 'var(--header-right, 0px)',
@@ -19,7 +19,7 @@ export function AppChrome() {
       {/* Chrome gradient background - confined to content area */}
       <div
         data-chrome-layer
-        className="fixed top-0 z-[var(--z-chrome,20)] overflow-hidden pointer-events-none"
+        className="fixed top-0 z-[var(--z-chrome,20)] overflow-hidden pointer-events-none transition-[transform,opacity] duration-200 ease-in-out motion-reduce:transition-none"
         style={{
           left: 'var(--header-left, 0px)',
           right: 'var(--header-right, 0px)',
