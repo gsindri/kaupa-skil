@@ -352,7 +352,7 @@ export default function CartEmailCheckout() {
   const [markAsSentState, setMarkAsSentState] = useState<Record<string, boolean>>({})
   const [modalSupplierId, setModalSupplierId] = useState<string | null>(null)
   const [modalTab, setModalTab] = useState<'summary' | 'email'>('summary')
-  const [pendingSendApprovals, setPendingSendApprovals] = useState<Record<string, boolean>>({})
+  const [, setPendingSendApprovals] = useState<Record<string, boolean>>({})
   const [sendAllDialogOpen, setSendAllDialogOpen] = useState(false)
   const [sendAllProcessing, setSendAllProcessing] = useState(false)
   const trackedBlockersRef = useRef<Record<string, SupplierStatus>>({})
@@ -574,7 +574,7 @@ export default function CartEmailCheckout() {
   const readySupplierIds = useMemo(
     () =>
       sortedSupplierSections
-        .filter(section => getDisplayStatus(section.supplierId, section.status) === 'ready')
+        .filter(section => getDisplayStatus(section.supplierId, section.status) !== 'minimum_not_met')
         .map(section => section.supplierId),
     [getDisplayStatus, sortedSupplierSections],
   )
@@ -821,10 +821,6 @@ export default function CartEmailCheckout() {
   const modalPreferredMethod = modalSupplierId
     ? preferredMethods[modalSupplierId] ?? 'default'
     : 'default'
-  const modalPendingApproval = modalSupplierId
-    ? pendingSendApprovals[modalSupplierId] ?? false
-    : false
-
   const emailData = modalSupplier
     ? createEmailData(
       modalSupplier.supplierName,
@@ -1051,8 +1047,7 @@ export default function CartEmailCheckout() {
               const supplierEmailMissing = !section.orderEmail
               const isPricingPending = status === 'pricing_pending'
               const isMinimumNotMet = status === 'minimum_not_met'
-              const primaryEnabled =
-                status === 'ready' || status === 'draft_created' || status === 'sent'
+              const primaryEnabled = status !== 'minimum_not_met'
               const buttonText =
                 status === 'sent'
                   ? `Resend order to ${section.supplierName}`
@@ -1163,7 +1158,7 @@ export default function CartEmailCheckout() {
                           {!primaryEnabled || isPricingPending ? (
                             <TooltipContent className="max-w-xs text-sm">
                               {status === 'pricing_pending'
-                                ? `Waiting for supplier to confirm price on ${pendingPrices.length} item${pendingPrices.length === 1 ? '' : 's'}.`
+                                ? `Price confirmation pending for ${pendingPrices.length} item${pendingPrices.length === 1 ? '' : 's'}. You can send now or wait for an update.`
                                 : status === 'minimum_not_met' && section.shortfallAmount
                                   ? `Add ${formatPriceISK(Math.ceil(section.shortfallAmount))} to enable sending.`
                                   : 'Complete the required details to continue.'}
@@ -1386,7 +1381,7 @@ export default function CartEmailCheckout() {
                 </Button>
                 {!allSuppliersReady ? (
                   <p className="text-center text-xs text-muted-foreground">
-                    All suppliers must be Ready to send all at once.
+                    Resolve minimum order blockers before sending all at once.
                   </p>
                 ) : null}
               </div>
@@ -1407,7 +1402,7 @@ export default function CartEmailCheckout() {
               <AlertDialogDescription>
                 {readySupplierNames.length > 0
                   ? `We'll open email drafts for ${readySupplierNames.join(', ')} using your preferred method.`
-                  : 'We’ll open an email draft for each ready supplier using your preferred method.'}
+                  : 'We’ll open an email draft for each supplier that can be sent using your preferred method.'}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
@@ -1602,33 +1597,11 @@ export default function CartEmailCheckout() {
               <Button
                 type="button"
                 onClick={() => handleOpenEmail()}
-                disabled={
-                  modalSupplier?.status === 'minimum_not_met' ||
-                  (modalSupplier?.status === 'pricing_pending' && !modalPendingApproval)
-                }
+                disabled={modalSupplier?.status === 'minimum_not_met'}
               >
                 Open email ({methodLabels[modalPreferredMethod]})
               </Button>
             </DialogFooter>
-            {modalSupplier?.status === 'pricing_pending' && !modalPendingApproval ? (
-              <div className="px-1 pb-1">
-                <Button
-                  type="button"
-                  variant="link"
-                  size="sm"
-                  className="h-auto px-0 text-xs"
-                  onClick={() => {
-                    if (!modalSupplier) return
-                    setPendingSendApprovals(prev => ({
-                      ...prev,
-                      [modalSupplier.supplierId]: true,
-                    }))
-                  }}
-                >
-                  Send anyway
-                </Button>
-              </div>
-            ) : null}
           </DialogContent>
         </Dialog>
       </div>

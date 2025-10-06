@@ -364,7 +364,7 @@ export default function Checkout() {
   const [markAsSentState, setMarkAsSentState] = useState<Record<string, boolean>>({})
   const [modalSupplierId, setModalSupplierId] = useState<string | null>(null)
   const [modalTab, setModalTab] = useState<'summary' | 'email'>('summary')
-  const [pendingSendApprovals, setPendingSendApprovals] = useState<Record<string, boolean>>({})
+  const [, setPendingSendApprovals] = useState<Record<string, boolean>>({})
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -585,7 +585,7 @@ export default function Checkout() {
     : formatPriceISK(grandTotal)
 
   const allSuppliersReady = sortedSupplierSections.every(
-    section => getDisplayStatus(section.supplierId, section.status) === 'ready',
+    section => getDisplayStatus(section.supplierId, section.status) !== 'minimum_not_met',
   )
 
   const modalSupplier = modalSupplierId
@@ -613,10 +613,6 @@ export default function Checkout() {
   const modalPreferredMethod = modalSupplierId
     ? preferredMethods[modalSupplierId] ?? 'default'
     : 'default'
-  const modalPendingApproval = modalSupplierId
-    ? pendingSendApprovals[modalSupplierId] ?? false
-    : false
-
   const emailData = modalSupplier
     ? createEmailData(
       modalSupplier.supplierName,
@@ -973,7 +969,6 @@ export default function Checkout() {
                                   : '',
                               )}
                               onClick={() => handleSendClick(section.supplierId)}
-                              aria-disabled={isPricingPending}
                             >
                               <Mail className="h-4 w-4" />
                               Send order to {section.supplierName}
@@ -981,7 +976,7 @@ export default function Checkout() {
                           </TooltipTrigger>
                           {isPricingPending ? (
                             <TooltipContent className="max-w-xs text-sm">
-                              Waiting for price on {pendingPrices.length} item{pendingPrices.length === 1 ? '' : 's'}.
+                              Price confirmation pending for {pendingPrices.length} item{pendingPrices.length === 1 ? '' : 's'}. You can send now or wait for an update.
                             </TooltipContent>
                           ) : null}
                         </Tooltip>
@@ -1165,7 +1160,7 @@ export default function Checkout() {
                     Send all orders
                   </Button>
                   <p className="text-xs text-muted-foreground">
-                    All suppliers must be Ready to send at once.
+                    Resolve minimum order blockers before sending all at once.
                   </p>
                 </div>
               </div>
@@ -1326,33 +1321,11 @@ export default function Checkout() {
               <Button
                 type="button"
                 onClick={() => handleOpenEmail()}
-                disabled={
-                  modalSupplier?.status === 'minimum_not_met' ||
-                  (modalSupplier?.status === 'pricing_pending' && !modalPendingApproval)
-                }
+                disabled={modalSupplier?.status === 'minimum_not_met'}
               >
                 Open email ({methodLabels[modalPreferredMethod]})
               </Button>
             </DialogFooter>
-            {modalSupplier?.status === 'pricing_pending' && !modalPendingApproval ? (
-              <div className="px-1 pb-1">
-                <Button
-                  type="button"
-                  variant="link"
-                  size="sm"
-                  className="h-auto px-0 text-xs"
-                  onClick={() => {
-                    if (!modalSupplier) return
-                    setPendingSendApprovals(prev => ({
-                      ...prev,
-                      [modalSupplier.supplierId]: true,
-                    }))
-                  }}
-                >
-                  Send anyway
-                </Button>
-              </div>
-            ) : null}
           </DialogContent>
         </Dialog>
       </div>
