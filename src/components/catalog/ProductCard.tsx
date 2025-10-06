@@ -50,21 +50,24 @@ function ProductCardCartQuantityStepper({
   productName: string;
   isUnavailable: boolean;
 }) {
-  const { requestQuantity, remove, canIncrease } = useCartQuantityController(
+  const { requestQuantity, remove, canIncrease, optimisticQuantity } = useCartQuantityController(
     cartItem.supplierItemId,
     cartItem.quantity
   );
 
   const handleChange = useCallback(
     (next: number) => {
-      requestQuantity(next);
+      const { quantity, ...payload } = cartItem;
+      requestQuantity(next, {
+        addItemPayload: payload,
+      });
     },
-    [requestQuantity]
+    [cartItem, requestQuantity]
   );
 
   return (
     <CatalogQuantityStepper
-      quantity={cartItem.quantity}
+      quantity={optimisticQuantity}
       onChange={handleChange}
       onRemove={remove}
       itemLabel={productName}
@@ -235,6 +238,9 @@ export const ProductCard = memo(function ProductCard({
   const supplierSummary = useMemo(() => {
     if (supplierCount === 0) return "No suppliers yet";
     if (supplierCount === 1) return primarySupplierName || "Supplier";
+    if (primarySupplierName) {
+      return `Best from ${primarySupplierName}`;
+    }
     return `${supplierCount} suppliers`;
   }, [primarySupplierName, supplierCount]);
 

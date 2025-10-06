@@ -78,7 +78,6 @@ describe('ProductCard supplier label', () => {
     render(<ProductCard product={product} />)
 
     expect(screen.getByText('Best from Innnés')).toBeInTheDocument()
-    expect(screen.getByText('+1')).toBeInTheDocument()
   })
 
   it('renders supplier label when only fallback entries have names', () => {

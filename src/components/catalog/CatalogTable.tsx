@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
 import { useCart } from '@/contexts/useBasket'
+import { useCartQuantityController } from '@/contexts/useCartQuantityController'
 import { CatalogQuantityStepper } from '@/components/catalog/CatalogQuantityStepper'
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover'
 import { useVendors } from '@/hooks/useVendors'
@@ -684,9 +685,13 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
     product: any
     suppliers: SupplierChipInfo[]
   }) {
-    const { items, addItem, updateQuantity, removeItem } = useCart()
+    const { items, addItem } = useCart()
     const existingItem = items.find(
       (i: any) => i.supplierItemId === product.catalog_id,
+    )
+    const controller = useCartQuantityController(
+      existingItem?.supplierItemId ?? product.catalog_id,
+      existingItem?.quantity ?? 0,
     )
     const [isPickerOpen, setIsPickerOpen] = useState(false)
     const [showAddedFeedback, setShowAddedFeedback] = useState(false)
@@ -893,7 +898,7 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
       [product, rawSuppliers],
     )
 
-    const currentQuantity = existingItem?.quantity ?? 0
+    const currentQuantity = controller.optimisticQuantity
     const primarySupplierName =
       existingItem?.supplierName || suppliers[0]?.supplier_name || 'Supplier'
 
@@ -935,9 +940,19 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
       previousQuantityRef.current = next
     }, [existingItem?.quantity, product.name])
 
+    const activeSupplier =
+      activeSupplierIndex >= 0 ? supplierEntries[activeSupplierIndex] : null
+
+    const controllerPayload = useMemo(
+      () =>
+        activeSupplierIndex >= 0 && activeSupplier
+          ? buildCartItem(activeSupplier, activeSupplierIndex)
+          : null,
+      [activeSupplier, activeSupplierIndex, buildCartItem],
+    )
+
     const handleQuantityChange = useCallback(
       (next: number) => {
-        if (!existingItem) return
         const numeric = Number.isFinite(next) ? Math.floor(next) : 0
         const bounded = (() => {
           const clamped = Math.max(0, numeric)
@@ -947,22 +962,16 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
           return clamped
         })()
 
-        if (bounded <= 0) {
-          removeItem(existingItem.supplierItemId)
-          return
-        }
-
-        if (bounded !== existingItem.quantity) {
-          updateQuantity(existingItem.supplierItemId, bounded)
-        }
+        controller.requestQuantity(bounded, {
+          addItemPayload: controllerPayload ?? undefined,
+        })
       },
-      [existingItem, maxQuantity, removeItem, updateQuantity],
+      [controller, controllerPayload, maxQuantity],
     )
 
     const handleRemove = useCallback(() => {
-      if (!existingItem) return
-      removeItem(existingItem.supplierItemId)
-    }, [existingItem, removeItem])
+      controller.remove()
+    }, [controller])
 
     const commitAdd = useCallback(
       (supplierIndex: number) => {
@@ -1153,7 +1162,9 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
           itemLabel={`${product.name} from ${primarySupplierName}`}
           minQuantity={0}
           maxQuantity={maxQuantity}
-          canIncrease={maxQuantity === undefined || currentQuantity < maxQuantity}
+          canIncrease={
+            (maxQuantity === undefined || currentQuantity < maxQuantity) && controller.canIncrease
+          }
           size="sm"
         />
         {maxHint}

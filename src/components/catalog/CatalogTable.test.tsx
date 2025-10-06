@@ -151,7 +151,7 @@ describe('CatalogTable', () => {
     })
   })
 
-  it('switches from add button to stepper when item enters the cart', () => {
+  it('switches from add button to stepper when item enters the cart', async () => {
     const product = {
       catalog_id: '1',
       name: 'Switch Product',
@@ -188,7 +188,7 @@ describe('CatalogTable', () => {
     )
 
     expect(
-      screen.getByLabelText(/Quantity for Switch Product from Acme/i),
+      await screen.findByLabelText(/Quantity for Switch Product from Acme/i),
     ).toBeInTheDocument()
   })
 
@@ -210,7 +210,10 @@ describe('CatalogTable', () => {
       </TooltipProvider>,
     )
 
-    const notifyButton = screen.getByRole('button', { name: 'Notify me' })
-    expect(notifyButton).toBeEnabled()
+    const notifyButtons = screen.getAllByRole('button', { name: 'Notify me' })
+    expect(notifyButtons.length).toBeGreaterThan(0)
+    for (const button of notifyButtons) {
+      expect(button).toBeEnabled()
+    }
   })
 })

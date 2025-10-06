@@ -1,5 +1,5 @@
 
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useMemo, useRef, useState } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { ItemBadges, PriceDisplay } from './ItemCardEnhancements'
 import { useSettings } from '@/contexts/useSettings'
@@ -7,6 +7,7 @@ import { useCart } from '@/contexts/useBasket'
 import { MiniCompareDrawer } from './MiniCompareDrawer'
 import { resolveImage } from '@/lib/images'
 import { CatalogQuantityStepper } from '@/components/catalog/CatalogQuantityStepper'
+import { useCartQuantityController } from '@/contexts/useCartQuantityController'
 
 interface ItemCardProps {
   item: {
@@ -38,14 +39,16 @@ export function ItemCard({ item, onCompareItem, userMode, compact = false }: Ite
   const [isCompareOpen, setIsCompareOpen] = useState(false);
   const pressTimer = useRef<number>();
   const { includeVat } = useSettings();
-  const { addItem, updateQuantity, removeItem, items: cartItems } = useCart();
+  const { items: cartItems } = useCart();
   const addButtonRef = useRef<HTMLButtonElement>(null);
-  const flyoutTimerRef = useRef<number>();
-  const [flyoutAmount, setFlyoutAmount] = useState<number | null>(null);
 
   const cartItem = cartItems.find(i => i.supplierItemId === item.id);
   const cartQuantity = cartItem?.quantity ?? 0;
   const supplierItemId = cartItem?.supplierItemId ?? item.id;
+  const { requestQuantity, remove, optimisticQuantity, flyoutAmount } = useCartQuantityController(
+    supplierItemId,
+    cartQuantity
+  );
   const requestedQuantityRef = useRef(cartQuantity);
   const confirmedQuantityRef = useRef(cartQuantity);
   const pendingIncrementRef = useRef(0);
@@ -95,25 +98,6 @@ export function ItemCard({ item, onCompareItem, userMode, compact = false }: Ite
   const unitPrice = includeVat ? item.unitPriceIncVat : item.unitPriceExVat;
   const packPrice = includeVat ? item.packPriceIncVat : item.packPriceExVat;
 
-  useEffect(() => {
-    return () => {
-      if (flyoutTimerRef.current) {
-        window.clearTimeout(flyoutTimerRef.current);
-      }
-    };
-  }, []);
-
-  const triggerFlyout = useCallback((amount: number) => {
-    setFlyoutAmount(amount);
-    if (flyoutTimerRef.current) {
-      window.clearTimeout(flyoutTimerRef.current);
-    }
-    flyoutTimerRef.current = window.setTimeout(() => {
-      setFlyoutAmount(null);
-      flyoutTimerRef.current = undefined;
-    }, 1200);
-  }, []);
-
   const cartPayload = useMemo(
     () => ({
       id: item.id,
@@ -133,6 +117,18 @@ export function ItemCard({ item, onCompareItem, userMode, compact = false }: Ite
       image: resolveImage(item.image)
     }),
     [item.id, item.image, item.name, item.packSize, item.suppliers, item.unit, item.unitPriceExVat, item.unitPriceIncVat, packPrice]
+  );
+
+  const applyQuantity = useCallback(
+    (next: number) => {
+      requestQuantity(next, {
+        addItemPayload: cartPayload,
+        addItemOptions: {
+          animateElement: addButtonRef.current || undefined
+        }
+      });
+    },
+    [cartPayload, requestQuantity]
   );
 
   const startPress = () => {
@@ -158,6 +154,15 @@ export function ItemCard({ item, onCompareItem, userMode, compact = false }: Ite
 
   const handleQuantityChange = useCallback(
     (requestedQuantity: number) => {
+      applyQuantity(requestedQuantity);
+    },
+    [applyQuantity]
+  );
+
+  const handleRemoveFromCart = useCallback(() => {
+    remove();
+  }, [remove]);
+
       const nextQuantity = Math.max(0, requestedQuantity);
       const previousRequested = requestedQuantityRef.current;
 
@@ -189,12 +194,12 @@ export function ItemCard({ item, onCompareItem, userMode, compact = false }: Ite
   );
 
   const handleIncrement = useCallback(() => {
-    handleQuantityChange(requestedQuantityRef.current + 1);
-  }, [handleQuantityChange]);
+    applyQuantity(optimisticQuantity + 1);
+  }, [applyQuantity, optimisticQuantity]);
 
   const handleDecrement = useCallback(() => {
-    handleQuantityChange(requestedQuantityRef.current - 1);
-  }, [handleQuantityChange]);
+    applyQuantity(optimisticQuantity - 1);
+  }, [applyQuantity, optimisticQuantity]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
@@ -297,7 +302,7 @@ export function ItemCard({ item, onCompareItem, userMode, compact = false }: Ite
 
         <div className="relative flex-shrink-0">
           <CatalogQuantityStepper
-            quantity={cartQuantity}
+            quantity={optimisticQuantity}
             onChange={handleQuantityChange}
             onRemove={handleRemoveFromCart}
             itemLabel={item.name}
