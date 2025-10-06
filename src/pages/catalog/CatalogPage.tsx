@@ -1248,8 +1248,7 @@ function FiltersBar({
                 </div>
               )}
             </div>
-            <div className="flex flex-shrink-0 items-center gap-2.5 sm:pl-3">
-              {renderFiltersToggleButton()}
+            <div className="flex flex-shrink-0 items-center gap-2.5">
               <SortDropdown
                 value={sortOrder}
                 onChange={setSortOrder}
