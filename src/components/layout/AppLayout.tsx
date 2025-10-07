@@ -9,6 +9,7 @@ import React, {
   type CSSProperties
 } from 'react'
 import clsx from 'clsx'
+import { cn } from '@/lib/utils'
 import { Outlet } from 'react-router-dom'
 import { TopNavigation } from './TopNavigation'
 import { PrimaryNavRail } from './PrimaryNavRail'
@@ -151,13 +152,14 @@ export function AppLayout({
             >
               {hasSecondary && (
                 <aside
-                  className={clsx(
+                  className={cn(
                     'relative hidden min-w-0 overflow-hidden lg:flex lg:flex-col',
+                    'transition-[width] duration-[var(--filters-transition,200ms)] ease-[var(--ease-snap)]',
+                    'motion-reduce:transition-none',
                     showSecondary ? 'lg:pointer-events-auto' : 'lg:pointer-events-none'
                   )}
                   style={{
-                    width: 'var(--filters-w, 0px)',
-                    transition: 'width var(--enter)',
+                    width: showSecondary ? 'var(--filters-w, 320px)' : '0px',
                   }}
                   aria-hidden={!showSecondary}
                 >

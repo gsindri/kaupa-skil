@@ -23,6 +23,7 @@ import { Button } from '@/components/ui/button'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { FilterChip } from '@/components/ui/filter-chip'
 import { useDebounce } from '@/hooks/useDebounce'
+import { FilterPresets } from './FilterPresets'
 import { CaretDown } from '@phosphor-icons/react'
 
 const FACET_STATE_KEY = 'catalog-facet-open-state'
@@ -357,50 +358,37 @@ export function CatalogFiltersPanel({
   return (
     <div
       className={cn(
-        'flex h-full flex-col',
-        variant === 'desktop' && 'lg:sticky lg:top-[var(--header-h,64px)] lg:max-h-[calc(100vh-var(--header-h,64px))]'
+        'flex h-full flex-col bg-[color:var(--surface-raised,hsl(var(--background)))]',
+        variant === 'desktop' && 'lg:max-h-[calc(100vh-var(--header-h,64px))]'
       )}
     >
-      <div className={headerSurfaceClass} style={headerTokens}>
-        <div className="flex items-center justify-between">
-          <h2 className="text-base font-semibold text-[color:var(--ink-hi)]">
-            {t('title')}
-          </h2>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={onClearFilters}
-            disabled={!hasActiveFilters}
-            className="h-8 px-3 text-sm font-medium text-[color:var(--ink-dim)] hover:text-[color:var(--ink)]"
-          >
-            {t('actions.clear')}
-          </Button>
-        </div>
-        {chips.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            <span className="text-xs font-semibold uppercase tracking-wide text-[color:var(--ink-dim)]/70">
-              {t('activeFilters', { defaultValue: 'Active filters' })}
-            </span>
-            <div className="flex flex-1 flex-wrap items-center gap-2">
-              {chips.map(chip => (
-                <FilterChip
-                  key={chip.key}
-                  selected
-                  onClick={chip.onEdit}
-                  onRemove={chip.onRemove}
-                  className="shrink-0"
-                >
-                  {chip.label}
-                </FilterChip>
-              ))}
-            </div>
+      {/* Sticky header with title, clear all, and Tier-1 toggles */}
+      <div 
+        className="sticky top-0 z-10 bg-[color:var(--surface-raised-strong)] backdrop-blur-md border-b border-[color:var(--ring-idle)]/40"
+        style={{
+          boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+        }}
+      >
+        <div className={headerSurfaceClass} style={headerTokens}>
+          <div className="flex items-center justify-between">
+            <h2 className="text-base font-semibold text-[color:var(--ink-hi)]">
+              {t('title')}
+            </h2>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={onClearFilters}
+              disabled={!hasActiveFilters}
+              className="h-8 px-3 text-sm font-medium text-[color:var(--ink-dim)] hover:text-[color:var(--ink)]"
+            >
+              {t('actions.clear')}
+            </Button>
           </div>
-        )}
-      </div>
-
-      <div className={panelBodyClass}>
-        <section className="space-y-4">
+        </div>
+        
+        {/* Tier-1 Quick Filters - Always visible */}
+        <div className="px-4 pb-3 pt-2 space-y-2">
           <div className="flex items-center gap-2">
             <Checkbox
               id="filter-in-stock"
@@ -442,6 +430,37 @@ export function CatalogFiltersPanel({
               {t('specials.onlySpecials', { defaultValue: 'On special only' })}
             </label>
           </div>
+        </div>
+      </div>
+
+      {/* Scrollable content area - Tier-2 Facets */}
+      <div className={panelBodyClass}>
+        <FilterPresets className="pb-4 border-b border-[color:var(--ring-idle)]/40" />
+        
+        <section className="space-y-4">
+          {/* Active filter chips */}
+          {chips.length > 0 && (
+            <div className="space-y-2 pb-4 border-b border-[color:var(--ring-idle)]/40">
+              <span className="block text-xs font-semibold uppercase tracking-wide text-[color:var(--ink-dim)]/70">
+                {t('activeFilters', { defaultValue: 'Active filters' })}
+              </span>
+              <div className="flex flex-wrap items-center gap-2">
+                {chips.map(chip => (
+                  <FilterChip
+                    key={chip.key}
+                    selected
+                    onClick={chip.onEdit}
+                    onRemove={chip.onRemove}
+                    className="shrink-0"
+                  >
+                    {chip.label}
+                  </FilterChip>
+                ))}
+              </div>
+            </div>
+          )}
+          
+          {/* Facet filters section - Categories, Suppliers, Brands, etc. */}
         </section>
 
         <section className="space-y-4">

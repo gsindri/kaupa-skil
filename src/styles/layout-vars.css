@@ -5,6 +5,11 @@
   --chrome-h: var(--header-h);  /* chrome follows header */
   --header-left: var(--layout-rail);
 
+  /* Filters panel tokens */
+  --filters-w: 320px;      /* desktop panel width */
+  --filters-w-mobile: min(92vw, 360px); /* mobile drawer width */
+  --filters-transition: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+
   /* top bar sizing + radii */
   --icon-btn: 40px;
   --chip-h: 40px;
@@ -62,4 +67,38 @@
   --field-bg: #0f1b28;
   --field-bg-elev: #112133;
   --field-ring: rgba(255, 255, 255, 0.1);
+}
+
+/* Filters panel mobile drawer */
+@media (max-width: 1023px) {
+  .filters-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.32);
+    backdrop-filter: blur(4px);
+    z-index: var(--z-popover, 70);
+  }
+
+  .filters-drawer {
+    position: fixed;
+    inset: 0 auto 0 0;
+    width: var(--filters-w-mobile);
+    height: 100vh;
+    background: hsl(var(--background));
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+    z-index: calc(var(--z-popover, 70) + 1);
+    overflow-y: auto;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .transition-\[width\] {
+    transition: none !important;
+  }
+  
+  .filters-drawer,
+  .filters-backdrop {
+    transition: none !important;
+  }
 }
