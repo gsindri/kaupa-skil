@@ -221,7 +221,7 @@ input[type='search'] {
 /* Position cart in reserved gutter */
 .cart-rail__layer {
   position: fixed;
-  top: var(--cart-rail-top, 64px);
+  top: 0;
   right: var(--cart-rail-gap);
   bottom: 16px;
   width: var(--cart-rail-w);

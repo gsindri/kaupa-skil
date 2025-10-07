@@ -41,9 +41,9 @@
   --z-dialog-content: 80; /* spotlight/dialog content */
 
   /* Cart rail tokens */
-  --cart-rail-w: 280px;           /* cart width when open */
+  --cart-rail-w: 200px;           /* cart width when open */
   --cart-rail-gap: 20px;          /* space between content and cart */
-  --cart-rail-offset: calc(var(--cart-rail-w) + var(--cart-rail-gap)); /* total shift: 300px */
+  --cart-rail-offset: calc(var(--cart-rail-w) + var(--cart-rail-gap)); /* total shift: 220px */
   --cart-rail-transition: 250ms cubic-bezier(0.4, 0, 0.2, 1);
 
   /* Catalog toolbar tokens */
