@@ -49,6 +49,150 @@ interface CatalogFiltersState {
   clear: () => void
 }
 
+type FacetArrayKey = Extract<keyof FacetFilters, 'brand' | 'category' | 'supplier' | 'availability'>
+
+const FACET_ARRAY_KEYS: FacetArrayKey[] = ['brand', 'category', 'supplier', 'availability']
+
+function normalizeStringArray(value: unknown): string[] | undefined {
+  if (value == null) return undefined
+
+  if (Array.isArray(value)) {
+    return value
+      .map(entry => `${entry}`.trim())
+      .filter((entry): entry is string => entry.length > 0)
+  }
+
+  if (typeof value === 'string') {
+    return value
+      .split(',')
+      .map(entry => entry.trim())
+      .filter((entry): entry is string => entry.length > 0)
+  }
+
+  if (typeof value === 'object') {
+    return Object.entries(value as Record<string, unknown>)
+      .filter(([, flag]) => Boolean(flag))
+      .map(([key]) => key)
+      .filter((entry): entry is string => entry.length > 0)
+  }
+
+  return undefined
+}
+
+function normalizePackSizeRange(
+  value: unknown,
+): FacetFilters['packSizeRange'] | undefined {
+  if (value == null) return value === null ? null : undefined
+  if (typeof value !== 'object') return undefined
+
+  const range = value as { min?: unknown; max?: unknown }
+  const min = range.min ?? undefined
+  const max = range.max ?? undefined
+
+  const parseNumber = (raw: unknown): number | undefined => {
+    if (raw == null || raw === '') return undefined
+    const numeric = typeof raw === 'number' ? raw : Number(raw)
+    return Number.isFinite(numeric) ? numeric : undefined
+  }
+
+  const minValue = parseNumber(min)
+  const maxValue = parseNumber(max)
+
+  if (minValue == null && maxValue == null) return undefined
+
+  return {
+    ...(minValue != null ? { min: minValue } : {}),
+    ...(maxValue != null ? { max: maxValue } : {}),
+  }
+}
+
+function normalizeFacetFiltersPatch(
+  patch: Partial<FacetFilters>,
+): Partial<FacetFilters> {
+  const normalized: Partial<FacetFilters> = {}
+
+  if ('search' in patch) {
+    const value = patch.search
+    normalized.search = typeof value === 'string' ? value : undefined
+  }
+
+  for (const key of FACET_ARRAY_KEYS) {
+    if (!(key in patch)) continue
+    const rawValue = patch[key]
+    if (rawValue == null) {
+      normalized[key] = undefined
+      continue
+    }
+    const list = normalizeStringArray(rawValue)
+    normalized[key] = list ?? undefined
+  }
+
+  if ('packSizeRange' in patch) {
+    const value = patch.packSizeRange
+    if (value === null) {
+      normalized.packSizeRange = null
+    } else if (value === undefined) {
+      normalized.packSizeRange = undefined
+    } else {
+      normalized.packSizeRange = normalizePackSizeRange(value)
+    }
+  }
+
+  return normalized
+}
+
+function normalizeFacetFiltersState(filters: unknown): FacetFilters {
+  const source = (filters ?? {}) as Partial<FacetFilters>
+  const normalizedPatch = normalizeFacetFiltersPatch(source)
+  const normalized: FacetFilters = {}
+
+  if ('search' in normalizedPatch) normalized.search = normalizedPatch.search
+
+  for (const key of FACET_ARRAY_KEYS) {
+    const value = normalizedPatch[key]
+    if (value != null) {
+      normalized[key] = value
+    }
+  }
+
+  if ('packSizeRange' in normalizedPatch) {
+    normalized.packSizeRange = normalizedPatch.packSizeRange ?? undefined
+  } else if (source.packSizeRange != null) {
+    const range = normalizePackSizeRange(source.packSizeRange)
+    if (range !== undefined) normalized.packSizeRange = range
+  }
+
+  return normalized
+}
+
+function mergeFilters(
+  current: FacetFilters,
+  patch: Partial<FacetFilters>,
+): FacetFilters {
+  const normalizedPatch = normalizeFacetFiltersPatch(patch)
+  const next: FacetFilters = { ...current }
+
+  if ('search' in normalizedPatch) {
+    if (normalizedPatch.search === undefined) delete next.search
+    else next.search = normalizedPatch.search
+  }
+
+  for (const key of FACET_ARRAY_KEYS) {
+    if (!(key in normalizedPatch)) continue
+    const value = normalizedPatch[key]
+    if (value == null) delete next[key]
+    else next[key] = value
+  }
+
+  if ('packSizeRange' in normalizedPatch) {
+    const range = normalizedPatch.packSizeRange
+    if (range === undefined) delete next.packSizeRange
+    else next.packSizeRange = range
+  }
+
+  return next
+}
+
 const defaultState: Omit<
   CatalogFiltersState,
   | 'setFilters'
@@ -73,13 +217,9 @@ export const useCatalogFilters = create<CatalogFiltersState>()(
       ...defaultState,
       setFilters: f =>
         set(state => {
-          // Only update if filters actually changed to prevent unnecessary re-renders
-          const newFilters = { ...state.filters, ...f }
-          const hasChanges = Object.keys(f).some(key =>
-            JSON.stringify(state.filters[key as keyof FacetFilters]) !==
-              JSON.stringify(newFilters[key as keyof FacetFilters])
-          )
-          return hasChanges ? { filters: newFilters } : state
+          const merged = mergeFilters(state.filters, f)
+          const hasChanges = JSON.stringify(state.filters) !== JSON.stringify(merged)
+          return hasChanges ? { filters: merged } : state
         }),
       setOnlyWithPrice: v => set({ onlyWithPrice: v }),
       setSort: v => set({ sort: v }),
@@ -91,7 +231,18 @@ export const useCatalogFilters = create<CatalogFiltersState>()(
         set(state => (state.triSuppliers === v ? state : { triSuppliers: v })),
       clear: () => set({ ...defaultState }),
     }),
-    { name: 'catalogFilters' },
+    {
+      name: 'catalogFilters',
+      merge: (persistedState, currentState) => {
+        const persisted = persistedState as Partial<CatalogFiltersState> | undefined
+        if (!persisted) return currentState
+        return {
+          ...currentState,
+          ...persisted,
+          filters: normalizeFacetFiltersState(persisted.filters ?? currentState.filters),
+        }
+      },
+    },
   ),
 )
 
