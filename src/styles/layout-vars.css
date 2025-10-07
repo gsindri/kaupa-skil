@@ -40,6 +40,12 @@
   --z-dialog-overlay: 72; /* global dialog overlay layer */
   --z-dialog-content: 80; /* spotlight/dialog content */
 
+  /* Cart rail tokens */
+  --cart-rail-w: 280px;           /* cart width when open */
+  --cart-rail-gap: 20px;          /* space between content and cart */
+  --cart-rail-offset: calc(var(--cart-rail-w) + var(--cart-rail-gap)); /* total shift: 300px */
+  --cart-rail-transition: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+
   /* Catalog toolbar tokens */
   --toolbar-ring: 0 0 0 1px rgba(255, 255, 255, 0.1) inset;
   --toolbar-shadow: 0 28px 60px rgba(3, 10, 22, 0.55);

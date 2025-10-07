@@ -48,14 +48,6 @@ export function AppLayout({
     [headerRef]
   )
 
-  const updateRightGutter = useCallback(() => {
-    if (typeof window === 'undefined') return
-    const node = contentRef.current
-    if (!node) return
-    const rect = node.getBoundingClientRect()
-    const gutter = Math.max(0, window.innerWidth - rect.right)
-    document.documentElement.style.setProperty('--page-right-gutter', `${gutter}px`)
-  }, [])
 
   const hasSecondary = !!secondary
   const showSecondary = hasSecondary && panelOpen
@@ -76,28 +68,6 @@ export function AppLayout({
     }
   }, [])
 
-  useLayoutEffect(() => {
-    if (typeof window === 'undefined') return
-    const handleResize = () => {
-      updateRightGutter()
-    }
-
-    handleResize()
-    window.addEventListener('resize', handleResize)
-
-    const node = contentRef.current
-    let observer: ResizeObserver | undefined
-
-    if (node && typeof ResizeObserver !== 'undefined') {
-      observer = new ResizeObserver(handleResize)
-      observer.observe(node)
-    }
-
-    return () => {
-      window.removeEventListener('resize', handleResize)
-      observer?.disconnect()
-    }
-  }, [updateRightGutter, showSecondary])
 
   const headerNode =
     header && React.isValidElement(header)
@@ -134,8 +104,13 @@ export function AppLayout({
 
       {/* Right content area */}
       <div
-        className="flex min-h-screen flex-col"
-        style={{ marginLeft: 'var(--layout-rail,72px)' }}
+        className="app-shell-content flex min-h-screen flex-col"
+        style={{
+          marginLeft: 'var(--layout-rail,72px)',
+          marginRight: '0',
+          width: '100%',
+          transition: 'margin-right var(--cart-rail-transition), width var(--cart-rail-transition)',
+        }}
       >
         <a
           href="#main-content"

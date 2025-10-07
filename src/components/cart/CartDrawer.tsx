@@ -77,6 +77,15 @@ export function CartDrawer() {
     setIsMounted(true)
   }, [])
 
+  // Manage data-cart-rail attribute on document root
+  React.useEffect(() => {
+    if (isDesktop && isDrawerOpen) {
+      document.documentElement.setAttribute('data-cart-rail', 'open')
+    } else {
+      document.documentElement.removeAttribute('data-cart-rail')
+    }
+  }, [isDesktop, isDrawerOpen])
+
   const subtotal = getTotalPrice(includeVat)
 
   const handleClose = React.useCallback(() => {
