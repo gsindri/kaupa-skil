@@ -11,7 +11,10 @@ import { CatalogTable } from '@/components/catalog/CatalogTable'
 import { CatalogGrid } from '@/components/catalog/CatalogGrid'
 import { InfiniteSentinel } from '@/components/common/InfiniteSentinel'
 import { FilterChip } from '@/components/ui/filter-chip'
-import { CatalogFiltersPanel } from '@/components/catalog/CatalogFiltersPanel'
+import {
+  CatalogFiltersPanel,
+  type ActiveFilterChip,
+} from '@/components/catalog/CatalogFiltersPanel'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import type { FacetFilters, PublicCatalogFilters, OrgCatalogFilters } from '@/services/catalog'
@@ -223,6 +226,8 @@ export default function CatalogPage() {
   const stringifiedFilters = useMemo(() => JSON.stringify(filters), [filters])
   const [bannerDismissed, setBannerDismissed] = useState(false)
   const headerRef = useRef<HTMLDivElement>(null)
+  const filterButtonRef = useRef<HTMLButtonElement | null>(null)
+  const previousShowFilters = useRef(showFilters)
   const [scrolled, setScrolled] = useState(false)
 
   useEffect(() => {
@@ -780,9 +785,34 @@ export default function CatalogPage() {
 
   const total = totalCount
 
+  const openFacetForChip = useCallback(
+    (facet: keyof FacetFilters) => {
+      setFocusedFacet(facet)
+      setShowFilters(true)
+    },
+    [setFocusedFacet, setShowFilters],
+  )
+
+  const closeFilters = useCallback(() => {
+    setShowFilters(false)
+    setFocusedFacet(null)
+  }, [setFocusedFacet, setShowFilters])
+
+  const chips = useMemo<ActiveFilterChip[]>(
+    () => deriveChipsFromFilters(filters, setFilters, openFacetForChip),
+    [filters, setFilters, openFacetForChip],
+  )
+
+  const activeFacetCount = chips.length
+  const activeCount =
+    (triStock !== 'off' ? 1 : 0) +
+    (triSuppliers !== 'off' ? 1 : 0) +
+    (triSpecial !== 'off' ? 1 : 0) +
+    activeFacetCount
 
   return (
-    <AppLayout
+    <>
+      <AppLayout
       headerRef={headerRef}
       header={
         <FiltersBar
@@ -807,19 +837,20 @@ export default function CatalogPage() {
           setFocusedFacet={setFocusedFacet}
           total={total}
           scrolled={scrolled}
+          chips={chips}
+          filterButtonRef={filterButtonRef}
         />
       }
       secondary={
-        showFilters ? (
-          <div id="catalog-filters-panel">
-            <CatalogFiltersPanel
-              filters={filters}
-              onChange={setFilters}
-              focusedFacet={focusedFacet}
-              onClearFilters={clearAllFilters}
-            />
-          </div>
-        ) : null
+        <div id="catalog-filters-panel" className="hidden h-full lg:flex">
+          <CatalogFiltersPanel
+            filters={filters}
+            onChange={setFilters}
+            focusedFacet={focusedFacet}
+            onClearFilters={clearAllFilters}
+            chips={chips}
+          />
+        </div>
       }
       panelOpen={showFilters}
     >
@@ -830,6 +861,39 @@ export default function CatalogPage() {
           view === 'grid' ? 'pt-2' : 'pt-2',
         )}
       >
+        {chips.length > 0 && (
+          <div
+            className="lg:hidden"
+            style={{ '--ctrl-h': '32px', '--ctrl-r': '10px' } as React.CSSProperties}
+          >
+            <div className="flex flex-wrap items-center gap-2 rounded-[var(--ctrl-r,12px)] bg-[color:var(--chip-bg)]/70 px-3 py-3 ring-1 ring-inset ring-[color:var(--ring-idle)] backdrop-blur-xl">
+              <span className="text-xs font-semibold uppercase tracking-wide text-[color:var(--ink-dim)]/70">
+                Active filters
+              </span>
+              {chips.map(chip => (
+                <FilterChip
+                  key={`mobile-${chip.key}`}
+                  selected
+                  onClick={() => chip.onEdit()}
+                  onRemove={chip.onRemove}
+                  className="shrink-0"
+                >
+                  {chip.label}
+                </FilterChip>
+              ))}
+              {activeCount > 0 && (
+                <button
+                  type="button"
+                  onClick={clearAllFilters}
+                  className="ml-auto text-sm font-medium text-[color:var(--ink-dim)]/80 underline decoration-white/20 underline-offset-4 transition hover:text-[color:var(--ink)]"
+                >
+                  Clear all
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
         {showConnectBanner && (
           <div
             data-testid="alert"
@@ -947,7 +1011,17 @@ export default function CatalogPage() {
           </div>
         )}
       </div>
-    </AppLayout>
+      </AppLayout>
+      <MobileFiltersDrawer
+        open={showFilters}
+        onClose={closeFilters}
+        filters={filters}
+        onChange={setFilters}
+        focusedFacet={focusedFacet}
+        onClearFilters={clearAllFilters}
+        chips={chips}
+      />
+    </>
   )
 }
 
@@ -974,6 +1048,8 @@ interface FiltersBarProps {
   onLockChange?: (locked: boolean) => void
   total: number | null
   scrolled: boolean
+  chips: DerivedChip[]
+  filterButtonRef?: React.RefObject<HTMLButtonElement>
 }
 
 function FiltersBar({
@@ -999,18 +1075,11 @@ function FiltersBar({
   onLockChange,
   total,
   scrolled,
+  chips,
+  filterButtonRef,
 }: FiltersBarProps) {
   const containerClass = CATALOG_CONTAINER_CLASS
   const { search: _search, ...facetFilters } = filters
-  const chips = deriveChipsFromFilters(
-    filters,
-    setFilters,
-    facet => {
-      setFocusedFacet(facet)
-      setShowFilters(true)
-      onLockChange?.(true)
-    },
-  )
   const activeFacetCount = chips.length
   const activeCount =
     (triStock !== 'off' ? 1 : 0) +
@@ -1087,6 +1156,13 @@ function FiltersBar({
     }
   }, [showFilters])
 
+  useEffect(() => {
+    if (previousShowFilters.current && !showFilters) {
+      filterButtonRef.current?.focus()
+    }
+    previousShowFilters.current = showFilters
+  }, [showFilters, filterButtonRef])
+
   const toggleFilters = useCallback(() => {
     const next = !showFilters
     if (next) {
@@ -1117,6 +1193,7 @@ function FiltersBar({
               showFilters && 'bg-[color:var(--seg-active-bg)] text-[color:var(--ink-hi)] ring-[color:var(--ring-hover)]',
               extraClassName,
             )}
+            ref={filterButtonRef ?? undefined}
           >
             <FunnelSimple
               size={24}
@@ -1132,7 +1209,7 @@ function FiltersBar({
         <TooltipContent sideOffset={8}>Filters (F)</TooltipContent>
       </Tooltip>
     ),
-    [toggleFilters, showFilters, activeCount],
+    [toggleFilters, showFilters, activeCount, filterButtonRef],
   )
 
   const isEditableElement = (el: Element | null) => {
@@ -1271,7 +1348,10 @@ function FiltersBar({
               <FilterChip
                 key={chip.key}
                 selected
-                onClick={chip.onEdit}
+                onClick={() => {
+                  onLockChange?.(true)
+                  chip.onEdit()
+                }}
                 onRemove={chip.onRemove}
                 className="shrink-0"
               >
@@ -1291,4 +1371,238 @@ function FiltersBar({
         </div>
       </section>
     )
+}
+
+const FOCUSABLE_SELECTOR =
+  'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])'
+const MOBILE_DRAWER_TRANSITION_MS = 220
+
+function usePrefersReducedMotionLocal() {
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(() => {
+    if (typeof window === 'undefined' || !('matchMedia' in window)) return false
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  })
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !('matchMedia' in window)) return () => {}
+    const media = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const handler = (event: MediaQueryListEvent) => setPrefersReducedMotion(event.matches)
+
+    if ('addEventListener' in media) media.addEventListener('change', handler)
+    else media.addListener(handler)
+
+    setPrefersReducedMotion(media.matches)
+
+    return () => {
+      if ('removeEventListener' in media) media.removeEventListener('change', handler)
+      else media.removeListener(handler)
+    }
+  }, [])
+
+  return prefersReducedMotion
+}
+
+interface MobileFiltersDrawerProps {
+  open: boolean
+  onClose: () => void
+  filters: FacetFilters
+  onChange: (f: Partial<FacetFilters>) => void
+  focusedFacet: keyof FacetFilters | null
+  onClearFilters: () => void
+  chips: DerivedChip[]
+}
+
+function MobileFiltersDrawer({
+  open,
+  onClose,
+  filters,
+  onChange,
+  focusedFacet,
+  onClearFilters,
+  chips,
+}: MobileFiltersDrawerProps) {
+  const prefersReducedMotion = usePrefersReducedMotionLocal()
+  const [rendered, setRendered] = useState(open)
+  const [isDragging, setIsDragging] = useState(false)
+  const [dragOffset, setDragOffset] = useState(0)
+  const drawerRef = useRef<HTMLDivElement | null>(null)
+  const contentRef = useRef<HTMLDivElement | null>(null)
+  const startXRef = useRef<number | null>(null)
+  const offsetRef = useRef(0)
+
+  useEffect(() => {
+    if (open) {
+      setRendered(true)
+      requestAnimationFrame(() => {
+        const first = contentRef.current?.querySelector<HTMLElement>(FOCUSABLE_SELECTOR)
+        first?.focus()
+      })
+      return
+    }
+
+    startXRef.current = null
+    offsetRef.current = 0
+    setIsDragging(false)
+    setDragOffset(0)
+
+    if (prefersReducedMotion) {
+      setRendered(false)
+      return
+    }
+
+    const timeout = window.setTimeout(
+      () => setRendered(false),
+      MOBILE_DRAWER_TRANSITION_MS,
+    )
+    return () => window.clearTimeout(timeout)
+  }, [open, prefersReducedMotion])
+
+  useEffect(() => {
+    if (!rendered || typeof document === 'undefined') return
+    const { body } = document
+    const previousOverflow = body.style.overflow
+    body.style.overflow = 'hidden'
+    return () => {
+      body.style.overflow = previousOverflow
+    }
+  }, [rendered])
+
+  useEffect(() => {
+    if (!open || typeof document === 'undefined') return
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault()
+        onClose()
+        return
+      }
+
+      if (event.key !== 'Tab') return
+      const container = contentRef.current
+      if (!container) return
+
+      const focusable = Array.from(
+        container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR),
+      ).filter(element => !element.hasAttribute('disabled'))
+
+      if (!focusable.length) {
+        event.preventDefault()
+        container.focus()
+        return
+      }
+
+      const first = focusable[0]
+      const last = focusable[focusable.length - 1]
+      const activeElement = document.activeElement as HTMLElement | null
+
+      if (event.shiftKey) {
+        if (!activeElement || activeElement === first) {
+          event.preventDefault()
+          last.focus()
+        }
+      } else if (activeElement === last) {
+        event.preventDefault()
+        first.focus()
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [open, onClose])
+
+  useEffect(() => {
+    if (!open) return
+    const drawer = drawerRef.current
+    if (!drawer) return
+
+    const handleTouchStart = (event: TouchEvent) => {
+      startXRef.current = event.touches[0]?.clientX ?? null
+      offsetRef.current = 0
+      setIsDragging(true)
+    }
+
+    const handleTouchMove = (event: TouchEvent) => {
+      if (startXRef.current == null) return
+      const currentX = event.touches[0]?.clientX
+      if (currentX == null) return
+      const delta = currentX - startXRef.current
+      if (delta <= 0) {
+        offsetRef.current = 0
+        setDragOffset(0)
+        return
+      }
+      const width = drawer.getBoundingClientRect().width
+      const nextOffset = Math.min(delta, width)
+      offsetRef.current = nextOffset
+      setDragOffset(nextOffset)
+    }
+
+    const handleTouchEnd = () => {
+      const shouldClose = offsetRef.current > 90
+      setIsDragging(false)
+      setDragOffset(0)
+      startXRef.current = null
+      offsetRef.current = 0
+      if (shouldClose) onClose()
+    }
+
+    drawer.addEventListener('touchstart', handleTouchStart, { passive: true })
+    drawer.addEventListener('touchmove', handleTouchMove, { passive: true })
+    drawer.addEventListener('touchend', handleTouchEnd)
+    drawer.addEventListener('touchcancel', handleTouchEnd)
+
+    return () => {
+      drawer.removeEventListener('touchstart', handleTouchStart)
+      drawer.removeEventListener('touchmove', handleTouchMove)
+      drawer.removeEventListener('touchend', handleTouchEnd)
+      drawer.removeEventListener('touchcancel', handleTouchEnd)
+    }
+  }, [open, onClose])
+
+  if (!rendered) return null
+
+  const transition = prefersReducedMotion || isDragging ? 'none' : `transform var(--enter, 200ms ease-out)`
+  const backdropTransition = prefersReducedMotion
+    ? 'none'
+    : `opacity ${MOBILE_DRAWER_TRANSITION_MS}ms var(--ease-snap, cubic-bezier(.22,1,.36,1))`
+
+  return (
+    <div className="fixed inset-0 z-[var(--z-modal,80)] flex lg:hidden" aria-hidden={!open}>
+      <div
+        className="flex-1 bg-[color:var(--overlay)]/70 backdrop-blur-sm"
+        style={{
+          opacity: open ? 1 : 0,
+          transition: backdropTransition,
+        }}
+        onClick={onClose}
+      />
+      <div
+        ref={drawerRef}
+        className="relative h-full w-[min(92vw,360px)] max-w-full"
+        style={{
+          transform: open
+            ? `translateX(${dragOffset}px)`
+            : 'translateX(-100%)',
+          transition,
+        }}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Filters"
+      >
+        <div
+          ref={contentRef}
+          className="tw-pop flex h-full w-full flex-col overflow-hidden p-0"
+          tabIndex={-1}
+        >
+          <CatalogFiltersPanel
+            filters={filters}
+            onChange={onChange}
+            focusedFacet={focusedFacet}
+            onClearFilters={onClearFilters}
+            chips={chips}
+            variant="drawer"
+          />
+        </div>
+      </div>
+    </div>
+  )
 }
