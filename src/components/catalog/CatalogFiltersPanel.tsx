@@ -126,13 +126,13 @@ export function CatalogFiltersPanel({
   variant = 'desktop',
 }: CatalogFiltersPanelProps) {
   const { t } = useTranslation(undefined, { keyPrefix: 'catalog.filters' })
-  const triStock = useCatalogFilters(s => s.triStock)
-  const setTriStock = useCatalogFilters(s => s.setTriStock)
-  const triSuppliers = useCatalogFilters(s => s.triSuppliers)
-  const setTriSuppliers = useCatalogFilters(s => s.setTriSuppliers)
-  const triSpecial = useCatalogFilters(s => s.triSpecial)
-  const setTriSpecial = useCatalogFilters(s => s.setTriSpecial)
-  const availability = triStockToAvailability(triStock)
+  const inStock = useCatalogFilters(s => s.inStock)
+  const setInStock = useCatalogFilters(s => s.setInStock)
+  const mySuppliers = useCatalogFilters(s => s.mySuppliers)
+  const setMySuppliers = useCatalogFilters(s => s.setMySuppliers)
+  const onSpecial = useCatalogFilters(s => s.onSpecial)
+  const setOnSpecial = useCatalogFilters(s => s.setOnSpecial)
+  const availability = inStock ? ['IN_STOCK'] : undefined
 
   const batchedChange = useBatchedChange(onChange)
 
@@ -149,7 +149,7 @@ export function CatalogFiltersPanel({
   }, [filters])
 
   const hasActiveFilters =
-    hasFacetFilters || triStock !== 'off' || triSuppliers !== 'off' || triSpecial !== 'off'
+    hasFacetFilters || inStock || mySuppliers || onSpecial
 
   const defaultOpenState: FacetOpenState = useMemo(
     () => ({ category: true, supplier: true, brand: true, packSizeRange: true }),
@@ -211,7 +211,7 @@ export function CatalogFiltersPanel({
   }, [focusedFacet, facetRefs, openFacets, prefersReducedMotion])
 
   const { data, isLoading } = useQuery({
-    queryKey: ['catalogFacets', filters, triStock],
+    queryKey: ['catalogFacets', filters, inStock],
     queryFn: () =>
       fetchCatalogFacets({
         ...filters,
@@ -401,73 +401,46 @@ export function CatalogFiltersPanel({
 
       <div className={panelBodyClass}>
         <section className="space-y-4">
-          <div>
-            <span className="block text-xs font-semibold uppercase tracking-wide text-[color:var(--ink-dim)]/70">
-              {t('group.availability', { defaultValue: 'Availability' })}
-            </span>
-            <ToggleGroup
-              type="single"
-              value={triStock}
-              onValueChange={value => value && setTriStock(value as TriState)}
-              className="mt-2 flex gap-1 rounded-[var(--ctrl-r,12px)] bg-[color:var(--chip-bg)] p-1"
-              aria-label={t('stock.label')}
+          <div className="flex items-center gap-2">
+            <Checkbox
+              id="filter-in-stock"
+              checked={inStock}
+              onCheckedChange={setInStock}
+            />
+            <label
+              htmlFor="filter-in-stock"
+              className="text-sm font-medium text-[color:var(--ink)] cursor-pointer select-none"
             >
-              <ToggleGroupItem value="off" className={segmentedBaseClass}>
-                {t('stock.options.all')}
-              </ToggleGroupItem>
-              <ToggleGroupItem value="include" className={segmentedBaseClass}>
-                {t('stock.options.include')}
-              </ToggleGroupItem>
-              <ToggleGroupItem value="exclude" className={segmentedBaseClass}>
-                {t('stock.options.exclude')}
-              </ToggleGroupItem>
-            </ToggleGroup>
+              {t('stock.inStockOnly', { defaultValue: 'Only in stock' })}
+            </label>
           </div>
 
-          <div>
-            <span className="block text-xs font-semibold uppercase tracking-wide text-[color:var(--ink-dim)]/70">
-              {t('group.suppliers', { defaultValue: 'Suppliers' })}
-            </span>
-            <ToggleGroup
-              type="single"
-              value={triSuppliers}
-              onValueChange={value => value && setTriSuppliers(value as TriState)}
-              className="mt-2 flex gap-1 rounded-[var(--ctrl-r,12px)] bg-[color:var(--chip-bg)] p-1"
-              aria-label={t('suppliers.label')}
+          <div className="flex items-center gap-2">
+            <Checkbox
+              id="filter-my-suppliers"
+              checked={mySuppliers}
+              onCheckedChange={setMySuppliers}
+            />
+            <label
+              htmlFor="filter-my-suppliers"
+              className="text-sm font-medium text-[color:var(--ink)] cursor-pointer select-none"
             >
-              <ToggleGroupItem value="off" className={segmentedBaseClass}>
-                {t('suppliers.options.all')}
-              </ToggleGroupItem>
-              <ToggleGroupItem value="include" className={segmentedBaseClass}>
-                {t('suppliers.options.include')}
-              </ToggleGroupItem>
-              <ToggleGroupItem value="exclude" className={segmentedBaseClass}>
-                {t('suppliers.options.exclude')}
-              </ToggleGroupItem>
-            </ToggleGroup>
+              {t('suppliers.myOnly', { defaultValue: 'My suppliers only' })}
+            </label>
           </div>
 
-          <div>
-            <span className="block text-xs font-semibold uppercase tracking-wide text-[color:var(--ink-dim)]/70">
-              {t('group.specials', { defaultValue: 'Specials' })}
-            </span>
-            <ToggleGroup
-              type="single"
-              value={triSpecial}
-              onValueChange={value => value && setTriSpecial(value as TriState)}
-              className="mt-2 flex gap-1 rounded-[var(--ctrl-r,12px)] bg-[color:var(--chip-bg)] p-1"
-              aria-label={t('specials.label')}
+          <div className="flex items-center gap-2">
+            <Checkbox
+              id="filter-on-special"
+              checked={onSpecial}
+              onCheckedChange={setOnSpecial}
+            />
+            <label
+              htmlFor="filter-on-special"
+              className="text-sm font-medium text-[color:var(--ink)] cursor-pointer select-none"
             >
-              <ToggleGroupItem value="off" className={segmentedBaseClass}>
-                {t('specials.options.all')}
-              </ToggleGroupItem>
-              <ToggleGroupItem value="include" className={segmentedBaseClass}>
-                {t('specials.options.include')}
-              </ToggleGroupItem>
-              <ToggleGroupItem value="exclude" className={segmentedBaseClass}>
-                {t('specials.options.exclude')}
-              </ToggleGroupItem>
-            </ToggleGroup>
+              {t('specials.onlySpecials', { defaultValue: 'On special only' })}
+            </label>
           </div>
         </section>
 
