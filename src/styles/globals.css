@@ -211,7 +211,7 @@ input[type='search'] {
 .cart-rail__layer{
   position:fixed;
   top:var(--cart-rail-top,64px);
-  right:max(env(safe-area-inset-right, 0px), var(--page-right-gutter, 1rem));
+  right:calc(max(env(safe-area-inset-right, 0px), var(--page-right-gutter, 1rem)) - var(--cart-rail-w, 168px) - 20px);
   bottom:16px;
   width:var(--cart-rail-w,168px);
   pointer-events:none;
