@@ -7,42 +7,9 @@ import { useCart } from "@/contexts/useBasket"
 import { useSettings } from "@/contexts/useSettings"
 import { QuantityStepper } from "./QuantityStepper"
 import { cn } from "@/lib/utils"
+import { useMediaQuery } from "@/hooks/useMediaQuery"
 
-const DESKTOP_MEDIA_QUERY = "(min-width: 769px)"
-
-function useMediaQuery(query: string) {
-  const [matches, setMatches] = React.useState(() => {
-    if (typeof window === "undefined") return false
-    return window.matchMedia(query).matches
-  })
-
-  React.useEffect(() => {
-    if (typeof window === "undefined") return () => {}
-
-    const mediaQuery = window.matchMedia(query)
-    const handleChange = (event: MediaQueryListEvent) => setMatches(event.matches)
-
-    if ("addEventListener" in mediaQuery) {
-      mediaQuery.addEventListener("change", handleChange)
-    } else {
-      // @ts-expect-error - Legacy browsers
-      mediaQuery.addListener(handleChange)
-    }
-
-    setMatches(mediaQuery.matches)
-
-    return () => {
-      if ("removeEventListener" in mediaQuery) {
-        mediaQuery.removeEventListener("change", handleChange)
-      } else {
-        // @ts-expect-error - Legacy browsers
-        mediaQuery.removeListener(handleChange)
-      }
-    }
-  }, [query])
-
-  return matches
-}
+const DESKTOP_MEDIA_QUERY = "(min-width: 1024px)"
 
 function formatCurrency(value: number) {
   return new Intl.NumberFormat(undefined, {
@@ -76,15 +43,6 @@ export function CartDrawer() {
   React.useEffect(() => {
     setIsMounted(true)
   }, [])
-
-  // Manage data-cart-rail attribute on document root
-  React.useEffect(() => {
-    if (isDesktop && isDrawerOpen) {
-      document.documentElement.setAttribute('data-cart-rail', 'open')
-    } else {
-      document.documentElement.removeAttribute('data-cart-rail')
-    }
-  }, [isDesktop, isDrawerOpen])
 
   const subtotal = getTotalPrice(includeVat)
 

@@ -198,7 +198,7 @@ input[type='search'] {
 /* Cart rail layout */
 .page-grid{
   display:grid;
-  gap:var(--cart-rail-gap,12px);
+  gap:var(--cart-rail-gap, var(--page-gutter, 1.5rem));
   grid-template-columns:minmax(0,1fr);
 }
 
@@ -206,25 +206,14 @@ input[type='search'] {
   min-width:0;
 }
 
-/* Shell layout variables */
-:root {
-  --shell-margin-right: 0;
-  --shell-width: calc(100% - var(--layout-rail, 72px));
-}
-
-/* When cart rail is open, push the entire shell */
-[data-cart-rail="open"] {
-  --shell-margin-right: var(--cart-rail-offset);
-  --shell-width: calc(100% - var(--layout-rail, 72px) - var(--cart-rail-offset));
-}
-
 /* Position cart in reserved gutter */
 .cart-rail__layer {
   position: fixed;
-  top: 0;
-  right: var(--cart-rail-gap);
-  bottom: 16px;
-  width: var(--cart-rail-w);
+  top: var(--cart-rail-top, var(--header-h, 64px));
+  right: var(--cart-rail-gap, var(--page-gutter, 1.5rem));
+  bottom: 0;
+  width: var(--cart-rail-w, 360px);
+  max-height: calc(100vh - var(--cart-rail-top, var(--header-h, 64px)));
   pointer-events: none;
   z-index: var(--z-cart, 140);
   display: none;
@@ -246,29 +235,7 @@ input[type='search'] {
   pointer-events: auto;
 }
 
-/* Responsive: overlay mode on narrow screens */
-@media (max-width: 1200px) {
-  /* Don't push shell on narrow screens */
-  [data-cart-rail="open"] .app-shell-content {
-    margin-right: 0;
-    width: 100%;
-  }
-
-  /* Cart overlays with backdrop */
-  .cart-rail__layer[data-state="open"] {
-    right: 0;
-  }
-
-  .cart-rail__layer[data-state="open"]::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.4);
-    z-index: -1;
-  }
-}
-
-@media (max-width: 768px) {
+@media (max-width: 1023px) {
   .cart-rail__layer {
     display: none !important;
   }
@@ -299,10 +266,10 @@ input[type='search'] {
 }
 
 .cart-rail--desktop{
-  transform:translateX(calc(100% + 20px));
+  transform:translateX(calc(100% + var(--cart-rail-gap, var(--page-gutter, 1.5rem))));
   opacity:0;
   pointer-events:none;
-  transition:transform var(--enter), opacity var(--enter);
+  transition:transform var(--cart-rail-transition), opacity var(--cart-rail-transition);
 }
 
 .cart-rail__layer[data-state="open"] .cart-rail--desktop{
