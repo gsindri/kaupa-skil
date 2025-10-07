@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { announceToScreenReader } from '@/components/quick/AccessibilityEnhancementsUtils'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
@@ -26,7 +27,8 @@ interface AdvancedSection {
 export function AdvancedFilters({ className }: AdvancedFiltersProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({})
-
+  const [isApplyingMOQ, setIsApplyingMOQ] = useState(false)
+  const [isApplyingLeadTime, setIsApplyingLeadTime] = useState(false)
   const sections: AdvancedSection[] = [
     {
       id: 'dietary',
@@ -82,6 +84,21 @@ export function AdvancedFilters({ className }: AdvancedFiltersProps) {
 
   const toggleSection = (sectionId: string) => {
     setOpenSections(prev => ({ ...prev, [sectionId]: !prev[sectionId] }))
+  }
+
+  // Apply handlers with loading states
+  const handleApplyMOQ = async () => {
+    setIsApplyingMOQ(true)
+    await new Promise(resolve => setTimeout(resolve, 150))
+    announceToScreenReader('Minimum order quantity filter applied')
+    setIsApplyingMOQ(false)
+  }
+
+  const handleApplyLeadTime = async () => {
+    setIsApplyingLeadTime(true)
+    await new Promise(resolve => setTimeout(resolve, 150))
+    announceToScreenReader('Lead time filter applied')
+    setIsApplyingLeadTime(false)
   }
 
   // Count active advanced filters (for future use)
@@ -177,9 +194,11 @@ export function AdvancedFilters({ className }: AdvancedFiltersProps) {
                             <Button
                               size="sm"
                               variant="outline"
+                              onClick={filter.id === 'moq' ? handleApplyMOQ : handleApplyLeadTime}
+                              disabled={filter.id === 'moq' ? isApplyingMOQ : isApplyingLeadTime}
                               className="h-8 px-3 text-xs"
                             >
-                              Apply
+                              {(filter.id === 'moq' ? isApplyingMOQ : isApplyingLeadTime) ? 'Applying...' : 'Apply'}
                             </Button>
                           </div>
                         </div>

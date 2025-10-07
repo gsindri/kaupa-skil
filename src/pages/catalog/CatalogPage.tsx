@@ -35,6 +35,7 @@ import { resolveImage } from '@/lib/images'
 import { useSearchParams } from 'react-router-dom'
 import { MagnifyingGlass, FunnelSimple, XCircle } from '@phosphor-icons/react'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { announceToScreenReader } from '@/components/quick/AccessibilityEnhancementsUtils'
 
 const FILTER_PANEL_LS_KEY = 'catalog-filters-open'
 const CATALOG_CONTAINER_CLASS = 'mx-auto w-full max-w-[1600px] px-6 sm:px-10 lg:px-16'
@@ -771,7 +772,70 @@ export default function CatalogPage() {
   const closeFilters = useCallback(() => {
     setShowFilters(false)
     setFocusedFacet(null)
+    // Return focus to filter button if it exists
+    if (filterButtonRef.current) {
+      filterButtonRef.current.focus()
+    }
   }, [setFocusedFacet, setShowFilters])
+
+  // Keyboard shortcuts: Alt+F to toggle, Escape to close
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Alt+F to toggle filters
+      if (e.altKey && e.key.toLowerCase() === 'f') {
+        e.preventDefault()
+        setShowFilters(prev => {
+          const next = !prev
+          announceToScreenReader(next ? 'Filters panel opened' : 'Filters panel closed')
+          return next
+        })
+      }
+      // Escape to close filters
+      if (e.key === 'Escape' && showFilters) {
+        e.preventDefault()
+        closeFilters()
+        announceToScreenReader('Filters panel closed')
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [showFilters, closeFilters])
+
+  // Focus trap when panel is open on desktop
+  useEffect(() => {
+    if (!showFilters) return
+    
+    const filterPanel = document.getElementById('catalog-filters-panel')
+    if (!filterPanel) return
+
+    const focusableElements = filterPanel.querySelectorAll<HTMLElement>(
+      'button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])'
+    )
+    
+    if (focusableElements.length === 0) return
+
+    const firstElement = focusableElements[0]
+    const lastElement = focusableElements[focusableElements.length - 1]
+
+    const handleTabKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab') return
+
+      // If shift+tab on first element, focus last
+      if (e.shiftKey && document.activeElement === firstElement) {
+        e.preventDefault()
+        lastElement.focus()
+      }
+      // If tab on last element, focus first
+      else if (!e.shiftKey && document.activeElement === lastElement) {
+        e.preventDefault()
+        firstElement.focus()
+      }
+    }
+
+    document.addEventListener('keydown', handleTabKey)
+    return () => document.removeEventListener('keydown', handleTabKey)
+  }, [showFilters])
 
   const chips = useMemo<ActiveFilterChip[]>(
     () => deriveChipsFromFilters(filters, setFilters, openFacetForChip),

@@ -6,6 +6,7 @@ import React, {
   useState,
   type CSSProperties,
 } from 'react'
+import { announceToScreenReader } from '@/components/quick/AccessibilityEnhancementsUtils'
 import { useQuery } from '@tanstack/react-query'
 import { useVirtualizer } from '@tanstack/react-virtual'
 
@@ -202,16 +203,24 @@ export function CatalogFiltersPanel({
   const [packMax, setPackMax] = useState<string>(
     filters.packSizeRange?.max?.toString() ?? ''
   )
+  const [isApplyingPackSize, setIsApplyingPackSize] = useState(false)
 
-  const applyPackSizeRange = useCallback(() => {
+  const applyPackSizeRange = useCallback(async () => {
+    setIsApplyingPackSize(true)
     const min = packMin ? Number(packMin) : undefined
     const max = packMax ? Number(packMax) : undefined
     
+    // Simulate brief loading for UX
+    await new Promise(resolve => setTimeout(resolve, 150))
+    
     if (min === undefined && max === undefined) {
       onChange({ packSizeRange: undefined })
+      announceToScreenReader('Pack size filter cleared')
     } else {
       onChange({ packSizeRange: { min, max } })
+      announceToScreenReader(`Pack size filter applied: ${min ?? 'any'} to ${max ?? 'any'}`)
     }
+    setIsApplyingPackSize(false)
   }, [packMin, packMax, onChange])
 
   const prefersReducedMotion = usePrefersReducedMotion()
@@ -631,10 +640,10 @@ export function CatalogFiltersPanel({
                     size="sm"
                     variant="outline"
                     onClick={handleApplyPack}
-                    disabled={!packHasChanges || packRangeInvalid}
+                    disabled={!packHasChanges || packRangeInvalid || isApplyingPackSize}
                     className="h-9 px-4"
                   >
-                    {t('packSize.actions.apply')}
+                    {isApplyingPackSize ? t('packSize.actions.applying', { defaultValue: 'Applying...' }) : t('packSize.actions.apply')}
                   </Button>
                   {packHasAnyValue && (
                     <Button
