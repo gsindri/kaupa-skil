@@ -206,10 +206,16 @@ input[type='search'] {
   min-width:0;
 }
 
+/* Shell layout variables */
+:root {
+  --shell-margin-right: 0;
+  --shell-width: 100%;
+}
+
 /* When cart rail is open, push the entire shell */
-[data-cart-rail="open"] .app-shell-content {
-  margin-right: var(--cart-rail-offset);
-  width: calc(100% - var(--cart-rail-offset));
+[data-cart-rail="open"] {
+  --shell-margin-right: var(--cart-rail-offset);
+  --shell-width: calc(100% - var(--cart-rail-offset));
 }
 
 /* Position cart in reserved gutter */

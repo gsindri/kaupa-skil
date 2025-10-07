@@ -107,8 +107,8 @@ export function AppLayout({
         className="app-shell-content flex min-h-screen flex-col"
         style={{
           marginLeft: 'var(--layout-rail,72px)',
-          marginRight: '0',
-          width: '100%',
+          marginRight: 'var(--shell-margin-right, 0)',
+          width: 'var(--shell-width, 100%)',
           transition: 'margin-right var(--cart-rail-transition), width var(--cart-rail-transition)',
         }}
       >
