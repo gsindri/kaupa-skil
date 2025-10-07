@@ -49,8 +49,12 @@ export function CatalogCommandPalette({ onApply }: CatalogCommandPaletteProps) {
       while ((match = tokenRegex.exec(input)) !== null) {
         const [, key, raw] = match
         const normalized = key.toLowerCase() as TokenKey
-        const existing = (result[normalized] as string[] | undefined) ?? []
-        result[normalized] = [...existing, raw]
+        const existing = result[normalized] 
+          ? (typeof result[normalized] === 'object' && 'include' in result[normalized]!) 
+            ? (result[normalized] as { include: string[]; exclude: string[] }).include 
+            : []
+          : []
+        result[normalized] = { include: [...existing, raw], exclude: [] }
         text = text.replace(match[0], '')
       }
 

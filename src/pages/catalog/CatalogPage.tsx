@@ -59,72 +59,121 @@ function deriveChipsFromFilters(
 ): DerivedChip[] {
   const chips: DerivedChip[] = []
 
-  if (filters.category && filters.category.length) {
-    if (filters.category.length <= 2) {
-      filters.category.forEach(id => {
+  const totalCategories = (filters.category?.include?.length || 0) + (filters.category?.exclude?.length || 0)
+  if (totalCategories > 0) {
+    if (totalCategories <= 2) {
+      filters.category?.include?.forEach(id => {
         chips.push({
-          key: `category-${id}`,
+          key: `category-include-${id}`,
           label: id,
           onRemove: () =>
-            setFilters({ category: filters.category!.filter(categoryId => categoryId !== id) }),
+            setFilters({
+              category: {
+                include: filters.category!.include.filter(c => c !== id),
+                exclude: filters.category!.exclude
+              }
+            }),
+          onEdit: () => openFacet('category'),
+        })
+      })
+      filters.category?.exclude?.forEach(id => {
+        chips.push({
+          key: `category-exclude-${id}`,
+          label: `− ${id}`,
+          onRemove: () =>
+            setFilters({
+              category: {
+                include: filters.category!.include,
+                exclude: filters.category!.exclude.filter(c => c !== id)
+              }
+            }),
           onEdit: () => openFacet('category'),
         })
       })
     } else {
       chips.push({
         key: 'category',
-        label: `Categories (${filters.category.length})`,
+        label: `Categories (${totalCategories})`,
         onRemove: () => setFilters({ category: undefined }),
         onEdit: () => openFacet('category'),
       })
     }
   }
 
-  if (filters.supplier && filters.supplier.length) {
-    if (filters.supplier.length <= 2) {
-      filters.supplier.forEach(id => {
+  const totalSuppliers = (filters.supplier?.include?.length || 0) + (filters.supplier?.exclude?.length || 0)
+  if (totalSuppliers > 0) {
+    if (totalSuppliers <= 2) {
+      filters.supplier?.include?.forEach(id => {
         chips.push({
-          key: `supplier-${id}`,
+          key: `supplier-include-${id}`,
           label: id,
           onRemove: () =>
-            setFilters({ supplier: filters.supplier!.filter(supplierId => supplierId !== id) }),
+            setFilters({
+              supplier: {
+                include: filters.supplier!.include.filter(s => s !== id),
+                exclude: filters.supplier!.exclude
+              }
+            }),
+          onEdit: () => openFacet('supplier'),
+        })
+      })
+      filters.supplier?.exclude?.forEach(id => {
+        chips.push({
+          key: `supplier-exclude-${id}`,
+          label: `− ${id}`,
+          onRemove: () =>
+            setFilters({
+              supplier: {
+                include: filters.supplier!.include,
+                exclude: filters.supplier!.exclude.filter(s => s !== id)
+              }
+            }),
           onEdit: () => openFacet('supplier'),
         })
       })
     } else {
-      const [first, second, ...rest] = filters.supplier
-      ;[first, second].forEach(id => {
-        chips.push({
-          key: `supplier-${id}`,
-          label: id,
-          onRemove: () =>
-            setFilters({ supplier: filters.supplier!.filter(supplierId => supplierId !== id) }),
-          onEdit: () => openFacet('supplier'),
-        })
-      })
       chips.push({
-        key: 'supplier-extra',
-        label: `Suppliers (+${rest.length})`,
+        key: 'supplier',
+        label: `Suppliers (${totalSuppliers})`,
         onRemove: () => setFilters({ supplier: undefined }),
         onEdit: () => openFacet('supplier'),
       })
     }
   }
 
-  if (filters.brand && filters.brand.length) {
-    if (filters.brand.length <= 2) {
-      filters.brand.forEach(id => {
+  const totalBrands = (filters.brand?.include?.length || 0) + (filters.brand?.exclude?.length || 0)
+  if (totalBrands > 0) {
+    if (totalBrands <= 2) {
+      filters.brand?.include?.forEach(id => {
         chips.push({
-          key: `brand-${id}`,
+          key: `brand-include-${id}`,
           label: id,
-          onRemove: () => setFilters({ brand: filters.brand!.filter(brandId => brandId !== id) }),
+          onRemove: () => setFilters({
+            brand: {
+              include: filters.brand!.include.filter(b => b !== id),
+              exclude: filters.brand!.exclude
+            }
+          }),
+          onEdit: () => openFacet('brand'),
+        })
+      })
+      filters.brand?.exclude?.forEach(id => {
+        chips.push({
+          key: `brand-exclude-${id}`,
+          label: `− ${id}`,
+          onRemove: () => setFilters({
+            brand: {
+              include: filters.brand!.include,
+              exclude: filters.brand!.exclude.filter(b => b !== id)
+            }
+          }),
           onEdit: () => openFacet('brand'),
         })
       })
     } else {
       chips.push({
         key: 'brand',
-        label: `Brands (${filters.brand.length})`,
+        label: `Brands (${totalBrands})`,
         onRemove: () => setFilters({ brand: undefined }),
         onEdit: () => openFacet('brand'),
       })
@@ -274,13 +323,32 @@ export default function CatalogPage() {
   useEffect(() => {
     const f: Partial<FacetFilters> = {}
     const categories = searchParams.get('categories')
+    const categoriesExclude = searchParams.get('categories_exclude')
     const brands = searchParams.get('brands')
+    const brandsExclude = searchParams.get('brands_exclude')
     const suppliers = searchParams.get('suppliers')
+    const suppliersExclude = searchParams.get('suppliers_exclude')
     const pack = searchParams.get('pack')
     const search = searchParams.get('search')
-    if (categories) f.category = categories.split(',').filter(Boolean)
-    if (brands) f.brand = brands.split(',').filter(Boolean)
-    if (suppliers) f.supplier = suppliers.split(',').filter(Boolean)
+    
+    if (categories || categoriesExclude) {
+      f.category = {
+        include: categories ? categories.split(',').filter(Boolean) : [],
+        exclude: categoriesExclude ? categoriesExclude.split(',').filter(Boolean) : []
+      }
+    }
+    if (brands || brandsExclude) {
+      f.brand = {
+        include: brands ? brands.split(',').filter(Boolean) : [],
+        exclude: brandsExclude ? brandsExclude.split(',').filter(Boolean) : []
+      }
+    }
+    if (suppliers || suppliersExclude) {
+      f.supplier = {
+        include: suppliers ? suppliers.split(',').filter(Boolean) : [],
+        exclude: suppliersExclude ? suppliersExclude.split(',').filter(Boolean) : []
+      }
+    }
     if (pack) {
       const [minStr, maxStr] = pack.split('-')
       const min = minStr ? Number(minStr) : undefined
@@ -355,9 +423,12 @@ export default function CatalogPage() {
         changed = true
       }
     }
-    updateParam('categories', filters.category?.join(',') || null)
-    updateParam('suppliers', filters.supplier?.join(',') || null)
-    updateParam('brands', filters.brand?.join(',') || null)
+    updateParam('categories', filters.category?.include?.join(',') || null)
+    updateParam('categories_exclude', filters.category?.exclude?.join(',') || null)
+    updateParam('suppliers', filters.supplier?.include?.join(',') || null)
+    updateParam('suppliers_exclude', filters.supplier?.exclude?.join(',') || null)
+    updateParam('brands', filters.brand?.include?.join(',') || null)
+    updateParam('brands_exclude', filters.brand?.exclude?.join(',') || null)
     const packValue =
       filters.packSizeRange && (filters.packSizeRange.min != null || filters.packSizeRange.max != null)
         ? `${filters.packSizeRange.min ?? ''}-${filters.packSizeRange.max ?? ''}`
@@ -487,10 +558,13 @@ export default function CatalogPage() {
   }, [debouncedSearch])
 
   useEffect(() => {
-    if (filters.brand?.length) logFacetInteraction('brand', filters.brand.join(','))
-    if (filters.category?.length) logFacetInteraction('category', filters.category.join(','))
-    if (filters.supplier?.length)
-      logFacetInteraction('supplier', filters.supplier.join(','))
+    const brandTotal = (filters.brand?.include?.length || 0) + (filters.brand?.exclude?.length || 0)
+    const categoryTotal = (filters.category?.include?.length || 0) + (filters.category?.exclude?.length || 0)
+    const supplierTotal = (filters.supplier?.include?.length || 0) + (filters.supplier?.exclude?.length || 0)
+    
+    if (brandTotal > 0) logFacetInteraction('brand', `${filters.brand?.include?.join(',') || ''}|${filters.brand?.exclude?.join(',') || ''}`)
+    if (categoryTotal > 0) logFacetInteraction('category', `${filters.category?.include?.join(',') || ''}|${filters.category?.exclude?.join(',') || ''}`)
+    if (supplierTotal > 0) logFacetInteraction('supplier', `${filters.supplier?.include?.join(',') || ''}|${filters.supplier?.exclude?.join(',') || ''}`)
     if (filters.packSizeRange)
       logFacetInteraction('packSizeRange', JSON.stringify(filters.packSizeRange))
   }, [filters.brand, filters.category, filters.supplier, filters.packSizeRange])
@@ -595,10 +669,13 @@ export default function CatalogPage() {
   }, [products, tableSort])
 
   const displayProducts = view === 'list' ? sortedProducts : products
+  const brandTotal = (filters.brand?.include?.length || 0) + (filters.brand?.exclude?.length || 0)
+  const categoryTotal = (filters.category?.include?.length || 0) + (filters.category?.exclude?.length || 0)
+  const supplierTotal = (filters.supplier?.include?.length || 0) + (filters.supplier?.exclude?.length || 0)
   const hasFacetFilters = Boolean(
-    (filters.brand && filters.brand.length) ||
-      (filters.category && filters.category.length) ||
-      (filters.supplier && filters.supplier.length) ||
+    brandTotal > 0 ||
+      categoryTotal > 0 ||
+      supplierTotal > 0 ||
       filters.packSizeRange,
   )
   const hasSearchQuery = Boolean((filters.search ?? '').trim().length)

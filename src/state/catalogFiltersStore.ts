@@ -52,27 +52,33 @@ type FacetArrayKey = Extract<keyof FacetFilters, 'brand' | 'category' | 'supplie
 
 const FACET_ARRAY_KEYS: FacetArrayKey[] = ['brand', 'category', 'supplier', 'availability']
 
-function normalizeStringArray(value: unknown): string[] | undefined {
+function normalizeIncludeExclude(value: unknown): { include: string[]; exclude: string[] } | undefined {
   if (value == null) return undefined
 
-  if (Array.isArray(value)) {
-    return value
-      .map(entry => `${entry}`.trim())
-      .filter((entry): entry is string => entry.length > 0)
+  // Already in correct format
+  if (typeof value === 'object' && !Array.isArray(value) && 'include' in value && 'exclude' in value) {
+    const obj = value as { include: unknown; exclude: unknown }
+    const include = Array.isArray(obj.include) ? obj.include.map(v => String(v).trim()).filter(Boolean) : []
+    const exclude = Array.isArray(obj.exclude) ? obj.exclude.map(v => String(v).trim()).filter(Boolean) : []
+    if (include.length === 0 && exclude.length === 0) return undefined
+    return { include, exclude }
   }
 
+  // Legacy array format - convert to include-only
+  if (Array.isArray(value)) {
+    const include = value.map(entry => `${entry}`.trim()).filter((entry): entry is string => entry.length > 0)
+    if (include.length === 0) return undefined
+    return { include, exclude: [] }
+  }
+
+  // String format - convert to include-only
   if (typeof value === 'string') {
-    return value
+    const include = value
       .split(',')
       .map(entry => entry.trim())
       .filter((entry): entry is string => entry.length > 0)
-  }
-
-  if (typeof value === 'object') {
-    return Object.entries(value as Record<string, unknown>)
-      .filter(([, flag]) => Boolean(flag))
-      .map(([key]) => key)
-      .filter((entry): entry is string => entry.length > 0)
+    if (include.length === 0) return undefined
+    return { include, exclude: [] }
   }
 
   return undefined
@@ -122,8 +128,16 @@ function normalizeFacetFiltersPatch(
       normalized[key] = undefined
       continue
     }
-    const list = normalizeStringArray(rawValue)
-    normalized[key] = list ?? undefined
+    if (key === 'availability') {
+      // availability stays as simple string array
+      if (Array.isArray(rawValue)) {
+        normalized[key] = rawValue.map(v => String(v).trim()).filter(Boolean) as any
+      }
+    } else {
+      // brand, category, supplier use include/exclude
+      const result = normalizeIncludeExclude(rawValue)
+      normalized[key] = result ?? undefined
+    }
   }
 
   if ('packSizeRange' in patch) {
@@ -150,7 +164,11 @@ function normalizeFacetFiltersState(filters: unknown): FacetFilters {
   for (const key of FACET_ARRAY_KEYS) {
     const value = normalizedPatch[key]
     if (value != null) {
-      normalized[key] = value
+      if (key === 'availability' && Array.isArray(value)) {
+        normalized[key] = value as any
+      } else if (key !== 'availability' && typeof value === 'object' && 'include' in value) {
+        normalized[key] = value as any
+      }
     }
   }
 
@@ -179,8 +197,12 @@ function mergeFilters(
   for (const key of FACET_ARRAY_KEYS) {
     if (!(key in normalizedPatch)) continue
     const value = normalizedPatch[key]
-    if (value == null) delete next[key]
-    else next[key] = value
+    if (value == null) {
+      delete next[key]
+    } else {
+      // Type assertion needed because TypeScript can't narrow the union properly
+      ;(next as any)[key] = value
+    }
   }
 
   if ('packSizeRange' in normalizedPatch) {

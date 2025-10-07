@@ -4,8 +4,8 @@ import { useCatalogFilters } from './catalogFiltersStore'
 describe('catalogFilters store', () => {
   it('updates filters, sort and boolean toggles', () => {
     const { result } = renderHook(() => useCatalogFilters())
-    act(() => result.current.setFilters({ brand: ['Foo'] }))
-    expect(result.current.filters.brand).toEqual(['Foo'])
+    act(() => result.current.setFilters({ brand: { include: ['Foo'], exclude: [] } }))
+    expect(result.current.filters.brand).toEqual({ include: ['Foo'], exclude: [] })
     act(() => result.current.setSort('az'))
     expect(result.current.sort).toBe('az')
     act(() => result.current.setInStock(true))
@@ -18,7 +18,7 @@ describe('catalogFilters store', () => {
 
   it('clears to default state', () => {
     const { result } = renderHook(() => useCatalogFilters())
-    act(() => result.current.setFilters({ brand: ['Foo'] }))
+    act(() => result.current.setFilters({ brand: { include: ['Foo'], exclude: [] } }))
     act(() => result.current.setOnlyWithPrice(true))
     act(() => result.current.setSort('az'))
     act(() => result.current.setInStock(true))

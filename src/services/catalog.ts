@@ -3,9 +3,9 @@ import type { SortOrder, TriState } from '@/state/catalogFiltersStore'
 
 export type FacetFilters = {
   search?: string
-  brand?: string[]
-  category?: string[]
-  supplier?: string[]
+  brand?: { include: string[]; exclude: string[] }
+  category?: { include: string[]; exclude: string[] }
+  supplier?: { include: string[]; exclude: string[] }
   availability?: string[]
   packSizeRange?: { min?: number; max?: number } | null
 }
@@ -121,13 +121,20 @@ export async function fetchPublicCatalogItems(
   query = query.limit(50)
 
   if (filters.search) query = query.ilike('name', `%${filters.search}%`)
-  if (filters.brand?.length) query = query.in('brand', filters.brand)
-  if (filters.category?.length) {
+  if (filters.brand?.include?.length) query = query.in('brand', filters.brand.include)
+  if (filters.brand?.exclude?.length) query = query.not('brand', 'in', `(${filters.brand.exclude.join(',')})`)
+  if (filters.category?.include?.length) {
     // Filter by category using the category_tags array
-    query = query.overlaps('category_tags', filters.category)
+    query = query.overlaps('category_tags', filters.category.include)
   }
-  if (filters.supplier?.length) {
-    query = query.overlaps('supplier_ids', filters.supplier)
+  if (filters.category?.exclude?.length) {
+    query = query.not('category_tags', 'ov', `{${filters.category.exclude.join(',')}}`)
+  }
+  if (filters.supplier?.include?.length) {
+    query = query.overlaps('supplier_ids', filters.supplier.include)
+  }
+  if (filters.supplier?.exclude?.length) {
+    query = query.not('supplier_ids', 'ov', `{${filters.supplier.exclude.join(',')}}`)
   }
   if (filters.onSpecial !== undefined) {
     query = query.eq('on_special', filters.onSpecial)
@@ -194,9 +201,12 @@ export async function fetchOrgCatalogItems(
   }
 
   if (filters.search) query = query.ilike('name', `%${filters.search}%`)
-  if (filters.brand?.length) query = query.in('brand', filters.brand)
-  if (filters.category?.length) query = query.overlaps('category_tags', filters.category)
-  if (filters.supplier?.length) query = query.overlaps('supplier_ids', filters.supplier)
+  if (filters.brand?.include?.length) query = query.in('brand', filters.brand.include)
+  if (filters.brand?.exclude?.length) query = query.not('brand', 'in', `(${filters.brand.exclude.join(',')})`)
+  if (filters.category?.include?.length) query = query.overlaps('category_tags', filters.category.include)
+  if (filters.category?.exclude?.length) query = query.not('category_tags', 'ov', `{${filters.category.exclude.join(',')}}`)
+  if (filters.supplier?.include?.length) query = query.overlaps('supplier_ids', filters.supplier.include)
+  if (filters.supplier?.exclude?.length) query = query.not('supplier_ids', 'ov', `{${filters.supplier.exclude.join(',')}}`)
   if (filters.onSpecial !== undefined) {
     query = query.eq('on_special', filters.onSpecial)
   }
@@ -320,8 +330,8 @@ export interface CatalogFacets {
 export async function fetchCatalogFacets(filters: FacetFilters): Promise<CatalogFacets> {
   const { data, error } = await supabase.rpc('fetch_catalog_facets', {
     _search: filters.search ?? null,
-    _category_ids: filters.category && filters.category.length ? filters.category : null,
-    _supplier_ids: filters.supplier && filters.supplier.length ? filters.supplier : null,
+    _category_ids: filters.category?.include?.length ? filters.category.include : null,
+    _supplier_ids: filters.supplier?.include?.length ? filters.supplier.include : null,
     _availability:
       filters.availability && filters.availability.length
         ? filters.availability
@@ -333,7 +343,7 @@ export async function fetchCatalogFacets(filters: FacetFilters): Promise<Catalog
       }
       return [packSizeRangeToString(range)]
     })(),
-    _brands: filters.brand && filters.brand.length ? filters.brand : null,
+    _brands: filters.brand?.include?.length ? filters.brand.include : null,
   })
   if (error) throw error
   const result: CatalogFacets = {
