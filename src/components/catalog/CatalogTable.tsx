@@ -936,7 +936,7 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
         addedFeedbackTimeoutRef.current = window.setTimeout(() => {
           setShowAddedFeedback(false)
           addedFeedbackTimeoutRef.current = null
-        }, 1000)
+        }, 300)
       } else if (next === 0 && previous > 0) {
         announceToScreenReader(`Removed ${product.name} from cart`)
         setShowAddedFeedback(false)
