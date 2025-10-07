@@ -102,12 +102,14 @@ function usePrefersReducedMotion() {
     const handler = (event: MediaQueryListEvent) => setReduced(event.matches)
 
     if ('addEventListener' in media) media.addEventListener('change', handler)
+    // @ts-expect-error - addListener is deprecated but needed for older browsers
     else media.addListener(handler)
 
     setReduced(media.matches)
 
     return () => {
       if ('removeEventListener' in media) media.removeEventListener('change', handler)
+      // @ts-expect-error - removeListener is deprecated but needed for older browsers
       else media.removeListener(handler)
     }
   }, [])
