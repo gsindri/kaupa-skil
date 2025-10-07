@@ -230,8 +230,8 @@ export function CartDrawer() {
       {!isDesktop && (
         <Sheet open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
           <SheetContent
-            side="right"
-            className={cn("cart-rail cart-rail--mobile p-0")}
+            side="top"
+            className={cn("cart-rail cart-rail--mobile w-full p-0")}
             aria-label="Cart"
           >
             {content}
