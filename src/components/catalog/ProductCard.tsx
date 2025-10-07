@@ -20,7 +20,7 @@ import { useCart } from "@/contexts/useBasket";
 import type { CartItem } from "@/lib/types";
 import { CatalogQuantityStepper } from "./CatalogQuantityStepper";
 import { useCartQuantityController } from "@/contexts/useCartQuantityController";
-import { Loader2, Lock, ShoppingCart } from "lucide-react";
+import { Loader2, ShoppingCart } from "lucide-react";
 import { PriceBenchmarkBadge } from "./PriceBenchmarkBadge";
 
 type SupplierEntry = {
@@ -330,7 +330,6 @@ export const ProductCard = memo(function ProductCard({
 
   const allowPrice = showPrice !== false;
   const hasVisiblePrice = allowPrice && product.best_price != null;
-  const isPriceLocked = allowPrice && product.best_price == null;
   const priceLabel = hasVisiblePrice ? formatCurrency(product.best_price ?? 0) : null;
 
   const headerSubline = packInfo || brand || "";
@@ -347,14 +346,6 @@ export const ProductCard = memo(function ProductCard({
       "bg-muted": availability === "UNKNOWN",
     },
   );
-
-  const handleSeePrice = useCallback(() => {
-    if (!detailLink) return;
-    if (typeof window === "undefined") return;
-    const target = detailLink.target ?? "_self";
-    const features = target === "_blank" ? "noopener,noreferrer" : undefined;
-    window.open(detailLink.href, target, features);
-  }, [detailLink]);
 
   const handleCardKeyDown = useCallback(
     (event: KeyboardEvent<HTMLDivElement>) => {
@@ -376,27 +367,6 @@ export const ProductCard = memo(function ProductCard({
         <span>Add</span>
       </>
     );
-
-    if (isPriceLocked) {
-      const disabled = !detailLink;
-      return (
-        <Button
-          ref={setCartButtonRef}
-          type="button"
-          size="sm"
-          className="h-9"
-          onClick={disabled ? undefined : handleSeePrice}
-          disabled={disabled}
-          aria-label={
-            detailLink
-              ? `See price for ${product.name}`
-              : `Price unavailable for ${product.name}`
-          }
-        >
-          See price
-        </Button>
-      );
-    }
 
     if (hasMultipleSuppliers) {
       return (
@@ -573,18 +543,11 @@ export const ProductCard = memo(function ProductCard({
                       <span className="text-[12px] text-muted-foreground">{unitHint}</span>
                     ) : null}
                   </div>
-                ) : (
+                ) : allowPrice ? (
                   <div className="flex min-w-0 flex-1 items-center gap-1 text-sm text-muted-foreground">
-                    {isPriceLocked ? (
-                      <>
-                        <Lock className="size-3.5" aria-hidden="true" />
-                        <span>Price locked</span>
-                      </>
-                    ) : (
-                      "Price unavailable"
-                    )}
+                    Price unavailable
                   </div>
-                )}
+                ) : null}
                 <div className="flex flex-shrink-0 items-center gap-2">
                   {isInCart && cartItem ? (
                     <ProductCardCartQuantityStepper

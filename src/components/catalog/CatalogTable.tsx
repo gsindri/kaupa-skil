@@ -30,7 +30,6 @@ import ProductThumb from '@/components/catalog/ProductThumb'
 import SupplierLogo from './SupplierLogo'
 import { resolveImage } from '@/lib/images'
 import type { CartItem } from '@/lib/types'
-import { Lock } from 'lucide-react'
 import { toast } from '@/hooks/use-toast'
 import { cn } from '@/lib/utils'
 import { useSupplierConnections } from '@/hooks/useSupplierConnections'
@@ -648,9 +647,6 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
                       <div className="min-w-0 space-y-0.5 text-left">
                         <div className="flex items-center gap-1 text-[13px] font-medium text-foreground">
                           <span className="truncate">{primarySupplierName}</span>
-                          {primarySupplier && !primarySupplier.is_connected && (
-                            <Lock className="h-3.5 w-3.5 text-muted-foreground" />
-                          )}
                         </div>
                         {remainingSupplierCount > 0 && (
                           <div className="text-[11px] text-muted-foreground">
@@ -1144,7 +1140,6 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
                       updatedAt={s.updatedAt}
                     />
                   )}
-                  {!s.connected && <Lock className="h-4 w-4" />}
                 </Button>
               )
             })}
@@ -1201,62 +1196,15 @@ function PriceCell({
 }: {
   product: any
 }) {
-  const sources: string[] =
-    product.price_sources ||
-    (Array.isArray(product.suppliers)
-      ? product.suppliers.map((s: any) =>
-          typeof s === 'string' ? s : s.name || s.supplier_name || '',
-        )
-      : Array.isArray(product.supplier_names)
-        ? product.supplier_names
-        : [])
   const priceValues: number[] = Array.isArray(product.prices)
     ? product.prices
         .map((p: any) => (typeof p === 'number' ? p : p?.price))
         .filter((p: any) => typeof p === 'number')
     : []
-  const isLocked = product.prices_locked ?? product.price_locked ?? false
   const detailLink =
     typeof product.sample_source_url === 'string'
       ? product.sample_source_url
       : null
-
-  if (isLocked) {
-    const linkNode = detailLink ? (
-      <a
-        href={detailLink}
-        target="_blank"
-        rel="noreferrer"
-        className="text-sm font-medium text-primary hover:underline"
-      >
-        See price
-      </a>
-    ) : (
-      <span className="text-sm font-medium text-primary">See price</span>
-    )
-
-    const content = (
-      <div className="flex items-center justify-end gap-2 text-sm text-muted-foreground">
-        <Lock className="h-4 w-4" aria-hidden="true" />
-        {linkNode}
-      </div>
-    )
-
-    if (sources.length) {
-      return (
-        <Tooltip>
-          <TooltipTrigger asChild>{content}</TooltipTrigger>
-          <TooltipContent className="space-y-1">
-            {sources.map(source => (
-              <div key={source}>{`Connect ${source} to unlock pricing.`}</div>
-            ))}
-          </TooltipContent>
-        </Tooltip>
-      )
-    }
-
-    return content
-  }
 
   if (priceValues.length) {
     priceValues.sort((a, b) => a - b)
@@ -1278,11 +1226,29 @@ function PriceCell({
     )
   }
 
-  return (
-    <div className="flex items-center justify-end gap-2 text-sm text-muted-foreground">
-      <span aria-hidden="true">—</span>
-      <span className="sr-only">Price unavailable</span>
-    </div>
-  )
+  if (typeof product.price_min === 'number' && typeof product.price_max === 'number') {
+    const min = product.price_min
+    const max = product.price_max
+    const text =
+      min === max
+        ? formatCurrency(min)
+        : `${formatCurrency(min)}–${formatCurrency(max)}`
+    return <span className="text-sm font-semibold text-foreground">{text}</span>
+  }
+
+  if (detailLink) {
+    return (
+      <a
+        href={detailLink}
+        target="_blank"
+        rel="noreferrer"
+        className="text-sm font-medium text-primary hover:underline"
+      >
+        View supplier details
+      </a>
+    )
+  }
+
+  return <span className="text-sm text-muted-foreground">Price unavailable</span>
 }
 

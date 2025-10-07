@@ -33,12 +33,11 @@ describe('CatalogTable', () => {
     cartState.addItem.mockReset()
     cartState.updateQuantity.mockReset()
   })
-  it('shows lock icon and tooltip when price is locked', async () => {
+  it('shows add button when price information is unavailable', async () => {
     const product = {
       catalog_id: '1',
       name: 'Locked Product',
       prices_locked: true,
-      price_sources: ['Acme'],
       suppliers: ['Acme'],
       availability_status: 'IN_STOCK',
     }
@@ -53,15 +52,12 @@ describe('CatalogTable', () => {
       </TooltipProvider>,
     )
 
-    const priceCallout = await screen.findByText('See price')
-    const lockIcon = priceCallout.parentElement?.querySelector('svg') as SVGElement
-    expect(lockIcon).toBeInTheDocument()
-
-    const user = userEvent.setup()
-    await user.hover(priceCallout.parentElement as HTMLElement)
-
-    const tooltip = await screen.findAllByText('Connect Acme to unlock pricing.')
-    expect(tooltip.length).toBeGreaterThan(0)
+    expect(
+      await screen.findByRole('button', {
+        name: `Add ${product.name} to cart`,
+      }),
+    ).toBeInTheDocument()
+    expect(screen.queryByText('See price')).not.toBeInTheDocument()
   })
 
   it('displays price even when item is in cart', () => {
