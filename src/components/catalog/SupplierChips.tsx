@@ -1,10 +1,8 @@
 import { isValidElement, useState } from 'react'
 import SupplierLogo from './SupplierLogo'
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerFooter, DrawerClose } from '@/components/ui/drawer'
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerFooter, DrawerClose } from '@/components/ui/drawer'
 import { Button } from '@/components/ui/button'
-import { Lock } from 'lucide-react'
-import { cn } from '@/lib/utils'
 
 type Availability = 'IN_STOCK' | 'LOW_STOCK' | 'OUT_OF_STOCK' | 'UNKNOWN' | null | undefined
 
@@ -52,9 +50,7 @@ export default function SupplierChips({ suppliers }: SupplierChipsProps) {
       .slice(0, 2)
       .toUpperCase()
     const loc = s.location_city || s.location_country_code
-    const aria = s.is_connected
-      ? `Supplier: ${s.supplier_name}`
-      : `Supplier: ${s.supplier_name} (price locked)`
+    const aria = `Supplier: ${s.supplier_name}`
     const locationFull = [s.location_city, s.location_country_code]
       .filter(Boolean)
       .join(', ')
@@ -62,10 +58,7 @@ export default function SupplierChips({ suppliers }: SupplierChipsProps) {
     const chip = (
       <button
         type="button"
-        className={cn(
-          'flex items-center gap-1 rounded-full bg-muted pl-1 pr-2 h-6 max-w-full',
-          !s.is_connected && 'pr-1'
-        )}
+        className="flex h-6 max-w-full items-center gap-1 rounded-full bg-muted pl-1 pr-2"
         onClick={() => setActive(s)}
         tabIndex={0}
         aria-label={aria}
@@ -81,7 +74,6 @@ export default function SupplierChips({ suppliers }: SupplierChipsProps) {
             <span className="ml-1 text-muted-foreground">· {loc}</span>
           )}
         </span>
-        {!s.is_connected && <Lock className="ml-1 h-3 w-3 text-muted-foreground" />}
       </button>
     )
 
@@ -135,9 +127,6 @@ export default function SupplierChips({ suppliers }: SupplierChipsProps) {
         <DrawerContent>
           <DrawerHeader>
             <DrawerTitle>{active?.supplier_name}</DrawerTitle>
-            {!active?.is_connected && (
-              <DrawerDescription>Price locked</DrawerDescription>
-            )}
           </DrawerHeader>
           <DrawerFooter>
             {!active?.is_connected && (

@@ -1,7 +1,6 @@
 
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
-import { Lock } from 'lucide-react'
 import { timeAgo } from '@/lib/timeAgo'
 import type { AvailabilityStatus } from '@/components/catalog/AvailabilityBadge'
 import { cn } from '@/lib/utils'
@@ -29,7 +28,7 @@ const AVAILABILITY_MAP: Record<
 export default function SupplierChip({
   name,
   logoUrl,
-  connected = true,
+  connected: _connected = true,
   availability,
   className,
   ...props
@@ -48,9 +47,7 @@ export default function SupplierChip({
   const time = updatedAt ? timeAgo(typeof updatedAt === 'string' ? updatedAt : updatedAt.toISOString()) : 'unknown'
 
   const { tabIndex, ['aria-label']: ariaLabelProp, ...rest } = props as any
-  const ariaLabel = !connected
-    ? `${name} (price locked)`
-    : ariaLabelProp ?? name
+  const ariaLabel = ariaLabelProp ?? name
 
   return (
     <div
@@ -66,19 +63,6 @@ export default function SupplierChip({
           <AvatarFallback>{initials}</AvatarFallback>
         )}
       </Avatar>
-
-      {!connected && (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <span className="absolute inset-0 flex items-center justify-center rounded-full bg-black/50">
-              <Lock className="h-3 w-3 text-white" />
-            </span>
-          </TooltipTrigger>
-          <TooltipContent>
-            Price locked. Connect {name} to view price.
-          </TooltipContent>
-        </Tooltip>
-      )}
 
       {availability && (
         <Tooltip>
