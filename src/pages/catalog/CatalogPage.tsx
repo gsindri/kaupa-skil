@@ -856,7 +856,7 @@ export default function CatalogPage() {
       <div
         className={cn(
           CATALOG_CONTAINER_CLASS,
-          'w-full space-y-5 pb-8',
+          'w-full space-y-5 pb-8 pr-[200px]',
           view === 'grid' ? 'pt-2' : 'pt-2',
         )}
       >
