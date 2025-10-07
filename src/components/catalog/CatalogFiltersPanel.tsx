@@ -302,34 +302,59 @@ export function CatalogFiltersPanel({
       item: { id: string; name: string; count: number },
     ) => {
       const current = (filters as Record<string, unknown>)[facetKey]
-      const isArray = Array.isArray(current)
-      const selected = isArray
-        ? (current as string[]).includes(item.id)
-        : current === item.id
+      
+      // Determine if item is included or excluded
+      let state: 'include' | 'exclude' | null = null
+      if (current && typeof current === 'object' && !Array.isArray(current)) {
+        const obj = current as { include?: string[]; exclude?: string[] }
+        if (obj.include?.includes(item.id)) state = 'include'
+        else if (obj.exclude?.includes(item.id)) state = 'exclude'
+      }
 
       const label = item.name || t('facets.unknown', { defaultValue: 'Unknown' })
 
+      const handleClick = () => {
+        const currentObj = current as { include: string[]; exclude: string[] } | undefined
+        const include = currentObj?.include ?? []
+        const exclude = currentObj?.exclude ?? []
+
+        // Cycle: null → include → exclude → null
+        if (state === null) {
+          // Add to include
+          batchedChange({ 
+            [facetKey]: { include: [...include, item.id], exclude } 
+          } as Partial<FacetFilters>)
+        } else if (state === 'include') {
+          // Move to exclude
+          batchedChange({ 
+            [facetKey]: { include: include.filter(id => id !== item.id), exclude: [...exclude, item.id] }
+          } as Partial<FacetFilters>)
+        } else {
+          // Remove entirely
+          const newInclude = include.filter(id => id !== item.id)
+          const newExclude = exclude.filter(id => id !== item.id)
+          if (newInclude.length === 0 && newExclude.length === 0) {
+            batchedChange({ [facetKey]: undefined } as Partial<FacetFilters>)
+          } else {
+            batchedChange({ [facetKey]: { include: newInclude, exclude: newExclude } } as Partial<FacetFilters>)
+          }
+        }
+      }
+
       return (
-        <label
+        <button
           key={`${facetKey}-${item.id}`}
-          className="flex cursor-pointer items-center justify-between gap-3 rounded-lg px-2.5 py-2 text-sm transition hover:bg-[color:var(--chip-bg)]/60"
+          type="button"
+          onClick={handleClick}
+          className={cn(
+            "w-full flex items-center justify-between gap-3 rounded-lg px-2.5 py-2 text-sm transition",
+            state === 'include' && "bg-[color:var(--chip-bg)] text-[color:var(--ink-hi)]",
+            state === 'exclude' && "bg-destructive/10 text-destructive",
+            state === null && "hover:bg-[color:var(--chip-bg)]/60"
+          )}
         >
           <span className="flex items-center gap-2">
-            <Checkbox
-              checked={selected}
-              onCheckedChange={checked => {
-                if (isArray) {
-                  const next = new Set(current as string[])
-                  if (checked) next.add(item.id)
-                  else next.delete(item.id)
-                  const values = Array.from(next)
-                  batchedChange({ [facetKey]: values.length ? values : undefined } as Partial<FacetFilters>)
-                } else {
-                  batchedChange({ [facetKey]: checked ? item.id : undefined } as Partial<FacetFilters>)
-                }
-              }}
-              aria-label={label}
-            />
+            {state === 'exclude' && <span className="text-xs">−</span>}
             <span className="truncate" title={label}>
               {label}
             </span>
@@ -337,7 +362,7 @@ export function CatalogFiltersPanel({
           <span className="text-xs font-semibold text-[color:var(--ink-dim)]/80">
             {item.count}
           </span>
-        </label>
+        </button>
       )
     },
     [batchedChange, filters, t],
