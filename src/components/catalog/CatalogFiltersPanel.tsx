@@ -24,10 +24,11 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { FilterChip } from '@/components/ui/filter-chip'
 import { useDebounce } from '@/hooks/useDebounce'
 import { FilterPresets } from './FilterPresets'
+import { AdvancedFilters } from './AdvancedFilters'
 import { CaretDown } from '@phosphor-icons/react'
 
 const FACET_STATE_KEY = 'catalog-facet-open-state'
-const VIRTUALIZE_THRESHOLD = 300
+const VIRTUALIZE_THRESHOLD = 50
 
 export interface ActiveFilterChip {
   key: string
@@ -194,6 +195,24 @@ export function CatalogFiltersPanel({
     }) satisfies Record<keyof FacetFilters, React.RefObject<HTMLDivElement>>,
     [],
   )
+
+  const [packMin, setPackMin] = useState<string>(
+    filters.packSizeRange?.min?.toString() ?? ''
+  )
+  const [packMax, setPackMax] = useState<string>(
+    filters.packSizeRange?.max?.toString() ?? ''
+  )
+
+  const applyPackSizeRange = useCallback(() => {
+    const min = packMin ? Number(packMin) : undefined
+    const max = packMax ? Number(packMax) : undefined
+    
+    if (min === undefined && max === undefined) {
+      onChange({ packSizeRange: undefined })
+    } else {
+      onChange({ packSizeRange: { min, max } })
+    }
+  }, [packMin, packMax, onChange])
 
   const prefersReducedMotion = usePrefersReducedMotion()
 
@@ -631,6 +650,9 @@ export function CatalogFiltersPanel({
               </div>
             )}
           </article>
+
+          {/* Advanced Filters Section */}
+          <AdvancedFilters />
         </section>
       </div>
     </div>
