@@ -141,8 +141,15 @@ export async function fetchPublicCatalogItems(
   if (filters.onSpecial !== undefined) {
     query = query.eq('on_special', filters.onSpecial)
   }
-  // Skip pricing filter when no pricing data is available
-  // if (filters.onlyWithPrice) query = query.not('best_price', 'is', null)
+  if (filters.onlyWithPrice) {
+    query = query.not('best_price', 'is', null)
+  }
+  if (filters.priceRange?.min !== undefined) {
+    query = query.gte('best_price', filters.priceRange.min)
+  }
+  if (filters.priceRange?.max !== undefined) {
+    query = query.lte('best_price', filters.priceRange.max)
+  }
   if (filters.availability && filters.availability.length) {
     query = query.in('availability_status', filters.availability)
   }
@@ -218,8 +225,15 @@ export async function fetchOrgCatalogItems(
     query = query.neq('is_my_supplier', true)
   }
 
-  // Skip pricing filter when no pricing data is available
-  // if (filters.onlyWithPrice) query = query.not('best_price', 'is', null)
+  if (filters.onlyWithPrice) {
+    query = query.not('best_price', 'is', null)
+  }
+  if (filters.priceRange?.min !== undefined) {
+    query = query.gte('best_price', filters.priceRange.min)
+  }
+  if (filters.priceRange?.max !== undefined) {
+    query = query.lte('best_price', filters.priceRange.max)
+  }
   if (filters.availability && filters.availability.length) {
     query = query.in('availability_status', filters.availability)
   }
