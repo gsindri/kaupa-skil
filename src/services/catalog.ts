@@ -10,6 +10,21 @@ export type FacetFilters = {
   packSizeRange?: { min?: number; max?: number } | null
   priceRange?: { min?: number; max?: number } | null
   pricePerUnitRange?: { min?: number; max?: number } | null
+  dietary?: string[]
+  quality?: string[]
+  operational?: {
+    moq?: number
+    leadTimeDays?: number
+    caseBreak?: boolean
+    directDelivery?: boolean
+    sameDay?: boolean
+  }
+  lifecycle?: string[]
+  dataQuality?: {
+    hasImage?: boolean
+    hasPrice?: boolean
+    hasDescription?: boolean
+  }
 }
 
 function packSizeRangeToString(range: { min?: number; max?: number }): string {
@@ -153,6 +168,36 @@ export async function fetchPublicCatalogItems(
   if (filters.availability && filters.availability.length) {
     query = query.in('availability_status', filters.availability)
   }
+  
+  // Dietary filters
+  if (filters.dietary?.includes('vegan')) query = query.eq('is_vegan', true)
+  if (filters.dietary?.includes('vegetarian')) query = query.eq('is_vegetarian', true)
+  if (filters.dietary?.includes('gluten_free')) query = query.eq('is_gluten_free', true)
+  if (filters.dietary?.includes('halal')) query = query.eq('is_halal', true)
+  
+  // Quality filters
+  if (filters.quality?.includes('organic')) query = query.eq('is_organic', true)
+  if (filters.quality?.includes('icelandic')) query = query.eq('is_icelandic', true)
+  if (filters.quality?.includes('eco_friendly')) query = query.eq('is_eco_friendly', true)
+  if (filters.quality?.includes('fair_trade')) query = query.eq('is_fair_trade', true)
+  
+  // Operational filters
+  if (filters.operational?.moq) query = query.lte('min_moq', filters.operational.moq)
+  if (filters.operational?.leadTimeDays) query = query.lte('min_lead_time_days', filters.operational.leadTimeDays)
+  if (filters.operational?.caseBreak) query = query.eq('allows_case_break', true)
+  if (filters.operational?.directDelivery) query = query.eq('allows_direct_delivery', true)
+  if (filters.operational?.sameDay) query = query.eq('allows_same_day', true)
+  
+  // Lifecycle filters
+  if (filters.lifecycle?.includes('new_item')) query = query.eq('is_new_item', true)
+  if (filters.lifecycle?.includes('discontinued')) query = query.eq('is_discontinued', true)
+  if (filters.lifecycle?.includes('seasonal')) query = query.eq('is_seasonal', true)
+  
+  // Data quality filters
+  if (filters.dataQuality?.hasImage) query = query.not('sample_image_url', 'is', null)
+  if (filters.dataQuality?.hasPrice) query = query.not('best_price', 'is', null)
+  if (filters.dataQuality?.hasDescription) query = query.not('description', 'is', null)
+  
   if (filters.cursor) query = query.gt('catalog_id', filters.cursor)
 
   const { data, error, count } = await query
@@ -237,6 +282,35 @@ export async function fetchOrgCatalogItems(
   if (filters.availability && filters.availability.length) {
     query = query.in('availability_status', filters.availability)
   }
+  
+  // Dietary filters
+  if (filters.dietary?.includes('vegan')) query = query.eq('is_vegan', true)
+  if (filters.dietary?.includes('vegetarian')) query = query.eq('is_vegetarian', true)
+  if (filters.dietary?.includes('gluten_free')) query = query.eq('is_gluten_free', true)
+  if (filters.dietary?.includes('halal')) query = query.eq('is_halal', true)
+  
+  // Quality filters
+  if (filters.quality?.includes('organic')) query = query.eq('is_organic', true)
+  if (filters.quality?.includes('icelandic')) query = query.eq('is_icelandic', true)
+  if (filters.quality?.includes('eco_friendly')) query = query.eq('is_eco_friendly', true)
+  if (filters.quality?.includes('fair_trade')) query = query.eq('is_fair_trade', true)
+  
+  // Operational filters
+  if (filters.operational?.moq) query = query.lte('min_moq', filters.operational.moq)
+  if (filters.operational?.leadTimeDays) query = query.lte('min_lead_time_days', filters.operational.leadTimeDays)
+  if (filters.operational?.caseBreak) query = query.eq('allows_case_break', true)
+  if (filters.operational?.directDelivery) query = query.eq('allows_direct_delivery', true)
+  if (filters.operational?.sameDay) query = query.eq('allows_same_day', true)
+  
+  // Lifecycle filters
+  if (filters.lifecycle?.includes('new_item')) query = query.eq('is_new_item', true)
+  if (filters.lifecycle?.includes('discontinued')) query = query.eq('is_discontinued', true)
+  if (filters.lifecycle?.includes('seasonal')) query = query.eq('is_seasonal', true)
+  
+  // Data quality filters
+  if (filters.dataQuality?.hasImage) query = query.not('sample_image_url', 'is', null)
+  if (filters.dataQuality?.hasPrice) query = query.not('best_price', 'is', null)
+  if (filters.dataQuality?.hasDescription) query = query.not('description', 'is', null)
   
   // Add cursor-based pagination
   if (filters.cursor) query = query.gt('catalog_id', filters.cursor)

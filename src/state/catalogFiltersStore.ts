@@ -45,6 +45,7 @@ interface CatalogFiltersState {
   setOnSpecial: (v: boolean) => void
   setHasPrice: (v: boolean) => void
   setSort: (v: SortOrder) => void
+  applyAdvancedFilter: (category: string, value: string | boolean | number, action?: 'add' | 'remove' | 'set') => void
   clear: () => void
 }
 
@@ -223,6 +224,7 @@ const defaultState: Omit<
   | 'setOnSpecial'
   | 'setHasPrice'
   | 'setSort'
+  | 'applyAdvancedFilter'
   | 'clear'
 > = {
   filters: {},
@@ -250,6 +252,31 @@ export const useCatalogFilters = create<CatalogFiltersState>()(
       setOnSpecial: v => set(state => (state.onSpecial === v ? state : { onSpecial: v })),
       setHasPrice: v => set(state => (state.hasPrice === v ? state : { hasPrice: v })),
       setSort: v => set({ sort: v }),
+      applyAdvancedFilter: (category, value, action = 'set') =>
+        set(state => {
+          const newFilters = { ...state.filters }
+          
+          if (category === 'dietary' || category === 'quality' || category === 'lifecycle') {
+            const current = (newFilters[category] as string[] | undefined) || []
+            if (action === 'add' && typeof value === 'string') {
+              (newFilters as any)[category] = [...current, value]
+            } else if (action === 'remove' && typeof value === 'string') {
+              (newFilters as any)[category] = current.filter(v => v !== value)
+            }
+          } else if (category === 'operational') {
+            const current = newFilters.operational || { caseBreak: false, directDelivery: false, sameDay: false }
+            if (typeof value === 'object' && value !== null) {
+              newFilters.operational = { ...current, ...(value as any) }
+            }
+          } else if (category === 'dataQuality') {
+            const current = newFilters.dataQuality || { hasImage: false, hasPrice: false, hasDescription: false }
+            if (typeof value === 'object' && value !== null) {
+              newFilters.dataQuality = { ...current, ...(value as any) }
+            }
+          }
+          
+          return { filters: newFilters }
+        }),
       clear: () => set({ ...defaultState }),
     }),
     {

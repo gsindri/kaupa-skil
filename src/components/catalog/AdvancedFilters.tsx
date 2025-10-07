@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { CaretDown } from '@phosphor-icons/react'
 import { cn } from '@/lib/utils'
+import { useCatalogFilters } from '@/state/catalogFiltersStore'
 
 interface AdvancedFiltersProps {
   className?: string
@@ -19,7 +20,7 @@ interface AdvancedSection {
     label: string
     type: 'checkbox' | 'number'
     checked?: boolean
-    value?: number
+    value?: string
     placeholder?: string
   }[]
 }
@@ -27,78 +28,109 @@ interface AdvancedSection {
 export function AdvancedFilters({ className }: AdvancedFiltersProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({})
-  const [isApplyingMOQ, setIsApplyingMOQ] = useState(false)
-  const [isApplyingLeadTime, setIsApplyingLeadTime] = useState(false)
-  const [isApplyingPrice, setIsApplyingPrice] = useState(false)
-  const [isApplyingPPU, setIsApplyingPPU] = useState(false)
+  
+  const { filters, setFilters } = useCatalogFilters()
 
-  // Price range state
+  // Local state for number inputs
   const [priceMin, setPriceMin] = useState('')
   const [priceMax, setPriceMax] = useState('')
-  
-  // Price per unit range state
-  const [ppuMin, setPpuMin] = useState('')
-  const [ppuMax, setPpuMax] = useState('')
+  const [moq, setMoq] = useState('')
+  const [leadTime, setLeadTime] = useState('')
+
+  const handleCheckboxChange = (category: string, filterId: string, checked: boolean) => {
+    const newFilters = { ...filters }
+    
+    if (category === 'dietary' || category === 'quality' || category === 'lifecycle') {
+      const current = newFilters[category] || []
+      newFilters[category] = checked 
+        ? [...current, filterId]
+        : current.filter(v => v !== filterId)
+    } else if (category === 'operational') {
+      const current = newFilters.operational || {}
+      newFilters.operational = { ...current, [filterId]: checked }
+    } else if (category === 'dataQuality') {
+      const current = newFilters.dataQuality || {}
+      newFilters.dataQuality = { ...current, [filterId]: checked }
+    }
+    
+    setFilters(newFilters)
+  }
+
+  const handleApplyPrice = () => {
+    const min = priceMin ? parseFloat(priceMin) : undefined
+    const max = priceMax ? parseFloat(priceMax) : undefined
+    setFilters({ priceRange: min || max ? { min, max } : null })
+    announceToScreenReader('Price range filter applied')
+  }
+
+  const handleApplyMOQ = () => {
+    const value = moq ? parseInt(moq) : undefined
+    setFilters({ operational: { ...filters.operational, moq: value } })
+    announceToScreenReader('MOQ filter applied')
+  }
+
+  const handleApplyLeadTime = () => {
+    const value = leadTime ? parseInt(leadTime) : undefined
+    setFilters({ operational: { ...filters.operational, leadTimeDays: value } })
+    announceToScreenReader('Lead time filter applied')
+  }
 
   const sections: AdvancedSection[] = [
     {
       id: 'pricing',
       title: 'Price Intelligence',
       filters: [
-        { id: 'price_min', label: 'Min price (ISK)', type: 'number', value: undefined, placeholder: 'e.g., 100' },
-        { id: 'price_max', label: 'Max price (ISK)', type: 'number', value: undefined, placeholder: 'e.g., 5000' },
-        { id: 'ppu_min', label: 'Min price/unit', type: 'number', value: undefined, placeholder: 'e.g., 10' },
-        { id: 'ppu_max', label: 'Max price/unit', type: 'number', value: undefined, placeholder: 'e.g., 500' },
+        { id: 'price_min', label: 'Min price (ISK)', type: 'number', value: priceMin, placeholder: 'e.g., 100' },
+        { id: 'price_max', label: 'Max price (ISK)', type: 'number', value: priceMax, placeholder: 'e.g., 5000' },
       ],
     },
     {
       id: 'dietary',
       title: 'Dietary & Allergens',
       filters: [
-        { id: 'vegan', label: 'Vegan', type: 'checkbox', checked: false },
-        { id: 'vegetarian', label: 'Vegetarian', type: 'checkbox', checked: false },
-        { id: 'gluten_free', label: 'Gluten-free', type: 'checkbox', checked: false },
-        { id: 'lactose_free', label: 'Lactose-free', type: 'checkbox', checked: false },
-        { id: 'halal', label: 'Halal', type: 'checkbox', checked: false },
-        { id: 'kosher', label: 'Kosher', type: 'checkbox', checked: false },
+        { id: 'vegan', label: 'Vegan', type: 'checkbox', checked: filters.dietary?.includes('vegan') },
+        { id: 'vegetarian', label: 'Vegetarian', type: 'checkbox', checked: filters.dietary?.includes('vegetarian') },
+        { id: 'gluten_free', label: 'Gluten-free', type: 'checkbox', checked: filters.dietary?.includes('gluten_free') },
+        { id: 'halal', label: 'Halal', type: 'checkbox', checked: filters.dietary?.includes('halal') },
       ],
     },
     {
       id: 'quality',
       title: 'Quality & Origin',
       filters: [
-        { id: 'organic', label: 'Organic certified', type: 'checkbox', checked: false },
-        { id: 'msc', label: 'MSC certified', type: 'checkbox', checked: false },
-        { id: 'fairtrade', label: 'Fairtrade', type: 'checkbox', checked: false },
-        { id: 'local', label: 'Local origin', type: 'checkbox', checked: false },
+        { id: 'organic', label: 'Organic certified', type: 'checkbox', checked: filters.quality?.includes('organic') },
+        { id: 'icelandic', label: 'Icelandic origin', type: 'checkbox', checked: filters.quality?.includes('icelandic') },
+        { id: 'eco_friendly', label: 'Eco-friendly', type: 'checkbox', checked: filters.quality?.includes('eco_friendly') },
+        { id: 'fair_trade', label: 'Fairtrade', type: 'checkbox', checked: filters.quality?.includes('fair_trade') },
       ],
     },
     {
-      id: 'operations',
+      id: 'operational',
       title: 'Operations',
       filters: [
-        { id: 'moq', label: 'Max MOQ', type: 'number', value: undefined, placeholder: 'e.g., 12' },
-        { id: 'lead_time', label: 'Max lead time (days)', type: 'number', value: undefined, placeholder: 'e.g., 7' },
-        { id: 'case_break', label: 'Case-break allowed', type: 'checkbox', checked: false },
-        { id: 'next_delivery', label: 'Matches delivery schedule', type: 'checkbox', checked: false },
+        { id: 'moq', label: 'Max MOQ', type: 'number', value: moq, placeholder: 'e.g., 12' },
+        { id: 'lead_time', label: 'Max lead time (days)', type: 'number', value: leadTime, placeholder: 'e.g., 7' },
+        { id: 'caseBreak', label: 'Case-break allowed', type: 'checkbox', checked: filters.operational?.caseBreak },
+        { id: 'directDelivery', label: 'Direct delivery', type: 'checkbox', checked: filters.operational?.directDelivery },
+        { id: 'sameDay', label: 'Same day available', type: 'checkbox', checked: filters.operational?.sameDay },
       ],
     },
     {
       id: 'lifecycle',
       title: 'Lifecycle',
       filters: [
-        { id: 'new_this_month', label: 'New this month', type: 'checkbox', checked: false },
-        { id: 'back_in_stock', label: 'Back in stock', type: 'checkbox', checked: false },
-        { id: 'seasonal', label: 'Seasonal (in season)', type: 'checkbox', checked: false },
+        { id: 'new_item', label: 'New items', type: 'checkbox', checked: filters.lifecycle?.includes('new_item') },
+        { id: 'discontinued', label: 'Discontinued', type: 'checkbox', checked: filters.lifecycle?.includes('discontinued') },
+        { id: 'seasonal', label: 'Seasonal (in season)', type: 'checkbox', checked: filters.lifecycle?.includes('seasonal') },
       ],
     },
     {
       id: 'data_quality',
       title: 'Data Quality',
       filters: [
-        { id: 'has_image', label: 'Has image', type: 'checkbox', checked: false },
-        { id: 'has_nutrition', label: 'Has nutrition info', type: 'checkbox', checked: false },
-        { id: 'has_spec', label: 'Has spec sheet', type: 'checkbox', checked: false },
+        { id: 'hasImage', label: 'Has image', type: 'checkbox', checked: filters.dataQuality?.hasImage },
+        { id: 'hasPrice', label: 'Has price', type: 'checkbox', checked: filters.dataQuality?.hasPrice },
+        { id: 'hasDescription', label: 'Has description', type: 'checkbox', checked: filters.dataQuality?.hasDescription },
       ],
     },
   ]
@@ -107,36 +139,7 @@ export function AdvancedFilters({ className }: AdvancedFiltersProps) {
     setOpenSections(prev => ({ ...prev, [sectionId]: !prev[sectionId] }))
   }
 
-  // Apply handlers with loading states
-  const handleApplyMOQ = async () => {
-    setIsApplyingMOQ(true)
-    await new Promise(resolve => setTimeout(resolve, 150))
-    announceToScreenReader('Minimum order quantity filter applied')
-    setIsApplyingMOQ(false)
-  }
-
-  const handleApplyLeadTime = async () => {
-    setIsApplyingLeadTime(true)
-    await new Promise(resolve => setTimeout(resolve, 150))
-    announceToScreenReader('Lead time filter applied')
-    setIsApplyingLeadTime(false)
-  }
-
-  const handleApplyPrice = async () => {
-    setIsApplyingPrice(true)
-    await new Promise(resolve => setTimeout(resolve, 150))
-    announceToScreenReader('Price range filter applied')
-    setIsApplyingPrice(false)
-  }
-
-  const handleApplyPPU = async () => {
-    setIsApplyingPPU(true)
-    await new Promise(resolve => setTimeout(resolve, 150))
-    announceToScreenReader('Price per unit filter applied')
-    setIsApplyingPPU(false)
-  }
-
-  // Count active advanced filters (for future use)
+  // Count active filters
   const activeCount = sections.reduce((acc, section) => {
     return acc + section.filters.filter(f => f.type === 'checkbox' && f.checked).length
   }, 0)
@@ -200,7 +203,10 @@ export function AdvancedFilters({ className }: AdvancedFiltersProps) {
                         <div className="flex items-center gap-2">
                           <Checkbox
                             id={`adv-${filter.id}`}
-                            checked={filter.checked}
+                            checked={filter.checked || false}
+                            onCheckedChange={(checked) => 
+                              handleCheckboxChange(section.id, filter.id, !!checked)
+                            }
                             className="h-4 w-4"
                           />
                           <label
@@ -222,18 +228,12 @@ export function AdvancedFilters({ className }: AdvancedFiltersProps) {
                             <Input
                               id={`adv-${filter.id}`}
                               type="number"
-                              value={
-                                filter.id === 'price_min' ? priceMin :
-                                filter.id === 'price_max' ? priceMax :
-                                filter.id === 'ppu_min' ? ppuMin :
-                                filter.id === 'ppu_max' ? ppuMax :
-                                filter.value ?? ''
-                              }
+                              value={filter.value || ''}
                               onChange={(e) => {
                                 if (filter.id === 'price_min') setPriceMin(e.target.value)
                                 else if (filter.id === 'price_max') setPriceMax(e.target.value)
-                                else if (filter.id === 'ppu_min') setPpuMin(e.target.value)
-                                else if (filter.id === 'ppu_max') setPpuMax(e.target.value)
+                                else if (filter.id === 'moq') setMoq(e.target.value)
+                                else if (filter.id === 'lead_time') setLeadTime(e.target.value)
                               }}
                               placeholder={filter.placeholder}
                               className="h-8 text-sm"
@@ -241,26 +241,14 @@ export function AdvancedFilters({ className }: AdvancedFiltersProps) {
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={
-                                filter.id === 'moq' ? handleApplyMOQ :
-                                filter.id === 'lead_time' ? handleApplyLeadTime :
-                                filter.id === 'price_min' || filter.id === 'price_max' ? handleApplyPrice :
-                                handleApplyPPU
-                              }
-                              disabled={
-                                filter.id === 'moq' ? isApplyingMOQ :
-                                filter.id === 'lead_time' ? isApplyingLeadTime :
-                                filter.id === 'price_min' || filter.id === 'price_max' ? isApplyingPrice :
-                                isApplyingPPU
-                              }
+                              onClick={() => {
+                                if (filter.id === 'price_min' || filter.id === 'price_max') handleApplyPrice()
+                                else if (filter.id === 'moq') handleApplyMOQ()
+                                else if (filter.id === 'lead_time') handleApplyLeadTime()
+                              }}
                               className="h-8 px-3 text-xs"
                             >
-                              {
-                                (filter.id === 'moq' ? isApplyingMOQ :
-                                filter.id === 'lead_time' ? isApplyingLeadTime :
-                                filter.id === 'price_min' || filter.id === 'price_max' ? isApplyingPrice :
-                                isApplyingPPU) ? 'Applying...' : 'Apply'
-                              }
+                              Apply
                             </Button>
                           </div>
                         </div>
