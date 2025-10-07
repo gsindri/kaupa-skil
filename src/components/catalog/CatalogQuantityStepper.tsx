@@ -225,7 +225,7 @@ export function CatalogQuantityStepper({
           countWrapper:
             "relative flex h-full flex-1 items-center justify-center bg-transparent px-2",
           count:
-            "catalog-card__stepper-count min-w-[3rem] text-center text-[13px] font-medium leading-[2.25rem] text-foreground",
+            "catalog-card__stepper-count h-[2.25rem] min-w-[3rem] text-center text-sm font-medium leading-[2.25rem] text-foreground",
         }
       : {
           root:
@@ -235,7 +235,7 @@ export function CatalogQuantityStepper({
           countWrapper:
             "relative flex h-full flex-1 items-center justify-center bg-transparent px-3",
           count:
-            "catalog-card__stepper-count min-w-[3.25rem] text-center text-sm font-medium leading-[2.5rem] text-foreground",
+            "catalog-card__stepper-count h-[2.5rem] min-w-[3.25rem] text-center text-base font-medium leading-[2.5rem] text-foreground",
         };
 
   const showRemoveIcon = allowRemoval && optimisticQuantity <= Math.max(1, minQuantity || 0);
@@ -297,7 +297,7 @@ export function CatalogQuantityStepper({
           }}
           aria-label={`Quantity for ${itemLabel}`}
           className={cn(
-            "h-full w-full appearance-none bg-transparent tabular-nums text-center text-foreground outline-none",
+            "w-full appearance-none bg-transparent tabular-nums text-center text-foreground outline-none",
             sizeStyles.count,
           )}
         />
