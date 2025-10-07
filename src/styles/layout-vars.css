@@ -48,7 +48,8 @@
   /* Cart rail tokens */
   --cart-rail-w: 200px;           /* cart width when open */
   --cart-rail-gap: 20px;          /* space between content and cart */
-  --cart-rail-offset: calc(var(--cart-rail-w) + var(--cart-rail-gap)); /* total shift: 220px */
+  --cart-rail-h: min(520px, calc(100vh - var(--cart-rail-top, 64px) - 32px)); /* cart drop height */
+  --cart-rail-offset: calc(var(--cart-rail-h) + var(--cart-rail-gap));
   --cart-rail-transition: 250ms cubic-bezier(0.4, 0, 0.2, 1);
 
   /* Catalog toolbar tokens */
