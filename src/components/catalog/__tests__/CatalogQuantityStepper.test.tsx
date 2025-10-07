@@ -283,6 +283,47 @@ describe('CatalogQuantityStepper', () => {
     expect(addItem).toHaveBeenCalledTimes(3)
   })
 
+  it('syncs controller quantity when cart items are removed elsewhere', () => {
+    const basketValue: React.ContextType<typeof BasketContext> = {
+      items: [],
+      addItem: vi.fn(),
+      updateQuantity: vi.fn(),
+      removeItem: vi.fn(),
+      clearBasket: vi.fn(),
+      clearCart: vi.fn(),
+      restoreItems: vi.fn(),
+      getTotalItems: () => 0,
+      getTotalPrice: () => 0,
+      getMissingPriceCount: () => 0,
+      isDrawerOpen: false,
+      setIsDrawerOpen: vi.fn(),
+      isDrawerPinned: false,
+      setIsDrawerPinned: vi.fn() as React.Dispatch<React.SetStateAction<boolean>>,
+      cartPulseSignal: 0,
+    }
+
+    function ControllerProbe({ quantity }: { quantity: number }) {
+      const controller = useCartQuantityController('item-1', quantity)
+      return <span data-testid="optimistic-quantity">{controller.optimisticQuantity}</span>
+    }
+
+    const { rerender } = render(
+      <BasketContext.Provider value={basketValue}>
+        <ControllerProbe quantity={2} />
+      </BasketContext.Provider>,
+    )
+
+    expect(screen.getByTestId('optimistic-quantity')).toHaveTextContent('2')
+
+    rerender(
+      <BasketContext.Provider value={basketValue}>
+        <ControllerProbe quantity={0} />
+      </BasketContext.Provider>,
+    )
+
+    expect(screen.getByTestId('optimistic-quantity')).toHaveTextContent('0')
+  })
+
   it('never shows a lower quantity while controller increments are pending', () => {
     const addItem = vi.fn()
     const updateQuantity = vi.fn()
