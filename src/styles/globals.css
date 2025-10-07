@@ -700,8 +700,8 @@ svg.lucide{ stroke-width:1.75; }
 .dark .catalog-card__stepper-btn{ color:rgba(241,245,249,0.92); }
 .dark .catalog-card__stepper-btn:hover:not(:disabled){ background:color-mix(in oklab, rgba(148,163,184,0.45) 40%, transparent); color:#fff; }
 .catalog-card__stepper-btn:disabled{ opacity:0.5; }
-.catalog-card__stepper-count{ min-width:2.75rem; height:2.25rem; display:inline-flex; align-items:center; justify-content:center; padding:0 0.45rem; border-radius:0.65rem; font-variant-numeric:tabular-nums; font-size:0.95rem; font-weight:600; background:#fff; color:hsl(var(--foreground)); border:1px solid color-mix(in oklab, hsl(var(--border)) 82%, transparent); }
-.dark .catalog-card__stepper-count{ background:rgba(15,23,42,0.35); color:rgba(241,245,249,0.92); border-color:color-mix(in oklab, rgba(148,163,184,0.65) 70%, transparent); }
+.catalog-card__stepper-count{ min-width:2.75rem; height:100%; display:block; padding:0; font-variant-numeric:tabular-nums; font-size:0.95rem; font-weight:600; background:transparent; color:inherit; border:none; line-height:1.1; }
+.dark .catalog-card__stepper-count{ color:inherit; }
 
 @keyframes catalog-chip-pulse{
   0%{ transform:scale(1); box-shadow:0 0 0 0 rgba(33,212,214,0); }
