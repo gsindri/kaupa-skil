@@ -227,7 +227,6 @@ export default function CatalogPage() {
   const [bannerDismissed, setBannerDismissed] = useState(false)
   const headerRef = useRef<HTMLDivElement>(null)
   const filterButtonRef = useRef<HTMLButtonElement | null>(null)
-  const previousShowFilters = useRef(showFilters)
   const [scrolled, setScrolled] = useState(false)
 
   useEffect(() => {
@@ -1156,11 +1155,12 @@ function FiltersBar({
     }
   }, [showFilters])
 
+  const previousShowFiltersRef = useRef(showFilters)
   useEffect(() => {
-    if (previousShowFilters.current && !showFilters) {
+    if (previousShowFiltersRef.current && !showFilters) {
       filterButtonRef.current?.focus()
     }
-    previousShowFilters.current = showFilters
+    previousShowFiltersRef.current = showFilters
   }, [showFilters, filterButtonRef])
 
   const toggleFilters = useCallback(() => {
