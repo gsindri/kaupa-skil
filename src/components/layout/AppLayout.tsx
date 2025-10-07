@@ -37,6 +37,7 @@ export function AppLayout({
   panelOpen = true
 }: AppLayoutProps) {
   const internalHeaderRef = useRef<HTMLDivElement>(null)
+  const contentRef = useRef<HTMLDivElement | null>(null)
   const combinedHeaderRef = useCallback(
     (node: HTMLDivElement | null) => {
       internalHeaderRef.current = node
@@ -46,6 +47,18 @@ export function AppLayout({
     },
     [headerRef]
   )
+
+  const updateRightGutter = useCallback(() => {
+    if (typeof window === 'undefined') return
+    const node = contentRef.current
+    if (!node) return
+    const rect = node.getBoundingClientRect()
+    const gutter = Math.max(0, window.innerWidth - rect.right)
+    document.documentElement.style.setProperty('--page-right-gutter', `${gutter}px`)
+  }, [])
+
+  const hasSecondary = !!secondary
+  const showSecondary = hasSecondary && panelOpen
 
   const isPinned = useCallback(() => {
     const el = internalHeaderRef.current
@@ -63,13 +76,33 @@ export function AppLayout({
     }
   }, [])
 
+  useLayoutEffect(() => {
+    if (typeof window === 'undefined') return
+    const handleResize = () => {
+      updateRightGutter()
+    }
+
+    handleResize()
+    window.addEventListener('resize', handleResize)
+
+    const node = contentRef.current
+    let observer: ResizeObserver | undefined
+
+    if (node && typeof ResizeObserver !== 'undefined') {
+      observer = new ResizeObserver(handleResize)
+      observer.observe(node)
+    }
+
+    return () => {
+      window.removeEventListener('resize', handleResize)
+      observer?.disconnect()
+    }
+  }, [updateRightGutter, showSecondary])
+
   const headerNode =
     header && React.isValidElement(header)
       ? React.cloneElement(header as ReactElement<any>, { onLockChange: handleLockChange })
       : header
-
-  const hasSecondary = !!secondary
-  const showSecondary = hasSecondary && panelOpen
 
   const filtersWidth = useMemo(
     () => (showSecondary ? 'clamp(280px, 24vw, 360px)' : '0px'),
@@ -138,6 +171,7 @@ export function AppLayout({
                 'page-grid__content mx-auto grid w-full items-start gap-6 max-w-none',
                 hasSecondary ? 'lg:max-w-[1600px]' : 'lg:grid-cols-1'
               )}
+              ref={contentRef}
               style={gridStyle}
             >
               {hasSecondary && (
