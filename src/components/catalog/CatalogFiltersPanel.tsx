@@ -193,6 +193,8 @@ export function CatalogFiltersPanel({
       supplier: React.createRef<HTMLDivElement>(),
       availability: React.createRef<HTMLDivElement>(),
       packSizeRange: React.createRef<HTMLDivElement>(),
+      priceRange: React.createRef<HTMLDivElement>(),
+      pricePerUnitRange: React.createRef<HTMLDivElement>(),
     }) satisfies Record<keyof FacetFilters, React.RefObject<HTMLDivElement>>,
     [],
   )

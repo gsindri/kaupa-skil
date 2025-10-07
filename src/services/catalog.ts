@@ -8,6 +8,8 @@ export type FacetFilters = {
   supplier?: { include: string[]; exclude: string[] }
   availability?: string[]
   packSizeRange?: { min?: number; max?: number } | null
+  priceRange?: { min?: number; max?: number } | null
+  pricePerUnitRange?: { min?: number; max?: number } | null
 }
 
 function packSizeRangeToString(range: { min?: number; max?: number }): string {

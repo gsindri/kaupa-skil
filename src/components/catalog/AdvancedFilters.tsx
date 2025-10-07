@@ -29,7 +29,28 @@ export function AdvancedFilters({ className }: AdvancedFiltersProps) {
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({})
   const [isApplyingMOQ, setIsApplyingMOQ] = useState(false)
   const [isApplyingLeadTime, setIsApplyingLeadTime] = useState(false)
+  const [isApplyingPrice, setIsApplyingPrice] = useState(false)
+  const [isApplyingPPU, setIsApplyingPPU] = useState(false)
+
+  // Price range state
+  const [priceMin, setPriceMin] = useState('')
+  const [priceMax, setPriceMax] = useState('')
+  
+  // Price per unit range state
+  const [ppuMin, setPpuMin] = useState('')
+  const [ppuMax, setPpuMax] = useState('')
+
   const sections: AdvancedSection[] = [
+    {
+      id: 'pricing',
+      title: 'Price Intelligence',
+      filters: [
+        { id: 'price_min', label: 'Min price (ISK)', type: 'number', value: undefined, placeholder: 'e.g., 100' },
+        { id: 'price_max', label: 'Max price (ISK)', type: 'number', value: undefined, placeholder: 'e.g., 5000' },
+        { id: 'ppu_min', label: 'Min price/unit', type: 'number', value: undefined, placeholder: 'e.g., 10' },
+        { id: 'ppu_max', label: 'Max price/unit', type: 'number', value: undefined, placeholder: 'e.g., 500' },
+      ],
+    },
     {
       id: 'dietary',
       title: 'Dietary & Allergens',
@@ -99,6 +120,20 @@ export function AdvancedFilters({ className }: AdvancedFiltersProps) {
     await new Promise(resolve => setTimeout(resolve, 150))
     announceToScreenReader('Lead time filter applied')
     setIsApplyingLeadTime(false)
+  }
+
+  const handleApplyPrice = async () => {
+    setIsApplyingPrice(true)
+    await new Promise(resolve => setTimeout(resolve, 150))
+    announceToScreenReader('Price range filter applied')
+    setIsApplyingPrice(false)
+  }
+
+  const handleApplyPPU = async () => {
+    setIsApplyingPPU(true)
+    await new Promise(resolve => setTimeout(resolve, 150))
+    announceToScreenReader('Price per unit filter applied')
+    setIsApplyingPPU(false)
   }
 
   // Count active advanced filters (for future use)
@@ -187,18 +222,45 @@ export function AdvancedFilters({ className }: AdvancedFiltersProps) {
                             <Input
                               id={`adv-${filter.id}`}
                               type="number"
-                              value={filter.value ?? ''}
+                              value={
+                                filter.id === 'price_min' ? priceMin :
+                                filter.id === 'price_max' ? priceMax :
+                                filter.id === 'ppu_min' ? ppuMin :
+                                filter.id === 'ppu_max' ? ppuMax :
+                                filter.value ?? ''
+                              }
+                              onChange={(e) => {
+                                if (filter.id === 'price_min') setPriceMin(e.target.value)
+                                else if (filter.id === 'price_max') setPriceMax(e.target.value)
+                                else if (filter.id === 'ppu_min') setPpuMin(e.target.value)
+                                else if (filter.id === 'ppu_max') setPpuMax(e.target.value)
+                              }}
                               placeholder={filter.placeholder}
                               className="h-8 text-sm"
                             />
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={filter.id === 'moq' ? handleApplyMOQ : handleApplyLeadTime}
-                              disabled={filter.id === 'moq' ? isApplyingMOQ : isApplyingLeadTime}
+                              onClick={
+                                filter.id === 'moq' ? handleApplyMOQ :
+                                filter.id === 'lead_time' ? handleApplyLeadTime :
+                                filter.id === 'price_min' || filter.id === 'price_max' ? handleApplyPrice :
+                                handleApplyPPU
+                              }
+                              disabled={
+                                filter.id === 'moq' ? isApplyingMOQ :
+                                filter.id === 'lead_time' ? isApplyingLeadTime :
+                                filter.id === 'price_min' || filter.id === 'price_max' ? isApplyingPrice :
+                                isApplyingPPU
+                              }
                               className="h-8 px-3 text-xs"
                             >
-                              {(filter.id === 'moq' ? isApplyingMOQ : isApplyingLeadTime) ? 'Applying...' : 'Apply'}
+                              {
+                                (filter.id === 'moq' ? isApplyingMOQ :
+                                filter.id === 'lead_time' ? isApplyingLeadTime :
+                                filter.id === 'price_min' || filter.id === 'price_max' ? isApplyingPrice :
+                                isApplyingPPU) ? 'Applying...' : 'Apply'
+                              }
                             </Button>
                           </div>
                         </div>
