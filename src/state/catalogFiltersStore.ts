@@ -2,8 +2,6 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { shallow } from 'zustand/vanilla/shallow'
 import type { FacetFilters } from '@/services/catalog'
-import type { TriState } from '@/lib/catalogFilters'
-export type { TriState } from '@/lib/catalogFilters'
 
 // Zustand store managing catalog filter state. Utility helpers have been
 // consolidated in "@/lib/catalogFilters" to keep this module focused on state.
@@ -25,26 +23,27 @@ export type SortOrder =
   | 'az'
   | 'recent'
 
-export type TriStock = TriState
+// Legacy tri-state for backward compatibility
+export type TriState = 'off' | 'include' | 'exclude'
 
 interface CatalogFiltersState {
   /** Current facet filters applied to the catalog */
   filters: FacetFilters
   /** Whether to show only items with price information */
   onlyWithPrice: boolean
-  /** Tri-state stock filter */
-  triStock: TriState
-  /** Tri-state special filter */
-  triSpecial: TriState
-  /** Tri-state my suppliers filter */
-  triSuppliers: TriState
+  /** Tier-1 toggles - simple boolean filters (NEW) */
+  inStock: boolean
+  mySuppliers: boolean
+  onSpecial: boolean
+  hasPrice: boolean
   /** Selected sort order */
   sort: SortOrder
   setFilters: (f: Partial<FacetFilters>) => void
   setOnlyWithPrice: (v: boolean) => void
-  setTriStock: (v: TriState) => void
-  setTriSpecial: (v: TriState) => void
-  setTriSuppliers: (v: TriState) => void
+  setInStock: (v: boolean) => void
+  setMySuppliers: (v: boolean) => void
+  setOnSpecial: (v: boolean) => void
+  setHasPrice: (v: boolean) => void
   setSort: (v: SortOrder) => void
   clear: () => void
 }
@@ -197,17 +196,19 @@ const defaultState: Omit<
   CatalogFiltersState,
   | 'setFilters'
   | 'setOnlyWithPrice'
+  | 'setInStock'
+  | 'setMySuppliers'
+  | 'setOnSpecial'
+  | 'setHasPrice'
   | 'setSort'
-  | 'setTriStock'
-  | 'setTriSpecial'
-  | 'setTriSuppliers'
   | 'clear'
 > = {
   filters: {},
   onlyWithPrice: false,
-  triStock: 'off',
-  triSpecial: 'off',
-  triSuppliers: 'off',
+  inStock: false,
+  mySuppliers: false,
+  onSpecial: false,
+  hasPrice: false,
   sort: 'relevance',
 }
 
@@ -222,13 +223,11 @@ export const useCatalogFilters = create<CatalogFiltersState>()(
           return hasChanges ? { filters: merged } : state
         }),
       setOnlyWithPrice: v => set({ onlyWithPrice: v }),
+      setInStock: v => set(state => (state.inStock === v ? state : { inStock: v })),
+      setMySuppliers: v => set(state => (state.mySuppliers === v ? state : { mySuppliers: v })),
+      setOnSpecial: v => set(state => (state.onSpecial === v ? state : { onSpecial: v })),
+      setHasPrice: v => set(state => (state.hasPrice === v ? state : { hasPrice: v })),
       setSort: v => set({ sort: v }),
-      setTriStock: v =>
-        set(state => (state.triStock === v ? state : { triStock: v })),
-      setTriSpecial: v =>
-        set(state => (state.triSpecial === v ? state : { triSpecial: v })),
-      setTriSuppliers: v =>
-        set(state => (state.triSuppliers === v ? state : { triSuppliers: v })),
       clear: () => set({ ...defaultState }),
     }),
     {

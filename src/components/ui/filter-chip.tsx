@@ -5,12 +5,26 @@ import { X } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const filterChipVariants = cva(
-  "inline-flex h-[var(--ctrl-h,36px)] items-center justify-center whitespace-nowrap rounded-[var(--ctrl-r,12px)] border border-[color:var(--ring-idle)]/60 bg-white/70 px-3 text-sm font-medium text-[color:var(--ink-dim)] transition duration-150 ease-out backdrop-blur-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-3 focus-visible:ring-offset-[color:var(--toolbar-bg)] cursor-pointer select-none hover:bg-white/85 hover:text-[color:var(--ink)] hover:border-[color:var(--ring-hover)] motion-reduce:transition-none data-[selected=true]:border-[color:var(--accent-fill)]/60 data-[selected=true]:bg-[color:var(--accent-fill)]/15 data-[selected=true]:text-[color:var(--accent-ink)] data-[selected=true]:hover:bg-[color:var(--accent-fill)]/25"
+  "inline-flex h-[var(--ctrl-h,36px)] items-center justify-center gap-1 whitespace-nowrap rounded-[var(--ctrl-r,12px)] border px-3 text-sm font-medium transition duration-150 ease-out backdrop-blur-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-3 focus-visible:ring-offset-[color:var(--toolbar-bg)] cursor-pointer select-none motion-reduce:transition-none",
+  {
+    variants: {
+      variant: {
+        include: "border-[color:var(--accent-fill)]/60 bg-[color:var(--accent-fill)]/15 text-[color:var(--accent-ink)] hover:bg-[color:var(--accent-fill)]/25",
+        exclude: "border-destructive/60 bg-destructive/10 text-destructive hover:bg-destructive/20",
+        default: "border-[color:var(--ring-idle)]/60 bg-white/70 text-[color:var(--ink-dim)] hover:bg-white/85 hover:text-[color:var(--ink)] hover:border-[color:var(--ring-hover)]"
+      }
+    },
+    defaultVariants: {
+      variant: "default"
+    }
+  }
 )
 
 export interface FilterChipProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   selected?: boolean
+  variant?: 'include' | 'exclude' | 'default'
+  onCycle?: () => void
   onSelectedChange?: (selected: boolean) => void
   animation?: string
   onRemove?: () => void
@@ -20,7 +34,9 @@ const FilterChip = React.forwardRef<HTMLButtonElement, FilterChipProps>(
   (
     {
       selected = false,
+      variant = 'default',
       onSelectedChange,
+      onCycle,
       animation = "animate-chip-bounce",
       className,
       children,
@@ -32,6 +48,28 @@ const FilterChip = React.forwardRef<HTMLButtonElement, FilterChipProps>(
   ) => {
     const removeLabel =
       typeof children === "string" ? `Remove ${children}` : "Remove filter"
+
+    const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+      if (onCycle) {
+        onCycle()
+      } else {
+        onSelectedChange?.(!selected)
+      }
+      onClick?.(e)
+    }
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>) => {
+      if ((e.key === 'Backspace' || e.key === 'Delete') && onCycle) {
+        e.preventDefault()
+        // Trigger remove by cycling to the end
+        if (variant === 'exclude') {
+          onCycle() // exclude → remove
+        } else if (variant === 'include') {
+          onCycle() // include → exclude
+          setTimeout(() => onCycle && onCycle(), 0) // exclude → remove
+        }
+      }
+    }
 
     const handleRemove = (
       e: React.MouseEvent<HTMLSpanElement> | React.KeyboardEvent<HTMLSpanElement>
@@ -55,13 +93,13 @@ const FilterChip = React.forwardRef<HTMLButtonElement, FilterChipProps>(
         ref={ref}
         key={String(selected)}
         data-selected={selected}
-        onClick={(e) => {
-          onSelectedChange?.(!selected)
-          onClick?.(e)
-        }}
-        className={cn(filterChipVariants(), animation, className)}
+        onClick={handleClick}
+        onKeyDown={handleKeyDown}
+        className={cn(filterChipVariants({ variant }), animation, className)}
+        title={variant === 'exclude' ? 'Excluded' : undefined}
         {...props}
       >
+        {variant === 'exclude' && <span aria-hidden="true">−</span>}
         {children}
         {selected && onRemove && (
           <span
