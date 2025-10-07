@@ -117,7 +117,22 @@ export function useCartQuantityController(supplierItemId: string, cartQuantity: 
   useEffect(() => {
     const external = Math.max(0, Math.floor(cartQuantity || 0))
     const { version, quantity } = lastPropSeenRef.current
+
     if (external === quantity) {
+      targetRef.current = external
+      committedRef.current = external
+      lastPropSeenRef.current = { version, quantity: external }
+      setOptimistic(external)
+      setPendingIncrement(0)
+      return
+    }
+
+    const hasPendingUpdate = targetRef.current !== committedRef.current
+
+    if (
+      !hasPendingUpdate &&
+      (external !== targetRef.current || external !== committedRef.current)
+    ) {
       targetRef.current = external
       committedRef.current = external
       lastPropSeenRef.current = { version, quantity: external }
