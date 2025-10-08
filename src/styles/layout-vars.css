@@ -46,11 +46,10 @@
   --z-dialog-content: 80; /* spotlight/dialog content */
 
   /* Cart rail tokens */
-  --page-gutter: clamp(16px, 4vw, 32px);
-  --cart-rail-w: 240px;           /* cart width when open */
-  --cart-rail-gap: var(--page-gutter);
-  --cart-rail-offset: calc(var(--cart-rail-w) + var(--cart-rail-gap));
-  --cart-rail-transition: 240ms cubic-bezier(0.4, 0, 0.2, 1);
+  --cart-rail-w: 200px;           /* cart width when open */
+  --cart-rail-gap: 20px;          /* space between content and cart */
+  --cart-rail-offset: calc(var(--cart-rail-w) + var(--cart-rail-gap)); /* total shift: 220px */
+  --cart-rail-transition: 250ms cubic-bezier(0.4, 0, 0.2, 1);
 
   /* Catalog toolbar tokens */
   --toolbar-ring: 0 0 0 1px rgba(255, 255, 255, 0.1) inset;

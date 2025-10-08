@@ -2,14 +2,47 @@ import * as React from "react"
 import { createPortal } from "react-dom"
 import { Sheet, SheetContent } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
-import { ShoppingCart, X, Trash2 } from "lucide-react"
+import { X, Trash2 } from "lucide-react"
 import { useCart } from "@/contexts/useBasket"
 import { useSettings } from "@/contexts/useSettings"
 import { QuantityStepper } from "./QuantityStepper"
 import { cn } from "@/lib/utils"
-import { useMediaQuery } from "@/hooks/useMediaQuery"
 
-const DESKTOP_MEDIA_QUERY = "(min-width: 1024px)"
+const DESKTOP_MEDIA_QUERY = "(min-width: 769px)"
+
+function useMediaQuery(query: string) {
+  const [matches, setMatches] = React.useState(() => {
+    if (typeof window === "undefined") return false
+    return window.matchMedia(query).matches
+  })
+
+  React.useEffect(() => {
+    if (typeof window === "undefined") return () => {}
+
+    const mediaQuery = window.matchMedia(query)
+    const handleChange = (event: MediaQueryListEvent) => setMatches(event.matches)
+
+    if ("addEventListener" in mediaQuery) {
+      mediaQuery.addEventListener("change", handleChange)
+    } else {
+      // @ts-expect-error - Legacy browsers
+      mediaQuery.addListener(handleChange)
+    }
+
+    setMatches(mediaQuery.matches)
+
+    return () => {
+      if ("removeEventListener" in mediaQuery) {
+        mediaQuery.removeEventListener("change", handleChange)
+      } else {
+        // @ts-expect-error - Legacy browsers
+        mediaQuery.removeListener(handleChange)
+      }
+    }
+  }, [query])
+
+  return matches
+}
 
 function formatCurrency(value: number) {
   return new Intl.NumberFormat(undefined, {
@@ -37,17 +70,21 @@ export function CartDrawer() {
     }, 0)
   }, [items])
 
-  const totalLabel = React.useMemo(() => {
-    const suffix = totalItems === 1 ? "item" : "items"
-    return `${totalItems} ${suffix}`
-  }, [totalItems])
-
   const [isMounted, setIsMounted] = React.useState(false)
   const desktopRailRef = React.useRef<HTMLDivElement | null>(null)
 
   React.useEffect(() => {
     setIsMounted(true)
   }, [])
+
+  // Manage data-cart-rail attribute on document root
+  React.useEffect(() => {
+    if (isDesktop && isDrawerOpen) {
+      document.documentElement.setAttribute('data-cart-rail', 'open')
+    } else {
+      document.documentElement.removeAttribute('data-cart-rail')
+    }
+  }, [isDesktop, isDrawerOpen])
 
   const subtotal = getTotalPrice(includeVat)
 
@@ -75,84 +112,59 @@ export function CartDrawer() {
     return () => document.removeEventListener("pointerdown", handlePointerDown)
   }, [isDesktop, isDrawerOpen, handleClose])
 
+  const renderItemThumb = (image: string | null, name: string) => {
+    if (image) {
+      return <img src={image} alt={name} className="cart-item__thumb" />
+    }
+    const fallback = name.trim().charAt(0).toUpperCase() || "•"
+    return (
+      <span aria-hidden className="cart-item__thumb cart-item__thumb--fallback">
+        {fallback}
+      </span>
+    )
+  }
+
   const cartItems = (
     <div className="cart-rail__body">
       {items.length === 0 ? (
-        <div className="cart-rail__empty-state" role="status">
-          <span className="cart-rail__empty-icon" aria-hidden>
-            <ShoppingCart />
-          </span>
-          <p className="cart-rail__empty-title">Your cart is empty</p>
-          <p className="cart-rail__empty-copy">
-            Add items from the catalog to start building your order.
-          </p>
-        </div>
+        <p className="cart-rail__empty">Your cart is empty.</p>
       ) : (
-        <ul className="cart-rail__list">
-          {items.map(item => {
-            const name = (item.displayName || item.itemName || "Item").trim() || "Item"
-            const unitPrice = includeVat
-              ? item.unitPriceIncVat ?? item.packPrice ?? 0
-              : item.unitPriceExVat ?? item.packPrice ?? 0
-            const lineTotal = unitPrice * item.quantity
-            const unitPriceLabel = formatCurrency(unitPrice)
+        items.map(item => {
+          const name = (item.displayName || item.itemName || "Item").trim() || "Item"
+          const unitPrice = includeVat
+            ? item.unitPriceIncVat ?? item.packPrice ?? 0
+            : item.unitPriceExVat ?? item.packPrice ?? 0
+          const lineTotal = unitPrice * item.quantity
 
-            const renderItemThumb = () => {
-              if (item.image) {
-                return (
-                  <img
-                    src={item.image}
-                    alt={name}
-                    className="cart-item__thumb"
-                    loading="lazy"
-                  />
-                )
-              }
-
-              const fallback = name.trim().charAt(0).toUpperCase() || "•"
-              return (
-                <span aria-hidden className="cart-item__thumb cart-item__thumb--fallback">
-                  {fallback}
-                </span>
-              )
-            }
-
-            return (
-              <li className="cart-item" key={item.supplierItemId}>
-                <div className="cart-item__media">{renderItemThumb()}</div>
-                <div className="cart-item__meta">
-                  <div className="cart-item__topline">
-                    <span className="cart-item__title" title={name}>
-                      {name}
-                    </span>
-                    <span className="cart-item__line-total">{formatCurrency(lineTotal)}</span>
-                  </div>
-                  {item.supplierName ? (
-                    <p className="cart-item__supplier">{item.supplierName}</p>
-                  ) : null}
-                  <p className="cart-item__unit-price">Unit price · {unitPriceLabel}</p>
-                  <div className="cart-item__controls">
-                    <QuantityStepper
-                      supplierItemId={item.supplierItemId}
-                      quantity={item.quantity}
-                      label={name}
-                      supplier={item.supplierName}
-                      className="cart-item__stepper"
-                    />
-                    <button
-                      type="button"
-                      className="cart-item__remove"
-                      aria-label={`Remove ${name}`}
-                      onClick={() => removeItem(item.supplierItemId)}
-                    >
-                      <Trash2 aria-hidden className="cart-item__remove-icon" />
-                    </button>
-                  </div>
+          return (
+            <article className="cart-item" key={item.supplierItemId}>
+              {renderItemThumb(item.image, name)}
+              <div className="cart-item__info">
+                <div className="cart-item__title" title={name}>
+                  {name}
                 </div>
-              </li>
-            )
-          })}
-        </ul>
+                <div className="cart-item__price">{formatCurrency(lineTotal)}</div>
+                <div className="cart-item__actions">
+                  <QuantityStepper
+                    supplierItemId={item.supplierItemId}
+                    quantity={item.quantity}
+                    label={name}
+                    supplier={item.supplierName}
+                    className="cart-item__stepper"
+                  />
+                  <button
+                    type="button"
+                    className="cart-item__remove"
+                    aria-label={`Remove ${name}`}
+                    onClick={() => removeItem(item.supplierItemId)}
+                  >
+                    <Trash2 aria-hidden className="cart-item__remove-icon" />
+                  </button>
+                </div>
+              </div>
+            </article>
+          )
+        })
       )}
     </div>
   )
@@ -161,8 +173,8 @@ export function CartDrawer() {
     <>
       <header className="cart-rail__header">
         <div className="cart-rail__title" aria-live="polite">
-          <span className="cart-rail__title-text">Cart</span>
-          <span className="cart-rail__count">{totalLabel}</span>
+          <span>Cart</span>
+          <span className="cart-rail__count">{totalItems}</span>
         </div>
         <button
           type="button"
