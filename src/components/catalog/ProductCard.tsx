@@ -301,7 +301,11 @@ export const ProductCard = memo(function ProductCard({
             controller.canIncrease
           }
           size="sm"
-          className="rounded-lg border border-border/60 bg-background/90 px-2 py-1 shadow-none"
+          className={cn(
+            "h-[2.625rem] min-h-[2.625rem] rounded-full border border-border/60 bg-background/90 px-1.5 shadow-none",
+            "[&_.catalog-card__stepper-btn]:h-[2.625rem] [&_.catalog-card__stepper-btn]:min-h-[2.625rem] [&_.catalog-card__stepper-btn]:min-w-[2.625rem]",
+            "[&_.catalog-card__stepper-count]:h-[2.625rem] [&_.catalog-card__stepper-count]:leading-[2.625rem]",
+          )}
         />
         {maxHint ? (
           <span className="text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
@@ -447,10 +451,10 @@ export const ProductCard = memo(function ProductCard({
                   product={product}
                   suppliers={addToCartSuppliers}
                   className="w-full"
-                  buttonClassName="inline-flex h-10 w-full items-center justify-center rounded-full bg-secondary px-4 text-sm font-semibold text-secondary-foreground shadow-sm transition-colors duration-150 hover:bg-secondary/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-                  disabledButtonClassName="inline-flex h-10 w-full items-center justify-center rounded-full bg-muted px-4 text-sm font-medium text-muted-foreground shadow-none"
-                  passiveButtonClassName="inline-flex h-10 w-full items-center justify-center rounded-full border border-border/70 bg-background/80 px-4 text-sm font-medium text-muted-foreground shadow-none backdrop-blur-sm"
-                  unavailableButtonClassName="inline-flex h-10 w-full items-center justify-center rounded-full border border-dashed border-muted-foreground/60 bg-background/70 px-4 text-sm font-medium text-muted-foreground shadow-none"
+                  buttonClassName="inline-flex h-[2.625rem] w-full items-center justify-center rounded-full bg-secondary px-4 text-sm font-semibold text-secondary-foreground shadow-sm transition-colors duration-150 hover:bg-secondary/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                  disabledButtonClassName="inline-flex h-[2.625rem] w-full items-center justify-center rounded-full bg-muted px-4 text-sm font-medium text-muted-foreground shadow-none"
+                  passiveButtonClassName="inline-flex h-[2.625rem] w-full items-center justify-center rounded-full border border-border/70 bg-background/80 px-4 text-sm font-medium text-muted-foreground shadow-none backdrop-blur-sm"
+                  unavailableButtonClassName="inline-flex h-[2.625rem] w-full items-center justify-center rounded-full border border-dashed border-muted-foreground/60 bg-background/70 px-4 text-sm font-medium text-muted-foreground shadow-none"
                   popoverClassName="w-64 space-y-1 p-2"
                   popoverSide="top"
                   popoverAlign="end"
