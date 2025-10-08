@@ -82,6 +82,38 @@ const parseQuantity = (value: unknown): number | null => {
   return Math.max(0, Math.floor(numeric))
 }
 
+const QUANTITY_CAP_FIELDS = [
+  'max_order_qty',
+  'max_order_quantity',
+  'maxOrderQuantity',
+  'maxOrderQty',
+  'max_qty',
+  'maxQuantity',
+  'max_quantity',
+  'maximum_quantity',
+  'maximumQuantity',
+  'maximum_order_quantity',
+  'maximumOrderQuantity',
+  'order_limit',
+  'orderLimit',
+  'available_quantity',
+  'availableQuantity',
+  'quantity_available',
+  'stock_quantity',
+  'stock_qty',
+] as const
+
+const collectQuantityCaps = (source: any): number[] => {
+  if (!source) return []
+
+  const normalized = QUANTITY_CAP_FIELDS.map(field => parseQuantity(source?.[field]))
+    .filter((value): value is number => value !== null && Number.isFinite(value))
+    .map(value => Math.floor(Math.max(0, value)))
+    .filter(value => value > 0)
+
+  return normalized
+}
+
 export function CatalogAddToCartButton({
   product,
   suppliers,
@@ -221,34 +253,40 @@ export function CatalogAddToCartButton({
     return supplierEntries.length === 1 ? 0 : -1
   }, [existingItem?.supplierId, supplierEntries])
 
+  const productQuantityCaps = useMemo(
+    () => collectQuantityCaps(product),
+    [product],
+  )
+
+  const productMaxQuantity = useMemo(() => {
+    if (!productQuantityCaps.length) return undefined
+    return Math.min(...productQuantityCaps)
+  }, [productQuantityCaps])
+
   const maxQuantity = useMemo(() => {
-    if (activeSupplierIndex < 0) return undefined
+    if (activeSupplierIndex < 0) {
+      return productMaxQuantity
+    }
+
     const raw = rawSuppliers[activeSupplierIndex] as any
-    if (!raw) return undefined
+    if (!raw) {
+      return productMaxQuantity
+    }
 
-    const candidates = [
-      parseQuantity(raw?.max_order_qty),
-      parseQuantity(raw?.maximum_order_quantity),
-      parseQuantity(raw?.max_qty),
-      parseQuantity(raw?.maxQuantity),
-      parseQuantity(raw?.maximum_quantity),
-      parseQuantity(raw?.order_limit),
-      parseQuantity(raw?.stock_quantity),
-      parseQuantity(raw?.stock_qty),
-      parseQuantity(raw?.quantity_available),
-    ]
+    const supplierCaps = collectQuantityCaps(raw)
+    const combinedCaps = [...supplierCaps, ...productQuantityCaps]
 
-    const normalized = candidates
-      .filter((value): value is number => value !== null && Number.isFinite(value))
-      .map(value => Math.floor(Math.max(0, value)))
-      .filter(value => value > 0)
-
-    if (!normalized.length) {
+    if (!combinedCaps.length) {
       return undefined
     }
 
-    return Math.min(...normalized)
-  }, [activeSupplierIndex, rawSuppliers])
+    return Math.min(...combinedCaps)
+  }, [
+    activeSupplierIndex,
+    productMaxQuantity,
+    productQuantityCaps,
+    rawSuppliers,
+  ])
 
   const buildCartItem = useCallback(
     (
