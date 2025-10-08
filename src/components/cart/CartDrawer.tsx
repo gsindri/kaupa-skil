@@ -38,7 +38,7 @@ export function CartDrawer() {
   }, [items])
 
   const [isMounted, setIsMounted] = React.useState(false)
-  const desktopRailRef = React.useRef<HTMLDivElement | null>(null)
+  const desktopRailRef = React.useRef<HTMLElement | null>(null)
 
   React.useEffect(() => {
     setIsMounted(true)
@@ -130,7 +130,7 @@ export function CartDrawer() {
   const content = (
     <>
       <header className="cart-rail__header">
-        <div className="cart-rail__title" aria-live="polite">
+        <div id="cart-rail-title" className="cart-rail__title" aria-live="polite">
           <span>Cart</span>
           <span className="cart-rail__count">{totalItems}</span>
         </div>
@@ -172,6 +172,8 @@ export function CartDrawer() {
               ref={desktopRailRef}
               className="cart-rail cart-rail--desktop"
               aria-label="Cart"
+              role="region"
+              aria-labelledby="cart-rail-title"
               data-state={isDrawerOpen ? "open" : "closed"}
             >
               {content}
