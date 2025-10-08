@@ -29,6 +29,9 @@ import { ViewToggle } from '@/components/place-order/ViewToggle'
 
 import AppLayout from '@/components/layout/AppLayout'
 import { useCatalogFilters, SortOrder } from '@/state/catalogFiltersStore'
+import { useCart } from '@/contexts/useBasket'
+import type { CartItem } from '@/lib/types'
+import { resolveImage } from '@/lib/images'
 import { useSearchParams } from 'react-router-dom'
 import { MagnifyingGlass, FunnelSimple, XCircle } from '@phosphor-icons/react'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
@@ -227,6 +230,7 @@ export default function CatalogPage() {
   })
   const viewKey = `catalog:${view}`
   // Removed separate products state - using data directly from hooks
+  const { addItem } = useCart()
   const [addingId, setAddingId] = useState<string | null>(null)
   const [tableSort, setTableSort] = useState<{
     key: 'name' | 'supplier' | 'price' | 'availability'
@@ -716,14 +720,114 @@ export default function CatalogPage() {
     })
   }
 
-  const handleAdd = (product: any) => {
-    setAddingId(product.catalog_id)
-    const clear = () => setAddingId(null)
-    if (typeof window !== 'undefined') {
-      window.setTimeout(clear, 400)
-    } else {
-      setTimeout(clear, 400)
+  const handleAdd = (product: any, selectedSupplierId?: string) => {
+    const supplierIds = Array.isArray(product.supplier_ids)
+      ? (product.supplier_ids as unknown[]).filter(
+          (value): value is string => typeof value === 'string' && value.length > 0,
+        )
+      : []
+    const supplierNames = Array.isArray(product.supplier_names)
+      ? (product.supplier_names as unknown[]).filter(
+          (value): value is string => typeof value === 'string' && value.length > 0,
+        )
+      : []
+    const supplierEntries = Array.isArray(product.suppliers)
+      ? product.suppliers.filter(Boolean)
+      : []
+
+    const extractId = (entry: any): string => {
+      if (!entry) return ''
+      if (typeof entry === 'string') return entry
+      return (
+        entry.supplier_id ??
+        entry.id ??
+        entry.supplierId ??
+        entry.supplier?.id ??
+        ''
+      )
     }
+
+    const extractName = (entry: any): string => {
+      if (!entry) return ''
+      if (typeof entry === 'string') return entry
+      return (
+        entry.supplier_name ??
+        entry.name ??
+        entry.displayName ??
+        entry.supplier?.name ??
+        ''
+      )
+    }
+
+    let supplierId =
+      typeof selectedSupplierId === 'string' && selectedSupplierId.length > 0
+        ? selectedSupplierId
+        : undefined
+
+    if (!supplierId && supplierIds.length) {
+      supplierId = supplierIds[0]
+    }
+
+    if (!supplierId && supplierEntries.length) {
+      supplierId = extractId(supplierEntries[0]) || undefined
+    }
+
+    if (!supplierId) {
+      supplierId = ''
+    }
+
+    const findNameForId = (id: string): string => {
+      if (!id) return ''
+      const index = supplierIds.indexOf(id)
+      if (index !== -1) {
+        const candidate = supplierNames[index]
+        if (candidate) return candidate
+      }
+      const supplierMatch = supplierEntries.find(entry => extractId(entry) === id)
+      if (supplierMatch) {
+        const candidate = extractName(supplierMatch)
+        if (candidate) return candidate
+      }
+      return ''
+    }
+
+    let supplierName = findNameForId(supplierId)
+
+    if (!supplierName && supplierNames.length) {
+      supplierName = supplierNames[0]
+    }
+
+    if (!supplierName && supplierEntries.length) {
+      supplierName = extractName(supplierEntries[0])
+    }
+
+    if (!supplierName && supplierId) {
+      supplierName = supplierId
+    }
+
+    const item: Omit<CartItem, 'quantity'> = {
+      id: product.catalog_id,
+      supplierId,
+      supplierName: supplierName || supplierId || '',
+      itemName: product.name,
+      sku: product.catalog_id,
+      packSize: product.pack_size || '',
+      packPrice: product.best_price ?? 0,
+      unitPriceExVat: product.best_price ?? 0,
+      unitPriceIncVat: product.best_price ?? 0,
+      vatRate: 0,
+      unit: '',
+      supplierItemId: product.catalog_id,
+      displayName: product.name,
+      packQty: 1,
+      image: resolveImage(
+        product.sample_image_url,
+        product.availability_status,
+      ),
+    }
+    setAddingId(product.catalog_id)
+    addItem(item, 1)
+    setTimeout(() => setAddingId(null), 500)
   }
 
   useEffect(() => {

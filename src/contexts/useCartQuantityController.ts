@@ -2,10 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import type { CartItem } from '@/lib/types'
 import { useCart } from './useBasket'
 
-export type AddItemOptions = {
-  showToast?: boolean
-  animateElement?: HTMLElement
-}
+type AddItemOptions = { showToast?: boolean; animateElement?: HTMLElement }
 
 type RequestQuantityMeta = {
   addItemPayload?: Omit<CartItem, 'quantity'>

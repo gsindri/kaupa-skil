@@ -1,16 +1,27 @@
-import { memo, useCallback, useEffect, useId, useMemo, useRef, type KeyboardEvent } from "react";
+import {
+  memo,
+  useCallback,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+  type KeyboardEvent,
+} from "react";
 import { Card } from "@/components/ui/card";
 import SupplierLogo from "./SupplierLogo";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/lib/format";
 import type { PublicCatalogItem } from "@/services/catalog";
 import { resolveImage } from "@/lib/images";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { useCart } from "@/contexts/useBasket";
-import type { CartQuantityController } from "@/contexts/useCartQuantityController";
+import type { CartItem } from "@/lib/types";
 import { CatalogQuantityStepper } from "./CatalogQuantityStepper";
+import { useCartQuantityController } from "@/contexts/useCartQuantityController";
+import { Loader2, ShoppingCart } from "lucide-react";
 import { PriceBenchmarkBadge } from "./PriceBenchmarkBadge";
-import CatalogAddToCartButton from "./CatalogAddToCartButton";
-import { Loader2 } from "lucide-react";
 
 type SupplierEntry = {
   supplier_id?: string | null;
@@ -30,6 +41,41 @@ interface ProductCardProps {
   showPrice?: boolean;
 }
 
+function ProductCardCartQuantityStepper({
+  cartItem,
+  productName,
+  isUnavailable,
+}: {
+  cartItem: CartItem;
+  productName: string;
+  isUnavailable: boolean;
+}) {
+  const { requestQuantity, remove, canIncrease, optimisticQuantity } = useCartQuantityController(
+    cartItem.supplierItemId,
+    cartItem.quantity
+  );
+
+  const handleChange = useCallback(
+    (next: number) => {
+      const { quantity, ...payload } = cartItem;
+      requestQuantity(next, {
+        addItemPayload: payload,
+      });
+    },
+    [cartItem, requestQuantity]
+  );
+
+  return (
+    <CatalogQuantityStepper
+      quantity={optimisticQuantity}
+      onChange={handleChange}
+      onRemove={remove}
+      itemLabel={productName}
+      canIncrease={!isUnavailable && canIncrease}
+      className="rounded-lg border border-border/60 bg-background/90 px-2 py-1 shadow-none"
+    />
+  );
+}
 
 export const ProductCard = memo(function ProductCard({
   product,
@@ -39,6 +85,7 @@ export const ProductCard = memo(function ProductCard({
   showPrice,
 }: ProductCardProps) {
   const { addItem, items } = useCart();
+  const [open, setOpen] = useState(false);
   const titleId = useId();
   const imageRef = useRef<HTMLImageElement | null>(null);
   const cartButtonRef = useRef<HTMLButtonElement | HTMLAnchorElement | null>(null);
@@ -177,16 +224,16 @@ export const ProductCard = memo(function ProductCard({
   const primarySupplierLogo = derivedPrimaryLogo;
   const packInfo = product.canonical_pack ?? product.pack_sizes?.join(", ") ?? "";
   const brand = product.brand ?? "";
+  const hasMultipleSuppliers = supplierIds.length > 1;
   const defaultSupplierId = supplierIds[0] ?? "";
-  const addToCartSuppliers = useMemo(
-    () =>
-      supplierRecords.map(record => ({
-        supplier_id: record.id,
-        supplier_name: record.name && record.name.length ? record.name : record.id,
-        supplier_logo_url: record.logo,
-      })),
-    [supplierRecords],
-  );
+  const defaultSupplierName =
+    (supplierDisplayNames[0] && supplierDisplayNames[0].length
+      ? supplierDisplayNames[0]
+      : supplierIds[0]) ?? primarySupplierName;
+  const orderedSuppliers = supplierRecords.map(record => ({
+    id: record.id,
+    name: record.name && record.name.length ? record.name : record.id,
+  }));
 
   const supplierSummary = useMemo(() => {
     if (supplierCount === 0) return "No suppliers yet";
@@ -215,18 +262,58 @@ export const ProductCard = memo(function ProductCard({
     return availabilityLabel;
   }, [availabilityLabel, product.active_supplier_count, supplierCount]);
 
-  const cartQuantity = useMemo(() => {
+  const { cartItem, cartQuantity } = useMemo(() => {
     let total = 0;
+    let found: CartItem | null = null;
     for (const entry of items) {
       if (entry.supplierItemId === product.catalog_id) {
         total += entry.quantity;
+        if (!found) {
+          found = entry;
+        }
       }
     }
-    return total;
+    return { cartItem: found, cartQuantity: total };
   }, [items, product.catalog_id]);
 
   const isInCart = cartQuantity > 0;
 
+  useEffect(() => {
+    if (isInCart && cartItem) {
+      cartButtonRef.current = null;
+    }
+  }, [isInCart, cartItem]);
+
+  const handleAdd = (supplierId: string, supplierName: string) => {
+    if (onAdd) {
+      onAdd(supplierId);
+      return;
+    }
+
+    const selectedSupplier = supplierRecords.find(record => record.id === supplierId);
+    addItem(
+      {
+        id: product.catalog_id,
+        supplierId,
+        supplierName,
+        supplierLogoUrl: selectedSupplier?.logo ?? derivedPrimaryLogo ?? null,
+        itemName: product.name,
+        sku: product.catalog_id,
+        packSize: packInfo,
+        packPrice: product.best_price ?? 0,
+        unitPriceExVat: product.best_price ?? 0,
+        unitPriceIncVat: product.best_price ?? 0,
+        vatRate: 0,
+        unit: "",
+        supplierItemId: product.catalog_id,
+        displayName: product.name,
+        packQty: 1,
+        image: img,
+      },
+      1,
+      { animateElement: imageRef.current ?? undefined },
+    );
+  };
 
   const isUnavailable =
     availability === "OUT_OF_STOCK" ||
@@ -269,59 +356,68 @@ export const ProductCard = memo(function ProductCard({
     [],
   );
 
-  const renderCardStepper = useCallback(
-    ({
-      controller,
-      currentQuantity,
-      handleQuantityChange,
-      handleRemove,
-      maxHint,
-      maxQuantity,
-      isUnavailable: stepperUnavailable,
-    }: {
-      controller: CartQuantityController;
-      currentQuantity: number;
-      handleQuantityChange: (value: number) => void;
-      handleRemove: () => void;
-      maxHint: string | null;
-      maxQuantity: number | undefined;
-      isUnavailable: boolean;
-    }) => (
-      <div className="flex w-full flex-col items-end gap-1">
-        <CatalogQuantityStepper
-          quantity={currentQuantity}
-          onChange={handleQuantityChange}
-          onRemove={handleRemove}
-          itemLabel={`${product.name}`}
-          minQuantity={0}
-          maxQuantity={maxQuantity}
-          canIncrease={
-            !stepperUnavailable &&
-            (maxQuantity === undefined || currentQuantity < maxQuantity) &&
-            controller.canIncrease
-          }
-          size="sm"
-          className="rounded-lg border border-border/60 bg-background/90 px-2 py-1 shadow-none"
-        />
-        {maxHint ? (
-          <span className="text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
-            {maxHint}
-          </span>
-        ) : null}
-      </div>
-    ),
-    [product.name],
-  );
+  const renderActionButton = () => {
+    const buttonContent = (
+      <>
+        {isAdding ? (
+          <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
+        ) : (
+          <ShoppingCart className="mr-2 h-4 w-4" aria-hidden="true" />
+        )}
+        <span>Add</span>
+      </>
+    );
 
-  const addButtonLabel = isAdding ? (
-    <>
-      <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
-      <span>Adding…</span>
-    </>
-  ) : (
-    <span>Add</span>
-  );
+    if (hasMultipleSuppliers) {
+      return (
+        <Popover open={open} onOpenChange={setOpen}>
+          <PopoverTrigger asChild>
+            <Button
+              ref={setCartButtonRef}
+              type="button"
+              size="sm"
+              className="h-9"
+              disabled={isAdding || isUnavailable}
+              aria-label={`Choose supplier for ${product.name}`}
+              title={isUnavailable ? "Out of stock" : undefined}
+            >
+              {buttonContent}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-56 space-y-2 p-2" align="end" sideOffset={8}>
+            {orderedSuppliers.map(supplier => (
+              <Button
+                key={supplier.id}
+                variant={supplier.id === defaultSupplierId ? "default" : "outline"}
+                onClick={() => {
+                  handleAdd(supplier.id, supplier.name);
+                  setOpen(false);
+                }}
+                className="justify-start"
+              >
+                {supplier.name}
+              </Button>
+            ))}
+          </PopoverContent>
+        </Popover>
+      );
+    }
 
+    return (
+      <Button
+        ref={setCartButtonRef}
+        type="button"
+        size="sm"
+        className="h-9"
+        onClick={() => handleAdd(defaultSupplierId, defaultSupplierName)}
+        disabled={isAdding || isUnavailable}
+        aria-label={`Add ${product.name}`}
+        title={isUnavailable ? "Out of stock" : undefined}
+      >
+        {buttonContent}
+      </Button>
+    );
+  };
 
   return (
     <Card
@@ -418,54 +514,53 @@ export const ProductCard = memo(function ProductCard({
           </span>
         </div>
         <div className="mt-auto w-full">
-          <div className="mt-4 border-t border-border pt-3">
-            <div
-              className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
-              aria-live="polite"
-            >
-              {priceLabel ? (
-                <div className="flex min-w-0 flex-1 flex-col justify-center text-left">
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg font-semibold text-foreground tabular-nums">{priceLabel}</span>
-                    <PriceBenchmarkBadge
-                      supplierId={defaultSupplierId}
-                      catalogProductId={product.catalog_id}
-                      currentPrice={product.best_price ?? undefined}
-                    />
+          {isUnavailable && !isInCart ? (
+            <div className="mt-4 border-t border-border pt-3">
+              <Button
+                ref={setCartButtonRef}
+                type="button"
+                variant="outline"
+                className="h-12 w-full justify-center text-sm font-semibold"
+                aria-label={`Notify me when ${product.name} is back`}
+              >
+                Notify me
+              </Button>
+            </div>
+          ) : (
+            <div className="mt-4 border-t border-border pt-3">
+              <div className="flex h-12 items-center justify-between gap-3" aria-live="polite">
+                {priceLabel ? (
+                  <div className="flex min-w-0 flex-1 flex-col justify-center text-left">
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg font-semibold text-foreground tabular-nums">{priceLabel}</span>
+                      <PriceBenchmarkBadge
+                        supplierId={defaultSupplierId}
+                        catalogProductId={product.catalog_id}
+                        currentPrice={product.best_price ?? undefined}
+                      />
+                    </div>
+                    {unitHint ? (
+                      <span className="text-[12px] text-muted-foreground">{unitHint}</span>
+                    ) : null}
                   </div>
-                  {unitHint ? (
-                    <span className="text-[12px] text-muted-foreground">{unitHint}</span>
+                ) : allowPrice ? (
+                  <div className="flex min-w-0 flex-1 items-center gap-1 text-sm text-muted-foreground">
+                    Price unavailable
+                  </div>
+                ) : null}
+                <div className="flex flex-shrink-0 items-center gap-2">
+                  {isInCart && cartItem ? (
+                    <ProductCardCartQuantityStepper
+                      cartItem={cartItem}
+                      productName={product.name}
+                      isUnavailable={isUnavailable}
+                    />
                   ) : null}
+                  {!isInCart || !cartItem ? renderActionButton() : null}
                 </div>
-              ) : allowPrice ? (
-                <div className="flex min-w-0 flex-1 items-center gap-1 text-sm text-muted-foreground">
-                  Price unavailable
-                </div>
-              ) : null}
-              <div className="flex w-full sm:w-auto sm:flex-shrink-0">
-                <CatalogAddToCartButton
-                  product={product}
-                  suppliers={addToCartSuppliers}
-                  className="w-full"
-                  buttonClassName="inline-flex h-10 w-full items-center justify-center rounded-full bg-secondary px-4 text-sm font-semibold text-secondary-foreground shadow-sm transition-colors duration-150 hover:bg-secondary/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-                  disabledButtonClassName="inline-flex h-10 w-full items-center justify-center rounded-full bg-muted px-4 text-sm font-medium text-muted-foreground shadow-none"
-                  passiveButtonClassName="inline-flex h-10 w-full items-center justify-center rounded-full border border-border/70 bg-background/80 px-4 text-sm font-medium text-muted-foreground shadow-none backdrop-blur-sm"
-                  unavailableButtonClassName="inline-flex h-10 w-full items-center justify-center rounded-full border border-dashed border-muted-foreground/60 bg-background/70 px-4 text-sm font-medium text-muted-foreground shadow-none"
-                  popoverClassName="w-64 space-y-1 p-2"
-                  popoverSide="top"
-                  popoverAlign="end"
-                  addItemOptions={imageRef.current ? { animateElement: imageRef.current } : undefined}
-                  onActionButtonRef={setCartButtonRef}
-                  isLoading={isAdding}
-                  onAdd={supplierId => {
-                    onAdd?.(supplierId);
-                  }}
-                  buttonLabel={addButtonLabel}
-                  renderStepper={renderCardStepper}
-                />
               </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </Card>
