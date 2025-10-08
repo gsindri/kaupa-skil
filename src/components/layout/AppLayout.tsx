@@ -17,6 +17,8 @@ import { AppChrome } from './AppChrome'
 import { CartDrawer } from '@/components/cart/CartDrawer'
 import useHeaderScrollHide from './useHeaderScrollHide'
 import { isTypeableElement } from './isTypeableElement'
+import { useCart } from '@/contexts/useBasket'
+import { useMediaQuery } from '@/hooks/useMediaQuery'
 
 interface AppLayoutProps {
   header?: ReactNode
@@ -39,6 +41,14 @@ export function AppLayout({
 }: AppLayoutProps) {
   const internalHeaderRef = useRef<HTMLDivElement>(null)
   const contentRef = useRef<HTMLDivElement | null>(null)
+  const layoutPaddingRef = useRef<HTMLDivElement | null>(null)
+  const { isDrawerOpen } = useCart()
+  const isDesktopCart = useMediaQuery('(min-width: 1024px)')
+  const shouldReserveCartRail = isDesktopCart && isDrawerOpen
+  const cartRailOffset = 'calc(var(--cart-rail-gap, 2rem) + var(--cart-rail-w, 360px))'
+  const baseShellWidth = 'calc(100% - var(--layout-rail, 72px))'
+  const reservedShellWidth =
+    'calc(100% - var(--layout-rail, 72px) - var(--cart-rail-gap, 2rem) - var(--cart-rail-w, 360px))'
   const combinedHeaderRef = useCallback(
     (node: HTMLDivElement | null) => {
       internalHeaderRef.current = node
@@ -66,6 +76,49 @@ export function AppLayout({
     const rail = document.querySelector('[data-rail]')
     if (rail instanceof HTMLElement) {
       document.documentElement.style.setProperty('--header-left', `${rail.offsetWidth}px`)
+    }
+  }, [])
+
+  useLayoutEffect(() => {
+    if (typeof window === 'undefined') return
+
+    const root = document.documentElement
+
+    const updateMetrics = () => {
+      const headerHeight = internalHeaderRef.current?.getBoundingClientRect().height
+      if (headerHeight) {
+        root.style.setProperty('--cart-rail-top', `${headerHeight}px`)
+        root.style.setProperty('--header-h', `${headerHeight}px`)
+      }
+
+      const layoutEl = layoutPaddingRef.current
+      if (layoutEl) {
+        const { paddingRight } = window.getComputedStyle(layoutEl)
+        if (paddingRight) {
+          root.style.setProperty('--cart-rail-gap', paddingRight)
+        }
+      }
+    }
+
+    updateMetrics()
+
+    let resizeObserver: ResizeObserver | null = null
+    if (typeof ResizeObserver !== 'undefined') {
+      resizeObserver = new ResizeObserver(updateMetrics)
+      const headerEl = internalHeaderRef.current
+      if (headerEl) resizeObserver.observe(headerEl)
+      const layoutEl = layoutPaddingRef.current
+      if (layoutEl) resizeObserver.observe(layoutEl)
+    }
+
+    window.addEventListener('resize', updateMetrics)
+
+    return () => {
+      resizeObserver?.disconnect()
+      window.removeEventListener('resize', updateMetrics)
+      root.style.removeProperty('--cart-rail-gap')
+      root.style.removeProperty('--cart-rail-top')
+      root.style.removeProperty('--header-h')
     }
   }, [])
 
@@ -108,8 +161,8 @@ export function AppLayout({
         className="app-shell-content flex min-h-screen flex-col"
         style={{
           marginLeft: 'var(--layout-rail,72px)',
-          marginRight: 'var(--shell-margin-right, 0)',
-          width: 'var(--shell-width, 100%)',
+          marginRight: shouldReserveCartRail ? cartRailOffset : '0px',
+          width: shouldReserveCartRail ? reservedShellWidth : baseShellWidth,
           transition: 'margin-right var(--cart-rail-transition), width var(--cart-rail-transition)',
         }}
       >
@@ -134,7 +187,10 @@ export function AppLayout({
         </div>
 
         {/* Main content */}
-        <div className="px-4 pb-8 pt-2 sm:px-6 lg:px-8">
+        <div
+          className="px-4 pb-8 pt-2 sm:px-6 lg:px-8"
+          ref={layoutPaddingRef}
+        >
           <div
             className={clsx(
               'page-grid items-start gap-3',

@@ -74,12 +74,14 @@ export function SmartCartSidebar({ className = "" }: SmartCartSidebarProps) {
 
   if (getTotalItems() === 0) {
     return (
-      <Card className={`w-80 ${className}`}>
-        <CardContent className="p-6 text-center">
-          <ShoppingCart className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
-          <p className="text-muted-foreground">Your cart is empty</p>
-        </CardContent>
-      </Card>
+      <div className={className}>
+        <Card className="w-full">
+          <CardContent className="px-4 py-6 text-center">
+            <ShoppingCart className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+            <p className="text-muted-foreground">Your cart is empty</p>
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 
