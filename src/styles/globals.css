@@ -212,7 +212,7 @@ input[type='search'] {
   top: var(--cart-rail-top, var(--header-h, 64px));
   right: var(--cart-rail-gap, var(--page-gutter, 1.5rem));
   bottom: 0;
-  width: var(--cart-rail-w, 240px);
+  width: var(--cart-rail-w, 360px);
   max-height: calc(100vh - var(--cart-rail-top, var(--header-h, 64px)));
   pointer-events: none;
   z-index: var(--z-cart, 140);
