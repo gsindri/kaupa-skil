@@ -211,27 +211,20 @@ input[type='search'] {
   position: fixed;
   top: var(--cart-rail-top, var(--header-h, 64px));
   right: var(--cart-rail-gap, var(--page-gutter, 1.5rem));
-  bottom: 0;
+  bottom: env(safe-area-inset-bottom, 0px);
   width: var(--cart-rail-w, 240px);
-  max-height: calc(100vh - var(--cart-rail-top, var(--header-h, 64px)));
+  max-height: calc(100vh - var(--cart-rail-top, var(--header-h, 64px)) - env(safe-area-inset-bottom, 0px));
   pointer-events: none;
   z-index: var(--z-cart, 140);
   display: none;
-  transition: transform var(--cart-rail-transition), opacity var(--cart-rail-transition);
+  transform-origin: right center;
 }
 
 .cart-rail__layer[data-state] {
   display: block;
 }
 
-.cart-rail__layer[data-state="closed"] {
-  transform: translateX(100%);
-  opacity: 0;
-}
-
 .cart-rail__layer[data-state="open"] {
-  transform: translateX(0);
-  opacity: 1;
   pointer-events: auto;
 }
 
@@ -270,21 +263,33 @@ input[type='search'] {
 }
 
 .cart-rail--desktop{
-  transform:translateX(calc(100% + var(--cart-rail-gap, var(--page-gutter, 1.5rem))));
+  transform-origin:right center;
+  transform:translateX(calc(100% + var(--cart-rail-gap, var(--page-gutter, 1.5rem)))) scale(.98);
   opacity:0;
   pointer-events:none;
-  transition:transform var(--cart-rail-transition), opacity var(--cart-rail-transition);
+  filter:saturate(95%) blur(.2px);
+  transition:
+    transform var(--cart-rail-transition),
+    opacity var(--cart-rail-transition),
+    filter var(--cart-rail-transition);
 }
 
 .cart-rail__layer[data-state="open"] .cart-rail--desktop{
-  transform:translateX(0);
+  transform:translateX(0) scale(1);
   opacity:1;
   pointer-events:auto;
+  filter:saturate(100%) blur(0);
 }
 
 @media (prefers-reduced-motion: reduce){
   .cart-rail--desktop{
     transition:none;
+  }
+
+  .cart-item{
+    animation:none;
+    opacity:1;
+    transform:none;
   }
 }
 
@@ -622,6 +627,13 @@ input[type='search'] {
   color:#fff !important;
   box-shadow:0 16px 30px -20px rgba(11,91,211,0.55);
   transition:transform var(--enter), box-shadow var(--enter);
+}
+
+@keyframes cartItemIn{
+  to{
+    opacity:1;
+    transform:translateX(0);
+  }
 }
 
 .cart-rail__checkout:hover{
