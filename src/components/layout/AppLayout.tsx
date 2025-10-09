@@ -6,6 +6,8 @@ import React, {
   MutableRefObject,
   ReactElement,
   useMemo,
+  useEffect,
+  useState,
   type CSSProperties
 } from 'react'
 import clsx from 'clsx'
@@ -44,11 +46,28 @@ export function AppLayout({
   const layoutPaddingRef = useRef<HTMLDivElement | null>(null)
   const { isDrawerOpen } = useCart()
   const isDesktopCart = useMediaQuery('(min-width: 1024px)')
-  const shouldReserveCartRail = isDesktopCart && isDrawerOpen
-  const cartRailOffset = 'calc(var(--cart-rail-gap, 2rem) + var(--cart-rail-w, 360px))'
-  const baseShellWidth = 'calc(100% - var(--layout-rail, 72px))'
-  const reservedShellWidth =
-    'calc(100% - var(--layout-rail, 72px) - var(--cart-rail-gap, 2rem) - var(--cart-rail-w, 360px))'
+  const isCartOpen = isDesktopCart && isDrawerOpen
+  const getInitialCartMode = () => {
+    if (typeof window === 'undefined') return 'overlay'
+    return window.innerWidth >= 1600 ? 'inset' : 'overlay'
+  }
+  const [cartMode, setCartMode] = useState<'overlay' | 'inset'>(getInitialCartMode)
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    const getMode = () => (window.innerWidth >= 1600 ? 'inset' : 'overlay')
+    const handleResize = () => {
+      setCartMode((prev) => {
+        const next = getMode()
+        return prev === next ? prev : next
+      })
+    }
+
+    handleResize()
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
   const combinedHeaderRef = useCallback(
     (node: HTMLDivElement | null) => {
       internalHeaderRef.current = node
@@ -96,6 +115,7 @@ export function AppLayout({
         const { paddingRight } = window.getComputedStyle(layoutEl)
         if (paddingRight) {
           root.style.setProperty('--cart-rail-gap', paddingRight)
+          root.style.setProperty('--page-content-pr', paddingRight)
         }
       }
     }
@@ -117,6 +137,7 @@ export function AppLayout({
       resizeObserver?.disconnect()
       window.removeEventListener('resize', updateMetrics)
       root.style.removeProperty('--cart-rail-gap')
+      root.style.removeProperty('--page-content-pr')
       root.style.removeProperty('--cart-rail-top')
       root.style.removeProperty('--header-h')
     }
@@ -143,7 +164,12 @@ export function AppLayout({
   }, [hasSecondary, filtersWidth])
 
   return (
-    <div className="relative min-h-screen">
+    <div
+      id="app-shell"
+      data-cart-open={isCartOpen ? 'true' : 'false'}
+      data-cart-mode={cartMode}
+      className="relative min-h-screen"
+    >
       {/* Left rail - fixed position */}
       <aside
         data-rail
@@ -160,10 +186,7 @@ export function AppLayout({
       <div
         className="app-shell-content flex min-h-screen flex-col"
         style={{
-          marginLeft: 'var(--layout-rail,72px)',
-          marginRight: shouldReserveCartRail ? cartRailOffset : '0px',
-          width: shouldReserveCartRail ? reservedShellWidth : baseShellWidth,
-          transition: 'margin-right var(--cart-rail-transition), width var(--cart-rail-transition)',
+          marginLeft: 'var(--layout-rail,72px)'
         }}
       >
         <a
@@ -182,13 +205,15 @@ export function AppLayout({
           className={headerClassName}
           style={{ position: 'sticky', top: 0, zIndex: 'var(--z-header,50)' }}
         >
-          <TopNavigation />
-          {headerNode}
+          <div className="topbar">
+            <TopNavigation />
+          </div>
+          {headerNode ? <div className="toolbar">{headerNode}</div> : null}
         </div>
 
         {/* Main content */}
         <div
-          className="px-4 pb-8 pt-2 sm:px-6 lg:px-8"
+          className="page-content px-4 pb-8 pt-2 sm:px-6 lg:px-8"
           ref={layoutPaddingRef}
         >
           <div
