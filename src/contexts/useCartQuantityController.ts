@@ -24,6 +24,7 @@ type Controller = {
 }
 
 const FLYOUT_DURATION_MS = 800
+const MAX_PENDING_INCREMENT = 10
 
 export function useCartQuantityController(supplierItemId: string, cartQuantity: number): Controller {
   const { addItem, updateQuantity, removeItem } = useCart()
@@ -50,6 +51,21 @@ export function useCartQuantityController(supplierItemId: string, cartQuantity: 
       flyoutTimeoutRef.current = null
     }
     setFlyoutAmount(0)
+  }, [])
+
+  const updatePendingIncrement = useCallback((target: number) => {
+    const delta = target - committedRef.current
+
+    if (delta === 0) {
+      setPendingIncrement(0)
+      return
+    }
+
+    const boundedDelta = Math.max(
+      -MAX_PENDING_INCREMENT,
+      Math.min(MAX_PENDING_INCREMENT, delta),
+    )
+    setPendingIncrement(boundedDelta)
   }, [])
 
   const flush = useCallback(() => {
@@ -83,7 +99,7 @@ export function useCartQuantityController(supplierItemId: string, cartQuantity: 
 
       targetRef.current = next
       setOptimistic(next)
-      setPendingIncrement(next - committedRef.current)
+      updatePendingIncrement(next)
 
       const increaseDelta = Math.max(0, next - previousTarget)
       if (increaseDelta > 0) {
@@ -107,15 +123,15 @@ export function useCartQuantityController(supplierItemId: string, cartQuantity: 
 
       scheduleFlush()
     },
-    [addItem, clearFlyout, scheduleFlush]
+    [addItem, clearFlyout, scheduleFlush, updatePendingIncrement]
   )
 
   const remove = useCallback(() => {
     targetRef.current = 0
     setOptimistic(0)
-    setPendingIncrement(-committedRef.current)
+    updatePendingIncrement(0)
     scheduleFlush()
-  }, [scheduleFlush])
+  }, [scheduleFlush, updatePendingIncrement])
 
   useEffect(() => {
     const external = Math.max(0, Math.floor(cartQuantity || 0))
@@ -152,7 +168,7 @@ export function useCartQuantityController(supplierItemId: string, cartQuantity: 
     clearFlyout()
   }, [clearFlyout])
 
-  const canIncrease = targetRef.current <= committedRef.current
+  const canIncrease = pendingIncrement < MAX_PENDING_INCREMENT
   const isPending = targetRef.current !== committedRef.current
 
   return {
