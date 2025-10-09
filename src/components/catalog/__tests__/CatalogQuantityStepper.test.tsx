@@ -1,5 +1,5 @@
 import React from 'react'
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 
@@ -9,9 +9,10 @@ import { useCartQuantityController } from '@/contexts/useCartQuantityController'
 import type { CartItem } from '@/lib/types'
 
 describe('CatalogQuantityStepper', () => {
-  it('ignores stale confirmations from superseded optimistic updates', () => {
+  it('ignores stale confirmations from superseded optimistic updates', async () => {
     const handleChange = vi.fn()
     const handleRemove = vi.fn()
+    const user = userEvent.setup()
 
     const { rerender } = render(
       <CatalogQuantityStepper
@@ -26,12 +27,12 @@ describe('CatalogQuantityStepper', () => {
       name: /increase quantity of test product/i,
     })
 
-    fireEvent.click(incrementButton)
-    fireEvent.click(incrementButton)
+    await user.click(incrementButton)
+    await user.click(incrementButton)
 
     expect(handleChange).toHaveBeenCalledWith(2)
     expect(handleChange).toHaveBeenCalledWith(3)
-    expect(screen.getByDisplayValue('3')).toBeInTheDocument()
+    await screen.findByDisplayValue('3')
 
     rerender(
       <CatalogQuantityStepper
@@ -42,7 +43,7 @@ describe('CatalogQuantityStepper', () => {
       />,
     )
 
-    expect(screen.getByDisplayValue('3')).toBeInTheDocument()
+    await screen.findByDisplayValue('3')
 
     rerender(
       <CatalogQuantityStepper
@@ -53,7 +54,7 @@ describe('CatalogQuantityStepper', () => {
       />,
     )
 
-    expect(screen.getByDisplayValue('3')).toBeInTheDocument()
+    await screen.findByDisplayValue('3')
 
     rerender(
       <CatalogQuantityStepper
@@ -64,12 +65,13 @@ describe('CatalogQuantityStepper', () => {
       />,
     )
 
-    expect(screen.getByDisplayValue('3')).toBeInTheDocument()
+    await screen.findByDisplayValue('3')
   })
 
-  it('maintains optimistic quantity when stale duplicate arrives after removal', () => {
+  it('maintains optimistic quantity when stale duplicate arrives after removal', async () => {
     const handleChange = vi.fn()
     const handleRemove = vi.fn()
+    const user = userEvent.setup()
 
     const { rerender } = render(
       <CatalogQuantityStepper
@@ -87,13 +89,13 @@ describe('CatalogQuantityStepper', () => {
       name: /remove test product from cart/i,
     })
 
-    fireEvent.click(incrementButton)
+    await user.click(incrementButton)
     expect(handleChange).toHaveBeenCalledWith(2)
-    expect(screen.getByDisplayValue('2')).toBeInTheDocument()
+    await screen.findByDisplayValue('2')
 
-    fireEvent.click(decrementButton)
+    await user.click(decrementButton)
     expect(handleChange).toHaveBeenCalledWith(1)
-    expect(screen.getByDisplayValue('1')).toBeInTheDocument()
+    await screen.findByDisplayValue('1')
 
     rerender(
       <CatalogQuantityStepper
@@ -104,7 +106,7 @@ describe('CatalogQuantityStepper', () => {
       />,
     )
 
-    expect(screen.getByDisplayValue('1')).toBeInTheDocument()
+    await screen.findByDisplayValue('1')
 
     rerender(
       <CatalogQuantityStepper
@@ -115,7 +117,7 @@ describe('CatalogQuantityStepper', () => {
       />,
     )
 
-    expect(screen.getByDisplayValue('1')).toBeInTheDocument()
+    await screen.findByDisplayValue('1')
 
     rerender(
       <CatalogQuantityStepper
@@ -126,12 +128,13 @@ describe('CatalogQuantityStepper', () => {
       />,
     )
 
-    expect(screen.getByText('1')).toBeInTheDocument()
+    await screen.findByText('1')
   })
 
-  it('syncs to external quantity changes when pending updates do not match', () => {
+  it('syncs to external quantity changes when pending updates do not match', async () => {
     const handleChange = vi.fn()
     const handleRemove = vi.fn()
+    const user = userEvent.setup()
 
     const { rerender } = render(
       <CatalogQuantityStepper
@@ -146,10 +149,10 @@ describe('CatalogQuantityStepper', () => {
       name: /increase quantity of test product/i,
     })
 
-    fireEvent.click(incrementButton)
+    await user.click(incrementButton)
 
     expect(handleChange).toHaveBeenCalledWith(2)
-    expect(screen.getByDisplayValue('2')).toBeInTheDocument()
+    await screen.findByDisplayValue('2')
 
     rerender(
       <CatalogQuantityStepper
@@ -160,7 +163,7 @@ describe('CatalogQuantityStepper', () => {
       />,
     )
 
-    expect(screen.getByDisplayValue('5')).toBeInTheDocument()
+    await screen.findByDisplayValue('5')
 
     rerender(
       <CatalogQuantityStepper
@@ -171,7 +174,7 @@ describe('CatalogQuantityStepper', () => {
       />,
     )
 
-    expect(screen.getByDisplayValue('5')).toBeInTheDocument()
+    await screen.findByDisplayValue('5')
   })
 
   it('applies typed quantity changes on commit', async () => {
@@ -196,7 +199,7 @@ describe('CatalogQuantityStepper', () => {
     expect(handleChange).toHaveBeenCalledWith(5)
   })
 
-  it('queues add requests via the cart controller when incremented rapidly', () => {
+  it('queues add requests via the cart controller when incremented rapidly', async () => {
     const addItem = vi.fn()
     const updateQuantity = vi.fn()
     const removeItem = vi.fn()
@@ -268,11 +271,10 @@ describe('CatalogQuantityStepper', () => {
     fireEvent.click(incrementButton)
     fireEvent.click(incrementButton)
 
-    expect(addItem).toHaveBeenCalledTimes(3)
-    expect(addItem).toHaveBeenNthCalledWith(1, payload, 1, undefined)
-    expect(addItem).toHaveBeenNthCalledWith(2, payload, 1, undefined)
-    expect(addItem).toHaveBeenNthCalledWith(3, payload, 1, undefined)
-    expect(updateQuantity).not.toHaveBeenCalled()
+    await waitFor(() => expect(updateQuantity).toHaveBeenCalledTimes(1))
+    expect(addItem).toHaveBeenCalledTimes(1)
+    expect(addItem).toHaveBeenCalledWith(payload, 1, undefined)
+    expect(updateQuantity).toHaveBeenCalledWith('item-1', 3)
 
     rerender(
       <BasketContext.Provider value={basketValue}>
@@ -280,10 +282,87 @@ describe('CatalogQuantityStepper', () => {
       </BasketContext.Provider>,
     )
 
-    expect(addItem).toHaveBeenCalledTimes(3)
+    expect(addItem).toHaveBeenCalledTimes(1)
+    expect(updateQuantity).toHaveBeenCalledTimes(1)
   })
 
-  it('syncs controller quantity when cart items are removed elsewhere', () => {
+  it('keeps increasing optimistically while updates are still pending', async () => {
+    const addItem = vi.fn()
+    const updateQuantity = vi.fn()
+    const removeItem = vi.fn()
+
+    const basketValue: React.ContextType<typeof BasketContext> = {
+      items: [],
+      addItem,
+      updateQuantity,
+      removeItem,
+      clearBasket: vi.fn(),
+      clearCart: vi.fn(),
+      restoreItems: vi.fn(),
+      getTotalItems: () => 0,
+      getTotalPrice: () => 0,
+      getMissingPriceCount: () => 0,
+      isDrawerOpen: false,
+      setIsDrawerOpen: vi.fn(),
+      isDrawerPinned: false,
+      setIsDrawerPinned: vi.fn() as React.Dispatch<React.SetStateAction<boolean>>,
+      cartPulseSignal: 0,
+    }
+
+    let frameId = 0
+
+    const rafSpy = vi
+      .spyOn(window, 'requestAnimationFrame')
+      .mockImplementation(() => {
+        frameId += 1
+        return frameId
+      })
+
+    const cancelSpy = vi
+      .spyOn(window, 'cancelAnimationFrame')
+      .mockImplementation(() => {})
+
+    function ControllerHarness({ quantity }: { quantity: number }) {
+      const controller = useCartQuantityController('item-1', quantity)
+
+      return (
+        <CatalogQuantityStepper
+          quantity={controller.optimisticQuantity}
+          onChange={next => controller.requestQuantity(next)}
+          onRemove={controller.remove}
+          itemLabel="Test product"
+        />
+      )
+    }
+
+    try {
+      render(
+        <BasketContext.Provider value={basketValue}>
+          <ControllerHarness quantity={5} />
+        </BasketContext.Provider>,
+      )
+
+      const incrementButton = screen.getByRole('button', {
+        name: /increase quantity of test product/i,
+      })
+
+      fireEvent.click(incrementButton)
+      fireEvent.click(incrementButton)
+      fireEvent.click(incrementButton)
+      fireEvent.click(incrementButton)
+      fireEvent.click(incrementButton)
+
+      await waitFor(() => expect(screen.getByDisplayValue('10')).toBeInTheDocument())
+      expect(incrementButton).not.toBeDisabled()
+      expect(updateQuantity).not.toHaveBeenCalled()
+      expect(addItem).not.toHaveBeenCalled()
+    } finally {
+      rafSpy.mockRestore()
+      cancelSpy.mockRestore()
+    }
+  })
+
+  it('syncs controller quantity when cart items are removed elsewhere', async () => {
     const basketValue: React.ContextType<typeof BasketContext> = {
       items: [],
       addItem: vi.fn(),
@@ -313,7 +392,7 @@ describe('CatalogQuantityStepper', () => {
       </BasketContext.Provider>,
     )
 
-    expect(screen.getByTestId('optimistic-quantity')).toHaveTextContent('2')
+    await waitFor(() => expect(screen.getByTestId('optimistic-quantity')).toHaveTextContent('2'))
 
     rerender(
       <BasketContext.Provider value={basketValue}>
@@ -321,10 +400,10 @@ describe('CatalogQuantityStepper', () => {
       </BasketContext.Provider>,
     )
 
-    expect(screen.getByTestId('optimistic-quantity')).toHaveTextContent('0')
+    await waitFor(() => expect(screen.getByTestId('optimistic-quantity')).toHaveTextContent('0'))
   })
 
-  it('never shows a lower quantity while controller increments are pending', () => {
+  it('never shows a lower quantity while controller increments are pending', async () => {
     const addItem = vi.fn()
     const updateQuantity = vi.fn()
 
@@ -395,7 +474,7 @@ describe('CatalogQuantityStepper', () => {
     fireEvent.click(incrementButton)
     fireEvent.click(incrementButton)
 
-    expect(screen.getByDisplayValue('3')).toBeInTheDocument()
+    await screen.findByDisplayValue('3')
 
     rerender(
       <BasketContext.Provider value={basketValue}>
@@ -403,7 +482,7 @@ describe('CatalogQuantityStepper', () => {
       </BasketContext.Provider>,
     )
 
-    expect(screen.getByDisplayValue('3')).toBeInTheDocument()
+    await screen.findByDisplayValue('3')
 
     rerender(
       <BasketContext.Provider value={basketValue}>
@@ -411,7 +490,7 @@ describe('CatalogQuantityStepper', () => {
       </BasketContext.Provider>,
     )
 
-    expect(screen.getByDisplayValue('3')).toBeInTheDocument()
+    await screen.findByDisplayValue('3')
 
     rerender(
       <BasketContext.Provider value={basketValue}>
@@ -419,6 +498,6 @@ describe('CatalogQuantityStepper', () => {
       </BasketContext.Provider>,
     )
 
-    expect(screen.getByDisplayValue('3')).toBeInTheDocument()
+    await screen.findByDisplayValue('3')
   })
 })
