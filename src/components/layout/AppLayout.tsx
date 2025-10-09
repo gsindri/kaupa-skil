@@ -204,10 +204,11 @@ export function AppLayout({
                   'transition-[width] duration-[var(--filters-transition,200ms)] ease-[var(--ease-snap)]',
                   'motion-reduce:transition-none',
                   showSecondary ? 'lg:pointer-events-auto' : 'lg:pointer-events-none',
-                  'lg:sticky lg:top-0 lg:self-start'
+                  'lg:sticky lg:self-start'
                 )}
                 style={{
                   width: showSecondary ? 'var(--filters-w, 320px)' : '0px',
+                  top: showSecondary ? 'var(--header-h, 56px)' : undefined,
                   maxHeight: showSecondary ? 'calc(100vh - var(--header-h, 56px))' : undefined,
                 }}
                 aria-hidden={!showSecondary}
