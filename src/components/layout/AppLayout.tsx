@@ -185,8 +185,8 @@ export function AppLayout({
           >
             <div
               className={clsx(
-                'page-grid__content mx-auto grid w-full items-start gap-0 max-w-none',
-                hasSecondary ? 'lg:max-w-[1600px]' : 'lg:grid-cols-1'
+                'page-grid__content grid w-full items-start gap-0',
+                !hasSecondary && 'lg:grid-cols-1'
               )}
               ref={contentRef}
               style={gridStyle}
