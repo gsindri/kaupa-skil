@@ -22,10 +22,6 @@ import { cn } from '@/lib/utils'
 import { resolveImage } from '@/lib/images'
 import type { CartItem } from '@/lib/types'
 import { announceToScreenReader } from '@/components/quick/AccessibilityEnhancementsUtils'
-import {
-  getAddToCartSizeTokens,
-  type CatalogAddToCartSize,
-} from './catalogSizing'
 
 export type CatalogAddToCartSupplier = {
   supplier_id: string
@@ -46,8 +42,6 @@ interface CatalogAddToCartButtonProps {
   popoverSide?: 'top' | 'bottom' | 'left' | 'right'
   popoverAlign?: 'start' | 'end' | 'center'
   buttonLabel?: ReactNode
-  size?: CatalogAddToCartSize
-  stepperSize?: CatalogAddToCartSize
   addItemOptions?: AddItemOptions
   onActionButtonRef?: (node: HTMLButtonElement | null) => void
   isLoading?: boolean
@@ -66,16 +60,14 @@ interface CatalogAddToCartButtonProps {
   }) => ReactNode
 }
 
-const SHARED_SHELL_CLASSES =
-  'inline-flex h-[var(--atc-h)] min-h-[var(--atc-h)] w-full min-w-[var(--atc-min-w,0px)] items-center justify-center rounded-[var(--atc-radius)] px-[var(--atc-pad-x)] text-[length:var(--atc-font-size,0.875rem)] font-medium gap-[var(--atc-gap)]'
 const DEFAULT_BUTTON_CLASSES =
-  `${SHARED_SHELL_CLASSES} bg-secondary text-secondary-foreground shadow-sm transition-colors duration-150 hover:bg-secondary/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2 focus-visible:ring-offset-background`
+  'inline-flex h-10 w-full items-center justify-center rounded-full bg-secondary px-4 text-sm font-medium text-secondary-foreground shadow-sm transition-colors duration-150 hover:bg-secondary/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2 focus-visible:ring-offset-background'
 const DEFAULT_DISABLED_CLASSES =
-  `${SHARED_SHELL_CLASSES} bg-muted text-muted-foreground shadow-none`
+  'inline-flex h-10 w-full items-center justify-center rounded-full bg-muted px-4 text-sm font-medium text-muted-foreground shadow-none'
 const DEFAULT_PASSIVE_CLASSES =
-  `${SHARED_SHELL_CLASSES} border border-border/70 bg-background/80 text-muted-foreground shadow-none backdrop-blur-sm`
+  'inline-flex h-10 w-full items-center justify-center rounded-full border border-border/70 bg-background/80 px-4 text-sm font-medium text-muted-foreground shadow-none backdrop-blur-sm'
 const DEFAULT_UNAVAILABLE_CLASSES =
-  `${SHARED_SHELL_CLASSES} border border-dashed border-muted-foreground/60 bg-background/70 text-muted-foreground shadow-none`
+  'inline-flex h-10 w-full items-center justify-center rounded-full border border-dashed border-muted-foreground/60 bg-background/70 px-4 text-sm font-medium text-muted-foreground shadow-none'
 const DEFAULT_POPOVER_CLASSES = 'w-64 space-y-1 p-2'
 
 const normalizeString = (value: unknown): string | null => {
@@ -135,26 +127,12 @@ export function CatalogAddToCartButton({
   popoverSide = 'top',
   popoverAlign = 'end',
   buttonLabel = 'Add',
-  size = 'md',
-  stepperSize,
   addItemOptions,
   onActionButtonRef,
   isLoading,
   onAdd,
   renderStepper,
 }: CatalogAddToCartButtonProps) {
-  const effectiveStepperSize = stepperSize ?? size
-
-  const addButtonVars = useMemo(
-    () => getAddToCartSizeTokens(size),
-    [size],
-  )
-
-  const stepperVars = useMemo(
-    () => getAddToCartSizeTokens(effectiveStepperSize),
-    [effectiveStepperSize],
-  )
-
   const { items } = useCart()
   const existingItem = items.find(
     (i: CartItem) => i.supplierItemId === product.catalog_id,
@@ -626,11 +604,11 @@ export function CatalogAddToCartButton({
   }
 
   const defaultStepper = (
-    <div className="flex h-full w-full flex-col justify-center gap-[calc(var(--atc-gap)*0.75)]">
+    <div className="flex h-full w-full flex-col justify-center gap-1">
       <div className="relative flex h-full w-full items-center justify-center">
         <CatalogQuantityStepper
           className={cn(
-            'catalog-atc-shell__stepper h-full w-full justify-center shadow-sm transition-opacity',
+            'h-full w-full justify-center shadow-sm transition-opacity',
             stepperClassName,
             showAddedFeedback && 'pointer-events-none opacity-0',
           )}
@@ -644,14 +622,14 @@ export function CatalogAddToCartButton({
             (maxQuantity === undefined || currentQuantity < maxQuantity) &&
             controller.canIncrease
           }
-          size={effectiveStepperSize}
+          size="sm"
         />
         {showAddedFeedback && (
           <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
             <div
               role="status"
               aria-live="polite"
-              className="flex h-full w-full items-center justify-center rounded-[var(--atc-radius)] border border-emerald-300/60 bg-emerald-500/10 text-[length:var(--atc-font-size,0.875rem)] font-medium text-emerald-700 shadow-sm backdrop-blur-sm dark:border-emerald-400/40 dark:bg-emerald-500/15 dark:text-emerald-200"
+              className="flex h-full w-full items-center justify-center rounded-full border border-emerald-300/60 bg-emerald-500/10 text-sm font-medium text-emerald-700 shadow-sm backdrop-blur-sm dark:border-emerald-400/40 dark:bg-emerald-500/15 dark:text-emerald-200"
             >
               Added
               <span aria-hidden className="ml-1 text-base">
@@ -668,8 +646,6 @@ export function CatalogAddToCartButton({
       )}
     </div>
   )
-
-  const shellStyle = currentQuantity > 0 ? stepperVars : addButtonVars
 
   const content =
     currentQuantity > 0
@@ -688,15 +664,7 @@ export function CatalogAddToCartButton({
       : renderAddButton()
 
   return (
-    <div
-      className={cn(
-        'catalog-add-to-cart-shell relative flex w-full items-center justify-center',
-        className,
-      )}
-      style={shellStyle}
-      data-size={size}
-      data-stepper-size={effectiveStepperSize}
-    >
+    <div className={cn('flex w-full items-center justify-center', className)}>
       {content}
     </div>
   )

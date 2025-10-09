@@ -6,6 +6,8 @@ import { formatCurrency } from "@/lib/format";
 import type { PublicCatalogItem } from "@/services/catalog";
 import { resolveImage } from "@/lib/images";
 import { useCart } from "@/contexts/useBasket";
+import type { CartQuantityController } from "@/contexts/useCartQuantityController";
+import { CatalogQuantityStepper } from "./CatalogQuantityStepper";
 import { PriceBenchmarkBadge } from "./PriceBenchmarkBadge";
 import CatalogAddToCartButton from "./CatalogAddToCartButton";
 import { Loader2 } from "lucide-react";
@@ -267,6 +269,54 @@ export const ProductCard = memo(function ProductCard({
     [],
   );
 
+  const renderCardStepper = useCallback(
+    ({
+      controller,
+      currentQuantity,
+      handleQuantityChange,
+      handleRemove,
+      maxHint,
+      maxQuantity,
+      isUnavailable: stepperUnavailable,
+    }: {
+      controller: CartQuantityController;
+      currentQuantity: number;
+      handleQuantityChange: (value: number) => void;
+      handleRemove: () => void;
+      maxHint: string | null;
+      maxQuantity: number | undefined;
+      isUnavailable: boolean;
+    }) => (
+      <div className="flex w-full flex-col items-end gap-1">
+        <CatalogQuantityStepper
+          quantity={currentQuantity}
+          onChange={handleQuantityChange}
+          onRemove={handleRemove}
+          itemLabel={`${product.name}`}
+          minQuantity={0}
+          maxQuantity={maxQuantity}
+          canIncrease={
+            !stepperUnavailable &&
+            (maxQuantity === undefined || currentQuantity < maxQuantity) &&
+            controller.canIncrease
+          }
+          size="sm"
+          className={cn(
+            "h-[2.625rem] min-h-[2.625rem] rounded-full border border-border/60 bg-background/90 px-1.5 shadow-none",
+            "[&_.catalog-card__stepper-btn]:h-[2.625rem] [&_.catalog-card__stepper-btn]:min-h-[2.625rem] [&_.catalog-card__stepper-btn]:min-w-[2.625rem]",
+            "[&_.catalog-card__stepper-count]:h-[2.625rem] [&_.catalog-card__stepper-count]:leading-[2.625rem]",
+          )}
+        />
+        {maxHint ? (
+          <span className="text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+            {maxHint}
+          </span>
+        ) : null}
+      </div>
+    ),
+    [product.name],
+  );
+
   const addButtonLabel = isAdding ? (
     <>
       <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
@@ -401,7 +451,10 @@ export const ProductCard = memo(function ProductCard({
                   product={product}
                   suppliers={addToCartSuppliers}
                   className="w-full"
-                  size="lg"
+                  buttonClassName="inline-flex h-[2.625rem] w-full items-center justify-center rounded-full bg-secondary px-4 text-sm font-semibold text-secondary-foreground shadow-sm transition-colors duration-150 hover:bg-secondary/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                  disabledButtonClassName="inline-flex h-[2.625rem] w-full items-center justify-center rounded-full bg-muted px-4 text-sm font-medium text-muted-foreground shadow-none"
+                  passiveButtonClassName="inline-flex h-[2.625rem] w-full items-center justify-center rounded-full border border-border/70 bg-background/80 px-4 text-sm font-medium text-muted-foreground shadow-none backdrop-blur-sm"
+                  unavailableButtonClassName="inline-flex h-[2.625rem] w-full items-center justify-center rounded-full border border-dashed border-muted-foreground/60 bg-background/70 px-4 text-sm font-medium text-muted-foreground shadow-none"
                   popoverClassName="w-64 space-y-1 p-2"
                   popoverSide="top"
                   popoverAlign="end"
@@ -412,6 +465,7 @@ export const ProductCard = memo(function ProductCard({
                     onAdd?.(supplierId);
                   }}
                   buttonLabel={addButtonLabel}
+                  renderStepper={renderCardStepper}
                 />
               </div>
             </div>
