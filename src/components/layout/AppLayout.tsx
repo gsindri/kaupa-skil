@@ -188,7 +188,10 @@ export function AppLayout({
 
         {/* Main content */}
         <div
-          className="px-4 pb-8 pt-2 sm:px-6 lg:px-8"
+          className={clsx(
+            'px-4 pb-8 pt-2 sm:px-6 lg:pr-0',
+            hasSecondary ? 'lg:pl-0' : 'lg:pl-8'
+          )}
           ref={layoutPaddingRef}
         >
           <div
@@ -200,7 +203,7 @@ export function AppLayout({
           >
             <div
               className={clsx(
-                'page-grid__content mx-auto grid w-full items-start gap-6 max-w-none',
+                'page-grid__content mx-auto grid w-full items-start gap-6 max-w-none lg:pr-8',
                 hasSecondary ? 'lg:max-w-[1600px]' : 'lg:grid-cols-1'
               )}
               ref={contentRef}
