@@ -22,6 +22,10 @@ import { cn } from '@/lib/utils'
 import { resolveImage } from '@/lib/images'
 import type { CartItem } from '@/lib/types'
 import { announceToScreenReader } from '@/components/quick/AccessibilityEnhancementsUtils'
+import {
+  CATALOG_ADD_TO_CART_BUTTON_CLASSES,
+  CATALOG_ADD_TO_CART_STEPPER_CLASSES,
+} from './catalogAddToCartStyles'
 
 export type CatalogAddToCartSupplier = {
   supplier_id: string
@@ -60,14 +64,6 @@ interface CatalogAddToCartButtonProps {
   }) => ReactNode
 }
 
-const DEFAULT_BUTTON_CLASSES =
-  'inline-flex h-10 w-full items-center justify-center rounded-full bg-secondary px-4 text-sm font-medium text-secondary-foreground shadow-sm transition-colors duration-150 hover:bg-secondary/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2 focus-visible:ring-offset-background'
-const DEFAULT_DISABLED_CLASSES =
-  'inline-flex h-10 w-full items-center justify-center rounded-full bg-muted px-4 text-sm font-medium text-muted-foreground shadow-none'
-const DEFAULT_PASSIVE_CLASSES =
-  'inline-flex h-10 w-full items-center justify-center rounded-full border border-border/70 bg-background/80 px-4 text-sm font-medium text-muted-foreground shadow-none backdrop-blur-sm'
-const DEFAULT_UNAVAILABLE_CLASSES =
-  'inline-flex h-10 w-full items-center justify-center rounded-full border border-dashed border-muted-foreground/60 bg-background/70 px-4 text-sm font-medium text-muted-foreground shadow-none'
 const DEFAULT_POPOVER_CLASSES = 'w-64 space-y-1 p-2'
 
 const normalizeString = (value: unknown): string | null => {
@@ -448,13 +444,14 @@ export function CatalogAddToCartButton({
     }
   }, [commitAdd, disableAddReason, supplierEntries.length])
 
-  const resolvedButtonClasses = buttonClassName ?? DEFAULT_BUTTON_CLASSES
+  const resolvedButtonClasses =
+    buttonClassName ?? CATALOG_ADD_TO_CART_BUTTON_CLASSES.button
   const resolvedDisabledClasses =
-    disabledButtonClassName ?? DEFAULT_DISABLED_CLASSES
+    disabledButtonClassName ?? CATALOG_ADD_TO_CART_BUTTON_CLASSES.disabled
   const resolvedPassiveClasses =
-    passiveButtonClassName ?? DEFAULT_PASSIVE_CLASSES
+    passiveButtonClassName ?? CATALOG_ADD_TO_CART_BUTTON_CLASSES.passive
   const resolvedUnavailableClasses =
-    unavailableButtonClassName ?? DEFAULT_UNAVAILABLE_CLASSES
+    unavailableButtonClassName ?? CATALOG_ADD_TO_CART_BUTTON_CLASSES.unavailable
   const resolvedPopoverClasses = popoverClassName ?? DEFAULT_POPOVER_CLASSES
 
   const maxHint = maxQuantity !== undefined ? `Max ${maxQuantity}` : null
@@ -608,7 +605,7 @@ export function CatalogAddToCartButton({
       <div className="relative flex h-full w-full items-center justify-center">
         <CatalogQuantityStepper
           className={cn(
-            'h-full w-full justify-center shadow-sm transition-opacity',
+            CATALOG_ADD_TO_CART_STEPPER_CLASSES.stepper,
             stepperClassName,
             showAddedFeedback && 'pointer-events-none opacity-0',
           )}
@@ -625,11 +622,11 @@ export function CatalogAddToCartButton({
           size="sm"
         />
         {showAddedFeedback && (
-          <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+          <div className={CATALOG_ADD_TO_CART_STEPPER_CLASSES.feedbackOverlay}>
             <div
               role="status"
               aria-live="polite"
-              className="flex h-full w-full items-center justify-center rounded-full border border-emerald-300/60 bg-emerald-500/10 text-sm font-medium text-emerald-700 shadow-sm backdrop-blur-sm dark:border-emerald-400/40 dark:bg-emerald-500/15 dark:text-emerald-200"
+              className={CATALOG_ADD_TO_CART_STEPPER_CLASSES.feedbackInner}
             >
               Added
               <span aria-hidden className="ml-1 text-base">
@@ -640,7 +637,7 @@ export function CatalogAddToCartButton({
         )}
       </div>
       {maxHint && (
-        <div className="pt-0.5 text-center text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+        <div className={CATALOG_ADD_TO_CART_STEPPER_CLASSES.maxHint}>
           {maxHint}
         </div>
       )}
