@@ -62,7 +62,7 @@ export function AppLayout({
     const el = internalHeaderRef.current
     const ae = document.activeElement
     const menuOpen = el?.querySelector('[data-open="true"]')
-    return window.scrollY < 1 || !!menuOpen || isTypeableElement(ae)
+    return !!menuOpen || isTypeableElement(ae)
   }, [])
 
   const handleLockChange = useHeaderScrollHide(internalHeaderRef, { isPinned })
