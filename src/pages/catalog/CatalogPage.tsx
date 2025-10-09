@@ -1104,6 +1104,8 @@ export default function CatalogPage() {
         className={cn(
           'mx-auto w-full max-w-[1600px] space-y-5 pb-8',
           view === 'grid' ? 'pt-2' : 'pt-2',
+          // Add extra horizontal padding when no sidebars are visible
+          !showFilters && 'px-4 sm:px-8 lg:px-12 xl:px-16',
         )}
       >
         {chips.length > 0 && (
