@@ -1323,7 +1323,7 @@ function FiltersBar({
   chips,
   filterButtonRef,
 }: FiltersBarProps) {
-  const containerClass = 'mx-auto w-full max-w-[1600px] px-4 sm:px-6 lg:px-8'
+  const containerClass = 'mx-auto w-full max-w-[1600px]'
   const { search: _search, ...facetFilters } = filters
   const activeFacetCount = chips.length
   const activeCount =
