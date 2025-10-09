@@ -35,7 +35,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { announceToScreenReader } from '@/components/quick/AccessibilityEnhancementsUtils'
 
 const FILTER_PANEL_LS_KEY = 'catalog-filters-open'
-const CATALOG_CONTAINER_CLASS = 'mx-auto w-full max-w-[1600px] px-6 sm:px-10 lg:px-16'
+
 const COMPACT_TOOLBAR_TOKENS = {
   '--ctrl-h': '36px',
   '--ctrl-r': '10px',
@@ -1102,8 +1102,7 @@ export default function CatalogPage() {
     >
       <div
         className={cn(
-          CATALOG_CONTAINER_CLASS,
-          'w-full space-y-5 pb-8',
+          'mx-auto w-full max-w-[1600px] space-y-5 pb-8',
           view === 'grid' ? 'pt-2' : 'pt-2',
         )}
       >
@@ -1324,7 +1323,7 @@ function FiltersBar({
   chips,
   filterButtonRef,
 }: FiltersBarProps) {
-  const containerClass = CATALOG_CONTAINER_CLASS
+  const containerClass = 'mx-auto w-full max-w-[1600px] px-4 sm:px-6 lg:px-8'
   const { search: _search, ...facetFilters } = filters
   const activeFacetCount = chips.length
   const activeCount =

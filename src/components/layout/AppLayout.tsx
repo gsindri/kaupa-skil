@@ -178,7 +178,7 @@ export function AppLayout({
         <div className="pb-8 pt-2">
           <div
             className={clsx(
-              'page-grid items-start gap-3',
+              'page-grid items-start',
               hasSecondary && 'page-grid--with-secondary'
             )}
             data-has-secondary={showSecondary ? 'true' : undefined}
