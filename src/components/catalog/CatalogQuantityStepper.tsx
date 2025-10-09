@@ -1,9 +1,11 @@
 import {
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
   type ChangeEvent,
+  type CSSProperties,
   type KeyboardEvent as ReactKeyboardEvent,
   type MouseEvent,
   type RefObject,
@@ -11,6 +13,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { Minus, Plus, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  getAddToCartSizeTokens,
+  type CatalogAddToCartSize,
+} from "./catalogSizing";
 
 interface CatalogQuantityStepperProps {
   quantity: number;
@@ -21,8 +27,9 @@ interface CatalogQuantityStepperProps {
   canIncrease?: boolean;
   minQuantity?: number;
   maxQuantity?: number;
-  size?: "sm" | "md";
+  size?: CatalogAddToCartSize;
   increaseButtonRef?: RefObject<HTMLButtonElement>;
+  style?: CSSProperties;
 }
 
 type StepDirection = "inc" | "dec";
@@ -41,6 +48,7 @@ export function CatalogQuantityStepper({
   maxQuantity,
   size = "md",
   increaseButtonRef,
+  style,
 }: CatalogQuantityStepperProps) {
   const holdTimeoutRef = useRef<number>();
   const holdIntervalRef = useRef<number>();
@@ -62,8 +70,18 @@ export function CatalogQuantityStepper({
     [effectiveMax, minQuantity],
   );
 
-  const effectiveCanIncrease = canIncrease && (effectiveMax === undefined || optimisticQuantity < effectiveMax);
+  const effectiveCanIncrease =
+    canIncrease && (effectiveMax === undefined || optimisticQuantity < effectiveMax);
   const allowRemoval = onRemove !== undefined || minQuantity <= 0;
+
+  const sizeVars = useMemo(() => getAddToCartSizeTokens(size), [size]);
+  const mergedStyle = useMemo(
+    () => ({
+      ...sizeVars,
+      ...(style ?? {}),
+    }),
+    [sizeVars, style],
+  );
 
   useEffect(() => {
     latestQuantity.current = quantity;
@@ -215,29 +233,6 @@ export function CatalogQuantityStepper({
     [commitInputValue, optimisticQuantity],
   );
 
-  const sizeStyles =
-    size === "sm"
-      ? {
-          root:
-            "h-full min-h-[2.25rem] overflow-hidden rounded-full border border-border/60 bg-background/95 text-[13px] font-medium text-foreground shadow-sm focus-within:ring-2 focus-within:ring-primary/40 focus-within:ring-offset-1 focus-within:ring-offset-background",
-          button:
-            "flex h-full min-h-[2.25rem] min-w-[2.25rem] items-center justify-center rounded-none bg-transparent text-foreground first:rounded-l-full last:rounded-r-full",
-          countWrapper:
-            "relative flex h-full flex-1 items-center justify-center bg-transparent px-2",
-          count:
-            "catalog-card__stepper-count h-[2.25rem] min-w-[3rem] text-center text-sm font-medium leading-[2.25rem] text-foreground",
-        }
-      : {
-          root:
-            "h-full min-h-[2.5rem] overflow-hidden rounded-full border border-border/60 bg-background text-sm font-medium text-foreground shadow-sm focus-within:ring-2 focus-within:ring-primary/40 focus-within:ring-offset-1 focus-within:ring-offset-background",
-          button:
-            "flex h-full min-h-[2.5rem] min-w-[2.5rem] items-center justify-center rounded-none bg-transparent text-foreground first:rounded-l-full last:rounded-r-full",
-          countWrapper:
-            "relative flex h-full flex-1 items-center justify-center bg-transparent px-3",
-          count:
-            "catalog-card__stepper-count h-[2.5rem] min-w-[3.25rem] text-center text-base font-medium leading-[2.5rem] text-foreground",
-        };
-
   const showRemoveIcon = allowRemoval && optimisticQuantity <= Math.max(1, minQuantity || 0);
   const decrementLabel = showRemoveIcon
     ? `Remove ${itemLabel} from cart`
@@ -248,10 +243,11 @@ export function CatalogQuantityStepper({
       role="group"
       aria-label={`Quantity controls for ${itemLabel}`}
       className={cn(
-        "inline-flex w-full items-stretch backdrop-blur",
-        sizeStyles.root,
+        "inline-flex w-full items-stretch overflow-hidden rounded-[var(--atc-radius)] border border-border/60 bg-background/95 text-[length:var(--atc-font-size,0.875rem)] font-medium text-foreground shadow-sm backdrop-blur focus-within:ring-2 focus-within:ring-primary/40 focus-within:ring-offset-1 focus-within:ring-offset-background",
+        "min-h-[var(--atc-h)]",
         className,
       )}
+      style={mergedStyle}
     >
       <Button
         type="button"
@@ -259,7 +255,7 @@ export function CatalogQuantityStepper({
         size="icon"
         className={cn(
           "catalog-card__stepper-btn transition-transform duration-150 ease-out",
-          sizeStyles.button,
+          "flex h-full min-h-[var(--atc-h)] min-w-[var(--atc-h)] items-center justify-center rounded-none bg-transparent text-foreground first:rounded-l-[var(--atc-radius)] last:rounded-r-[var(--atc-radius)]",
           "hover:-translate-y-0.5 hover:bg-muted/60 focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-1",
         )}
         aria-label={decrementLabel}
@@ -272,15 +268,15 @@ export function CatalogQuantityStepper({
         onClick={event => handleClick("dec", event)}
       >
         {showRemoveIcon ? (
-          <Trash2 className="h-4 w-4" aria-hidden="true" />
+          <Trash2 className="size-[calc(var(--atc-icon,1.25rem)*0.85)]" aria-hidden="true" />
         ) : (
-          <Minus className="h-4 w-4" aria-hidden="true" />
+          <Minus className="size-[calc(var(--atc-icon,1.25rem)*0.85)]" aria-hidden="true" />
         )}
       </Button>
       <div
         className={cn(
           "relative flex-1",
-          sizeStyles.countWrapper,
+          "flex h-full items-center justify-center bg-transparent px-[var(--atc-stepper-pad,var(--atc-pad-x))]",
         )}
       >
         <input
@@ -298,7 +294,7 @@ export function CatalogQuantityStepper({
           aria-label={`Quantity for ${itemLabel}`}
           className={cn(
             "w-full appearance-none bg-transparent tabular-nums text-center text-foreground outline-none",
-            sizeStyles.count,
+            "catalog-card__stepper-count h-[var(--atc-h)] min-w-[var(--atc-count-min,calc(var(--atc-h)*1.3))] text-[length:var(--atc-font-size,0.875rem)] font-medium leading-[var(--atc-h)]",
           )}
         />
         <span className="sr-only" aria-live="polite">
@@ -311,7 +307,7 @@ export function CatalogQuantityStepper({
         size="icon"
         className={cn(
           "catalog-card__stepper-btn transition-transform duration-150 ease-out",
-          sizeStyles.button,
+          "flex h-full min-h-[var(--atc-h)] min-w-[var(--atc-h)] items-center justify-center rounded-none bg-transparent text-foreground first:rounded-l-[var(--atc-radius)] last:rounded-r-[var(--atc-radius)]",
           "hover:-translate-y-0.5 hover:bg-muted/60 focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-1",
           !effectiveCanIncrease && "opacity-60",
         )}
@@ -326,7 +322,7 @@ export function CatalogQuantityStepper({
         onPointerCancel={stopHold}
         onClick={event => handleClick("inc", event)}
       >
-        <Plus className="h-4 w-4" aria-hidden="true" />
+        <Plus className="size-[calc(var(--atc-icon,1.25rem)*0.85)]" aria-hidden="true" />
       </Button>
     </div>
   );
