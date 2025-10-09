@@ -1,7 +1,5 @@
 import { useCallback, useEffect, useRef } from 'react'
 
-const HIDE_DELTA = 8
-
 interface Options {
   /**
    * Return true when header should remain pinned (always visible)
@@ -49,8 +47,27 @@ export function useHeaderScrollHide(
       }
     }
 
+    let interactionLockUntil = 0
+    const lockFor = (ms: number) => {
+      interactionLockUntil = performance.now() + ms
+    }
+    const handlePointerDown = () => lockFor(180)
+    el.addEventListener('pointerdown', handlePointerDown, { passive: true })
+
+    let lastY = Math.max(0, window.scrollY)
+    let hiddenProgress = 0
+    let headerHeight = 1
+
+    const setHiddenProgress = (value: number) => {
+      const clamped = Math.min(1, Math.max(0, value))
+      if (clamped === hiddenProgress) return
+      hiddenProgress = clamped
+      document.documentElement.style.setProperty('--header-hidden', `${hiddenProgress}`)
+    }
+
     const setHeaderVars = () => {
       const height = Math.round(el.getBoundingClientRect().height)
+      headerHeight = height > 0 ? height : 1
       document.documentElement.style.setProperty('--header-h', `${height}px`)
     }
     setHeaderVars()
@@ -61,33 +78,14 @@ export function useHeaderScrollHide(
     ro?.observe(el)
     window.addEventListener('resize', setHeaderVars)
 
-    let interactionLockUntil = 0
-    const lockFor = (ms: number) => {
-      interactionLockUntil = performance.now() + ms
-    }
-    const handlePointerDown = () => lockFor(180)
-    el.addEventListener('pointerdown', handlePointerDown, { passive: true })
-
-    let lastY = Math.max(0, window.scrollY)
-    let accumulatedDelta = 0
-    let hidden = false
-
     const resetScrollState = (y: number) => {
       lastY = y
-      accumulatedDelta = 0
-    }
-
-    const applyHidden = (nextHidden: boolean) => {
-      if (hidden === nextHidden) return
-      hidden = nextHidden
-      document.documentElement.style.setProperty('--header-hidden', hidden ? '1' : '0')
-      applyTransition()
-      el.style.transform = hidden ? 'translate3d(0, -100%, 0)' : 'translate3d(0, 0, 0)'
+      setHiddenProgress(0)
     }
 
     applyTransition()
     document.documentElement.style.setProperty('--header-hidden', '0')
-    el.style.transform = 'translate3d(0, 0, 0)'
+    el.style.transform = 'translate3d(0, calc(-1 * var(--header-hidden) * var(--header-h)), 0)'
 
     const pinned = () =>
       (isPinned?.() ?? false) || lockCount.current > 0 || performance.now() < interactionLockUntil
@@ -96,7 +94,7 @@ export function useHeaderScrollHide(
       const y = Math.max(0, window.scrollY)
 
       if (pinned()) {
-        if (hidden) applyHidden(false)
+        if (hiddenProgress !== 0) setHiddenProgress(0)
         resetScrollState(y)
         return
       }
@@ -107,16 +105,13 @@ export function useHeaderScrollHide(
         return
       }
 
-      if (Math.sign(delta) !== Math.sign(accumulatedDelta)) {
-        accumulatedDelta = delta
-      } else {
-        accumulatedDelta += delta
+      if (delta < 0) {
+        if (hiddenProgress !== 0) setHiddenProgress(0)
+        return
       }
 
-      if (Math.abs(accumulatedDelta) > HIDE_DELTA) {
-        applyHidden(accumulatedDelta > 0)
-        accumulatedDelta = 0
-      }
+      const nextProgress = hiddenProgress + delta / headerHeight
+      setHiddenProgress(nextProgress)
     }
 
     const handleScroll = () => requestAnimationFrame(onScroll)
