@@ -192,18 +192,20 @@ export function AppLayout({
               style={gridStyle}
             >
               {hasSecondary && (
-                <aside
-                  className={cn(
-                    'relative hidden min-w-0 overflow-hidden lg:flex lg:flex-col',
-                    'transition-[width] duration-[var(--filters-transition,200ms)] ease-[var(--ease-snap)]',
-                    'motion-reduce:transition-none',
-                    showSecondary ? 'lg:pointer-events-auto' : 'lg:pointer-events-none'
-                  )}
-                  style={{
-                    width: showSecondary ? 'var(--filters-w, 320px)' : '0px',
-                  }}
-                  aria-hidden={!showSecondary}
-                >
+              <aside
+                className={cn(
+                  'relative hidden min-w-0 overflow-hidden lg:flex lg:flex-col',
+                  'transition-[width] duration-[var(--filters-transition,200ms)] ease-[var(--ease-snap)]',
+                  'motion-reduce:transition-none',
+                  showSecondary ? 'lg:pointer-events-auto' : 'lg:pointer-events-none',
+                  'lg:sticky lg:top-0 lg:self-start'
+                )}
+                style={{
+                  width: showSecondary ? 'var(--filters-w, 320px)' : '0px',
+                  maxHeight: showSecondary ? 'calc(100vh - var(--header-h, 56px))' : undefined,
+                }}
+                aria-hidden={!showSecondary}
+              >
                   {secondary}
                 </aside>
               )}
