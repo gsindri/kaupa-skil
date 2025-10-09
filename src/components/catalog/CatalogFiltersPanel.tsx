@@ -401,13 +401,13 @@ export function CatalogFiltersPanel({
   const skeletonRows = Array.from({ length: 6 })
 
   const headerSurfaceClass = cn(
-    'flex flex-col gap-3 border-b border-white/10 bg-[color:var(--toolbar-bg)]/80 px-4 py-4 backdrop-blur-xl',
-    variant === 'desktop' ? 'shadow-[0_10px_30px_rgba(8,15,26,0.22)]' : '',
+    'flex flex-col gap-3 border-b border-white/10 bg-[color:var(--toolbar-bg)]/80 py-4 backdrop-blur-xl',
+    variant === 'desktop' ? 'shadow-[0_10px_30px_rgba(8,15,26,0.22)] pl-0 pr-4' : 'px-4',
   )
 
   const panelBodyClass = cn(
-    'flex-1 space-y-6 overflow-y-auto px-4 pb-6',
-    variant === 'desktop' ? 'pt-4' : 'pt-2'
+    'flex-1 space-y-6 overflow-y-auto pb-6',
+    variant === 'desktop' ? 'pt-4 pl-0 pr-4' : 'pt-2 px-4'
   )
 
   const headerTokens = useMemo<HeaderVars>(() => ({
@@ -448,7 +448,10 @@ export function CatalogFiltersPanel({
         </div>
         
         {/* Tier-1 Quick Filters - Always visible */}
-        <div className="px-4 pb-3 pt-2 space-y-2">
+        <div className={cn(
+          variant === 'desktop' ? 'pl-0 pr-4 pb-3 pt-2' : 'px-4 pb-3 pt-2',
+          'space-y-2'
+        )}>
           <div className="flex items-center gap-2">
             <Checkbox
               id="filter-in-stock"
