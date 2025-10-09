@@ -60,9 +60,15 @@ export function AppLayout({
 
   const isPinned = useCallback(() => {
     const el = internalHeaderRef.current
+    if (!el) return false
+
     const ae = document.activeElement
-    const menuOpen = el?.querySelector('[data-open="true"]')
-    return !!menuOpen || isTypeableElement(ae)
+    const menuOpen = el.querySelector('[data-state="open"]')
+    if (menuOpen) return true
+
+    if (ae && el.contains(ae) && isTypeableElement(ae)) return true
+
+    return false
   }, [])
 
   const handleLockChange = useHeaderScrollHide(internalHeaderRef, { isPinned })
