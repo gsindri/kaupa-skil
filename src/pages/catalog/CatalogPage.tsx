@@ -7,6 +7,7 @@ import { useCatalogProducts } from '@/hooks/useCatalogProducts'
 import { useOrgCatalog } from '@/hooks/useOrgCatalog'
 import { rememberScroll, restoreScroll } from '@/lib/scrollMemory'
 import { useDebounce } from '@/hooks/useDebounce'
+import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { CatalogTable } from '@/components/catalog/CatalogTable'
 import { CatalogGrid } from '@/components/catalog/CatalogGrid'
 import { InfiniteSentinel } from '@/components/common/InfiniteSentinel'
@@ -1679,6 +1680,7 @@ function MobileFiltersDrawer({
   const contentRef = useRef<HTMLDivElement | null>(null)
   const startXRef = useRef<number | null>(null)
   const offsetRef = useRef(0)
+  const isDesktop = useMediaQuery('(min-width: 1024px)')
 
   useEffect(() => {
     if (open) {
@@ -1708,14 +1710,14 @@ function MobileFiltersDrawer({
   }, [open, prefersReducedMotion])
 
   useEffect(() => {
-    if (!rendered || typeof document === 'undefined') return
+    if (!rendered || typeof document === 'undefined' || isDesktop) return
     const { body } = document
     const previousOverflow = body.style.overflow
     body.style.overflow = 'hidden'
     return () => {
       body.style.overflow = previousOverflow
     }
-  }, [rendered])
+  }, [rendered, isDesktop])
 
   useEffect(() => {
     if (!open || typeof document === 'undefined') return
