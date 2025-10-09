@@ -198,7 +198,7 @@ input[type='search'] {
 /* Cart rail layout */
 .page-grid{
   display:grid;
-  gap:var(--cart-rail-gap, var(--page-gutter, 1.5rem));
+  gap:0;
   grid-template-columns:minmax(0,1fr);
 }
 

@@ -175,12 +175,7 @@ export function AppLayout({
         </div>
 
         {/* Main content */}
-        <div
-          className={clsx(
-            'px-4 pb-8 pt-2 sm:px-6',
-            hasSecondary ? 'lg:pl-0' : 'lg:pl-8'
-          )}
-        >
+        <div className="pb-8 pt-2">
           <div
             className={clsx(
               'page-grid items-start gap-3',
@@ -190,7 +185,7 @@ export function AppLayout({
           >
             <div
               className={clsx(
-                'page-grid__content mx-auto grid w-full items-start gap-6 max-w-none',
+                'page-grid__content mx-auto grid w-full items-start gap-0 max-w-none',
                 hasSecondary ? 'lg:max-w-[1600px]' : 'lg:grid-cols-1'
               )}
               ref={contentRef}
@@ -214,7 +209,7 @@ export function AppLayout({
               )}
               <main
                 id="main-content"
-                className="w-full min-w-0 lg:pr-8"
+                className="w-full min-w-0 px-4 sm:px-6 lg:px-8"
                 style={{ minHeight: 'calc(100vh - var(--header-h, 56px))' }}
               >
                 {children ?? <Outlet />}
