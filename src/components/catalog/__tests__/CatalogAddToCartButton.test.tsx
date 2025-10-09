@@ -38,7 +38,7 @@ vi.mock('@/contexts/useBasket', () => ({
   }),
 }))
 
-const useCartQuantityControllerMock = vi.fn(() => controllerMock)
+const useCartQuantityControllerMock = vi.fn((supplierItemId: string, cartQuantity: number) => controllerMock)
 
 vi.mock('@/contexts/useCartQuantityController', async () => {
   const actual = await vi.importActual<

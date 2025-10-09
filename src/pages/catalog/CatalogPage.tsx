@@ -191,6 +191,226 @@ function deriveChipsFromFilters(
     })
   }
 
+  // Price Range Filters
+  if (filters.priceRange) {
+    const { min, max } = filters.priceRange
+    let label = 'Price: '
+    if (min != null && max != null) label += `${min}-${max} kr`
+    else if (min != null) label += `≥ ${min} kr`
+    else if (max != null) label += `≤ ${max} kr`
+    chips.push({
+      key: 'priceRange',
+      label,
+      onRemove: () => setFilters({ priceRange: undefined }),
+      onEdit: () => openFacet('priceRange'),
+    })
+  }
+
+  if (filters.pricePerUnitRange) {
+    const { min, max } = filters.pricePerUnitRange
+    let label = 'Price/Unit: '
+    if (min != null && max != null) label += `${min}-${max} kr`
+    else if (min != null) label += `≥ ${min} kr`
+    else if (max != null) label += `≤ ${max} kr`
+    chips.push({
+      key: 'pricePerUnitRange',
+      label,
+      onRemove: () => setFilters({ pricePerUnitRange: undefined }),
+      onEdit: () => openFacet('pricePerUnitRange'),
+    })
+  }
+
+  // Dietary Filters
+  const dietaryLabels: Record<string, string> = {
+    vegan: 'Vegan',
+    vegetarian: 'Vegetarian',
+    gluten_free: 'Gluten-Free',
+    halal: 'Halal',
+  }
+  const dietaryItems = filters.dietary || []
+  if (dietaryItems.length > 0) {
+    if (dietaryItems.length <= 2) {
+      dietaryItems.forEach(item => {
+        chips.push({
+          key: `dietary-${item}`,
+          label: dietaryLabels[item] || item,
+          onRemove: () => {
+            const updated = dietaryItems.filter(d => d !== item)
+            setFilters({ dietary: updated.length > 0 ? updated : undefined })
+          },
+          onEdit: () => openFacet('dietary'),
+        })
+      })
+    } else {
+      chips.push({
+        key: 'dietary',
+        label: `Dietary (${dietaryItems.length})`,
+        onRemove: () => setFilters({ dietary: undefined }),
+        onEdit: () => openFacet('dietary'),
+      })
+    }
+  }
+
+  // Quality Filters
+  const qualityLabels: Record<string, string> = {
+    organic: 'Organic',
+    fair_trade: 'Fair Trade',
+    eco_friendly: 'Eco-Friendly',
+    icelandic: 'Icelandic',
+  }
+  const qualityItems = filters.quality || []
+  if (qualityItems.length > 0) {
+    if (qualityItems.length <= 2) {
+      qualityItems.forEach(item => {
+        chips.push({
+          key: `quality-${item}`,
+          label: qualityLabels[item] || item,
+          onRemove: () => {
+            const updated = qualityItems.filter(q => q !== item)
+            setFilters({ quality: updated.length > 0 ? updated : undefined })
+          },
+          onEdit: () => openFacet('quality'),
+        })
+      })
+    } else {
+      chips.push({
+        key: 'quality',
+        label: `Quality (${qualityItems.length})`,
+        onRemove: () => setFilters({ quality: undefined }),
+        onEdit: () => openFacet('quality'),
+      })
+    }
+  }
+
+  // Operational Filters
+  if (filters.operational) {
+    const { moq, leadTimeDays, caseBreak, directDelivery, sameDay } = filters.operational
+    if (moq != null) {
+      chips.push({
+        key: 'operational-moq',
+        label: `MOQ ≤ ${moq}`,
+        onRemove: () => {
+          const updated = { ...filters.operational }
+          delete updated.moq
+          const hasOtherProps = Object.keys(updated).some(k => updated[k as keyof typeof updated] != null)
+          setFilters({ operational: hasOtherProps ? updated : undefined })
+        },
+        onEdit: () => openFacet('operational'),
+      })
+    }
+    if (leadTimeDays != null) {
+      chips.push({
+        key: 'operational-leadTime',
+        label: `Lead Time ≤ ${leadTimeDays}d`,
+        onRemove: () => {
+          const updated = { ...filters.operational }
+          delete updated.leadTimeDays
+          const hasOtherProps = Object.keys(updated).some(k => updated[k as keyof typeof updated] != null)
+          setFilters({ operational: hasOtherProps ? updated : undefined })
+        },
+        onEdit: () => openFacet('operational'),
+      })
+    }
+    if (caseBreak) {
+      chips.push({
+        key: 'operational-caseBreak',
+        label: 'Case Break',
+        onRemove: () => {
+          const updated = { ...filters.operational, caseBreak: false }
+          const hasOtherProps = updated.moq != null || updated.leadTimeDays != null || updated.directDelivery || updated.sameDay
+          setFilters({ operational: hasOtherProps ? updated : undefined })
+        },
+        onEdit: () => openFacet('operational'),
+      })
+    }
+    if (directDelivery) {
+      chips.push({
+        key: 'operational-directDelivery',
+        label: 'Direct Delivery',
+        onRemove: () => {
+          const updated = { ...filters.operational, directDelivery: false }
+          const hasOtherProps = updated.moq != null || updated.leadTimeDays != null || updated.caseBreak || updated.sameDay
+          setFilters({ operational: hasOtherProps ? updated : undefined })
+        },
+        onEdit: () => openFacet('operational'),
+      })
+    }
+    if (sameDay) {
+      chips.push({
+        key: 'operational-sameDay',
+        label: 'Same Day',
+        onRemove: () => {
+          const updated = { ...filters.operational, sameDay: false }
+          const hasOtherProps = updated.moq != null || updated.leadTimeDays != null || updated.caseBreak || updated.directDelivery
+          setFilters({ operational: hasOtherProps ? updated : undefined })
+        },
+        onEdit: () => openFacet('operational'),
+      })
+    }
+  }
+
+  // Lifecycle Filters
+  const lifecycleLabels: Record<string, string> = {
+    new: 'New',
+    discontinued: 'Discontinued',
+    seasonal: 'Seasonal',
+  }
+  const lifecycleItems = filters.lifecycle || []
+  if (lifecycleItems.length > 0) {
+    lifecycleItems.forEach(item => {
+      chips.push({
+        key: `lifecycle-${item}`,
+        label: lifecycleLabels[item] || item,
+        onRemove: () => {
+          const updated = lifecycleItems.filter(l => l !== item)
+          setFilters({ lifecycle: updated.length > 0 ? updated : undefined })
+        },
+        onEdit: () => openFacet('lifecycle'),
+      })
+    })
+  }
+
+  // Data Quality Filters
+  if (filters.dataQuality) {
+    const { hasImage, hasPrice, hasDescription } = filters.dataQuality
+    if (hasImage) {
+      chips.push({
+        key: 'dataQuality-hasImage',
+        label: 'Has Image',
+        onRemove: () => {
+          const updated = { ...filters.dataQuality, hasImage: false }
+          const hasOtherProps = updated.hasPrice || updated.hasDescription
+          setFilters({ dataQuality: hasOtherProps ? updated : undefined })
+        },
+        onEdit: () => openFacet('dataQuality'),
+      })
+    }
+    if (hasPrice) {
+      chips.push({
+        key: 'dataQuality-hasPrice',
+        label: 'Has Price',
+        onRemove: () => {
+          const updated = { ...filters.dataQuality, hasPrice: false }
+          const hasOtherProps = updated.hasImage || updated.hasDescription
+          setFilters({ dataQuality: hasOtherProps ? updated : undefined })
+        },
+        onEdit: () => openFacet('dataQuality'),
+      })
+    }
+    if (hasDescription) {
+      chips.push({
+        key: 'dataQuality-hasDescription',
+        label: 'Has Description',
+        onRemove: () => {
+          const updated = { ...filters.dataQuality, hasDescription: false }
+          const hasOtherProps = updated.hasImage || updated.hasPrice
+          setFilters({ dataQuality: hasOtherProps ? updated : undefined })
+        },
+        onEdit: () => openFacet('dataQuality'),
+      })
+    }
+  }
+
   return chips
 }
 
@@ -257,6 +477,13 @@ export default function CatalogPage() {
       supplier: undefined,
       packSizeRange: undefined,
       availability: undefined,
+      priceRange: undefined,
+      pricePerUnitRange: undefined,
+      dietary: undefined,
+      quality: undefined,
+      operational: undefined,
+      lifecycle: undefined,
+      dataQuality: undefined,
     })
     setFocusedFacet(null)
   }, [
@@ -672,7 +899,14 @@ export default function CatalogPage() {
     brandTotal > 0 ||
       categoryTotal > 0 ||
       supplierTotal > 0 ||
-      filters.packSizeRange,
+      filters.packSizeRange ||
+      filters.priceRange ||
+      filters.pricePerUnitRange ||
+      (filters.dietary && filters.dietary.length > 0) ||
+      (filters.quality && filters.quality.length > 0) ||
+      filters.operational ||
+      (filters.lifecycle && filters.lifecycle.length > 0) ||
+      filters.dataQuality,
   )
   const hasSearchQuery = Boolean((filters.search ?? '').trim().length)
   const hasAnyFilters =
