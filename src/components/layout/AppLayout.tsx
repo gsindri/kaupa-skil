@@ -44,11 +44,10 @@ export function AppLayout({
   const layoutPaddingRef = useRef<HTMLDivElement | null>(null)
   const { isDrawerOpen } = useCart()
   const isDesktopCart = useMediaQuery('(min-width: 1024px)')
-  const shouldReserveCartRail = isDesktopCart && isDrawerOpen
-  const cartRailOffset = 'calc(var(--cart-rail-gap, 2rem) + var(--cart-rail-w, 360px))'
+  const isWideViewport = useMediaQuery('(min-width: 1600px)')
+  const isCartOpen = isDesktopCart && isDrawerOpen
+  const cartMode = isWideViewport ? 'inset' : 'overlay'
   const baseShellWidth = 'calc(100% - var(--layout-rail, 72px))'
-  const reservedShellWidth =
-    'calc(100% - var(--layout-rail, 72px) - var(--cart-rail-gap, 2rem) - var(--cart-rail-w, 360px))'
   const combinedHeaderRef = useCallback(
     (node: HTMLDivElement | null) => {
       internalHeaderRef.current = node
@@ -93,9 +92,13 @@ export function AppLayout({
 
       const layoutEl = layoutPaddingRef.current
       if (layoutEl) {
-        const { paddingRight } = window.getComputedStyle(layoutEl)
-        if (paddingRight) {
-          root.style.setProperty('--cart-rail-gap', paddingRight)
+        const styles = window.getComputedStyle(layoutEl)
+        const paddingRight = styles.paddingRight
+        const basePad = styles.getPropertyValue('--page-content-pad')?.trim()
+        const gapValue = basePad && basePad.length > 0 ? basePad : paddingRight
+
+        if (gapValue) {
+          root.style.setProperty('--cart-rail-gap', gapValue)
         }
       }
     }
@@ -143,7 +146,12 @@ export function AppLayout({
   }, [hasSecondary, filtersWidth])
 
   return (
-    <div className="relative min-h-screen">
+    <div
+      id="app-shell"
+      className="relative min-h-screen"
+      data-cart-open={isCartOpen ? 'true' : 'false'}
+      data-cart-mode={cartMode}
+    >
       {/* Left rail - fixed position */}
       <aside
         data-rail
@@ -161,9 +169,7 @@ export function AppLayout({
         className="app-shell-content flex min-h-screen flex-col"
         style={{
           marginLeft: 'var(--layout-rail,72px)',
-          marginRight: shouldReserveCartRail ? cartRailOffset : '0px',
-          width: shouldReserveCartRail ? reservedShellWidth : baseShellWidth,
-          transition: 'margin-right var(--cart-rail-transition), width var(--cart-rail-transition)',
+          width: baseShellWidth,
         }}
       >
         <a
@@ -179,8 +185,13 @@ export function AppLayout({
           data-app-header="true"
           data-chrome-layer
           ref={combinedHeaderRef}
-          className={headerClassName}
-          style={{ position: 'sticky', top: 0, zIndex: 'var(--z-header,50)' }}
+          className={clsx('topbar', headerClassName)}
+          style={{
+            position: 'sticky',
+            top: 0,
+            zIndex: 'var(--z-header,50)',
+            isolation: 'isolate',
+          }}
         >
           <TopNavigation />
           {headerNode}
@@ -188,7 +199,7 @@ export function AppLayout({
 
         {/* Main content */}
         <div
-          className="px-4 pb-8 pt-2 sm:px-6 lg:px-8"
+          className="page-content pb-8 pt-2"
           ref={layoutPaddingRef}
         >
           <div

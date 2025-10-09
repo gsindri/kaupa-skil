@@ -140,6 +140,62 @@ input[type='search'] {
   will-change: transform;
 }
 
+#app-shell {
+  background-color: var(--page-bg, #0b1320);
+}
+
+.page-content {
+  --page-content-pad: 1rem;
+  padding-inline-start: var(--page-content-pad);
+  padding-inline-end: var(--page-content-pad);
+}
+
+@media (min-width: 640px) {
+  .page-content {
+    --page-content-pad: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .page-content {
+    --page-content-pad: 2rem;
+  }
+}
+
+.topbar,
+.toolbar {
+  isolation: isolate;
+}
+
+.topbar::after,
+.toolbar::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  right: 0;
+  width: 0;
+  background: inherit;
+  z-index: -1;
+  pointer-events: none;
+  transition: width 220ms cubic-bezier(.2,.7,.2,1);
+}
+
+#app-shell[data-cart-open="true"][data-cart-mode="inset"] {
+  --cart-gutter: calc(var(--cart-rail-w, 240px) + var(--cart-rail-gap, var(--page-content-pad, 1rem)));
+}
+
+#app-shell[data-cart-open="true"][data-cart-mode="inset"] .topbar,
+#app-shell[data-cart-open="true"][data-cart-mode="inset"] .toolbar,
+#app-shell[data-cart-open="true"][data-cart-mode="inset"] .page-content {
+  padding-inline-end: var(--cart-gutter);
+  transition: padding-inline-end 220ms cubic-bezier(.2,.7,.2,1);
+}
+
+#app-shell[data-cart-open="true"][data-cart-mode="inset"] .topbar::after,
+#app-shell[data-cart-open="true"][data-cart-mode="inset"] .toolbar::after {
+  width: var(--cart-gutter);
+}
+
 /* Base look for any floating panel */
 .pop-chrome,
 .tw-pop{
