@@ -1,5 +1,4 @@
 import * as React from "react"
-import { createPortal } from "react-dom"
 import { Sheet, SheetContent } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
 import { ShoppingCart, X, Trash2 } from "lucide-react"
@@ -42,13 +41,6 @@ export function CartDrawer() {
     return `${totalItems} ${suffix}`
   }, [totalItems])
 
-  const [isMounted, setIsMounted] = React.useState(false)
-  const desktopRailRef = React.useRef<HTMLElement | null>(null)
-
-  React.useEffect(() => {
-    setIsMounted(true)
-  }, [])
-
   const subtotal = getTotalPrice(includeVat)
 
   const handleClose = React.useCallback(() => {
@@ -58,22 +50,6 @@ export function CartDrawer() {
   const handleCheckout = React.useCallback(() => {
     window.location.assign("/checkout")
   }, [])
-
-  React.useEffect(() => {
-    if (!isDesktop) return
-    const handlePointerDown = (event: MouseEvent) => {
-      if (!isDrawerOpen) return
-      const target = event.target as Node | null
-      if (!target) return
-      if (desktopRailRef.current && desktopRailRef.current.contains(target)) {
-        return
-      }
-      handleClose()
-    }
-
-    document.addEventListener("pointerdown", handlePointerDown)
-    return () => document.removeEventListener("pointerdown", handlePointerDown)
-  }, [isDesktop, isDrawerOpen, handleClose])
 
   const cartItems = (
     <div className="cart-rail__body">
@@ -190,45 +166,44 @@ export function CartDrawer() {
     </>
   )
 
-  const desktopRail =
-    isMounted && isDesktop
-      ? createPortal(
-          <div
-            className="cart-rail__layer"
-            data-state={isDrawerOpen ? "open" : "closed"}
-            aria-hidden={isDrawerOpen ? undefined : true}
-          >
-            <aside
-              ref={desktopRailRef}
-              className="cart-rail cart-rail--desktop"
-              aria-label="Cart"
-              role="region"
-              aria-labelledby="cart-rail-title"
-              data-state={isDrawerOpen ? "open" : "closed"}
-            >
-              {content}
-            </aside>
-          </div>,
-          document.body
-        )
-      : null
+  if (isDesktop) {
+    return (
+      <aside
+        className={cn(
+          'cart-rail cart-rail--desktop',
+          'transition-[width,opacity] duration-[var(--cart-rail-transition,240ms)]',
+          'motion-reduce:transition-none',
+          isDrawerOpen ? 'cart-rail--open' : 'cart-rail--closed'
+        )}
+        style={{
+          position: 'sticky',
+          top: 'var(--header-h, 56px)',
+          right: 0,
+          height: 'calc(100vh - var(--header-h, 56px))',
+          width: isDrawerOpen ? 'var(--cart-rail-w, 240px)' : '0px',
+          opacity: isDrawerOpen ? 1 : 0,
+          pointerEvents: isDrawerOpen ? 'auto' : 'none',
+          overflow: 'hidden',
+        }}
+        aria-label="Cart"
+        role="region"
+        aria-hidden={!isDrawerOpen}
+      >
+        {content}
+      </aside>
+    )
+  }
 
   return (
-    <>
-      {desktopRail}
-
-      {!isDesktop && (
-        <Sheet open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
-          <SheetContent
-            side="right"
-            className={cn("cart-rail cart-rail--mobile p-0")}
-            aria-label="Cart"
-          >
-            {content}
-          </SheetContent>
-        </Sheet>
-      )}
-    </>
+    <Sheet open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
+      <SheetContent
+        side="right"
+        className={cn("cart-rail cart-rail--mobile p-0")}
+        aria-label="Cart"
+      >
+        {content}
+      </SheetContent>
+    </Sheet>
   )
 }
 

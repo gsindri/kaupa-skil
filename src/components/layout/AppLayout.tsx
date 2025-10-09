@@ -41,14 +41,9 @@ export function AppLayout({
 }: AppLayoutProps) {
   const internalHeaderRef = useRef<HTMLDivElement>(null)
   const contentRef = useRef<HTMLDivElement | null>(null)
-  const layoutPaddingRef = useRef<HTMLDivElement | null>(null)
   const { isDrawerOpen } = useCart()
   const isDesktopCart = useMediaQuery('(min-width: 1024px)')
-  const shouldReserveCartRail = isDesktopCart && isDrawerOpen
-  const cartRailOffset = 'calc(var(--cart-rail-gap, 2rem) + var(--cart-rail-w, 360px))'
-  const baseShellWidth = 'calc(100% - var(--layout-rail, 72px))'
-  const reservedShellWidth =
-    'calc(100% - var(--layout-rail, 72px) - var(--cart-rail-gap, 2rem) - var(--cart-rail-w, 360px))'
+  const shouldShowCartRail = isDesktopCart && isDrawerOpen
   const combinedHeaderRef = useCallback(
     (node: HTMLDivElement | null) => {
       internalHeaderRef.current = node
@@ -87,16 +82,7 @@ export function AppLayout({
     const updateMetrics = () => {
       const headerHeight = internalHeaderRef.current?.getBoundingClientRect().height
       if (headerHeight) {
-        root.style.setProperty('--cart-rail-top', `${headerHeight}px`)
         root.style.setProperty('--header-h', `${headerHeight}px`)
-      }
-
-      const layoutEl = layoutPaddingRef.current
-      if (layoutEl) {
-        const { paddingRight } = window.getComputedStyle(layoutEl)
-        if (paddingRight) {
-          root.style.setProperty('--cart-rail-gap', paddingRight)
-        }
       }
     }
 
@@ -107,8 +93,6 @@ export function AppLayout({
       resizeObserver = new ResizeObserver(updateMetrics)
       const headerEl = internalHeaderRef.current
       if (headerEl) resizeObserver.observe(headerEl)
-      const layoutEl = layoutPaddingRef.current
-      if (layoutEl) resizeObserver.observe(layoutEl)
     }
 
     window.addEventListener('resize', updateMetrics)
@@ -116,8 +100,6 @@ export function AppLayout({
     return () => {
       resizeObserver?.disconnect()
       window.removeEventListener('resize', updateMetrics)
-      root.style.removeProperty('--cart-rail-gap')
-      root.style.removeProperty('--cart-rail-top')
       root.style.removeProperty('--header-h')
     }
   }, [])
@@ -133,14 +115,23 @@ export function AppLayout({
     [showSecondary]
   )
 
+  const cartWidth = useMemo(
+    () => (shouldShowCartRail ? 'var(--cart-rail-w, 240px)' : '0px'),
+    [shouldShowCartRail]
+  )
+
   const gridStyle = useMemo<GridVars | undefined>(() => {
-    if (!hasSecondary) return undefined
+    const cols: string[] = []
+    if (hasSecondary) cols.push('var(--filters-w, 0px)')
+    cols.push('minmax(0, 1fr)')
+    if (isDesktopCart) cols.push(cartWidth)
+    
     return {
       '--filters-w': filtersWidth,
-      gridTemplateColumns: 'var(--filters-w, 0px) minmax(0, 1fr)',
-      transition: 'grid-template-columns var(--enter)',
+      gridTemplateColumns: cols.join(' '),
+      transition: 'grid-template-columns var(--cart-rail-transition, 240ms)',
     }
-  }, [hasSecondary, filtersWidth])
+  }, [hasSecondary, filtersWidth, isDesktopCart, cartWidth])
 
   return (
     <div className="relative min-h-screen">
@@ -161,9 +152,6 @@ export function AppLayout({
         className="app-shell-content flex min-h-screen flex-col"
         style={{
           marginLeft: 'var(--layout-rail,72px)',
-          marginRight: shouldReserveCartRail ? cartRailOffset : '0px',
-          width: shouldReserveCartRail ? reservedShellWidth : baseShellWidth,
-          transition: 'margin-right var(--cart-rail-transition), width var(--cart-rail-transition)',
         }}
       >
         <a
@@ -189,10 +177,9 @@ export function AppLayout({
         {/* Main content */}
         <div
           className={clsx(
-            'px-4 pb-8 pt-2 sm:px-6 lg:pr-0',
+            'px-4 pb-8 pt-2 sm:px-6',
             hasSecondary ? 'lg:pl-0' : 'lg:pl-8'
           )}
-          ref={layoutPaddingRef}
         >
           <div
             className={clsx(
@@ -203,7 +190,7 @@ export function AppLayout({
           >
             <div
               className={clsx(
-                'page-grid__content mx-auto grid w-full items-start gap-6 max-w-none lg:pr-8',
+                'page-grid__content mx-auto grid w-full items-start gap-6 max-w-none',
                 hasSecondary ? 'lg:max-w-[1600px]' : 'lg:grid-cols-1'
               )}
               ref={contentRef}
@@ -227,13 +214,14 @@ export function AppLayout({
               )}
               <main
                 id="main-content"
-                className="w-full min-w-0"
+                className="w-full min-w-0 lg:pr-8"
                 style={{ minHeight: 'calc(100vh - var(--header-h, 56px))' }}
               >
                 {children ?? <Outlet />}
               </main>
+              {isDesktopCart && <CartDrawer />}
             </div>
-            <CartDrawer />
+            {!isDesktopCart && <CartDrawer />}
           </div>
         </div>
       </div>
