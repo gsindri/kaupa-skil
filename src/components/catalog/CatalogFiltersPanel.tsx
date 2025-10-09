@@ -415,24 +415,13 @@ export function CatalogFiltersPanel({
     '--ctrl-r': '10px',
   }), [])
 
-  const stickyOffset = '24px'
-
-  const containerClass = cn(
-    'flex h-full flex-col bg-[color:var(--surface-raised,hsl(var(--background)))]',
-    variant === 'desktop' && 'lg:sticky'
-  )
-
-  const containerStyle = useMemo<CSSProperties | undefined>(() => {
-    if (variant !== 'desktop') return undefined
-
-    return {
-      top: `calc(var(--header-h,64px) + ${stickyOffset})`,
-      maxHeight: `calc(100vh - var(--header-h,64px) - ${stickyOffset})`,
-    }
-  }, [stickyOffset, variant])
-
   return (
-    <div className={containerClass} style={containerStyle}>
+    <div
+      className={cn(
+        'flex h-full flex-col bg-[color:var(--surface-raised,hsl(var(--background)))]',
+        variant === 'desktop' && 'lg:max-h-[calc(100vh-var(--header-h,64px))]'
+      )}
+    >
       {/* Sticky header with title, clear all, and Tier-1 toggles */}
       <div 
         className="sticky top-0 z-10 bg-[color:var(--surface-raised-strong)] backdrop-blur-md border-b border-[color:var(--ring-idle)]/40"

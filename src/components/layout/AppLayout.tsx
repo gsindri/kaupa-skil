@@ -194,7 +194,7 @@ export function AppLayout({
               {hasSecondary && (
                 <aside
                   className={cn(
-                    'relative hidden min-w-0 lg:flex lg:flex-col lg:overflow-visible',
+                    'relative hidden min-w-0 overflow-hidden lg:flex lg:flex-col',
                     'transition-[width] duration-[var(--filters-transition,200ms)] ease-[var(--ease-snap)]',
                     'motion-reduce:transition-none',
                     showSecondary ? 'lg:pointer-events-auto' : 'lg:pointer-events-none'

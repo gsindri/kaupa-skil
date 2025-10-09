@@ -129,14 +129,16 @@ export function useCartQuantityController(supplierItemId: string, cartQuantity: 
     const pendingVersion = pendingVersionRef.current
 
     if (pendingVersion != null) {
-      committedRef.current = external
-      targetRef.current = external
-      pendingVersionRef.current = null
-      lastPropSeenRef.current = { version: pendingVersion, quantity: external }
-      hasCartItemRef.current = external > 0
-      lastSentRef.current = external
-      setOptimistic(external)
-      setPendingIncrement(0)
+      if (external === targetRef.current) {
+        committedRef.current = external
+        targetRef.current = external
+        pendingVersionRef.current = null
+        lastPropSeenRef.current = { version: pendingVersion, quantity: external }
+        hasCartItemRef.current = external > 0
+        lastSentRef.current = external
+        setOptimistic(external)
+        setPendingIncrement(0)
+      }
       return
     }
 

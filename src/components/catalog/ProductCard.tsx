@@ -10,10 +10,6 @@ import type { CartQuantityController } from "@/contexts/useCartQuantityControlle
 import { CatalogQuantityStepper } from "./CatalogQuantityStepper";
 import { PriceBenchmarkBadge } from "./PriceBenchmarkBadge";
 import CatalogAddToCartButton from "./CatalogAddToCartButton";
-import {
-  CATALOG_ADD_TO_CART_BUTTON_CLASSES,
-  CATALOG_ADD_TO_CART_STEPPER_CLASSES,
-} from "./catalogAddToCartStyles";
 import { Loader2 } from "lucide-react";
 
 type SupplierEntry = {
@@ -282,7 +278,6 @@ export const ProductCard = memo(function ProductCard({
       maxHint,
       maxQuantity,
       isUnavailable: stepperUnavailable,
-      showAddedFeedback,
     }: {
       controller: CartQuantityController;
       currentQuantity: number;
@@ -291,43 +286,31 @@ export const ProductCard = memo(function ProductCard({
       maxHint: string | null;
       maxQuantity: number | undefined;
       isUnavailable: boolean;
-      showAddedFeedback: boolean;
     }) => (
       <div className="flex w-full flex-col items-end gap-1">
-        <div className="relative flex w-full items-center justify-end">
-          <CatalogQuantityStepper
-            quantity={currentQuantity}
-            onChange={handleQuantityChange}
-            onRemove={handleRemove}
-            itemLabel={`${product.name}`}
-            minQuantity={0}
-            maxQuantity={maxQuantity}
-            canIncrease={
-              !stepperUnavailable &&
-              (maxQuantity === undefined || currentQuantity < maxQuantity) &&
-              controller.canIncrease
-            }
-            size="sm"
-            className={cn(
-              CATALOG_ADD_TO_CART_STEPPER_CLASSES.stepper,
-              showAddedFeedback && "pointer-events-none opacity-0",
-            )}
-          />
-          {showAddedFeedback ? (
-            <div className={CATALOG_ADD_TO_CART_STEPPER_CLASSES.feedbackOverlay}>
-              <div
-                role="status"
-                aria-live="polite"
-                className={CATALOG_ADD_TO_CART_STEPPER_CLASSES.feedbackInner}
-              >
-                Added
-                <span aria-hidden className="ml-1 text-base">✓</span>
-              </div>
-            </div>
-          ) : null}
-        </div>
+        <CatalogQuantityStepper
+          quantity={currentQuantity}
+          onChange={handleQuantityChange}
+          onRemove={handleRemove}
+          itemLabel={`${product.name}`}
+          minQuantity={0}
+          maxQuantity={maxQuantity}
+          canIncrease={
+            !stepperUnavailable &&
+            (maxQuantity === undefined || currentQuantity < maxQuantity) &&
+            controller.canIncrease
+          }
+          size="sm"
+          className={cn(
+            "h-[2.625rem] min-h-[2.625rem] rounded-full border border-border/60 bg-background/90 px-1.5 shadow-none",
+            "[&_.catalog-card__stepper-btn]:h-[2.625rem] [&_.catalog-card__stepper-btn]:min-h-[2.625rem] [&_.catalog-card__stepper-btn]:min-w-[2.625rem]",
+            "[&_.catalog-card__stepper-count]:h-[2.625rem] [&_.catalog-card__stepper-count]:leading-[2.625rem]",
+          )}
+        />
         {maxHint ? (
-          <span className={CATALOG_ADD_TO_CART_STEPPER_CLASSES.maxHint}>{maxHint}</span>
+          <span className="text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+            {maxHint}
+          </span>
         ) : null}
       </div>
     ),
@@ -468,10 +451,10 @@ export const ProductCard = memo(function ProductCard({
                   product={product}
                   suppliers={addToCartSuppliers}
                   className="w-full"
-                  buttonClassName={CATALOG_ADD_TO_CART_BUTTON_CLASSES.button}
-                  disabledButtonClassName={CATALOG_ADD_TO_CART_BUTTON_CLASSES.disabled}
-                  passiveButtonClassName={CATALOG_ADD_TO_CART_BUTTON_CLASSES.passive}
-                  unavailableButtonClassName={CATALOG_ADD_TO_CART_BUTTON_CLASSES.unavailable}
+                  buttonClassName="inline-flex h-[2.625rem] w-full items-center justify-center rounded-full bg-secondary px-4 text-sm font-semibold text-secondary-foreground shadow-sm transition-colors duration-150 hover:bg-secondary/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                  disabledButtonClassName="inline-flex h-[2.625rem] w-full items-center justify-center rounded-full bg-muted px-4 text-sm font-medium text-muted-foreground shadow-none"
+                  passiveButtonClassName="inline-flex h-[2.625rem] w-full items-center justify-center rounded-full border border-border/70 bg-background/80 px-4 text-sm font-medium text-muted-foreground shadow-none backdrop-blur-sm"
+                  unavailableButtonClassName="inline-flex h-[2.625rem] w-full items-center justify-center rounded-full border border-dashed border-muted-foreground/60 bg-background/70 px-4 text-sm font-medium text-muted-foreground shadow-none"
                   popoverClassName="w-64 space-y-1 p-2"
                   popoverSide="top"
                   popoverAlign="end"
