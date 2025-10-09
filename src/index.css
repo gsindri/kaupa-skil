@@ -135,53 +135,6 @@ html { scrollbar-gutter: stable; }
   z-index: 40;
 }
 
-/* Cart presentation modes */
-#app-shell {
-  background-color: var(--page-bg, #0b1320);
-}
-
-#app-shell .topbar,
-#app-shell .toolbar,
-#app-shell .page-content {
-  transition: padding-right var(--cart-rail-transition, 220ms cubic-bezier(.2,.7,.2,1));
-}
-
-#app-shell .topbar,
-#app-shell .toolbar {
-  position: relative;
-  background: var(--bar-bg, rgba(14, 23, 38, 0.9));
-  isolation: isolate;
-}
-
-#app-shell .topbar::after,
-#app-shell .toolbar::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  right: 0;
-  width: 0;
-  background: inherit;
-  z-index: -1;
-}
-
-#app-shell[data-cart-open="true"][data-cart-mode="inset"] {
-  --cart-gutter: calc(var(--cart-rail-w, 240px) + var(--cart-rail-gap, var(--page-gutter, 16px)));
-}
-
-#app-shell[data-cart-open="true"][data-cart-mode="inset"] .topbar,
-#app-shell[data-cart-open="true"][data-cart-mode="inset"] .toolbar {
-  padding-right: var(--cart-gutter, 0px);
-}
-
-#app-shell[data-cart-open="true"][data-cart-mode="inset"] .page-content {
-  padding-right: calc(var(--page-content-pr, var(--page-gutter, 16px)) + var(--cart-gutter, 0px));
-}
-
-#app-shell[data-cart-open="true"][data-cart-mode="inset"] .topbar::after,
-#app-shell[data-cart-open="true"][data-cart-mode="inset"] .toolbar::after {
-  width: var(--cart-gutter, 0px);
-}
-
 /* Nested header fragments (like TopNavigation) should flow with the parent */
 [data-app-header="true"] [data-app-header="true"] {
   position: relative;
