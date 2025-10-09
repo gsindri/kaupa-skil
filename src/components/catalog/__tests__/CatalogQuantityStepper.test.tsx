@@ -9,7 +9,7 @@ import { useCartQuantityController } from '@/contexts/useCartQuantityController'
 import type { CartItem } from '@/lib/types'
 
 describe('CatalogQuantityStepper', () => {
-  it('ignores stale confirmations from superseded optimistic updates', async () => {
+  it('syncs to parent quantity across rapid rerenders', async () => {
     const handleChange = vi.fn()
     const handleRemove = vi.fn()
     const user = userEvent.setup()
@@ -54,7 +54,7 @@ describe('CatalogQuantityStepper', () => {
       />,
     )
 
-    await screen.findByDisplayValue('3')
+    await screen.findByDisplayValue('2')
 
     rerender(
       <CatalogQuantityStepper
@@ -68,7 +68,7 @@ describe('CatalogQuantityStepper', () => {
     await screen.findByDisplayValue('3')
   })
 
-  it('maintains optimistic quantity when stale duplicate arrives after removal', async () => {
+  it('reflects parent quantity updates after removal rerenders', async () => {
     const handleChange = vi.fn()
     const handleRemove = vi.fn()
     const user = userEvent.setup()
@@ -106,7 +106,7 @@ describe('CatalogQuantityStepper', () => {
       />,
     )
 
-    await screen.findByDisplayValue('1')
+    await screen.findByDisplayValue('2')
 
     rerender(
       <CatalogQuantityStepper
@@ -128,10 +128,10 @@ describe('CatalogQuantityStepper', () => {
       />,
     )
 
-    await screen.findByText('1')
+    await screen.findByDisplayValue('2')
   })
 
-  it('syncs to external quantity changes when pending updates do not match', async () => {
+  it('syncs to external quantity changes when parent rerenders mid-update', async () => {
     const handleChange = vi.fn()
     const handleRemove = vi.fn()
     const user = userEvent.setup()
@@ -174,7 +174,7 @@ describe('CatalogQuantityStepper', () => {
       />,
     )
 
-    await screen.findByDisplayValue('5')
+    await screen.findByDisplayValue('2')
   })
 
   it('applies typed quantity changes on commit', async () => {
@@ -199,7 +199,7 @@ describe('CatalogQuantityStepper', () => {
     expect(handleChange).toHaveBeenCalledWith(5)
   })
 
-  it('queues add requests via the cart controller when incremented rapidly', async () => {
+  it('updates the cart immediately when incremented rapidly', () => {
     const addItem = vi.fn()
     const updateQuantity = vi.fn()
     const removeItem = vi.fn()
@@ -271,10 +271,11 @@ describe('CatalogQuantityStepper', () => {
     fireEvent.click(incrementButton)
     fireEvent.click(incrementButton)
 
-    await waitFor(() => expect(updateQuantity).toHaveBeenCalledTimes(1))
     expect(addItem).toHaveBeenCalledTimes(1)
     expect(addItem).toHaveBeenCalledWith(payload, 1, undefined)
-    expect(updateQuantity).toHaveBeenCalledWith('item-1', 3)
+    expect(updateQuantity).toHaveBeenCalledTimes(2)
+    expect(updateQuantity).toHaveBeenNthCalledWith(1, 'item-1', 2)
+    expect(updateQuantity).toHaveBeenNthCalledWith(2, 'item-1', 3)
 
     rerender(
       <BasketContext.Provider value={basketValue}>
@@ -283,10 +284,10 @@ describe('CatalogQuantityStepper', () => {
     )
 
     expect(addItem).toHaveBeenCalledTimes(1)
-    expect(updateQuantity).toHaveBeenCalledTimes(1)
+    expect(updateQuantity).toHaveBeenCalledTimes(2)
   })
 
-  it('keeps increasing optimistically while updates are still pending', async () => {
+  it('keeps the increment button enabled during rapid synchronous updates', () => {
     const addItem = vi.fn()
     const updateQuantity = vi.fn()
     const removeItem = vi.fn()
@@ -309,19 +310,6 @@ describe('CatalogQuantityStepper', () => {
       cartPulseSignal: 0,
     }
 
-    let frameId = 0
-
-    const rafSpy = vi
-      .spyOn(window, 'requestAnimationFrame')
-      .mockImplementation(() => {
-        frameId += 1
-        return frameId
-      })
-
-    const cancelSpy = vi
-      .spyOn(window, 'cancelAnimationFrame')
-      .mockImplementation(() => {})
-
     function ControllerHarness({ quantity }: { quantity: number }) {
       const controller = useCartQuantityController('item-1', quantity)
 
@@ -335,31 +323,27 @@ describe('CatalogQuantityStepper', () => {
       )
     }
 
-    try {
-      render(
-        <BasketContext.Provider value={basketValue}>
-          <ControllerHarness quantity={5} />
-        </BasketContext.Provider>,
-      )
+    render(
+      <BasketContext.Provider value={basketValue}>
+        <ControllerHarness quantity={5} />
+      </BasketContext.Provider>,
+    )
 
-      const incrementButton = screen.getByRole('button', {
-        name: /increase quantity of test product/i,
-      })
+    const incrementButton = screen.getByRole('button', {
+      name: /increase quantity of test product/i,
+    })
 
-      fireEvent.click(incrementButton)
-      fireEvent.click(incrementButton)
-      fireEvent.click(incrementButton)
-      fireEvent.click(incrementButton)
-      fireEvent.click(incrementButton)
+    fireEvent.click(incrementButton)
+    fireEvent.click(incrementButton)
+    fireEvent.click(incrementButton)
+    fireEvent.click(incrementButton)
+    fireEvent.click(incrementButton)
 
-      await waitFor(() => expect(screen.getByDisplayValue('10')).toBeInTheDocument())
-      expect(incrementButton).not.toBeDisabled()
-      expect(updateQuantity).not.toHaveBeenCalled()
-      expect(addItem).not.toHaveBeenCalled()
-    } finally {
-      rafSpy.mockRestore()
-      cancelSpy.mockRestore()
-    }
+    expect(screen.getByDisplayValue('10')).toBeInTheDocument()
+    expect(incrementButton).not.toBeDisabled()
+    expect(updateQuantity).toHaveBeenCalledTimes(5)
+    expect(updateQuantity).toHaveBeenLastCalledWith('item-1', 10)
+    expect(addItem).not.toHaveBeenCalled()
   })
 
   it('syncs controller quantity when cart items are removed elsewhere', async () => {
