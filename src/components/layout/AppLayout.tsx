@@ -110,6 +110,32 @@ export function AppLayout({
     }
   }, [])
 
+  useLayoutEffect(() => {
+    if (typeof window === 'undefined') return
+    
+    // When the secondary panel (filter sidebar) toggles, we need to:
+    // 1. Force a layout recalculation for sticky positioning
+    // 2. Reset the scroll-hide logic by triggering a scroll event
+    
+    // Small delay to ensure layout has settled
+    const timeoutId = setTimeout(() => {
+      // Force a reflow by reading scrollY
+      const currentScroll = window.scrollY
+      
+      // Dispatch a scroll event to wake up the scroll handler
+      window.dispatchEvent(new Event('scroll'))
+      
+      // If at top of page, ensure header is visible
+      if (currentScroll === 0 && internalHeaderRef.current) {
+        const el = internalHeaderRef.current
+        el.style.transform = 'translate3d(0, 0, 0)'
+        document.documentElement.style.setProperty('--header-hidden', '0')
+      }
+    }, 50)
+    
+    return () => clearTimeout(timeoutId)
+  }, [showSecondary])
+
 
   const headerNode =
     header && React.isValidElement(header)
