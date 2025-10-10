@@ -268,7 +268,7 @@ export function TopNavigation() {
       role="banner"
       data-app-header="true"
       className={cn(
-        'relative z-[var(--z-header,55)] pt-[2px] px-3 sm:px-4 flex items-center gap-3 text-white',
+        'relative z-[57] pt-[2px] px-3 sm:px-4 flex items-center gap-3 text-white',
         scrolled ? 'shadow-lg' : 'shadow-none',
         'transition-[box-shadow] duration-base ease-snap motion-reduce:transition-none'
       )}
