@@ -46,6 +46,7 @@ interface CatalogAddToCartButtonProps {
   onActionButtonRef?: (node: HTMLButtonElement | null) => void
   isLoading?: boolean
   onAdd?: (supplierId: string) => void
+  size?: 'sm' | 'md'
   renderStepper?: (props: {
     controller: CartQuantityController
     currentQuantity: number
@@ -132,6 +133,7 @@ export function CatalogAddToCartButton({
   isLoading,
   onAdd,
   renderStepper,
+  size = 'md',
 }: CatalogAddToCartButtonProps) {
   const { items } = useCart()
   const existingItem = items.find(
@@ -622,7 +624,7 @@ export function CatalogAddToCartButton({
             (maxQuantity === undefined || currentQuantity < maxQuantity) &&
             controller.canIncrease
           }
-          size="sm"
+          size={size}
         />
         {showAddedFeedback && (
           <div className="pointer-events-none absolute inset-0 flex items-center justify-center">

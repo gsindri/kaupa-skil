@@ -100,6 +100,7 @@ export function UnifiedCartControl({
       onAdd={onAdd}
       popoverSide={popoverSide}
       popoverAlign={popoverAlign}
+      size={isCatalog ? 'md' : 'sm'}
       renderStepper={({
         controller,
         currentQuantity,

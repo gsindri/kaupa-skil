@@ -657,7 +657,7 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
                         supplier_name: s.supplier_name,
                         supplier_logo_url: s.supplier_logo_url,
                       }))}
-                      className="flex h-[68%] w-[78%] max-w-[220px] items-stretch justify-center"
+                      className="flex h-10 w-[78%] max-w-[220px] items-stretch justify-center"
                       popoverSide="top"
                       popoverAlign="end"
                     />
