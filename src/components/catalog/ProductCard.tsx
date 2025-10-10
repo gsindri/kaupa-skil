@@ -269,53 +269,6 @@ export const ProductCard = memo(function ProductCard({
     [],
   );
 
-  const renderCardStepper = useCallback(
-    ({
-      controller,
-      currentQuantity,
-      handleQuantityChange,
-      handleRemove,
-      maxHint,
-      maxQuantity,
-      isUnavailable: stepperUnavailable,
-    }: {
-      controller: CartQuantityController;
-      currentQuantity: number;
-      handleQuantityChange: (value: number) => void;
-      handleRemove: () => void;
-      maxHint: string | null;
-      maxQuantity: number | undefined;
-      isUnavailable: boolean;
-    }) => (
-      <div className="flex w-full flex-col items-end gap-1">
-        <CatalogQuantityStepper
-          quantity={currentQuantity}
-          onChange={handleQuantityChange}
-          onRemove={handleRemove}
-          itemLabel={`${product.name}`}
-          minQuantity={0}
-          maxQuantity={maxQuantity}
-          canIncrease={
-            !stepperUnavailable &&
-            (maxQuantity === undefined || currentQuantity < maxQuantity) &&
-            controller.canIncrease
-          }
-          size="sm"
-          className={cn(
-            "h-[2.625rem] min-h-[2.625rem] rounded-full border border-border/60 bg-background/90 px-1.5 shadow-none",
-            "[&_.catalog-card__stepper-btn]:h-[2.625rem] [&_.catalog-card__stepper-btn]:min-h-[2.625rem] [&_.catalog-card__stepper-btn]:min-w-[2.625rem]",
-            "[&_.catalog-card__stepper-count]:h-[2.625rem] [&_.catalog-card__stepper-count]:leading-[2.625rem]",
-          )}
-        />
-        {maxHint ? (
-          <span className="text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
-            {maxHint}
-          </span>
-        ) : null}
-      </div>
-    ),
-    [product.name],
-  );
 
   const addButtonLabel = isAdding ? (
     <>
@@ -448,7 +401,7 @@ export const ProductCard = memo(function ProductCard({
               ) : null}
               <div className="flex w-full sm:w-auto sm:flex-shrink-0">
                 <UnifiedCartControl
-                  variant="catalog"
+                  variant="compact"
                   product={product}
                   suppliers={addToCartSuppliers}
                   className="w-full"
