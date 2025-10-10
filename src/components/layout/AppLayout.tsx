@@ -204,18 +204,18 @@ export function AppLayout({
         <div className="pb-8 pt-2">
           <div
             className={clsx(
-              'page-grid items-start',
+              'page-grid items-start transition-[margin-left] duration-[var(--filters-transition,200ms)]',
+              'motion-reduce:transition-none',
               hasSecondary && 'page-grid--with-secondary'
             )}
+            style={{
+              marginLeft: 'var(--sidebar-push, 0px)',
+            }}
             data-has-secondary={showSecondary ? 'true' : undefined}
           >
             <div
-              className={clsx(
-                'page-grid__content grid w-full items-start gap-0',
-                !hasSecondary && 'lg:grid-cols-1'
-              )}
+              className="w-full"
               ref={contentRef}
-              style={gridStyle}
             >
               {hasSecondary && (
               <aside
@@ -240,10 +240,7 @@ export function AppLayout({
               )}
               <main
                 id="main-content"
-                className={cn(
-                  "w-full min-w-0 px-4 sm:px-6",
-                  showSecondary ? "lg:px-12" : "lg:px-8"
-                )}
+                className="w-full min-w-0 px-4 sm:px-6 lg:px-8"
                 style={{ minHeight: 'calc(100vh - var(--header-h, 56px))' }}
               >
                 {children ?? <Outlet />}
