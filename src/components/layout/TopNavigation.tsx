@@ -268,42 +268,14 @@ export function TopNavigation() {
       role="banner"
       data-app-header="true"
       className={cn(
-        'relative z-[var(--z-header,50)] pt-[2px] px-3 sm:px-4 flex items-center gap-3 text-white',
+        'relative z-[var(--z-header,55)] pt-[2px] px-3 sm:px-4 flex items-center gap-3 text-white',
         scrolled ? 'shadow-lg' : 'shadow-none',
         'transition-[box-shadow] duration-base ease-snap motion-reduce:transition-none'
       )}
       style={{
         height: 'clamp(44px, var(--toolbar-h, 56px), 72px)',
-        backdropFilter: 'saturate(135%) blur(18px)',
-        WebkitBackdropFilter: 'saturate(135%) blur(18px)',
-        background: 'var(--toolbar-bg, rgba(15, 26, 41, 0.88))',
       }}
     >
-      <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden" aria-hidden>
-        <div
-          className="absolute inset-0"
-          style={{
-            background:
-              'var(--topbar-bg, linear-gradient(128deg, #071021 0%, #0a1628 32%, #102642 66%, #153b63 100%))',
-          }}
-        />
-        <div
-          className="absolute inset-0"
-          style={{
-            background:
-              'radial-gradient(140% 120% at 48% -10%, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 65%)',
-            opacity: 0.14,
-          }}
-        />
-        <div
-          className="absolute inset-0"
-          style={{
-            background:
-              'linear-gradient(160deg, rgba(40, 215, 255, 0.1) 0%, rgba(40, 215, 255, 0.04) 28%, rgba(10, 27, 45, 0) 70%)',
-          }}
-        />
-        <div className="absolute inset-x-0 bottom-0 h-px bg-white/10" />
-      </div>
       <div className="flex items-center gap-3 min-w-0">
         <Link
           to="/"
