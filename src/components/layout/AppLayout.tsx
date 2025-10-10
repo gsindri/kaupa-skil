@@ -188,7 +188,6 @@ export function AppLayout({
             position: 'sticky',
             top: 0,
             zIndex: 'var(--z-header,55)',
-            marginLeft: 'var(--layout-rail, 72px)',
           }}
         >
           <AppChrome />
