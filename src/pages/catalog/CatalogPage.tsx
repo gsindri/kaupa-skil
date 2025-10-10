@@ -1423,8 +1423,7 @@ function FiltersBar({
       setFocusedFacet(null)
     }
     setShowFilters(next)
-    onLockChange?.(next)
-  }, [showFilters, facetFilters, setFocusedFacet, setShowFilters, onLockChange])
+  }, [showFilters, facetFilters, setFocusedFacet, setShowFilters])
 
   const renderFiltersToggleButton = useCallback(
     (extraClassName?: string) => (
