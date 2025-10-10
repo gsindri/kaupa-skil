@@ -401,7 +401,7 @@ export const ProductCard = memo(function ProductCard({
               ) : null}
               <div className="flex w-full sm:w-auto sm:flex-shrink-0">
                 <UnifiedCartControl
-                  variant="compact"
+                  variant="catalog"
                   product={product}
                   suppliers={addToCartSuppliers}
                   className="w-full"

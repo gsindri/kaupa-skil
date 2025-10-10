@@ -650,7 +650,7 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
                 <TableCell className="w-[220px] px-4 py-2 text-center align-middle">
                   <div className="flex h-full w-full items-center justify-center">
                     <UnifiedCartControl
-                      variant="compact"
+                      variant="catalog"
                       product={p}
                       suppliers={suppliers.map(s => ({
                         supplier_id: s.supplier_id,
