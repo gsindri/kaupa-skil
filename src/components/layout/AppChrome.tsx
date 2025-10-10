@@ -8,7 +8,7 @@ export function AppChrome() {
         data-chrome-layer
         className="absolute top-0 z-[var(--z-stripe,56)] h-[2px] pointer-events-none transition-transform duration-200 ease-in-out motion-reduce:transition-none"
         style={{
-          left: 0,
+          left: 'calc(-1 * var(--layout-rail, 72px))',
           right: 0,
           transform: 'translate3d(0, calc(-1 * var(--header-hidden, 0) * var(--header-h, 56px)), 0)',
           background:
@@ -21,7 +21,7 @@ export function AppChrome() {
         data-chrome-layer
         className="absolute top-0 z-[var(--z-chrome,20)] overflow-hidden pointer-events-none transition-[transform,opacity] duration-200 ease-in-out motion-reduce:transition-none"
         style={{
-          left: 0,
+          left: 'calc(-1 * var(--layout-rail, 72px))',
           right: 0,
           height: 'clamp(44px, var(--toolbar-h, 56px), 72px)',
           transform: 'translate3d(0, calc(-1 * var(--header-hidden, 0) * var(--header-h, 56px)), 0)',
