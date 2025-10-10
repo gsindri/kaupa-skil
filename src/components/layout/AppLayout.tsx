@@ -237,7 +237,7 @@ export function AppLayout({
                 )}
                 style={{
                   width: showSecondary ? 'var(--filters-w, 320px)' : '0px',
-                  top: showSecondary ? 'var(--header-h, 56px)' : undefined,
+                  top: 'var(--header-h, 56px)',
                   maxHeight: showSecondary ? 'calc(100vh - var(--header-h, 56px))' : undefined,
                 }}
                 aria-hidden={!showSecondary}
