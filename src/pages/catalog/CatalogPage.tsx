@@ -1510,7 +1510,12 @@ function FiltersBar({
 
     return (
       <section
-        style={COMPACT_TOOLBAR_TOKENS}
+        style={{
+          ...COMPACT_TOOLBAR_TOKENS,
+          position: 'sticky',
+          top: 'var(--chrome-h, 56px)',
+          zIndex: 'calc(var(--z-header, 50) - 1)',
+        }}
         className={cn(
           'relative bg-[color:var(--toolbar-bg)] backdrop-blur-xl ring-1 ring-inset ring-[color:var(--ring-idle)] after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-white/12 after:content-[""]',
           scrolled && 'before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-white/16 before:opacity-70 before:content-[""]',
