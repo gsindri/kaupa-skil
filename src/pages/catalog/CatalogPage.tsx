@@ -46,6 +46,9 @@ const COMPACT_TOOLBAR_TOKENS = {
 interface DerivedChip {
   key: string
   label: string
+  variant: 'boolean' | 'range' | 'multi' | 'text' | 'default'
+  summary?: string
+  hasPopover?: boolean
   onRemove: () => void
   onEdit: () => void
 }
@@ -54,8 +57,45 @@ function deriveChipsFromFilters(
   filters: FacetFilters,
   setFilters: (f: Partial<FacetFilters>) => void,
   openFacet: (facet: keyof FacetFilters) => void,
+  inStock: boolean,
+  setInStock: (v: boolean) => void,
+  onSpecial: boolean,
+  setOnSpecial: (v: boolean) => void,
+  mySuppliers: boolean,
+  setMySuppliers: (v: boolean) => void,
 ): DerivedChip[] {
   const chips: DerivedChip[] = []
+
+  // Boolean filters first (highest priority)
+  if (inStock) {
+    chips.push({
+      key: 'inStock',
+      label: 'In Stock',
+      variant: 'boolean',
+      onRemove: () => setInStock(false),
+      onEdit: () => {},
+    })
+  }
+
+  if (onSpecial) {
+    chips.push({
+      key: 'onSpecial',
+      label: 'On Special',
+      variant: 'boolean',
+      onRemove: () => setOnSpecial(false),
+      onEdit: () => {},
+    })
+  }
+
+  if (mySuppliers) {
+    chips.push({
+      key: 'mySuppliers',
+      label: 'My Suppliers',
+      variant: 'boolean',
+      onRemove: () => setMySuppliers(false),
+      onEdit: () => {},
+    })
+  }
 
   const totalCategories = (filters.category?.include?.length || 0) + (filters.category?.exclude?.length || 0)
   if (totalCategories > 0) {
@@ -64,6 +104,7 @@ function deriveChipsFromFilters(
         chips.push({
           key: `category-include-${id}`,
           label: id,
+          variant: 'multi',
           onRemove: () =>
             setFilters({
               category: {
@@ -78,6 +119,7 @@ function deriveChipsFromFilters(
         chips.push({
           key: `category-exclude-${id}`,
           label: `− ${id}`,
+          variant: 'multi',
           onRemove: () =>
             setFilters({
               category: {
@@ -89,9 +131,14 @@ function deriveChipsFromFilters(
         })
       })
     } else {
+      const firstTwo = filters.category!.include.slice(0, 2)
+      const remaining = totalCategories - 2
       chips.push({
         key: 'category',
-        label: `Categories (${totalCategories})`,
+        label: remaining > 0 ? `Categories: ${firstTwo.join(', ')} +${remaining}` : `Categories (${totalCategories})`,
+        variant: 'multi',
+        summary: [...(filters.category?.include || []), ...(filters.category?.exclude || [])].join(', '),
+        hasPopover: true,
         onRemove: () => setFilters({ category: undefined }),
         onEdit: () => openFacet('category'),
       })
@@ -105,6 +152,7 @@ function deriveChipsFromFilters(
         chips.push({
           key: `supplier-include-${id}`,
           label: id,
+          variant: 'multi',
           onRemove: () =>
             setFilters({
               supplier: {
@@ -119,6 +167,7 @@ function deriveChipsFromFilters(
         chips.push({
           key: `supplier-exclude-${id}`,
           label: `− ${id}`,
+          variant: 'multi',
           onRemove: () =>
             setFilters({
               supplier: {
@@ -130,9 +179,14 @@ function deriveChipsFromFilters(
         })
       })
     } else {
+      const firstTwo = filters.supplier!.include.slice(0, 2)
+      const remaining = totalSuppliers - 2
       chips.push({
         key: 'supplier',
-        label: `Suppliers (${totalSuppliers})`,
+        label: remaining > 0 ? `Suppliers: ${firstTwo.join(', ')} +${remaining}` : `Suppliers (${totalSuppliers})`,
+        variant: 'multi',
+        summary: [...(filters.supplier?.include || []), ...(filters.supplier?.exclude || [])].join(', '),
+        hasPopover: true,
         onRemove: () => setFilters({ supplier: undefined }),
         onEdit: () => openFacet('supplier'),
       })
@@ -146,6 +200,7 @@ function deriveChipsFromFilters(
         chips.push({
           key: `brand-include-${id}`,
           label: id,
+          variant: 'multi',
           onRemove: () => setFilters({
             brand: {
               include: filters.brand!.include.filter(b => b !== id),
@@ -159,6 +214,7 @@ function deriveChipsFromFilters(
         chips.push({
           key: `brand-exclude-${id}`,
           label: `− ${id}`,
+          variant: 'multi',
           onRemove: () => setFilters({
             brand: {
               include: filters.brand!.include,
@@ -169,9 +225,14 @@ function deriveChipsFromFilters(
         })
       })
     } else {
+      const firstTwo = filters.brand!.include.slice(0, 2)
+      const remaining = totalBrands - 2
       chips.push({
         key: 'brand',
-        label: `Brands (${totalBrands})`,
+        label: remaining > 0 ? `Brands: ${firstTwo.join(', ')} +${remaining}` : `Brands (${totalBrands})`,
+        variant: 'multi',
+        summary: [...(filters.brand?.include || []), ...(filters.brand?.exclude || [])].join(', '),
+        hasPopover: true,
         onRemove: () => setFilters({ brand: undefined }),
         onEdit: () => openFacet('brand'),
       })
@@ -180,13 +241,15 @@ function deriveChipsFromFilters(
 
   if (filters.packSizeRange) {
     const { min, max } = filters.packSizeRange
-    let label = 'Pack'
-    if (min != null && max != null) label += ` ${min}-${max}`
-    else if (min != null) label += ` ≥ ${min}`
-    else if (max != null) label += ` ≤ ${max}`
+    let label = 'Pack: '
+    if (min != null && max != null) label += `${min}-${max}`
+    else if (min != null) label += `≥ ${min}`
+    else if (max != null) label += `≤ ${max}`
     chips.push({
       key: 'packSizeRange',
       label,
+      variant: 'range',
+      hasPopover: true,
       onRemove: () => setFilters({ packSizeRange: undefined }),
       onEdit: () => openFacet('packSizeRange'),
     })
@@ -202,6 +265,8 @@ function deriveChipsFromFilters(
     chips.push({
       key: 'priceRange',
       label,
+      variant: 'range',
+      hasPopover: true,
       onRemove: () => setFilters({ priceRange: undefined }),
       onEdit: () => openFacet('priceRange'),
     })
@@ -216,6 +281,8 @@ function deriveChipsFromFilters(
     chips.push({
       key: 'pricePerUnitRange',
       label,
+      variant: 'range',
+      hasPopover: true,
       onRemove: () => setFilters({ pricePerUnitRange: undefined }),
       onEdit: () => openFacet('pricePerUnitRange'),
     })
@@ -235,6 +302,7 @@ function deriveChipsFromFilters(
         chips.push({
           key: `dietary-${item}`,
           label: dietaryLabels[item] || item,
+          variant: 'multi',
           onRemove: () => {
             const updated = dietaryItems.filter(d => d !== item)
             setFilters({ dietary: updated.length > 0 ? updated : undefined })
@@ -246,6 +314,8 @@ function deriveChipsFromFilters(
       chips.push({
         key: 'dietary',
         label: `Dietary (${dietaryItems.length})`,
+        variant: 'multi',
+        hasPopover: true,
         onRemove: () => setFilters({ dietary: undefined }),
         onEdit: () => openFacet('dietary'),
       })
@@ -266,6 +336,7 @@ function deriveChipsFromFilters(
         chips.push({
           key: `quality-${item}`,
           label: qualityLabels[item] || item,
+          variant: 'multi',
           onRemove: () => {
             const updated = qualityItems.filter(q => q !== item)
             setFilters({ quality: updated.length > 0 ? updated : undefined })
@@ -277,6 +348,8 @@ function deriveChipsFromFilters(
       chips.push({
         key: 'quality',
         label: `Quality (${qualityItems.length})`,
+        variant: 'multi',
+        hasPopover: true,
         onRemove: () => setFilters({ quality: undefined }),
         onEdit: () => openFacet('quality'),
       })
@@ -290,6 +363,7 @@ function deriveChipsFromFilters(
       chips.push({
         key: 'operational-moq',
         label: `MOQ ≤ ${moq}`,
+        variant: 'default',
         onRemove: () => {
           const updated = { ...filters.operational }
           delete updated.moq
@@ -303,6 +377,7 @@ function deriveChipsFromFilters(
       chips.push({
         key: 'operational-leadTime',
         label: `Lead Time ≤ ${leadTimeDays}d`,
+        variant: 'default',
         onRemove: () => {
           const updated = { ...filters.operational }
           delete updated.leadTimeDays
@@ -316,6 +391,7 @@ function deriveChipsFromFilters(
       chips.push({
         key: 'operational-caseBreak',
         label: 'Case Break',
+        variant: 'default',
         onRemove: () => {
           const updated = { ...filters.operational, caseBreak: false }
           const hasOtherProps = updated.moq != null || updated.leadTimeDays != null || updated.directDelivery || updated.sameDay
@@ -328,6 +404,7 @@ function deriveChipsFromFilters(
       chips.push({
         key: 'operational-directDelivery',
         label: 'Direct Delivery',
+        variant: 'default',
         onRemove: () => {
           const updated = { ...filters.operational, directDelivery: false }
           const hasOtherProps = updated.moq != null || updated.leadTimeDays != null || updated.caseBreak || updated.sameDay
@@ -340,6 +417,7 @@ function deriveChipsFromFilters(
       chips.push({
         key: 'operational-sameDay',
         label: 'Same Day',
+        variant: 'default',
         onRemove: () => {
           const updated = { ...filters.operational, sameDay: false }
           const hasOtherProps = updated.moq != null || updated.leadTimeDays != null || updated.caseBreak || updated.directDelivery
@@ -362,6 +440,7 @@ function deriveChipsFromFilters(
       chips.push({
         key: `lifecycle-${item}`,
         label: lifecycleLabels[item] || item,
+        variant: 'multi',
         onRemove: () => {
           const updated = lifecycleItems.filter(l => l !== item)
           setFilters({ lifecycle: updated.length > 0 ? updated : undefined })
@@ -378,6 +457,7 @@ function deriveChipsFromFilters(
       chips.push({
         key: 'dataQuality-hasImage',
         label: 'Has Image',
+        variant: 'default',
         onRemove: () => {
           const updated = { ...filters.dataQuality, hasImage: false }
           const hasOtherProps = updated.hasPrice || updated.hasDescription
@@ -390,6 +470,7 @@ function deriveChipsFromFilters(
       chips.push({
         key: 'dataQuality-hasPrice',
         label: 'Has Price',
+        variant: 'default',
         onRemove: () => {
           const updated = { ...filters.dataQuality, hasPrice: false }
           const hasOtherProps = updated.hasImage || updated.hasDescription
@@ -402,6 +483,7 @@ function deriveChipsFromFilters(
       chips.push({
         key: 'dataQuality-hasDescription',
         label: 'Has Description',
+        variant: 'default',
         onRemove: () => {
           const updated = { ...filters.dataQuality, hasDescription: false }
           const hasOtherProps = updated.hasImage || updated.hasPrice
@@ -1045,17 +1127,23 @@ export default function CatalogPage() {
     return () => document.removeEventListener('keydown', handleTabKey)
   }, [showFilters])
 
-  const chips = useMemo<ActiveFilterChip[]>(
-    () => deriveChipsFromFilters(filters, setFilters, openFacetForChip),
-    [filters, setFilters, openFacetForChip],
+  const chips = useMemo<DerivedChip[]>(
+    () => deriveChipsFromFilters(
+      filters,
+      setFilters,
+      openFacetForChip,
+      inStock,
+      setInStock,
+      onSpecial,
+      setOnSpecial,
+      mySuppliers,
+      setMySuppliers
+    ),
+    [filters, setFilters, openFacetForChip, inStock, setInStock, onSpecial, setOnSpecial, mySuppliers, setMySuppliers],
   )
 
   const activeFacetCount = chips.length
-  const activeCount =
-    (inStock ? 1 : 0) +
-    (mySuppliers ? 1 : 0) +
-    (onSpecial ? 1 : 0) +
-    activeFacetCount
+  const activeCount = chips.length
 
   return (
     <>
@@ -1530,52 +1618,87 @@ function FiltersBar({
           </div>
         )}
 
-        <div className={cn(containerClass, "lg:pl-10 xl:pl-52")}>
-          <div className="flex flex-col gap-3 py-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-4">
-              <div className="relative min-w-0 w-full sm:w-auto sm:flex-none sm:min-w-[400px] sm:max-w-[600px]">
+        <div className={cn(containerClass, "lg:pl-20 xl:pl-32")}>
+          <div className="flex items-center gap-3 py-3">
+            {/* LEFT: Filters button + Chips */}
+            <div className="flex items-center gap-2 flex-1 min-w-0">
+              {renderFiltersToggleButton('flex-none')}
+              
+              {/* Chip scroller */}
+              <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
+                {chips.map(chip => (
+                  <FilterChip
+                    key={chip.key}
+                    variant={chip.variant}
+                    hasPopover={chip.hasPopover}
+                    summary={chip.summary}
+                    onRemove={chip.onRemove}
+                    onEdit={chip.onEdit}
+                    className="flex-none"
+                  >
+                    {chip.label}
+                  </FilterChip>
+                ))}
+                
+                {activeCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={clearAll}
+                    className="flex-none whitespace-nowrap text-sm font-medium text-destructive/80 hover:text-destructive transition-colors"
+                  >
+                    Clear all
+                  </button>
+                )}
+              </div>
+            </div>
+            
+            {/* CENTER: Search */}
+            <div className="flex-none w-full sm:w-[400px]">
+              <div className="relative">
                 <label className="sr-only" htmlFor="catalog-search">
                   Search products
                 </label>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                  <input
-                    id="catalog-search"
-                    ref={searchRef}
-                    type="search"
-                    placeholder="Search products"
-                    aria-keyshortcuts="Control+K Meta+K"
-                    value={searchValue}
-                    onChange={handleSearchChange}
-                    onKeyDown={handleSearchKeyDown}
-                    onFocus={() => onLockChange?.(true)}
-                    onBlur={() => onLockChange?.(false)}
-                    className="h-11 w-full rounded-[var(--ctrl-r,14px)] bg-white pl-12 pr-12 text-base font-semibold text-slate-900 placeholder:text-slate-500 ring-1 ring-inset ring-[color:var(--ring-idle)] shadow-[0_12px_38px_rgba(7,18,30,0.26)] transition duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent hover:ring-[color:var(--ring-hover)] motion-reduce:transition-none"
-                  />
-                </TooltipTrigger>
-                <TooltipContent sideOffset={8}>Search (Ctrl/⌘+K)</TooltipContent>
-              </Tooltip>
-              <span className="pointer-events-none absolute left-3 top-1/2 grid -translate-y-1/2 place-items-center text-slate-500">
-                <MagnifyingGlass size={22} weight="fill" aria-hidden="true" />
-              </span>
-              {showClear && (
-                <button
-                  type="button"
-                  onClick={handleClearSearch}
-                  aria-label="Clear search"
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-full p-2 text-slate-500 transition duration-150 ease-out hover:bg-slate-200/70 hover:text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-0 motion-reduce:transition-none"
-                >
-                  <XCircle size={20} weight="fill" />
-                </button>
-              )}
+                    <input
+                      id="catalog-search"
+                      ref={searchRef}
+                      type="search"
+                      placeholder="Search products"
+                      aria-keyshortcuts="Control+K Meta+K"
+                      value={searchValue}
+                      onChange={handleSearchChange}
+                      onKeyDown={handleSearchKeyDown}
+                      onFocus={() => onLockChange?.(true)}
+                      onBlur={() => onLockChange?.(false)}
+                      className="h-11 w-full rounded-[var(--ctrl-r,14px)] bg-white pl-12 pr-12 text-base font-semibold text-slate-900 placeholder:text-slate-500 ring-1 ring-inset ring-[color:var(--ring-idle)] shadow-[0_12px_38px_rgba(7,18,30,0.26)] transition duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent hover:ring-[color:var(--ring-hover)] motion-reduce:transition-none"
+                    />
+                  </TooltipTrigger>
+                  <TooltipContent sideOffset={8}>Search (Ctrl/⌘+K)</TooltipContent>
+                </Tooltip>
+                <span className="pointer-events-none absolute left-3 top-1/2 grid -translate-y-1/2 place-items-center text-slate-500">
+                  <MagnifyingGlass size={22} weight="fill" aria-hidden="true" />
+                </span>
+                {showClear && (
+                  <button
+                    type="button"
+                    onClick={handleClearSearch}
+                    aria-label="Clear search"
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-full p-2 text-slate-500 transition duration-150 ease-out hover:bg-slate-200/70 hover:text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-0 motion-reduce:transition-none"
+                  >
+                    <XCircle size={20} weight="fill" />
+                  </button>
+                )}
               </div>
+            </div>
+            
+            {/* RIGHT: Sort + View + Results count */}
+            <div className="flex flex-none items-center gap-2.5">
               {formattedTotal && (
-                <div className="flex items-center justify-between text-sm font-semibold text-[color:var(--ink-hi)] sm:flex-shrink-0 sm:justify-end">
-                  <span className="tabular-nums">{formattedTotal} results</span>
+                <div className="hidden xl:flex items-center text-sm font-semibold text-[color:var(--ink-hi)]">
+                  <span className="tabular-nums">{formattedTotal}</span>
                 </div>
               )}
-            </div>
-            <div className="flex flex-shrink-0 items-center gap-2.5">
               <SortDropdown
                 value={sortOrder}
                 onChange={setSortOrder}
@@ -1590,33 +1713,6 @@ function FiltersBar({
                 }}
               />
             </div>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2 pb-3">
-            <div className="lg:mr-auto">{renderFiltersToggleButton('shrink-0')}</div>
-            {chips.map(chip => (
-              <FilterChip
-                key={chip.key}
-                selected
-                onClick={() => {
-                  onLockChange?.(true)
-                  chip.onEdit()
-                }}
-                onRemove={chip.onRemove}
-                className="shrink-0"
-              >
-                {chip.label}
-              </FilterChip>
-            ))}
-            {activeCount > 0 && (
-              <button
-                type="button"
-                onClick={clearAll}
-                className="shrink-0 whitespace-nowrap text-sm font-medium text-[color:var(--ink-dim)]/80 underline decoration-white/20 underline-offset-4 transition-colors hover:text-[color:var(--ink)]"
-              >
-                Clear all
-              </button>
-            )}
           </div>
         </div>
       </section>

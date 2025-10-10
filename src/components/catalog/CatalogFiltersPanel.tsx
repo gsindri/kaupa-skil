@@ -34,6 +34,9 @@ const VIRTUALIZE_THRESHOLD = 50
 export interface ActiveFilterChip {
   key: string
   label: string
+  variant: 'boolean' | 'range' | 'multi' | 'text' | 'default'
+  summary?: string
+  hasPopover?: boolean
   onRemove: () => void
   onEdit: () => void
 }
