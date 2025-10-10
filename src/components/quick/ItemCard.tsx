@@ -7,6 +7,7 @@ import { useCart } from '@/contexts/useBasket'
 import { MiniCompareDrawer } from './MiniCompareDrawer'
 import { resolveImage } from '@/lib/images'
 import { CatalogQuantityStepper } from '@/components/catalog/CatalogQuantityStepper'
+import { cartStepperClassNames } from '@/components/cart/cartStyleHelper'
 import { useCartQuantityController } from '@/contexts/useCartQuantityController'
 
 interface ItemCardProps {
@@ -217,14 +218,14 @@ export function ItemCard({ item, onCompareItem, userMode, compact = false }: Ite
           />
         </div>
 
-        <div className="relative flex-shrink-0">
+        <div className="relative flex-shrink-0 pt-0.5">
           <CatalogQuantityStepper
             quantity={optimisticQuantity}
             onChange={handleQuantityChange}
             onRemove={handleRemoveFromCart}
             itemLabel={item.name}
             canIncrease={Boolean(item.stock)}
-            className="rounded-full border border-border/60 bg-background/90 px-2 py-1 shadow-none"
+            className={cartStepperClassNames.compact}
             size="sm"
             increaseButtonRef={addButtonRef}
           />
