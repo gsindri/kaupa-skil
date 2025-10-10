@@ -73,10 +73,6 @@ export function AppLayout({
 
   const { handleLockChange, reset: resetHeaderScrollHide } = useHeaderScrollHide(internalHeaderRef, { isPinned })
 
-  useLayoutEffect(() => {
-    const sidebarWidth = showSecondary ? 'clamp(280px, 24vw, 360px)' : '0px'
-    document.documentElement.style.setProperty('--sidebar-push', sidebarWidth)
-  }, [showSecondary])
 
   useLayoutEffect(() => {
     if (typeof window === 'undefined') return
@@ -193,30 +189,16 @@ export function AppLayout({
           <AppChrome />
           <TopNavigation />
           
-          {/* Only FiltersBar shifts with sidebar */}
-          {headerNode && (
-            <div
-              className="transition-[margin-left] duration-[var(--filters-transition,200ms)] motion-reduce:transition-none"
-              style={{
-                marginLeft: 'var(--sidebar-push, 0px)',
-              }}
-            >
-              {headerNode}
-            </div>
-          )}
+          {headerNode}
         </div>
 
         {/* Main content */}
         <div className="pb-8 pt-2">
           <div
             className={clsx(
-              'page-grid items-start transition-[margin-left] duration-[var(--filters-transition,200ms)]',
-              'motion-reduce:transition-none',
+              'page-grid items-start',
               hasSecondary && 'page-grid--with-secondary'
             )}
-            style={{
-              marginLeft: 'var(--sidebar-push, 0px)',
-            }}
             data-has-secondary={showSecondary ? 'true' : undefined}
           >
             <div
@@ -227,9 +209,10 @@ export function AppLayout({
               <aside
                 className={cn(
                   'hidden min-w-0 overflow-hidden lg:flex lg:flex-col',
-                  'transition-[width] duration-[var(--filters-transition,200ms)]',
+                  'transition-[width,box-shadow] duration-[var(--filters-transition,200ms)]',
                   'motion-reduce:transition-none',
                   showSecondary ? 'lg:pointer-events-auto' : 'lg:pointer-events-none',
+                  showSecondary && 'shadow-[8px_0_32px_rgba(0,0,0,0.12)]'
                 )}
                 style={{
                   position: 'fixed',
@@ -237,7 +220,8 @@ export function AppLayout({
                   left: 'var(--layout-rail, 72px)',
                   width: showSecondary ? 'clamp(280px, 24vw, 360px)' : '0px',
                   height: '100vh',
-                  zIndex: 55,
+                  zIndex: 70,
+                  background: 'hsl(var(--background))',
                 }}
                 aria-hidden={!showSecondary}
               >
