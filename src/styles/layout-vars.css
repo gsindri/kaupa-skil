@@ -4,7 +4,7 @@
   --toolbar-h: var(--header-h, 56px); /* toolbar follows header */
   --chrome-h: var(--header-h);  /* chrome follows header */
   --sidebar-push: 0px;     /* dynamically updated by AppLayout */
-  --header-left: calc(var(--layout-rail) + var(--sidebar-push, 0px));
+  --header-left: var(--layout-rail);
 
   /* Filters panel tokens */
   --filters-w: 320px;      /* desktop panel width */

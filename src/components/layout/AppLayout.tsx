@@ -177,27 +177,33 @@ export function AppLayout({
           Skip to content
         </a>
 
-        {/* Unified header wrapper - contains chrome, nav, and filters bar */}
+        {/* Header wrapper - full width, stays visible */}
         <div
           id="catalogHeader"
           data-app-header="true"
           data-chrome-layer
           ref={combinedHeaderRef}
-          className={cn(
-            'transition-[margin-left] duration-[var(--filters-transition,200ms)]',
-            'motion-reduce:transition-none',
-            headerClassName
-          )}
+          className={cn(headerClassName)}
           style={{
             position: 'sticky',
             top: 0,
             zIndex: 'var(--z-header,55)',
-            marginLeft: 'var(--sidebar-push, 0px)',
           }}
         >
           <AppChrome />
           <TopNavigation />
-          {headerNode}
+          
+          {/* Only FiltersBar shifts with sidebar */}
+          {headerNode && (
+            <div
+              className="transition-[margin-left] duration-[var(--filters-transition,200ms)] motion-reduce:transition-none"
+              style={{
+                marginLeft: 'var(--sidebar-push, 0px)',
+              }}
+            >
+              {headerNode}
+            </div>
+          )}
         </div>
 
         {/* Main content */}
