@@ -1061,33 +1061,6 @@ export default function CatalogPage() {
     <>
       <AppLayout
       headerRef={headerRef}
-      header={
-        <FiltersBar
-          filters={filters}
-          setFilters={setFilters}
-          onlyWithPrice={onlyWithPrice}
-          setOnlyWithPrice={setOnlyWithPrice}
-          inStock={inStock}
-          setInStock={setInStock}
-          onSpecial={onSpecial}
-          setOnSpecial={setOnSpecial}
-          mySuppliers={mySuppliers}
-          setMySuppliers={setMySuppliers}
-          sortOrder={sortOrder}
-          setSortOrder={setSortOrder}
-          view={view}
-          setView={setView}
-          error={error}
-          showFilters={showFilters}
-          setShowFilters={setShowFilters}
-          focusedFacet={focusedFacet}
-          setFocusedFacet={setFocusedFacet}
-          total={total}
-          scrolled={scrolled}
-          chips={chips}
-          filterButtonRef={filterButtonRef}
-        />
-      }
       secondary={
         <div id="catalog-filters-panel" className="hidden h-full lg:flex">
           <CatalogFiltersPanel
@@ -1101,6 +1074,31 @@ export default function CatalogPage() {
       }
       panelOpen={showFilters}
     >
+      <FiltersBar
+        filters={filters}
+        setFilters={setFilters}
+        onlyWithPrice={onlyWithPrice}
+        setOnlyWithPrice={setOnlyWithPrice}
+        inStock={inStock}
+        setInStock={setInStock}
+        onSpecial={onSpecial}
+        setOnSpecial={setOnSpecial}
+        mySuppliers={mySuppliers}
+        setMySuppliers={setMySuppliers}
+        sortOrder={sortOrder}
+        setSortOrder={setSortOrder}
+        view={view}
+        setView={setView}
+        error={error}
+        showFilters={showFilters}
+        setShowFilters={setShowFilters}
+        focusedFacet={focusedFacet}
+        setFocusedFacet={setFocusedFacet}
+        total={total}
+        scrolled={scrolled}
+        chips={chips}
+        filterButtonRef={filterButtonRef}
+      />
       <div
         className={cn(
           'mx-auto w-full max-w-[1600px] space-y-5 pb-8',
@@ -1513,7 +1511,7 @@ function FiltersBar({
         style={{
           ...COMPACT_TOOLBAR_TOKENS,
           position: 'sticky',
-          top: 'var(--chrome-h, 56px)',
+          top: '0',
           zIndex: 'calc(var(--z-header, 50) - 1)',
         }}
         className={cn(
