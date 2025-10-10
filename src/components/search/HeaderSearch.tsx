@@ -9,6 +9,7 @@ import { useTranslation } from '@/lib/i18n'
 import AvailabilityBadge from '@/components/catalog/AvailabilityBadge'
 import { SupplierLogo } from '@/components/catalog/SupplierLogo'
 import { QuantityStepper } from '@/components/cart/QuantityStepper'
+import { getUnifiedCartClasses } from '@/components/cart/unifiedCartStyles'
 import { LazyImage } from '@/components/ui/LazyImage'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -998,6 +999,7 @@ function DialogBadge({ children }: { children: React.ReactNode }) {
 function ProductQuickAddButton({ item }: { item: SearchResultItem }) {
   const { items, addItem } = useCart()
   const [isAdding, setIsAdding] = useState(false)
+  const { button: quickAddButtonClass, stepper: quickAddStepperClass } = getUnifiedCartClasses('compact')
 
   const supplierIds = item.metadata?.supplierIds ?? []
   if (!supplierIds || supplierIds.length === 0) return null
@@ -1025,6 +1027,7 @@ function ProductQuickAddButton({ item }: { item: SearchResultItem }) {
           quantity={existingItem.quantity}
           label={item.name}
           supplier={existingItem.supplierName}
+          className={quickAddStepperClass}
         />
       </div>
     )
@@ -1083,7 +1086,10 @@ function ProductQuickAddButton({ item }: { item: SearchResultItem }) {
       onTouchStart={stopPropagation}
       onClick={handleClick}
       disabled={isAdding}
-      className="!h-8 !px-3 rounded-full text-sm font-semibold shadow-[0_16px_36px_-24px_rgba(11,91,211,0.7)]"
+      className={cn(
+        quickAddButtonClass,
+        '!w-auto shadow-[0_16px_36px_-24px_rgba(11,91,211,0.7)]',
+      )}
     >
       {isAdding ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Add'}
     </Button>

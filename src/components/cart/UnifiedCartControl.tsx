@@ -1,6 +1,7 @@
 import { useMemo, type ReactNode } from 'react'
 import { CatalogAddToCartButton, type CatalogAddToCartSupplier } from '@/components/catalog/CatalogAddToCartButton'
 import { CatalogQuantityStepper } from '@/components/catalog/CatalogQuantityStepper'
+import { getUnifiedCartClasses } from '@/components/cart/unifiedCartStyles'
 import { getCartControlClasses } from '@/components/cart/cartControlStyles'
 import { cartStepperClassNames, getCartStepperClassName } from '@/components/cart/cartStyleHelper'
 import { cn } from '@/lib/utils'
@@ -40,6 +41,11 @@ export function UnifiedCartControl({
   popoverAlign = 'end',
 }: UnifiedCartControlProps) {
   const isCatalog = variant === 'catalog'
+
+  const { button, disabledButton, passiveButton, unavailableButton, stepper } = useMemo(
+    () => getUnifiedCartClasses(variant),
+    [variant],
+  )
   
   // Standardized button styling - rounded-full pill shape with consistent sizing
   const { button, disabledButton, passiveButton, unavailableButton, stepper } = useMemo(
