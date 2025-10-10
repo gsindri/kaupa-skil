@@ -1,6 +1,7 @@
 import { useMemo, type ReactNode } from 'react'
 import { CatalogAddToCartButton, type CatalogAddToCartSupplier } from '@/components/catalog/CatalogAddToCartButton'
 import { CatalogQuantityStepper } from '@/components/catalog/CatalogQuantityStepper'
+import { cartStepperClassNames, getCartStepperClassName } from '@/components/cart/cartStyleHelper'
 import { cn } from '@/lib/utils'
 import type { AddItemOptions } from '@/contexts/useCartQuantityController'
 
@@ -78,10 +79,7 @@ export function UnifiedCartControl({
   ), [isCatalog])
 
   // Standardized stepper styling - matches button height
-  const stepperClasses = useMemo(() => cn(
-    'rounded-full',
-    !isCatalog && 'text-[13px]', // Slightly smaller text for compact variant
-  ), [isCatalog])
+  const stepperClasses = useMemo(() => getCartStepperClassName(isCatalog ? 'catalog' : 'compact'), [isCatalog])
 
   return (
     <CatalogAddToCartButton
@@ -116,7 +114,7 @@ export function UnifiedCartControl({
             onChange={handleQuantityChange}
             onRemove={handleRemove}
             itemLabel={`${product.name} from ${primarySupplierName}`}
-            className={stepperClasses}
+            className={cartStepperClassNames[isCatalog ? 'catalog' : 'compact']}
             size={isCatalog ? 'md' : 'sm'}
             canIncrease={controller.canIncrease}
             maxQuantity={maxQuantity}
