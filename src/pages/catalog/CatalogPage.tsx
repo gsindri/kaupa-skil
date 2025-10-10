@@ -1530,7 +1530,7 @@ function FiltersBar({
 
         <div className={containerClass}>
           <div className="flex flex-col gap-3 py-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex flex-col gap-1 sm:flex-1 sm:flex-row sm:items-center sm:gap-4">
+            <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-4 sm:ml-[280px] lg:ml-[320px]">
               <div className="relative min-w-0 w-full sm:w-auto sm:flex-none sm:min-w-[400px] sm:max-w-[600px]">
                 <label className="sr-only" htmlFor="catalog-search">
                   Search products
@@ -1591,8 +1591,7 @@ function FiltersBar({
           </div>
 
           <div className="flex flex-wrap items-center gap-2 pb-3">
-            {renderFiltersToggleButton('shrink-0')}
-            <div className="flex-1 hidden lg:block" />
+            <div className="lg:mr-auto">{renderFiltersToggleButton('shrink-0')}</div>
             {chips.map(chip => (
               <FilterChip
                 key={chip.key}
