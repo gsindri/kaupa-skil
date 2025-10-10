@@ -19,7 +19,7 @@ export function AppChrome() {
       {/* Chrome gradient background - confined to content area */}
       <div
         data-chrome-layer
-        className="absolute top-0 z-[var(--z-chrome,20)] overflow-hidden pointer-events-none transition-[transform,opacity] duration-200 ease-in-out motion-reduce:transition-none"
+        className="absolute top-0 z-[var(--z-chrome,50)] overflow-hidden pointer-events-none transition-[transform,opacity] duration-200 ease-in-out motion-reduce:transition-none"
         style={{
           left: 'calc(-1 * var(--layout-rail, 72px))',
           right: 0,
