@@ -1,5 +1,6 @@
 import { useMemo, type ReactNode } from 'react'
 import { CatalogAddToCartButton, type CatalogAddToCartSupplier } from '@/components/catalog/CatalogAddToCartButton'
+import { CatalogQuantityStepper } from '@/components/catalog/CatalogQuantityStepper'
 import { cn } from '@/lib/utils'
 import type { AddItemOptions } from '@/contexts/useCartQuantityController'
 
@@ -108,9 +109,6 @@ export function UnifiedCartControl({
         product,
         primarySupplierName,
       }) => {
-        // Import CatalogQuantityStepper dynamically to avoid circular deps
-        const { CatalogQuantityStepper } = require('@/components/catalog/CatalogQuantityStepper')
-        
         return (
           <CatalogQuantityStepper
             quantity={currentQuantity}
