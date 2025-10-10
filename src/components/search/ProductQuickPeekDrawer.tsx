@@ -1,8 +1,9 @@
 import { Fragment, useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { Drawer, DrawerClose, DrawerContent } from '@/components/ui/drawer'
 import { Button } from '@/components/ui/button'
-import { LazyImage } from '@/components/ui/LazyImage'
 import { CatalogQuantityStepper } from '@/components/catalog/CatalogQuantityStepper'
+import { LazyImage } from '@/components/ui/LazyImage'
+import { getCompactCartControlClasses } from '@/components/cart/cartControlStyles'
 import {
   Select,
   SelectContent,
@@ -247,6 +248,14 @@ export function ProductQuickPeekDrawer({
 
   const totalPriceLabel =
     priceValue != null ? formatCurrency(priceValue * effectiveQuantity) : null
+
+  const cartControlClasses = useMemo(
+    () =>
+      getCompactCartControlClasses({
+        stepper: 'border border-white/12 bg-white/[0.04] text-[color:var(--text)]',
+      }),
+    [],
+  )
 
   const additionalPackSizes = packSizes.slice(1)
   const canAddToCart = Boolean(productId && selectedSupplier)
@@ -546,17 +555,19 @@ export function ProductQuickPeekDrawer({
                 minQuantity={hasCartItem ? 0 : 1}
                 maxQuantity={999}
                 canIncrease={hasCartItem ? controller.canIncrease : !isAdding}
-                className="rounded-full border border-white/12 bg-white/[0.04] px-1.5 text-[color:var(--text)]"
+                className={cartControlClasses.stepper}
                 size="sm"
               />
-              <Button
-                type="button"
-                onClick={handleAddToCart}
-                disabled={!canAddToCart || isAdding || hasCartItem}
-                className="h-11 flex-1 rounded-[14px]"
-              >
-                {isAdding ? <Loader2 className="h-4 w-4 animate-spin" /> : addButtonLabel}
-              </Button>
+              <div className="flex-1">
+                <Button
+                  type="button"
+                  onClick={handleAddToCart}
+                  disabled={!canAddToCart || isAdding || hasCartItem}
+                  className={cartControlClasses.button}
+                >
+                  {isAdding ? <Loader2 className="h-4 w-4 animate-spin" /> : addButtonLabel}
+                </Button>
+              </div>
             </div>
             <Button
               type="button"

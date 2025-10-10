@@ -1,6 +1,7 @@
 import { useMemo, type ReactNode } from 'react'
 import { CatalogAddToCartButton, type CatalogAddToCartSupplier } from '@/components/catalog/CatalogAddToCartButton'
 import { CatalogQuantityStepper } from '@/components/catalog/CatalogQuantityStepper'
+import { getCartControlClasses } from '@/components/cart/cartControlStyles'
 import { cartStepperClassNames, getCartStepperClassName } from '@/components/cart/cartStyleHelper'
 import { cn } from '@/lib/utils'
 import type { AddItemOptions } from '@/contexts/useCartQuantityController'
@@ -41,6 +42,10 @@ export function UnifiedCartControl({
   const isCatalog = variant === 'catalog'
   
   // Standardized button styling - rounded-full pill shape with consistent sizing
+  const { button, disabledButton, passiveButton, unavailableButton, stepper } = useMemo(
+    () => getCartControlClasses(variant),
+    [variant],
+  )
   const buttonClasses = useMemo(() => cn(
     'inline-flex w-full items-center justify-center rounded-full',
     'bg-secondary text-secondary-foreground shadow-sm',
@@ -86,11 +91,11 @@ export function UnifiedCartControl({
       product={product}
       suppliers={suppliers}
       className={className}
-      buttonClassName={buttonClasses}
-      disabledButtonClassName={disabledButtonClasses}
-      passiveButtonClassName={passiveButtonClasses}
-      unavailableButtonClassName={unavailableButtonClasses}
-      stepperClassName={stepperClasses}
+      buttonClassName={button}
+      disabledButtonClassName={disabledButton}
+      passiveButtonClassName={passiveButton}
+      unavailableButtonClassName={unavailableButton}
+      stepperClassName={stepper}
       buttonLabel={buttonLabel}
       addItemOptions={addItemOptions}
       onActionButtonRef={onActionButtonRef}
@@ -114,6 +119,7 @@ export function UnifiedCartControl({
             onChange={handleQuantityChange}
             onRemove={handleRemove}
             itemLabel={`${product.name} from ${primarySupplierName}`}
+            className={stepper}
             className={cartStepperClassNames[isCatalog ? 'catalog' : 'compact']}
             size={isCatalog ? 'md' : 'sm'}
             canIncrease={controller.canIncrease}
