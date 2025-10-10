@@ -74,11 +74,9 @@ export function AppLayout({
   const { handleLockChange, reset: resetHeaderScrollHide } = useHeaderScrollHide(internalHeaderRef, { isPinned })
 
   useLayoutEffect(() => {
-    const rail = document.querySelector('[data-rail]')
-    if (rail instanceof HTMLElement) {
-      document.documentElement.style.setProperty('--header-left', `${rail.offsetWidth}px`)
-    }
-  }, [])
+    const sidebarWidth = showSecondary ? 'clamp(280px, 24vw, 360px)' : '0px'
+    document.documentElement.style.setProperty('--sidebar-push', sidebarWidth)
+  }, [showSecondary])
 
   useLayoutEffect(() => {
     if (typeof window === 'undefined') return
@@ -178,16 +176,26 @@ export function AppLayout({
         >
           Skip to content
         </a>
-        <AppChrome />
-        {/* Header */}
+
+        {/* Unified header wrapper - contains chrome, nav, and filters bar */}
         <div
           id="catalogHeader"
           data-app-header="true"
           data-chrome-layer
           ref={combinedHeaderRef}
-          className={headerClassName}
-          style={{ position: 'sticky', top: 0, zIndex: 'var(--z-header,50)' }}
+          className={cn(
+            'transition-[margin-left] duration-[var(--filters-transition,200ms)]',
+            'motion-reduce:transition-none',
+            headerClassName
+          )}
+          style={{
+            position: 'sticky',
+            top: 0,
+            zIndex: 'var(--z-header,55)',
+            marginLeft: 'var(--sidebar-push, 0px)',
+          }}
         >
+          <AppChrome />
           <TopNavigation />
           {headerNode}
         </div>
@@ -212,16 +220,18 @@ export function AppLayout({
               {hasSecondary && (
               <aside
                 className={cn(
-                  'relative hidden min-w-0 overflow-hidden lg:flex lg:flex-col',
-                  'transition-[width] duration-[var(--filters-transition,200ms)] ease-[var(--ease-snap)]',
+                  'hidden min-w-0 overflow-hidden lg:flex lg:flex-col',
+                  'transition-[width] duration-[var(--filters-transition,200ms)]',
                   'motion-reduce:transition-none',
                   showSecondary ? 'lg:pointer-events-auto' : 'lg:pointer-events-none',
-                  'lg:sticky lg:self-start'
                 )}
                 style={{
-                  width: showSecondary ? 'var(--filters-w, 320px)' : '0px',
-                  top: 'var(--chrome-h, 56px)',
-                  maxHeight: showSecondary ? 'calc(100vh - var(--chrome-h, 56px))' : undefined,
+                  position: 'fixed',
+                  top: 0,
+                  left: 'var(--layout-rail, 72px)',
+                  width: showSecondary ? 'clamp(280px, 24vw, 360px)' : '0px',
+                  height: '100vh',
+                  zIndex: 55,
                 }}
                 aria-hidden={!showSecondary}
               >
