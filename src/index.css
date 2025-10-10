@@ -124,13 +124,12 @@ html { scrollbar-gutter: stable; }
   }
 }
 
-/* 1) Ensure header is to the right of the sidebar */
+/* 1) Header positioning */
 [data-app-header="true"],
 .app-header,
 #catalogHeader {
   position: sticky;
   top: 0;
-  left: var(--header-left, 0px);
   width: auto;
   z-index: 40;
 }
