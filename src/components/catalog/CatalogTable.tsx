@@ -20,7 +20,7 @@ import { cn } from '@/lib/utils'
 import { useSupplierConnections } from '@/hooks/useSupplierConnections'
 import { useSuppliers } from '@/hooks/useSuppliers'
 import { useWindowVirtualizer } from '@tanstack/react-virtual'
-import CatalogAddToCartButton from './CatalogAddToCartButton'
+import { UnifiedCartControl } from '@/components/cart/UnifiedCartControl'
 
 type AvailabilityState = 'IN_STOCK' | 'LOW_STOCK' | 'OUT_OF_STOCK' | 'UNKNOWN' | null | undefined
 
@@ -649,7 +649,8 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
                 </TableCell>
                 <TableCell className="w-[220px] px-4 py-2 text-center align-middle">
                   <div className="flex h-full w-full items-center justify-center">
-                    <CatalogAddToCartButton
+                    <UnifiedCartControl
+                      variant="catalog"
                       product={p}
                       suppliers={suppliers.map(s => ({
                         supplier_id: s.supplier_id,
@@ -657,11 +658,6 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
                         supplier_logo_url: s.supplier_logo_url,
                       }))}
                       className="flex h-[68%] w-[78%] max-w-[220px] items-stretch justify-center"
-                      buttonClassName="inline-flex h-full w-full items-center justify-center rounded-full bg-secondary px-3 text-[13px] font-medium text-secondary-foreground shadow-sm transition-colors duration-150 hover:bg-secondary/80 focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2"
-                      disabledButtonClassName="inline-flex h-full w-full items-center justify-center rounded-full bg-muted px-3 text-[13px] font-medium text-muted-foreground shadow-none"
-                      passiveButtonClassName="inline-flex h-full w-full items-center justify-center rounded-full border border-border/70 bg-background/80 px-3 text-[13px] font-medium text-muted-foreground shadow-none backdrop-blur-sm"
-                      unavailableButtonClassName="inline-flex h-full w-full items-center justify-center rounded-full border border-dashed border-muted-foreground/60 bg-background/70 px-3 text-[13px] font-medium text-muted-foreground shadow-none"
-                      popoverClassName="w-64 space-y-1 p-2"
                       popoverSide="top"
                       popoverAlign="end"
                     />

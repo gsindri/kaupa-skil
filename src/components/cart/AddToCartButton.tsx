@@ -1,68 +1,30 @@
-import { Button } from '@/components/ui/button'
-import { QuantityStepper } from './QuantityStepper'
-import { useCart } from '@/contexts/useBasket'
-import { useState } from 'react'
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from '@/components/ui/select'
+import { UnifiedCartControl } from './UnifiedCartControl'
+import type { CatalogAddToCartSupplier } from '@/components/catalog/CatalogAddToCartButton'
 
 interface AddToCartButtonProps {
   product: any
   vendors: { id: string; name: string }[]
 }
 
+/**
+ * Legacy AddToCartButton - now wraps UnifiedCartControl for consistency.
+ * Uses compact variant for backward compatibility with existing layouts.
+ */
 export default function AddToCartButton({ product, vendors }: AddToCartButtonProps) {
-  const { items, addItem } = useCart()
-  const cartItem = items.find(i => i.supplierItemId === product.catalog_id)
-
-  const [vendorId, setVendorId] = useState(
-    vendors.length === 1 ? vendors[0].id : (product.suppliers?.[0]?.id as string | undefined)
-  )
-
-  if (cartItem) {
-    return (
-      <QuantityStepper
-        supplierItemId={cartItem.supplierItemId}
-        quantity={cartItem.quantity}
-        label={product.name}
-      />
-    )
-  }
-
-  const handleAdd = () => {
-    if (!vendorId) return
-    addItem({ product_id: product.catalog_id, supplier_id: vendorId })
-  }
+  const suppliers: CatalogAddToCartSupplier[] = vendors.map(v => ({
+    supplier_id: v.id,
+    supplier_name: v.name,
+    supplier_logo_url: null,
+  }))
 
   return (
-    <div className="flex items-center gap-2">
-      {vendors.length > 1 && (
-        <Select value={vendorId} onValueChange={setVendorId}>
-          <SelectTrigger className="w-[140px]" aria-label="Select vendor">
-            <SelectValue placeholder="Select vendor" />
-          </SelectTrigger>
-          <SelectContent>
-            {vendors.map(v => (
-              <SelectItem key={v.id} value={v.id}>
-                {v.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      )}
-      <Button
-        size="sm"
-        onClick={handleAdd}
-        aria-label={`Add ${product.name}`}
-        disabled={!vendorId}
-      >
-        Add
-      </Button>
-    </div>
+    <UnifiedCartControl
+      variant="compact"
+      product={product}
+      suppliers={suppliers}
+      popoverSide="bottom"
+      popoverAlign="start"
+    />
   )
 }
 

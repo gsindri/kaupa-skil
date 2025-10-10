@@ -9,7 +9,7 @@ import { useCart } from "@/contexts/useBasket";
 import type { CartQuantityController } from "@/contexts/useCartQuantityController";
 import { CatalogQuantityStepper } from "./CatalogQuantityStepper";
 import { PriceBenchmarkBadge } from "./PriceBenchmarkBadge";
-import CatalogAddToCartButton from "./CatalogAddToCartButton";
+import { UnifiedCartControl } from "@/components/cart/UnifiedCartControl";
 import { Loader2 } from "lucide-react";
 
 type SupplierEntry = {
@@ -447,15 +447,11 @@ export const ProductCard = memo(function ProductCard({
                 </div>
               ) : null}
               <div className="flex w-full sm:w-auto sm:flex-shrink-0">
-                <CatalogAddToCartButton
+                <UnifiedCartControl
+                  variant="catalog"
                   product={product}
                   suppliers={addToCartSuppliers}
                   className="w-full"
-                  buttonClassName="inline-flex h-[2.625rem] w-full items-center justify-center rounded-full bg-secondary px-4 text-sm font-semibold text-secondary-foreground shadow-sm transition-colors duration-150 hover:bg-secondary/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-                  disabledButtonClassName="inline-flex h-[2.625rem] w-full items-center justify-center rounded-full bg-muted px-4 text-sm font-medium text-muted-foreground shadow-none"
-                  passiveButtonClassName="inline-flex h-[2.625rem] w-full items-center justify-center rounded-full border border-border/70 bg-background/80 px-4 text-sm font-medium text-muted-foreground shadow-none backdrop-blur-sm"
-                  unavailableButtonClassName="inline-flex h-[2.625rem] w-full items-center justify-center rounded-full border border-dashed border-muted-foreground/60 bg-background/70 px-4 text-sm font-medium text-muted-foreground shadow-none"
-                  popoverClassName="w-64 space-y-1 p-2"
                   popoverSide="top"
                   popoverAlign="end"
                   addItemOptions={imageRef.current ? { animateElement: imageRef.current } : undefined}
@@ -465,7 +461,6 @@ export const ProductCard = memo(function ProductCard({
                     onAdd?.(supplierId);
                   }}
                   buttonLabel={addButtonLabel}
-                  renderStepper={renderCardStepper}
                 />
               </div>
             </div>
