@@ -1,10 +1,7 @@
 import { useMemo, type ReactNode } from 'react'
 import { CatalogAddToCartButton, type CatalogAddToCartSupplier } from '@/components/catalog/CatalogAddToCartButton'
 import { CatalogQuantityStepper } from '@/components/catalog/CatalogQuantityStepper'
-import { getUnifiedCartClasses } from '@/components/cart/unifiedCartStyles'
 import { getCartControlClasses } from '@/components/cart/cartControlStyles'
-import { cartStepperClassNames, getCartStepperClassName } from '@/components/cart/cartStyleHelper'
-import { cn } from '@/lib/utils'
 import type { AddItemOptions } from '@/contexts/useCartQuantityController'
 
 interface UnifiedCartControlProps {
@@ -43,54 +40,9 @@ export function UnifiedCartControl({
   const isCatalog = variant === 'catalog'
 
   const { button, disabledButton, passiveButton, unavailableButton, stepper } = useMemo(
-    () => getUnifiedCartClasses(variant),
-    [variant],
-  )
-  
-  // Standardized button styling - rounded-full pill shape with consistent sizing
-  const { button, disabledButton, passiveButton, unavailableButton, stepper } = useMemo(
     () => getCartControlClasses(variant),
     [variant],
   )
-  const buttonClasses = useMemo(() => cn(
-    'inline-flex w-full items-center justify-center rounded-full',
-    'bg-secondary text-secondary-foreground shadow-sm',
-    'transition-colors duration-150',
-    'hover:bg-secondary/85',
-    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30',
-    'focus-visible:ring-offset-2 focus-visible:ring-offset-background',
-    'text-sm font-medium px-4',
-    isCatalog ? 'h-10' : 'h-9',
-  ), [isCatalog])
-
-  // Standardized disabled button styling
-  const disabledButtonClasses = useMemo(() => cn(
-    'inline-flex w-full items-center justify-center rounded-full',
-    'bg-muted text-muted-foreground shadow-none',
-    'text-sm font-medium px-4',
-    isCatalog ? 'h-10' : 'h-9',
-  ), [isCatalog])
-
-  // Standardized passive button styling (notify me, etc.)
-  const passiveButtonClasses = useMemo(() => cn(
-    'inline-flex w-full items-center justify-center rounded-full',
-    'border border-border/70 bg-background/80 text-muted-foreground',
-    'shadow-none backdrop-blur-sm',
-    'text-sm font-medium px-4',
-    isCatalog ? 'h-10' : 'h-9',
-  ), [isCatalog])
-
-  // Standardized unavailable button styling
-  const unavailableButtonClasses = useMemo(() => cn(
-    'inline-flex w-full items-center justify-center rounded-full',
-    'border border-dashed border-muted-foreground/60',
-    'bg-background/70 text-muted-foreground shadow-none',
-    'text-sm font-medium px-4',
-    isCatalog ? 'h-10' : 'h-9',
-  ), [isCatalog])
-
-  // Standardized stepper styling - matches button height
-  const stepperClasses = useMemo(() => getCartStepperClassName(isCatalog ? 'catalog' : 'compact'), [isCatalog])
 
   return (
     <CatalogAddToCartButton
@@ -126,7 +78,6 @@ export function UnifiedCartControl({
             onRemove={handleRemove}
             itemLabel={`${product.name} from ${primarySupplierName}`}
             className={stepper}
-            className={cartStepperClassNames[isCatalog ? 'catalog' : 'compact']}
             size={isCatalog ? 'md' : 'sm'}
             canIncrease={controller.canIncrease}
             maxQuantity={maxQuantity}
