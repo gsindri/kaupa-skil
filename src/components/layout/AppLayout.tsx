@@ -220,8 +220,8 @@ export function AppLayout({
                 )}
                 style={{
                   width: showSecondary ? 'var(--filters-w, 320px)' : '0px',
-                  top: 'var(--header-h, 56px)',
-                  maxHeight: showSecondary ? 'calc(100vh - var(--header-h, 56px))' : undefined,
+                  top: '0px',
+                  maxHeight: showSecondary ? '100vh' : undefined,
                 }}
                 aria-hidden={!showSecondary}
               >
@@ -230,7 +230,10 @@ export function AppLayout({
               )}
               <main
                 id="main-content"
-                className="w-full min-w-0 px-4 sm:px-6 lg:px-8"
+                className={cn(
+                  "w-full min-w-0 px-4 sm:px-6",
+                  showSecondary ? "lg:px-12" : "lg:px-8"
+                )}
                 style={{ minHeight: 'calc(100vh - var(--header-h, 56px))' }}
               >
                 {children ?? <Outlet />}
