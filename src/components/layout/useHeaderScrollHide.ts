@@ -23,6 +23,10 @@ export function useHeaderScrollHide(
   { isPinned, onLockChange }: Options = {}
 ) {
   const lockCount = useRef(0)
+  const hiddenRef = useRef(false)
+  const lastYRef = useRef(0)
+  const accumulatedDeltaRef = useRef(0)
+
   const handleLockChange = useCallback(
     (locked: boolean) => {
       lockCount.current += locked ? 1 : -1
@@ -31,6 +35,29 @@ export function useHeaderScrollHide(
     },
     [onLockChange]
   )
+
+  const reset = useCallback(() => {
+    if (!ref.current) return
+    
+    const el = ref.current
+    
+    // Force header visible in DOM
+    const reduceMotion =
+      typeof window !== 'undefined' &&
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+    if (!reduceMotion) {
+      el.style.transition = 'transform 200ms ease-in-out'
+    }
+    el.style.transform = 'translate3d(0, 0, 0)'
+    document.documentElement.style.setProperty('--header-hidden', '0')
+    
+    // Reset internal state
+    hiddenRef.current = false
+    lastYRef.current = Math.max(0, window.scrollY)
+    accumulatedDeltaRef.current = 0
+  }, [ref])
 
   useEffect(() => {
     const el = ref.current
@@ -68,21 +95,19 @@ export function useHeaderScrollHide(
     const handlePointerDown = () => lockFor(180)
     el.addEventListener('pointerdown', handlePointerDown, { passive: true })
 
-    let lastY = Math.max(0, window.scrollY)
-    let accumulatedDelta = 0
-    let hidden = false
+    lastYRef.current = Math.max(0, window.scrollY)
 
     const resetScrollState = (y: number) => {
-      lastY = y
-      accumulatedDelta = 0
+      lastYRef.current = y
+      accumulatedDeltaRef.current = 0
     }
 
     const applyHidden = (nextHidden: boolean) => {
-      if (hidden === nextHidden) return
-      hidden = nextHidden
-      document.documentElement.style.setProperty('--header-hidden', hidden ? '1' : '0')
+      if (hiddenRef.current === nextHidden) return
+      hiddenRef.current = nextHidden
+      document.documentElement.style.setProperty('--header-hidden', hiddenRef.current ? '1' : '0')
       applyTransition()
-      el.style.transform = hidden ? 'translate3d(0, -100%, 0)' : 'translate3d(0, 0, 0)'
+      el.style.transform = hiddenRef.current ? 'translate3d(0, -100%, 0)' : 'translate3d(0, 0, 0)'
     }
 
     applyTransition()
@@ -96,26 +121,26 @@ export function useHeaderScrollHide(
       const y = Math.max(0, window.scrollY)
 
       if (pinned()) {
-        if (hidden) applyHidden(false)
+        if (hiddenRef.current) applyHidden(false)
         resetScrollState(y)
         return
       }
 
-      const delta = y - lastY
-      lastY = y
+      const delta = y - lastYRef.current
+      lastYRef.current = y
       if (delta === 0) {
         return
       }
 
-      if (Math.sign(delta) !== Math.sign(accumulatedDelta)) {
-        accumulatedDelta = delta
+      if (Math.sign(delta) !== Math.sign(accumulatedDeltaRef.current)) {
+        accumulatedDeltaRef.current = delta
       } else {
-        accumulatedDelta += delta
+        accumulatedDeltaRef.current += delta
       }
 
-      if (Math.abs(accumulatedDelta) > HIDE_DELTA) {
-        applyHidden(accumulatedDelta > 0)
-        accumulatedDelta = 0
+      if (Math.abs(accumulatedDeltaRef.current) > HIDE_DELTA) {
+        applyHidden(accumulatedDeltaRef.current > 0)
+        accumulatedDeltaRef.current = 0
       }
     }
 
@@ -133,9 +158,9 @@ export function useHeaderScrollHide(
       }
       el.style.transform = 'translate3d(0, 0, 0)'
     }
-  }, [ref, isPinned])
+  }, [ref, isPinned, reset])
 
-  return handleLockChange
+  return { handleLockChange, reset }
 }
 
 export default useHeaderScrollHide

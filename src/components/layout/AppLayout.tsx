@@ -71,7 +71,7 @@ export function AppLayout({
     return false
   }, [])
 
-  const handleLockChange = useHeaderScrollHide(internalHeaderRef, { isPinned })
+  const { handleLockChange, reset: resetHeaderScrollHide } = useHeaderScrollHide(internalHeaderRef, { isPinned })
 
   useLayoutEffect(() => {
     const rail = document.querySelector('[data-rail]')
@@ -113,31 +113,14 @@ export function AppLayout({
   useLayoutEffect(() => {
     if (typeof window === 'undefined') return
     
-    // When the secondary panel (filter sidebar) toggles, we need to:
-    // 1. Force the header to be visible (reset the hidden state)
-    // 2. Let the scroll handler take over from there
-    
-    // Small delay to ensure layout has settled
+    // When filter sidebar toggles, reset header scroll-hide state
+    // Small delay ensures layout has settled before reset
     const timeoutId = setTimeout(() => {
-      if (!internalHeaderRef.current) return
-      
-      const el = internalHeaderRef.current
-      
-      // Force header to be visible by directly manipulating the DOM
-      // This bypasses the scroll-hide internal state
-      el.style.transition = 'transform 200ms ease-in-out'
-      el.style.transform = 'translate3d(0, 0, 0)'
-      document.documentElement.style.setProperty('--header-hidden', '0')
-      
-      // After showing the header, dispatch a scroll event so the scroll handler
-      // can recalculate its internal state (lastY, accumulatedDelta, hidden)
-      requestAnimationFrame(() => {
-        window.dispatchEvent(new Event('scroll'))
-      })
+      resetHeaderScrollHide()
     }, 50)
     
     return () => clearTimeout(timeoutId)
-  }, [showSecondary])
+  }, [showSecondary, resetHeaderScrollHide])
 
 
   const headerNode =
