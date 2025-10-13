@@ -268,27 +268,29 @@ export function TopNavigation() {
       role="banner"
       data-app-header="true"
       className={cn(
-        'relative z-[57] pt-[2px] px-3 sm:px-4 flex items-center gap-3 text-white',
+        'relative z-[57] pt-[2px] text-white',
         scrolled ? 'shadow-lg' : 'shadow-none',
         'transition-[box-shadow] duration-base ease-snap motion-reduce:transition-none'
       )}
       style={{
         height: 'clamp(44px, var(--toolbar-h, 56px), 72px)',
+        paddingInline: 'calc(var(--page-gutter) + var(--catalog-extra-gutter))',
       }}
     >
-      <div className="flex items-center gap-3 min-w-0">
-        <Link
-          to="/"
-          aria-label={t('navigation.logo.aria')}
-          title={t('navigation.logo.aria')}
-          className="inline-flex shrink-0 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
-        >
-          <HeildaLogo className="h-8 w-auto shrink-0 drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)]" />
-        </Link>
-        <TenantSwitcher />
-      </div>
+      <div className="mx-auto flex w-full max-w-[1600px] items-center gap-3">
+        <div className="flex min-w-0 items-center gap-3">
+          <Link
+            to="/"
+            aria-label={t('navigation.logo.aria')}
+            title={t('navigation.logo.aria')}
+            className="inline-flex shrink-0 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
+          >
+            <HeildaLogo className="h-8 w-auto shrink-0 drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)]" />
+          </Link>
+          <TenantSwitcher />
+        </div>
 
-      <nav aria-label="Global actions" className="ml-auto flex items-center gap-[12px] lg:gap-[14px]">
+        <nav aria-label="Global actions" className="ml-auto flex items-center gap-[12px] lg:gap-[14px]">
         <span className="inline-flex h-9 items-center whitespace-nowrap text-[13px] font-medium text-white/80">
           {t('navigation.search.prompt')}
         </span>
@@ -541,6 +543,7 @@ export function TopNavigation() {
         </DropdownMenu>
         <CartButton />
       </nav>
+      </div>
       <HeaderSearch ref={searchRef} mode="dialog" open={searchOpen} onOpenChange={setSearchOpen} />
     </div>
   )

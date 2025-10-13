@@ -230,8 +230,11 @@ export function AppLayout({
               )}
               <main
                 id="main-content"
-                className="w-full min-w-0 px-4 sm:px-6 lg:px-8"
-                style={{ minHeight: 'calc(100vh - var(--header-h, 56px))' }}
+                className="w-full min-w-0"
+                style={{
+                  minHeight: 'calc(100vh - var(--header-h, 56px))',
+                  paddingInline: 'var(--page-gutter)',
+                }}
               >
                 {children ?? <Outlet />}
               </main>
