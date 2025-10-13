@@ -548,6 +548,21 @@ export default function CatalogPage() {
     }
     return false
   })
+  useEffect(() => {
+    if (typeof document === 'undefined') return undefined
+    const className = 'catalog-gutters-expanded'
+    const target = document.body
+
+    if (!showFilters) {
+      target.classList.add(className)
+    } else {
+      target.classList.remove(className)
+    }
+
+    return () => {
+      target.classList.remove(className)
+    }
+  }, [showFilters])
   const [focusedFacet, setFocusedFacet] = useState<keyof FacetFilters | null>(null)
   const clearAllFilters = useCallback(() => {
     setInStock(false)
@@ -1193,9 +1208,8 @@ export default function CatalogPage() {
         className={cn(
           'mx-auto w-full max-w-[1600px] space-y-5 pb-8',
           view === 'grid' ? 'pt-2' : 'pt-2',
-          // Add extra horizontal padding when no sidebars are visible
-          !showFilters && 'px-4 sm:px-8 lg:px-12 xl:px-16',
         )}
+        style={{ paddingInline: 'var(--catalog-extra-gutter)' }}
       >
         {chips.length > 0 && (
           <div
@@ -1600,6 +1614,7 @@ function FiltersBar({
       <section
         style={{
           ...COMPACT_TOOLBAR_TOKENS,
+          paddingInline: 'calc(var(--page-gutter) + var(--catalog-extra-gutter))',
         }}
         className={cn(
           'relative bg-[color:var(--toolbar-bg)] backdrop-blur-xl ring-1 ring-inset ring-[color:var(--ring-idle)] after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-white/12 after:content-[""]',
@@ -1618,7 +1633,7 @@ function FiltersBar({
           </div>
         )}
 
-        <div className={cn(containerClass, "lg:pl-20 xl:pl-32")}>
+        <div className={containerClass}>
           <div className="flex items-center gap-3 py-3">
             {/* LEFT: Filters button + Chips */}
             <div className="flex items-center gap-2 flex-1 min-w-0">
