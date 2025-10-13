@@ -399,7 +399,7 @@ export const ProductCard = memo(function ProductCard({
                   Price unavailable
                 </div>
               ) : null}
-              <div className="flex w-full sm:w-auto sm:flex-shrink-0">
+              <div className="flex w-full">
                 <UnifiedCartControl
                   variant="catalog"
                   product={product}
