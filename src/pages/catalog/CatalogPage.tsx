@@ -1643,42 +1643,10 @@ function FiltersBar({
           className={containerClass}
           style={{ paddingInline: 'var(--catalog-extra-gutter)' }}
         >
-          <div className="flex items-center gap-3 py-3">
-            {/* LEFT: Filters button + Chips */}
-            <div className="flex items-center gap-2 flex-1 min-w-0">
-              {renderFiltersToggleButton('flex-none')}
-              
-              {/* Chip scroller */}
-              <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
-                {chips.map(chip => (
-                  <FilterChip
-                    key={chip.key}
-                    variant={chip.variant}
-                    hasPopover={chip.hasPopover}
-                    summary={chip.summary}
-                    onRemove={chip.onRemove}
-                    onEdit={chip.onEdit}
-                    className="flex-none"
-                  >
-                    {chip.label}
-                  </FilterChip>
-                ))}
-                
-                {activeCount > 0 && (
-                  <button
-                    type="button"
-                    onClick={clearAll}
-                    className="flex-none whitespace-nowrap text-sm font-medium text-destructive/80 hover:text-destructive transition-colors"
-                  >
-                    Clear all
-                  </button>
-                )}
-              </div>
-            </div>
-            
-            {/* CENTER: Search */}
-            <div className="flex-none w-full sm:w-[400px]">
-              <div className="relative">
+          <div className="flex flex-col gap-3 py-3">
+            <div className="flex items-center gap-3">
+              {/* LEFT: Search */}
+              <div className="relative flex min-w-[220px] flex-1">
                 <label className="sr-only" htmlFor="catalog-search">
                   Search products
                 </label>
@@ -1695,7 +1663,7 @@ function FiltersBar({
                       onKeyDown={handleSearchKeyDown}
                       onFocus={() => onLockChange?.(true)}
                       onBlur={() => onLockChange?.(false)}
-                      className="h-11 w-full rounded-[var(--ctrl-r,14px)] bg-white pl-12 pr-12 text-base font-semibold text-slate-900 placeholder:text-slate-500 ring-1 ring-inset ring-[color:var(--ring-idle)] shadow-[0_12px_38px_rgba(7,18,30,0.26)] transition duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent hover:ring-[color:var(--ring-hover)] motion-reduce:transition-none"
+                      className="h-11 w-full flex-1 rounded-[var(--ctrl-r,14px)] bg-white pl-12 pr-12 text-base font-semibold text-slate-900 placeholder:text-slate-500 ring-1 ring-inset ring-[color:var(--ring-idle)] shadow-[0_12px_38px_rgba(7,18,30,0.26)] transition duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent hover:ring-[color:var(--ring-hover)] motion-reduce:transition-none"
                     />
                   </TooltipTrigger>
                   <TooltipContent sideOffset={8}>Search (Ctrl/⌘+K)</TooltipContent>
@@ -1714,29 +1682,58 @@ function FiltersBar({
                   </button>
                 )}
               </div>
+
+              {/* RIGHT: Results + Filters + Sort + View */}
+              <div className="flex flex-none items-center gap-2.5">
+                {formattedTotal && (
+                  <div className="hidden lg:flex items-center text-sm font-semibold text-[color:var(--ink-hi)]">
+                    <span className="tabular-nums">{formattedTotal}</span>
+                  </div>
+                )}
+                {renderFiltersToggleButton('flex-none')}
+                <SortDropdown
+                  value={sortOrder}
+                  onChange={setSortOrder}
+                  onOpenChange={onLockChange}
+                  className="whitespace-nowrap"
+                />
+                <ViewToggle
+                  value={view}
+                  onChange={v => {
+                    rememberScroll(`catalog:${view}`)
+                    setView(v)
+                  }}
+                />
+              </div>
             </div>
-            
-            {/* RIGHT: Sort + View + Results count */}
-            <div className="flex flex-none items-center gap-2.5">
-              {formattedTotal && (
-                <div className="hidden xl:flex items-center text-sm font-semibold text-[color:var(--ink-hi)]">
-                  <span className="tabular-nums">{formattedTotal}</span>
-                </div>
-              )}
-              <SortDropdown
-                value={sortOrder}
-                onChange={setSortOrder}
-                onOpenChange={onLockChange}
-                className="whitespace-nowrap"
-              />
-              <ViewToggle
-                value={view}
-                onChange={v => {
-                  rememberScroll(`catalog:${view}`)
-                  setView(v)
-                }}
-              />
-            </div>
+
+            {(chips.length > 0 || activeCount > 0) && (
+              <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
+                {chips.map(chip => (
+                  <FilterChip
+                    key={chip.key}
+                    variant={chip.variant}
+                    hasPopover={chip.hasPopover}
+                    summary={chip.summary}
+                    onRemove={chip.onRemove}
+                    onEdit={chip.onEdit}
+                    className="flex-none"
+                  >
+                    {chip.label}
+                  </FilterChip>
+                ))}
+
+                {activeCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={clearAll}
+                    className="flex-none whitespace-nowrap text-sm font-medium text-destructive/80 hover:text-destructive transition-colors"
+                  >
+                    Clear all
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </section>
