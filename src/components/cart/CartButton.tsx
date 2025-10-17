@@ -69,6 +69,7 @@ export function CartButton({
   const isToolbarVariant = variant === 'toolbar'
 
   const buttonClassName = cn(
+    'max-w-full overflow-hidden',
     isToolbarVariant
       ? [
           navTextButtonClass,
@@ -121,8 +122,8 @@ export function CartButton({
       {!hideLabel && (
         <span
           className={cn(
-            'font-medium leading-tight tracking-tight transition-colors duration-150 ease-out',
-            isToolbarVariant ? 'truncate text-[inherit]' : size === 'sm' ? 'text-sm' : 'text-[0.95rem]',
+            'min-w-0 truncate font-medium leading-tight tracking-tight transition-colors duration-150 ease-out',
+            isToolbarVariant ? 'text-[inherit]' : size === 'sm' ? 'text-sm' : 'text-[0.95rem]',
             labelClassName
           )}
         >

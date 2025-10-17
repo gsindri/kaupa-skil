@@ -315,7 +315,7 @@ export function TopNavigation() {
             onClick={() => setSearchOpen(true)}
             title={t('navigation.search.title')}
             className={cn(
-              'group flex h-11 w-full min-w-[160px] items-center gap-3 rounded-full border border-white/10 bg-white/5',
+              'group flex h-11 w-full min-w-[160px] items-center gap-3 overflow-hidden rounded-full border border-white/10 bg-white/5',
               'px-4 text-left text-[14px] font-medium text-white/80',
               'transition-[background-color,border-color,transform] duration-fast ease-snap',
               'hover:border-white/20 hover:bg-white/10',
@@ -329,7 +329,7 @@ export function TopNavigation() {
             >
               <SearchSoft width={22} height={22} tone={0.18} />
             </span>
-            <span className="flex-1 truncate text-white/85">
+            <span className="flex-1 min-w-0 truncate text-white/85">
               {t('navigation.search.prompt')}
             </span>
             <kbd className="hidden rounded-md border border-white/15 bg-white/5 px-2 py-[3px] text-[11px] font-semibold uppercase tracking-[0.12em] text-white/70 sm:block">
