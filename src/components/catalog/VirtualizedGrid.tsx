@@ -333,7 +333,7 @@ export function VirtualizedGrid<T>({
   const normalizedScrollMargin = Number.isFinite(scrollMargin)
     ? scrollMargin
     : 0
-  const contentHeight = Math.max(0, totalHeight - normalizedScrollMargin)
+  const contentHeight = Math.max(0, totalHeight)
 
   return (
     <div
