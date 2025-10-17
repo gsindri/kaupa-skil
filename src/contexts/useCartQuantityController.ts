@@ -17,6 +17,7 @@ type Controller = {
   requestQuantity: (next: number, meta?: RequestQuantityMeta) => void
   remove: () => void
   optimisticQuantity: number
+  targetQuantity: number
   isPending: boolean
   pendingIncrement: number
   canIncrease: boolean
@@ -164,6 +165,7 @@ export function useCartQuantityController(supplierItemId: string, cartQuantity: 
     requestQuantity,
     remove,
     optimisticQuantity: optimistic,
+    targetQuantity: targetRef.current,
     isPending,
     pendingIncrement,
     canIncrease,
