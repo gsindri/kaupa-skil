@@ -136,14 +136,14 @@ export function AppLayout({
     const cols: string[] = []
     if (showSecondary) cols.push('var(--filters-w, 0px)')
     cols.push('minmax(0, 1fr)')
-    if (isDesktopCart) cols.push(cartWidth)
+    if (shouldShowCartRail) cols.push(cartWidth)
 
     return {
       '--filters-w': filtersWidth,
       gridTemplateColumns: cols.join(' '),
       transition: 'grid-template-columns var(--cart-rail-transition, 240ms)',
     }
-  }, [showSecondary, filtersWidth, isDesktopCart, cartWidth])
+  }, [showSecondary, filtersWidth, shouldShowCartRail, cartWidth])
 
   return (
     <div className="relative min-h-screen">
@@ -203,8 +203,9 @@ export function AppLayout({
             style={gridStyle}
           >
             <div
-              className="w-full"
+              className={clsx('page-grid__content min-w-0 w-full')}
               ref={contentRef}
+              style={{ gridColumn: showSecondary ? '2 / span 1' : undefined }}
             >
               {hasSecondary && (
               <aside
@@ -239,8 +240,8 @@ export function AppLayout({
               >
                 {children ?? <Outlet />}
               </main>
-              {isDesktopCart && <CartDrawer />}
             </div>
+            {shouldShowCartRail && isDesktopCart && <CartDrawer />}
             {!isDesktopCart && <CartDrawer />}
           </div>
         </div>
