@@ -56,7 +56,7 @@ export default function CartIcon({
       </svg>
 
       <span
-        className="cart-icon__badge pointer-events-none absolute -right-2.5 -top-2 flex items-center justify-center"
+        className="cart-icon__badge pointer-events-none absolute right-1 top-1 flex items-center justify-center"
         aria-hidden="true"
       >
         <svg className="cart-icon__badge-svg" width="28" height="28" viewBox="0 0 32 32">
