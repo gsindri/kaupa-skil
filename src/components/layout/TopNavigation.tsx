@@ -274,10 +274,13 @@ export function TopNavigation() {
       )}
       style={{
         height: 'clamp(44px, var(--toolbar-h, 56px), 72px)',
-        paddingInline: 'calc(var(--page-gutter) + var(--catalog-extra-gutter))',
+        paddingInline: 'var(--page-gutter)',
       }}
     >
-      <div className="mx-auto flex w-full max-w-[1600px] items-center gap-3">
+      <div
+        className="mx-auto flex w-full max-w-[1600px] items-center gap-3"
+        style={{ paddingInline: 'var(--catalog-extra-gutter)' }}
+      >
         <div className="flex min-w-0 items-center gap-3">
           <Link
             to="/"
