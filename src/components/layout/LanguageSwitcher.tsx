@@ -21,9 +21,16 @@ import {
 interface LanguageSwitcherProps {
   className?: string
   triggerClassName?: string
+  labelClassName?: string
+  caretClassName?: string
 }
 
-export function LanguageSwitcher({ className, triggerClassName }: LanguageSwitcherProps) {
+export function LanguageSwitcher({
+  className,
+  triggerClassName,
+  labelClassName,
+  caretClassName
+}: LanguageSwitcherProps) {
   const { language, setLanguage } = useLanguage()
   const { t } = useTranslation(undefined, { keyPrefix: 'common.language' })
   const options = React.useMemo(
@@ -62,8 +69,11 @@ export function LanguageSwitcher({ className, triggerClassName }: LanguageSwitch
               )}
               aria-hidden="true"
             />
-            <span className="truncate">{activeLanguage.label}</span>
-            <ChevronDown className={navTextCaretClass} aria-hidden="true" />
+            <span className={cn('truncate', labelClassName)}>{activeLanguage.label}</span>
+            <ChevronDown
+              className={cn(navTextCaretClass, caretClassName)}
+              aria-hidden="true"
+            />
             <span className={navTextButtonFocusRingClass} aria-hidden="true" />
           </button>
         </DropdownMenuTrigger>
