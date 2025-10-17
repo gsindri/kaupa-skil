@@ -136,14 +136,14 @@ export function AppLayout({
     const cols: string[] = []
     if (showSecondary) cols.push('var(--filters-w, 0px)')
     cols.push('minmax(0, 1fr)')
-    if (isDesktopCart) cols.push(cartWidth)
+    if (shouldShowCartRail) cols.push(cartWidth)
 
     return {
       '--filters-w': filtersWidth,
       gridTemplateColumns: cols.join(' '),
       transition: 'grid-template-columns var(--cart-rail-transition, 240ms)',
     }
-  }, [showSecondary, filtersWidth, isDesktopCart, cartWidth])
+  }, [showSecondary, filtersWidth, shouldShowCartRail, cartWidth])
 
   const contentGridColumn = useMemo(() => {
     if (showSecondary) return '2 / span 1'
@@ -213,6 +213,12 @@ export function AppLayout({
             data-has-secondary={showSecondary ? 'true' : undefined}
             style={gridStyle}
           >
+            <div
+              className={clsx('page-grid__content min-w-0 w-full')}
+              ref={contentRef}
+              style={{ gridColumn: showSecondary ? '2 / span 1' : undefined }}
+            >
+              {hasSecondary && (
             {hasSecondary && (
               <aside
                 className={cn(
@@ -255,6 +261,7 @@ export function AppLayout({
                 {children ?? <Outlet />}
               </main>
             </div>
+            {shouldShowCartRail && isDesktopCart && <CartDrawer />}
             {isDesktopCart && (
               <div
                 aria-hidden={!isDesktopCart}
