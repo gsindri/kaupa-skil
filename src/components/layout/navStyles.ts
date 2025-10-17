@@ -1,5 +1,5 @@
 export const navTextButtonClass = [
-  'group relative inline-flex h-11 min-h-[44px] min-w-[44px] items-center gap-2 rounded-full px-4 bg-transparent',
+  'group relative inline-flex min-h-[36px] h-9 items-center gap-2 rounded-full px-3',
   'text-[14px] font-medium text-[color:var(--ink-dim,#cfd7e4)]',
   'transition-[color,background-color,transform,outline,box-shadow] duration-150 ease-out',
   'outline-none hover:text-[color:var(--ink,#eaf0f7)] focus-visible:text-[color:var(--ink,#eaf0f7)]',

@@ -3,11 +3,6 @@ import { useTranslation } from '@/lib/i18n'
 import { useCart } from '@/contexts/useBasket'
 import { cn } from '@/lib/utils'
 import { CART_ROUTE } from '@/lib/featureFlags'
-import {
-  navTextButtonClass,
-  navTextButtonFocusRingClass,
-  navTextButtonPillClass,
-} from '@/components/layout/navStyles'
 import CartIcon from './CartIcon'
 
 type CartButtonVariant = 'toolbar' | 'ghost' | 'primary'
@@ -20,7 +15,6 @@ interface CartButtonProps {
   className?: string
   hideLabel?: boolean
   label?: string
-  labelClassName?: string
 }
 
 export function CartButton({
@@ -28,8 +22,7 @@ export function CartButton({
   size = 'default',
   className,
   hideLabel = false,
-  label,
-  labelClassName
+  label
 }: CartButtonProps) {
   const { items, isDrawerOpen, cartPulseSignal } = useCart()
   const { t } = useTranslation(undefined, { keyPrefix: 'cart.button' })
@@ -66,70 +59,46 @@ export function CartButton({
     window.location.assign(CART_ROUTE)
   }, [])
 
-  const isToolbarVariant = variant === 'toolbar'
-
-  const buttonClassName = cn(
-    isToolbarVariant
-      ? [
-          navTextButtonClass,
-          'text-left',
-          'text-[color:var(--ink-dim,#cfd7e4)] hover:text-[color:var(--ink,#eaf0f7)] focus-visible:text-[color:var(--ink,#eaf0f7)]',
-        ]
-      : [
-          'group inline-flex min-h-[38px] items-center rounded-none border-0 bg-transparent p-0 text-sm font-medium leading-tight text-[inherit] transition-opacity duration-150 ease-out hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent',
-          size === 'sm' ? 'gap-[3px]' : 'gap-[4px]',
-          size === 'sm' ? 'text-sm' : 'text-base',
-          variant === 'ghost' && 'text-foreground hover:text-foreground/80',
-          variant === 'primary' && 'text-primary hover:text-primary/80',
-          variant === 'toolbar' && 'text-[color:var(--ink-dim,#cfd7e4)] hover:text-white',
-        ],
-    className
-  )
-
-  const iconWrapperClass = cn(
-    'relative inline-flex items-center justify-center rounded-full transition-colors duration-200 ease-out',
-    isToolbarVariant
-      ? [
-          'size-11 min-w-[44px] rounded-full bg-white/5',
-          'group-hover:bg-white/10 group-focus-visible:bg-white/10',
-        ]
-      : [size === 'sm' ? 'h-9 w-9' : 'h-10 w-10'],
-    isPulsing && 'cart-button-pulse'
-  )
-
-  const iconClassName = cn(
-    'shrink-0 text-current',
-    isToolbarVariant ? 'h-6 w-6' : size === 'sm' ? 'h-8 w-8' : 'h-9 w-9'
-  )
-
-  return (
+  const iconSizeClass = size === 'sm' ? 'h-8 w-8' : 'h-9 w-9'
+  const trigger = (
     <button
       type="button"
       onClick={handleOpenCart}
-      className={buttonClassName}
+      className={cn(
+        'group inline-flex min-h-[38px] items-end rounded-none border-0 bg-transparent p-0 text-sm font-medium leading-tight text-[inherit] transition-opacity duration-150 ease-out hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent',
+        variant === 'toolbar' && 'text-[color:var(--ink-dim,#cfd7e4)] hover:text-white',
+        variant === 'ghost' && 'text-foreground hover:text-foreground/80',
+        variant === 'primary' && 'text-primary hover:text-primary/80',
+        size === 'sm' ? 'gap-[3px]' : 'gap-[4px]',
+        size === 'sm' ? 'text-sm' : 'text-base',
+        className
+      )}
       aria-label={ariaLabel}
       title={tooltipLabel}
     >
-      {isToolbarVariant ? <span className={navTextButtonPillClass} aria-hidden="true" /> : null}
-      <span className={iconWrapperClass}>
+      <span
+        className={cn(
+          'relative inline-flex items-center justify-center pb-px transition-transform duration-200 ease-out',
+          isPulsing && 'cart-button-pulse'
+        )}
+      >
         <CartIcon
           count={totalItems}
-          className={iconClassName}
+          className={cn('shrink-0 text-current', iconSizeClass)}
           title={t('iconTitle', { label: displayLabel, count: totalItems })}
         />
       </span>
       {!hideLabel && (
         <span
           className={cn(
-            'font-medium leading-tight tracking-tight transition-colors duration-150 ease-out',
-            isToolbarVariant ? 'truncate text-[inherit]' : size === 'sm' ? 'text-sm' : 'text-[0.95rem]',
-            labelClassName
+            'font-medium leading-none tracking-tight transition-colors duration-150 ease-out',
+            size === 'sm' ? 'text-sm' : 'text-[0.95rem]',
+            'translate-y-[2px]'
           )}
         >
           {displayLabel}
         </span>
       )}
-      {isToolbarVariant ? <span className={navTextButtonFocusRingClass} aria-hidden="true" /> : null}
       <span className="sr-only" aria-live="polite">
         {hasItems
           ? t('status.withItems', { count: totalItems })
@@ -137,6 +106,8 @@ export function CartButton({
       </span>
     </button>
   )
+
+  return trigger
 }
 
 export default CartButton
