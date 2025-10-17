@@ -200,6 +200,7 @@ export function AppLayout({
               hasSecondary && 'page-grid--with-secondary'
             )}
             data-has-secondary={showSecondary ? 'true' : undefined}
+            style={gridStyle}
           >
             <div
               className="w-full"
