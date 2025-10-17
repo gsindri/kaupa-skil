@@ -1614,7 +1614,7 @@ function FiltersBar({
       <section
         style={{
           ...COMPACT_TOOLBAR_TOKENS,
-          paddingInline: 'calc(var(--page-gutter) + var(--catalog-extra-gutter))',
+          paddingInline: 'var(--page-gutter)',
         }}
         className={cn(
           'relative bg-[color:var(--toolbar-bg)] backdrop-blur-xl ring-1 ring-inset ring-[color:var(--ring-idle)] after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-white/12 after:content-[""]',
@@ -1622,7 +1622,10 @@ function FiltersBar({
         )}
       >
         {error && (
-          <div className={cn(containerClass, 'py-3')}>
+          <div
+            className={cn(containerClass, 'py-3')}
+            style={{ paddingInline: 'var(--catalog-extra-gutter)' }}
+          >
             <Alert
               variant="destructive"
               className="rounded-[var(--ctrl-r,12px)] bg-white/12 text-[color:var(--ink)] ring-1 ring-inset ring-white/15 shadow-[0_16px_36px_rgba(3,10,22,0.45)] backdrop-blur-xl"
@@ -1633,7 +1636,10 @@ function FiltersBar({
           </div>
         )}
 
-        <div className={containerClass}>
+        <div
+          className={containerClass}
+          style={{ paddingInline: 'var(--catalog-extra-gutter)' }}
+        >
           <div className="flex items-center gap-3 py-3">
             {/* LEFT: Filters button + Chips */}
             <div className="flex items-center gap-2 flex-1 min-w-0">
