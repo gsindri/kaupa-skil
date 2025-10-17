@@ -213,12 +213,6 @@ export function AppLayout({
             data-has-secondary={showSecondary ? 'true' : undefined}
             style={gridStyle}
           >
-            <div
-              className={clsx('page-grid__content min-w-0 w-full')}
-              ref={contentRef}
-              style={{ gridColumn: showSecondary ? '2 / span 1' : undefined }}
-            >
-              {hasSecondary && (
             {hasSecondary && (
               <aside
                 className={cn(
@@ -244,7 +238,7 @@ export function AppLayout({
               </aside>
             )}
             <div
-              className="page-grid__content w-full"
+              className="page-grid__content min-w-0 w-full"
               ref={contentRef}
               style={{
                 gridColumn: contentGridColumn,
