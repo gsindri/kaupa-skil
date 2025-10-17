@@ -12,6 +12,7 @@ const controllerMock = {
   requestQuantity,
   remove,
   optimisticQuantity: 1,
+  targetQuantity: 1,
   isPending: false,
   pendingIncrement: 0,
   canIncrease: true,
@@ -65,6 +66,7 @@ describe('CatalogAddToCartButton', () => {
     requestQuantity.mockClear()
     remove.mockClear()
     controllerMock.optimisticQuantity = 1
+    controllerMock.targetQuantity = 1
     controllerMock.canIncrease = true
     useCartQuantityControllerMock.mockClear()
     useCartQuantityControllerMock.mockReturnValue(controllerMock)

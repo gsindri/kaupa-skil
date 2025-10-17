@@ -334,10 +334,7 @@ export function CatalogAddToCartButton({
     [product, rawSuppliers, supplierEntries],
   )
 
-  const currentQuantity =
-    controller.isPending || controller.optimisticQuantity > 0
-      ? controller.optimisticQuantity
-      : existingItem?.quantity ?? 0
+  const currentQuantity = controller.targetQuantity
 
   const primarySupplierName =
     existingItem?.supplierName ||

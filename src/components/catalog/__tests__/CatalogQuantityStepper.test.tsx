@@ -1,5 +1,5 @@
-import React from 'react'
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import React, { useCallback, useMemo, useState } from 'react'
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 
@@ -245,7 +245,7 @@ describe('CatalogQuantityStepper', () => {
 
       return (
         <CatalogQuantityStepper
-          quantity={controller.optimisticQuantity}
+          quantity={controller.targetQuantity}
           onChange={next =>
             controller.requestQuantity(next, {
               addItemPayload: payload,
@@ -315,7 +315,7 @@ describe('CatalogQuantityStepper', () => {
 
       return (
         <CatalogQuantityStepper
-          quantity={controller.optimisticQuantity}
+          quantity={controller.targetQuantity}
           onChange={next => controller.requestQuantity(next)}
           onRemove={controller.remove}
           itemLabel="Test product"
@@ -432,7 +432,7 @@ describe('CatalogQuantityStepper', () => {
 
       return (
         <CatalogQuantityStepper
-          quantity={controller.optimisticQuantity}
+          quantity={controller.targetQuantity}
           onChange={next =>
             controller.requestQuantity(next, {
               addItemPayload: payload,
@@ -483,5 +483,123 @@ describe('CatalogQuantityStepper', () => {
     )
 
     await screen.findByDisplayValue('3')
+  })
+
+  it('maintains the optimistic display across rapid increments while cart updates lag', async () => {
+    vi.useFakeTimers()
+
+    const addItem = vi.fn()
+    const updateQuantity = vi.fn()
+    const removeItem = vi.fn()
+
+    const payload: Omit<CartItem, 'quantity'> = {
+      id: 'item-1',
+      supplierId: 'supplier-1',
+      supplierName: 'Supplier',
+      itemName: 'Test product',
+      sku: 'sku-1',
+      packSize: '1',
+      packPrice: 100,
+      unitPriceExVat: 100,
+      unitPriceIncVat: 124,
+      vatRate: 0.24,
+      unit: 'each',
+      supplierItemId: 'item-1',
+      displayName: 'Test product',
+      packQty: 1,
+      image: null,
+    }
+
+    try {
+      function StepperHarness({ cartQuantity }: { cartQuantity: number }) {
+        const controller = useCartQuantityController('item-1', cartQuantity)
+
+        return (
+          <CatalogQuantityStepper
+            quantity={controller.targetQuantity}
+            onChange={next =>
+              controller.requestQuantity(next, {
+                addItemPayload: payload,
+              })
+            }
+            onRemove={controller.remove}
+            itemLabel="Test product"
+          />
+        )
+      }
+
+      function ProviderHarness() {
+        const [cartQuantity, setCartQuantity] = useState(0)
+
+        const scheduleCartQuantity = useCallback((next: number) => {
+          window.setTimeout(() => {
+            setCartQuantity(next)
+          }, 200)
+        }, [])
+
+        const basketValue = useMemo<React.ContextType<typeof BasketContext>>(
+          () => ({
+            items: [],
+            addItem: (item, quantity = 0, options) => {
+              addItem(item, quantity, options)
+              scheduleCartQuantity(quantity)
+            },
+            updateQuantity: (supplierItemId, quantity) => {
+              updateQuantity(supplierItemId, quantity)
+              scheduleCartQuantity(quantity)
+            },
+            removeItem: supplierItemId => {
+              removeItem(supplierItemId)
+              scheduleCartQuantity(0)
+            },
+            clearBasket: vi.fn(),
+            clearCart: vi.fn(),
+            restoreItems: vi.fn(),
+            getTotalItems: () => 0,
+            getTotalPrice: () => 0,
+            getMissingPriceCount: () => 0,
+            isDrawerOpen: false,
+            setIsDrawerOpen: vi.fn(),
+            isDrawerPinned: false,
+            setIsDrawerPinned: vi.fn() as React.Dispatch<React.SetStateAction<boolean>>,
+            cartPulseSignal: 0,
+          }),
+          [scheduleCartQuantity],
+        )
+
+        return (
+          <BasketContext.Provider value={basketValue}>
+            <StepperHarness cartQuantity={cartQuantity} />
+          </BasketContext.Provider>
+        )
+      }
+
+      render(<ProviderHarness />)
+
+      const incrementButton = screen.getByRole('button', {
+        name: /increase quantity of test product/i,
+      })
+      const quantityInput = screen.getByLabelText(/quantity for test product/i)
+
+      fireEvent.click(incrementButton)
+      expect(quantityInput).toHaveValue('1')
+      expect(addItem).toHaveBeenCalledTimes(1)
+
+      fireEvent.click(incrementButton)
+      expect(quantityInput).toHaveValue('2')
+      expect(updateQuantity).toHaveBeenCalledWith('item-1', 2)
+
+      fireEvent.click(incrementButton)
+      expect(quantityInput).toHaveValue('3')
+      expect(updateQuantity).toHaveBeenLastCalledWith('item-1', 3)
+
+      await act(async () => {
+        vi.advanceTimersByTime(600)
+      })
+
+      expect(quantityInput).toHaveValue('3')
+    } finally {
+      vi.useRealTimers()
+    }
   })
 })
