@@ -134,16 +134,16 @@ export function AppLayout({
 
   const gridStyle = useMemo<GridVars | undefined>(() => {
     const cols: string[] = []
-    if (hasSecondary) cols.push('var(--filters-w, 0px)')
+    if (showSecondary) cols.push('var(--filters-w, 0px)')
     cols.push('minmax(0, 1fr)')
     if (isDesktopCart) cols.push(cartWidth)
-    
+
     return {
       '--filters-w': filtersWidth,
       gridTemplateColumns: cols.join(' '),
       transition: 'grid-template-columns var(--cart-rail-transition, 240ms)',
     }
-  }, [hasSecondary, filtersWidth, isDesktopCart, cartWidth])
+  }, [showSecondary, filtersWidth, isDesktopCart, cartWidth])
 
   return (
     <div className="relative min-h-screen">
