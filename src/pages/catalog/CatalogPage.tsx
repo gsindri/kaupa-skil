@@ -1208,11 +1208,10 @@ export default function CatalogPage() {
         className={cn(
           'mx-auto w-full max-w-[1600px] space-y-5 pb-8',
           view === 'grid' ? 'pt-2' : 'pt-2',
-          showFilters && 'lg:pl-[clamp(280px,24vw,360px)]'
+          'lg:pl-[clamp(280px,24vw,360px)]'
         )}
         style={{ 
-          paddingInline: 'var(--catalog-extra-gutter)',
-          transition: 'padding-left 200ms ease-out'
+          paddingInline: 'var(--catalog-extra-gutter)'
         }}
       >
         {chips.length > 0 && (
