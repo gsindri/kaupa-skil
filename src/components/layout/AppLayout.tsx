@@ -145,6 +145,17 @@ export function AppLayout({
     }
   }, [showSecondary, filtersWidth, shouldShowCartRail, cartWidth])
 
+  const contentGridColumn = useMemo(() => {
+    if (showSecondary) return '2 / span 1'
+    if (isDesktopCart) return '1 / span 1'
+    return '1 / -1'
+  }, [showSecondary, isDesktopCart])
+
+  const cartGridColumn = useMemo(() => {
+    if (!isDesktopCart) return undefined
+    return showSecondary ? '3 / span 1' : '2 / span 1'
+  }, [isDesktopCart, showSecondary])
+
   return (
     <div className="relative min-h-screen">
       {/* Left rail - fixed position */}
@@ -208,6 +219,7 @@ export function AppLayout({
               style={{ gridColumn: showSecondary ? '2 / span 1' : undefined }}
             >
               {hasSecondary && (
+            {hasSecondary && (
               <aside
                 className={cn(
                   'hidden min-w-0 overflow-hidden lg:flex lg:flex-col',
@@ -217,19 +229,27 @@ export function AppLayout({
                   showSecondary && 'shadow-[8px_0_32px_rgba(0,0,0,0.12)]'
                 )}
                 style={{
-                  position: 'fixed',
-                  top: 0,
-                  left: 'var(--layout-rail, 72px)',
-                  width: showSecondary ? 'clamp(280px, 24vw, 360px)' : '0px',
-                  height: '100vh',
+                  gridColumn: '1 / span 1',
+                  position: 'sticky',
+                  top: 'var(--header-h, 56px)',
+                  height: 'calc(100vh - var(--header-h, 56px))',
+                  width: 'var(--filters-w, 0px)',
                   zIndex: 70,
                   background: 'hsl(var(--background))',
+                  display: showSecondary ? undefined : 'none',
                 }}
                 aria-hidden={!showSecondary}
               >
-                  {secondary}
-                </aside>
-              )}
+                {secondary}
+              </aside>
+            )}
+            <div
+              className="page-grid__content w-full"
+              ref={contentRef}
+              style={{
+                gridColumn: contentGridColumn,
+              }}
+            >
               <main
                 id="main-content"
                 className="w-full min-w-0"
@@ -242,6 +262,14 @@ export function AppLayout({
               </main>
             </div>
             {shouldShowCartRail && isDesktopCart && <CartDrawer />}
+            {isDesktopCart && (
+              <div
+                aria-hidden={!isDesktopCart}
+                style={{ gridColumn: cartGridColumn }}
+              >
+                <CartDrawer />
+              </div>
+            )}
             {!isDesktopCart && <CartDrawer />}
           </div>
         </div>
