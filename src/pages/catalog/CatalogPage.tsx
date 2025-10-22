@@ -1646,7 +1646,7 @@ function FiltersBar({
           <div className="flex flex-col gap-3 py-3">
             <div className="flex items-center gap-3">
               {/* LEFT: Search */}
-              <div className="relative flex min-w-[220px] flex-1 lg:flex-[0_1_70%]">
+              <div className="relative flex min-w-[220px] flex-1 lg:flex-none lg:basis-[55%] lg:max-w-[640px] xl:basis-[45%]">
                 <label className="sr-only" htmlFor="catalog-search">
                   Search products
                 </label>
