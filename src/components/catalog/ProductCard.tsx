@@ -400,21 +400,23 @@ export const ProductCard = memo(function ProductCard({
                 </div>
               ) : null}
               <div className="flex w-full justify-end">
-                <UnifiedCartControl
-                  variant="catalog"
-                  product={product}
-                  suppliers={addToCartSuppliers}
-                  className="ml-auto flex h-10 w-[78%] max-w-[220px] items-stretch justify-center"
-                  popoverSide="top"
-                  popoverAlign="end"
-                  addItemOptions={imageRef.current ? { animateElement: imageRef.current } : undefined}
-                  onActionButtonRef={setCartButtonRef}
-                  isLoading={isAdding}
-                  onAdd={supplierId => {
-                    onAdd?.(supplierId);
-                  }}
-                  buttonLabel={addButtonLabel}
-                />
+                <div className="flex w-full max-w-[220px] justify-end">
+                  <UnifiedCartControl
+                    variant="catalog"
+                    product={product}
+                    suppliers={addToCartSuppliers}
+                    className="flex h-10 w-[78%] max-w-[220px] items-stretch justify-center"
+                    popoverSide="top"
+                    popoverAlign="end"
+                    addItemOptions={imageRef.current ? { animateElement: imageRef.current } : undefined}
+                    onActionButtonRef={setCartButtonRef}
+                    isLoading={isAdding}
+                    onAdd={supplierId => {
+                      onAdd?.(supplierId);
+                    }}
+                    buttonLabel={addButtonLabel}
+                  />
+                </div>
               </div>
             </div>
           </div>
