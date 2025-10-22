@@ -1213,7 +1213,7 @@ export default function CatalogPage() {
               view === 'grid' ? 'pt-2' : 'pt-2'
             )}
             style={{
-              paddingInline: 'var(--catalog-extra-gutter)'
+              paddingInline: 'max(var(--catalog-extra-gutter), 1.5rem)'
             }}
           >
         {chips.length > 0 && (
@@ -1665,7 +1665,7 @@ function FiltersBar({
         {error && (
           <div
             className={cn(containerClass, 'py-3')}
-            style={{ paddingInline: 'var(--catalog-extra-gutter)' }}
+            style={{ paddingInline: 'max(var(--catalog-extra-gutter), 1.5rem)' }}
           >
             <Alert
               variant="destructive"
@@ -1679,12 +1679,20 @@ function FiltersBar({
 
         <div
           className={containerClass}
-          style={{ paddingInline: 'var(--catalog-extra-gutter)' }}
+          style={{ paddingInline: 'max(var(--catalog-extra-gutter), 1.5rem)' }}
         >
-          <div className="flex flex-col gap-3 py-3">
-            <div className="flex items-center gap-3">
-              {/* LEFT: Search */}
-              <div className="relative flex min-w-[220px] flex-1 lg:flex-none lg:basis-[55%] lg:max-w-[640px] xl:basis-[45%]">
+          <div className="catalog-toolbar flex flex-col gap-3 py-3">
+            <div className="catalog-toolbar-zones">
+              <div className="toolbar-left">
+                {renderFiltersToggleButton('flex-none')}
+                {formattedTotal && (
+                  <div className="hidden items-center text-sm font-semibold text-[color:var(--ink-hi)] lg:flex">
+                    <span className="tabular-nums">{formattedTotal}</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="toolbar-center relative flex min-w-[220px]">
                 <label className="sr-only" htmlFor="catalog-search">
                   Search products
                 </label>
@@ -1721,14 +1729,7 @@ function FiltersBar({
                 )}
               </div>
 
-              {/* RIGHT: Results + Filters + Sort + View */}
-              <div className="ml-auto flex flex-none items-center gap-4">
-                {formattedTotal && (
-                  <div className="hidden lg:flex items-center text-sm font-semibold text-[color:var(--ink-hi)]">
-                    <span className="tabular-nums">{formattedTotal}</span>
-                  </div>
-                )}
-                {renderFiltersToggleButton('flex-none')}
+              <div className="toolbar-right">
                 <SortDropdown
                   value={sortOrder}
                   onChange={setSortOrder}
