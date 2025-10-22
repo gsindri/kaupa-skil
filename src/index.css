@@ -86,6 +86,10 @@ body {
   padding: 0 !important;
 }
 
+.app-shell-content {
+  padding-right: var(--catalog-scroll-comp, 0px);
+}
+
 main > *:first-child {
   margin-top: 0;
 }
