@@ -45,6 +45,8 @@ export function CatalogQuantityStepper({
   const holdTimeoutRef = useRef<number>();
   const holdIntervalRef = useRef<number>();
   const latestQuantity = useRef(quantity);
+  const targetQuantityRef = useRef(quantity);
+  const pendingDirectionRef = useRef<StepDirection | null>(null);
   const [optimisticQuantity, setOptimisticQuantity] = useState(quantity);
   const [inputValue, setInputValue] = useState(() => `${quantity}`);
   const [isInputFocused, setIsInputFocused] = useState(false);
@@ -66,10 +68,27 @@ export function CatalogQuantityStepper({
   const allowRemoval = onRemove !== undefined || minQuantity <= 0;
 
   useEffect(() => {
-    latestQuantity.current = quantity;
-    setOptimisticQuantity(quantity);
+    const normalized = Number.isFinite(quantity) ? quantity : 0;
+    const pendingDirection = pendingDirectionRef.current;
+    const target = targetQuantityRef.current;
+
+    if (pendingDirection === "inc" && normalized < target) {
+      return;
+    }
+
+    if (pendingDirection === "dec" && normalized > target) {
+      return;
+    }
+
+    latestQuantity.current = normalized;
+    targetQuantityRef.current = normalized;
+    if (pendingDirection !== null) {
+      pendingDirectionRef.current = null;
+    }
+
+    setOptimisticQuantity(normalized);
     if (!isInputFocused) {
-      setInputValue(String(quantity));
+      setInputValue(String(normalized));
     }
   }, [isInputFocused, quantity]);
 
@@ -89,17 +108,28 @@ export function CatalogQuantityStepper({
   const applyQuantity = useCallback(
     (next: number) => {
       const boundedNext = clampToBounds(next);
+      const previous = latestQuantity.current;
       const allowRemoval = onRemove !== undefined || minQuantity <= 0;
 
       if (boundedNext <= 0) {
         if (!allowRemoval) {
           const fallback = Math.max(1, minQuantity);
           if (latestQuantity.current === fallback) {
+            targetQuantityRef.current = fallback;
+            pendingDirectionRef.current = null;
             setOptimisticQuantity(fallback);
             setInputValue(String(fallback));
             return;
           }
           latestQuantity.current = fallback;
+          targetQuantityRef.current = fallback;
+          if (fallback > previous) {
+            pendingDirectionRef.current = "inc";
+          } else if (fallback < previous) {
+            pendingDirectionRef.current = "dec";
+          } else {
+            pendingDirectionRef.current = null;
+          }
           setOptimisticQuantity(fallback);
           setInputValue(String(fallback));
           onChange(fallback);
@@ -107,6 +137,8 @@ export function CatalogQuantityStepper({
         }
 
         latestQuantity.current = 0;
+        targetQuantityRef.current = 0;
+        pendingDirectionRef.current = "dec";
         setOptimisticQuantity(0);
         setInputValue("0");
         if (onRemove) {
@@ -118,6 +150,14 @@ export function CatalogQuantityStepper({
       }
 
       latestQuantity.current = boundedNext;
+      targetQuantityRef.current = boundedNext;
+      if (boundedNext > previous) {
+        pendingDirectionRef.current = "inc";
+      } else if (boundedNext < previous) {
+        pendingDirectionRef.current = "dec";
+      } else {
+        pendingDirectionRef.current = null;
+      }
       setOptimisticQuantity(boundedNext);
       setInputValue(String(boundedNext));
       onChange(boundedNext);

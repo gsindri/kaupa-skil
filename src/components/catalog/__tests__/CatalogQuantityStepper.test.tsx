@@ -36,17 +36,6 @@ describe('CatalogQuantityStepper', () => {
 
     rerender(
       <CatalogQuantityStepper
-        quantity={3}
-        onChange={handleChange}
-        onRemove={handleRemove}
-        itemLabel="Test product"
-      />,
-    )
-
-    await screen.findByDisplayValue('3')
-
-    rerender(
-      <CatalogQuantityStepper
         quantity={2}
         onChange={handleChange}
         onRemove={handleRemove}
@@ -54,7 +43,7 @@ describe('CatalogQuantityStepper', () => {
       />,
     )
 
-    await screen.findByDisplayValue('2')
+    expect(screen.getByDisplayValue('3')).toBeInTheDocument()
 
     rerender(
       <CatalogQuantityStepper
@@ -106,7 +95,7 @@ describe('CatalogQuantityStepper', () => {
       />,
     )
 
-    await screen.findByDisplayValue('2')
+    expect(screen.getByDisplayValue('1')).toBeInTheDocument()
 
     rerender(
       <CatalogQuantityStepper
@@ -197,6 +186,58 @@ describe('CatalogQuantityStepper', () => {
     await user.type(input, '{enter}')
 
     expect(handleChange).toHaveBeenCalledWith(5)
+  })
+
+  it('does not visually regress when parent prop temporarily decreases', async () => {
+    const user = userEvent.setup()
+    const onChange = vi.fn()
+
+    function Wrapper() {
+      const [quantity, setQuantity] = useState(0)
+
+      return (
+        <>
+          <CatalogQuantityStepper
+            quantity={quantity}
+            onChange={value => {
+              onChange(value)
+            }}
+            itemLabel="Test product"
+          />
+          <button type="button" onClick={() => setQuantity(1)}>
+            Parent regress to 1
+          </button>
+          <button type="button" onClick={() => setQuantity(2)}>
+            Parent catch up to 2
+          </button>
+        </>
+      )
+    }
+
+    render(<Wrapper />)
+
+    const incrementButton = screen.getByRole('button', {
+      name: /increase quantity of test product/i,
+    })
+
+    await user.click(incrementButton)
+    await user.click(incrementButton)
+
+    expect(onChange).toHaveBeenCalledWith(1)
+    expect(onChange).toHaveBeenCalledWith(2)
+    expect(screen.getByDisplayValue('2')).toBeInTheDocument()
+
+    await user.click(
+      screen.getByRole('button', { name: /parent regress to 1/i }),
+    )
+
+    expect(screen.getByDisplayValue('2')).toBeInTheDocument()
+
+    await user.click(
+      screen.getByRole('button', { name: /parent catch up to 2/i }),
+    )
+
+    expect(screen.getByDisplayValue('2')).toBeInTheDocument()
   })
 
   it('updates the cart immediately when incremented rapidly', () => {

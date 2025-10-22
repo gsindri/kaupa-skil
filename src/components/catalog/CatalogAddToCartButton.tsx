@@ -334,7 +334,15 @@ export function CatalogAddToCartButton({
     [product, rawSuppliers, supplierEntries],
   )
 
-  const currentQuantity = controller.targetQuantity
+  const optimisticQuantity =
+    typeof controller.optimisticQuantity === 'number'
+      ? controller.optimisticQuantity
+      : undefined
+  const committedQuantity = existingItem?.quantity ?? 0
+  const currentQuantity = optimisticQuantity ?? committedQuantity
+  const canIncreaseQuantity =
+    (maxQuantity === undefined || currentQuantity < maxQuantity) &&
+    controller.canIncrease
 
   const primarySupplierName =
     existingItem?.supplierName ||
@@ -617,10 +625,7 @@ export function CatalogAddToCartButton({
           itemLabel={`${product.name} from ${primarySupplierName}`}
           minQuantity={0}
           maxQuantity={maxQuantity}
-          canIncrease={
-            (maxQuantity === undefined || currentQuantity < maxQuantity) &&
-            controller.canIncrease
-          }
+          canIncrease={canIncreaseQuantity}
           size={size}
         />
         {showAddedFeedback && (
