@@ -1706,7 +1706,7 @@ function FiltersBar({
               </div>
 
               {/* RIGHT: Results + Filters + Sort + View */}
-              <div className="flex flex-none items-center gap-2.5">
+              <div className="ml-auto flex flex-none items-center gap-4">
                 {formattedTotal && (
                   <div className="hidden lg:flex items-center text-sm font-semibold text-[color:var(--ink-hi)]">
                     <span className="tabular-nums">{formattedTotal}</span>
