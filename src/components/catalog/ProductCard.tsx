@@ -399,24 +399,22 @@ export const ProductCard = memo(function ProductCard({
                   Price unavailable
                 </div>
               ) : null}
-              <div className="flex h-full w-full items-center justify-center">
-                <div className="flex w-full max-w-[220px] justify-center">
-                  <UnifiedCartControl
-                    variant="catalog"
-                    product={product}
-                    suppliers={addToCartSuppliers}
-                    className="flex h-10 w-[78%] max-w-[220px] items-stretch justify-center"
-                    popoverSide="top"
-                    popoverAlign="end"
-                    addItemOptions={imageRef.current ? { animateElement: imageRef.current } : undefined}
-                    onActionButtonRef={setCartButtonRef}
-                    isLoading={isAdding}
-                    onAdd={supplierId => {
-                      onAdd?.(supplierId);
-                    }}
-                    buttonLabel={addButtonLabel}
-                  />
-                </div>
+              <div className="flex w-full justify-end">
+                <UnifiedCartControl
+                  variant="catalog"
+                  product={product}
+                  suppliers={addToCartSuppliers}
+                  className="flex h-10 w-full max-w-[220px] items-stretch justify-center sm:w-auto"
+                  popoverSide="top"
+                  popoverAlign="end"
+                  addItemOptions={imageRef.current ? { animateElement: imageRef.current } : undefined}
+                  onActionButtonRef={setCartButtonRef}
+                  isLoading={isAdding}
+                  onAdd={supplierId => {
+                    onAdd?.(supplierId);
+                  }}
+                  buttonLabel={addButtonLabel}
+                />
               </div>
             </div>
           </div>
