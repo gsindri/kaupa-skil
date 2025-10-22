@@ -29,7 +29,7 @@ import { AnalyticsTracker } from '@/components/quick/AnalyticsTrackerUtils'
 import { ViewToggle } from '@/components/place-order/ViewToggle'
 
 import AppLayout from '@/components/layout/AppLayout'
-import { Sheet, SheetContent } from '@/components/ui/sheet'
+import { Sheet, SheetContent, SheetPortal } from '@/components/ui/sheet'
 import { useCatalogFilters, SortOrder } from '@/state/catalogFiltersStore'
 import { useSearchParams } from 'react-router-dom'
 import { MagnifyingGlass, FunnelSimple, XCircle } from '@phosphor-icons/react'
@@ -1367,9 +1367,25 @@ export default function CatalogPage() {
         )}
       </div>
         </AppLayout>
+        {isDesktop && showFilters && (
+          <SheetPortal>
+            <div
+              role="presentation"
+              data-state="open"
+              className={cn(
+                'fixed inset-0 bg-[color:var(--overlay)] backdrop-blur-sm',
+                'data-[state=open]:animate-in data-[state=closed]:animate-out',
+                'data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0',
+                'z-[calc(var(--z-drawer,80)-1)]'
+              )}
+              onClick={closeFilters}
+            />
+          </SheetPortal>
+        )}
         {isDesktop && (
           <SheetContent
             side="left"
+            hideOverlay
             className="hidden h-full p-0 lg:flex"
             style={{ left: 'var(--layout-rail,72px)', width: 'clamp(280px, 24vw, 360px)' }}
           >
