@@ -299,6 +299,14 @@ export function TopNavigation() {
         </div>
 
         <div className="flex min-w-0 flex-1 items-center justify-center gap-3">
+          <span
+            className={cn(
+              'relative hidden max-w-[220px] items-center truncate text-left text-[13px] font-medium text-white/80 md:inline-flex',
+              'before:pointer-events-none before:absolute before:-right-3 before:top-1/2 before:-translate-y-1/2 before:border-y-[6px] before:border-l-[6px] before:border-y-transparent before:border-l-white/20'
+            )}
+          >
+            {t('navigation.search.prompt')}
+          </span>
           <button
             ref={searchTriggerRef}
             type="button"
@@ -317,18 +325,14 @@ export function TopNavigation() {
             onClick={() => setSearchOpen(true)}
             title={t('navigation.search.title')}
             className={cn(
-              'group inline-flex h-11 min-w-0 items-center gap-3 rounded-full border border-white/10 bg-white/5',
-              'pl-4 pr-3',
-              'text-[13px] font-medium text-white/80',
+              'group inline-flex size-11 items-center justify-center rounded-full border border-white/10 bg-white/5',
+              'text-white/80',
               'transition-[background-color,border-color,transform] duration-fast ease-snap',
               'hover:border-white/20 hover:bg-white/10 hover:text-white/90',
               'focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-1 focus-visible:ring-offset-transparent',
               'motion-safe:hover:-translate-y-[1px] motion-reduce:transform-none motion-reduce:hover:translate-y-0'
             )}
           >
-            <span className="max-w-[220px] truncate text-left">
-              {t('navigation.search.prompt')}
-            </span>
             <span
               aria-hidden="true"
               className="flex size-7 items-center justify-center rounded-full bg-white/10 text-[color:var(--ink-dim,#cfd7e4)] transition-colors duration-fast ease-snap group-hover:bg-white/15 group-hover:text-[color:var(--ink,#eaf0f7)]"
