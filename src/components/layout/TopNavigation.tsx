@@ -84,6 +84,8 @@ export function TopNavigation() {
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [platformShortcut, setPlatformShortcut] = useState<'⌘ + K' | 'Ctrl + K'>('Ctrl + K')
   const searchShortcutDescriptionId = useId()
+  const searchPromptDescriptionId = useId()
+  const searchAriaDescription = `${searchShortcutDescriptionId} ${searchPromptDescriptionId}`.trim()
   const searchOpenedByKeyboardRef = useRef(false)
   const accountOpenedByKeyboardRef = useRef(false)
   const accountTriggerRef = useRef<HTMLButtonElement>(null)
@@ -296,13 +298,25 @@ export function TopNavigation() {
           <TenantSwitcher />
         </div>
 
-        <div className="flex min-w-0 flex-1 items-center">
+        <div className="flex min-w-0 flex-1 items-center justify-center gap-3">
+          <div
+            id={searchPromptDescriptionId}
+            className={cn(
+              'sr-only sm:not-sr-only',
+              'sm:relative sm:inline-flex sm:shrink-0 sm:items-center sm:gap-2 sm:whitespace-nowrap sm:rounded-full sm:border sm:border-white/10 sm:bg-white/5 sm:px-3 sm:py-1 sm:text-[13px] sm:font-medium sm:text-white/80 sm:shadow-[0_1px_2px_rgba(0,0,0,0.2)]',
+              'sm:before:pointer-events-none sm:before:absolute sm:before:-right-1 sm:before:top-1/2 sm:before:h-2.5 sm:before:w-2.5 sm:before:-translate-y-1/2 sm:before:rotate-45 sm:before:rounded-[2px] sm:before:border sm:before:border-white/10 sm:before:bg-white/5 sm:before:shadow-[0_1px_2px_rgba(0,0,0,0.2)] sm:before:content-[""]'
+            )}
+          >
+            <span className="max-w-[220px] truncate text-left">
+              {t('navigation.search.prompt')}
+            </span>
+          </div>
           <button
             ref={searchTriggerRef}
             type="button"
             aria-haspopup="dialog"
             aria-keyshortcuts="/ meta+k control+k"
-            aria-describedby={searchShortcutDescriptionId}
+            aria-describedby={searchAriaDescription}
             aria-label={t('navigation.search.open')}
             onPointerDown={() => {
               searchOpenedByKeyboardRef.current = false
@@ -315,22 +329,20 @@ export function TopNavigation() {
             onClick={() => setSearchOpen(true)}
             title={t('navigation.search.title')}
             className={cn(
-              'group flex h-11 w-full min-w-[160px] items-center gap-3 overflow-hidden rounded-full border border-white/10 bg-white/5',
-              'px-4 text-left text-[14px] font-medium text-white/80',
+              'group inline-flex h-11 items-center gap-3 rounded-full border border-white/10 bg-white/5',
+              'px-4',
               'transition-[background-color,border-color,transform] duration-fast ease-snap',
               'hover:border-white/20 hover:bg-white/10',
               'focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-1 focus-visible:ring-offset-transparent',
               'motion-safe:hover:-translate-y-[1px] motion-reduce:transform-none motion-reduce:hover:translate-y-0'
             )}
           >
+            <span className="sr-only">{t('navigation.search.button')}</span>
             <span
               aria-hidden="true"
               className="flex size-7 items-center justify-center rounded-full bg-white/10 text-[color:var(--ink-dim,#cfd7e4)] transition-colors duration-fast ease-snap group-hover:bg-white/15 group-hover:text-[color:var(--ink,#eaf0f7)]"
             >
               <SearchSoft width={22} height={22} tone={0.18} />
-            </span>
-            <span className="flex-1 min-w-0 truncate text-white/85">
-              {t('navigation.search.prompt')}
             </span>
             <kbd className="hidden rounded-md border border-white/15 bg-white/5 px-2 py-[3px] text-[11px] font-semibold uppercase tracking-[0.12em] text-white/70 sm:block">
               {platformShortcut}
