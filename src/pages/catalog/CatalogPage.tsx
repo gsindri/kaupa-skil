@@ -29,6 +29,7 @@ import { AnalyticsTracker } from '@/components/quick/AnalyticsTrackerUtils'
 import { ViewToggle } from '@/components/place-order/ViewToggle'
 
 import AppLayout from '@/components/layout/AppLayout'
+import { Sheet, SheetContent } from '@/components/ui/sheet'
 import { useCatalogFilters, SortOrder } from '@/state/catalogFiltersStore'
 import { useSearchParams } from 'react-router-dom'
 import { MagnifyingGlass, FunnelSimple, XCircle } from '@phosphor-icons/react'
@@ -548,6 +549,7 @@ export default function CatalogPage() {
     }
     return false
   })
+  const isDesktop = useMediaQuery('(min-width: 1024px)')
   useEffect(() => {
     if (typeof document === 'undefined') return undefined
     const className = 'catalog-gutters-expanded'
@@ -596,6 +598,9 @@ export default function CatalogPage() {
   const [bannerDismissed, setBannerDismissed] = useState(false)
   const headerRef = useRef<HTMLDivElement>(null)
   const filterButtonRef = useRef<HTMLButtonElement | null>(null)
+  const focusFilterToggleButton = useCallback(() => {
+    filterButtonRef.current?.focus()
+  }, [filterButtonRef])
   const [scrolled, setScrolled] = useState(false)
 
   useEffect(() => {
@@ -1077,11 +1082,19 @@ export default function CatalogPage() {
   const closeFilters = useCallback(() => {
     setShowFilters(false)
     setFocusedFacet(null)
-    // Return focus to filter button if it exists
-    if (filterButtonRef.current) {
-      filterButtonRef.current.focus()
-    }
-  }, [setFocusedFacet, setShowFilters])
+    focusFilterToggleButton()
+  }, [setFocusedFacet, setShowFilters, focusFilterToggleButton])
+
+  const handleSheetOpenChange = useCallback(
+    (nextOpen: boolean) => {
+      if (nextOpen) {
+        setShowFilters(true)
+        return
+      }
+      closeFilters()
+    },
+    [closeFilters, setShowFilters],
+  )
 
   // Keyboard shortcuts: Alt+F to toggle, Escape to close
   useEffect(() => {
@@ -1162,58 +1175,47 @@ export default function CatalogPage() {
 
   return (
     <>
-      <AppLayout
-      headerRef={headerRef}
-      header={
-        <FiltersBar
-          filters={filters}
-          setFilters={setFilters}
-          onlyWithPrice={onlyWithPrice}
-          setOnlyWithPrice={setOnlyWithPrice}
-          inStock={inStock}
-          setInStock={setInStock}
-          onSpecial={onSpecial}
-          setOnSpecial={setOnSpecial}
-          mySuppliers={mySuppliers}
-          setMySuppliers={setMySuppliers}
-          sortOrder={sortOrder}
-          setSortOrder={setSortOrder}
-          view={view}
-          setView={setView}
-          error={error}
-          showFilters={showFilters}
-          setShowFilters={setShowFilters}
-          focusedFacet={focusedFacet}
-          setFocusedFacet={setFocusedFacet}
-          total={total}
-          scrolled={scrolled}
-          chips={chips}
-          filterButtonRef={filterButtonRef}
-        />
-      }
-      secondary={
-        <div id="catalog-filters-panel" className="hidden h-full lg:flex">
-          <CatalogFiltersPanel
-            filters={filters}
-            onChange={setFilters}
-            focusedFacet={focusedFacet}
-            onClearFilters={clearAllFilters}
-            chips={chips}
-          />
-        </div>
-      }
-      panelOpen={showFilters}
-    >
-      <div
-        className={cn(
-          'mx-auto w-full max-w-[1600px] space-y-5 pb-8',
-          view === 'grid' ? 'pt-2' : 'pt-2',
-          'lg:pl-[clamp(280px,24vw,360px)]'
-        )}
-        style={{ 
-          paddingInline: 'var(--catalog-extra-gutter)'
-        }}
-      >
+      <Sheet open={isDesktop && showFilters} onOpenChange={handleSheetOpenChange}>
+        <AppLayout
+          headerRef={headerRef}
+          header={
+            <FiltersBar
+              filters={filters}
+              setFilters={setFilters}
+              onlyWithPrice={onlyWithPrice}
+              setOnlyWithPrice={setOnlyWithPrice}
+              inStock={inStock}
+              setInStock={setInStock}
+              onSpecial={onSpecial}
+              setOnSpecial={setOnSpecial}
+              mySuppliers={mySuppliers}
+              setMySuppliers={setMySuppliers}
+              sortOrder={sortOrder}
+              setSortOrder={setSortOrder}
+              view={view}
+              setView={setView}
+              error={error}
+              showFilters={showFilters}
+              setShowFilters={setShowFilters}
+              focusedFacet={focusedFacet}
+              setFocusedFacet={setFocusedFacet}
+              total={total}
+              scrolled={scrolled}
+              chips={chips}
+              filterButtonRef={filterButtonRef}
+              focusFilterToggleButton={focusFilterToggleButton}
+            />
+          }
+        >
+          <div
+            className={cn(
+              'mx-auto w-full max-w-[1600px] space-y-5 pb-8',
+              view === 'grid' ? 'pt-2' : 'pt-2'
+            )}
+            style={{
+              paddingInline: 'var(--catalog-extra-gutter)'
+            }}
+          >
         {chips.length > 0 && (
           <div
             className="lg:hidden"
@@ -1364,9 +1366,27 @@ export default function CatalogPage() {
           </div>
         )}
       </div>
-      </AppLayout>
+        </AppLayout>
+        {isDesktop && (
+          <SheetContent
+            side="left"
+            className="hidden h-full p-0 lg:flex"
+            style={{ left: 'var(--layout-rail,72px)', width: 'clamp(280px, 24vw, 360px)' }}
+          >
+            <div id="catalog-filters-panel" className="flex h-full w-full flex-col overflow-hidden">
+              <CatalogFiltersPanel
+                filters={filters}
+                onChange={setFilters}
+                focusedFacet={focusedFacet}
+                onClearFilters={clearAllFilters}
+                chips={chips}
+              />
+            </div>
+          </SheetContent>
+        )}
+      </Sheet>
       <MobileFiltersDrawer
-        open={showFilters}
+        open={showFilters && !isDesktop}
         onClose={closeFilters}
         filters={filters}
         onChange={setFilters}
@@ -1403,6 +1423,7 @@ interface FiltersBarProps {
   scrolled: boolean
   chips: DerivedChip[]
   filterButtonRef?: React.RefObject<HTMLButtonElement>
+  focusFilterToggleButton: () => void
 }
 
 function FiltersBar({
@@ -1430,6 +1451,7 @@ function FiltersBar({
   scrolled,
   chips,
   filterButtonRef,
+  focusFilterToggleButton,
 }: FiltersBarProps) {
   const containerClass = 'mx-auto w-full max-w-[1600px]'
   const { search: _search, ...facetFilters } = filters
@@ -1512,10 +1534,10 @@ function FiltersBar({
   const previousShowFiltersRef = useRef(showFilters)
   useEffect(() => {
     if (previousShowFiltersRef.current && !showFilters) {
-      filterButtonRef.current?.focus()
+      focusFilterToggleButton()
     }
     previousShowFiltersRef.current = showFilters
-  }, [showFilters, filterButtonRef])
+  }, [showFilters, focusFilterToggleButton])
 
   const toggleFilters = useCallback(() => {
     const next = !showFilters
