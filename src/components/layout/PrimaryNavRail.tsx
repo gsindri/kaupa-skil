@@ -41,7 +41,7 @@ export function PrimaryNavRail() {
     >
       <nav className="flex flex-1 flex-col gap-2 px-2 pt-[var(--sidebar-offset)]">
         {items.map(({ to, Icon, label }) => {
-          const active = pathname === to || (to !== '/catalog' && pathname.startsWith(to + '/'))
+          const active = pathname === to
           const isHovered = hoveredItem === to
           return (
             <Link
