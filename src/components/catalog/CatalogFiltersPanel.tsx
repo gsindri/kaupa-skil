@@ -423,7 +423,7 @@ export function CatalogFiltersPanel({
   const panelScrollWrapperClass = 'relative flex-1 overflow-hidden'
 
   const panelBodyClass = cn(
-    'filter-scroll h-full space-y-6 overflow-y-auto pb-8 bg-[color:var(--filters-bg)]',
+    'filter-scroll h-full space-y-6 overflow-y-auto pb-4 bg-[color:var(--filters-bg)]',
     variant === 'desktop' ? 'px-5 pt-5' : 'px-4 pt-4',
     '[&::-webkit-scrollbar]:w-[6px]',
     '[&::-webkit-scrollbar-thumb]:rounded-full',
@@ -440,6 +440,61 @@ export function CatalogFiltersPanel({
     () => ({ scrollbarColor: 'var(--filters-scroll-thumb) var(--filters-scroll-track)' }),
     [],
   )
+
+  const panelBodyRef = useRef<HTMLDivElement | null>(null)
+  const [showTopShadow, setShowTopShadow] = useState(false)
+  const [showBottomShadow, setShowBottomShadow] = useState(false)
+
+  const updateScrollShadows = useCallback(() => {
+    const node = panelBodyRef.current
+    if (!node) return
+
+    const { scrollTop, scrollHeight, clientHeight } = node
+    const canScroll = scrollHeight - clientHeight > 1
+    const nextTop = canScroll && scrollTop > 1
+    const nextBottom = canScroll && scrollTop + clientHeight < scrollHeight - 1
+
+    setShowTopShadow(prev => (prev === nextTop ? prev : nextTop))
+    setShowBottomShadow(prev => (prev === nextBottom ? prev : nextBottom))
+  }, [])
+
+  useEffect(() => {
+    const node = panelBodyRef.current
+    if (!node) return
+
+    const handleScroll = () => updateScrollShadows()
+    node.addEventListener('scroll', handleScroll, { passive: true })
+
+    let resizeObserver: ResizeObserver | undefined
+    if (typeof window !== 'undefined' && 'ResizeObserver' in window) {
+      resizeObserver = new ResizeObserver(() => updateScrollShadows())
+      resizeObserver.observe(node)
+      const content = node.firstElementChild
+      if (content && content instanceof HTMLElement) {
+        resizeObserver.observe(content)
+      }
+    }
+
+    updateScrollShadows()
+
+    return () => {
+      node.removeEventListener('scroll', handleScroll)
+      resizeObserver?.disconnect()
+    }
+  }, [updateScrollShadows])
+
+  useEffect(() => {
+    updateScrollShadows()
+  }, [
+    updateScrollShadows,
+    chips.length,
+    data?.brands?.length,
+    data?.categories?.length,
+    data?.suppliers?.length,
+    filters,
+    variant,
+    isLoading,
+  ])
 
   return (
     <div
@@ -544,9 +599,21 @@ export function CatalogFiltersPanel({
 
       {/* Scrollable content area - Tier-2 Facets */}
       <div className={panelScrollWrapperClass}>
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-3 shadow-[inset_0_12px_12px_-12px_rgba(0,0,0,0.8)]" />
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-3 shadow-[inset_0_-12px_12px_-12px_rgba(0,0,0,0.8)]" />
-        <div className={panelBodyClass} style={panelScrollStyle}>
+        <div
+          aria-hidden="true"
+          className={cn(
+            'pointer-events-none absolute inset-x-0 top-0 h-3 shadow-[inset_0_12px_12px_-12px_rgba(0,0,0,0.8)] transition-opacity duration-200 ease-out',
+            showTopShadow ? 'opacity-100' : 'opacity-0'
+          )}
+        />
+        <div
+          aria-hidden="true"
+          className={cn(
+            'pointer-events-none absolute inset-x-0 bottom-0 h-3 shadow-[inset_0_-12px_12px_-12px_rgba(0,0,0,0.8)] transition-opacity duration-200 ease-out',
+            showBottomShadow ? 'opacity-100' : 'opacity-0'
+          )}
+        />
+        <div ref={panelBodyRef} className={panelBodyClass} style={panelScrollStyle}>
           <FilterPresets className="mb-3" />
           <div className="my-3 border-t border-[color:var(--filters-border)]/60" />
 
