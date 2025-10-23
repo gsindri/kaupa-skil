@@ -82,7 +82,6 @@ export function CartButton({
           size === 'sm' ? 'text-sm' : 'text-base',
           variant === 'ghost' && 'text-foreground hover:text-foreground/80',
           variant === 'primary' && 'text-primary hover:text-primary/80',
-          variant === 'toolbar' && 'text-[color:var(--ink-dim,#cfd7e4)] hover:text-white',
         ],
     className
   )

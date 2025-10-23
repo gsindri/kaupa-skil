@@ -431,7 +431,7 @@ export function CatalogFiltersPanel({
       cn(
         'filter-scroll h-full space-y-6 overflow-y-auto bg-[color:var(--filters-bg)]',
         variant === 'desktop' ? 'px-5 pt-5' : 'px-4 pt-4',
-        showBottomShadow ? 'pb-4' : 'pb-0',
+        'pb-4',
         '[&::-webkit-scrollbar]:w-[6px]',
         '[&::-webkit-scrollbar-thumb]:rounded-full',
         '[&::-webkit-scrollbar-thumb]:bg-[rgba(255,255,255,0.15)]',
@@ -821,13 +821,6 @@ export function CatalogFiltersPanel({
           {/* Advanced Filters Section */}
           <AdvancedFilters />
         </section>
-
-        {showBottomShadow && (
-          <div
-            aria-hidden="true"
-            className="pointer-events-none h-4 shrink-0 bg-gradient-to-b from-transparent to-[color:var(--filters-bg)]"
-          />
-        )}
       </div>
     </div>
   </div>
