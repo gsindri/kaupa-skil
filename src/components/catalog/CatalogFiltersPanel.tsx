@@ -430,8 +430,7 @@ export function CatalogFiltersPanel({
     () =>
       cn(
         'filter-scroll h-full space-y-6 overflow-y-auto bg-[color:var(--filters-bg)]',
-        variant === 'desktop' ? 'px-5 pt-5' : 'px-4 pt-4',
-        'pb-4',
+        variant === 'desktop' ? 'px-5 pt-[9px] pb-[9px]' : 'px-4 pt-2 pb-2',
         '[&::-webkit-scrollbar]:w-[6px]',
         '[&::-webkit-scrollbar-thumb]:rounded-full',
         '[&::-webkit-scrollbar-thumb]:bg-[rgba(255,255,255,0.15)]',
