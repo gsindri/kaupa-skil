@@ -611,13 +611,6 @@ export function CatalogFiltersPanel({
             showTopShadow ? 'opacity-100' : 'opacity-0'
           )}
         />
-        <div
-          aria-hidden="true"
-          className={cn(
-            'pointer-events-none absolute inset-x-0 bottom-0 h-3 shadow-[inset_0_-12px_12px_-12px_rgba(0,0,0,0.8)] transition-opacity duration-200 ease-out',
-            showBottomShadow ? 'opacity-100' : 'opacity-0'
-          )}
-        />
         <div ref={panelBodyRef} className={panelBodyClass} style={panelScrollStyle}>
           <FilterPresets className="mb-3" />
           <div className="my-3 border-t border-[color:var(--filters-border)]/60" />
