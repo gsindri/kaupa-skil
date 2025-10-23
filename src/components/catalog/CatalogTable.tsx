@@ -495,7 +495,7 @@ export function CatalogTable({ products, sort, onSort }: CatalogTableProps) {
   return (
     <div
       ref={containerRef}
-      className="overflow-hidden rounded-2xl border border-border/60 bg-card text-foreground shadow-sm dark:border-white/15 dark:bg-[rgba(13,19,32,0.86)]"
+      className="mt-8 overflow-hidden rounded-2xl border border-border/60 bg-card text-foreground shadow-sm dark:border-white/15 dark:bg-[rgba(13,19,32,0.86)]"
     >
       <Table className="min-w-full text-[13px] text-muted-foreground">
         <TableHeader className="sticky top-0 z-10 bg-card/85 backdrop-blur-sm supports-[backdrop-filter]:bg-card/70">
