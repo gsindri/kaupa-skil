@@ -14,13 +14,13 @@ import PriceIcon from '@/icons/price.svg?react'
 import DiscoverIcon from '@/icons/discover.svg?react'
 
 const items = [
-  { to: '/', Icon: DashboardIcon, label: 'Dashboard' },
+  { to: '/dashboard', Icon: DashboardIcon, label: 'Dashboard' },
   { to: '/catalog', Icon: CatalogIcon, label: 'Catalog' },
-  { to: '/compare', Icon: CompareIcon, label: 'Compare' },
-  { to: '/suppliers', Icon: SuppliersIcon, label: 'Suppliers' },
-  { to: '/pantry', Icon: PantryIcon, label: 'Pantry' },
-  { to: '/price-history', Icon: PriceIcon, label: 'Price' },
-  { to: '/discovery', Icon: DiscoverIcon, label: 'Discover' },
+  { to: '/dashboard/compare', Icon: CompareIcon, label: 'Compare' },
+  { to: '/dashboard/suppliers', Icon: SuppliersIcon, label: 'Suppliers' },
+  { to: '/dashboard/pantry', Icon: PantryIcon, label: 'Pantry' },
+  { to: '/dashboard/price-history', Icon: PriceIcon, label: 'Price' },
+  { to: '/dashboard/discovery', Icon: DiscoverIcon, label: 'Discover' },
 ]
 
 const focusRingClass =
