@@ -30,27 +30,30 @@ export default function LandingPage() {
       
       <main className="mx-auto max-w-[1200px] px-6">
         {/* Hero Section */}
-        <section className="py-20 md:py-28 text-center">
+        <section className="py-16 md:py-20 text-center">
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-6">
             A simpler way to order from your suppliers.
           </h1>
           <p className="text-lg md:text-xl text-muted-foreground mb-10 max-w-[600px] mx-auto">
-            Browse, compare, and place orders — all in one shared catalog.
+            Browse, compare, and order — all in one shared catalog.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button asChild size="lg" className="text-base">
               <Link to="/catalog">Explore catalog</Link>
             </Button>
             <Button asChild variant="outline" size="lg" className="text-base">
-              <Link to="/signup">Sign up</Link>
+              <Link to="/login">Log in</Link>
             </Button>
           </div>
+          <p className="text-sm text-muted-foreground mt-6">
+            No account needed — just start browsing.
+          </p>
         </section>
 
         {/* Benefits Section */}
-        <section className="py-16 md:py-20">
-          <div className="max-w-[800px] mx-auto space-y-8">
-            <div className="space-y-6 text-lg text-foreground">
+        <section className="py-10 md:py-12 bg-muted/30">
+          <div className="max-w-[1000px] mx-auto">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 text-base text-foreground">
               <p className="leading-relaxed">
                 Compare prices across wholesalers.
               </p>
@@ -68,7 +71,7 @@ export default function LandingPage() {
         </section>
 
         {/* Final CTA Section */}
-        <section className="py-16 md:py-20 text-center">
+        <section className="py-12 md:py-16 text-center">
           <h2 className="text-2xl md:text-3xl font-semibold text-foreground mb-6">
             Ready to simplify your ordering?
           </h2>

@@ -10,7 +10,7 @@ import { LanguageSwitcher } from '@/components/layout/LanguageSwitcher'
  */
 export function PublicNavigation() {
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-50 w-full border-b shadow-sm bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="mx-auto flex h-16 max-w-[1600px] items-center justify-between px-6">
         {/* Logo */}
         <Link to="/" className="flex items-center">
