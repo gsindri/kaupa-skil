@@ -8,6 +8,24 @@ import { CaretDown } from '@phosphor-icons/react'
 import { cn } from '@/lib/utils'
 import { useCatalogFilters } from '@/state/catalogFiltersStore'
 
+const advancedCardClass =
+  'rounded-xl border border-[color:var(--filters-border)] bg-[color:var(--filters-surface)] shadow-[0_16px_34px_rgba(4,10,20,0.35)] backdrop-blur-[2px]'
+
+const advancedTriggerClass =
+  'flex w-full items-center justify-between gap-3 rounded-lg px-4 py-3 text-left text-sm font-semibold text-[color:var(--filters-text-primary)] transition-colors duration-150 ease-out hover:bg-[color:var(--filters-surface-subtle)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--filters-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--filters-surface)] motion-reduce:transition-none'
+
+const sectionToggleClass =
+  'flex w-full items-center justify-between gap-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-[color:var(--filters-text-muted)] transition-colors duration-150 ease-out hover:text-[color:var(--filters-text-secondary)]'
+
+const nestedCheckboxClass =
+  'h-4 w-4 shrink-0 rounded-[6px] border-[color:var(--filters-border)] bg-transparent text-[color:var(--filters-text-primary)] transition duration-150 ease-out focus-visible:ring-[color:var(--filters-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--filters-bg)] data-[state=checked]:border-[color:var(--brand-accent,#2ee6d6)] data-[state=checked]:bg-[color:var(--brand-accent,#2ee6d6)] data-[state=checked]:text-[color:var(--filters-bg)] motion-reduce:transition-none'
+
+const numberInputClass =
+  'h-9 flex-1 rounded-lg border-[color:var(--filters-field-border)] bg-[color:var(--filters-field-bg)] px-3 text-sm text-[color:var(--filters-text-primary)] placeholder:text-[color:var(--filters-text-muted)] focus-visible:ring-[color:var(--filters-focus)] focus-visible:ring-offset-[color:var(--filters-bg)]'
+
+const applyButtonClass =
+  'h-9 rounded-full border-[color:var(--filters-border-strong)] bg-[color:var(--filters-chip-bg)] px-4 text-[11px] font-semibold uppercase tracking-[0.12em] text-[color:var(--filters-text-primary)] transition-colors hover:bg-[color:var(--filters-chip-hover)] focus-visible:ring-[color:var(--filters-focus)] focus-visible:ring-offset-[color:var(--filters-bg)]'
+
 interface AdvancedFiltersProps {
   className?: string
 }
@@ -148,18 +166,18 @@ export function AdvancedFilters({ className }: AdvancedFiltersProps) {
     <Collapsible
       open={isOpen}
       onOpenChange={setIsOpen}
-      className={cn('rounded-2xl border border-white/8 bg-white/4', className)}
+      className={cn(advancedCardClass, className)}
     >
       <CollapsibleTrigger asChild>
         <button
           type="button"
-          className="flex w-full items-center justify-between gap-3 rounded-lg px-4 py-3 text-left text-sm font-semibold text-[color:var(--ink-hi)] transition hover:bg-white/5"
+          className={advancedTriggerClass}
           aria-expanded={isOpen}
         >
           <div className="flex items-center gap-2">
             <span>Advanced Filters</span>
             {activeCount > 0 && (
-              <span className="inline-flex items-center justify-center rounded-full bg-[color:var(--accent-fill)] px-2 py-0.5 text-xs font-semibold text-[color:var(--accent-ink)]">
+              <span className="inline-flex items-center justify-center rounded-full border border-[color:var(--filters-border-strong)] bg-[color:var(--filters-chip-bg)] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-[color:var(--filters-text-primary)]">
                 {activeCount}
               </span>
             )}
@@ -167,7 +185,7 @@ export function AdvancedFilters({ className }: AdvancedFiltersProps) {
           <CaretDown
             size={18}
             className={cn(
-              'shrink-0 text-[color:var(--ink-dim)]/80 transition-transform duration-150 ease-out',
+              'shrink-0 text-[color:var(--filters-text-muted)] transition-transform duration-150 ease-out',
               isOpen ? 'rotate-0' : '-rotate-90'
             )}
             aria-hidden
@@ -175,20 +193,20 @@ export function AdvancedFilters({ className }: AdvancedFiltersProps) {
         </button>
       </CollapsibleTrigger>
 
-      <CollapsibleContent className="px-4 pb-3">
+      <CollapsibleContent className="px-4 pb-4 text-[color:var(--filters-text-secondary)]">
         <div className="space-y-3 pt-2">
           {sections.map(section => (
             <div key={section.id} className="space-y-2">
               <button
                 type="button"
                 onClick={() => toggleSection(section.id)}
-                className="flex w-full items-center justify-between gap-2 text-xs font-semibold uppercase tracking-wide text-[color:var(--ink-dim)]/70 hover:text-[color:var(--ink-dim)]"
+                className={cn(sectionToggleClass, openSections[section.id] && 'text-[color:var(--filters-text-primary)]')}
               >
                 <span>{section.title}</span>
                 <CaretDown
                   size={14}
                   className={cn(
-                    'shrink-0 transition-transform duration-150',
+                    'shrink-0 text-[color:var(--filters-text-muted)] transition-transform duration-150 ease-out',
                     openSections[section.id] ? 'rotate-0' : '-rotate-90'
                   )}
                   aria-hidden
@@ -204,14 +222,17 @@ export function AdvancedFilters({ className }: AdvancedFiltersProps) {
                           <Checkbox
                             id={`adv-${filter.id}`}
                             checked={filter.checked || false}
-                            onCheckedChange={(checked) => 
+                            onCheckedChange={(checked) =>
                               handleCheckboxChange(section.id, filter.id, !!checked)
                             }
-                            className="h-4 w-4"
+                            className={nestedCheckboxClass}
                           />
                           <label
                             htmlFor={`adv-${filter.id}`}
-                            className="text-sm text-[color:var(--ink)] cursor-pointer select-none"
+                            className={cn(
+                              'text-sm text-[color:var(--filters-text-secondary)] cursor-pointer select-none transition-colors hover:text-[color:var(--filters-text-primary)]',
+                              filter.checked && 'text-[color:var(--filters-text-primary)]'
+                            )}
                           >
                             {filter.label}
                           </label>
@@ -220,7 +241,7 @@ export function AdvancedFilters({ className }: AdvancedFiltersProps) {
                         <div className="space-y-1">
                           <label
                             htmlFor={`adv-${filter.id}`}
-                            className="text-xs font-medium text-[color:var(--ink-dim)]"
+                            className="text-[11px] font-medium uppercase tracking-[0.14em] text-[color:var(--filters-text-muted)]"
                           >
                             {filter.label}
                           </label>
@@ -236,7 +257,7 @@ export function AdvancedFilters({ className }: AdvancedFiltersProps) {
                                 else if (filter.id === 'lead_time') setLeadTime(e.target.value)
                               }}
                               placeholder={filter.placeholder}
-                              className="h-8 text-sm"
+                              className={numberInputClass}
                             />
                             <Button
                               size="sm"
@@ -246,7 +267,7 @@ export function AdvancedFilters({ className }: AdvancedFiltersProps) {
                                 else if (filter.id === 'moq') handleApplyMOQ()
                                 else if (filter.id === 'lead_time') handleApplyLeadTime()
                               }}
-                              className="h-8 px-3 text-xs"
+                              className={applyButtonClass}
                             >
                               Apply
                             </Button>
