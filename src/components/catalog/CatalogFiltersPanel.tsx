@@ -420,7 +420,7 @@ export function CatalogFiltersPanel({
     variant === 'desktop' ? 'px-5' : 'px-4',
   )
 
-  const panelScrollWrapperClass = 'relative flex-1 overflow-hidden'
+  const panelScrollWrapperClass = 'relative flex-1 overflow-hidden min-h-0'
 
   const panelBodyRef = useRef<HTMLDivElement | null>(null)
   const [showTopShadow, setShowTopShadow] = useState(false)
