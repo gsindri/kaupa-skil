@@ -282,7 +282,6 @@ export function TopNavigation() {
       <div
         className="mx-auto flex w-full max-w-[1600px] items-center"
         style={{
-          paddingInline: 'var(--catalog-extra-gutter)',
           columnGap: 'var(--page-gutter, 24px)',
         }}
       >

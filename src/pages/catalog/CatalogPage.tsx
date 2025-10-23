@@ -557,62 +557,7 @@ export default function CatalogPage() {
     return false
   })
   const isDesktop = useMediaQuery('(min-width: 1024px)')
-  useEffect(() => {
-    if (typeof document === 'undefined') return undefined
-    const className = 'catalog-gutters-expanded'
-    const target = document.body
-
-    target.classList.add(className)
-
-    return () => {
-      target.classList.remove(className)
-    }
-  }, [])
   const desktopFiltersOpen = isDesktop && showFilters
-  const scrollbarCompRef = useRef(0)
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-
-    if (!desktopFiltersOpen) {
-      const root = document.documentElement
-      const width = window.innerWidth - root.clientWidth
-
-      if (width > 0) {
-        scrollbarCompRef.current = width
-      }
-
-      root.style.removeProperty('--catalog-scroll-comp')
-
-      let rafId: number | undefined
-      if (scrollbarCompRef.current === 0) {
-        rafId = window.requestAnimationFrame(() => {
-          const retryWidth = window.innerWidth - root.clientWidth
-          if (retryWidth > 0 && scrollbarCompRef.current === 0) {
-            scrollbarCompRef.current = retryWidth
-          }
-        })
-      }
-
-      return () => {
-        if (typeof rafId === 'number') {
-          window.cancelAnimationFrame(rafId)
-        }
-      }
-    }
-  }, [desktopFiltersOpen])
-
-  useLayoutEffect(() => {
-    if (typeof window === 'undefined' || !desktopFiltersOpen) return undefined
-
-    const root = document.documentElement
-    const width = scrollbarCompRef.current || Math.max(0, window.innerWidth - root.clientWidth)
-    root.style.setProperty('--catalog-scroll-comp', `${width}px`)
-
-    return () => {
-      root.style.removeProperty('--catalog-scroll-comp')
-    }
-  }, [desktopFiltersOpen])
   const [focusedFacet, setFocusedFacet] = useState<keyof FacetFilters | null>(null)
   const clearAllFilters = useCallback(() => {
     setInStock(false)
@@ -1261,7 +1206,7 @@ export default function CatalogPage() {
               view === 'grid' ? 'pt-2' : 'pt-2'
             )}
             style={{
-              paddingInline: 'max(var(--catalog-extra-gutter), 1.5rem)'
+              paddingInline: '1.5rem'
             }}
           >
         {chips.length > 0 && (
@@ -1709,7 +1654,7 @@ function FiltersBar({
         {error && (
           <div
             className={cn(containerClass, 'py-3')}
-            style={{ paddingInline: 'max(var(--catalog-extra-gutter), 1.5rem)' }}
+            style={{ paddingInline: '1.5rem' }}
           >
             <Alert
               variant="destructive"
@@ -1723,7 +1668,7 @@ function FiltersBar({
 
         <div
           className={containerClass}
-          style={{ paddingInline: 'max(var(--catalog-extra-gutter), 1.5rem)' }}
+          style={{ paddingInline: '1.5rem' }}
         >
           <div className="catalog-toolbar flex flex-col gap-3 py-3">
             <div className="catalog-toolbar-zones">

@@ -222,27 +222,6 @@ input[type='search'] {
   }
 }
 
-.catalog-gutters-expanded{
-  --catalog-extra-gutter:1rem;
-}
-
-@media (min-width:640px){
-  .catalog-gutters-expanded{
-    --catalog-extra-gutter:2rem;
-  }
-}
-
-@media (min-width:1024px){
-  .catalog-gutters-expanded{
-    --catalog-extra-gutter:3rem;
-  }
-}
-
-@media (min-width:1280px){
-  .catalog-gutters-expanded{
-    --catalog-extra-gutter:4rem;
-  }
-}
 
 .catalog-toolbar-zones{
   display:flex;
