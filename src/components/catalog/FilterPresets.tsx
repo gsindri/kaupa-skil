@@ -46,7 +46,7 @@ export function FilterPresets({ className }: FilterPresetsProps) {
               key={key}
               type="button"
               onClick={() => applyPreset(key)}
-              className="group inline-flex min-h-[40px] items-center gap-1.5 rounded-full border border-[color:var(--filters-chip-border)] bg-[color:var(--filters-chip-bg)] px-4 text-xs font-medium text-[color:var(--filters-text-secondary)] transition-colors duration-150 ease-out hover:border-[color:var(--filters-border-strong)] hover:bg-[color:var(--filters-chip-hover)] hover:text-[color:var(--filters-text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--filters-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--filters-bg)] motion-reduce:transition-none"
+              className="group inline-flex min-h-[40px] items-center gap-1.5 rounded-full border border-[color:var(--filters-chip-border)] bg-[color:var(--filters-chip-bg)] px-4 py-1.5 text-[13px] font-medium text-[color:var(--filters-text-secondary)] transition-colors duration-150 ease-out hover:border-[color:var(--filters-border-strong)] hover:bg-[color:var(--filters-chip-hover)] hover:text-[color:var(--filters-text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--filters-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--filters-bg)] active:bg-[color:var(--filters-chip-hover)] motion-reduce:transition-none"
             >
               {preset.icon && (
                 <span aria-hidden="true" className="text-[color:var(--filters-text-muted)] transition-colors group-hover:text-[color:var(--filters-text-primary)]">
