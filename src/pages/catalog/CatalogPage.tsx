@@ -1392,11 +1392,12 @@ export default function CatalogPage() {
               role="presentation"
               data-state="open"
               className={cn(
-                'fixed inset-0 bg-[color:var(--overlay)] backdrop-blur-sm',
+                'fixed inset-y-0 right-0 bg-[color:var(--overlay)] backdrop-blur-sm',
                 'data-[state=open]:animate-in data-[state=closed]:animate-out',
                 'data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0',
                 'z-[calc(var(--z-drawer,80)-1)]'
               )}
+              style={{ left: 'var(--layout-rail,72px)' }}
               onClick={closeFilters}
             />
           </SheetPortal>
