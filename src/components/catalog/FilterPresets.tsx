@@ -1,4 +1,3 @@
-import { Button } from '@/components/ui/button'
 import { FILTER_PRESETS, type PresetKey } from '@/lib/filterPresets'
 import { useCatalogFilters, type SortOrder } from '@/state/catalogFiltersStore'
 import { cn } from '@/lib/utils'
@@ -35,24 +34,27 @@ export function FilterPresets({ className }: FilterPresetsProps) {
   }
 
   return (
-    <div className={cn('space-y-2', className)}>
-      <span className="block text-xs font-semibold uppercase tracking-wide text-[color:var(--ink-dim)]/70">
+    <div className={cn('space-y-3', className)}>
+      <span className="block text-[11px] font-semibold uppercase tracking-[0.22em] text-[color:var(--filters-text-muted)]">
         Quick Filters
       </span>
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2.5">
         {(Object.keys(FILTER_PRESETS) as PresetKey[]).map(key => {
           const preset = FILTER_PRESETS[key]
           return (
-            <Button
+            <button
               key={key}
-              variant="outline"
-              size="sm"
+              type="button"
               onClick={() => applyPreset(key)}
-              className="h-8 gap-1.5 text-xs"
+              className="group inline-flex min-h-[40px] items-center gap-1.5 rounded-full border border-[color:var(--filters-chip-border)] bg-[color:var(--filters-chip-bg)] px-4 text-xs font-medium text-[color:var(--filters-text-secondary)] transition-colors duration-150 ease-out hover:border-[color:var(--filters-border-strong)] hover:bg-[color:var(--filters-chip-hover)] hover:text-[color:var(--filters-text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--filters-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--filters-bg)] motion-reduce:transition-none"
             >
-              {preset.icon && <span aria-hidden="true">{preset.icon}</span>}
+              {preset.icon && (
+                <span aria-hidden="true" className="text-[color:var(--filters-text-muted)] transition-colors group-hover:text-[color:var(--filters-text-primary)]">
+                  {preset.icon}
+                </span>
+              )}
               {preset.label}
-            </Button>
+            </button>
           )
         })}
       </div>

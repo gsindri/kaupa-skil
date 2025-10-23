@@ -30,6 +30,24 @@
   --ink: rgba(236, 242, 248, 0.88);
   --ink-dim: rgba(236, 242, 248, 0.68);
 
+  /* Catalog filters sidebar tokens */
+  --filters-bg: #1e2631;
+  --filters-surface: #2a323e;
+  --filters-surface-subtle: rgba(255, 255, 255, 0.04);
+  --filters-border: rgba(255, 255, 255, 0.12);
+  --filters-border-strong: rgba(255, 255, 255, 0.18);
+  --filters-text-primary: #f2f5fa;
+  --filters-text-secondary: #c5cad5;
+  --filters-text-muted: #9097a5;
+  --filters-chip-bg: rgba(255, 255, 255, 0.1);
+  --filters-chip-hover: rgba(255, 255, 255, 0.16);
+  --filters-chip-border: rgba(255, 255, 255, 0.15);
+  --filters-field-bg: rgba(17, 26, 36, 0.65);
+  --filters-field-border: rgba(255, 255, 255, 0.08);
+  --filters-scroll-track: rgba(10, 16, 24, 0.45);
+  --filters-scroll-thumb: rgba(255, 255, 255, 0.18);
+  --filters-focus: rgba(46, 230, 214, 0.6);
+
   --accent-fill: #e1c182;
   --accent-ink: #242424;
 

@@ -63,6 +63,15 @@ const segmentedBaseClass =
 
 type HeaderVars = CSSProperties & { '--ctrl-h'?: string; '--ctrl-r'?: string }
 
+const checkboxClassName =
+  'h-4 w-4 shrink-0 rounded-[6px] border-[color:var(--filters-border)] bg-transparent text-[color:var(--filters-text-primary)] transition duration-150 ease-out focus-visible:ring-[color:var(--filters-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--filters-bg)] data-[state=checked]:border-[color:var(--brand-accent,#2ee6d6)] data-[state=checked]:bg-[color:var(--brand-accent,#2ee6d6)] data-[state=checked]:text-[color:var(--filters-bg)] motion-reduce:transition-none'
+
+const quickFilterRowClass =
+  'group flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors duration-150 ease-out hover:bg-[color:var(--filters-surface-subtle)] focus-within:bg-[color:var(--filters-surface-subtle)] focus-within:ring-1 focus-within:ring-[color:var(--filters-border-strong)] motion-reduce:transition-none'
+
+const sectionCardClass =
+  'rounded-xl border border-[color:var(--filters-border)] bg-[color:var(--filters-surface)] p-4 shadow-[0_16px_34px_rgba(4,10,20,0.35)] backdrop-blur-[2px]'
+
 function useBatchedChange(onChange: (f: Partial<FacetFilters>) => void) {
   const queued = useRef<Partial<FacetFilters> | null>(null)
   const frame = useRef<number | null>(null)
@@ -357,10 +366,12 @@ export function CatalogFiltersPanel({
           type="button"
           onClick={handleClick}
           className={cn(
-            "w-full flex items-center justify-between gap-3 rounded-lg px-2.5 py-2 text-sm transition",
-            state === 'include' && "bg-[color:var(--chip-bg)] text-[color:var(--ink-hi)]",
-            state === 'exclude' && "bg-destructive/10 text-destructive",
-            state === null && "hover:bg-[color:var(--chip-bg)]/60"
+            'group flex w-full items-center justify-between gap-3 rounded-[10px] px-3 py-2.5 text-sm text-[color:var(--filters-text-secondary)] transition-colors duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--filters-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--filters-surface)] motion-reduce:transition-none',
+            state === 'include' &&
+              'bg-[color:var(--filters-chip-bg)] text-[color:var(--filters-text-primary)]',
+            state === 'exclude' && 'bg-destructive/20 text-destructive',
+            state === null &&
+              'hover:bg-[color:var(--filters-surface-subtle)] hover:text-[color:var(--filters-text-primary)]'
           )}
         >
           <span className="flex items-center gap-2">
@@ -369,7 +380,7 @@ export function CatalogFiltersPanel({
               {label}
             </span>
           </span>
-          <span className="text-xs font-semibold text-[color:var(--ink-dim)]/80">
+          <span className="text-xs font-semibold text-[color:var(--filters-text-muted)] transition-colors group-hover:text-[color:var(--filters-text-secondary)]">
             {item.count}
           </span>
         </button>
@@ -404,13 +415,13 @@ export function CatalogFiltersPanel({
   const skeletonRows = Array.from({ length: 6 })
 
   const headerSurfaceClass = cn(
-    'flex flex-col gap-3 border-b border-white/10 bg-[color:var(--toolbar-bg)]/80 py-4 backdrop-blur-xl',
-    variant === 'desktop' ? 'shadow-[0_10px_30px_rgba(8,15,26,0.22)] pl-0 pr-4' : 'px-4',
+    'flex items-start justify-between gap-3 py-4 text-[color:var(--filters-text-secondary)]',
+    variant === 'desktop' ? 'px-5' : 'px-4',
   )
 
   const panelBodyClass = cn(
-    'flex-1 space-y-6 overflow-y-auto pb-6',
-    variant === 'desktop' ? 'pt-4 pl-0 pr-4' : 'pt-2 px-4'
+    'flex-1 space-y-6 overflow-y-auto pb-8',
+    variant === 'desktop' ? 'px-5 pt-5' : 'px-4 pt-4'
   )
 
   const headerTokens = useMemo<HeaderVars>(() => ({
@@ -418,80 +429,93 @@ export function CatalogFiltersPanel({
     '--ctrl-r': '10px',
   }), [])
 
+  const panelScrollStyle = useMemo<CSSProperties>(
+    () => ({ scrollbarColor: 'var(--filters-scroll-thumb) var(--filters-scroll-track)' }),
+    [],
+  )
+
   return (
     <div
       className={cn(
-        'flex h-full flex-col bg-[color:var(--surface-raised,hsl(var(--background)))]',
+        'flex h-full flex-col overflow-hidden bg-[color:var(--filters-bg)] text-[color:var(--filters-text-secondary)]',
+        'shadow-[0_24px_64px_rgba(4,12,24,0.45)] ring-1 ring-inset ring-[color:var(--filters-border)]/70',
         variant === 'desktop' && 'lg:max-h-[calc(100vh-var(--header-h,64px))]'
       )}
     >
       {/* Sticky header with title, clear all, and Tier-1 toggles */}
-      <div 
-        className="sticky top-0 z-10 bg-[color:var(--surface-raised-strong)] backdrop-blur-md border-b border-[color:var(--ring-idle)]/40"
-        style={{
-          boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-        }}
-      >
+      <div className="sticky top-0 z-10 border-b border-[color:var(--filters-border)] bg-[color:var(--filters-bg)]/95 backdrop-blur">
         <div className={headerSurfaceClass} style={headerTokens}>
-          <div className="flex items-center justify-between">
-            <h2 className="text-base font-semibold text-[color:var(--ink-hi)]">
+          <div>
+            <h2 className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[color:var(--filters-text-primary)]">
               {t('title')}
             </h2>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={onClearFilters}
-              disabled={!hasActiveFilters}
-              className="h-8 px-3 text-sm font-medium text-[color:var(--ink-dim)] hover:text-[color:var(--ink)]"
-            >
-              {t('actions.clear')}
-            </Button>
           </div>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={onClearFilters}
+            disabled={!hasActiveFilters}
+            className="h-8 rounded-full border border-transparent px-3 text-xs font-semibold uppercase tracking-[0.12em] text-[color:var(--filters-text-muted)] transition-colors hover:border-[color:var(--filters-border-strong)] hover:bg-[color:var(--filters-surface-subtle)] hover:text-[color:var(--filters-text-primary)] focus-visible:ring-[color:var(--filters-focus)] focus-visible:ring-offset-[color:var(--filters-bg)] disabled:opacity-40"
+          >
+            {t('actions.clear')}
+          </Button>
         </div>
-        
+
         {/* Tier-1 Quick Filters - Always visible */}
         <div className={cn(
-          variant === 'desktop' ? 'pl-0 pr-4 pb-3 pt-2' : 'px-4 pb-3 pt-2',
-          'space-y-2'
+          variant === 'desktop' ? 'px-5 pb-4' : 'px-4 pb-4',
+          'space-y-2.5'
         )}>
-          <div className="flex items-center gap-2">
+          <div className={cn(quickFilterRowClass, inStock && 'bg-[color:var(--filters-chip-bg)] ring-1 ring-[color:var(--filters-border-strong)]')}>
             <Checkbox
               id="filter-in-stock"
               checked={inStock}
               onCheckedChange={setInStock}
+              className={checkboxClassName}
             />
             <label
               htmlFor="filter-in-stock"
-              className="text-sm font-medium text-[color:var(--ink)] cursor-pointer select-none"
+              className={cn(
+                'flex-1 cursor-pointer select-none text-sm font-medium text-[color:var(--filters-text-secondary)] transition-colors group-hover:text-[color:var(--filters-text-primary)]',
+                inStock && 'text-[color:var(--filters-text-primary)]'
+              )}
             >
               {t('stock.inStockOnly', { defaultValue: 'Only in stock' })}
             </label>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className={cn(quickFilterRowClass, mySuppliers && 'bg-[color:var(--filters-chip-bg)] ring-1 ring-[color:var(--filters-border-strong)]')}>
             <Checkbox
               id="filter-my-suppliers"
               checked={mySuppliers}
               onCheckedChange={setMySuppliers}
+              className={checkboxClassName}
             />
             <label
               htmlFor="filter-my-suppliers"
-              className="text-sm font-medium text-[color:var(--ink)] cursor-pointer select-none"
+              className={cn(
+                'flex-1 cursor-pointer select-none text-sm font-medium text-[color:var(--filters-text-secondary)] transition-colors group-hover:text-[color:var(--filters-text-primary)]',
+                mySuppliers && 'text-[color:var(--filters-text-primary)]'
+              )}
             >
               {t('suppliers.myOnly', { defaultValue: 'My suppliers only' })}
             </label>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className={cn(quickFilterRowClass, onSpecial && 'bg-[color:var(--filters-chip-bg)] ring-1 ring-[color:var(--filters-border-strong)]')}>
             <Checkbox
               id="filter-on-special"
               checked={onSpecial}
               onCheckedChange={setOnSpecial}
+              className={checkboxClassName}
             />
             <label
               htmlFor="filter-on-special"
-              className="text-sm font-medium text-[color:var(--ink)] cursor-pointer select-none"
+              className={cn(
+                'flex-1 cursor-pointer select-none text-sm font-medium text-[color:var(--filters-text-secondary)] transition-colors group-hover:text-[color:var(--filters-text-primary)]',
+                onSpecial && 'text-[color:var(--filters-text-primary)]'
+              )}
             >
               {t('specials.onlySpecials', { defaultValue: 'On special only' })}
             </label>
@@ -500,14 +524,14 @@ export function CatalogFiltersPanel({
       </div>
 
       {/* Scrollable content area - Tier-2 Facets */}
-      <div className={panelBodyClass}>
-        <FilterPresets className="pb-4 border-b border-[color:var(--ring-idle)]/40" />
-        
+      <div className={panelBodyClass} style={panelScrollStyle}>
+        <FilterPresets className="pb-4 border-b border-[color:var(--filters-border)]/60" />
+
         <section className="space-y-4">
           {/* Active filter chips */}
           {chips.length > 0 && (
-            <div className="space-y-2 pb-4 border-b border-[color:var(--ring-idle)]/40">
-              <span className="block text-xs font-semibold uppercase tracking-wide text-[color:var(--ink-dim)]/70">
+            <div className="space-y-2 pb-4 border-b border-[color:var(--filters-border)]/60">
+              <span className="block text-[11px] font-semibold uppercase tracking-[0.22em] text-[color:var(--filters-text-muted)]">
                 {t('activeFilters', { defaultValue: 'Active filters' })}
               </span>
               <div className="flex flex-wrap items-center gap-2">
@@ -534,15 +558,15 @@ export function CatalogFiltersPanel({
             <div className="space-y-4">
               {skeletonRows.map((_, index) => (
                 <div key={`skeleton-${index}`} className="space-y-2">
-                  <div className="h-3 w-32 animate-pulse rounded-full bg-white/10" />
-                  <div className="space-y-2 rounded-xl border border-white/5 p-3">
+                  <div className="h-3 w-32 animate-pulse rounded-full bg-[color:var(--filters-surface-subtle)]" />
+                  <div className="space-y-2 rounded-xl border border-[color:var(--filters-border)]/40 bg-[color:var(--filters-surface-subtle)]/60 p-3">
                     {Array.from({ length: 3 }).map((__, inner) => (
                       <div key={inner} className="flex items-center justify-between gap-3">
                         <div className="flex items-center gap-3">
-                          <span className="h-4 w-4 rounded border border-white/20" />
-                          <div className="h-3 w-32 animate-pulse rounded-full bg-white/10" />
+                          <span className="h-4 w-4 rounded border border-[color:var(--filters-border)]/60" />
+                          <div className="h-3 w-32 animate-pulse rounded-full bg-[color:var(--filters-surface-subtle)]" />
                         </div>
-                        <div className="h-3 w-10 animate-pulse rounded-full bg-white/10" />
+                        <div className="h-3 w-10 animate-pulse rounded-full bg-[color:var(--filters-surface-subtle)]" />
                       </div>
                     ))}
                   </div>
@@ -559,11 +583,11 @@ export function CatalogFiltersPanel({
                 <article
                   key={key}
                   ref={facetRefs[key]}
-                  className="rounded-2xl border border-white/8 bg-white/4 p-3"
+                  className={sectionCardClass}
                 >
                   <button
                     type="button"
-                    className="flex w-full items-center justify-between gap-3 rounded-lg px-1 py-1 text-left text-sm font-semibold text-[color:var(--ink-hi)] transition hover:bg-white/5"
+                    className="flex w-full items-center justify-between gap-3 rounded-lg px-1.5 py-1.5 text-left text-sm font-semibold text-[color:var(--filters-text-primary)] transition-colors duration-150 ease-out hover:bg-[color:var(--filters-surface-subtle)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--filters-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--filters-surface)] motion-reduce:transition-none"
                     aria-expanded={isOpen}
                     aria-controls={`facet-${key}`}
                     onClick={() =>
@@ -574,7 +598,7 @@ export function CatalogFiltersPanel({
                     <CaretDown
                       size={18}
                       className={cn(
-                        'shrink-0 text-[color:var(--ink-dim)]/80 transition-transform duration-150 ease-out',
+                        'shrink-0 text-[color:var(--filters-text-muted)] transition-transform duration-150 ease-out',
                         isOpen ? 'rotate-0' : '-rotate-90'
                       )}
                       aria-hidden
@@ -595,7 +619,7 @@ export function CatalogFiltersPanel({
                           placeholder={t('facets.searchPlaceholder', {
                             defaultValue: 'Search in list…',
                           })}
-                          className="h-9 w-full rounded-lg border-white/10 bg-white/10 text-sm text-[color:var(--ink-hi)] placeholder:text-[color:var(--ink-dim)]/60"
+                          className="h-10 w-full rounded-lg border-[color:var(--filters-field-border)] bg-[color:var(--filters-field-bg)] text-sm text-[color:var(--filters-text-primary)] placeholder:text-[color:var(--filters-text-muted)] focus-visible:ring-[color:var(--filters-focus)] focus-visible:ring-offset-[color:var(--filters-bg)]"
                           autoComplete="off"
                         />
                       )}
@@ -613,10 +637,10 @@ export function CatalogFiltersPanel({
               )
             })}
 
-          <article ref={facetRefs.packSizeRange} className="rounded-2xl border border-white/8 bg-white/4 p-3">
+          <article ref={facetRefs.packSizeRange} className={sectionCardClass}>
             <button
               type="button"
-              className="flex w-full items-center justify-between gap-3 rounded-lg px-1 py-1 text-left text-sm font-semibold text-[color:var(--ink-hi)] transition hover:bg-white/5"
+              className="flex w-full items-center justify-between gap-3 rounded-lg px-1.5 py-1.5 text-left text-sm font-semibold text-[color:var(--filters-text-primary)] transition-colors duration-150 ease-out hover:bg-[color:var(--filters-surface-subtle)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--filters-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--filters-surface)] motion-reduce:transition-none"
               aria-expanded={openFacets.packSizeRange}
               aria-controls="facet-pack"
               onClick={() =>
@@ -630,7 +654,7 @@ export function CatalogFiltersPanel({
               <CaretDown
                 size={18}
                 className={cn(
-                  'shrink-0 text-[color:var(--ink-dim)]/80 transition-transform duration-150 ease-out',
+                  'shrink-0 text-[color:var(--filters-text-muted)] transition-transform duration-150 ease-out',
                   openFacets.packSizeRange ? 'rotate-0' : '-rotate-90'
                 )}
                 aria-hidden
@@ -651,7 +675,7 @@ export function CatalogFiltersPanel({
                       if (event.key === 'Enter') handleApplyPack()
                     }}
                     placeholder={t('packSize.placeholders.min')}
-                    className="h-10 flex-1 rounded-lg border-white/10 bg-white/10 text-sm text-[color:var(--ink-hi)] placeholder:text-[color:var(--ink-dim)]/60"
+                    className="h-10 flex-1 rounded-lg border-[color:var(--filters-field-border)] bg-[color:var(--filters-field-bg)] text-sm text-[color:var(--filters-text-primary)] placeholder:text-[color:var(--filters-text-muted)] focus-visible:ring-[color:var(--filters-focus)] focus-visible:ring-offset-[color:var(--filters-bg)]"
                   />
                   <Input
                     type="number"
@@ -664,7 +688,7 @@ export function CatalogFiltersPanel({
                       if (event.key === 'Enter') handleApplyPack()
                     }}
                     placeholder={t('packSize.placeholders.max')}
-                    className="h-10 flex-1 rounded-lg border-white/10 bg-white/10 text-sm text-[color:var(--ink-hi)] placeholder:text-[color:var(--ink-dim)]/60"
+                    className="h-10 flex-1 rounded-lg border-[color:var(--filters-field-border)] bg-[color:var(--filters-field-bg)] text-sm text-[color:var(--filters-text-primary)] placeholder:text-[color:var(--filters-text-muted)] focus-visible:ring-[color:var(--filters-focus)] focus-visible:ring-offset-[color:var(--filters-bg)]"
                   />
                 </div>
                 {packRangeInvalid && (
@@ -679,7 +703,7 @@ export function CatalogFiltersPanel({
                     variant="outline"
                     onClick={handleApplyPack}
                     disabled={!packHasChanges || packRangeInvalid || isApplyingPackSize}
-                    className="h-9 px-4"
+                    className="h-10 rounded-full border-[color:var(--filters-border-strong)] bg-[color:var(--filters-chip-bg)] px-5 text-xs font-semibold uppercase tracking-[0.12em] text-[color:var(--filters-text-primary)] transition-colors hover:bg-[color:var(--filters-chip-hover)] focus-visible:ring-[color:var(--filters-focus)] focus-visible:ring-offset-[color:var(--filters-bg)]"
                   >
                     {isApplyingPackSize ? t('packSize.actions.applying', { defaultValue: 'Applying...' }) : t('packSize.actions.apply')}
                   </Button>
@@ -689,6 +713,7 @@ export function CatalogFiltersPanel({
                       size="sm"
                       variant="ghost"
                       onClick={() => batchedChange({ packSizeRange: undefined })}
+                      className="h-10 rounded-full px-4 text-xs font-semibold uppercase tracking-[0.12em] text-[color:var(--filters-text-muted)] hover:bg-[color:var(--filters-surface-subtle)] hover:text-[color:var(--filters-text-primary)] focus-visible:ring-[color:var(--filters-focus)] focus-visible:ring-offset-[color:var(--filters-bg)]"
                     >
                       {t('packSize.actions.reset')}
                     </Button>
@@ -740,7 +765,7 @@ function FacetList({
 
   if (!filtered.length) {
     return (
-      <div className={cn('rounded-lg border border-dashed border-white/10 px-3 py-2 text-xs text-[color:var(--ink-dim)]', className)}>
+      <div className={cn('rounded-lg border border-dashed border-[color:var(--filters-border)]/70 bg-[color:var(--filters-surface-subtle)] px-3 py-2 text-xs text-[color:var(--filters-text-muted)]', className)}>
         {emptyLabel}
       </div>
     )
@@ -759,7 +784,11 @@ function FacetList({
   }
 
   return (
-    <div ref={parentRef} className={cn('max-h-64 overflow-y-auto', className)}>
+    <div
+      ref={parentRef}
+      className={cn('max-h-64 overflow-y-auto pr-1', className)}
+      style={{ scrollbarColor: 'var(--filters-scroll-thumb) var(--filters-scroll-track)' }}
+    >
       <div
         style={{
           height: `${rowVirtualizer.getTotalSize()}px`,
