@@ -1706,49 +1706,53 @@ function FiltersBar({
                 {renderFiltersToggleButton('flex-none')}
               </div>
 
-              <div className="toolbar-center relative flex min-w-[220px]">
-                <label className="sr-only" htmlFor="catalog-search">
-                  Search products
-                </label>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <input
-                      id="catalog-search"
-                      ref={searchRef}
-                      type="search"
-                      placeholder="Search products"
-                      aria-keyshortcuts="Control+K Meta+K"
-                      value={searchValue}
-                      onChange={handleSearchChange}
-                      onKeyDown={handleSearchKeyDown}
-                      onFocus={() => onLockChange?.(true)}
-                      onBlur={() => onLockChange?.(false)}
-                  className="h-11 w-full flex-1 rounded-[var(--ctrl-r,14px)] bg-white pl-12 pr-12 text-base font-semibold text-slate-900 placeholder:text-slate-500 ring-1 ring-inset ring-[color:var(--ring-idle)] shadow-[0_12px_38px_rgba(7,18,30,0.26)] transition duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--ring-hover)] focus-visible:ring-offset-0 hover:ring-[color:var(--ring-hover)] motion-reduce:transition-none"
-                    />
-                  </TooltipTrigger>
-                  <TooltipContent sideOffset={8}>Search (Ctrl/⌘+K)</TooltipContent>
-                </Tooltip>
-                <span className="pointer-events-none absolute left-3 top-1/2 grid -translate-y-1/2 place-items-center text-slate-500">
-                  <MagnifyingGlass size={22} weight="fill" aria-hidden="true" />
-                </span>
-                {showClear && (
-                  <button
-                    type="button"
-                    onClick={handleClearSearch}
-                    aria-label="Clear search"
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-full p-2 text-slate-500 transition duration-150 ease-out hover:bg-slate-200/70 hover:text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--ring-hover)] focus-visible:ring-offset-0 motion-reduce:transition-none"
-                  >
-                    <XCircle size={20} weight="fill" />
-                  </button>
+              <div className="toolbar-center flex min-w-[220px] items-center gap-3">
+                <div className="relative flex-1">
+                  <label className="sr-only" htmlFor="catalog-search">
+                    Search products
+                  </label>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <input
+                        id="catalog-search"
+                        ref={searchRef}
+                        type="search"
+                        placeholder="Search products"
+                        aria-keyshortcuts="Control+K Meta+K"
+                        value={searchValue}
+                        onChange={handleSearchChange}
+                        onKeyDown={handleSearchKeyDown}
+                        onFocus={() => onLockChange?.(true)}
+                        onBlur={() => onLockChange?.(false)}
+                        className="h-11 w-full flex-1 rounded-[var(--ctrl-r,14px)] bg-white pl-12 pr-12 text-base font-semibold text-slate-900 placeholder:text-slate-500 ring-1 ring-inset ring-[color:var(--ring-idle)] shadow-[0_12px_38px_rgba(7,18,30,0.26)] transition duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--ring-hover)] focus-visible:ring-offset-0 hover:ring-[color:var(--ring-hover)] motion-reduce:transition-none"
+                      />
+                    </TooltipTrigger>
+                    <TooltipContent sideOffset={8}>Search (Ctrl/⌘+K)</TooltipContent>
+                  </Tooltip>
+                  <span className="pointer-events-none absolute left-3 top-1/2 grid -translate-y-1/2 place-items-center text-slate-500">
+                    <MagnifyingGlass size={22} weight="fill" aria-hidden="true" />
+                  </span>
+                  {showClear && (
+                    <button
+                      type="button"
+                      onClick={handleClearSearch}
+                      aria-label="Clear search"
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-full p-2 text-slate-500 transition duration-150 ease-out hover:bg-slate-200/70 hover:text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--ring-hover)] focus-visible:ring-offset-0 motion-reduce:transition-none"
+                    >
+                      <XCircle size={20} weight="fill" />
+                    </button>
+                  )}
+                </div>
+
+                {formattedTotal && (
+                  <div className="hidden items-center text-sm font-semibold text-[color:var(--ink-hi)] lg:flex">
+                    <span className="tabular-nums">{formattedTotal}</span>
+                    <span className="ml-1 font-normal text-[color:var(--ink-lo)]">results</span>
+                  </div>
                 )}
               </div>
 
               <div className="toolbar-right lg:flex-nowrap lg:gap-4">
-                {formattedTotal && (
-                  <div className="hidden items-center text-sm font-semibold text-[color:var(--ink-hi)] lg:flex">
-                    <span className="tabular-nums">{formattedTotal}</span>
-                  </div>
-                )}
                 <SortDropdown
                   value={sortOrder}
                   onChange={setSortOrder}
