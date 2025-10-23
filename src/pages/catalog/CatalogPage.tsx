@@ -576,8 +576,29 @@ export default function CatalogPage() {
 
     if (!desktopFiltersOpen) {
       const root = document.documentElement
-      scrollbarCompRef.current = Math.max(0, window.innerWidth - root.clientWidth)
+      const width = window.innerWidth - root.clientWidth
+
+      if (width > 0) {
+        scrollbarCompRef.current = width
+      }
+
       root.style.removeProperty('--catalog-scroll-comp')
+
+      let rafId: number | undefined
+      if (scrollbarCompRef.current === 0) {
+        rafId = window.requestAnimationFrame(() => {
+          const retryWidth = window.innerWidth - root.clientWidth
+          if (retryWidth > 0 && scrollbarCompRef.current === 0) {
+            scrollbarCompRef.current = retryWidth
+          }
+        })
+      }
+
+      return () => {
+        if (typeof rafId === 'number') {
+          window.cancelAnimationFrame(rafId)
+        }
+      }
     }
   }, [desktopFiltersOpen])
 
