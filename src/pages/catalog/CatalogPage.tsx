@@ -1704,11 +1704,6 @@ function FiltersBar({
             <div className="catalog-toolbar-zones">
               <div className="toolbar-left">
                 {renderFiltersToggleButton('flex-none')}
-                {formattedTotal && (
-                  <div className="hidden items-center text-sm font-semibold text-[color:var(--ink-hi)] lg:flex">
-                    <span className="tabular-nums">{formattedTotal}</span>
-                  </div>
-                )}
               </div>
 
               <div className="toolbar-center relative flex min-w-[220px]">
@@ -1748,7 +1743,12 @@ function FiltersBar({
                 )}
               </div>
 
-              <div className="toolbar-right">
+              <div className="toolbar-right lg:flex-nowrap lg:gap-4">
+                {formattedTotal && (
+                  <div className="hidden items-center text-sm font-semibold text-[color:var(--ink-hi)] lg:flex">
+                    <span className="tabular-nums">{formattedTotal}</span>
+                  </div>
+                )}
                 <SortDropdown
                   value={sortOrder}
                   onChange={setSortOrder}
