@@ -1409,7 +1409,7 @@ export default function CatalogPage() {
           <SheetContent
             side="left"
             hideOverlay
-            className="hidden h-full p-0 lg:flex"
+            className="hidden h-full p-0 bg-[color:var(--filters-bg)] lg:flex"
             style={{ left: 'var(--layout-rail,72px)', width: 'clamp(280px, 24vw, 360px)' }}
           >
             <div id="catalog-filters-panel" className="flex h-full w-full flex-col overflow-hidden">
