@@ -555,16 +555,12 @@ export default function CatalogPage() {
     const className = 'catalog-gutters-expanded'
     const target = document.body
 
-    if (!showFilters) {
-      target.classList.add(className)
-    } else {
-      target.classList.remove(className)
-    }
+    target.classList.add(className)
 
     return () => {
       target.classList.remove(className)
     }
-  }, [showFilters])
+  }, [])
   const desktopFiltersOpen = isDesktop && showFilters
   useEffect(() => {
     if (typeof window === 'undefined') return undefined
