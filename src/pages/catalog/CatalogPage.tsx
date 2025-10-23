@@ -1353,16 +1353,11 @@ export default function CatalogPage() {
                 addingId={addingId}
               />
             ) : (
-              <>
-                <p className="text-sm text-muted-foreground">
-                  {`${displayProducts.length} item${displayProducts.length === 1 ? '' : 's'} visible`}
-                </p>
-                <CatalogTable
-                  products={displayProducts}
-                  sort={tableSort}
-                  onSort={handleSort}
-                />
-              </>
+              <CatalogTable
+                products={displayProducts}
+                sort={tableSort}
+                onSort={handleSort}
+              />
             )}
 
             {hasNextPage && (
