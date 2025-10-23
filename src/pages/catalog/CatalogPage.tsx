@@ -565,25 +565,25 @@ export default function CatalogPage() {
       target.classList.remove(className)
     }
   }, [showFilters])
+  const desktopFiltersOpen = isDesktop && showFilters
   useEffect(() => {
     if (typeof window === 'undefined') return undefined
 
     const root = document.documentElement
 
-    if (isDesktop && showFilters) {
-      const scrollbarWidth = Math.max(
-        0,
-        window.innerWidth - document.documentElement.clientWidth
-      )
+    if (desktopFiltersOpen) {
+      const scrollbarWidth = Math.max(0, window.innerWidth - root.clientWidth)
       root.style.setProperty('--catalog-scroll-comp', `${scrollbarWidth}px`)
-    } else {
-      root.style.removeProperty('--catalog-scroll-comp')
+
+      return () => {
+        root.style.removeProperty('--catalog-scroll-comp')
+      }
     }
 
-    return () => {
-      root.style.removeProperty('--catalog-scroll-comp')
-    }
-  }, [isDesktop, showFilters])
+    root.style.removeProperty('--catalog-scroll-comp')
+
+    return undefined
+  }, [desktopFiltersOpen])
   const [focusedFacet, setFocusedFacet] = useState<keyof FacetFilters | null>(null)
   const clearAllFilters = useCallback(() => {
     setInStock(false)

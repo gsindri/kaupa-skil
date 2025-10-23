@@ -86,6 +86,7 @@ body {
   padding: 0 !important;
 }
 
+[data-app-header="true"],
 .app-shell-content {
   padding-right: var(--catalog-scroll-comp, 0px);
 }
