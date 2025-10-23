@@ -67,7 +67,7 @@ const checkboxClassName =
   'h-4 w-4 shrink-0 rounded-[6px] border-[color:var(--filters-border)] bg-transparent text-[color:var(--filters-text-primary)] transition duration-150 ease-out focus-visible:ring-[color:var(--filters-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--filters-bg)] data-[state=checked]:border-[color:var(--brand-accent,#2ee6d6)] data-[state=checked]:bg-[color:var(--brand-accent,#2ee6d6)] data-[state=checked]:text-[color:var(--filters-bg)] motion-reduce:transition-none'
 
 const quickFilterRowClass =
-  'group flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors duration-150 ease-out hover:bg-[color:var(--filters-surface-subtle)] focus-within:bg-[color:var(--filters-surface-subtle)] focus-within:ring-1 focus-within:ring-[color:var(--filters-border-strong)] motion-reduce:transition-none'
+  'group flex min-h-[40px] items-center gap-3 rounded-lg px-3 py-2.5 transition-colors duration-150 ease-out hover:bg-[color:var(--filters-surface-subtle)] hover:text-[color:var(--filters-text-primary)] focus-within:bg-[color:var(--filters-surface-subtle)] focus-within:text-[color:var(--filters-text-primary)] focus-within:ring-2 focus-within:ring-[color:var(--filters-focus)] focus-within:ring-offset-2 focus-within:ring-offset-[color:var(--filters-surface)] motion-reduce:transition-none'
 
 const sectionCardClass =
   'rounded-xl border border-[color:var(--filters-border)] bg-[color:var(--filters-surface)] p-4 shadow-[0_16px_34px_rgba(4,10,20,0.35)] backdrop-blur-[2px]'
@@ -365,13 +365,14 @@ export function CatalogFiltersPanel({
           key={`${facetKey}-${item.id}`}
           type="button"
           onClick={handleClick}
+          aria-pressed={state !== null}
+          data-state={state ?? 'idle'}
           className={cn(
-            'group flex w-full items-center justify-between gap-3 rounded-[10px] px-3 py-2.5 text-sm text-[color:var(--filters-text-secondary)] transition-colors duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--filters-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--filters-surface)] motion-reduce:transition-none',
+            'group flex w-full items-center justify-between gap-3 rounded-md px-2.5 py-2 text-[13px] text-[color:var(--filters-text-secondary)] transition-colors duration-150 ease-out hover:bg-[color:var(--filters-surface-subtle)] hover:text-[color:var(--filters-text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--filters-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--filters-surface)] active:bg-[color:var(--filters-surface-strong)] motion-reduce:transition-none',
             state === 'include' &&
-              'bg-[color:var(--filters-chip-bg)] text-[color:var(--filters-text-primary)]',
-            state === 'exclude' && 'bg-destructive/20 text-destructive',
-            state === null &&
-              'hover:bg-[color:var(--filters-surface-subtle)] hover:text-[color:var(--filters-text-primary)]'
+              'bg-[color:var(--filters-chip-bg)] text-[color:var(--filters-text-primary)] ring-1 ring-[color:var(--filters-border-strong)] hover:ring-[color:var(--filters-border-strong)]',
+            state === 'exclude' && 'bg-destructive/15 text-destructive',
+            state === null && 'text-[color:var(--filters-text-secondary)]'
           )}
         >
           <span className="flex items-center gap-2">
@@ -380,7 +381,7 @@ export function CatalogFiltersPanel({
               {label}
             </span>
           </span>
-          <span className="text-xs font-semibold text-[color:var(--filters-text-muted)] transition-colors group-hover:text-[color:var(--filters-text-secondary)]">
+          <span className="text-[12px] font-semibold text-[color:var(--filters-text-muted)] transition-colors group-hover:text-[color:var(--filters-text-secondary)]">
             {item.count}
           </span>
         </button>
@@ -419,9 +420,15 @@ export function CatalogFiltersPanel({
     variant === 'desktop' ? 'px-5' : 'px-4',
   )
 
+  const panelScrollWrapperClass = 'relative flex-1 overflow-hidden'
+
   const panelBodyClass = cn(
-    'flex-1 space-y-6 overflow-y-auto pb-8',
-    variant === 'desktop' ? 'px-5 pt-5' : 'px-4 pt-4'
+    'filter-scroll h-full space-y-6 overflow-y-auto pb-8 bg-[color:var(--filters-bg)]',
+    variant === 'desktop' ? 'px-5 pt-5' : 'px-4 pt-4',
+    '[&::-webkit-scrollbar]:w-[6px]',
+    '[&::-webkit-scrollbar-thumb]:rounded-full',
+    '[&::-webkit-scrollbar-thumb]:bg-[rgba(255,255,255,0.15)]',
+    '[&::-webkit-scrollbar-track]:bg-transparent'
   )
 
   const headerTokens = useMemo<HeaderVars>(() => ({
@@ -463,120 +470,136 @@ export function CatalogFiltersPanel({
         </div>
 
         {/* Tier-1 Quick Filters - Always visible */}
-        <div className={cn(
-          variant === 'desktop' ? 'px-5 pb-4' : 'px-4 pb-4',
-          'space-y-2.5'
-        )}>
-          <div className={cn(quickFilterRowClass, inStock && 'bg-[color:var(--filters-chip-bg)] ring-1 ring-[color:var(--filters-border-strong)]')}>
-            <Checkbox
-              id="filter-in-stock"
-              checked={inStock}
-              onCheckedChange={setInStock}
-              className={checkboxClassName}
-            />
-            <label
-              htmlFor="filter-in-stock"
-              className={cn(
-                'flex-1 cursor-pointer select-none text-sm font-medium text-[color:var(--filters-text-secondary)] transition-colors group-hover:text-[color:var(--filters-text-primary)]',
-                inStock && 'text-[color:var(--filters-text-primary)]'
-              )}
-            >
-              {t('stock.inStockOnly', { defaultValue: 'Only in stock' })}
-            </label>
-          </div>
+        <div
+          className={cn(
+            'bg-[color:var(--filters-bg)]',
+            variant === 'desktop' ? 'px-5 pb-4' : 'px-4 pb-4'
+          )}
+        >
+          <section className="rounded-xl border border-[color:var(--filters-border)]/70 bg-[color:var(--filters-surface)]/95 p-3 shadow-[0_12px_28px_rgba(4,10,20,0.32)]">
+            <ul className="space-y-2.5">
+              <li>
+                <div className={cn(quickFilterRowClass, inStock && 'bg-[color:var(--filters-chip-bg)] ring-1 ring-[color:var(--filters-border-strong)]')}>
+                  <Checkbox
+                    id="filter-in-stock"
+                    checked={inStock}
+                    onCheckedChange={setInStock}
+                    className={checkboxClassName}
+                  />
+                  <label
+                    htmlFor="filter-in-stock"
+                    className={cn(
+                      'flex-1 cursor-pointer select-none text-[13px] font-medium text-[color:var(--filters-text-secondary)] transition-colors group-hover:text-[color:var(--filters-text-primary)]',
+                      inStock && 'text-[color:var(--filters-text-primary)]'
+                    )}
+                  >
+                    {t('stock.inStockOnly', { defaultValue: 'Only in stock' })}
+                  </label>
+                </div>
+              </li>
 
-          <div className={cn(quickFilterRowClass, mySuppliers && 'bg-[color:var(--filters-chip-bg)] ring-1 ring-[color:var(--filters-border-strong)]')}>
-            <Checkbox
-              id="filter-my-suppliers"
-              checked={mySuppliers}
-              onCheckedChange={setMySuppliers}
-              className={checkboxClassName}
-            />
-            <label
-              htmlFor="filter-my-suppliers"
-              className={cn(
-                'flex-1 cursor-pointer select-none text-sm font-medium text-[color:var(--filters-text-secondary)] transition-colors group-hover:text-[color:var(--filters-text-primary)]',
-                mySuppliers && 'text-[color:var(--filters-text-primary)]'
-              )}
-            >
-              {t('suppliers.myOnly', { defaultValue: 'My suppliers only' })}
-            </label>
-          </div>
+              <li>
+                <div className={cn(quickFilterRowClass, mySuppliers && 'bg-[color:var(--filters-chip-bg)] ring-1 ring-[color:var(--filters-border-strong)]')}>
+                  <Checkbox
+                    id="filter-my-suppliers"
+                    checked={mySuppliers}
+                    onCheckedChange={setMySuppliers}
+                    className={checkboxClassName}
+                  />
+                  <label
+                    htmlFor="filter-my-suppliers"
+                    className={cn(
+                      'flex-1 cursor-pointer select-none text-[13px] font-medium text-[color:var(--filters-text-secondary)] transition-colors group-hover:text-[color:var(--filters-text-primary)]',
+                      mySuppliers && 'text-[color:var(--filters-text-primary)]'
+                    )}
+                  >
+                    {t('suppliers.myOnly', { defaultValue: 'My suppliers only' })}
+                  </label>
+                </div>
+              </li>
 
-          <div className={cn(quickFilterRowClass, onSpecial && 'bg-[color:var(--filters-chip-bg)] ring-1 ring-[color:var(--filters-border-strong)]')}>
-            <Checkbox
-              id="filter-on-special"
-              checked={onSpecial}
-              onCheckedChange={setOnSpecial}
-              className={checkboxClassName}
-            />
-            <label
-              htmlFor="filter-on-special"
-              className={cn(
-                'flex-1 cursor-pointer select-none text-sm font-medium text-[color:var(--filters-text-secondary)] transition-colors group-hover:text-[color:var(--filters-text-primary)]',
-                onSpecial && 'text-[color:var(--filters-text-primary)]'
-              )}
-            >
-              {t('specials.onlySpecials', { defaultValue: 'On special only' })}
-            </label>
-          </div>
+              <li>
+                <div className={cn(quickFilterRowClass, onSpecial && 'bg-[color:var(--filters-chip-bg)] ring-1 ring-[color:var(--filters-border-strong)]')}>
+                  <Checkbox
+                    id="filter-on-special"
+                    checked={onSpecial}
+                    onCheckedChange={setOnSpecial}
+                    className={checkboxClassName}
+                  />
+                  <label
+                    htmlFor="filter-on-special"
+                    className={cn(
+                      'flex-1 cursor-pointer select-none text-[13px] font-medium text-[color:var(--filters-text-secondary)] transition-colors group-hover:text-[color:var(--filters-text-primary)]',
+                      onSpecial && 'text-[color:var(--filters-text-primary)]'
+                    )}
+                  >
+                    {t('specials.onlySpecials', { defaultValue: 'On special only' })}
+                  </label>
+                </div>
+              </li>
+            </ul>
+          </section>
         </div>
       </div>
 
       {/* Scrollable content area - Tier-2 Facets */}
-      <div className={panelBodyClass} style={panelScrollStyle}>
-        <FilterPresets className="pb-4 border-b border-[color:var(--filters-border)]/60" />
+      <div className={panelScrollWrapperClass}>
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-3 shadow-[inset_0_12px_12px_-12px_rgba(0,0,0,0.8)]" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-3 shadow-[inset_0_-12px_12px_-12px_rgba(0,0,0,0.8)]" />
+        <div className={panelBodyClass} style={panelScrollStyle}>
+          <FilterPresets className="mb-3" />
+          <div className="my-3 border-t border-[color:var(--filters-border)]/60" />
 
-        <section className="space-y-4">
-          {/* Active filter chips */}
-          {chips.length > 0 && (
-            <div className="space-y-2 pb-4 border-b border-[color:var(--filters-border)]/60">
-              <span className="block text-[11px] font-semibold uppercase tracking-[0.22em] text-[color:var(--filters-text-muted)]">
-                {t('activeFilters', { defaultValue: 'Active filters' })}
-              </span>
-              <div className="flex flex-wrap items-center gap-2">
-                {chips.map(chip => (
-                  <FilterChip
-                    key={chip.key}
-                    selected
-                    onClick={chip.onEdit}
-                    onRemove={chip.onRemove}
-                    className="shrink-0"
-                  >
-                    {chip.label}
-                  </FilterChip>
+          <section className="space-y-4">
+            {/* Active filter chips */}
+            {chips.length > 0 && (
+              <div className="space-y-2 pb-4 border-b border-[color:var(--filters-border)]/60">
+                <span className="block text-[11px] font-semibold uppercase tracking-[0.22em] text-[color:var(--filters-text-muted)]">
+                  {t('activeFilters', { defaultValue: 'Active filters' })}
+                </span>
+                <div className="flex flex-wrap items-center gap-2">
+                  {chips.map(chip => (
+                    <FilterChip
+                      key={chip.key}
+                      selected
+                      onClick={chip.onEdit}
+                      onRemove={chip.onRemove}
+                      className="shrink-0"
+                    >
+                      {chip.label}
+                    </FilterChip>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Facet filters section - Categories, Suppliers, Brands, etc. */}
+          </section>
+
+          <section className="mt-2 space-y-4">
+            {isLoading && (
+              <div className="space-y-4">
+                {skeletonRows.map((_, index) => (
+                  <div key={`skeleton-${index}`} className="space-y-2">
+                    <div className="h-3 w-32 animate-pulse rounded-full bg-[color:var(--filters-surface-subtle)]" />
+                    <div className="space-y-2 rounded-xl border border-[color:var(--filters-border)]/40 bg-[color:var(--filters-surface-subtle)]/60 p-3">
+                      {Array.from({ length: 3 }).map((__, inner) => (
+                        <div key={inner} className="flex items-center justify-between gap-3">
+                          <div className="flex items-center gap-3">
+                            <span className="h-4 w-4 rounded border border-[color:var(--filters-border)]/60" />
+                            <div className="h-3 w-32 animate-pulse rounded-full bg-[color:var(--filters-surface-subtle)]" />
+                          </div>
+                          <div className="h-3 w-10 animate-pulse rounded-full bg-[color:var(--filters-surface-subtle)]" />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 ))}
               </div>
-            </div>
-          )}
-          
-          {/* Facet filters section - Categories, Suppliers, Brands, etc. */}
-        </section>
+            )}
 
-        <section className="space-y-4">
-          {isLoading && (
-            <div className="space-y-4">
-              {skeletonRows.map((_, index) => (
-                <div key={`skeleton-${index}`} className="space-y-2">
-                  <div className="h-3 w-32 animate-pulse rounded-full bg-[color:var(--filters-surface-subtle)]" />
-                  <div className="space-y-2 rounded-xl border border-[color:var(--filters-border)]/40 bg-[color:var(--filters-surface-subtle)]/60 p-3">
-                    {Array.from({ length: 3 }).map((__, inner) => (
-                      <div key={inner} className="flex items-center justify-between gap-3">
-                        <div className="flex items-center gap-3">
-                          <span className="h-4 w-4 rounded border border-[color:var(--filters-border)]/60" />
-                          <div className="h-3 w-32 animate-pulse rounded-full bg-[color:var(--filters-surface-subtle)]" />
-                        </div>
-                        <div className="h-3 w-10 animate-pulse rounded-full bg-[color:var(--filters-surface-subtle)]" />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {!isLoading &&
-            facets.map(({ key, label, items, searchable }) => {
+            {!isLoading &&
+              facets.map(({ key, label, items, searchable }) => {
               const isOpen = openFacets[key]
               const searchValue = searchable ? debouncedFacetSearch[key as keyof FacetSearchState] : ''
               return (
@@ -728,6 +751,7 @@ export function CatalogFiltersPanel({
         </section>
       </div>
     </div>
+  </div>
   )
 }
 
