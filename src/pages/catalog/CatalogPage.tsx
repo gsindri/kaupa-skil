@@ -1,4 +1,11 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useMemo,
+  useLayoutEffect,
+} from 'react'
 import { SortDropdown } from '@/components/catalog/SortDropdown'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { AlertCircle, X } from 'lucide-react'
@@ -562,23 +569,28 @@ export default function CatalogPage() {
     }
   }, [])
   const desktopFiltersOpen = isDesktop && showFilters
+  const scrollbarCompRef = useRef(0)
+
   useEffect(() => {
-    if (typeof window === 'undefined') return undefined
+    if (typeof window === 'undefined') return
+
+    if (!desktopFiltersOpen) {
+      const root = document.documentElement
+      scrollbarCompRef.current = Math.max(0, window.innerWidth - root.clientWidth)
+      root.style.removeProperty('--catalog-scroll-comp')
+    }
+  }, [desktopFiltersOpen])
+
+  useLayoutEffect(() => {
+    if (typeof window === 'undefined' || !desktopFiltersOpen) return undefined
 
     const root = document.documentElement
+    const width = scrollbarCompRef.current || Math.max(0, window.innerWidth - root.clientWidth)
+    root.style.setProperty('--catalog-scroll-comp', `${width}px`)
 
-    if (desktopFiltersOpen) {
-      const scrollbarWidth = Math.max(0, window.innerWidth - root.clientWidth)
-      root.style.setProperty('--catalog-scroll-comp', `${scrollbarWidth}px`)
-
-      return () => {
-        root.style.removeProperty('--catalog-scroll-comp')
-      }
+    return () => {
+      root.style.removeProperty('--catalog-scroll-comp')
     }
-
-    root.style.removeProperty('--catalog-scroll-comp')
-
-    return undefined
   }, [desktopFiltersOpen])
   const [focusedFacet, setFocusedFacet] = useState<keyof FacetFilters | null>(null)
   const clearAllFilters = useCallback(() => {
