@@ -36,6 +36,7 @@ import { AnalyticsTracker } from '@/components/quick/AnalyticsTrackerUtils'
 import { ViewToggle } from '@/components/place-order/ViewToggle'
 
 import AppLayout from '@/components/layout/AppLayout'
+import { PublicNavigation } from '@/components/layout/PublicNavigation'
 import { Sheet, SheetContent, SheetPortal } from '@/components/ui/sheet'
 import { useCatalogFilters, SortOrder } from '@/state/catalogFiltersStore'
 import { useSearchParams } from 'react-router-dom'
@@ -506,7 +507,7 @@ function deriveChipsFromFilters(
 }
 
 export default function CatalogPage() {
-  const { profile } = useAuth()
+  const { user, profile } = useAuth()
   const orgId = profile?.tenant_id || ''
 
   // Direct access to avoid shallow comparison issues

@@ -9,6 +9,7 @@ import CatalogPage from "@/pages/catalog/CatalogPage";
 import Checkout from "@/pages/Checkout";
 import Compare from "@/pages/Compare";
 import Dashboard from "@/pages/Dashboard";
+import LandingPage from "@/pages/LandingPage";
 import Delivery from "@/pages/Delivery";
 import Discovery from "@/pages/Discovery";
 import ErrorPage from "@/pages/ErrorPage";
@@ -37,6 +38,11 @@ const shouldRedirectCheckout = FEATURE_EMAIL_CHECKOUT_ONE_PAGE && !FEATURE_TRADI
 export const routes = [
   {
     path: "/",
+    element: <LandingPage />,
+    errorElement: <ErrorPage />,
+  },
+  {
+    path: "/dashboard",
     element: (
       <AuthGate>
         <AppLayout />
@@ -121,11 +127,7 @@ export const routes = [
   },
   {
     path: "/catalog",
-    element: (
-      <AuthGate>
-        <CatalogPage />
-      </AuthGate>
-    ),
+    element: <CatalogPage />,
     errorElement: <ErrorPage />,
   },
   {

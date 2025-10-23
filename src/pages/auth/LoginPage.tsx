@@ -10,7 +10,7 @@ export default function LoginPage() {
   const location = useLocation();
 
   const from =
-    (location.state as { from?: { pathname?: string } })?.from?.pathname || "/";
+    (location.state as { from?: { pathname?: string } })?.from?.pathname || "/dashboard";
 
   if (user) {
     return <Navigate to={from} replace />;
