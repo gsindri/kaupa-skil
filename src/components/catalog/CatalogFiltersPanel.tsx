@@ -504,8 +504,7 @@ export function CatalogFiltersPanel({
     <div
       className={cn(
         'flex h-full flex-col overflow-hidden bg-[color:var(--filters-bg)] text-[color:var(--filters-text-secondary)]',
-        'shadow-[0_24px_64px_rgba(4,12,24,0.45)] ring-1 ring-inset ring-[color:var(--filters-border)]/70',
-        variant === 'desktop' && 'lg:max-h-[calc(100vh-var(--header-h,64px))]'
+        'shadow-[0_24px_64px_rgba(4,12,24,0.45)] ring-1 ring-inset ring-[color:var(--filters-border)]/70'
       )}
     >
       {/* Sticky header with title, clear all, and Tier-1 toggles */}
