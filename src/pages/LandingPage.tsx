@@ -66,8 +66,8 @@ export default function LandingPage() {
           className="mx-auto w-full"
           style={{
             maxWidth: '1600px',
-            paddingInline: 'clamp(1.5rem, 4vw, 4rem)',
-            paddingLeft: 'calc(var(--layout-rail, 72px) + clamp(1.5rem, 4vw, 4rem))'
+            paddingLeft: 'calc(var(--layout-rail, 72px) + clamp(1.5rem, 4vw, 4rem))',
+            paddingRight: 'clamp(1.5rem, 4vw, 4rem)'
           }}
         >
           {/* Hero Section - Asymmetric Layout */}
@@ -113,7 +113,7 @@ export default function LandingPage() {
 
               {/* Right: Visual Element */}
               <div className="relative hidden lg:flex justify-end">
-                <div className="relative max-w-[440px] rounded-3xl overflow-hidden shadow-[0_40px_120px_rgba(15,23,42,0.12)] border border-primary/10">
+                <div className="relative max-w-[520px] rounded-3xl overflow-hidden shadow-[0_40px_120px_rgba(15,23,42,0.12)] border border-primary/10">
                   <img
                     src={heroImage}
                     alt="Professional chef managing inventory in a modern kitchen"
@@ -129,25 +129,25 @@ export default function LandingPage() {
           <div className="max-w-[1000px] mx-auto px-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               <div className="flex items-start gap-3 p-4 rounded-2xl hover:bg-background/50 transition-all duration-200 hover:-translate-y-1 group">
-                <div className="w-1.5 h-1.5 rounded-full bg-warning mt-2 flex-shrink-0 group-hover:scale-150 transition-transform" />
+                <div className="w-2 h-2 rounded-full bg-warning mt-2 flex-shrink-0 group-hover:scale-150 transition-transform" />
                 <p className="text-base leading-7 text-foreground">
                   Compare prices across wholesalers.
                 </p>
               </div>
               <div className="flex items-start gap-3 p-4 rounded-2xl hover:bg-background/50 transition-all duration-200 hover:-translate-y-1 group">
-                <div className="w-1.5 h-1.5 rounded-full bg-warning mt-2 flex-shrink-0 group-hover:scale-150 transition-transform" />
+                <div className="w-2 h-2 rounded-full bg-warning mt-2 flex-shrink-0 group-hover:scale-150 transition-transform" />
                 <p className="text-base leading-7 text-foreground">
                   See what's in stock before you order.
                 </p>
               </div>
               <div className="flex items-start gap-3 p-4 rounded-2xl hover:bg-background/50 transition-all duration-200 hover:-translate-y-1 group">
-                <div className="w-1.5 h-1.5 rounded-full bg-warning mt-2 flex-shrink-0 group-hover:scale-150 transition-transform" />
+                <div className="w-2 h-2 rounded-full bg-warning mt-2 flex-shrink-0 group-hover:scale-150 transition-transform" />
                 <p className="text-base leading-7 text-foreground">
                   No juggling multiple supplier sites.
                 </p>
               </div>
               <div className="flex items-start gap-3 p-4 rounded-2xl hover:bg-background/50 transition-all duration-200 hover:-translate-y-1 group">
-                <div className="w-1.5 h-1.5 rounded-full bg-warning mt-2 flex-shrink-0 group-hover:scale-150 transition-transform" />
+                <div className="w-2 h-2 rounded-full bg-warning mt-2 flex-shrink-0 group-hover:scale-150 transition-transform" />
                 <p className="text-base leading-7 text-foreground">
                   No spreadsheets — just ordering.
                 </p>
