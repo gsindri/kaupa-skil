@@ -63,9 +63,7 @@ export function LanguageSwitcher({
                 `fi-${activeLanguage.flag}`,
                 'shrink-0 overflow-hidden rounded-[4px] text-[16px]',
                 'ring-1 ring-inset ring-[color:var(--surface-ring)]',
-                'transition-transform duration-150 ease-out',
-                'group-hover:translate-x-[1px] group-active:translate-x-[2px]',
-                'motion-reduce:transition-none motion-reduce:group-hover:translate-x-0 motion-reduce:group-active:translate-x-0',
+                'transition-colors duration-150 ease-out'
               )}
               aria-hidden="true"
             />
