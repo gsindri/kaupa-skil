@@ -61,12 +61,7 @@ export default function LandingPage() {
 
       <PublicNavigation />
       
-      <main
-        className="relative"
-        style={{
-          paddingInline: 'var(--page-gutter)',
-        }}
-      >
+      <main className="relative">
         <div
           className="mx-auto w-full"
           style={{
