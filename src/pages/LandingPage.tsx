@@ -61,13 +61,17 @@ export default function LandingPage() {
 
       <PublicNavigation />
       
-      <main className="relative">
+      <main 
+        className="relative"
+        style={{
+          paddingLeft: 'var(--layout-rail, 72px)'
+        }}
+      >
         <div
           className="mx-auto w-full"
           style={{
             maxWidth: '1600px',
-            paddingLeft: 'calc(var(--layout-rail, 72px) + clamp(1.5rem, 4vw, 4rem))',
-            paddingRight: 'clamp(1.5rem, 4vw, 4rem)'
+            paddingInline: 'clamp(1.5rem, 4vw, 4rem)'
           }}
         >
           {/* Hero Section - Asymmetric Layout */}
