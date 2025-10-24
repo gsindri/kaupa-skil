@@ -1648,7 +1648,7 @@ function FiltersBar({
           paddingInline: 'var(--page-gutter)',
         }}
         className={cn(
-          'relative bg-[color:var(--toolbar-bg)] backdrop-blur-xl border border-[color:var(--ring-idle)]/60 after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-white/12 after:content-[""]',
+          'relative bg-[color:var(--toolbar-bg)] backdrop-blur-xl after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-white/12 after:content-[""]',
           scrolled && 'before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-white/16 before:opacity-70 before:content-[""]',
         )}
       >
