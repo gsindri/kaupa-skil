@@ -3,6 +3,7 @@ import { useAuth } from '@/contexts/useAuth'
 import { Navigate, Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { PublicNavigation } from '@/components/layout/PublicNavigation'
+import heroImage from '@/assets/frontpagepic.png'
 
 export default function LandingPage() {
   const { user, isInitialized, loading } = useAuth()
@@ -78,27 +79,12 @@ export default function LandingPage() {
 
             {/* Right: Visual Element */}
             <div className="relative hidden lg:block">
-              <div className="relative p-8 rounded-3xl bg-gradient-to-br from-primary/5 via-accent/5 to-warning/5 border border-primary/10 shadow-lg backdrop-blur-sm">
-                <div className="space-y-8">
-                  <div>
-                    <div className="text-5xl font-bold font-display bg-gradient-to-r from-primary via-accent to-warning bg-clip-text text-transparent mb-2">
-                      10,000+
-                    </div>
-                    <div className="text-sm text-muted-foreground">Products available</div>
-                  </div>
-                  <div>
-                    <div className="text-5xl font-bold font-display bg-gradient-to-r from-primary via-accent to-warning bg-clip-text text-transparent mb-2">
-                      50+
-                    </div>
-                    <div className="text-sm text-muted-foreground">Suppliers to compare</div>
-                  </div>
-                  <div>
-                    <div className="text-5xl font-bold font-display bg-gradient-to-r from-primary via-accent to-warning bg-clip-text text-transparent mb-2">
-                      100%
-                    </div>
-                    <div className="text-sm text-muted-foreground">Price transparency</div>
-                  </div>
-                </div>
+              <div className="relative rounded-3xl overflow-hidden shadow-2xl border border-primary/10">
+                <img 
+                  src={heroImage}
+                  alt="Professional chef managing inventory in a modern kitchen"
+                  className="w-full h-full object-cover"
+                />
               </div>
             </div>
           </div>
