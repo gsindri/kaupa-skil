@@ -1215,7 +1215,7 @@ export default function CatalogPage() {
             className="lg:hidden"
             style={{ '--ctrl-h': '32px', '--ctrl-r': '10px' } as React.CSSProperties}
           >
-            <div className="flex flex-wrap items-center gap-2 rounded-[var(--ctrl-r,12px)] bg-[color:var(--chip-bg)]/70 px-3 py-3 ring-1 ring-inset ring-[color:var(--ring-idle)] backdrop-blur-xl">
+            <div className="flex flex-wrap items-center gap-2 rounded-[var(--ctrl-r,12px)] border border-[color:var(--ring-idle)]/60 bg-[color:var(--chip-bg)]/70 px-3 py-3 backdrop-blur-xl">
               <span className="text-xs font-semibold uppercase tracking-wide text-[color:var(--ink-dim)]/70">
                 Active filters
               </span>
@@ -1570,8 +1570,8 @@ function FiltersBar({
             aria-controls="catalog-filters-panel"
             aria-keyshortcuts="f"
             className={cn(
-              'inline-flex h-[var(--ctrl-h,40px)] items-center gap-3 rounded-[var(--ctrl-r,12px)] bg-[color:var(--chip-bg)] px-3 text-sm font-semibold text-[color:var(--ink-hi)] ring-1 ring-inset ring-[color:var(--ring-idle)] backdrop-blur-xl transition duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-4 focus-visible:ring-offset-[color:var(--toolbar-bg)] hover:bg-[color:var(--chip-bg-hover)] hover:text-[color:var(--ink-hi)] hover:ring-[color:var(--ring-hover)] motion-reduce:transition-none',
-              showFilters && 'bg-[color:var(--seg-active-bg)] text-[color:var(--ink-hi)] ring-[color:var(--ring-hover)]',
+              'inline-flex h-[var(--ctrl-h,40px)] items-center gap-3 rounded-[var(--ctrl-r,12px)] border border-transparent bg-[color:var(--chip-bg)] px-3 text-sm font-semibold text-[color:var(--ink-hi)] backdrop-blur-xl transition duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-4 focus-visible:ring-offset-[color:var(--toolbar-bg)] hover:bg-[color:var(--chip-bg-hover)] hover:text-[color:var(--ink-hi)] motion-reduce:transition-none',
+              showFilters && 'bg-[color:var(--seg-active-bg)] text-[color:var(--ink-hi)] border-[color:var(--ring-hover)]',
               extraClassName,
             )}
             ref={filterButtonRef ?? undefined}
@@ -1648,7 +1648,7 @@ function FiltersBar({
           paddingInline: 'var(--page-gutter)',
         }}
         className={cn(
-          'relative bg-[color:var(--toolbar-bg)] backdrop-blur-xl ring-1 ring-inset ring-[color:var(--ring-idle)] after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-white/12 after:content-[""]',
+          'relative bg-[color:var(--toolbar-bg)] backdrop-blur-xl border border-[color:var(--ring-idle)]/60 after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-white/12 after:content-[""]',
           scrolled && 'before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-white/16 before:opacity-70 before:content-[""]',
         )}
       >
@@ -1695,7 +1695,7 @@ function FiltersBar({
                         onKeyDown={handleSearchKeyDown}
                         onFocus={() => onLockChange?.(true)}
                         onBlur={() => onLockChange?.(false)}
-                        className="h-11 w-full flex-1 rounded-[var(--ctrl-r,14px)] bg-white pl-12 pr-12 text-base font-semibold text-slate-900 placeholder:text-slate-500 ring-1 ring-inset ring-[color:var(--ring-idle)] shadow-[0_12px_38px_rgba(7,18,30,0.26)] transition duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--ring-hover)] focus-visible:ring-offset-0 hover:ring-[color:var(--ring-hover)] motion-reduce:transition-none"
+                        className="h-11 w-full flex-1 rounded-[var(--ctrl-r,14px)] border border-transparent bg-white pl-12 pr-12 text-base font-semibold text-slate-900 placeholder:text-slate-500 shadow-[0_12px_38px_rgba(7,18,30,0.26)] transition duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--ring-hover)] focus-visible:ring-offset-0 motion-reduce:transition-none"
                       />
                     </TooltipTrigger>
                     <TooltipContent sideOffset={8}>Search (Ctrl/⌘+K)</TooltipContent>
