@@ -27,14 +27,30 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-background relative">
-      {/* Subtle background texture */}
-      <div 
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          backgroundImage: 'radial-gradient(circle at 1px 1px, hsl(var(--foreground) / 0.03) 1px, transparent 0)',
-          backgroundSize: '32px 32px'
-        }}
-      />
+      {/* Hybrid background: soft gradient + light grid with edge fade */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        {/* Gradient base layer */}
+        <div 
+          className="absolute inset-0"
+          style={{
+            background: 'linear-gradient(135deg, #F9FAFB 0%, #F3F4F6 100%)'
+          }}
+        />
+        
+        {/* Grid overlay with radial fade */}
+        <div 
+          className="absolute inset-0"
+          style={{
+            backgroundImage: `
+              linear-gradient(to right, rgba(0, 0, 0, 0.03) 1px, transparent 1px),
+              linear-gradient(to bottom, rgba(0, 0, 0, 0.03) 1px, transparent 1px)
+            `,
+            backgroundSize: '72px 72px',
+            maskImage: 'radial-gradient(ellipse 80% 70% at 50% 50%, black 40%, transparent 100%)',
+            WebkitMaskImage: 'radial-gradient(ellipse 80% 70% at 50% 50%, black 40%, transparent 100%)'
+          }}
+        />
+      </div>
       
       <PublicNavigation />
       
