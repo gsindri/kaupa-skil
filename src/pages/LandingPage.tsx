@@ -70,7 +70,7 @@ export default function LandingPage() {
         <div
           className="mx-auto w-full"
           style={{
-            maxWidth: '1600px',
+            maxWidth: '1280px',
             paddingInline: 'clamp(1.5rem, 4vw, 4rem)',
           }}
         >
@@ -78,7 +78,7 @@ export default function LandingPage() {
           <section className="py-20 md:py-28 lg:py-32">
             <div className="grid grid-cols-1 lg:grid-cols-[60%_40%] gap-12 lg:gap-16 items-center">
               {/* Left: Content */}
-              <div className="text-left lg:pl-10">
+              <div className="text-left">
                 <h1 className="text-5xl md:text-6xl lg:text-7xl font-display font-extrabold text-foreground mb-6 leading-[1.08]">
                   A <span className="relative inline-block">
                     simpler
@@ -116,7 +116,7 @@ export default function LandingPage() {
               </div>
 
               {/* Right: Visual Element */}
-              <div className="relative hidden lg:flex justify-end pr-4">
+              <div className="relative hidden lg:flex justify-end">
                 <div className="relative max-w-[440px] rounded-3xl overflow-hidden shadow-[0_40px_120px_rgba(15,23,42,0.12)] border border-primary/10">
                   <img
                     src={heroImage}
