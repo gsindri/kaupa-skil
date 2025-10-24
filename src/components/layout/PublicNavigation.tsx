@@ -17,7 +17,7 @@ export function PublicNavigation() {
       }}
     >
       <div
-        className="mx-auto flex h-20 w-full max-w-[1600px] items-center justify-between"
+        className="mx-auto flex h-20 w-full max-w-[1280px] items-center justify-between"
         style={{
           paddingInline: 'clamp(1.5rem, 4vw, 4rem)',
         }}
