@@ -67,6 +67,7 @@ export default function LandingPage() {
           style={{
             maxWidth: '1600px',
             paddingInline: 'clamp(1.5rem, 4vw, 4rem)',
+            paddingLeft: 'calc(var(--layout-rail, 72px) + clamp(1.5rem, 4vw, 4rem))'
           }}
         >
           {/* Hero Section - Asymmetric Layout */}
