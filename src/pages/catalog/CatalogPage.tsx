@@ -1203,7 +1203,7 @@ export default function CatalogPage() {
         >
           <div
             className={cn(
-              'mx-auto w-full max-w-[1600px] space-y-5 pb-8',
+              'mx-auto w-full max-w-[1280px] space-y-5 pb-8',
               view === 'grid' ? 'pt-2' : 'pt-2'
             )}
             style={{
