@@ -10,8 +10,18 @@ import { LanguageSwitcher } from '@/components/layout/LanguageSwitcher'
  */
 export function PublicNavigation() {
   return (
-    <header className="sticky top-0 z-50 w-full border-b shadow-sm bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="mx-auto flex h-20 max-w-[1600px] items-center justify-between px-8">
+    <header
+      className="sticky top-0 z-50 w-full border-b shadow-sm bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+      style={{
+        paddingInline: 'var(--page-gutter)',
+      }}
+    >
+      <div
+        className="mx-auto flex h-20 w-full max-w-[1600px] items-center justify-between"
+        style={{
+          paddingInline: 'clamp(1.5rem, 4vw, 4rem)',
+        }}
+      >
         {/* Logo */}
         <Link to="/" className="flex items-center">
           <HeildaLogo />
