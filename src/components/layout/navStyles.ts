@@ -40,9 +40,8 @@ export const navTextButtonFocusRingClass = [
 
 export const navTextIconClass = [
   'size-4 shrink-0 opacity-80',
-  'transition-transform duration-150 ease-out',
-  'group-hover:translate-x-[1px] group-active:translate-x-[2px]',
-  'motion-reduce:transition-none motion-reduce:group-hover:translate-x-0 motion-reduce:group-active:translate-x-0',
+  'transition-[color,transform] duration-150 ease-out',
+  'motion-reduce:transition-none',
   'group-data-[state=open]:text-[color:var(--nav-text-strong-color,var(--ink,#eaf0f7))] group-data-[active=true]:text-[color:var(--nav-text-strong-color,var(--ink,#eaf0f7))]',
   'group-aria-[current=true]:text-[color:var(--nav-text-strong-color,var(--ink,#eaf0f7))] group-aria-[current=page]:text-[color:var(--nav-text-strong-color,var(--ink,#eaf0f7))]'
 ].join(' ')
