@@ -1,12 +1,12 @@
 export const navTextButtonClass = [
   'group relative inline-flex h-11 min-h-[44px] min-w-[44px] items-center gap-2 rounded-full px-4 bg-transparent',
-  'text-[14px] font-medium text-[color:var(--ink-dim,#cfd7e4)]',
+  'text-[14px] font-medium text-[color:var(--nav-text-color,var(--ink-dim,#cfd7e4))]',
   'transition-[color,background-color,transform,outline,box-shadow] duration-150 ease-out',
-  'outline-none hover:text-[color:var(--ink,#eaf0f7)] focus-visible:text-[color:var(--ink,#eaf0f7)]',
+  'outline-none hover:text-[color:var(--nav-text-strong-color,var(--ink,#eaf0f7))] focus-visible:text-[color:var(--nav-text-strong-color,var(--ink,#eaf0f7))]',
   'data-[state=open]:font-semibold data-[state=open]:z-[1]',
-  'data-[state=open]:text-[color:var(--ink,#eaf0f7)] data-[active=true]:text-[color:var(--ink,#eaf0f7)]',
+  'data-[state=open]:text-[color:var(--nav-text-strong-color,var(--ink,#eaf0f7))] data-[active=true]:text-[color:var(--nav-text-strong-color,var(--ink,#eaf0f7))]',
   'data-[state=open]:[box-shadow:0_12px_32px_-16px_rgba(15,23,42,0.48),_0_0_0_1px_rgba(255,255,255,0.28)]',
-  'aria-[current=true]:text-[color:var(--ink,#eaf0f7)] aria-[current=page]:text-[color:var(--ink,#eaf0f7)]'
+  'aria-[current=true]:text-[color:var(--nav-text-strong-color,var(--ink,#eaf0f7))] aria-[current=page]:text-[color:var(--nav-text-strong-color,var(--ink,#eaf0f7))]'
 ].join(' ')
 
 export const navTextButtonPillClass = [
@@ -43,13 +43,13 @@ export const navTextIconClass = [
   'transition-transform duration-150 ease-out',
   'group-hover:translate-x-[1px] group-active:translate-x-[2px]',
   'motion-reduce:transition-none motion-reduce:group-hover:translate-x-0 motion-reduce:group-active:translate-x-0',
-  'group-data-[state=open]:text-[color:var(--ink,#eaf0f7)] group-data-[active=true]:text-[color:var(--ink,#eaf0f7)]',
-  'group-aria-[current=true]:text-[color:var(--ink,#eaf0f7)] group-aria-[current=page]:text-[color:var(--ink,#eaf0f7)]'
+  'group-data-[state=open]:text-[color:var(--nav-text-strong-color,var(--ink,#eaf0f7))] group-data-[active=true]:text-[color:var(--nav-text-strong-color,var(--ink,#eaf0f7))]',
+  'group-aria-[current=true]:text-[color:var(--nav-text-strong-color,var(--ink,#eaf0f7))] group-aria-[current=page]:text-[color:var(--nav-text-strong-color,var(--ink,#eaf0f7))]'
 ].join(' ')
 
 export const navTextCaretClass = [
   navTextIconClass,
-  'text-[color:var(--ink-dim,#cfd7e4)] group-data-[state=open]:rotate-180'
+  'text-[color:var(--nav-text-caret-color,var(--nav-text-color,var(--ink-dim,#cfd7e4))))] group-data-[state=open]:rotate-180'
 ].join(' ')
 
 export const navQuietLinkClass = [
