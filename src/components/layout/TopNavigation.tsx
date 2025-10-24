@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState, useLayoutEffect, useId, useMemo } f
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { DropdownMenu, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import { Button } from '@/components/ui/button'
 import {
   Building2,
   CircleUserRound,
@@ -354,227 +355,233 @@ export function TopNavigation() {
             labelClassName="hidden md:inline"
             caretClassName="hidden md:inline-flex"
           />
-          <DropdownMenu
-            open={userMenuOpen}
-            onOpenChange={(open) => {
-              if (!open && !accountOpenedByKeyboardRef.current) {
-                accountTriggerRef.current?.blur()
-              }
-              if (!open) {
-                accountOpenedByKeyboardRef.current = false
-              }
-              setUserMenuOpen(open)
-            }}
-          >
-            <DropdownMenuTrigger asChild>
-              <button
-                ref={accountTriggerRef}
-                type="button"
-                className={cn(
-                  navTextButtonClass,
-                  'min-w-0 max-w-[240px] text-left !px-3.5',
-                  'disabled:cursor-wait disabled:opacity-80'
-                )}
-                disabled={isBusy}
-                aria-busy={isBusy || undefined}
-                aria-label={accountMenuLabel}
-                aria-haspopup="menu"
-                title={displayName || undefined}
-                onPointerDown={() => {
+          {user ? (
+            <DropdownMenu
+              open={userMenuOpen}
+              onOpenChange={(open) => {
+                if (!open && !accountOpenedByKeyboardRef.current) {
+                  accountTriggerRef.current?.blur()
+                }
+                if (!open) {
                   accountOpenedByKeyboardRef.current = false
-                }}
-                onKeyDown={(event) => {
-                  if (event.key === ' ' || event.key === 'Enter' || event.key === 'ArrowDown' || event.key === 'ArrowUp') {
-                    accountOpenedByKeyboardRef.current = true
-                  }
-                }}
-              >
-                <span className={navTextButtonPillClass} aria-hidden="true" />
-                <span
-                  aria-hidden="true"
-                  className="relative flex size-4 shrink-0 items-center justify-center"
+                }
+                setUserMenuOpen(open)
+              }}
+            >
+              <DropdownMenuTrigger asChild>
+                <button
+                  ref={accountTriggerRef}
+                  type="button"
+                  className={cn(
+                    navTextButtonClass,
+                    'min-w-0 max-w-[240px] text-left !px-3.5',
+                    'disabled:cursor-wait disabled:opacity-80'
+                  )}
+                  disabled={isBusy}
+                  aria-busy={isBusy || undefined}
+                  aria-label={accountMenuLabel}
+                  aria-haspopup="menu"
+                  title={displayName || undefined}
+                  onPointerDown={() => {
+                    accountOpenedByKeyboardRef.current = false
+                  }}
+                  onKeyDown={(event) => {
+                    if (event.key === ' ' || event.key === 'Enter' || event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+                      accountOpenedByKeyboardRef.current = true
+                    }
+                  }}
                 >
+                  <span className={navTextButtonPillClass} aria-hidden="true" />
                   <span
-                    className={cn(
-                      'size-4 shrink-0 rounded-full border-2 border-[color:var(--ink,#eaf0f7)] border-b-transparent transition-opacity',
-                      isBusy ? 'animate-spin opacity-100' : 'opacity-0'
-                    )}
-                  />
-                </span>
-                <span className="min-w-0 truncate">{displayName}</span>
-                <ChevronDown className={navTextCaretClass} aria-hidden="true" />
-                <span className={navTextButtonFocusRingClass} aria-hidden="true" />
-              </button>
-            </DropdownMenuTrigger>
-
-          <PopCard
-            className="w-[320px] space-y-2"
-            sideOffset={12}
-            align="end"
-            withOverlay
-          >
-            <div className="px-2.5 pt-2">
-              <div className="flex items-center gap-3 rounded-[14px] bg-[color:var(--surface-pop)]/35 px-3 py-3">
-                <Avatar className="h-11 w-11 border border-white/10 bg-white/10 shadow-[0_1px_4px_rgba(15,23,42,0.32)]">
-                  {avatarUrl ? (
-                    <AvatarImage src={avatarUrl} alt={`${displayName} avatar`} className="object-cover" />
-                  ) : null}
-                  <AvatarFallback
-                    style={{ background: avatarColor }}
-                    className="text-sm font-semibold uppercase tracking-wide text-white"
+                    aria-hidden="true"
+                    className="relative flex size-4 shrink-0 items-center justify-center"
                   >
-                    {userInitials}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="min-w-0 space-y-1">
-                  <div className="truncate text-[15px] font-semibold text-[color:var(--text)]">
-                    {displayName}
-                  </div>
-                  {displayEmail ? (
-                    <div className="truncate text-[13px] text-[color:var(--text-muted)]">
-                      {displayEmail}
-                    </div>
-                  ) : null}
-                  <div className="min-w-0 text-[12px] text-[color:var(--text-muted)]">
-                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                      <span className="inline-flex shrink-0 items-center rounded-full bg-white/10 px-2 py-[2px] text-[10px] font-semibold uppercase tracking-[0.08em] text-white/80">
-                        {workspacePillLabel}
-                      </span>
-                      <span className="flex-1 min-w-0 whitespace-normal text-left leading-tight">
-                        {membershipsLoading
-                          ? t('common.status.loadingWorkspace')
-                          : workspaceLabel}
-                      </span>
+                    <span
+                      className={cn(
+                        'size-4 shrink-0 rounded-full border-2 border-[color:var(--ink,#eaf0f7)] border-b-transparent transition-opacity',
+                        isBusy ? 'animate-spin opacity-100' : 'opacity-0'
+                      )}
+                    />
+                  </span>
+                  <span className="min-w-0 truncate">{displayName}</span>
+                  <ChevronDown className={navTextCaretClass} aria-hidden="true" />
+                  <span className={navTextButtonFocusRingClass} aria-hidden="true" />
+                </button>
+              </DropdownMenuTrigger>
+
+              <PopCard
+                className="w-[320px] space-y-2"
+                sideOffset={12}
+                align="end"
+                withOverlay
+              >
+                <div className="px-2.5 pt-2">
+                  <div className="flex items-center gap-3 rounded-[14px] bg-[color:var(--surface-pop)]/35 px-3 py-3">
+                    <Avatar className="h-11 w-11 border border-white/10 bg-white/10 shadow-[0_1px_4px_rgba(15,23,42,0.32)]">
+                      {avatarUrl ? (
+                        <AvatarImage src={avatarUrl} alt={`${displayName} avatar`} className="object-cover" />
+                      ) : null}
+                      <AvatarFallback
+                        style={{ background: avatarColor }}
+                        className="text-sm font-semibold uppercase tracking-wide text-white"
+                      >
+                        {userInitials}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0 space-y-1">
+                      <div className="truncate text-[15px] font-semibold text-[color:var(--text)]">
+                        {displayName}
+                      </div>
+                      {displayEmail ? (
+                        <div className="truncate text-[13px] text-[color:var(--text-muted)]">
+                          {displayEmail}
+                        </div>
+                      ) : null}
+                      <div className="min-w-0 text-[12px] text-[color:var(--text-muted)]">
+                        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                          <span className="inline-flex shrink-0 items-center rounded-full bg-white/10 px-2 py-[2px] text-[10px] font-semibold uppercase tracking-[0.08em] text-white/80">
+                            {workspacePillLabel}
+                          </span>
+                          <span className="flex-1 min-w-0 whitespace-normal text-left leading-tight">
+                            {membershipsLoading
+                              ? t('common.status.loadingWorkspace')
+                              : workspaceLabel}
+                          </span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            </div>
 
-              <div className="tw-label normal-case opacity-60">{t('navigation.account.profileSection')}</div>
-              <div className="flex flex-col gap-1 px-1">
-                <DropdownMenuItem asChild onSelect={() => setUserMenuOpen(false)}>
-                  <button type="button" className="tw-row tw-row-loose w-full text-left">
-                    <CircleUserRound className="size-4 text-[color:var(--text-muted)]" />
-                  <span className="truncate">{t('navigation.account.profileSettings')}</span>
-                  <span />
-                </button>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild onSelect={() => setUserMenuOpen(false)}>
-                <button type="button" className="tw-row tw-row-loose w-full text-left">
-                  <Building2 className="size-4 text-[color:var(--text-muted)]" />
-                  <span className="truncate">{t('navigation.account.organizationSettings')}</span>
-                  <ChevronRight className="size-4 text-[color:var(--text-muted)]" aria-hidden />
-                </button>
-              </DropdownMenuItem>
-            </div>
-
-            <div className="xl:hidden">
-              <div className="pop-div my-2 opacity-70" />
-              <div className="tw-label normal-case opacity-60">{t('navigation.account.languageSection')}</div>
-              <div className="flex flex-col gap-1 px-1">
-                {languageOptions.map((option) => (
-                  <DropdownMenuItem
-                    key={option.value}
-                    onSelect={() => {
-                      setLanguage(option.value as any)
-                      setUserMenuOpen(false)
-                    }}
-                    asChild
-                  >
-                    <button
-                      type="button"
-                      role="menuitemradio"
-                      aria-checked={language === option.value}
-                      className="tw-row tw-row-loose w-full text-left"
-                    >
-                      <span className="flex size-8 items-center justify-center rounded-full border border-[color:var(--surface-ring)] text-[13px] font-semibold text-[color:var(--text-muted)]" aria-hidden="true">
-                        {option.code}
-                      </span>
-                      <span className="truncate">{option.label}</span>
-                      <Check
-                        aria-hidden="true"
-                        className={cn(
-                          'h-3.5 w-3.5 justify-self-end text-[color:var(--brand-accent)] transition-opacity',
-                          language === option.value ? 'opacity-80' : 'opacity-0',
-                        )}
-                      />
+                <div className="tw-label normal-case opacity-60">{t('navigation.account.profileSection')}</div>
+                <div className="flex flex-col gap-1 px-1">
+                  <DropdownMenuItem asChild onSelect={() => setUserMenuOpen(false)}>
+                    <button type="button" className="tw-row tw-row-loose w-full text-left">
+                      <CircleUserRound className="size-4 text-[color:var(--text-muted)]" />
+                      <span className="truncate">{t('navigation.account.profileSettings')}</span>
+                      <span />
                     </button>
                   </DropdownMenuItem>
-                ))}
-              </div>
-            </div>
+                  <DropdownMenuItem asChild onSelect={() => setUserMenuOpen(false)}>
+                    <button type="button" className="tw-row tw-row-loose w-full text-left">
+                      <Building2 className="size-4 text-[color:var(--text-muted)]" />
+                      <span className="truncate">{t('navigation.account.organizationSettings')}</span>
+                      <ChevronRight className="size-4 text-[color:var(--text-muted)]" aria-hidden />
+                    </button>
+                  </DropdownMenuItem>
+                </div>
 
-            <div className="pop-div my-2 opacity-70" />
+                <div className="xl:hidden">
+                  <div className="pop-div my-2 opacity-70" />
+                  <div className="tw-label normal-case opacity-60">{t('navigation.account.languageSection')}</div>
+                  <div className="flex flex-col gap-1 px-1">
+                    {languageOptions.map((option) => (
+                      <DropdownMenuItem
+                        key={option.value}
+                        onSelect={() => {
+                          setLanguage(option.value as any)
+                          setUserMenuOpen(false)
+                        }}
+                        asChild
+                      >
+                        <button
+                          type="button"
+                          role="menuitemradio"
+                          aria-checked={language === option.value}
+                          className="tw-row tw-row-loose w-full text-left"
+                        >
+                          <span className="flex size-8 items-center justify-center rounded-full border border-[color:var(--surface-ring)] text-[13px] font-semibold text-[color:var(--text-muted)]" aria-hidden="true">
+                            {option.code}
+                          </span>
+                          <span className="truncate">{option.label}</span>
+                          <Check
+                            aria-hidden="true"
+                            className={cn(
+                              'h-3.5 w-3.5 justify-self-end text-[color:var(--brand-accent)] transition-opacity',
+                              language === option.value ? 'opacity-80' : 'opacity-0',
+                            )}
+                          />
+                        </button>
+                      </DropdownMenuItem>
+                    ))}
+                  </div>
+                </div>
 
-            <div className="tw-label normal-case opacity-60">{t('navigation.account.helpSection')}</div>
-            <div className="flex flex-col gap-1 px-1">
-              <DropdownMenuItem asChild onSelect={() => setUserMenuOpen(false)}>
-                <button type="button" className="tw-row tw-row-loose w-full text-left">
-                  <Keyboard className="size-4 text-[color:var(--text-muted)]" />
-                  <span className="truncate">{t('navigation.account.keyboardShortcuts')}</span>
-                  <span className="tw-kbd">?</span>
-                </button>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild onSelect={() => setUserMenuOpen(false)}>
-                <a
-                  href="https://help.heilda.app"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="tw-row tw-row-loose w-full text-left"
-                  onClick={() => setUserMenuOpen(false)}
+                <div className="pop-div my-2 opacity-70" />
+
+                <div className="tw-label normal-case opacity-60">{t('navigation.account.helpSection')}</div>
+                <div className="flex flex-col gap-1 px-1">
+                  <DropdownMenuItem asChild onSelect={() => setUserMenuOpen(false)}>
+                    <button type="button" className="tw-row tw-row-loose w-full text-left">
+                      <Keyboard className="size-4 text-[color:var(--text-muted)]" />
+                      <span className="truncate">{t('navigation.account.keyboardShortcuts')}</span>
+                      <span className="tw-kbd">?</span>
+                    </button>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild onSelect={() => setUserMenuOpen(false)}>
+                    <a
+                      href="https://help.heilda.app"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="tw-row tw-row-loose w-full text-left"
+                      onClick={() => setUserMenuOpen(false)}
+                    >
+                      <LifeBuoy className="size-4 text-[color:var(--text-muted)]" />
+                      <span className="truncate">{t('navigation.account.helpCenter')}</span>
+                      <ArrowUpRight className="size-4 text-[color:var(--text-muted)]" aria-hidden />
+                    </a>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild onSelect={() => setUserMenuOpen(false)}>
+                    <a
+                      href="mailto:support@heilda.app"
+                      className="tw-row tw-row-loose w-full text-left"
+                      onClick={() => setUserMenuOpen(false)}
+                    >
+                      <Mail className="size-4 text-[color:var(--text-muted)]" />
+                      <span className="truncate">{t('navigation.account.contactSupport')}</span>
+                      <span />
+                    </a>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild onSelect={() => setUserMenuOpen(false)}>
+                    <a
+                      href="https://docs.heilda.app"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="tw-row tw-row-loose w-full text-left"
+                      onClick={() => setUserMenuOpen(false)}
+                    >
+                      <BookOpen className="size-4 text-[color:var(--text-muted)]" />
+                      <span className="truncate">{t('navigation.account.documentation')}</span>
+                      <ArrowUpRight className="size-4 text-[color:var(--text-muted)]" aria-hidden />
+                    </a>
+                  </DropdownMenuItem>
+                </div>
+
+                <div className="pop-div my-2 opacity-70" />
+
+                <DropdownMenuItem
+                  onSelect={() => {
+                    setUserMenuOpen(false)
+                    handleSignOut()
+                  }}
+                  asChild
                 >
-                  <LifeBuoy className="size-4 text-[color:var(--text-muted)]" />
-                  <span className="truncate">{t('navigation.account.helpCenter')}</span>
-                  <ArrowUpRight className="size-4 text-[color:var(--text-muted)]" aria-hidden />
-                </a>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild onSelect={() => setUserMenuOpen(false)}>
-                <a
-                  href="mailto:support@heilda.app"
-                  className="tw-row tw-row-loose w-full text-left"
-                  onClick={() => setUserMenuOpen(false)}
-                >
-                  <Mail className="size-4 text-[color:var(--text-muted)]" />
-                  <span className="truncate">{t('navigation.account.contactSupport')}</span>
-                  <span />
-                </a>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild onSelect={() => setUserMenuOpen(false)}>
-                <a
-                  href="https://docs.heilda.app"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="tw-row tw-row-loose w-full text-left"
-                  onClick={() => setUserMenuOpen(false)}
-                >
-                  <BookOpen className="size-4 text-[color:var(--text-muted)]" />
-                  <span className="truncate">{t('navigation.account.documentation')}</span>
-                  <ArrowUpRight className="size-4 text-[color:var(--text-muted)]" aria-hidden />
-                </a>
-              </DropdownMenuItem>
-            </div>
-
-            <div className="pop-div my-2 opacity-70" />
-
-            <DropdownMenuItem
-              onSelect={() => {
-                setUserMenuOpen(false)
-                handleSignOut()
-              }}
-              asChild
-            >
-              <button
-                type="button"
-                className="tw-row tw-row-loose w-full text-left text-[color:var(--text)]"
-              >
-                <LogOut className="size-4 text-[color:var(--text-muted)]" aria-hidden />
-                <span className="truncate">{t('navigation.account.signOut')}</span>
-                <span />
-              </button>
-            </DropdownMenuItem>
-          </PopCard>
-          </DropdownMenu>
+                  <button
+                    type="button"
+                    className="tw-row tw-row-loose w-full text-left text-[color:var(--text)]"
+                  >
+                    <LogOut className="size-4 text-[color:var(--text-muted)]" aria-hidden />
+                    <span className="truncate">{t('navigation.account.signOut')}</span>
+                    <span />
+                  </button>
+                </DropdownMenuItem>
+              </PopCard>
+            </DropdownMenu>
+          ) : (
+            <Button asChild size="lg" className="font-semibold shadow-[0_1px_4px_rgba(15,23,42,0.28)]">
+              <Link to="/login">{t('navigation.account.signIn')}</Link>
+            </Button>
+          )}
           <span aria-hidden="true" className="pointer-events-none flex h-11 items-center py-2">
             <span className="block h-full w-px rounded-full bg-white/12" />
           </span>
