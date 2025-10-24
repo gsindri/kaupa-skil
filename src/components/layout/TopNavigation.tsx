@@ -390,12 +390,17 @@ export function TopNavigation() {
                 }}
               >
                 <span className={navTextButtonPillClass} aria-hidden="true" />
-                {isBusy ? (
+                <span
+                  aria-hidden="true"
+                  className="relative flex size-4 shrink-0 items-center justify-center"
+                >
                   <span
-                    aria-hidden="true"
-                    className="size-4 shrink-0 animate-spin rounded-full border-2 border-[color:var(--ink,#eaf0f7)] border-b-transparent"
+                    className={cn(
+                      'size-4 shrink-0 rounded-full border-2 border-[color:var(--ink,#eaf0f7)] border-b-transparent transition-opacity',
+                      isBusy ? 'animate-spin opacity-100' : 'opacity-0'
+                    )}
                   />
-                ) : null}
+                </span>
                 <span className="min-w-0 truncate">{displayName}</span>
                 <ChevronDown className={navTextCaretClass} aria-hidden="true" />
                 <span className={navTextButtonFocusRingClass} aria-hidden="true" />
