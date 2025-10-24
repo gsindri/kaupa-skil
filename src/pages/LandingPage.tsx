@@ -76,23 +76,26 @@ export default function LandingPage() {
         >
           {/* Hero Section - Asymmetric Layout */}
           <section className="py-20 md:py-28 lg:py-32">
-            <div className="grid grid-cols-1 lg:grid-cols-[58%_42%] gap-12 lg:gap-16 items-center">
+            <div className="grid grid-cols-1 lg:grid-cols-[60%_40%] gap-12 lg:gap-16 items-center">
               {/* Left: Content */}
-              <div className="text-left">
-                <h1 className="text-5xl md:text-6xl lg:text-7xl font-display font-extrabold text-foreground mb-8 leading-[1.1]">
+              <div className="text-left lg:pl-10">
+                <h1 className="text-5xl md:text-6xl lg:text-7xl font-display font-extrabold text-foreground mb-6 leading-[1.08]">
                   A <span className="relative inline-block">
                     simpler
-                    <span className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-warning to-accent rounded-full" />
+                    <span
+                      className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-warning to-accent rounded-full animate-fade-in"
+                      style={{ animationDelay: '120ms' }}
+                    />
                   </span> way to order from your suppliers.
                 </h1>
                 <p className="text-base md:text-lg text-muted-foreground mb-10 max-w-[500px]">
                   Browse, compare, and order — all in one shared catalog.
                 </p>
-                <div className="flex flex-col sm:flex-row gap-4">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-5">
                   <Button
                     asChild
                     size="lg"
-                    className="text-base relative group overflow-hidden transition-all duration-200 hover:scale-105 hover:shadow-lg hover:shadow-primary/20"
+                    className="text-base relative group overflow-hidden transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/20"
                   >
                     <Link to="/catalog">
                       <span className="relative z-10">Explore catalog</span>
@@ -102,109 +105,29 @@ export default function LandingPage() {
                     asChild
                     variant="outline"
                     size="lg"
-                    className="text-base hover:scale-105 transition-transform duration-200"
+                    className="text-base"
                   >
                     <Link to="/login">Log in</Link>
                   </Button>
                 </div>
-                <p className="text-xs text-muted-foreground mt-6 tracking-wide">
+                <p className="text-xs text-muted-foreground/80 mt-6 tracking-wide">
                   No account needed — just start browsing.
                 </p>
               </div>
 
               {/* Right: Visual Element */}
-              <div className="relative hidden lg:block">
-                <div className="relative rounded-3xl overflow-hidden shadow-2xl border border-primary/10">
+              <div className="relative hidden lg:flex justify-end pr-4">
+                <div className="relative max-w-[440px] rounded-3xl overflow-hidden shadow-[0_40px_120px_rgba(15,23,42,0.12)] border border-primary/10">
                   <img
                     src={heroImage}
                     alt="Professional chef managing inventory in a modern kitchen"
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover brightness-[1.08] saturate-[0.94]"
                   />
+                  <div className="absolute inset-0 pointer-events-none shadow-[inset_0_0_40px_rgba(15,23,42,0.08)]" />
                 </div>
-
-      <main className="mx-auto max-w-[1200px] px-6 relative">
-        {/* Hero Section - Asymmetric Layout */}
-        <section className="py-20 md:py-28 lg:py-32">
-          <div className="grid grid-cols-1 lg:grid-cols-[60%_40%] gap-12 lg:gap-16 items-center">
-            {/* Left: Content */}
-            <div className="text-left lg:pl-10">
-              <h1 className="text-5xl md:text-6xl lg:text-7xl font-display font-extrabold text-foreground mb-6 leading-[1.08]">
-                A <span className="relative inline-block">
-                  simpler
-                  <span
-                    className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-warning to-accent rounded-full animate-fade-in"
-                    style={{ animationDelay: '120ms' }}
-                  />
-                </span> way to order from your suppliers.
-              </h1>
-              <p className="text-base md:text-lg text-muted-foreground mb-10 max-w-[500px]">
-                Browse, compare, and order — all in one shared catalog.
-              </p>
-              <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-5">
-                <Button
-                  asChild
-                  size="lg"
-                  className="text-base relative group overflow-hidden transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/20"
-                >
-                  <Link to="/catalog">
-                    <span className="relative z-10">Explore catalog</span>
-                  </Link>
-                </Button>
-                <Button
-                  asChild
-                  variant="outline"
-                  size="lg"
-                  className="text-base"
-                >
-                  <Link to="/login">Log in</Link>
-                </Button>
-              </div>
-              <p className="text-xs text-muted-foreground/80 mt-6 tracking-wide">
-                No account needed — just start browsing.
-              </p>
-            </div>
-
-            {/* Right: Visual Element */}
-            <div className="relative hidden lg:flex justify-end pr-4">
-              <div className="relative max-w-[440px] rounded-3xl overflow-hidden shadow-[0_40px_120px_rgba(15,23,42,0.12)] border border-primary/10">
-                <img
-                  src={heroImage}
-                  alt="Professional chef managing inventory in a modern kitchen"
-                  className="w-full h-full object-cover brightness-[1.08] saturate-[0.94]"
-                />
-                <div className="absolute inset-0 pointer-events-none shadow-[inset_0_0_40px_rgba(15,23,42,0.08)]" />
               </div>
             </div>
           </section>
-
-          {/* Benefits Section */}
-          <section className="py-10 md:py-12 bg-muted/30 rounded-3xl">
-            <div className="max-w-[1000px] mx-auto px-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div className="flex items-start gap-3 p-4 rounded-2xl hover:bg-background/50 transition-all duration-200 hover:-translate-y-1 group">
-                  <div className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-primary to-accent mt-2 flex-shrink-0 group-hover:scale-150 transition-transform" />
-                  <p className="text-base leading-relaxed text-foreground">
-                    Compare prices across wholesalers.
-                  </p>
-                </div>
-                <div className="flex items-start gap-3 p-4 rounded-2xl hover:bg-background/50 transition-all duration-200 hover:-translate-y-1 group">
-                  <div className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-accent to-warning mt-2 flex-shrink-0 group-hover:scale-150 transition-transform" />
-                  <p className="text-base leading-relaxed text-foreground">
-                    See what's in stock before you order.
-                  </p>
-                </div>
-                <div className="flex items-start gap-3 p-4 rounded-2xl hover:bg-background/50 transition-all duration-200 hover:-translate-y-1 group">
-                  <div className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-warning to-primary mt-2 flex-shrink-0 group-hover:scale-150 transition-transform" />
-                  <p className="text-base leading-relaxed text-foreground">
-                    No juggling multiple supplier sites.
-                  </p>
-                </div>
-                <div className="flex items-start gap-3 p-4 rounded-2xl hover:bg-background/50 transition-all duration-200 hover:-translate-y-1 group">
-                  <div className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-primary via-accent to-warning mt-2 flex-shrink-0 group-hover:scale-150 transition-transform" />
-                  <p className="text-base leading-relaxed text-foreground">
-                    No spreadsheets — just ordering.
-                  </p>
-                </div>
         {/* Benefits Section */}
         <section className="py-10 md:py-12 bg-muted/30 rounded-3xl">
           <div className="max-w-[1000px] mx-auto px-6">
@@ -234,7 +157,8 @@ export default function LandingPage() {
                 </p>
               </div>
             </div>
-          </section>
+          </div>
+        </section>
 
           {/* Final CTA Section */}
           <section className="py-12 md:py-16 text-center">
