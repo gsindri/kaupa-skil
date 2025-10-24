@@ -29,7 +29,11 @@ export function PublicNavigation() {
 
         {/* Right side actions */}
         <div className="flex items-center gap-4">
-          <LanguageSwitcher />
+          <LanguageSwitcher
+            triggerClassName="text-foreground [--nav-text-color:hsl(var(--foreground))] [--nav-text-strong-color:hsl(var(--foreground))] [--nav-text-caret-color:hsl(var(--muted-foreground))]"
+            labelClassName="text-foreground"
+            caretClassName="text-muted-foreground"
+          />
           
           <Button asChild variant="ghost">
             <Link to="/catalog">Explore catalog</Link>
