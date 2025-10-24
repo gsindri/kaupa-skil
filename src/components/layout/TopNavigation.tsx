@@ -280,7 +280,7 @@ export function TopNavigation() {
       }}
     >
       <div
-        className="mx-auto flex w-full max-w-[1280px] items-center"
+        className="mx-auto flex w-full max-w-[1600px] items-center"
         style={{
           paddingInline: 'clamp(1.5rem, 4vw, 4rem)',
           columnGap: 'var(--page-gutter, 24px)',

@@ -65,7 +65,7 @@ export default function LandingPage() {
         <div
           className="mx-auto w-full"
           style={{
-            maxWidth: '1280px',
+            maxWidth: '1600px',
             paddingInline: 'clamp(1.5rem, 4vw, 4rem)',
           }}
         >
