@@ -146,7 +146,7 @@ const SegButton = forwardRef<HTMLButtonElement, SegButtonProps>(function SegButt
       aria-keyshortcuts={shortcut}
       onClick={onClick}
       className={cn(
-        'relative inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium transition-colors outline-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900',
+        'relative inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium transition-colors outline-none focus-visible:outline-none',
         active
           ? 'bg-slate-700 text-slate-50 shadow-inner'
           : 'bg-transparent text-slate-300 hover:text-slate-50',
