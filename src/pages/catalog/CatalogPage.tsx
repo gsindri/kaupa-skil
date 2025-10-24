@@ -1273,7 +1273,7 @@ export default function CatalogPage() {
                 <button
                   type="button"
                   onClick={() => setBannerDismissed(true)}
-                  className="rounded-full p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-2"
+                  className="rounded-full p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-none"
                   aria-label="Dismiss connect suppliers banner"
                 >
                   <X className="h-4 w-4" aria-hidden="true" />
@@ -1570,7 +1570,7 @@ function FiltersBar({
             aria-controls="catalog-filters-panel"
             aria-keyshortcuts="f"
             className={cn(
-              'inline-flex h-[var(--ctrl-h,40px)] items-center gap-3 rounded-[var(--ctrl-r,12px)] border border-transparent bg-[color:var(--chip-bg)] px-3 text-sm font-semibold text-[color:var(--ink-hi)] backdrop-blur-xl transition duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus)] focus-visible:ring-offset-4 focus-visible:ring-offset-[color:var(--toolbar-bg)] hover:bg-[color:var(--chip-bg-hover)] hover:text-[color:var(--ink-hi)] motion-reduce:transition-none',
+              'inline-flex h-[var(--ctrl-h,40px)] items-center gap-3 rounded-[var(--ctrl-r,12px)] border border-transparent bg-[color:var(--chip-bg)] px-3 text-sm font-semibold text-[color:var(--ink-hi)] backdrop-blur-xl transition duration-200 ease-out focus-visible:outline-none hover:bg-[color:var(--chip-bg-hover)] hover:text-[color:var(--ink-hi)] motion-reduce:transition-none',
               showFilters && 'bg-[color:var(--seg-active-bg)] text-[color:var(--ink-hi)] border-[color:var(--ring-hover)]',
               extraClassName,
             )}
@@ -1695,7 +1695,7 @@ function FiltersBar({
                         onKeyDown={handleSearchKeyDown}
                         onFocus={() => onLockChange?.(true)}
                         onBlur={() => onLockChange?.(false)}
-                        className="h-11 w-full flex-1 rounded-[var(--ctrl-r,14px)] border border-transparent bg-white pl-12 pr-12 text-base font-semibold text-slate-900 placeholder:text-slate-500 shadow-[0_12px_38px_rgba(7,18,30,0.26)] transition duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--ring-hover)] focus-visible:ring-offset-0 motion-reduce:transition-none"
+                        className="h-11 w-full flex-1 rounded-[var(--ctrl-r,14px)] border border-transparent bg-white pl-12 pr-12 text-base font-semibold text-slate-900 placeholder:text-slate-500 shadow-[0_12px_38px_rgba(7,18,30,0.26)] transition duration-200 ease-out focus-visible:outline-none motion-reduce:transition-none"
                       />
                     </TooltipTrigger>
                     <TooltipContent sideOffset={8}>Search (Ctrl/⌘+K)</TooltipContent>
@@ -1708,7 +1708,7 @@ function FiltersBar({
                       type="button"
                       onClick={handleClearSearch}
                       aria-label="Clear search"
-                      className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-full p-2 text-slate-500 transition duration-150 ease-out hover:bg-slate-200/70 hover:text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--ring-hover)] focus-visible:ring-offset-0 motion-reduce:transition-none"
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-full p-2 text-slate-500 transition duration-150 ease-out hover:bg-slate-200/70 hover:text-slate-800 focus-visible:outline-none motion-reduce:transition-none"
                     >
                       <XCircle size={20} weight="fill" />
                     </button>
