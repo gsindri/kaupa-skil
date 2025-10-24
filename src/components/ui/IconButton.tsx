@@ -27,9 +27,9 @@ export const IconButton = React.forwardRef<HTMLButtonElement, IconButtonProps>(
         aria-label={ariaLabel ?? label}
         title={title ?? label}
         className={cn(
-          'group inline-grid h-[var(--icon-btn,2.5rem)] w-[var(--icon-btn,2.5rem)] h-10 w-10 place-items-center rounded-full ring-1 ring-white/10',
+          'group inline-grid h-[var(--icon-btn,2.5rem)] w-[var(--icon-btn,2.5rem)] h-10 w-10 place-items-center rounded-full',
           'bg-transparent text-[color:var(--ink-dim,#cfd7e4)] transition-[background-color,color,transform,box-shadow] duration-fast ease-snap motion-reduce:transition-none',
-          'hover:bg-white/5 hover:text-[color:var(--ink,#eaf0f7)] hover:ring-white/20',
+          'hover:bg-white/10 hover:text-[color:var(--ink,#eaf0f7)]',
           'focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-4 focus-visible:ring-offset-transparent',
           'motion-safe:hover:-translate-y-[0.5px] motion-reduce:transform-none motion-reduce:hover:translate-y-0',
           className
