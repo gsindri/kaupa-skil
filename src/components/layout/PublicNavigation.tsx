@@ -10,11 +10,8 @@ import { LanguageSwitcher } from '@/components/layout/LanguageSwitcher'
  */
 export function PublicNavigation() {
   return (
-    <header 
+    <header
       className="sticky top-0 z-50 w-full border-b shadow-sm bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
-      style={{
-        paddingLeft: 'var(--layout-rail, 72px)'
-      }}
     >
       <div
         className="mx-auto flex h-20 w-full max-w-[1600px] items-center justify-between"
