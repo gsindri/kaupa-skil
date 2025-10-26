@@ -13,12 +13,7 @@ export function PublicNavigation() {
     <header
       className="sticky top-0 z-50 w-full border-b shadow-sm bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
     >
-      <div
-        className="mx-auto flex h-20 w-full max-w-[1600px] items-center justify-between"
-        style={{
-          paddingInline: 'clamp(1.5rem, 4vw, 4rem)',
-        }}
-      >
+      <div className="public-shell flex h-20 w-full items-center justify-between">
         {/* Logo */}
         <Link to="/" className="flex items-center">
           <HeildaLogo />

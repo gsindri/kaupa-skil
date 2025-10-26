@@ -61,19 +61,8 @@ export default function LandingPage() {
 
       <PublicNavigation />
       
-      <main 
-        className="relative"
-        style={{
-          paddingLeft: 'var(--layout-rail, 72px)'
-        }}
-      >
-        <div
-          className="mx-auto w-full"
-          style={{
-            maxWidth: '1600px',
-            paddingInline: 'clamp(1.5rem, 4vw, 4rem)'
-          }}
-        >
+      <main className="relative">
+        <div className="public-shell">
           {/* Hero Section - Asymmetric Layout */}
           <section className="py-20 md:py-28 lg:py-32">
             <div className="grid grid-cols-1 lg:grid-cols-[60%_40%] gap-12 lg:gap-16 items-center">
