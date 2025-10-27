@@ -10,14 +10,25 @@ import heroImage from '@/assets/frontpagepic.png'
 export default function LandingPage() {
   const { user, isInitialized, loading } = useAuth()
   const [catalogVisible, setCatalogVisible] = useState(false)
+  const [scrollY, setScrollY] = useState(0)
+
+  // Track scroll position for parallax
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrollY(window.scrollY)
+    }
+    
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
   // Detect when catalog enters viewport
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
-        setCatalogVisible(entry.intersectionRatio > 0.2)
+        setCatalogVisible(entry.intersectionRatio > 0.1)
       },
-      { threshold: [0, 0.2, 0.4] }
+      { threshold: [0, 0.1, 0.2] }
     )
     
     const catalogSection = document.getElementById('catalog')
@@ -85,7 +96,7 @@ export default function LandingPage() {
         )}
         style={{
           background: 'hsl(var(--background))',
-          zIndex: 0
+          zIndex: 1
         }}
       />
 
@@ -109,9 +120,14 @@ export default function LandingPage() {
             <div 
               className={cn(
                 "grid grid-cols-1 lg:grid-cols-[60%_40%] gap-12 lg:gap-16 items-center",
-                "transition-all duration-700 ease-out",
-                catalogVisible && "opacity-40 -translate-y-4"
+                "transition-all duration-500 ease-out"
               )}
+              style={{
+                transform: catalogVisible 
+                  ? 'perspective(1200px) rotateX(2deg) translateY(-8px)' 
+                  : 'none',
+                opacity: catalogVisible ? 0.4 : 1
+              }}
             >
               {/* Left: Content */}
               <div className="text-left">
@@ -158,7 +174,14 @@ export default function LandingPage() {
               </div>
 
               {/* Right: Visual Element */}
-              <div className="relative hidden lg:flex justify-end">
+              <div 
+                className="relative hidden lg:flex justify-end"
+                style={{
+                  transform: `translateY(${scrollY * 0.4}px)`,
+                  transition: 'transform 0.1s ease-out',
+                  willChange: 'transform'
+                }}
+              >
                 <div className="relative max-w-[520px] rounded-3xl overflow-hidden shadow-[0_40px_120px_rgba(15,23,42,0.12)] border border-primary/10">
                   <img
                     src={heroImage}
@@ -174,41 +197,10 @@ export default function LandingPage() {
             <div 
               className="absolute bottom-0 left-0 right-0 h-32 pointer-events-none"
               style={{
-                background: 'linear-gradient(to bottom, rgba(249, 250, 251, 0), hsl(var(--background)))'
+                background: 'linear-gradient(to bottom, rgba(255, 255, 255, 0), hsl(var(--background)) 80%)'
               }}
             />
           </section>
-        {/* Benefits Section */}
-        <section className="py-10 md:py-12 bg-muted/30 rounded-3xl">
-          <div className="max-w-[1000px] mr-auto px-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              <div className="flex items-start gap-3 p-4 rounded-2xl hover:bg-background/50 transition-all duration-200 hover:-translate-y-1 group">
-                <div className="w-2 h-2 rounded-full bg-warning mt-2 flex-shrink-0 group-hover:scale-150 transition-transform" />
-                <p className="text-base leading-7 text-foreground">
-                  Compare prices across wholesalers.
-                </p>
-              </div>
-              <div className="flex items-start gap-3 p-4 rounded-2xl hover:bg-background/50 transition-all duration-200 hover:-translate-y-1 group">
-                <div className="w-2 h-2 rounded-full bg-warning mt-2 flex-shrink-0 group-hover:scale-150 transition-transform" />
-                <p className="text-base leading-7 text-foreground">
-                  See what's in stock before you order.
-                </p>
-              </div>
-              <div className="flex items-start gap-3 p-4 rounded-2xl hover:bg-background/50 transition-all duration-200 hover:-translate-y-1 group">
-                <div className="w-2 h-2 rounded-full bg-warning mt-2 flex-shrink-0 group-hover:scale-150 transition-transform" />
-                <p className="text-base leading-7 text-foreground">
-                  No juggling multiple supplier sites.
-                </p>
-              </div>
-              <div className="flex items-start gap-3 p-4 rounded-2xl hover:bg-background/50 transition-all duration-200 hover:-translate-y-1 group">
-                <div className="w-2 h-2 rounded-full bg-warning mt-2 flex-shrink-0 group-hover:scale-150 transition-transform" />
-                <p className="text-base leading-7 text-foreground">
-                  No spreadsheets — just ordering.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
 
           {/* Catalog Preview Section */}
           <section 
@@ -226,6 +218,38 @@ export default function LandingPage() {
             
             {/* Mount the actual catalog grid */}
             <CatalogGridWrapper />
+          </section>
+
+          {/* Benefits Section */}
+          <section className="py-10 md:py-12 bg-muted/30 rounded-3xl mt-8">
+            <div className="max-w-[1000px] mr-auto px-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="flex items-start gap-3 p-4 rounded-2xl hover:bg-background/50 transition-all duration-200 hover:-translate-y-1 group">
+                  <div className="w-2 h-2 rounded-full bg-warning mt-2 flex-shrink-0 group-hover:scale-150 transition-transform" />
+                  <p className="text-base leading-7 text-foreground">
+                    Compare prices across wholesalers.
+                  </p>
+                </div>
+                <div className="flex items-start gap-3 p-4 rounded-2xl hover:bg-background/50 transition-all duration-200 hover:-translate-y-1 group">
+                  <div className="w-2 h-2 rounded-full bg-warning mt-2 flex-shrink-0 group-hover:scale-150 transition-transform" />
+                  <p className="text-base leading-7 text-foreground">
+                    See what's in stock before you order.
+                  </p>
+                </div>
+                <div className="flex items-start gap-3 p-4 rounded-2xl hover:bg-background/50 transition-all duration-200 hover:-translate-y-1 group">
+                  <div className="w-2 h-2 rounded-full bg-warning mt-2 flex-shrink-0 group-hover:scale-150 transition-transform" />
+                  <p className="text-base leading-7 text-foreground">
+                    No juggling multiple supplier sites.
+                  </p>
+                </div>
+                <div className="flex items-start gap-3 p-4 rounded-2xl hover:bg-background/50 transition-all duration-200 hover:-translate-y-1 group">
+                  <div className="w-2 h-2 rounded-full bg-warning mt-2 flex-shrink-0 group-hover:scale-150 transition-transform" />
+                  <p className="text-base leading-7 text-foreground">
+                    No spreadsheets — just ordering.
+                  </p>
+                </div>
+              </div>
+            </div>
           </section>
         </div>
       </main>

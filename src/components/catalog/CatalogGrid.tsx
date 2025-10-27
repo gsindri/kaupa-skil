@@ -21,17 +21,25 @@ export function CatalogGrid({
   addingId,
 }: CatalogGridProps) {
   const renderItem = React.useCallback(
-    (p: any, index: number) => (
-      <ProductCard
-        key={p.catalog_id}
-        product={p}
-        onAdd={supplierId => onAddToCart(p, supplierId)}
-        showPrice={showPrice}
-        isAdding={addingId === p.catalog_id}
-        className={index < 12 ? "animate-fade-in" : undefined}
-        style={index < 12 ? { animationDelay: `${index * 40}ms` } : undefined}
-      />
-    ),
+    (p: any, index: number) => {
+      const isEven = index % 2 === 0
+      const slideAnimation = isEven ? 'animate-slide-left' : 'animate-slide-right'
+      
+      return (
+        <ProductCard
+          key={p.catalog_id}
+          product={p}
+          onAdd={supplierId => onAddToCart(p, supplierId)}
+          showPrice={showPrice}
+          isAdding={addingId === p.catalog_id}
+          className={index < 12 ? slideAnimation : undefined}
+          style={index < 12 ? { 
+            animationDelay: `${index * 50}ms`,
+            animationFillMode: 'backwards'
+          } : undefined}
+        />
+      )
+    },
     [onAddToCart, showPrice, addingId],
   )
 
