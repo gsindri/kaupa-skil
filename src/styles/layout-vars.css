@@ -91,8 +91,9 @@
 .public-shell {
   width: 100%;
   max-width: var(--content-max, 1200px);
-  margin-inline: auto;
-  padding-left: calc(var(--page-gutter, 1rem) + var(--layout-rail, 72px));
+  margin-left: var(--layout-rail, 72px);
+  margin-right: auto;
+  padding-left: var(--page-gutter, 1rem);
   padding-right: var(--page-gutter, 1rem);
 }
 
@@ -102,6 +103,7 @@
   }
 
   .public-shell {
+    margin-left: 0;
     padding-left: var(--page-gutter, 1rem);
   }
 }
