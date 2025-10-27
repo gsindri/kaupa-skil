@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { useAuth } from '@/contexts/useAuth'
 import { Navigate, Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
@@ -6,11 +6,34 @@ import { PublicNavigation } from '@/components/layout/PublicNavigation'
 import { CatalogGridWrapper } from '@/components/landing/CatalogGridWrapper'
 import { AnimatePresence, motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
+import { useHeaderScrollHide } from '@/components/layout/useHeaderScrollHide'
 import heroImage from '@/assets/frontpagepic.png'
 
 export default function LandingPage() {
   const { user, isInitialized, loading } = useAuth()
   const [appEntered, setAppEntered] = useState(false)
+  const headerRef = useRef<HTMLElement>(null)
+
+  // Smart isPinned callback - keeps header visible during hero section,
+  // allows auto-hide once in catalog
+  const isPinned = useCallback(() => {
+    // CRITICAL: Always keep header visible during hero section
+    // This prevents interference with the AnimatePresence morph animation
+    if (!appEntered) return true
+    
+    // Once in catalog section, allow auto-hide behavior
+    // Stay visible at the very top
+    if (window.scrollY < 1) return true
+    
+    // Stay visible in the first 90vh (hero section height)
+    if (window.scrollY < window.innerHeight * 0.9) return true
+    
+    // Otherwise, allow normal scroll-hide behavior
+    return false
+  }, [appEntered])
+
+  // Integrate scroll-hide hook
+  useHeaderScrollHide(headerRef, { isPinned })
 
   // Detect when app viewport threshold is reached (~80%)
   useEffect(() => {
@@ -56,7 +79,7 @@ export default function LandingPage() {
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.25 }}
           >
-            <PublicNavigation />
+            <PublicNavigation ref={headerRef} />
           </motion.div>
         ) : (
           <motion.div
@@ -66,7 +89,7 @@ export default function LandingPage() {
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.25 }}
           >
-            <PublicNavigation catalogVisible={true} />
+            <PublicNavigation ref={headerRef} catalogVisible={true} />
           </motion.div>
         )}
       </AnimatePresence>

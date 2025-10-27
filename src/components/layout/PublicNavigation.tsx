@@ -7,24 +7,27 @@ import { cn } from '@/lib/utils'
 
 interface PublicNavigationProps {
   catalogVisible?: boolean
+  onLockChange?: (locked: boolean) => void
 }
 
 /**
  * Public navigation for unauthenticated users
  * Shows: Logo, Explore catalog button, Log in button
  */
-export function PublicNavigation({ catalogVisible }: PublicNavigationProps) {
-  return (
-    <header
-      className={cn(
-        "sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60",
-        "transition-shadow duration-300",
-        catalogVisible ? "shadow-md" : "shadow-sm"
-      )}
-      style={{
-        paddingLeft: 'var(--layout-rail, 72px)'
-      }}
-    >
+export const PublicNavigation = React.forwardRef<HTMLElement, PublicNavigationProps>(
+  ({ catalogVisible, onLockChange }, ref) => {
+    return (
+      <header
+        ref={ref}
+        className={cn(
+          "sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60",
+          "transition-shadow duration-300",
+          catalogVisible ? "shadow-md" : "shadow-sm"
+        )}
+        style={{
+          paddingLeft: 'var(--layout-rail, 72px)'
+        }}
+      >
       <div
         className="mx-auto flex h-20 w-full items-center justify-between"
         style={{
@@ -55,5 +58,8 @@ export function PublicNavigation({ catalogVisible }: PublicNavigationProps) {
         </div>
       </div>
     </header>
-  )
-}
+    )
+  }
+)
+
+PublicNavigation.displayName = 'PublicNavigation'
