@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/useAuth'
 import { Navigate, Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
@@ -7,25 +7,10 @@ import { CatalogGridWrapper } from '@/components/landing/CatalogGridWrapper'
 import { AnimatePresence, motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import heroImage from '@/assets/frontpagepic.png'
-import { useHeaderScrollHide } from '@/components/layout/useHeaderScrollHide'
 
 export default function LandingPage() {
   const { user, isInitialized, loading } = useAuth()
   const [appEntered, setAppEntered] = useState(false)
-  const headerRef = useRef<HTMLElement>(null)
-
-  // Keep header visible in hero section, hide/show based on scroll direction elsewhere
-  const isPinned = useCallback(() => {
-    const scrollY = window.scrollY
-    // Always visible at very top
-    if (scrollY < 1) return true
-    // Keep visible in hero section (first viewport height)
-    const heroHeight = window.innerHeight
-    return scrollY < heroHeight * 0.9
-  }, [])
-
-  // Set up auto-hide header behavior
-  useHeaderScrollHide(headerRef, { isPinned })
 
   // Detect when app viewport threshold is reached (~80%)
   useEffect(() => {
@@ -71,7 +56,7 @@ export default function LandingPage() {
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.25 }}
           >
-            <PublicNavigation ref={headerRef} />
+            <PublicNavigation />
           </motion.div>
         ) : (
           <motion.div
@@ -81,7 +66,7 @@ export default function LandingPage() {
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.25 }}
           >
-            <PublicNavigation ref={headerRef} catalogVisible={true} />
+            <PublicNavigation catalogVisible={true} />
           </motion.div>
         )}
       </AnimatePresence>
