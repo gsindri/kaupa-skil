@@ -11,6 +11,7 @@ interface CatalogGridProps {
   showPrice?: boolean
   className?: string
   addingId?: string | null
+  mode?: 'public' | 'authenticated'
 }
 
 export function CatalogGrid({
@@ -20,6 +21,7 @@ export function CatalogGrid({
   showPrice,
   className,
   addingId,
+  mode = 'authenticated',
 }: CatalogGridProps) {
   const renderItem = React.useCallback(
     (p: any, index: number) => {
@@ -46,6 +48,7 @@ export function CatalogGrid({
               onAdd={supplierId => onAddToCart(p, supplierId)}
               showPrice={showPrice}
               isAdding={addingId === p.catalog_id}
+              mode={mode}
             />
           </motion.div>
         )
@@ -59,10 +62,11 @@ export function CatalogGrid({
           onAdd={supplierId => onAddToCart(p, supplierId)}
           showPrice={showPrice}
           isAdding={addingId === p.catalog_id}
+          mode={mode}
         />
       )
     },
-    [onAddToCart, showPrice, addingId],
+    [onAddToCart, showPrice, addingId, mode],
   )
 
   return (

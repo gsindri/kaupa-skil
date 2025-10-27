@@ -29,6 +29,7 @@ interface ProductCardProps {
   className?: string;
   showPrice?: boolean;
   style?: React.CSSProperties;
+  mode?: 'public' | 'authenticated';
 }
 
 
@@ -39,6 +40,7 @@ export const ProductCard = memo(function ProductCard({
   className,
   showPrice,
   style,
+  mode = 'authenticated',
 }: ProductCardProps) {
   const { addItem, items } = useCart();
   const titleId = useId();
@@ -243,8 +245,9 @@ export const ProductCard = memo(function ProductCard({
     };
   }, [product.sample_source_url]);
 
+  const isPublicMode = mode === 'public';
   const allowPrice = showPrice !== false;
-  const hasVisiblePrice = allowPrice && product.best_price != null;
+  const hasVisiblePrice = !isPublicMode && allowPrice && product.best_price != null;
   const priceLabel = hasVisiblePrice ? formatCurrency(product.best_price ?? 0) : null;
 
   const headerSubline = packInfo || brand || "";
@@ -396,6 +399,10 @@ export const ProductCard = memo(function ProductCard({
                   {unitHint ? (
                     <span className="text-[12px] text-muted-foreground">{unitHint}</span>
                   ) : null}
+                </div>
+              ) : isPublicMode ? (
+                <div className="flex min-w-0 flex-1 items-center gap-1 text-sm text-muted-foreground">
+                  Sign in for pricing
                 </div>
               ) : allowPrice ? (
                 <div className="flex min-w-0 flex-1 items-center gap-1 text-sm text-muted-foreground">

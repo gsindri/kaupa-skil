@@ -1,6 +1,7 @@
 import * as React from "react"
 import * as DialogPrimitive from "@radix-ui/react-dialog"
 import { X } from "lucide-react"
+import { useLocation } from "react-router-dom"
 
 import { cn } from "@/lib/utils"
 import { lockScroll, unlockScroll } from "@/lib/lockScroll"
@@ -9,22 +10,29 @@ const Dialog = ({
   onOpenChange,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Root>) => {
+  const location = useLocation()
+  const isLandingPage = location.pathname === '/'
+  
   React.useEffect(() => {
+    if (isLandingPage) return // Skip scroll lock on landing page
+    
     if (open) {
         lockScroll()
     } else {
         unlockScroll()
     }
-  }, [open])
+  }, [open, isLandingPage])
 
   return (
     <DialogPrimitive.Root
       open={open}
       onOpenChange={o => {
-        if (o) {
-          lockScroll()
-        } else {
-          unlockScroll()
+        if (!isLandingPage) {
+          if (o) {
+            lockScroll()
+          } else {
+            unlockScroll()
+          }
         }
         onOpenChange?.(o)
       }}
