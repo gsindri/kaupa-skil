@@ -119,7 +119,7 @@ export default function LandingPage() {
           </section>
         {/* Benefits Section */}
         <section className="py-10 md:py-12 bg-muted/30 rounded-3xl">
-          <div className="max-w-[1000px] mx-auto px-6">
+          <div className="max-w-[1000px] mr-auto px-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               <div className="flex items-start gap-3 p-4 rounded-2xl hover:bg-background/50 transition-all duration-200 hover:-translate-y-1 group">
                 <div className="w-2 h-2 rounded-full bg-warning mt-2 flex-shrink-0 group-hover:scale-150 transition-transform" />
