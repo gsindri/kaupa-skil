@@ -506,7 +506,17 @@ function deriveChipsFromFilters(
   return chips
 }
 
+import { CatalogShell } from '@/components/catalog/CatalogShell'
+
 export default function CatalogPage() {
+  return (
+    <AppLayout>
+      <CatalogShell mode="authenticated" />
+    </AppLayout>
+  )
+}
+
+function CatalogPageOld() {
   const { user, profile } = useAuth()
   const orgId = profile?.tenant_id || ''
 
