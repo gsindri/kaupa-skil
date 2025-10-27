@@ -4,7 +4,7 @@ import { Navigate, Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { PublicNavigation } from '@/components/layout/PublicNavigation'
 import { CatalogGridWrapper } from '@/components/landing/CatalogGridWrapper'
-import { AnimatePresence, motion } from 'framer-motion'
+
 import { cn } from '@/lib/utils'
 import { useHeaderScrollHide } from '@/components/layout/useHeaderScrollHide'
 import heroImage from '@/assets/frontpagepic.png'
@@ -69,30 +69,8 @@ export default function LandingPage() {
 
   return (
     <div className="landing-container min-h-screen bg-background">
-      {/* Navigation - morphs when app is entered */}
-      <AnimatePresence mode="wait">
-        {!appEntered ? (
-          <motion.div
-            key="marketing-nav"
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.25 }}
-          >
-            <PublicNavigation ref={headerRef} />
-          </motion.div>
-        ) : (
-          <motion.div
-            key="app-nav"
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.25 }}
-          >
-            <PublicNavigation ref={headerRef} catalogVisible={true} />
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Navigation - stable throughout scroll */}
+      <PublicNavigation ref={headerRef} catalogVisible={appEntered} />
 
       {/* Hero Layer - pins at top and peels away */}
       <div 
