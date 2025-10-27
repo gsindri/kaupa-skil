@@ -3,6 +3,7 @@ import { useAuth } from '@/contexts/useAuth'
 import { Navigate, Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { PublicNavigation } from '@/components/layout/PublicNavigation'
+import { CatalogGridWrapper } from '@/components/landing/CatalogGridWrapper'
 import heroImage from '@/assets/frontpagepic.png'
 
 export default function LandingPage() {
@@ -75,7 +76,7 @@ export default function LandingPage() {
           }}
         >
           {/* Hero Section - Asymmetric Layout */}
-          <section className="py-20 md:py-28 lg:py-32">
+          <section className="relative py-20 md:py-28 lg:py-32" data-hero>
             <div className="grid grid-cols-1 lg:grid-cols-[60%_40%] gap-12 lg:gap-16 items-center">
               {/* Left: Content */}
               <div className="text-left">
@@ -97,9 +98,15 @@ export default function LandingPage() {
                     size="lg"
                     className="text-base relative group overflow-hidden transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/20"
                   >
-                    <Link to="/catalog">
+                    <a 
+                      href="#catalog"
+                      onClick={(e) => {
+                        e.preventDefault()
+                        document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' })
+                      }}
+                    >
                       <span className="relative z-10">Explore catalog</span>
-                    </Link>
+                    </a>
                   </Button>
                   <Button
                     asChild
@@ -127,6 +134,14 @@ export default function LandingPage() {
                 </div>
               </div>
             </div>
+            
+            {/* Gradient transition to catalog */}
+            <div 
+              className="absolute bottom-0 left-0 right-0 h-32 pointer-events-none"
+              style={{
+                background: 'linear-gradient(to bottom, rgba(249, 250, 251, 0), hsl(var(--background)))'
+              }}
+            />
           </section>
         {/* Benefits Section */}
         <section className="py-10 md:py-12 bg-muted/30 rounded-3xl">
@@ -160,14 +175,22 @@ export default function LandingPage() {
           </div>
         </section>
 
-          {/* Final CTA Section */}
-          <section className="py-12 md:py-16 text-center">
-            <h2 className="text-2xl md:text-3xl font-semibold text-foreground mb-6">
-              Ready to simplify your ordering?
-            </h2>
-            <Button asChild size="lg" className="text-base">
-              <Link to="/catalog">Explore catalog</Link>
-            </Button>
+          {/* Catalog Preview Section */}
+          <section 
+            id="catalog" 
+            className="py-12 md:py-16 scroll-mt-[80px]"
+          >
+            <div className="mb-8">
+              <h2 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-3">
+                Browse the catalog
+              </h2>
+              <p className="text-base text-muted-foreground">
+                See what's available — no account needed.
+              </p>
+            </div>
+            
+            {/* Mount the actual catalog grid */}
+            <CatalogGridWrapper />
           </section>
         </div>
       </main>
