@@ -21,13 +21,15 @@ export function CatalogGrid({
   addingId,
 }: CatalogGridProps) {
   const renderItem = React.useCallback(
-    (p: any, _index: number) => (
+    (p: any, index: number) => (
       <ProductCard
         key={p.catalog_id}
         product={p}
         onAdd={supplierId => onAddToCart(p, supplierId)}
         showPrice={showPrice}
         isAdding={addingId === p.catalog_id}
+        className={index < 12 ? "animate-fade-in" : undefined}
+        style={index < 12 ? { animationDelay: `${index * 40}ms` } : undefined}
       />
     ),
     [onAddToCart, showPrice, addingId],

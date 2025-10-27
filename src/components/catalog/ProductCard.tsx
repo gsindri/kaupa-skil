@@ -28,6 +28,7 @@ interface ProductCardProps {
   isAdding?: boolean;
   className?: string;
   showPrice?: boolean;
+  style?: React.CSSProperties;
 }
 
 
@@ -37,6 +38,7 @@ export const ProductCard = memo(function ProductCard({
   isAdding,
   className,
   showPrice,
+  style,
 }: ProductCardProps) {
   const { addItem, items } = useCart();
   const titleId = useId();
@@ -290,6 +292,7 @@ export const ProductCard = memo(function ProductCard({
       role="group"
       aria-labelledby={titleId}
       onKeyDown={handleCardKeyDown}
+      style={style}
       className={cn(
         "group relative flex h-full w-full flex-col overflow-hidden rounded-2xl border border-border bg-card text-left shadow-sm transition-shadow duration-200",
         "hover:shadow-md",

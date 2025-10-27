@@ -1,13 +1,30 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/useAuth'
 import { Navigate, Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { PublicNavigation } from '@/components/layout/PublicNavigation'
 import { CatalogGridWrapper } from '@/components/landing/CatalogGridWrapper'
+import { cn } from '@/lib/utils'
 import heroImage from '@/assets/frontpagepic.png'
 
 export default function LandingPage() {
   const { user, isInitialized, loading } = useAuth()
+  const [catalogVisible, setCatalogVisible] = useState(false)
+
+  // Detect when catalog enters viewport
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setCatalogVisible(entry.intersectionRatio > 0.2)
+      },
+      { threshold: [0, 0.2, 0.4] }
+    )
+    
+    const catalogSection = document.getElementById('catalog')
+    if (catalogSection) observer.observe(catalogSection)
+    
+    return () => observer.disconnect()
+  }, [])
 
   // Show loading state while checking authentication
   if (loading || !isInitialized) {
@@ -60,7 +77,19 @@ export default function LandingPage() {
         />
       </div>
 
-      <PublicNavigation />
+      {/* Background transition overlay - fades in when catalog becomes visible */}
+      <div
+        className={cn(
+          "fixed inset-0 pointer-events-none transition-opacity duration-1000 ease-out",
+          catalogVisible ? "opacity-100" : "opacity-0"
+        )}
+        style={{
+          background: 'hsl(var(--background))',
+          zIndex: 0
+        }}
+      />
+
+      <PublicNavigation catalogVisible={catalogVisible} />
       
       <main 
         className="relative"
@@ -77,7 +106,13 @@ export default function LandingPage() {
         >
           {/* Hero Section - Asymmetric Layout */}
           <section className="relative py-20 md:py-28 lg:py-32" data-hero>
-            <div className="grid grid-cols-1 lg:grid-cols-[60%_40%] gap-12 lg:gap-16 items-center">
+            <div 
+              className={cn(
+                "grid grid-cols-1 lg:grid-cols-[60%_40%] gap-12 lg:gap-16 items-center",
+                "transition-all duration-700 ease-out",
+                catalogVisible && "opacity-40 -translate-y-4"
+              )}
+            >
               {/* Left: Content */}
               <div className="text-left">
                 <h1 className="text-5xl md:text-6xl lg:text-7xl font-display font-extrabold text-foreground mb-6 leading-[1.08]">
