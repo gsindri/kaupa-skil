@@ -1,0 +1,57 @@
+/* CSS Scroll-Timeline Animations for Landing Page */
+
+/* Hero peel effect - clips upward and fades as you scroll */
+@keyframes hero-peel {
+  to {
+    clip-path: inset(100% 0 0 0);
+    opacity: 0;
+  }
+}
+
+/* App viewport zoom-in - defocuses and scales up as it's revealed */
+@keyframes app-zoom {
+  from {
+    filter: blur(6px);
+    transform: scale(0.96);
+    pointer-events: none;
+  }
+  to {
+    filter: blur(0);
+    transform: scale(1);
+    pointer-events: auto;
+  }
+}
+
+/* Apply scroll-timeline only if supported */
+@supports (animation-timeline: view()) {
+  .hero-layer {
+    animation: hero-peel linear both;
+    animation-timeline: view();
+    animation-range: exit 0% exit 100%;
+  }
+
+  .app-viewport {
+    animation: app-zoom linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 100%;
+  }
+}
+
+/* Respect reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .hero-layer,
+  .app-viewport {
+    animation: none !important;
+  }
+  
+  .hero-layer {
+    clip-path: none;
+    opacity: 1;
+  }
+  
+  .app-viewport {
+    filter: none;
+    transform: none;
+    pointer-events: auto;
+  }
+}

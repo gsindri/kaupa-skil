@@ -3,6 +3,7 @@
 @import './styles/globals.css';
 @import './styles/layout-vars.css';
 @import './styles/design-system.css';
+@import './styles/scroll-animations.css';
 
 @tailwind base;
 @tailwind components;

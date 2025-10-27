@@ -229,17 +229,27 @@ export default {
                                                 transform: 'scale(1) translateY(0)'
                                         }
                                 },
-                                'chip-bounce': {
-                                        '0%': {
-                                                transform: 'scale(0.95)'
-                                        },
-                                        '50%': {
-                                                transform: 'scale(1.05)'
-                                        },
-                                        '100%': {
-                                                transform: 'scale(1)'
-                                        }
-                                }
+				'chip-bounce': {
+					'0%': {
+						transform: 'scale(0.95)'
+					},
+					'50%': {
+						transform: 'scale(1.05)'
+					},
+					'100%': {
+						transform: 'scale(1)'
+					}
+				},
+				'card-reveal': {
+					'0%': {
+						opacity: '0',
+						transform: 'translateY(16px) scale(0.985)'
+					},
+					'100%': {
+						opacity: '1',
+						transform: 'translateY(0) scale(1.0)'
+					}
+				}
                         },
                         animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
@@ -250,9 +260,10 @@ export default {
                                 'scale-lift': 'scale-lift 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
                                 'slide-left': 'slide-left 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)',
                                 'slide-right': 'slide-right 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)',
-                                'flyout': 'flyout 0.15s ease-out',
-                                'search-result-enter': 'search-result-enter 0.12s ease-out',
-                                'chip-bounce': 'chip-bounce 0.25s ease-out',
+				'flyout': 'flyout 0.15s ease-out',
+				'search-result-enter': 'search-result-enter 0.12s ease-out',
+				'chip-bounce': 'chip-bounce 0.25s ease-out',
+				'card-reveal': 'card-reveal 0.35s ease-out',
                         },
 			fontFeatureSettings: {
 				'tnum': '"tnum" 1',
@@ -265,5 +276,19 @@ export default {
 			}
 		}
 	},
-        plugins: [animatePlugin],
+        plugins: [
+		animatePlugin,
+		function({ addBase }: any) {
+			addBase({
+				'@media (prefers-reduced-motion: reduce)': {
+					'*, *::before, *::after': {
+						'animation-duration': '0.01ms !important',
+						'animation-iteration-count': '1 !important',
+						'transition-duration': '0.01ms !important',
+						'scroll-behavior': 'auto !important'
+					}
+				}
+			})
+		}
+	],
 } satisfies Config;

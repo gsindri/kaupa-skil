@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import { VirtualizedGrid } from './VirtualizedGrid'
 import { ProductCard } from './ProductCard'
@@ -22,9 +23,35 @@ export function CatalogGrid({
 }: CatalogGridProps) {
   const renderItem = React.useCallback(
     (p: any, index: number) => {
-      const isEven = index % 2 === 0
-      const slideAnimation = isEven ? 'animate-slide-left' : 'animate-slide-right'
+      // Only animate first 12 cards with subtle reveal
+      if (index < 12) {
+        return (
+          <motion.div
+            key={p.catalog_id}
+            initial={{ opacity: 0, y: 16, scale: 0.985 }}
+            whileInView={{ 
+              opacity: 1, 
+              y: 0, 
+              scale: 1.0,
+              transition: { 
+                duration: 0.35, 
+                ease: 'easeOut',
+                delay: (index % 4) * 0.07 // Stagger within rows
+              }
+            }}
+            viewport={{ once: true, amount: 0.2 }}
+          >
+            <ProductCard
+              product={p}
+              onAdd={supplierId => onAddToCart(p, supplierId)}
+              showPrice={showPrice}
+              isAdding={addingId === p.catalog_id}
+            />
+          </motion.div>
+        )
+      }
       
+      // No animation for cards beyond first 12
       return (
         <ProductCard
           key={p.catalog_id}
@@ -32,11 +59,6 @@ export function CatalogGrid({
           onAdd={supplierId => onAddToCart(p, supplierId)}
           showPrice={showPrice}
           isAdding={addingId === p.catalog_id}
-          className={index < 12 ? slideAnimation : undefined}
-          style={index < 12 ? { 
-            animationDelay: `${index * 50}ms`,
-            animationFillMode: 'backwards'
-          } : undefined}
         />
       )
     },

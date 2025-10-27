@@ -4,35 +4,25 @@ import { Navigate, Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { PublicNavigation } from '@/components/layout/PublicNavigation'
 import { CatalogGridWrapper } from '@/components/landing/CatalogGridWrapper'
+import { AnimatePresence, motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import heroImage from '@/assets/frontpagepic.png'
 
 export default function LandingPage() {
   const { user, isInitialized, loading } = useAuth()
-  const [catalogVisible, setCatalogVisible] = useState(false)
-  const [scrollY, setScrollY] = useState(0)
+  const [appEntered, setAppEntered] = useState(false)
 
-  // Track scroll position for parallax
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrollY(window.scrollY)
-    }
-    
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
-
-  // Detect when catalog enters viewport
+  // Detect when app viewport threshold is reached (~80%)
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
-        setCatalogVisible(entry.intersectionRatio > 0.1)
+        setAppEntered(entry.intersectionRatio > 0.8)
       },
-      { threshold: [0, 0.1, 0.2] }
+      { threshold: [0, 0.2, 0.4, 0.6, 0.8, 1.0] }
     )
     
-    const catalogSection = document.getElementById('catalog')
-    if (catalogSection) observer.observe(catalogSection)
+    const appViewport = document.getElementById('app-viewport')
+    if (appViewport) observer.observe(appViewport)
     
     return () => observer.disconnect()
   }, [])
@@ -55,80 +45,86 @@ export default function LandingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background relative">
-      {/* Hybrid background: soft gradient + light grid with edge fade */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        {/* Gradient base layer */}
-        <div
-          className="absolute inset-0"
-          style={{
-            background:
-              'linear-gradient(135deg, #F9FAFB 0%, #F4F6FB 45%, #E8EDF5 100%)'
-          }}
-        />
-
-        {/* Grid overlay with radial fade */}
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage: `
-              linear-gradient(to right, rgba(0, 0, 0, 0.03) 1px, transparent 1px),
-              linear-gradient(to bottom, rgba(0, 0, 0, 0.03) 1px, transparent 1px)
-            `,
-            backgroundSize: '72px 72px',
-            maskImage: 'radial-gradient(ellipse 80% 70% at 50% 50%, black 40%, transparent 100%)',
-            WebkitMaskImage: 'radial-gradient(ellipse 80% 70% at 50% 50%, black 40%, transparent 100%)'
-          }}
-        />
-        <div
-          className="absolute inset-x-0 bottom-0 h-1/3"
-          style={{
-            background: 'linear-gradient(to top, rgba(148, 163, 184, 0.14), transparent)'
-          }}
-        />
-      </div>
-
-      {/* Background transition overlay - fades in when catalog becomes visible */}
-      <div
-        className={cn(
-          "fixed inset-0 pointer-events-none transition-opacity duration-1000 ease-out",
-          catalogVisible ? "opacity-100" : "opacity-0"
+    <div className="landing-container min-h-screen bg-background">
+      {/* Navigation - morphs when app is entered */}
+      <AnimatePresence mode="wait">
+        {!appEntered ? (
+          <motion.div
+            key="marketing-nav"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.25 }}
+          >
+            <PublicNavigation />
+          </motion.div>
+        ) : (
+          <motion.div
+            key="app-nav"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.25 }}
+          >
+            <PublicNavigation catalogVisible={true} />
+          </motion.div>
         )}
-        style={{
-          background: 'hsl(var(--background))',
-          zIndex: 1
-        }}
-      />
+      </AnimatePresence>
 
-      <PublicNavigation catalogVisible={catalogVisible} />
-      
-      <main 
-        className="relative"
+      {/* Hero Layer - pins at top and peels away */}
+      <div 
+        className="hero-layer sticky top-0 h-screen overflow-hidden"
         style={{
-          paddingLeft: 'var(--layout-rail, 72px)'
+          zIndex: 1,
+          willChange: 'clip-path, opacity'
         }}
       >
-        <div
-          className="mx-auto w-full"
+        {/* Hybrid background: soft gradient + light grid with edge fade */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          {/* Gradient base layer */}
+          <div
+            className="absolute inset-0"
+            style={{
+              background: 'linear-gradient(135deg, #F9FAFB 0%, #F4F6FB 45%, #E8EDF5 100%)'
+            }}
+          />
+
+          {/* Grid overlay with radial fade */}
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage: `
+                linear-gradient(to right, rgba(0, 0, 0, 0.03) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(0, 0, 0, 0.03) 1px, transparent 1px)
+              `,
+              backgroundSize: '72px 72px',
+              maskImage: 'radial-gradient(ellipse 80% 70% at 50% 50%, black 40%, transparent 100%)',
+              WebkitMaskImage: 'radial-gradient(ellipse 80% 70% at 50% 50%, black 40%, transparent 100%)'
+            }}
+          />
+          <div
+            className="absolute inset-x-0 bottom-0 h-1/3"
+            style={{
+              background: 'linear-gradient(to top, rgba(148, 163, 184, 0.14), transparent)'
+            }}
+          />
+        </div>
+
+        {/* Hero Content */}
+        <div 
+          className="relative h-full"
           style={{
-            maxWidth: '1600px',
-            paddingInline: 'clamp(1.5rem, 4vw, 4rem)'
+            paddingLeft: 'var(--layout-rail, 72px)'
           }}
         >
-          {/* Hero Section - Asymmetric Layout */}
-          <section className="relative py-20 md:py-28 lg:py-32" data-hero>
-            <div 
-              className={cn(
-                "grid grid-cols-1 lg:grid-cols-[60%_40%] gap-12 lg:gap-16 items-center",
-                "transition-all duration-500 ease-out"
-              )}
-              style={{
-                transform: catalogVisible 
-                  ? 'perspective(1200px) rotateX(2deg) translateY(-8px)' 
-                  : 'none',
-                opacity: catalogVisible ? 0.4 : 1
-              }}
-            >
+          <div
+            className="mx-auto w-full h-full flex items-center"
+            style={{
+              maxWidth: '1600px',
+              paddingInline: 'clamp(1.5rem, 4vw, 4rem)'
+            }}
+          >
+            <div className="grid grid-cols-1 lg:grid-cols-[60%_40%] gap-12 lg:gap-16 items-center w-full">
               {/* Left: Content */}
               <div className="text-left">
                 <h1 className="text-5xl md:text-6xl lg:text-7xl font-display font-extrabold text-foreground mb-6 leading-[1.08]">
@@ -150,10 +146,10 @@ export default function LandingPage() {
                     className="text-base relative group overflow-hidden transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/20"
                   >
                     <a 
-                      href="#catalog"
+                      href="#app-viewport"
                       onClick={(e) => {
                         e.preventDefault()
-                        document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' })
+                        document.getElementById('app-viewport')?.scrollIntoView({ behavior: 'smooth' })
                       }}
                     >
                       <span className="relative z-10">Explore catalog</span>
@@ -174,14 +170,7 @@ export default function LandingPage() {
               </div>
 
               {/* Right: Visual Element */}
-              <div 
-                className="relative hidden lg:flex justify-end"
-                style={{
-                  transform: `translateY(${scrollY * 0.4}px)`,
-                  transition: 'transform 0.1s ease-out',
-                  willChange: 'transform'
-                }}
-              >
+              <div className="relative hidden lg:flex justify-end">
                 <div className="relative max-w-[520px] rounded-3xl overflow-hidden shadow-[0_40px_120px_rgba(15,23,42,0.12)] border border-primary/10">
                   <img
                     src={heroImage}
@@ -192,70 +181,87 @@ export default function LandingPage() {
                 </div>
               </div>
             </div>
-            
-            {/* Gradient transition to catalog */}
-            <div 
-              className="absolute bottom-0 left-0 right-0 h-32 pointer-events-none"
-              style={{
-                background: 'linear-gradient(to bottom, rgba(255, 255, 255, 0), hsl(var(--background)) 80%)'
-              }}
-            />
-          </section>
+          </div>
+        </div>
+      </div>
 
-          {/* Catalog Preview Section */}
-          <section 
-            id="catalog" 
-            className="py-12 md:py-16 scroll-mt-[80px]"
+      {/* App Viewport - revealed from underneath with zoom/blur effect */}
+      <div 
+        id="app-viewport"
+        className="app-viewport min-h-screen relative bg-background"
+        style={{
+          zIndex: 2,
+          willChange: 'filter, transform'
+        }}
+      >
+        <main 
+          className="relative"
+          style={{
+            paddingLeft: 'var(--layout-rail, 72px)'
+          }}
+        >
+          <div
+            className="mx-auto w-full"
+            style={{
+              maxWidth: '1600px',
+              paddingInline: 'clamp(1.5rem, 4vw, 4rem)'
+            }}
           >
-            <div className="mb-8">
-              <h2 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-3">
-                Browse the catalog
-              </h2>
-              <p className="text-base text-muted-foreground">
-                See what's available — no account needed.
-              </p>
-            </div>
-            
-            {/* Mount the actual catalog grid */}
-            <CatalogGridWrapper />
-          </section>
+            {/* Catalog Preview Section */}
+            <section 
+              id="catalog" 
+              className="py-12 md:py-16 scroll-mt-[80px]"
+            >
+              <div className="mb-8">
+                <h2 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-3">
+                  Browse the catalog
+                </h2>
+                <p className="text-base text-muted-foreground">
+                  See what's available — no account needed.
+                </p>
+              </div>
+              
+              {/* Mount the actual catalog grid */}
+              <CatalogGridWrapper />
+            </section>
 
-          {/* Benefits Section */}
-          <section className="py-10 md:py-12 bg-muted/30 rounded-3xl mt-8">
-            <div className="max-w-[1000px] mr-auto px-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div className="flex items-start gap-3 p-4 rounded-2xl hover:bg-background/50 transition-all duration-200 hover:-translate-y-1 group">
-                  <div className="w-2 h-2 rounded-full bg-warning mt-2 flex-shrink-0 group-hover:scale-150 transition-transform" />
-                  <p className="text-base leading-7 text-foreground">
-                    Compare prices across wholesalers.
-                  </p>
-                </div>
-                <div className="flex items-start gap-3 p-4 rounded-2xl hover:bg-background/50 transition-all duration-200 hover:-translate-y-1 group">
-                  <div className="w-2 h-2 rounded-full bg-warning mt-2 flex-shrink-0 group-hover:scale-150 transition-transform" />
-                  <p className="text-base leading-7 text-foreground">
-                    See what's in stock before you order.
-                  </p>
-                </div>
-                <div className="flex items-start gap-3 p-4 rounded-2xl hover:bg-background/50 transition-all duration-200 hover:-translate-y-1 group">
-                  <div className="w-2 h-2 rounded-full bg-warning mt-2 flex-shrink-0 group-hover:scale-150 transition-transform" />
-                  <p className="text-base leading-7 text-foreground">
-                    No juggling multiple supplier sites.
-                  </p>
-                </div>
-                <div className="flex items-start gap-3 p-4 rounded-2xl hover:bg-background/50 transition-all duration-200 hover:-translate-y-1 group">
-                  <div className="w-2 h-2 rounded-full bg-warning mt-2 flex-shrink-0 group-hover:scale-150 transition-transform" />
-                  <p className="text-base leading-7 text-foreground">
-                    No spreadsheets — just ordering.
-                  </p>
+            {/* Benefits Section */}
+            <section className="py-10 md:py-12 bg-muted/30 rounded-3xl mt-8">
+              <div className="max-w-[1000px] mr-auto px-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                  <div className="flex items-start gap-3 p-4 rounded-2xl hover:bg-background/50 transition-all duration-200 hover:-translate-y-1 group">
+                    <div className="w-2 h-2 rounded-full bg-warning mt-2 flex-shrink-0 group-hover:scale-150 transition-transform" />
+                    <p className="text-base leading-7 text-foreground">
+                      Compare prices across wholesalers.
+                    </p>
+                  </div>
+                  <div className="flex items-start gap-3 p-4 rounded-2xl hover:bg-background/50 transition-all duration-200 hover:-translate-y-1 group">
+                    <div className="w-2 h-2 rounded-full bg-warning mt-2 flex-shrink-0 group-hover:scale-150 transition-transform" />
+                    <p className="text-base leading-7 text-foreground">
+                      See what's in stock before you order.
+                    </p>
+                  </div>
+                  <div className="flex items-start gap-3 p-4 rounded-2xl hover:bg-background/50 transition-all duration-200 hover:-translate-y-1 group">
+                    <div className="w-2 h-2 rounded-full bg-warning mt-2 flex-shrink-0 group-hover:scale-150 transition-transform" />
+                    <p className="text-base leading-7 text-foreground">
+                      No juggling multiple supplier sites.
+                    </p>
+                  </div>
+                  <div className="flex items-start gap-3 p-4 rounded-2xl hover:bg-background/50 transition-all duration-200 hover:-translate-y-1 group">
+                    <div className="w-2 h-2 rounded-full bg-warning mt-2 flex-shrink-0 group-hover:scale-150 transition-transform" />
+                    <p className="text-base leading-7 text-foreground">
+                      No spreadsheets — just ordering.
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
-          </section>
-        </div>
-      </main>
+            </section>
+          </div>
+        </main>
 
-      {/* Footer spacing */}
-      <div className="pb-12"></div>
+        {/* Footer spacing */}
+        <div className="pb-12"></div>
+      </div>
     </div>
   )
 }
