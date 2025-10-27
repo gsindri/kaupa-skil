@@ -23,7 +23,6 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { FilterChip } from '@/components/ui/filter-chip'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { useDebounce } from '@/hooks/useDebounce'
 import { FilterPresets } from './FilterPresets'
 import { AdvancedFilters } from './AdvancedFilters'
@@ -49,7 +48,6 @@ interface CatalogFiltersPanelProps {
   onClearFilters: () => void
   chips: ActiveFilterChip[]
   variant?: 'desktop' | 'drawer'
-  mode?: 'public' | 'authenticated'
 }
 
 type FacetKey = Extract<keyof FacetFilters, 'brand' | 'category' | 'supplier'>
@@ -141,9 +139,7 @@ export function CatalogFiltersPanel({
   onClearFilters,
   chips,
   variant = 'desktop',
-  mode = 'authenticated',
 }: CatalogFiltersPanelProps) {
-  const isPublicMode = mode === 'public'
   const { t } = useTranslation(undefined, { keyPrefix: 'catalog.filters' })
   const inStock = useCatalogFilters(s => s.inStock)
   const setInStock = useCatalogFilters(s => s.setInStock)
@@ -561,34 +557,23 @@ export function CatalogFiltersPanel({
               </li>
 
               <li>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div className={cn(quickFilterRowClass, mySuppliers && 'bg-[color:var(--filters-chip-bg)] ring-1 ring-[color:var(--filters-border-strong)]', isPublicMode && 'opacity-60 cursor-not-allowed')}>
-                      <Checkbox
-                        id="filter-my-suppliers"
-                        checked={mySuppliers}
-                        onCheckedChange={isPublicMode ? undefined : setMySuppliers}
-                        disabled={isPublicMode}
-                        className={checkboxClassName}
-                      />
-                      <label
-                        htmlFor="filter-my-suppliers"
-                        className={cn(
-                          'flex-1 cursor-pointer select-none text-[13px] font-medium text-[color:var(--filters-text-secondary)] transition-colors group-hover:text-[color:var(--filters-text-primary)]',
-                          mySuppliers && 'text-[color:var(--filters-text-primary)]',
-                          isPublicMode && 'cursor-not-allowed'
-                        )}
-                      >
-                        {t('suppliers.myOnly', { defaultValue: 'My suppliers only' })}
-                      </label>
-                    </div>
-                  </TooltipTrigger>
-                  {isPublicMode && (
-                    <TooltipContent>
-                      Sign in to filter by your suppliers
-                    </TooltipContent>
-                  )}
-                </Tooltip>
+                <div className={cn(quickFilterRowClass, mySuppliers && 'bg-[color:var(--filters-chip-bg)] ring-1 ring-[color:var(--filters-border-strong)]')}>
+                  <Checkbox
+                    id="filter-my-suppliers"
+                    checked={mySuppliers}
+                    onCheckedChange={setMySuppliers}
+                    className={checkboxClassName}
+                  />
+                  <label
+                    htmlFor="filter-my-suppliers"
+                    className={cn(
+                      'flex-1 cursor-pointer select-none text-[13px] font-medium text-[color:var(--filters-text-secondary)] transition-colors group-hover:text-[color:var(--filters-text-primary)]',
+                      mySuppliers && 'text-[color:var(--filters-text-primary)]'
+                    )}
+                  >
+                    {t('suppliers.myOnly', { defaultValue: 'My suppliers only' })}
+                  </label>
+                </div>
               </li>
 
               <li>
