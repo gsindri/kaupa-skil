@@ -39,18 +39,7 @@ export function useHeaderScrollHide(
   const reset = useCallback(() => {
     if (!ref.current) return
     
-    const el = ref.current
-    
-    // Force header visible in DOM
-    const reduceMotion =
-      typeof window !== 'undefined' &&
-      typeof window.matchMedia === 'function' &&
-      window.matchMedia('(prefers-reduced-motion: reduce)').matches
-
-    if (!reduceMotion) {
-      el.style.transition = 'transform 200ms ease-in-out'
-    }
-    el.style.transform = 'translate3d(0, 0, 0)'
+    // Force header visible via CSS variable
     document.documentElement.style.setProperty('--header-hidden', '0')
     
     // Reset internal state
@@ -62,19 +51,6 @@ export function useHeaderScrollHide(
   useEffect(() => {
     const el = ref.current
     if (!el) return
-
-    const reduceMotion =
-      typeof window !== 'undefined' &&
-      typeof window.matchMedia === 'function' &&
-      window.matchMedia('(prefers-reduced-motion: reduce)').matches
-
-    const applyTransition = () => {
-      if (reduceMotion) {
-        el.style.removeProperty('transition')
-      } else {
-        el.style.transition = 'transform 200ms ease-in-out'
-      }
-    }
 
     const setHeaderVars = () => {
       const height = Math.round(el.getBoundingClientRect().height)
@@ -106,13 +82,9 @@ export function useHeaderScrollHide(
       if (hiddenRef.current === nextHidden) return
       hiddenRef.current = nextHidden
       document.documentElement.style.setProperty('--header-hidden', hiddenRef.current ? '1' : '0')
-      applyTransition()
-      el.style.transform = hiddenRef.current ? 'translate3d(0, -100%, 0)' : 'translate3d(0, 0, 0)'
     }
 
-    applyTransition()
     document.documentElement.style.setProperty('--header-hidden', '0')
-    el.style.transform = 'translate3d(0, 0, 0)'
 
     const pinned = () =>
       (isPinned?.() ?? false) || lockCount.current > 0 || performance.now() < interactionLockUntil
@@ -153,10 +125,6 @@ export function useHeaderScrollHide(
       el.removeEventListener('pointerdown', handlePointerDown)
       ro?.disconnect()
       document.documentElement.style.setProperty('--header-hidden', '0')
-      if (!reduceMotion) {
-        el.style.removeProperty('transition')
-      }
-      el.style.transform = 'translate3d(0, 0, 0)'
     }
   }, [ref, isPinned, reset])
 
