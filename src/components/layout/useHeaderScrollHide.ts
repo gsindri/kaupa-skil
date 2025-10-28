@@ -128,17 +128,6 @@ export function useHeaderScrollHide(
     // Run once immediately to sync with current scroll position
     onScroll()
     
-    // ALSO check again after a frame to catch browser scroll restoration
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        const y = Math.max(0, window.scrollY)
-        if (y !== lastYRef.current) {
-          lastYRef.current = y
-          onScroll()
-        }
-      })
-    })
-    
     window.addEventListener('scroll', handleScroll, { passive: true })
 
     return () => {
