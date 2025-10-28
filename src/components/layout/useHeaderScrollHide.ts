@@ -71,8 +71,6 @@ export function useHeaderScrollHide(
     const handlePointerDown = () => lockFor(180)
     el.addEventListener('pointerdown', handlePointerDown, { passive: true })
 
-    lastYRef.current = Math.max(0, window.scrollY)
-
     const resetScrollState = (y: number) => {
       lastYRef.current = y
       accumulatedDeltaRef.current = 0
@@ -117,6 +115,9 @@ export function useHeaderScrollHide(
     }
 
     const handleScroll = () => requestAnimationFrame(onScroll)
+    
+    // Initialize scroll position RIGHT before first call
+    lastYRef.current = Math.max(0, window.scrollY)
     
     // Run once immediately to sync with current scroll position
     onScroll()
