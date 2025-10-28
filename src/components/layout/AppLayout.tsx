@@ -1,16 +1,22 @@
 import React, {
   ReactNode,
+  useCallback,
   useLayoutEffect,
+  useRef,
+  MutableRefObject,
+  ReactElement,
   useMemo,
   type CSSProperties
 } from 'react'
 import clsx from 'clsx'
 import { cn } from '@/lib/utils'
 import { Outlet } from 'react-router-dom'
+import { TopNavigation } from './TopNavigation'
 import { PrimaryNavRail } from './PrimaryNavRail'
-import { AuthenticatedHeader } from './AuthenticatedHeader'
+import { AppChrome } from './AppChrome'
 import { CartDrawer } from '@/components/cart/CartDrawer'
-import { useAutoHideHeader } from '@/hooks/useAutoHideHeader'
+import useHeaderScrollHide from './useHeaderScrollHide'
+import { isTypeableElement } from './isTypeableElement'
 import { useCart } from '@/contexts/useBasket'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
 
@@ -19,6 +25,7 @@ interface AppLayoutProps {
   secondary?: ReactNode
   panelOpen?: boolean
   children?: ReactNode
+  headerRef?: React.Ref<HTMLDivElement>
   headerClassName?: string
 }
 
@@ -27,28 +34,93 @@ type GridVars = CSSProperties & { '--filters-w'?: string }
 export function AppLayout({
   header,
   children,
+  headerRef,
   headerClassName,
   secondary,
   panelOpen = true
 }: AppLayoutProps) {
+  const internalHeaderRef = useRef<HTMLDivElement>(null)
+  const contentRef = useRef<HTMLDivElement | null>(null)
   const { isDrawerOpen } = useCart()
   const isDesktopCart = useMediaQuery('(min-width: 1024px)')
   const shouldShowCartRail = isDesktopCart && isDrawerOpen
+  const combinedHeaderRef = useCallback(
+    (node: HTMLDivElement | null) => {
+      internalHeaderRef.current = node
+      if (typeof headerRef === 'function') headerRef(node)
+      else if (headerRef && 'current' in headerRef)
+        (headerRef as MutableRefObject<HTMLDivElement | null>).current = node
+    },
+    [headerRef]
+  )
+
 
   const hasSecondary = !!secondary
   const showSecondary = hasSecondary && panelOpen
 
-  // Check if modal/dialog is open to disable auto-hide
-  const modalOpen = !!document.querySelector('[role="dialog"][data-state="open"]')
-  const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches
+  const isPinned = useCallback(() => {
+    const el = internalHeaderRef.current
+    if (!el) return false
 
-  useAutoHideHeader({
-    headerId: 'authenticated-header',
-    spacerId: 'authenticated-header-spacer',
-    thresholdPx: 24,
-    minVelocity: 2,
-    disabled: modalOpen || reduceMotion
-  })
+    const ae = document.activeElement
+    const menuOpen = el.querySelector('[data-state="open"]')
+    if (menuOpen) return true
+
+    if (ae && el.contains(ae) && isTypeableElement(ae)) return true
+
+    return false
+  }, [])
+
+  const { handleLockChange, reset: resetHeaderScrollHide } = useHeaderScrollHide(internalHeaderRef, { isPinned })
+
+
+  useLayoutEffect(() => {
+    if (typeof window === 'undefined') return
+
+    const root = document.documentElement
+
+    const updateMetrics = () => {
+      const headerHeight = internalHeaderRef.current?.getBoundingClientRect().height
+      if (headerHeight) {
+        root.style.setProperty('--header-h', `${headerHeight}px`)
+      }
+    }
+
+    updateMetrics()
+
+    let resizeObserver: ResizeObserver | null = null
+    if (typeof ResizeObserver !== 'undefined') {
+      resizeObserver = new ResizeObserver(updateMetrics)
+      const headerEl = internalHeaderRef.current
+      if (headerEl) resizeObserver.observe(headerEl)
+    }
+
+    window.addEventListener('resize', updateMetrics)
+
+    return () => {
+      resizeObserver?.disconnect()
+      window.removeEventListener('resize', updateMetrics)
+      root.style.removeProperty('--header-h')
+    }
+  }, [])
+
+  useLayoutEffect(() => {
+    if (typeof window === 'undefined') return
+    
+    // When filter sidebar toggles, reset header scroll-hide state
+    // Small delay ensures layout has settled before reset
+    const timeoutId = setTimeout(() => {
+      resetHeaderScrollHide()
+    }, 50)
+    
+    return () => clearTimeout(timeoutId)
+  }, [showSecondary, resetHeaderScrollHide])
+
+
+  const headerNode =
+    header && React.isValidElement(header)
+      ? React.cloneElement(header as ReactElement<any>, { onLockChange: handleLockChange })
+      : header
 
   const filtersWidth = useMemo(
     () => (showSecondary ? 'clamp(280px, 24vw, 360px)' : '0px'),
@@ -112,10 +184,24 @@ export function AppLayout({
           Skip to content
         </a>
 
-        {/* Header wrapper - full width, uses fixed positioning via hook */}
-        <AuthenticatedHeader className={headerClassName}>
-          {header}
-        </AuthenticatedHeader>
+        {/* Header wrapper - full width, stays visible */}
+        <div
+          id="catalogHeader"
+          data-app-header="true"
+          data-chrome-layer
+          ref={combinedHeaderRef}
+          className={cn(headerClassName)}
+          style={{
+            position: 'sticky',
+            top: 0,
+            zIndex: 'var(--z-header,55)',
+          }}
+        >
+          <AppChrome />
+          <TopNavigation />
+          
+          {headerNode}
+        </div>
 
         {/* Main content */}
         <div className="pb-8 pt-2">
@@ -153,6 +239,7 @@ export function AppLayout({
             )}
             <div
               className="page-grid__content min-w-0 w-full"
+              ref={contentRef}
               style={{
                 gridColumn: contentGridColumn,
               }}

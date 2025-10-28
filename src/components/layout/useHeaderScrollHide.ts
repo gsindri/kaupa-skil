@@ -79,6 +79,8 @@ export function useHeaderScrollHide(
     const setHeaderVars = () => {
       const height = Math.round(el.getBoundingClientRect().height)
       document.documentElement.style.setProperty('--header-h', `${height}px`)
+      // Add body padding to compensate for fixed positioning
+      document.body.style.paddingTop = `${height}px`
     }
     setHeaderVars()
     const ro =
@@ -87,6 +89,14 @@ export function useHeaderScrollHide(
         : null
     ro?.observe(el)
     window.addEventListener('resize', setHeaderVars)
+
+    // Store original position and switch to fixed for transform to work
+    const originalPosition = window.getComputedStyle(el).position
+    el.style.position = 'fixed'
+    el.style.top = '0'
+    el.style.left = '0'
+    el.style.right = '0'
+    el.style.zIndex = '50'
 
     let interactionLockUntil = 0
     const lockFor = (ms: number) => {
@@ -153,10 +163,16 @@ export function useHeaderScrollHide(
       el.removeEventListener('pointerdown', handlePointerDown)
       ro?.disconnect()
       document.documentElement.style.setProperty('--header-hidden', '0')
+      document.body.style.removeProperty('padding-top')
       if (!reduceMotion) {
         el.style.removeProperty('transition')
       }
       el.style.transform = 'translate3d(0, 0, 0)'
+      el.style.position = originalPosition
+      el.style.removeProperty('top')
+      el.style.removeProperty('left')
+      el.style.removeProperty('right')
+      el.style.removeProperty('z-index')
     }
   }, [ref, isPinned, reset])
 

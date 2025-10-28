@@ -590,6 +590,7 @@ export default function CatalogPage() {
   ])
   const stringifiedFilters = useMemo(() => JSON.stringify(filters), [filters])
   const [bannerDismissed, setBannerDismissed] = useState(false)
+  const headerRef = useRef<HTMLDivElement>(null)
   const filterButtonRef = useRef<HTMLButtonElement | null>(null)
   const focusFilterToggleButton = useCallback(() => {
     filterButtonRef.current?.focus()
@@ -1170,6 +1171,7 @@ export default function CatalogPage() {
     <>
       <Sheet open={isDesktop && showFilters} onOpenChange={handleSheetOpenChange}>
         <AppLayout
+          headerRef={headerRef}
           header={
             <FiltersBar
               filters={filters}
