@@ -1,4 +1,3 @@
-import React from 'react'
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { HeildaLogo } from '@/components/branding/HeildaLogo'
@@ -7,19 +6,18 @@ import { cn } from '@/lib/utils'
 
 interface PublicNavigationProps {
   catalogVisible?: boolean
-  onLockChange?: (locked: boolean) => void
+  headerRef?: React.RefCallback<HTMLElement>
 }
 
 /**
  * Public navigation for unauthenticated users
  * Shows: Logo, Explore catalog button, Log in button
  */
-export const PublicNavigation = React.forwardRef<HTMLElement, PublicNavigationProps>(
-  ({ catalogVisible, onLockChange }, ref) => {
-    return (
-      <header
-        ref={ref}
-        data-app-header="true"
+export function PublicNavigation({ catalogVisible, headerRef }: PublicNavigationProps) {
+  return (
+    <header
+      ref={headerRef}
+      data-app-header="true"
         className={cn(
           "fixed top-0 left-0 right-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60",
           "transition-shadow duration-300",
@@ -59,8 +57,5 @@ export const PublicNavigation = React.forwardRef<HTMLElement, PublicNavigationPr
         </div>
       </div>
     </header>
-    )
-  }
-)
-
-PublicNavigation.displayName = 'PublicNavigation'
+  )
+}

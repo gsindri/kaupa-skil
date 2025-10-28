@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useCallback, useRef } from 'react'
 
 const HIDE_DELTA = 8
 
@@ -15,17 +15,18 @@ interface Options {
 
 /**
  * Auto-hides the header on downward scroll and reveals on upward scroll.
- * Updates `--hdr-p` CSS variable on both the header element and documentElement
- * and maintains `--header-h` via ResizeObserver.
+ * Uses a ref callback to ensure setup happens when DOM element is attached.
  */
-export function useHeaderScrollHide(
-  ref: React.RefObject<HTMLElement>,
-  { isPinned, onLockChange }: Options = {}
-) {
+export function useHeaderScrollHide({ isPinned, onLockChange }: Options = {}) {
   const lockCount = useRef(0)
   const hiddenRef = useRef(false)
   const lastYRef = useRef(0)
   const accumulatedDeltaRef = useRef(0)
+  const cleanupRef = useRef<(() => void) | null>(null)
+  const isPinnedRef = useRef(isPinned)
+  
+  // Keep isPinned callback fresh
+  isPinnedRef.current = isPinned
 
   const handleLockChange = useCallback(
     (locked: boolean) => {
@@ -37,22 +38,26 @@ export function useHeaderScrollHide(
   )
 
   const reset = useCallback(() => {
-    const el = ref.current
-    if (!el) return
-
     // Force header visible via CSS variable
     document.documentElement.style.setProperty('--header-hidden', '0')
-    el.style.setProperty('--header-hidden', '0')
 
     // Reset internal state
     hiddenRef.current = false
     lastYRef.current = Math.max(0, window.scrollY)
     accumulatedDeltaRef.current = 0
-  }, [ref])
+  }, [])
 
-  useEffect(() => {
-    const el = ref.current
-    if (!el) return
+  const refCallback = useCallback((el: HTMLElement | null) => {
+    // Clean up previous element
+    if (cleanupRef.current) {
+      cleanupRef.current()
+      cleanupRef.current = null
+    }
+
+    if (!el) {
+      document.documentElement.style.setProperty('--header-hidden', '0')
+      return
+    }
 
     // Set initial state immediately
     document.documentElement.style.setProperty('--header-hidden', '0')
@@ -90,10 +95,8 @@ export function useHeaderScrollHide(
       el.style.setProperty('--header-hidden', value)
     }
 
-    document.documentElement.style.setProperty('--header-hidden', '0')
-
     const pinned = () =>
-      (isPinned?.() ?? false) || lockCount.current > 0 || performance.now() < interactionLockUntil
+      (isPinnedRef.current?.() ?? false) || lockCount.current > 0 || performance.now() < interactionLockUntil
 
     const onScroll = () => {
       const y = Math.max(0, window.scrollY)
@@ -132,16 +135,17 @@ export function useHeaderScrollHide(
     
     window.addEventListener('scroll', handleScroll, { passive: true })
 
-    return () => {
+    // Store cleanup function
+    cleanupRef.current = () => {
       window.removeEventListener('scroll', handleScroll)
       window.removeEventListener('resize', setHeaderVars)
       el.removeEventListener('pointerdown', handlePointerDown)
       ro?.disconnect()
       document.documentElement.style.setProperty('--header-hidden', '0')
     }
-  }, [ref, isPinned, reset])
+  }, [])
 
-  return { handleLockChange, reset }
+  return { ref: refCallback, handleLockChange, reset }
 }
 
 export default useHeaderScrollHide

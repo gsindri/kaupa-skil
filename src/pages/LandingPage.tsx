@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '@/contexts/useAuth'
 import { Navigate, Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
@@ -12,15 +12,14 @@ import heroImage from '@/assets/frontpagepic.png'
 export default function LandingPage() {
   const { user, isInitialized, loading } = useAuth()
   const [appEntered, setAppEntered] = useState(false)
-  const headerRef = useRef<HTMLElement>(null)
 
   // Allow auto-hide behavior everywhere on landing page
   const isPinned = useCallback(() => {
     return false
   }, [])
 
-  // Integrate scroll-hide hook
-  useHeaderScrollHide(headerRef, { isPinned })
+  // Integrate scroll-hide hook with ref callback
+  const { ref: headerRef } = useHeaderScrollHide({ isPinned })
 
   // Detect when app viewport threshold is reached (~80%)
   useEffect(() => {
@@ -57,7 +56,7 @@ export default function LandingPage() {
   return (
     <div className="landing-container min-h-screen bg-background">
       {/* Navigation - stable throughout scroll */}
-      <PublicNavigation ref={headerRef} catalogVisible={appEntered} />
+      <PublicNavigation headerRef={headerRef} catalogVisible={appEntered} />
       
       {/* Spacer to prevent content jump when header is fixed */}
       <div 

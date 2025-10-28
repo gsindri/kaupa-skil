@@ -30,9 +30,10 @@ export function FullWidthLayout({
     const menuOpen = el?.querySelector('[data-open="true"]')
     return window.scrollY < 1 || !!menuOpen || isTypeableElement(ae)
   }, [])
-  const handleLockChange = useHeaderScrollHide(internalHeaderRef, { isPinned })
+  const { ref: scrollHideRef, handleLockChange } = useHeaderScrollHide({ isPinned })
   const setHeaderRef = (node: HTMLDivElement | null) => {
     internalHeaderRef.current = node as HTMLDivElement
+    scrollHideRef(node as HTMLElement)
     if (typeof headerRef === 'function') headerRef(node as HTMLDivElement)
     else if (headerRef && 'current' in (headerRef as any)) (headerRef as any).current = node
   }

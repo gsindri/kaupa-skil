@@ -44,19 +44,6 @@ export function AppLayout({
   const { isDrawerOpen } = useCart()
   const isDesktopCart = useMediaQuery('(min-width: 1024px)')
   const shouldShowCartRail = isDesktopCart && isDrawerOpen
-  const combinedHeaderRef = useCallback(
-    (node: HTMLDivElement | null) => {
-      internalHeaderRef.current = node
-      if (typeof headerRef === 'function') headerRef(node)
-      else if (headerRef && 'current' in headerRef)
-        (headerRef as MutableRefObject<HTMLDivElement | null>).current = node
-    },
-    [headerRef]
-  )
-
-
-  const hasSecondary = !!secondary
-  const showSecondary = hasSecondary && panelOpen
 
   const isPinned = useCallback(() => {
     const el = internalHeaderRef.current
@@ -71,7 +58,21 @@ export function AppLayout({
     return false
   }, [])
 
-  const { handleLockChange, reset: resetHeaderScrollHide } = useHeaderScrollHide(internalHeaderRef, { isPinned })
+  const { ref: scrollHideRef, handleLockChange, reset: resetHeaderScrollHide } = useHeaderScrollHide({ isPinned })
+
+  const combinedHeaderRef = useCallback(
+    (node: HTMLDivElement | null) => {
+      internalHeaderRef.current = node
+      scrollHideRef(node as HTMLElement)
+      if (typeof headerRef === 'function') headerRef(node)
+      else if (headerRef && 'current' in headerRef)
+        (headerRef as MutableRefObject<HTMLDivElement | null>).current = node
+    },
+    [headerRef, scrollHideRef]
+  )
+
+  const hasSecondary = !!secondary
+  const showSecondary = hasSecondary && panelOpen
 
 
   useLayoutEffect(() => {
