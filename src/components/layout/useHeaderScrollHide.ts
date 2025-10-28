@@ -26,14 +26,6 @@ export function useHeaderScrollHide(
   const hiddenRef = useRef(false)
   const lastYRef = useRef(0)
   const accumulatedDeltaRef = useRef(0)
-  const [headerEl, setHeaderEl] = useState<HTMLElement | null>(() => ref.current ?? null)
-
-  useLayoutEffect(() => {
-    const el = ref.current ?? null
-    if (el !== headerEl) {
-      setHeaderEl(el)
-    }
-  }, [ref, headerEl])
 
   const handleLockChange = useCallback(
     (locked: boolean) => {
@@ -45,20 +37,21 @@ export function useHeaderScrollHide(
   )
 
   const reset = useCallback(() => {
-    if (!headerEl) return
+    const el = ref.current
+    if (!el) return
 
     // Force header visible via CSS variable
     document.documentElement.style.setProperty('--header-hidden', '0')
-    headerEl.style.setProperty('--header-hidden', '0')
+    el.style.setProperty('--header-hidden', '0')
 
     // Reset internal state
     hiddenRef.current = false
     lastYRef.current = Math.max(0, window.scrollY)
     accumulatedDeltaRef.current = 0
-  }, [headerEl])
+  }, [ref])
 
   useEffect(() => {
-    const el = headerEl
+    const el = ref.current
     if (!el) return
 
     // Set initial state immediately
@@ -146,7 +139,7 @@ export function useHeaderScrollHide(
       ro?.disconnect()
       document.documentElement.style.setProperty('--header-hidden', '0')
     }
-  }, [headerEl, isPinned, reset])
+  }, [ref, isPinned, reset])
 
   return { handleLockChange, reset }
 }
