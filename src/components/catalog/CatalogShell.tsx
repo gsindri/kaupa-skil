@@ -316,7 +316,8 @@ export function CatalogShell({ mode }: CatalogShellProps) {
           </section>
           
           {/* Grid/Table */}
-          <div className="mx-auto w-full max-w-[1600px] space-y-5 pb-8 pt-2" style={{ paddingInline: 'clamp(1.5rem, 4vw, 4rem)' }}>
+          <div style={{ paddingInline: 'clamp(1.5rem, 4vw, 4rem)' }}>
+            <div className="mx-auto w-full max-w-[1600px] space-y-5 pb-8 pt-2">
             {view === 'grid' ? (
               <CatalogGrid
                 products={displayProducts}
@@ -352,6 +353,7 @@ export function CatalogShell({ mode }: CatalogShellProps) {
                 </Button>
               </div>
             )}
+            </div>
           </div>
         </div>
         
