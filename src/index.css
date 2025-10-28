@@ -130,9 +130,11 @@ html { scrollbar-gutter: stable; }
 [data-app-header="true"],
 .app-header,
 #catalogHeader {
-  position: sticky;
+  position: fixed;
   top: 0;
-  width: auto;
+  width: 100%;
+  left: 0;
+  right: 0;
   z-index: 55;
 }
 

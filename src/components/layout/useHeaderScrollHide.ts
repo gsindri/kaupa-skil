@@ -52,6 +52,10 @@ export function useHeaderScrollHide(
     const el = ref.current
     if (!el) return
 
+    // Set initial state immediately
+    document.documentElement.style.setProperty('--header-hidden', '0')
+    el.style.setProperty('--header-hidden', '0')
+
     const setHeaderVars = () => {
       const height = Math.round(el.getBoundingClientRect().height)
       document.documentElement.style.setProperty('--header-h', `${height}px`)
@@ -79,7 +83,9 @@ export function useHeaderScrollHide(
     const applyHidden = (nextHidden: boolean) => {
       if (hiddenRef.current === nextHidden) return
       hiddenRef.current = nextHidden
-      document.documentElement.style.setProperty('--header-hidden', hiddenRef.current ? '1' : '0')
+      const value = hiddenRef.current ? '1' : '0'
+      document.documentElement.style.setProperty('--header-hidden', value)
+      el.style.setProperty('--header-hidden', value)
     }
 
     document.documentElement.style.setProperty('--header-hidden', '0')
