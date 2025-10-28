@@ -22,6 +22,7 @@ export function useHeaderScrollHide(
   ref: React.RefObject<HTMLElement>,
   { isPinned, onLockChange }: Options = {}
 ) {
+  const element = ref.current
   const lockCount = useRef(0)
   const hiddenRef = useRef(false)
   const lastYRef = useRef(0)
@@ -49,7 +50,7 @@ export function useHeaderScrollHide(
   }, [ref])
 
   useEffect(() => {
-    const el = ref.current
+    const el = element
     if (!el) return
 
     // Set initial state immediately
@@ -148,7 +149,7 @@ export function useHeaderScrollHide(
       ro?.disconnect()
       document.documentElement.style.setProperty('--header-hidden', '0')
     }
-  }, [ref, isPinned, reset])
+  }, [element, isPinned, reset])
 
   return { handleLockChange, reset }
 }
