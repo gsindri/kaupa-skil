@@ -17,8 +17,9 @@ export default function LandingPage() {
   useAutoHideHeader({
     headerId: 'public-header',
     spacerId: 'public-header-spacer',
-    thresholdPx: 24,
-    minVelocity: 2,
+    thresholdPx: 8,
+    minVelocity: 0.5,
+    initiallyHidden: true,
     disabled: !appEntered || reduceMotion
   })
 

@@ -7,6 +7,7 @@ type Options = {
   headerId?: string
   spacerId?: string
   root?: HTMLElement | null
+  initiallyHidden?: boolean
 }
 
 /**
@@ -20,10 +21,18 @@ export function useAutoHideHeader({
   headerId = "app-header",
   spacerId = "app-header-spacer",
   root = null,
+  initiallyHidden = false,
 }: Options = {}) {
   const lastY = useRef(0)
   const lastT = useRef(performance.now())
-  const [hidden, setHidden] = useState(false)
+  const [hidden, setHidden] = useState(initiallyHidden)
+
+  // Reveal header when hook becomes enabled
+  useEffect(() => {
+    if (!disabled && hidden) {
+      setHidden(false)
+    }
+  }, [disabled, hidden])
 
   useEffect(() => {
     if (disabled) return
