@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 
 const HIDE_DELTA = 8
 
@@ -26,6 +26,14 @@ export function useHeaderScrollHide(
   const hiddenRef = useRef(false)
   const lastYRef = useRef(0)
   const accumulatedDeltaRef = useRef(0)
+  const [headerEl, setHeaderEl] = useState<HTMLElement | null>(() => ref.current ?? null)
+
+  useLayoutEffect(() => {
+    const el = ref.current ?? null
+    if (el !== headerEl) {
+      setHeaderEl(el)
+    }
+  }, [ref, headerEl])
 
   const handleLockChange = useCallback(
     (locked: boolean) => {
@@ -37,19 +45,20 @@ export function useHeaderScrollHide(
   )
 
   const reset = useCallback(() => {
-    if (!ref.current) return
-    
+    if (!headerEl) return
+
     // Force header visible via CSS variable
     document.documentElement.style.setProperty('--header-hidden', '0')
-    
+    headerEl.style.setProperty('--header-hidden', '0')
+
     // Reset internal state
     hiddenRef.current = false
     lastYRef.current = Math.max(0, window.scrollY)
     accumulatedDeltaRef.current = 0
-  }, [ref])
+  }, [headerEl])
 
   useEffect(() => {
-    const el = ref.current
+    const el = headerEl
     if (!el) return
 
     // Set initial state immediately
@@ -137,7 +146,7 @@ export function useHeaderScrollHide(
       ro?.disconnect()
       document.documentElement.style.setProperty('--header-hidden', '0')
     }
-  }, [ref, isPinned, reset])
+  }, [headerEl, isPinned, reset])
 
   return { handleLockChange, reset }
 }
