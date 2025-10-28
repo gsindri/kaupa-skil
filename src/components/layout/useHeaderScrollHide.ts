@@ -117,6 +117,10 @@ export function useHeaderScrollHide(
     }
 
     const handleScroll = () => requestAnimationFrame(onScroll)
+    
+    // Run once immediately to sync with current scroll position
+    onScroll()
+    
     window.addEventListener('scroll', handleScroll, { passive: true })
 
     return () => {
