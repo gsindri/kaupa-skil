@@ -192,8 +192,10 @@ export function AppLayout({
           ref={combinedHeaderRef}
           className={cn(headerClassName)}
           style={{
-            position: 'sticky',
+            position: 'fixed',
             top: 0,
+            left: 'var(--layout-rail, 72px)',
+            right: 0,
             zIndex: 'var(--z-header,55)',
           }}
         >
@@ -202,6 +204,16 @@ export function AppLayout({
           
           {headerNode}
         </div>
+        
+        {/* Spacer to prevent content jump when header is fixed */}
+        <div 
+          style={{ 
+            height: 'var(--header-h, 56px)',
+            marginLeft: 'var(--layout-rail, 72px)',
+            transition: 'height 200ms ease-in-out'
+          }} 
+          aria-hidden="true"
+        />
 
         {/* Main content */}
         <div className="pb-8 pt-2">

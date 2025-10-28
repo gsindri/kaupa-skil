@@ -71,6 +71,15 @@ export default function LandingPage() {
     <div className="landing-container min-h-screen bg-background">
       {/* Navigation - stable throughout scroll */}
       <PublicNavigation ref={headerRef} catalogVisible={appEntered} />
+      
+      {/* Spacer to prevent content jump when header is fixed */}
+      <div 
+        style={{ 
+          height: 'var(--header-h, 56px)',
+          transition: 'height 200ms ease-in-out'
+        }} 
+        aria-hidden="true"
+      />
 
       {/* Hero Layer - pins at top and peels away */}
       <div 
