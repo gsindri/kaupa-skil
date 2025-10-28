@@ -207,8 +207,14 @@ export function CatalogShell({ mode }: CatalogShellProps) {
         <div className="w-full">
           {/* Toolbar */}
           <section
-            style={{ ...COMPACT_TOOLBAR_TOKENS, paddingInline: 'clamp(1.5rem, 4vw, 4rem)' }}
-            className="relative bg-[color:var(--toolbar-bg)] backdrop-blur-xl after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-white/12"
+            style={{ 
+              ...COMPACT_TOOLBAR_TOKENS, 
+              paddingInline: 'clamp(1.5rem, 4vw, 4rem)',
+              position: 'sticky',
+              top: 'calc(var(--header-h, 56px) * (1 - var(--header-hidden, 0)))',
+              zIndex: 'var(--z-toolbar, 40)',
+            }}
+            className="bg-[color:var(--toolbar-bg)] backdrop-blur-xl after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-white/12"
           >
             <div className="mx-auto w-full max-w-[1600px]">
               <div className="catalog-toolbar flex flex-col gap-3 py-3">
