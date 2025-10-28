@@ -1,39 +1,26 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/useAuth'
 import { Navigate, Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { PublicNavigation } from '@/components/layout/PublicNavigation'
 import { CatalogGridWrapper } from '@/components/landing/CatalogGridWrapper'
+import { useAutoHideHeader } from '@/hooks/useAutoHideHeader'
 
-import { cn } from '@/lib/utils'
-import { useHeaderScrollHide } from '@/components/layout/useHeaderScrollHide'
 import heroImage from '@/assets/frontpagepic.png'
 
 export default function LandingPage() {
   const { user, isInitialized, loading } = useAuth()
   const [appEntered, setAppEntered] = useState(false)
-  const headerRef = useRef<HTMLElement>(null)
 
-  // Smart isPinned callback - keeps header visible during hero section,
-  // allows auto-hide once in catalog
-  const isPinned = useCallback(() => {
-    // CRITICAL: Always keep header visible during hero section
-    // This prevents interference with the AnimatePresence morph animation
-    if (!appEntered) return true
-    
-    // Once in catalog section, allow auto-hide behavior
-    // Stay visible at the very top
-    if (window.scrollY < 1) return true
-    
-    // Stay visible in the first 90vh (hero section height)
-    if (window.scrollY < window.innerHeight * 0.9) return true
-    
-    // Otherwise, allow normal scroll-hide behavior
-    return false
-  }, [appEntered])
+  const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches
 
-  // Integrate scroll-hide hook
-  useHeaderScrollHide(headerRef, { isPinned })
+  useAutoHideHeader({
+    headerId: 'public-header',
+    spacerId: 'public-header-spacer',
+    thresholdPx: 24,
+    minVelocity: 2,
+    disabled: !appEntered || reduceMotion
+  })
 
   // Detect when app viewport threshold is reached (~80%)
   useEffect(() => {
@@ -70,7 +57,7 @@ export default function LandingPage() {
   return (
     <div className="landing-container min-h-screen bg-background">
       {/* Navigation - stable throughout scroll */}
-      <PublicNavigation ref={headerRef} catalogVisible={appEntered} />
+      <PublicNavigation catalogVisible={appEntered} />
 
       {/* Hero Layer - pins at top and peels away */}
       <div 

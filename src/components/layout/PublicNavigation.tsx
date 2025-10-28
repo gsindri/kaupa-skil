@@ -7,20 +7,19 @@ import { cn } from '@/lib/utils'
 
 interface PublicNavigationProps {
   catalogVisible?: boolean
-  onLockChange?: (locked: boolean) => void
 }
 
 /**
  * Public navigation for unauthenticated users
  * Shows: Logo, Explore catalog button, Log in button
  */
-export const PublicNavigation = React.forwardRef<HTMLElement, PublicNavigationProps>(
-  ({ catalogVisible, onLockChange }, ref) => {
-    return (
+export function PublicNavigation({ catalogVisible }: PublicNavigationProps) {
+  return (
+    <>
       <header
-        ref={ref}
+        id="public-header"
         className={cn(
-          "sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60",
+          "z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60",
           "transition-shadow duration-300",
           catalogVisible ? "shadow-md" : "shadow-sm"
         )}
@@ -28,13 +27,13 @@ export const PublicNavigation = React.forwardRef<HTMLElement, PublicNavigationPr
           paddingLeft: 'var(--layout-rail, 72px)'
         }}
       >
-      <div
-        className="mx-auto flex h-20 w-full items-center justify-between"
-        style={{
-          maxWidth: '1600px',
-          paddingInline: 'clamp(1.5rem, 4vw, 4rem)'
-        }}
-      >
+        <div
+          className="mx-auto flex h-20 w-full items-center justify-between"
+          style={{
+            maxWidth: '1600px',
+            paddingInline: 'clamp(1.5rem, 4vw, 4rem)'
+          }}
+        >
         {/* Logo */}
         <Link to="/" className="flex items-center">
           <HeildaLogo />
@@ -56,10 +55,9 @@ export const PublicNavigation = React.forwardRef<HTMLElement, PublicNavigationPr
             <Link to="/login">Log in</Link>
           </Button>
         </div>
-      </div>
-    </header>
-    )
-  }
-)
-
-PublicNavigation.displayName = 'PublicNavigation'
+        </div>
+      </header>
+      <div id="public-header-spacer" aria-hidden="true" />
+    </>
+  )
+}
