@@ -14,23 +14,10 @@ export default function LandingPage() {
   const [appEntered, setAppEntered] = useState(false)
   const headerRef = useRef<HTMLElement>(null)
 
-  // Smart isPinned callback - keeps header visible during hero section,
-  // allows auto-hide once in catalog
+  // Allow auto-hide behavior everywhere on landing page
   const isPinned = useCallback(() => {
-    // CRITICAL: Always keep header visible during hero section
-    // This prevents interference with the AnimatePresence morph animation
-    if (!appEntered) return true
-    
-    // Once in catalog section, allow auto-hide behavior
-    // Stay visible at the very top
-    if (window.scrollY < 1) return true
-    
-    // Stay visible in the first 90vh (hero section height)
-    if (window.scrollY < window.innerHeight * 0.9) return true
-    
-    // Otherwise, allow normal scroll-hide behavior
     return false
-  }, [appEntered])
+  }, [])
 
   // Integrate scroll-hide hook
   useHeaderScrollHide(headerRef, { isPinned })
