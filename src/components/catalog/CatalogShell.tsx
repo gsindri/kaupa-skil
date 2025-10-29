@@ -218,7 +218,7 @@ export function CatalogShell({ mode }: CatalogShellProps) {
             }}
             className="bg-[color:var(--toolbar-bg)] backdrop-blur-xl after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-white/12"
           >
-            <div className="mx-auto w-full max-w-7xl">
+            <div className="mx-auto w-full max-w-[1440px]">
               <div className="catalog-toolbar flex flex-col gap-3 py-3">
                 <div className="catalog-toolbar-zones">
                   <div className="toolbar-left">
@@ -316,7 +316,7 @@ export function CatalogShell({ mode }: CatalogShellProps) {
           </section>
           
           {/* Grid/Table */}
-          <div className="mx-auto w-full max-w-7xl space-y-5 pb-8 pt-2" style={{ paddingInline: 'clamp(1.5rem, 4vw, 4rem)' }}>
+          <div className="mx-auto w-full max-w-[1440px] space-y-5 pb-8 pt-2" style={{ paddingInline: 'clamp(1.5rem, 4vw, 4rem)' }}>
             {view === 'grid' ? (
               <CatalogGrid
                 products={displayProducts}

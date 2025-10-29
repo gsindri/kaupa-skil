@@ -1203,7 +1203,7 @@ export default function CatalogPage() {
         >
           <div
             className={cn(
-              'mx-auto w-full max-w-7xl space-y-5 pb-8',
+              'mx-auto w-full max-w-[1440px] space-y-5 pb-8',
               view === 'grid' ? 'pt-2' : 'pt-2'
             )}
             style={{
@@ -1459,7 +1459,7 @@ function FiltersBar({
   filterButtonRef,
   focusFilterToggleButton,
 }: FiltersBarProps) {
-  const containerClass = 'mx-auto w-full max-w-7xl'
+  const containerClass = 'mx-auto w-full max-w-[1440px]'
   const { search: _search, ...facetFilters } = filters
   const activeFacetCount = chips.length
   const activeCount =
