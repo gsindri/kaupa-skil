@@ -114,13 +114,12 @@ export default function LandingPage() {
           }}
         >
           <div
-            className="mx-auto w-full h-full flex items-center"
+            className="mx-auto w-full max-w-screen-2xl h-full flex items-center"
             style={{
-              maxWidth: '1600px',
               paddingInline: 'clamp(1.5rem, 4vw, 4rem)'
             }}
           >
-            <div className="grid grid-cols-1 lg:grid-cols-[60%_40%] gap-12 lg:gap-16 items-center w-full">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center w-full">
               {/* Left: Content */}
               <div className="text-left">
                 <h1 className="text-5xl md:text-6xl lg:text-7xl font-display font-extrabold text-foreground mb-6 leading-[1.08]">
@@ -166,7 +165,7 @@ export default function LandingPage() {
               </div>
 
               {/* Right: Visual Element */}
-              <div className="relative hidden lg:flex justify-end">
+              <div className="relative hidden lg:flex items-center justify-center">
                 <div className="relative max-w-[520px] rounded-3xl overflow-hidden shadow-[0_40px_120px_rgba(15,23,42,0.12)] border border-primary/10">
                   <img
                     src={heroImage}
