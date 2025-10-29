@@ -1569,8 +1569,13 @@ function FiltersBar({
             aria-expanded={showFilters}
             aria-controls="catalog-filters-panel"
             aria-keyshortcuts="f"
+            aria-label={
+              activeCount
+                ? `Filters, ${activeCount} active`
+                : 'Filters, no active filters'
+            }
             className={cn(
-              'inline-flex h-[var(--ctrl-h,40px)] items-center gap-3 rounded-[var(--ctrl-r,12px)] border border-transparent bg-[color:var(--chip-bg)] px-3 text-sm font-semibold text-[color:var(--ink-hi)] backdrop-blur-xl transition duration-200 ease-out focus-visible:outline-none hover:bg-[color:var(--chip-bg-hover)] hover:text-[color:var(--ink-hi)] motion-reduce:transition-none',
+              'inline-flex h-[var(--ctrl-h,40px)] items-center gap-2 rounded-[var(--ctrl-r,12px)] border border-transparent bg-[color:var(--chip-bg)] px-2.5 text-sm font-semibold text-[color:var(--ink-hi)] backdrop-blur-xl transition duration-200 ease-out focus-visible:outline-none hover:bg-[color:var(--chip-bg-hover)] hover:text-[color:var(--ink-hi)] motion-reduce:transition-none sm:gap-3 sm:px-3',
               showFilters && 'bg-[color:var(--seg-active-bg)] text-[color:var(--ink-hi)] border-[color:var(--ring-hover)]',
               extraClassName,
             )}
@@ -1581,10 +1586,17 @@ function FiltersBar({
               weight="fill"
               className={cn('transition-opacity text-[color:var(--ink-hi)]', !showFilters && 'opacity-80')}
             />
-            <span className="hidden sm:inline">
-              {activeCount ? `Filters (${activeCount})` : 'Filters'}
+            <span className="flex items-center gap-1 sm:gap-2">
+              <span>Filters</span>
+              {activeCount > 0 && (
+                <span
+                  aria-hidden="true"
+                  className="inline-flex min-w-[1.25rem] translate-y-[-1px] items-center justify-center rounded-full bg-[color:var(--chip-bg-hover)] px-1 text-[10px] font-semibold leading-[14px] text-[color:var(--ink-hi)] sm:translate-y-0 sm:bg-[color:var(--seg-active-bg)] sm:px-1.5 sm:text-xs"
+                >
+                  {activeCount}
+                </span>
+              )}
             </span>
-            <span className="sm:hidden">Filters</span>
           </button>
         </TooltipTrigger>
         <TooltipContent sideOffset={8}>Filters (F)</TooltipContent>
