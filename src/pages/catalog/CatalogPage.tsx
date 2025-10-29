@@ -1207,7 +1207,7 @@ export default function CatalogPage() {
               view === 'grid' ? 'pt-2' : 'pt-2'
             )}
             style={{
-              paddingInline: 'clamp(1.5rem, 4vw, 4rem)'
+              paddingInline: 'var(--page-gutter)'
             }}
           >
         {chips.length > 0 && (
@@ -1655,7 +1655,7 @@ function FiltersBar({
         {error && (
           <div
             className={cn(containerClass, 'py-3')}
-            style={{ paddingInline: 'clamp(1.5rem, 4vw, 4rem)' }}
+            style={{ paddingInline: 'var(--page-gutter)' }}
           >
             <Alert
               variant="destructive"
@@ -1669,7 +1669,7 @@ function FiltersBar({
 
         <div
           className={containerClass}
-          style={{ paddingInline: 'clamp(1.5rem, 4vw, 4rem)' }}
+          style={{ paddingInline: 'var(--page-gutter)' }}
         >
           <div className="catalog-toolbar flex flex-col gap-3 py-3">
             <div className="catalog-toolbar-zones">
