@@ -33,14 +33,21 @@ export interface VirtualizedGridProps<T> {
   breakpoints?: GridBreakpoint[]
 }
 
+/** Get content width excluding padding */
+function contentWidth(el: HTMLElement): number {
+  const cs = getComputedStyle(el)
+  const padLeft = parseFloat(cs.paddingLeft) || 0
+  const padRight = parseFloat(cs.paddingRight) || 0
+  return el.clientWidth - padLeft - padRight
+}
+
 /** Measure container width and keep it reactive. */
 function useContainerSize(ref: React.RefObject<HTMLElement>) {
   const [w, setW] = React.useState(0)
   React.useLayoutEffect(() => {
     if (!ref.current) return
-    const ro = new ResizeObserver(([entry]) => {
-      const cr = entry.contentRect
-      setW(cr.width)
+    const ro = new ResizeObserver(() => {
+      setW(ref.current ? contentWidth(ref.current) : 0)
     })
     ro.observe(ref.current)
     return () => ro.disconnect()

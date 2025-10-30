@@ -315,15 +315,16 @@ export function CatalogShell({ mode }: CatalogShellProps) {
             </ContentRail>
           </section>
           
-          {/* Grid/Table */}
-          <div 
-            className="mx-auto w-full" 
-            style={{ 
-              maxWidth: 'var(--page-max)', 
-              paddingInline: 'var(--page-gutter)' 
-            }}
-          >
-            <div className="space-y-5 pb-8 pt-2">
+          {/* Grid/Table - Mirror ContentRail structure */}
+          <div style={{ paddingLeft: 'var(--layout-rail,72px)' }}>
+            <div 
+              className="mx-auto w-full" 
+              style={{ 
+                maxWidth: 'var(--page-max)', 
+                paddingInline: 'var(--page-gutter)' 
+              }}
+            >
+              <div className="space-y-5 pb-8 pt-2">
             {view === 'grid' ? (
               <CatalogGrid
                 products={displayProducts}
@@ -358,7 +359,8 @@ export function CatalogShell({ mode }: CatalogShellProps) {
                   {isFetchingNextPage ? 'Loading...' : 'Load more'}
                 </Button>
               </div>
-            )}
+              )}
+              </div>
             </div>
           </div>
         </div>
