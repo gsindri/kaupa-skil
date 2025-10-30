@@ -4,7 +4,7 @@ html {
 
 :root {
   --layout-rail: 72px;     /* nav rail width */
-  --page-max: 1536px;      /* shared marketing + app max width (matches max-w-screen-2xl) */
+  --page-max: 1280px;      /* shared marketing + app max width (matches max-w-7xl) */
   --page-gutter: 2rem;     /* responsive page padding (lg: 32px) */
   --header-h: 56px;        /* unified header height */
   --toolbar-h: var(--header-h, 56px); /* toolbar follows header */

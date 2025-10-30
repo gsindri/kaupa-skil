@@ -37,8 +37,29 @@ export interface VirtualizedGridProps<T> {
 /** Get content width excluding padding */
 function contentWidth(el: HTMLElement): number {
   const cs = getComputedStyle(el)
-  const padLeft = parseFloat(cs.paddingLeft) || 0
-  const padRight = parseFloat(cs.paddingRight) || 0
+  
+  // Try to read computed padding first (fast path)
+  let padLeft = parseFloat(cs.paddingLeft) || 0
+  let padRight = parseFloat(cs.paddingRight) || 0
+  
+  // Fallback: If padding is 0 but paddingInline is set, compute it manually
+  if (padLeft === 0 && padRight === 0 && cs.paddingInline) {
+    const inline = cs.paddingInline.trim()
+    // Handle CSS variable like "var(--page-gutter)"
+    if (inline.startsWith('var(')) {
+      const varName = inline.match(/var\((--[^,)]+)/)?.[1]
+      if (varName) {
+        const resolved = cs.getPropertyValue(varName).trim()
+        const value = parseFloat(resolved) || 0
+        padLeft = padRight = value
+      }
+    } else {
+      // Direct value like "32px"
+      const value = parseFloat(inline) || 0
+      padLeft = padRight = value
+    }
+  }
+  
   const result = el.clientWidth - padLeft - padRight
   
   console.log('📏 contentWidth:', { 
@@ -46,8 +67,10 @@ function contentWidth(el: HTMLElement): number {
     padLeft, 
     padRight, 
     result,
-    computedPaddingInline: cs.paddingInline
+    computedPaddingInline: cs.paddingInline,
+    resolvedGutter: cs.getPropertyValue('--page-gutter')
   })
+  
   return result
 }
 
@@ -58,9 +81,28 @@ function useContainerSize(ref: React.RefObject<HTMLElement>) {
   // Force initial measurement after layout to ensure CSS variables are resolved
   React.useLayoutEffect(() => {
     if (!ref.current) return
-    const measure = () => setW(ref.current ? contentWidth(ref.current) : 0)
+    const measure = () => {
+      if (!ref.current) return
+      const width = contentWidth(ref.current)
+      setW(width)
+    }
+    
     measure() // Immediate
     requestAnimationFrame(measure) // After paint
+    
+    // Retry after a small delay if we got 0 padding (CSS vars not resolved yet)
+    const timer = setTimeout(() => {
+      if (ref.current) {
+        const cs = getComputedStyle(ref.current)
+        const pad = parseFloat(cs.paddingLeft) || 0
+        if (pad === 0) {
+          // CSS vars still not resolved, force remeasure
+          measure()
+        }
+      }
+    }, 50)
+    
+    return () => clearTimeout(timer)
   }, [ref])
   
   React.useLayoutEffect(() => {
