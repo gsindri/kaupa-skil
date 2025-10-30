@@ -316,7 +316,7 @@ export function CatalogShell({ mode }: CatalogShellProps) {
           </section>
           
           {/* Grid/Table */}
-          <ContentRail>
+          <div className="mx-auto max-w-screen-2xl px-5 md:px-6 lg:px-8">
             <div className="space-y-5 pb-8 pt-2">
             {view === 'grid' ? (
               <CatalogGrid
@@ -354,7 +354,7 @@ export function CatalogShell({ mode }: CatalogShellProps) {
               </div>
             )}
             </div>
-          </ContentRail>
+          </div>
         </div>
         
         {/* Desktop Filters Panel */}

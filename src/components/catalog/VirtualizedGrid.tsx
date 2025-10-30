@@ -369,6 +369,7 @@ export function VirtualizedGrid<T>({
                 gridTemplateColumns: `repeat(${cols}, minmax(${cardWidth}px, 1fr))`,
                 columnGap: safeGapX,
                 rowGap: safeGapY,
+                paddingInline: 0,
                 paddingBottom: safeGapY,
                 alignContent: 'start',
               }}
