@@ -83,9 +83,9 @@ export function CatalogGrid({
       gapY={16}
       breakpoints={[
         { minWidth: 0, columns: 2, minCardWidth: 176, gapX: 12, gapY: 16 },
-        { minWidth: 768, columns: 3, minCardWidth: 248, gapX: 16, gapY: 20 },
-        { minWidth: 1024, columns: 4, minCardWidth: 288, gapX: 24, gapY: 28 },
-        { minWidth: 1440, columns: 4, minCardWidth: 328, gapX: 24, gapY: 28 },
+        { minWidth: 600, columns: 3, minCardWidth: 248, gapX: 16, gapY: 20 },
+        { minWidth: 880, columns: 4, minCardWidth: 288, gapX: 24, gapY: 28 },
+        { minWidth: 1300, columns: 4, minCardWidth: 328, gapX: 24, gapY: 28 },
       ]}
       onNearEnd={onNearEnd}
       className={cn(

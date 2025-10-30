@@ -39,7 +39,9 @@ function contentWidth(el: HTMLElement): number {
   const cs = getComputedStyle(el)
   const padLeft = parseFloat(cs.paddingLeft) || 0
   const padRight = parseFloat(cs.paddingRight) || 0
-  return el.clientWidth - padLeft - padRight
+  const result = el.clientWidth - padLeft - padRight
+  console.log('📏 contentWidth:', { clientWidth: el.clientWidth, padLeft, padRight, result })
+  return result
 }
 
 /** Measure container width and keep it reactive. */
@@ -111,6 +113,14 @@ export function VirtualizedGrid<T>({
   // Use external ref if provided, otherwise use internal ref
   const measureRef = containerRef || scrollerRef
   const { width } = useContainerSize(measureRef)
+
+  // DEBUG: Log measured width
+  React.useEffect(() => {
+    if (width > 0) {
+      console.log('🔍 VirtualizedGrid measured width:', width)
+      console.log('🔍 Window width:', typeof window !== 'undefined' ? window.innerWidth : 0)
+    }
+  }, [width])
 
   const sortedBreakpoints = React.useMemo(() => {
     if (!breakpoints || breakpoints.length === 0) return null
