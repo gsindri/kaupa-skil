@@ -5,6 +5,7 @@ import { VirtualizedGrid } from './VirtualizedGrid'
 import { ProductCard } from './ProductCard'
 
 interface CatalogGridProps {
+  containerRef?: React.RefObject<HTMLDivElement>
   products: any[]
   onAddToCart: (p: any, supplierId?: string) => void
   onNearEnd?: () => void
@@ -15,6 +16,7 @@ interface CatalogGridProps {
 }
 
 export function CatalogGrid({
+  containerRef,
   products,
   onAddToCart,
   onNearEnd,
@@ -71,6 +73,7 @@ export function CatalogGrid({
 
   return (
     <VirtualizedGrid
+      containerRef={containerRef}
       items={products}
       renderItem={renderItem}
       itemKey={item => item.catalog_id}

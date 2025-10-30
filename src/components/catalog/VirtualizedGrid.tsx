@@ -11,6 +11,7 @@ export interface GridBreakpoint {
 }
 
 export interface VirtualizedGridProps<T> {
+  containerRef?: React.RefObject<HTMLDivElement>
   items: T[]
   /** Render a single card. Receive the item and its absolute index. */
   renderItem: (item: T, index: number) => React.ReactNode
@@ -90,6 +91,7 @@ function useAnchoredGridScroll(args: {
 }
 
 export function VirtualizedGrid<T>({
+  containerRef,
   items,
   renderItem,
   minCardWidth = 260,
@@ -106,7 +108,9 @@ export function VirtualizedGrid<T>({
   const scrollerRef = React.useRef<HTMLDivElement>(null)
   const innerRef = React.useRef<HTMLDivElement>(null)
 
-  const { width } = useContainerSize(scrollerRef)
+  // Use external ref if provided, otherwise use internal ref
+  const measureRef = containerRef || scrollerRef
+  const { width } = useContainerSize(measureRef)
 
   const sortedBreakpoints = React.useMemo(() => {
     if (!breakpoints || breakpoints.length === 0) return null
@@ -344,7 +348,6 @@ export function VirtualizedGrid<T>({
 
   return (
     <div
-      ref={scrollerRef}
       className={className}
       style={{
         position: 'relative',

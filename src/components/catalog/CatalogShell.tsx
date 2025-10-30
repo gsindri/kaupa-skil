@@ -68,6 +68,7 @@ export function CatalogShell({ mode }: CatalogShellProps) {
   const isDesktop = useMediaQuery('(min-width: 1024px)')
   const searchRef = useRef<HTMLInputElement>(null)
   const filterButtonRef = useRef<HTMLButtonElement | null>(null)
+  const gridContainerRef = useRef<HTMLDivElement>(null)
   
   // Data fetching
   const availability = inStock ? ['IN_STOCK'] : undefined
@@ -315,9 +316,10 @@ export function CatalogShell({ mode }: CatalogShellProps) {
             </ContentRail>
           </section>
           
-          {/* Grid/Table - Mirror ContentRail structure */}
-          <div style={{ paddingLeft: 'var(--layout-rail,72px)' }}>
+          {/* Grid/Table - Single wrapper for measurement */}
+          <div className="pl-[var(--layout-rail,72px)]">
             <div 
+              ref={gridContainerRef}
               className="mx-auto w-full" 
               style={{ 
                 maxWidth: 'var(--page-max)', 
@@ -327,6 +329,7 @@ export function CatalogShell({ mode }: CatalogShellProps) {
               <div className="space-y-5 pb-8 pt-2">
             {view === 'grid' ? (
               <CatalogGrid
+                containerRef={gridContainerRef}
                 products={displayProducts}
                 onAddToCart={handleAddToCart}
                 onNearEnd={handleLoadMore}
