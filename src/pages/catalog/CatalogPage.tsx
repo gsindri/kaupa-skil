@@ -1664,26 +1664,31 @@ function FiltersBar({
       <section
         style={{
           ...COMPACT_TOOLBAR_TOKENS,
-          paddingInline: 'var(--page-gutter)',
         }}
         className={cn(
           'relative bg-[color:var(--toolbar-bg)] backdrop-blur-xl after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-white/12 after:content-[""]',
           scrolled && 'before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-white/16 before:opacity-70 before:content-[""]',
         )}
       >
-        {error && (
-          <div className="py-3 px-5 md:px-6 lg:px-8">
-            <Alert
-              variant="destructive"
-              className="rounded-[var(--ctrl-r,12px)] bg-white/12 text-[color:var(--ink)] ring-1 ring-inset ring-white/15 shadow-[0_16px_36px_rgba(3,10,22,0.45)] backdrop-blur-xl"
-            >
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>{String(error)}</AlertDescription>
-            </Alert>
-          </div>
-        )}
+        <div
+          className="mx-auto w-full"
+          style={{
+            maxWidth: 'var(--page-max)',
+            paddingInline: 'var(--page-gutter)',
+          }}
+        >
+          {error && (
+            <div className="py-3">
+              <Alert
+                variant="destructive"
+                className="rounded-[var(--ctrl-r,12px)] bg-white/12 text-[color:var(--ink)] ring-1 ring-inset ring-white/15 shadow-[0_16px_36px_rgba(3,10,22,0.45)] backdrop-blur-xl"
+              >
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{String(error)}</AlertDescription>
+              </Alert>
+            </div>
+          )}
 
-        <div className="px-5 md:px-6 lg:px-8">
           <div className="catalog-toolbar flex flex-col gap-3 py-3">
             <div className="catalog-toolbar-zones">
               <div className="toolbar-left">
