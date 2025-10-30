@@ -22,6 +22,7 @@ import { cn } from '@/lib/utils'
 import type { FacetFilters } from '@/services/catalog'
 import { MagnifyingGlass, FunnelSimple, XCircle } from '@phosphor-icons/react'
 import { rememberScroll } from '@/lib/scrollMemory'
+import { ContentRail } from '@/components/layout/ContentRail'
 
 interface CatalogShellProps {
   mode: 'public' | 'authenticated'
@@ -209,7 +210,6 @@ export function CatalogShell({ mode }: CatalogShellProps) {
           <section
             style={{ 
               ...COMPACT_TOOLBAR_TOKENS, 
-              paddingInline: 'clamp(1.5rem, 4vw, 4rem)',
               position: 'sticky',
               top: 'calc(var(--header-h, 56px) * (1 - var(--header-hidden, 0)))',
               transform: 'translate3d(0, calc(-100% * var(--header-hidden, 0)), 0)',
@@ -218,7 +218,7 @@ export function CatalogShell({ mode }: CatalogShellProps) {
             }}
             className="bg-[color:var(--toolbar-bg)] backdrop-blur-xl after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-white/12"
           >
-            <div className="mx-auto w-full max-w-screen-2xl">
+            <ContentRail>
               <div className="catalog-toolbar flex flex-col gap-3 py-3">
                 <div className="catalog-toolbar-zones">
                   <div className="toolbar-left">
@@ -312,11 +312,12 @@ export function CatalogShell({ mode }: CatalogShellProps) {
                   </div>
                 )}
               </div>
-            </div>
+            </ContentRail>
           </section>
           
           {/* Grid/Table */}
-          <div className="mx-auto w-full max-w-screen-2xl space-y-5 pb-8 pt-2" style={{ paddingInline: 'clamp(1.5rem, 4vw, 4rem)' }}>
+          <ContentRail>
+            <div className="space-y-5 pb-8 pt-2">
             {view === 'grid' ? (
               <CatalogGrid
                 products={displayProducts}
@@ -352,7 +353,8 @@ export function CatalogShell({ mode }: CatalogShellProps) {
                 </Button>
               </div>
             )}
-          </div>
+            </div>
+          </ContentRail>
         </div>
         
         {/* Desktop Filters Panel */}

@@ -1203,12 +1203,9 @@ export default function CatalogPage() {
         >
           <div
             className={cn(
-              'mx-auto w-full max-w-screen-2xl space-y-5 pb-8',
+              'space-y-5 pb-8',
               view === 'grid' ? 'pt-2' : 'pt-2'
             )}
-            style={{
-              paddingInline: 'var(--page-gutter)'
-            }}
           >
         {chips.length > 0 && (
           <div
@@ -1459,7 +1456,6 @@ function FiltersBar({
   filterButtonRef,
   focusFilterToggleButton,
 }: FiltersBarProps) {
-  const containerClass = 'mx-auto w-full max-w-screen-2xl'
   const { search: _search, ...facetFilters } = filters
   const activeFacetCount = chips.length
   const activeCount =
@@ -1665,10 +1661,7 @@ function FiltersBar({
         )}
       >
         {error && (
-          <div
-            className={cn(containerClass, 'py-3')}
-            style={{ paddingInline: 'var(--page-gutter)' }}
-          >
+          <div className="py-3 px-5 md:px-6 lg:px-8">
             <Alert
               variant="destructive"
               className="rounded-[var(--ctrl-r,12px)] bg-white/12 text-[color:var(--ink)] ring-1 ring-inset ring-white/15 shadow-[0_16px_36px_rgba(3,10,22,0.45)] backdrop-blur-xl"
@@ -1679,10 +1672,7 @@ function FiltersBar({
           </div>
         )}
 
-        <div
-          className={containerClass}
-          style={{ paddingInline: 'var(--page-gutter)' }}
-        >
+        <div className="px-5 md:px-6 lg:px-8">
           <div className="catalog-toolbar flex flex-col gap-3 py-3">
             <div className="catalog-toolbar-zones">
               <div className="toolbar-left">

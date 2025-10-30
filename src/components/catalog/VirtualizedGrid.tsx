@@ -371,7 +371,6 @@ export function VirtualizedGrid<T>({
                 rowGap: safeGapY,
                 paddingBottom: safeGapY,
                 alignContent: 'start',
-                paddingInline: 0,
               }}
             >
               {Array.from({ length: endIndex - startIndex }).map((_, i) => {

@@ -107,18 +107,8 @@ export default function LandingPage() {
         </div>
 
         {/* Hero Content */}
-        <div 
-          className="relative h-full"
-          style={{
-            paddingLeft: 'var(--layout-rail, 72px)'
-          }}
-        >
-          <div
-            className="mx-auto w-full max-w-screen-2xl h-full flex items-center"
-            style={{
-              paddingInline: 'clamp(1.5rem, 4vw, 4rem)'
-            }}
-          >
+        <div className="relative h-full">
+          <div className="mx-auto w-full max-w-screen-2xl h-full flex items-center px-5 md:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center w-full">
               {/* Left: Content */}
               <div className="text-left">
@@ -189,19 +179,8 @@ export default function LandingPage() {
           willChange: 'filter, transform'
         }}
       >
-        <main 
-          className="relative"
-          style={{
-            paddingLeft: 'var(--layout-rail, 72px)'
-          }}
-        >
-          <div
-            className="mx-auto w-full"
-            style={{
-              maxWidth: '1600px',
-              paddingInline: 'clamp(1.5rem, 4vw, 4rem)'
-            }}
-          >
+        <main className="relative">
+          <div className="mx-auto w-full max-w-screen-2xl px-5 md:px-6 lg:px-8">
             {/* Catalog Preview Section */}
             <section 
               id="catalog" 
