@@ -4,7 +4,8 @@ html {
 
 :root {
   --layout-rail: 72px;     /* nav rail width */
-  --content-max: 1200px;   /* shared marketing + app max width */
+  --page-max: 1536px;      /* shared marketing + app max width (matches max-w-screen-2xl) */
+  --page-gutter: 2rem;     /* responsive page padding (lg: 32px) */
   --header-h: 56px;        /* unified header height */
   --toolbar-h: var(--header-h, 56px); /* toolbar follows header */
   --chrome-h: var(--header-h);  /* chrome follows header */
@@ -70,7 +71,6 @@ html {
   --z-dialog-content: 80; /* spotlight/dialog content */
 
   /* Cart rail tokens */
-  --page-gutter: clamp(16px, 4vw, 48px);
   --cart-rail-w: 240px;           /* cart width when open */
   --cart-rail-transition: 240ms cubic-bezier(0.4, 0, 0.2, 1);
 
@@ -94,11 +94,17 @@ html {
 
 .public-shell {
   width: 100%;
-  max-width: var(--content-max, 1200px);
+  max-width: var(--page-max);
   margin-left: var(--layout-rail, 72px);
   margin-right: auto;
-  padding-left: var(--page-gutter, 1rem);
-  padding-right: var(--page-gutter, 1rem);
+  padding-left: var(--page-gutter);
+  padding-right: var(--page-gutter);
+}
+
+@media (max-width: 1024px) {
+  :root {
+    --page-gutter: 1.5rem;  /* md: 24px */
+  }
 }
 
 @media (max-width: 1023px) {
@@ -108,7 +114,12 @@ html {
 
   .public-shell {
     margin-left: 0;
-    padding-left: var(--page-gutter, 1rem);
+  }
+}
+
+@media (max-width: 640px) {
+  :root {
+    --page-gutter: 1.25rem;  /* sm: 20px */
   }
 }
 

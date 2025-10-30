@@ -316,7 +316,13 @@ export function CatalogShell({ mode }: CatalogShellProps) {
           </section>
           
           {/* Grid/Table */}
-          <div className="mx-auto max-w-screen-2xl px-5 md:px-6 lg:px-8">
+          <div 
+            className="mx-auto w-full" 
+            style={{ 
+              maxWidth: 'var(--page-max)', 
+              paddingInline: 'var(--page-gutter)' 
+            }}
+          >
             <div className="space-y-5 pb-8 pt-2">
             {view === 'grid' ? (
               <CatalogGrid
