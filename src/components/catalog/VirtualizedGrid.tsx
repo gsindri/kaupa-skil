@@ -40,13 +40,29 @@ function contentWidth(el: HTMLElement): number {
   const padLeft = parseFloat(cs.paddingLeft) || 0
   const padRight = parseFloat(cs.paddingRight) || 0
   const result = el.clientWidth - padLeft - padRight
-  console.log('📏 contentWidth:', { clientWidth: el.clientWidth, padLeft, padRight, result })
+  
+  console.log('📏 contentWidth:', { 
+    clientWidth: el.clientWidth, 
+    padLeft, 
+    padRight, 
+    result,
+    computedPaddingInline: cs.paddingInline
+  })
   return result
 }
 
 /** Measure container width and keep it reactive. */
 function useContainerSize(ref: React.RefObject<HTMLElement>) {
   const [w, setW] = React.useState(0)
+  
+  // Force initial measurement after layout to ensure CSS variables are resolved
+  React.useLayoutEffect(() => {
+    if (!ref.current) return
+    const measure = () => setW(ref.current ? contentWidth(ref.current) : 0)
+    measure() // Immediate
+    requestAnimationFrame(measure) // After paint
+  }, [ref])
+  
   React.useLayoutEffect(() => {
     if (!ref.current) return
     const ro = new ResizeObserver(() => {
@@ -55,6 +71,7 @@ function useContainerSize(ref: React.RefObject<HTMLElement>) {
     ro.observe(ref.current)
     return () => ro.disconnect()
   }, [ref])
+  
   return { width: w }
 }
 
@@ -358,7 +375,6 @@ export function VirtualizedGrid<T>({
 
   return (
     <div
-      ref={scrollerRef}
       className={className}
       style={{
         position: 'relative',
