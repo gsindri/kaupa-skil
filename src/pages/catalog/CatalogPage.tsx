@@ -1204,11 +1204,7 @@ export default function CatalogPage() {
         >
           <div
             ref={gridContainerRef}
-            className="mx-auto w-full space-y-5 pb-8 pt-2"
-            style={{
-              maxWidth: 'var(--page-max)',
-              paddingInline: 'var(--page-gutter)',
-            }}
+            className="w-full space-y-5 pb-8 pt-2"
           >
               {chips.length > 0 && (
                 <div

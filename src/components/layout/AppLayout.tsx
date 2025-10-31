@@ -259,9 +259,10 @@ export function AppLayout({
             >
               <main
                 id="main-content"
-                className="w-full min-w-0"
+                className="w-full min-w-0 mx-auto"
                 style={{
                   minHeight: 'calc(100vh - var(--header-h, 56px))',
+                  maxWidth: 'var(--page-max)',
                   paddingInline: 'var(--page-gutter)',
                 }}
               >
