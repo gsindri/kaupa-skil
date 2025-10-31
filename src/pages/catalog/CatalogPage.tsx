@@ -1207,6 +1207,7 @@ export default function CatalogPage() {
             className="mx-auto w-full"
             style={{
               maxWidth: 'var(--page-max)',
+              paddingInline: 'var(--page-gutter)',
             }}
           >
             <div
