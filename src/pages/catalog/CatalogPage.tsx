@@ -1212,11 +1212,11 @@ export default function CatalogPage() {
               }}
             >
               <div
-              className={cn(
-                'space-y-5 pb-8',
-                view === 'grid' ? 'pt-2' : 'pt-2'
-              )}
-            >
+                className={cn(
+                  'space-y-5 pb-8',
+                  view === 'grid' ? 'pt-2' : 'pt-2'
+                )}
+              >
               {chips.length > 0 && (
                 <div
                   className="lg:hidden"
@@ -1364,6 +1364,7 @@ export default function CatalogPage() {
               )}
             </div>
           </div>
+        </div>
         </AppLayout>
         {isDesktop && showFilters && (
           <SheetPortal>
