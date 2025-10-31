@@ -175,7 +175,7 @@ export function AppLayout({
       <div
         className="app-shell-content flex min-h-screen flex-col"
         style={{
-          /* Make content area width match the header (left rail removed). */
+          /* Match header's layout box: viewport minus rail */
           width: 'calc(100% - var(--layout-rail,72px))',
           marginLeft: 'var(--layout-rail,72px)',
         }}
@@ -212,7 +212,7 @@ export function AppLayout({
         <div
           style={{
             height: 'var(--header-h, 56px)',
-            transition: 'height 200ms ease-in-out',
+            transition: 'height 200ms ease-in-out'
           }}
           aria-hidden="true"
         />

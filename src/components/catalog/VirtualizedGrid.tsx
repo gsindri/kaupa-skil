@@ -37,10 +37,8 @@ export interface VirtualizedGridProps<T> {
 /** Get content width excluding padding */
 function contentWidth(el: HTMLElement): number {
   const cs = getComputedStyle(el)
-
   const padLeft = parseFloat(cs.paddingLeft) || 0
   const padRight = parseFloat(cs.paddingRight) || 0
-
   return Math.max(0, el.clientWidth - padLeft - padRight)
 }
 
