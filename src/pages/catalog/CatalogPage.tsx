@@ -1202,14 +1202,16 @@ export default function CatalogPage() {
             />
           }
         >
-          <div
-            ref={gridContainerRef}
-            className="mx-auto w-full"
-            style={{
-              maxWidth: 'calc(var(--page-max) - (2 * var(--page-gutter)))',
-            }}
-          >
+          <div style={{ marginInline: 'calc(var(--page-gutter) * -1)' }}>
             <div
+              ref={gridContainerRef}
+              className="mx-auto w-full"
+              style={{
+                maxWidth: 'var(--page-max)',
+                paddingInline: 'var(--page-gutter)',
+              }}
+            >
+              <div
               className={cn(
                 'space-y-5 pb-8',
                 view === 'grid' ? 'pt-2' : 'pt-2'
