@@ -1206,8 +1206,7 @@ export default function CatalogPage() {
             ref={gridContainerRef}
             className="mx-auto w-full"
             style={{
-              maxWidth: 'var(--page-max)',
-              paddingInline: 'var(--page-gutter)',
+              maxWidth: 'calc(var(--page-max) - (2 * var(--page-gutter)))',
             }}
           >
             <div
