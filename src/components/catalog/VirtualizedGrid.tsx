@@ -37,41 +37,11 @@ export interface VirtualizedGridProps<T> {
 /** Get content width excluding padding */
 function contentWidth(el: HTMLElement): number {
   const cs = getComputedStyle(el)
-  
-  // Try to read computed padding first (fast path)
-  let padLeft = parseFloat(cs.paddingLeft) || 0
-  let padRight = parseFloat(cs.paddingRight) || 0
-  
-  // Fallback: If padding is 0, read --page-gutter directly
-  if (padLeft === 0 && padRight === 0) {
-    const gutter = cs.getPropertyValue('--page-gutter').trim()
-    
-    if (gutter) {
-      // Convert rem to px if needed
-      let value = 0
-      if (gutter.endsWith('rem')) {
-        const remValue = parseFloat(gutter)
-        const rootFontSize = parseFloat(getComputedStyle(document.documentElement).fontSize)
-        value = remValue * rootFontSize
-      } else {
-        value = parseFloat(gutter) || 0
-      }
-      padLeft = padRight = value
-    }
-  }
-  
-  const result = el.clientWidth - padLeft - padRight
-  
-  console.log('📏 contentWidth:', { 
-    clientWidth: el.clientWidth, 
-    padLeft, 
-    padRight, 
-    result,
-    computedPaddingInline: cs.paddingInline,
-    resolvedGutter: cs.getPropertyValue('--page-gutter')
-  })
-  
-  return result
+
+  const padLeft = parseFloat(cs.paddingLeft) || 0
+  const padRight = parseFloat(cs.paddingRight) || 0
+
+  return Math.max(0, el.clientWidth - padLeft - padRight)
 }
 
 /** Measure container width and keep it reactive. */
