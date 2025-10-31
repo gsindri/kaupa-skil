@@ -417,6 +417,7 @@ export function VirtualizedGrid<T>({
 
   return (
     <div
+      ref={scrollerRef}
       className={className}
       style={{
         position: 'relative',
