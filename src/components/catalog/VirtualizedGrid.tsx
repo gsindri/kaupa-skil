@@ -42,34 +42,19 @@ function contentWidth(el: HTMLElement): number {
   let padLeft = parseFloat(cs.paddingLeft) || 0
   let padRight = parseFloat(cs.paddingRight) || 0
   
-  // Fallback: If padding is 0 but paddingInline is set, compute it manually
-  if (padLeft === 0 && padRight === 0 && cs.paddingInline) {
-    const inline = cs.paddingInline.trim()
-    // Handle CSS variable like "var(--page-gutter)"
-    if (inline.startsWith('var(')) {
-      const varName = inline.match(/var\((--[^,)]+)/)?.[1]
-      if (varName) {
-        const resolved = cs.getPropertyValue(varName).trim()
-        // Convert rem to px if needed
-        let value = 0
-        if (resolved.endsWith('rem')) {
-          const remValue = parseFloat(resolved)
-          const rootFontSize = parseFloat(getComputedStyle(document.documentElement).fontSize)
-          value = remValue * rootFontSize
-        } else {
-          value = parseFloat(resolved) || 0
-        }
-        padLeft = padRight = value
-      }
-    } else {
-      // Handle direct values (e.g., "2rem" or "32px")
+  // Fallback: If padding is 0, read --page-gutter directly
+  if (padLeft === 0 && padRight === 0) {
+    const gutter = cs.getPropertyValue('--page-gutter').trim()
+    
+    if (gutter) {
+      // Convert rem to px if needed
       let value = 0
-      if (inline.endsWith('rem')) {
-        const remValue = parseFloat(inline)
+      if (gutter.endsWith('rem')) {
+        const remValue = parseFloat(gutter)
         const rootFontSize = parseFloat(getComputedStyle(document.documentElement).fontSize)
         value = remValue * rootFontSize
       } else {
-        value = parseFloat(inline) || 0
+        value = parseFloat(gutter) || 0
       }
       padLeft = padRight = value
     }
