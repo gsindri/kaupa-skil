@@ -50,12 +50,27 @@ function contentWidth(el: HTMLElement): number {
       const varName = inline.match(/var\((--[^,)]+)/)?.[1]
       if (varName) {
         const resolved = cs.getPropertyValue(varName).trim()
-        const value = parseFloat(resolved) || 0
+        // Convert rem to px if needed
+        let value = 0
+        if (resolved.endsWith('rem')) {
+          const remValue = parseFloat(resolved)
+          const rootFontSize = parseFloat(getComputedStyle(document.documentElement).fontSize)
+          value = remValue * rootFontSize
+        } else {
+          value = parseFloat(resolved) || 0
+        }
         padLeft = padRight = value
       }
     } else {
-      // Direct value like "32px"
-      const value = parseFloat(inline) || 0
+      // Handle direct values (e.g., "2rem" or "32px")
+      let value = 0
+      if (inline.endsWith('rem')) {
+        const remValue = parseFloat(inline)
+        const rootFontSize = parseFloat(getComputedStyle(document.documentElement).fontSize)
+        value = remValue * rootFontSize
+      } else {
+        value = parseFloat(inline) || 0
+      }
       padLeft = padRight = value
     }
   }
