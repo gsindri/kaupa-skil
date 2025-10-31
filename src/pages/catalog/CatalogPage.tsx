@@ -1207,7 +1207,6 @@ export default function CatalogPage() {
             className="mx-auto w-full space-y-5 pb-8 pt-2"
             style={{
               maxWidth: 'var(--page-max)',
-              paddingInline: 'var(--page-gutter)',
             }}
           >
               {chips.length > 0 && (
