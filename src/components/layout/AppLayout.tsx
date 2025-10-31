@@ -202,18 +202,8 @@ export function AppLayout({
         >
           <AppChrome />
           <TopNavigation />
-
-          {headerNode ? (
-            <div
-              className="mx-auto w-full"
-              style={{
-                maxWidth: 'var(--page-max)',
-                paddingInline: 'var(--page-gutter)',
-              }}
-            >
-              {headerNode}
-            </div>
-          ) : null}
+          
+          {headerNode}
         </div>
         
         {/* Spacer to prevent content jump when header is fixed */}
@@ -273,9 +263,6 @@ export function AppLayout({
                 style={{
                   minHeight: 'calc(100vh - var(--header-h, 56px))',
                   paddingInline: 'var(--page-gutter)',
-                  marginInline: 'auto',
-                  maxWidth: 'var(--page-max)',
-                  width: '100%',
                 }}
               >
                 {children ?? <Outlet />}
