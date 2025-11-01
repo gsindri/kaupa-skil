@@ -1671,7 +1671,7 @@ function FiltersBar({
             </div>
           )}
 
-          <div className="catalog-toolbar flex flex-col gap-3 py-3">
+          <div className="content-container catalog-toolbar flex flex-col gap-3 py-3">
             <div className="catalog-toolbar-zones">
               <div className="toolbar-left">
                 {renderFiltersToggleButton('flex-none')}
