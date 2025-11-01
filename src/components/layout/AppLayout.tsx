@@ -252,17 +252,15 @@ export function AppLayout({
               </aside>
             )}
             <div
-              className="page-grid__content min-w-0 w-full mx-auto"
+              className="page-grid__content min-w-0 w-full"
               ref={contentRef}
               style={{
                 gridColumn: contentGridColumn,
-                maxWidth: 'var(--page-max)',
-                paddingInline: 'var(--page-gutter)',
               }}
             >
               <main
                 id="main-content"
-                className="w-full min-w-0"
+                className="content-container w-full min-w-0"
                 style={{
                   minHeight: 'calc(100vh - var(--header-h, 56px))',
                 }}

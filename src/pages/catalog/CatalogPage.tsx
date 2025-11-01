@@ -1659,15 +1659,8 @@ function FiltersBar({
           scrolled && 'before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-white/16 before:opacity-70 before:content-[""]',
         )}
       >
-        <div
-          className="mx-auto w-full"
-          style={{
-            maxWidth: 'var(--page-max)',
-            paddingInline: 'var(--page-gutter)',
-          }}
-        >
-          {error && (
-            <div className="py-3">
+        {error && (
+          <div className="py-3">
               <Alert
                 variant="destructive"
                 className="rounded-[var(--ctrl-r,12px)] bg-white/12 text-[color:var(--ink)] ring-1 ring-inset ring-white/15 shadow-[0_16px_36px_rgba(3,10,22,0.45)] backdrop-blur-xl"
@@ -1775,7 +1768,6 @@ function FiltersBar({
               </div>
             )}
           </div>
-        </div>
       </section>
     )
 }
