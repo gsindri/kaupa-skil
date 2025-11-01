@@ -341,6 +341,7 @@ body {
 
 /* Single content container for consistent alignment across header and page content */
 .content-container {
+  width: 100%;
   max-width: var(--page-max);
   padding-inline: var(--page-gutter);
   margin-inline: auto;
