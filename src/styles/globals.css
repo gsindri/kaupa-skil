@@ -210,18 +210,6 @@ input[type='search'] {
 
 /* Cart rail positioned in grid layout */
 
-@media (min-width:640px){
-  :root{
-    --page-gutter:1.5rem;
-  }
-}
-
-@media (min-width:1024px){
-  :root{
-    --page-gutter:2rem;
-  }
-}
-
 
 .catalog-toolbar-zones{
   display:flex;
