@@ -70,7 +70,23 @@ html {
   --z-dialog-overlay: 72; /* global dialog overlay layer */
   --z-dialog-content: 80; /* spotlight/dialog content */
 
-  /* Cart rail tokens */
+/* Band/Container Pattern */
+.band {
+  position: relative;
+  width: 100%;
+}
+
+.band--toolbar {
+  background: var(--toolbar-bg);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.content-container {
+  box-sizing: border-box;
+}
+
+/* Cart rail tokens */
   --cart-rail-w: 240px;           /* cart width when open */
   --cart-rail-transition: 240ms cubic-bezier(0.4, 0, 0.2, 1);
 

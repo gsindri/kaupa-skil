@@ -176,7 +176,7 @@ export function AppLayout({
         className="app-shell-content flex min-h-screen flex-col"
         style={{
           /* Match header's layout box: viewport minus rail */
-          width: 'calc(100% - var(--layout-rail,72px))',
+          width: 'calc(100vw - var(--layout-rail,72px))',
           marginLeft: 'var(--layout-rail,72px)',
         }}
       >
@@ -260,7 +260,7 @@ export function AppLayout({
             >
               <main
                 id="main-content"
-                className="content-container w-full min-w-0"
+                className="w-full min-w-0"
                 style={{
                   minHeight: 'calc(100vh - var(--header-h, 56px))',
                 }}
