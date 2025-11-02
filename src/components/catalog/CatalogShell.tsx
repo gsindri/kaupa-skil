@@ -320,7 +320,7 @@ export function CatalogShell({ mode }: CatalogShellProps) {
           <div className="pl-[var(--layout-rail,72px)]">
             <div 
               ref={gridContainerRef}
-              className="mx-auto w-full box-border"
+              className="mx-auto w-full" 
               style={{ 
                 maxWidth: 'var(--page-max)', 
                 paddingInline: 'var(--page-gutter)' 

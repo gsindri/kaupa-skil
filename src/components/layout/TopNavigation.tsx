@@ -280,7 +280,7 @@ export function TopNavigation() {
       }}
     >
       <div
-        className="mx-auto flex w-full items-center box-border"
+        className="mx-auto flex w-full items-center"
         style={{
           maxWidth: 'var(--page-max)',
           paddingInline: 'var(--page-gutter)',
