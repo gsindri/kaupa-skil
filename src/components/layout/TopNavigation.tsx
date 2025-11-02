@@ -279,7 +279,14 @@ export function TopNavigation() {
         height: 'clamp(44px, var(--toolbar-h, 56px), 72px)',
       }}
     >
-      <div className="content-container flex w-full items-center gap-[var(--page-gutter)]">
+      <div
+        className="mx-auto flex w-full items-center"
+        style={{
+          maxWidth: 'var(--page-max)',
+          paddingInline: 'var(--page-gutter)',
+          columnGap: 'var(--page-gutter)',
+        }}
+      >
         <div className="flex min-w-0 flex-shrink-0 items-center gap-4">
           <Link
             to="/"

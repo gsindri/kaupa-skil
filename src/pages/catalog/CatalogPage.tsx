@@ -1202,9 +1202,10 @@ export default function CatalogPage() {
             />
           }
         >
-          <section className="band">
-            <div className="content-container" ref={gridContainerRef}>
-              <div className="w-full space-y-5 pb-8 pt-2">
+          <div
+            ref={gridContainerRef}
+            className="w-full space-y-5 pb-8 pt-2"
+          >
               {chips.length > 0 && (
                 <div
                   className="lg:hidden"
@@ -1351,8 +1352,6 @@ export default function CatalogPage() {
                 </div>
               )}
           </div>
-            </div>
-          </section>
         </AppLayout>
         {isDesktop && showFilters && (
           <SheetPortal>
@@ -1652,15 +1651,15 @@ function FiltersBar({
 
     return (
       <section
-        className={cn(
-          'band band--toolbar relative sticky z-[var(--z-header)] transition-shadow',
-          scrolled && 'before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-white/16 before:opacity-70 before:content-[""]',
-        )}
         style={{
           ...COMPACT_TOOLBAR_TOKENS,
         }}
+        className={cn(
+          'relative bg-[color:var(--toolbar-bg)] backdrop-blur-xl after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-white/12 after:content-[""]',
+          scrolled && 'before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-white/16 before:opacity-70 before:content-[""]',
+        )}
       >
-        <div className="content-container">
+        <div>
           {error && (
             <div className="py-3">
               <Alert
