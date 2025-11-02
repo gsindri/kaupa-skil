@@ -37,6 +37,7 @@ import { ViewToggle } from '@/components/place-order/ViewToggle'
 
 import AppLayout from '@/components/layout/AppLayout'
 import { PublicNavigation } from '@/components/layout/PublicNavigation'
+import { ContentRail } from '@/components/layout/ContentRail'
 import { Sheet, SheetContent, SheetPortal } from '@/components/ui/sheet'
 import { useCatalogFilters, SortOrder } from '@/state/catalogFiltersStore'
 import { useSearchParams } from 'react-router-dom'
@@ -1202,156 +1203,158 @@ export default function CatalogPage() {
             />
           }
         >
-          {chips.length > 0 && (
-            <div
-              className="lg:hidden"
-              style={{ '--ctrl-h': '32px', '--ctrl-r': '10px' } as React.CSSProperties}
-            >
-              <div className="flex flex-wrap items-center gap-2 rounded-[var(--ctrl-r,12px)] border border-[color:var(--ring-idle)]/60 bg-[color:var(--chip-bg)]/70 px-3 py-3 backdrop-blur-xl">
-                <span className="text-xs font-semibold uppercase tracking-wide text-[color:var(--ink-dim)]/70">
-                  Active filters
-                </span>
-                {chips.map(chip => (
-                  <FilterChip
-                    key={`mobile-${chip.key}`}
-                    selected
-                    onClick={() => chip.onEdit()}
-                    onRemove={chip.onRemove}
-                    className="shrink-0"
-                  >
-                    {chip.label}
-                  </FilterChip>
-                ))}
-                {activeCount > 0 && (
-                  <button
-                    type="button"
-                    onClick={clearAllFilters}
-                    className="ml-auto text-sm font-medium text-[color:var(--ink-dim)]/80 underline decoration-white/20 underline-offset-4 transition hover:text-[color:var(--ink)]"
-                  >
-                    Clear all
-                  </button>
-                )}
-              </div>
-            </div>
-          )}
-
-          {showConnectBanner && (
-            <div
-              data-testid="alert"
-              className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white/90 p-6 shadow-sm backdrop-blur-xl"
-            >
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex items-start gap-3">
-                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-sky-100 text-sky-600">
-                    <AlertCircle className="h-5 w-5" aria-hidden="true" />
+          <ContentRail includeRailPadding={false}>
+            {chips.length > 0 && (
+              <div
+                className="lg:hidden"
+                style={{ '--ctrl-h': '32px', '--ctrl-r': '10px' } as React.CSSProperties}
+              >
+                <div className="flex flex-wrap items-center gap-2 rounded-[var(--ctrl-r,12px)] border border-[color:var(--ring-idle)]/60 bg-[color:var(--chip-bg)]/70 px-3 py-3 backdrop-blur-xl">
+                  <span className="text-xs font-semibold uppercase tracking-wide text-[color:var(--ink-dim)]/70">
+                    Active filters
                   </span>
-                  <div>
-                    <p className="text-sm font-semibold text-slate-900">
-                      Connect suppliers to unlock prices.
-                    </p>
-                    <p className="mt-1 text-sm text-slate-600">
-                      Get live pricing and availability by connecting with your suppliers.
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setShowFilters(true)}
-                  >
-                    Browse suppliers
-                  </Button>
-                  <button
-                    type="button"
-                    onClick={() => setBannerDismissed(true)}
-                    className="rounded-full p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-none"
-                    aria-label="Dismiss connect suppliers banner"
-                  >
-                    <X className="h-4 w-4" aria-hidden="true" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          <div
-            ref={gridContainerRef}
-            className="space-y-6 pb-8 pt-2"
-          >
-            {isInitialLoading ? (
-              <div className="flex h-64 items-center justify-center rounded-2xl border border-slate-200 bg-white/90 shadow-sm">
-                <p className="text-sm font-medium text-slate-600">Loading catalog…</p>
-              </div>
-            ) : !displayProducts.length ? (
-              <div className="rounded-2xl border border-dashed border-slate-300 bg-white/80 px-6 py-12 text-center shadow-sm">
-                <h2 className="text-lg font-semibold text-slate-900">No products found</h2>
-                <p className="mt-2 text-sm text-slate-600">
-                  {hasAnyFilters
-                    ? 'Try adjusting or clearing your search and filters to see more results.'
-                    : 'We could not find any products to show right now. Try refreshing the catalog.'}
-                </p>
-                <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-                  {hasAnyFilters && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => {
-                        clearAllFilters()
-                        setFilters({ search: '' })
-                      }}
+                  {chips.map(chip => (
+                    <FilterChip
+                      key={`mobile-${chip.key}`}
+                      selected
+                      onClick={() => chip.onEdit()}
+                      onRemove={chip.onRemove}
+                      className="shrink-0"
                     >
-                      Clear filters
-                    </Button>
+                      {chip.label}
+                    </FilterChip>
+                  ))}
+                  {activeCount > 0 && (
+                    <button
+                      type="button"
+                      onClick={clearAllFilters}
+                      className="ml-auto text-sm font-medium text-[color:var(--ink-dim)]/80 underline decoration-white/20 underline-offset-4 transition hover:text-[color:var(--ink)]"
+                    >
+                      Clear all
+                    </button>
                   )}
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => refetch()}
-                  >
-                    Refresh
-                  </Button>
                 </div>
-              </div>
-            ) : (
-              <div className="space-y-6">
-                {view === 'grid' ? (
-                  <CatalogGrid
-                    containerRef={gridContainerRef}
-                    products={displayProducts}
-                    onAddToCart={handleAdd}
-                    onNearEnd={handleLoadMore}
-                    showPrice
-                    addingId={addingId}
-                  />
-                ) : (
-                  <CatalogTable
-                    products={displayProducts}
-                    sort={tableSort}
-                    onSort={handleSort}
-                  />
-                )}
-
-                {hasNextPage && (
-                  <div className="flex flex-col items-center gap-3 py-6">
-                    <InfiniteSentinel
-                      key={sentinelKey}
-                      onVisible={handleLoadMore}
-                      disabled={!hasNextPage || isLoadingMore}
-                    />
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={handleLoadMore}
-                      disabled={isLoadingMore}
-                    >
-                      {isLoadingMore ? 'Loading more…' : 'Load more'}
-                    </Button>
-                  </div>
-                )}
               </div>
             )}
-          </div>
+
+            {showConnectBanner && (
+              <div
+                data-testid="alert"
+                className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white/90 p-6 shadow-sm backdrop-blur-xl"
+              >
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex items-start gap-3">
+                    <span className="flex h-10 w-10 items-center justify-center rounded-full bg-sky-100 text-sky-600">
+                      <AlertCircle className="h-5 w-5" aria-hidden="true" />
+                    </span>
+                    <div>
+                      <p className="text-sm font-semibold text-slate-900">
+                        Connect suppliers to unlock prices.
+                      </p>
+                      <p className="mt-1 text-sm text-slate-600">
+                        Get live pricing and availability by connecting with your suppliers.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setShowFilters(true)}
+                    >
+                      Browse suppliers
+                    </Button>
+                    <button
+                      type="button"
+                      onClick={() => setBannerDismissed(true)}
+                      className="rounded-full p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-none"
+                      aria-label="Dismiss connect suppliers banner"
+                    >
+                      <X className="h-4 w-4" aria-hidden="true" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div
+              ref={gridContainerRef}
+              className="space-y-6 pb-8 pt-2"
+            >
+              {isInitialLoading ? (
+                <div className="flex h-64 items-center justify-center rounded-2xl border border-slate-200 bg-white/90 shadow-sm">
+                  <p className="text-sm font-medium text-slate-600">Loading catalog…</p>
+                </div>
+              ) : !displayProducts.length ? (
+                <div className="rounded-2xl border border-dashed border-slate-300 bg-white/80 px-6 py-12 text-center shadow-sm">
+                  <h2 className="text-lg font-semibold text-slate-900">No products found</h2>
+                  <p className="mt-2 text-sm text-slate-600">
+                    {hasAnyFilters
+                      ? 'Try adjusting or clearing your search and filters to see more results.'
+                      : 'We could not find any products to show right now. Try refreshing the catalog.'}
+                  </p>
+                  <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+                    {hasAnyFilters && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          clearAllFilters()
+                          setFilters({ search: '' })
+                        }}
+                      >
+                        Clear filters
+                      </Button>
+                    )}
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => refetch()}
+                    >
+                      Refresh
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {view === 'grid' ? (
+                    <CatalogGrid
+                      containerRef={gridContainerRef}
+                      products={displayProducts}
+                      onAddToCart={handleAdd}
+                      onNearEnd={handleLoadMore}
+                      showPrice
+                      addingId={addingId}
+                    />
+                  ) : (
+                    <CatalogTable
+                      products={displayProducts}
+                      sort={tableSort}
+                      onSort={handleSort}
+                    />
+                  )}
+
+                  {hasNextPage && (
+                    <div className="flex flex-col items-center gap-3 py-6">
+                      <InfiniteSentinel
+                        key={sentinelKey}
+                        onVisible={handleLoadMore}
+                        disabled={!hasNextPage || isLoadingMore}
+                      />
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={handleLoadMore}
+                        disabled={isLoadingMore}
+                      >
+                        {isLoadingMore ? 'Loading more…' : 'Load more'}
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </ContentRail>
         </AppLayout>
         {isDesktop && showFilters && (
           <SheetPortal>

@@ -1,13 +1,20 @@
 import { PropsWithChildren } from "react";
 
-export function ContentRail({ children }: PropsWithChildren) {
+interface ContentRailProps extends PropsWithChildren {
+  includeRailPadding?: boolean;
+}
+
+export function ContentRail({
+  children,
+  includeRailPadding = true
+}: ContentRailProps) {
   return (
-    <div className="pl-[var(--layout-rail,72px)]">
-      <div 
-        className="mx-auto w-full" 
-        style={{ 
-          maxWidth: 'var(--page-max)', 
-          paddingInline: 'var(--page-gutter)' 
+    <div className={includeRailPadding ? "pl-[var(--layout-rail,72px)]" : undefined}>
+      <div
+        className="mx-auto w-full"
+        style={{
+          maxWidth: "var(--page-max)",
+          paddingInline: "var(--page-gutter)"
         }}
       >
         {children}
