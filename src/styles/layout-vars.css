@@ -83,7 +83,15 @@ html {
 }
 
 .content-container {
-  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  box-sizing: border-box !important;
+  padding-inline: var(--page-gutter);
+  margin-inline: auto;
+  max-width: min(
+    var(--page-max),
+    calc(100dvw - var(--layout-rail, 72px) - 2 * var(--page-gutter))
+  );
 }
 
 /* Cart rail tokens */
