@@ -69,7 +69,7 @@ export function FullWidthLayout({
         >
           <TopNavigation />
           {headerNode && (
-            <div className="mx-auto w-full max-w-screen-2xl px-4 sm:px-6 lg:px-8">{headerNode}</div>
+            <div className="content-container">{headerNode}</div>
           )}
         </div>
 
@@ -77,7 +77,7 @@ export function FullWidthLayout({
         <div
           id="catalogContent"
           className={cn(
-            'flex-1 min-h-0 px-4 sm:px-6 lg:px-8 xl:px-10 2xl:px-12',
+            'flex-1 min-h-0',
             contentClassName,
           )}
           style={{
@@ -86,11 +86,13 @@ export function FullWidthLayout({
           }}
           {...restContentProps}
         >
-          <div className="page-grid items-start gap-3">
-            <div className="page-grid__content min-w-0">
-              {children}
+          <div className="content-container">
+            <div className="page-grid items-start gap-3">
+              <div className="page-grid__content min-w-0">
+                {children}
+              </div>
+              <CartDrawer />
             </div>
-            <CartDrawer />
           </div>
         </div>
       </div>
