@@ -83,6 +83,11 @@
   --catalog-extra-gutter:0px;
 }
 
+html {
+  /* Reserve space for scrollbars so fixed headers align with the content column */
+  scrollbar-gutter: stable;
+}
+
 input[type='search']::-webkit-search-cancel-button,
 input[type='search']::-webkit-search-decoration,
 input[type='search']::-webkit-search-results-button,
