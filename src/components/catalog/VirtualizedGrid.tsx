@@ -374,9 +374,36 @@ export function VirtualizedGrid<T>({
   }, [virtualRows, rowCount, onNearEnd, items.length, rowStride])
 
   // Grid CSS sizes
-  const cardWidth = cols
+  const baseCardWidth = cols
     ? Math.max(1, Math.floor((width - safeGapX * (cols - 1)) / cols))
     : effectiveMinCardWidth || 1
+
+  const columnWidths = React.useMemo(() => {
+    if (!cols) return []
+    const base = baseCardWidth
+    const widths = Array.from({ length: cols }, () => base)
+    const totalGapWidth = safeGapX * (cols - 1)
+    const totalUsedWidth = base * cols + totalGapWidth
+    const leftover = Math.max(0, Math.round(width - totalUsedWidth))
+    if (leftover <= 0) return widths
+
+    const evenShare = Math.floor(leftover / cols)
+    const remainder = leftover % cols
+
+    if (evenShare > 0) {
+      for (let i = 0; i < widths.length; i += 1) {
+        widths[i] += evenShare
+      }
+    }
+
+    if (remainder > 0) {
+      for (let i = 0; i < remainder; i += 1) {
+        widths[i] += 1
+      }
+    }
+
+    return widths
+  }, [baseCardWidth, cols, safeGapX, width])
   const totalHeight = rowVirtualizer.getTotalSize()
   const normalizedScrollMargin = Number.isFinite(scrollMargin)
     ? scrollMargin
@@ -414,7 +441,10 @@ export function VirtualizedGrid<T>({
                 transform: `translate3d(0, ${Math.max(0, vr.start - normalizedScrollMargin)}px, 0)`,
                 height: cardHeight,
                 display: 'grid',
-                gridTemplateColumns: `repeat(${cols}, ${cardWidth}px)`,
+                gridTemplateColumns:
+                  columnWidths.length === cols
+                    ? columnWidths.map(w => `${w}px`).join(' ')
+                    : `repeat(${cols}, ${baseCardWidth}px)`,
                 justifyContent: 'start',
                 columnGap: safeGapX,
                 rowGap: safeGapY,
