@@ -1659,20 +1659,27 @@ function FiltersBar({
           scrolled && 'before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-white/16 before:opacity-70 before:content-[""]',
         )}
       >
-        <div className="content-container">
-          {error && (
-            <div className="py-3">
-              <Alert
-                variant="destructive"
-                className="rounded-[var(--ctrl-r,12px)] bg-white/12 text-[color:var(--ink)] ring-1 ring-inset ring-white/15 shadow-[0_16px_36px_rgba(3,10,22,0.45)] backdrop-blur-xl"
-              >
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>{String(error)}</AlertDescription>
-              </Alert>
-            </div>
-          )}
+        <ContentRail includeRailPadding={false}>
+          <div
+            style={{
+              maxWidth: 'var(--page-max)',
+              paddingInline: 'var(--page-gutter)',
+              marginInline: 'auto',
+            }}
+          >
+            {error && (
+              <div className="py-3">
+                <Alert
+                  variant="destructive"
+                  className="rounded-[var(--ctrl-r,12px)] bg-white/12 text-[color:var(--ink)] ring-1 ring-inset ring-white/15 shadow-[0_16px_36px_rgba(3,10,22,0.45)] backdrop-blur-xl"
+                >
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>{String(error)}</AlertDescription>
+                </Alert>
+              </div>
+            )}
 
-          <div className="catalog-toolbar flex flex-col gap-3 py-3">
+            <div className="catalog-toolbar flex flex-col gap-3 py-3">
             <div className="catalog-toolbar-zones">
               <div className="toolbar-left">
                 {renderFiltersToggleButton('flex-none')}
@@ -1768,8 +1775,9 @@ function FiltersBar({
                 )}
               </div>
             )}
+            </div>
           </div>
-        </div>
+        </ContentRail>
       </section>
     )
 }
