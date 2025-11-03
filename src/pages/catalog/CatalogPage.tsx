@@ -1659,117 +1659,119 @@ function FiltersBar({
           scrolled && 'before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-white/16 before:opacity-70 before:content-[""]',
         )}
       >
-        <div className="content-container">
-          {error && (
-            <div className="py-3">
-              <Alert
-                variant="destructive"
-                className="rounded-[var(--ctrl-r,12px)] bg-white/12 text-[color:var(--ink)] ring-1 ring-inset ring-white/15 shadow-[0_16px_36px_rgba(3,10,22,0.45)] backdrop-blur-xl"
-              >
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>{String(error)}</AlertDescription>
-              </Alert>
-            </div>
-          )}
-
-          <div className="catalog-toolbar flex flex-col gap-3 py-3">
-            <div className="catalog-toolbar-zones">
-              <div className="toolbar-left">
-                {renderFiltersToggleButton('flex-none')}
+        <ContentRail includeRailPadding={false}>
+          <div>
+            {error && (
+              <div className="py-3">
+                <Alert
+                  variant="destructive"
+                  className="rounded-[var(--ctrl-r,12px)] bg-white/12 text-[color:var(--ink)] ring-1 ring-inset ring-white/15 shadow-[0_16px_36px_rgba(3,10,22,0.45)] backdrop-blur-xl"
+                >
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>{String(error)}</AlertDescription>
+                </Alert>
               </div>
+            )}
 
-              <div className="toolbar-center flex min-w-[220px] items-center gap-3">
-                <div className="relative flex-1">
-                  <label className="sr-only" htmlFor="catalog-search">
-                    Search products
-                  </label>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <input
-                        id="catalog-search"
-                        ref={searchRef}
-                        type="search"
-                        placeholder="Search products"
-                        aria-keyshortcuts="Control+K Meta+K"
-                        value={searchValue}
-                        onChange={handleSearchChange}
-                        onKeyDown={handleSearchKeyDown}
-                        onFocus={() => onLockChange?.(true)}
-                        onBlur={() => onLockChange?.(false)}
-                        className="h-11 w-full flex-1 rounded-[var(--ctrl-r,14px)] border border-transparent bg-white pl-12 pr-12 text-base font-semibold text-slate-900 placeholder:text-slate-500 shadow-[0_12px_38px_rgba(7,18,30,0.26)] transition duration-200 ease-out focus-visible:outline-none motion-reduce:transition-none"
-                      />
-                    </TooltipTrigger>
-                    <TooltipContent sideOffset={8}>Search (Ctrl/⌘+K)</TooltipContent>
-                  </Tooltip>
-                  <span className="pointer-events-none absolute left-3 top-1/2 grid -translate-y-1/2 place-items-center text-slate-500">
-                    <MagnifyingGlass size={22} weight="fill" aria-hidden="true" />
-                  </span>
-                  {showClear && (
-                    <button
-                      type="button"
-                      onClick={handleClearSearch}
-                      aria-label="Clear search"
-                      className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-full p-2 text-slate-500 transition duration-150 ease-out hover:bg-slate-200/70 hover:text-slate-800 focus-visible:outline-none motion-reduce:transition-none"
-                    >
-                      <XCircle size={20} weight="fill" />
-                    </button>
+            <div className="catalog-toolbar flex flex-col gap-3 py-3">
+              <div className="catalog-toolbar-zones">
+                <div className="toolbar-left">
+                  {renderFiltersToggleButton('flex-none')}
+                </div>
+
+                <div className="toolbar-center flex min-w-[220px] items-center gap-3">
+                  <div className="relative flex-1">
+                    <label className="sr-only" htmlFor="catalog-search">
+                      Search products
+                    </label>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <input
+                          id="catalog-search"
+                          ref={searchRef}
+                          type="search"
+                          placeholder="Search products"
+                          aria-keyshortcuts="Control+K Meta+K"
+                          value={searchValue}
+                          onChange={handleSearchChange}
+                          onKeyDown={handleSearchKeyDown}
+                          onFocus={() => onLockChange?.(true)}
+                          onBlur={() => onLockChange?.(false)}
+                          className="h-11 w-full flex-1 rounded-[var(--ctrl-r,14px)] border border-transparent bg-white pl-12 pr-12 text-base font-semibold text-slate-900 placeholder:text-slate-500 shadow-[0_12px_38px_rgba(7,18,30,0.26)] transition duration-200 ease-out focus-visible:outline-none motion-reduce:transition-none"
+                        />
+                      </TooltipTrigger>
+                      <TooltipContent sideOffset={8}>Search (Ctrl/⌘+K)</TooltipContent>
+                    </Tooltip>
+                    <span className="pointer-events-none absolute left-3 top-1/2 grid -translate-y-1/2 place-items-center text-slate-500">
+                      <MagnifyingGlass size={22} weight="fill" aria-hidden="true" />
+                    </span>
+                    {showClear && (
+                      <button
+                        type="button"
+                        onClick={handleClearSearch}
+                        aria-label="Clear search"
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-full p-2 text-slate-500 transition duration-150 ease-out hover:bg-slate-200/70 hover:text-slate-800 focus-visible:outline-none motion-reduce:transition-none"
+                      >
+                        <XCircle size={20} weight="fill" />
+                      </button>
+                    )}
+                  </div>
+
+                  {formattedTotal && (
+                    <div className="hidden items-center text-sm font-semibold text-[color:var(--ink-hi)] lg:flex">
+                      <span className="tabular-nums">{formattedTotal}</span>
+                      <span className="ml-1 font-normal text-[color:var(--ink-lo)]">results</span>
+                    </div>
                   )}
                 </div>
 
-                {formattedTotal && (
-                  <div className="hidden items-center text-sm font-semibold text-[color:var(--ink-hi)] lg:flex">
-                    <span className="tabular-nums">{formattedTotal}</span>
-                    <span className="ml-1 font-normal text-[color:var(--ink-lo)]">results</span>
-                  </div>
-                )}
+                <div className="toolbar-right lg:flex-nowrap lg:gap-4">
+                  <SortDropdown
+                    value={sortOrder}
+                    onChange={setSortOrder}
+                    onOpenChange={onLockChange}
+                    className="whitespace-nowrap"
+                  />
+                  <ViewToggle
+                    value={view}
+                    onChange={v => {
+                      rememberScroll(`catalog:${view}`)
+                      setView(v)
+                    }}
+                  />
+                </div>
               </div>
 
-              <div className="toolbar-right lg:flex-nowrap lg:gap-4">
-                <SortDropdown
-                  value={sortOrder}
-                  onChange={setSortOrder}
-                  onOpenChange={onLockChange}
-                  className="whitespace-nowrap"
-                />
-                <ViewToggle
-                  value={view}
-                  onChange={v => {
-                    rememberScroll(`catalog:${view}`)
-                    setView(v)
-                  }}
-                />
-              </div>
+              {(chips.length > 0 || activeCount > 0) && (
+                <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
+                  {chips.map(chip => (
+                    <FilterChip
+                      key={chip.key}
+                      variant={chip.variant}
+                      hasPopover={chip.hasPopover}
+                      summary={chip.summary}
+                      onRemove={chip.onRemove}
+                      onEdit={chip.onEdit}
+                      className="flex-none"
+                    >
+                      {chip.label}
+                    </FilterChip>
+                  ))}
+
+                  {activeCount > 0 && (
+                    <button
+                      type="button"
+                      onClick={clearAll}
+                      className="flex-none whitespace-nowrap text-sm font-medium text-destructive/80 hover:text-destructive transition-colors"
+                    >
+                      Clear all
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
-
-            {(chips.length > 0 || activeCount > 0) && (
-              <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
-                {chips.map(chip => (
-                  <FilterChip
-                    key={chip.key}
-                    variant={chip.variant}
-                    hasPopover={chip.hasPopover}
-                    summary={chip.summary}
-                    onRemove={chip.onRemove}
-                    onEdit={chip.onEdit}
-                    className="flex-none"
-                  >
-                    {chip.label}
-                  </FilterChip>
-                ))}
-
-                {activeCount > 0 && (
-                  <button
-                    type="button"
-                    onClick={clearAll}
-                    className="flex-none whitespace-nowrap text-sm font-medium text-destructive/80 hover:text-destructive transition-colors"
-                  >
-                    Clear all
-                  </button>
-                )}
-              </div>
-            )}
           </div>
-        </div>
+        </ContentRail>
       </section>
     )
 }
