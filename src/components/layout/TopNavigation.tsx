@@ -36,6 +36,7 @@ import {
   navTextButtonPillClass,
   navTextCaretClass,
 } from './navStyles'
+import { ContentRail } from './ContentRail'
 import { supabase } from '@/integrations/supabase/client'
 
 type Membership = {
@@ -279,12 +280,16 @@ export function TopNavigation() {
         height: 'clamp(44px, var(--toolbar-h, 56px), 72px)',
       }}
     >
-      <div
-        className="content-container flex w-full items-center"
-        style={{
-          columnGap: 'var(--page-gutter)',
-        }}
-      >
+      <ContentRail includeRailPadding={false}>
+        <div
+          className="flex w-full items-center"
+          style={{
+            columnGap: 'var(--page-gutter)',
+            maxWidth: 'var(--page-max)',
+            paddingInline: 'var(--page-gutter)',
+            marginInline: 'auto',
+          }}
+        >
         <div className="flex min-w-0 flex-shrink-0 items-center gap-4">
           <Link
             to="/"
@@ -585,7 +590,8 @@ export function TopNavigation() {
           </span>
           <CartButton labelClassName="hidden sm:inline" />
         </nav>
-      </div>
+        </div>
+      </ContentRail>
       <HeaderSearch ref={searchRef} mode="dialog" open={searchOpen} onOpenChange={setSearchOpen} />
     </div>
   )
