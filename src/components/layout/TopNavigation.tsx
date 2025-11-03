@@ -280,10 +280,8 @@ export function TopNavigation() {
       }}
     >
       <div
-        className="mx-auto flex w-full items-center"
+        className="content-container flex w-full items-center"
         style={{
-          maxWidth: 'var(--page-max)',
-          paddingInline: 'var(--page-gutter)',
           columnGap: 'var(--page-gutter)',
         }}
       >
