@@ -219,7 +219,7 @@ export function CatalogShell({ mode }: CatalogShellProps) {
             }}
             className="band band--toolbar after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-white/12"
           >
-            <ContentRail includeRailPadding={false}>
+            <ContentRail>
               <div className="catalog-toolbar flex flex-col gap-3 py-3">
                 <div className="catalog-toolbar-zones">
                   <div className="toolbar-left">
@@ -317,46 +317,55 @@ export function CatalogShell({ mode }: CatalogShellProps) {
           </section>
           
           {/* Grid/Table - Single wrapper for measurement */}
-          <ContentRail includeRailPadding={false} contentRef={gridContainerRef}>
-            <div className="space-y-5 pb-8 pt-2">
-              {view === 'grid' ? (
-                <CatalogGrid
-                  containerRef={gridContainerRef}
-                  products={displayProducts}
-                  onAddToCart={handleAddToCart}
-                  onNearEnd={handleLoadMore}
-                  showPrice={!isPublicMode}
-                  addingId={addingId}
-                  mode={mode}
-                />
-              ) : (
-                <CatalogTable
-                  products={displayProducts}
-                  sort={tableSort}
-                  onSort={(key) => {
-                    setTableSort(prev => {
-                      if (prev && prev.key === key) {
-                        return { key, direction: prev.direction === 'asc' ? 'desc' : 'asc' }
-                      }
-                      return { key, direction: 'asc' }
-                    })
-                  }}
-                />
+          <div className="pl-[var(--layout-rail,72px)]">
+            <div 
+              ref={gridContainerRef}
+              className="mx-auto w-full" 
+              style={{ 
+                maxWidth: 'var(--page-max)', 
+                paddingInline: 'var(--page-gutter)' 
+              }}
+            >
+              <div className="space-y-5 pb-8 pt-2">
+            {view === 'grid' ? (
+              <CatalogGrid
+                containerRef={gridContainerRef}
+                products={displayProducts}
+                onAddToCart={handleAddToCart}
+                onNearEnd={handleLoadMore}
+                showPrice={!isPublicMode}
+                addingId={addingId}
+                mode={mode}
+              />
+            ) : (
+              <CatalogTable
+                products={displayProducts}
+                sort={tableSort}
+                onSort={(key) => {
+                  setTableSort(prev => {
+                    if (prev && prev.key === key) {
+                      return { key, direction: prev.direction === 'asc' ? 'desc' : 'asc' }
+                    }
+                    return { key, direction: 'asc' }
+                  })
+                }}
+              />
+            )}
+            
+            {hasNextPage && (
+              <div className="flex justify-center py-6">
+                <Button
+                  variant="outline"
+                  onClick={handleLoadMore}
+                  disabled={isFetchingNextPage}
+                >
+                  {isFetchingNextPage ? 'Loading...' : 'Load more'}
+                </Button>
+              </div>
               )}
-
-              {hasNextPage && (
-                <div className="flex justify-center py-6">
-                  <Button
-                    variant="outline"
-                    onClick={handleLoadMore}
-                    disabled={isFetchingNextPage}
-                  >
-                    {isFetchingNextPage ? 'Loading...' : 'Load more'}
-                  </Button>
-                </div>
-              )}
+              </div>
             </div>
-          </ContentRail>
+          </div>
         </div>
         
         {/* Desktop Filters Panel */}
