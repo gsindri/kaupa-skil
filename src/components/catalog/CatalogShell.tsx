@@ -209,15 +209,15 @@ export function CatalogShell({ mode }: CatalogShellProps) {
         <div className="w-full">
           {/* Toolbar */}
           <section
-            style={{ 
-              ...COMPACT_TOOLBAR_TOKENS, 
+            style={{
+              ...COMPACT_TOOLBAR_TOKENS,
               position: 'sticky',
               top: 'calc(var(--header-h, 56px) * (1 - var(--header-hidden, 0)))',
               transform: 'translate3d(0, calc(-100% * var(--header-hidden, 0)), 0)',
               transition: 'transform 200ms ease-in-out, top 200ms ease-in-out',
               zIndex: 'var(--z-toolbar, 40)',
             }}
-            className="bg-[color:var(--toolbar-bg)] backdrop-blur-xl after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-white/12"
+            className="band band--toolbar after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-white/12"
           >
             <ContentRail>
               <div className="catalog-toolbar flex flex-col gap-3 py-3">

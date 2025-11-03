@@ -341,10 +341,22 @@ body {
 
 /* Single content container for consistent alignment across header and page content */
 .content-container {
+  inline-size: min(100%, var(--align-cap, var(--page-max)));
   width: 100%;
-  max-width: var(--page-max);
+  max-width: var(--align-cap, var(--page-max));
+  box-sizing: border-box !important;
   padding-inline: var(--page-gutter);
   margin-inline: auto;
+}
+
+.band {
+  position: relative;
+  inline-size: 100%;
+}
+
+.band--toolbar {
+  background: var(--toolbar-bg);
+  backdrop-filter: blur(12px);
 }
 /* --- Sidebar chrome fixes --- */
 
