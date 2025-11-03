@@ -11,7 +11,7 @@ html {
   --chrome-h: var(--header-h);  /* chrome follows header */
   --align-cap: min(
     var(--page-max),
-    calc(100dvw - var(--layout-rail, 72px) - (2 * var(--page-gutter)))
+    calc(100dvw - (2 * var(--page-gutter)))
   );
   --sidebar-push: 0px;     /* dynamically updated by AppLayout */
   --header-left: var(--layout-rail);
