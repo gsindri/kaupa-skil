@@ -37,7 +37,6 @@ import {
   navTextCaretClass,
 } from './navStyles'
 import { supabase } from '@/integrations/supabase/client'
-import { ContentRail } from '@/components/layout/ContentRail'
 
 type Membership = {
   id: string
@@ -280,84 +279,83 @@ export function TopNavigation() {
         height: 'clamp(44px, var(--toolbar-h, 56px), 72px)',
       }}
     >
-      <ContentRail includeRailPadding={false}>
-        <div
-          className="flex w-full items-center"
-          style={{
-            columnGap: 'var(--page-gutter)',
-          }}
-        >
-          <div className="flex min-w-0 flex-shrink-0 items-center gap-4">
-            <Link
-              to="/"
-              aria-label={t('navigation.logo.aria')}
-              title={t('navigation.logo.aria')}
-              className="inline-flex shrink-0 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
-            >
-              <HeildaLogo className="h-8 w-auto shrink-0 drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)]" />
-            </Link>
-            <TenantSwitcher />
-          </div>
+      <div
+        className="content-container flex w-full items-center"
+        style={{
+          columnGap: 'var(--page-gutter)',
+        }}
+      >
+        <div className="flex min-w-0 flex-shrink-0 items-center gap-4">
+          <Link
+            to="/"
+            aria-label={t('navigation.logo.aria')}
+            title={t('navigation.logo.aria')}
+            className="inline-flex shrink-0 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
+          >
+            <HeildaLogo className="h-8 w-auto shrink-0 drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)]" />
+          </Link>
+          <TenantSwitcher />
+        </div>
 
-          <div className="flex min-w-0 flex-1 items-center justify-center gap-3">
+        <div className="flex min-w-0 flex-1 items-center justify-center gap-3">
+          <span
+            className={cn(
+              'relative hidden max-w-[220px] items-center truncate text-left text-[13px] font-medium text-white/80 md:inline-flex',
+              'before:pointer-events-none before:absolute before:-right-3 before:top-1/2 before:-translate-y-1/2 before:border-y-[6px] before:border-l-[6px] before:border-y-transparent before:border-l-white/20'
+            )}
+          >
+            {t('navigation.search.prompt')}
+          </span>
+          <button
+            ref={searchTriggerRef}
+            type="button"
+            aria-haspopup="dialog"
+            aria-keyshortcuts="/ meta+k control+k"
+            aria-describedby={searchAriaDescription}
+            aria-label={t('navigation.search.open')}
+            onPointerDown={() => {
+              searchOpenedByKeyboardRef.current = false
+            }}
+            onKeyDown={(event) => {
+              if (event.key === ' ' || event.key === 'Enter') {
+                searchOpenedByKeyboardRef.current = true
+              }
+            }}
+            onClick={() => setSearchOpen(true)}
+            title={t('navigation.search.title')}
+            className={cn(
+              'group inline-flex size-11 items-center justify-center rounded-full border border-white/10 bg-white/5',
+              'text-white/80',
+              'transition-[background-color,border-color] duration-fast ease-snap',
+              'hover:border-white/20 hover:bg-white/10 hover:text-white/90',
+              'focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-1 focus-visible:ring-offset-transparent',
+            )}
+          >
             <span
-              className={cn(
-                'relative hidden max-w-[220px] items-center truncate text-left text-[13px] font-medium text-white/80 md:inline-flex',
-                'before:pointer-events-none before:absolute before:-right-3 before:top-1/2 before:-translate-y-1/2 before:border-y-[6px] before:border-l-[6px] before:border-y-transparent before:border-l-white/20'
-              )}
+              aria-hidden="true"
+              className="flex size-7 items-center justify-center rounded-full bg-white/10 text-[color:var(--ink-dim,#cfd7e4)] transition-colors duration-fast ease-snap group-hover:bg-white/15 group-hover:text-[color:var(--ink,#eaf0f7)]"
             >
-              {t('navigation.search.prompt')}
+              <SearchSoft width={22} height={22} tone={0.18} />
             </span>
-            <button
-              ref={searchTriggerRef}
-              type="button"
-              aria-haspopup="dialog"
-              aria-keyshortcuts="/ meta+k control+k"
-              aria-describedby={searchAriaDescription}
-              aria-label={t('navigation.search.open')}
-              onPointerDown={() => {
-                searchOpenedByKeyboardRef.current = false
-              }}
-              onKeyDown={(event) => {
-                if (event.key === ' ' || event.key === 'Enter') {
-                  searchOpenedByKeyboardRef.current = true
-                }
-              }}
-              onClick={() => setSearchOpen(true)}
-              title={t('navigation.search.title')}
-              className={cn(
-                'group inline-flex size-11 items-center justify-center rounded-full border border-white/10 bg-white/5',
-                'text-white/80',
-                'transition-[background-color,border-color] duration-fast ease-snap',
-                'hover:border-white/20 hover:bg-white/10 hover:text-white/90',
-                'focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-1 focus-visible:ring-offset-transparent',
-              )}
-            >
-              <span
-                aria-hidden="true"
-                className="flex size-7 items-center justify-center rounded-full bg-white/10 text-[color:var(--ink-dim,#cfd7e4)] transition-colors duration-fast ease-snap group-hover:bg-white/15 group-hover:text-[color:var(--ink,#eaf0f7)]"
-              >
-                <SearchSoft width={22} height={22} tone={0.18} />
-              </span>
-            </button>
-            <span id={searchPromptDescriptionId} className="sr-only">
-              {t('navigation.search.button')}
-            </span>
-            <span id={searchShortcutDescriptionId} className="sr-only">
-              {t('navigation.search.shortcut', { shortcut: platformShortcut })}
-            </span>
-          </div>
+          </button>
+          <span id={searchPromptDescriptionId} className="sr-only">
+            {t('navigation.search.button')}
+          </span>
+          <span id={searchShortcutDescriptionId} className="sr-only">
+            {t('navigation.search.shortcut', { shortcut: platformShortcut })}
+          </span>
+        </div>
 
-          <nav aria-label="Global actions" className="flex flex-shrink-0 items-center gap-3.5">
-            <LanguageSwitcher
-              className="flex-shrink-0"
-              triggerClassName="!px-2.5 md:!px-3.5"
-              labelClassName="hidden md:inline"
-              caretClassName="hidden md:inline-flex"
-            />
-            {user ? (
-              <DropdownMenu
-                open={userMenuOpen}
+        <nav aria-label="Global actions" className="flex flex-shrink-0 items-center gap-3.5">
+          <LanguageSwitcher
+            className="flex-shrink-0"
+            triggerClassName="!px-2.5 md:!px-3.5"
+            labelClassName="hidden md:inline"
+            caretClassName="hidden md:inline-flex"
+          />
+          {user ? (
+            <DropdownMenu
+              open={userMenuOpen}
               onOpenChange={(open) => {
                 if (!open && !accountOpenedByKeyboardRef.current) {
                   accountTriggerRef.current?.blur()
@@ -586,9 +584,8 @@ export function TopNavigation() {
             <span className="block h-full w-px rounded-full bg-white/12" />
           </span>
           <CartButton labelClassName="hidden sm:inline" />
-          </nav>
-        </div>
-      </ContentRail>
+        </nav>
+      </div>
       <HeaderSearch ref={searchRef} mode="dialog" open={searchOpen} onOpenChange={setSearchOpen} />
     </div>
   )
