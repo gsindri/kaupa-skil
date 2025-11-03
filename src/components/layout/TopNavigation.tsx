@@ -283,7 +283,6 @@ export function TopNavigation() {
         className="content-container flex w-full items-center"
         style={{
           columnGap: 'var(--page-gutter)',
-          paddingLeft: 'calc(var(--page-gutter) + var(--layout-rail))',
         }}
       >
         <div className="flex min-w-0 flex-shrink-0 items-center gap-4">
