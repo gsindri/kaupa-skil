@@ -1203,7 +1203,7 @@ export default function CatalogPage() {
             />
           }
         >
-          <ContentRail contentRef={gridContainerRef}>
+          <ContentRail includeRailPadding={false} contentRef={gridContainerRef}>
             {chips.length > 0 && (
               <div
                 className="lg:hidden"
