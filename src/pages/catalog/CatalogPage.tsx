@@ -1203,7 +1203,7 @@ export default function CatalogPage() {
             />
           }
         >
-          <ContentRail includeRailPadding={false}>
+          <ContentRail contentRef={gridContainerRef}>
             {chips.length > 0 && (
               <div
                 className="lg:hidden"
@@ -1277,10 +1277,7 @@ export default function CatalogPage() {
               </div>
             )}
 
-            <div
-              ref={gridContainerRef}
-              className="space-y-6 pb-8 pt-2"
-            >
+            <div className="space-y-6 pb-8 pt-2">
               {isInitialLoading ? (
                 <div className="flex h-64 items-center justify-center rounded-2xl border border-slate-200 bg-white/90 shadow-sm">
                   <p className="text-sm font-medium text-slate-600">Loading catalog…</p>
