@@ -440,7 +440,7 @@ export function CatalogFiltersPanel({
         '[&::-webkit-scrollbar-thumb]:bg-[rgba(255,255,255,0.15)]',
         '[&::-webkit-scrollbar-track]:bg-transparent'
       ),
-    [showBottomShadow, variant],
+    [variant],
   )
 
   const headerTokens = useMemo<HeaderVars>(() => ({
