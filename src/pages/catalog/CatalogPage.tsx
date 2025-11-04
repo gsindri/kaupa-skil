@@ -1660,7 +1660,7 @@ function FiltersBar({
           scrolled && 'before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-white/16 before:opacity-70 before:content-[""]',
         )}
       >
-        <ContentRail includeRailPadding={false}>
+        <ContentRail>
           <div>
             {error && (
               <div className="py-3">
