@@ -217,10 +217,11 @@ export function CatalogShell({ mode }: CatalogShellProps) {
               transition: 'transform 200ms ease-in-out, top 200ms ease-in-out',
               zIndex: 'var(--z-toolbar, 40)',
               paddingInline: 0,
+              '--align-cap': 'var(--page-max)',
             }}
             className="band band--toolbar after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-white/12"
           >
-            <ContentRail includeRailPadding={false}>
+            <ContentRail>
               <div className="catalog-toolbar flex flex-col gap-3 py-3">
                 <div className="catalog-toolbar-zones">
                   <div className="toolbar-left">

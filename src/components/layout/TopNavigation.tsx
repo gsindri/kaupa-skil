@@ -278,6 +278,7 @@ export function TopNavigation() {
       )}
       style={{
         height: 'clamp(44px, var(--toolbar-h, 56px), 72px)',
+        '--align-cap': 'var(--page-max)'
       }}
     >
       <div
@@ -312,7 +313,7 @@ export function TopNavigation() {
         />
         <div className="absolute inset-x-0 bottom-0 h-px bg-white/8" />
       </div>
-      <ContentRail>
+      <ContentRail includeRailPadding>
         <div
           className="flex w-full items-center"
           style={{
