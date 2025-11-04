@@ -1653,6 +1653,7 @@ function FiltersBar({
       <section
         style={{
           ...COMPACT_TOOLBAR_TOKENS,
+          paddingInline: 0,
         }}
         className={cn(
           'band band--toolbar after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-white/12 after:content-[""]',
