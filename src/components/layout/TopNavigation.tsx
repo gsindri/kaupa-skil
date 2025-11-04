@@ -284,8 +284,10 @@ export function TopNavigation() {
     >
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 [-z-20]"
+        className="pointer-events-none absolute inset-y-0 overflow-hidden [-z-10]"
         style={{
+          left: 'var(--layout-rail)',
+          width: 'calc(var(--page-max) + var(--page-gutter) * 2)',
           opacity: 'calc(1 - (0.05 * var(--header-hidden, 0)))',
         }}
       >
@@ -296,16 +298,6 @@ export function TopNavigation() {
               'var(--topbar-bg, linear-gradient(128deg, #071021 0%, #0a1628 32%, #102642 66%, #153b63 100%))',
           }}
         />
-      </div>
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-y-0 overflow-hidden [-z-10]"
-        style={{
-          left: 'var(--layout-rail)',
-          width: 'calc(var(--page-max) + var(--page-gutter) * 2)',
-          opacity: 'calc(1 - (0.05 * var(--header-hidden, 0)))',
-        }}
-      >
         <div
           className="absolute inset-0"
           style={{
