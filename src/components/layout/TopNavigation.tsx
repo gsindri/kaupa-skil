@@ -280,6 +280,38 @@ export function TopNavigation() {
         height: 'clamp(44px, var(--toolbar-h, 56px), 72px)',
       }}
     >
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-y-0 left-1/2 -translate-x-1/2 overflow-hidden [-z-10]"
+        style={{
+          width: 'var(--align-cap)',
+          opacity: 'calc(1 - (0.05 * var(--header-hidden, 0)))',
+        }}
+      >
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              'var(--topbar-bg, linear-gradient(128deg, #071021 0%, #0a1628 32%, #102642 66%, #153b63 100%))',
+          }}
+        />
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              'radial-gradient(140% 120% at 48% -10%, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 65%)',
+            opacity: 0.14,
+          }}
+        />
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              'linear-gradient(160deg, rgba(40, 215, 255, 0.1) 0%, rgba(40, 215, 255, 0.04) 28%, rgba(10, 27, 45, 0) 70%)',
+          }}
+        />
+        <div className="absolute inset-x-0 bottom-0 h-px bg-white/8" />
+      </div>
       <ContentRail includeRailPadding={false}>
         <div
           className="flex w-full items-center"
