@@ -284,10 +284,8 @@ export function TopNavigation() {
     >
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-y-0 overflow-hidden [-z-10]"
+        className="pointer-events-none absolute inset-0 overflow-hidden [-z-10]"
         style={{
-          left: 'var(--layout-rail)',
-          width: 'calc(var(--page-max) + var(--page-gutter) * 2)',
           opacity: 'calc(1 - (0.05 * var(--header-hidden, 0)))',
         }}
       >
