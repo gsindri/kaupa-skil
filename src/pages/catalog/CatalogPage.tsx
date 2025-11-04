@@ -1654,8 +1654,8 @@ function FiltersBar({
         style={{
           ...COMPACT_TOOLBAR_TOKENS,
           paddingInline: 0,
-          '--align-cap': 'var(--page-max)',
-        }}
+          ['--align-cap' as any]: 'var(--page-max)',
+        } as React.CSSProperties}
         className={cn(
           'band band--toolbar after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-white/12 after:content-[""]',
           scrolled && 'before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-white/16 before:opacity-70 before:content-[""]',
