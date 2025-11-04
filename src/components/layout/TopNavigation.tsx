@@ -313,7 +313,7 @@ export function TopNavigation() {
         />
         <div className="absolute inset-x-0 bottom-0 h-px bg-white/8" />
       </div>
-      <ContentRail>
+      <ContentRail includeRailPadding>
         <div
           className="flex w-full flex-wrap items-center gap-y-3"
           style={{
