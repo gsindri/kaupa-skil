@@ -275,12 +275,12 @@ export function TopNavigation() {
         scrolled ? 'shadow-lg' : 'shadow-none',
         'transition-[box-shadow] duration-base ease-snap motion-reduce:transition-none'
       )}
-      style={(
-        {
-          height: 'clamp(44px, var(--toolbar-h, 56px), 72px)',
-          ['--align-cap' as any]: 'calc(var(--page-max) + var(--layout-rail, 72px))',
-        } as React.CSSProperties
-      )}
+      style={{
+        height: 'clamp(44px, var(--toolbar-h, 56px), 72px)',
+        // Use page-max + layout-rail + 2 × page-gutter so the bar lines up with the grid
+        ['--align-cap' as any]:
+          'calc(var(--page-max) + var(--layout-rail) + (var(--page-gutter) * 2))',
+      } as React.CSSProperties}
     >
       <div
         aria-hidden
