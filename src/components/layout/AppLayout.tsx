@@ -197,10 +197,10 @@ export function AppLayout({
           style={{
             position: 'fixed',
             top: 0,
-            left: 'var(--layout-rail,72px)',
-            width: 'calc(100vw - var(--layout-rail,72px))',
+            left: 0,
+            right: 0,
             zIndex: 'var(--z-header,55)',
-            paddingLeft: 0,
+            paddingLeft: 'var(--layout-rail, 72px)',
           }}
         >
           <AppChrome />
