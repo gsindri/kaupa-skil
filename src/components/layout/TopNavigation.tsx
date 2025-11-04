@@ -285,9 +285,6 @@ export function TopNavigation() {
           className="flex w-full items-center"
           style={{
             columnGap: 'var(--page-gutter)',
-            maxWidth: 'var(--page-max)',
-            paddingInline: 'var(--page-gutter)',
-            marginInline: 'auto',
           }}
         >
         <div className="flex min-w-0 flex-shrink-0 items-center gap-4">

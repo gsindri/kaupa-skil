@@ -1660,13 +1660,7 @@ function FiltersBar({
         )}
       >
         <ContentRail includeRailPadding={false}>
-          <div
-            style={{
-              maxWidth: 'var(--page-max)',
-              paddingInline: 'var(--page-gutter)',
-              marginInline: 'auto',
-            }}
-          >
+          <div>
             {error && (
               <div className="py-3">
                 <Alert
