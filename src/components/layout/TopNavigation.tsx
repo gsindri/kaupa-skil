@@ -275,10 +275,12 @@ export function TopNavigation() {
         scrolled ? 'shadow-lg' : 'shadow-none',
         'transition-[box-shadow] duration-base ease-snap motion-reduce:transition-none'
       )}
-      style={{
-        height: 'clamp(44px, var(--toolbar-h, 56px), 72px)',
-        '--align-cap': 'var(--page-max)'
-      }}
+      style={(
+        {
+          height: 'clamp(44px, var(--toolbar-h, 56px), 72px)',
+          ['--align-cap' as any]: 'var(--page-max)',
+        } as React.CSSProperties
+      )}
     >
       <div
         aria-hidden
