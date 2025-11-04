@@ -267,20 +267,16 @@ export function TopNavigation() {
       : t('navigation.workspace.workspace')
   
   return (
-    <header
+    <div
       ref={barRef}
       role="banner"
       className={cn(
-        'relative z-[57] py-[2px] text-white',
+        'relative z-[57] flex items-center py-[2px] text-white',
         scrolled ? 'shadow-lg' : 'shadow-none',
         'transition-[box-shadow] duration-base ease-snap motion-reduce:transition-none'
       )}
       style={(
         {
-          position: 'fixed',
-          top: 0,
-          marginLeft: 'var(--layout-rail, 72px)',
-          width: 'calc(100vw - var(--layout-rail, 72px))',
           height: 'clamp(44px, var(--toolbar-h, 56px), 72px)',
           ['--align-cap' as any]: 'var(--page-max)',
         } as React.CSSProperties
@@ -288,48 +284,38 @@ export function TopNavigation() {
     >
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 overflow-hidden [-z-10]"
+        className="pointer-events-none absolute inset-y-0 overflow-hidden [-z-10]"
         style={{
+          left: 'var(--layout-rail)',
+          width: 'var(--page-max)',
           opacity: 'calc(1 - (0.05 * var(--header-hidden, 0)))',
         }}
       >
         <div
-          className="h-full"
+          className="absolute inset-0"
           style={{
-            maxWidth: 'var(--page-max)',
-            margin: '0 auto',
-            paddingInline: 'var(--page-gutter)',
-            height: '100%',
+            background:
+              'var(--topbar-bg, linear-gradient(128deg, #071021 0%, #0a1628 32%, #102642 66%, #153b63 100%))',
           }}
-        >
-          <div className="relative h-full">
-            <div
-              className="absolute inset-0"
-              style={{
-                background:
-                  'var(--topbar-bg, linear-gradient(128deg, #071021 0%, #0a1628 32%, #102642 66%, #153b63 100%))',
-              }}
-            />
-            <div
-              className="absolute inset-0"
-              style={{
-                background:
-                  'radial-gradient(140% 120% at 48% -10%, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 65%)',
-                opacity: 0.14,
-              }}
-            />
-            <div
-              className="absolute inset-0"
-              style={{
-                background:
-                  'linear-gradient(160deg, rgba(40, 215, 255, 0.1) 0%, rgba(40, 215, 255, 0.04) 28%, rgba(10, 27, 45, 0) 70%)',
-              }}
-            />
-            <div className="absolute inset-x-0 bottom-0 h-px bg-white/8" />
-          </div>
-        </div>
+        />
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              'radial-gradient(140% 120% at 48% -10%, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 65%)',
+            opacity: 0.14,
+          }}
+        />
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              'linear-gradient(160deg, rgba(40, 215, 255, 0.1) 0%, rgba(40, 215, 255, 0.04) 28%, rgba(10, 27, 45, 0) 70%)',
+          }}
+        />
+        <div className="absolute inset-x-0 bottom-0 h-px bg-white/8" />
       </div>
-      <ContentRail>
+      <ContentRail includeRailPadding={false}>
         <div
           className="flex w-full flex-wrap items-center gap-y-3"
           style={{
@@ -642,6 +628,6 @@ export function TopNavigation() {
         </div>
       </ContentRail>
       <HeaderSearch ref={searchRef} mode="dialog" open={searchOpen} onOpenChange={setSearchOpen} />
-    </header>
+    </div>
   )
 }
