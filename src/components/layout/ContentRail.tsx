@@ -14,11 +14,7 @@ export function ContentRail({
     <div className={includeRailPadding ? "pl-[var(--layout-rail,72px)]" : undefined}>
       <div
         ref={contentRef}
-        className="mx-auto w-full"
-        style={{
-          maxWidth: "var(--page-max)",
-          paddingInline: "var(--page-gutter)",
-        }}
+        className="content-container"
       >
         {children}
       </div>
