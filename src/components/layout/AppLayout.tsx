@@ -197,15 +197,14 @@ export function AppLayout({
           style={{
             position: 'fixed',
             top: 0,
-            left: 0,
+            left: 'var(--layout-rail,72px)',
             right: 0,
             zIndex: 'var(--z-header,55)',
-            paddingLeft: 'var(--layout-rail,72px)',
           }}
         >
           <AppChrome />
           <TopNavigation />
-          
+
           {headerNode}
         </div>
         

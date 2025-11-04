@@ -286,7 +286,7 @@ export function TopNavigation() {
         aria-hidden
         className="pointer-events-none absolute inset-y-0 overflow-hidden [-z-10]"
         style={{
-          left: 'var(--layout-rail)',
+          left: 0,
           width: 'calc(var(--page-max) + var(--page-gutter) * 2)',
           opacity: 'calc(1 - (0.05 * var(--header-hidden, 0)))',
         }}
