@@ -312,7 +312,7 @@ export function TopNavigation() {
         />
         <div className="absolute inset-x-0 bottom-0 h-px bg-white/8" />
       </div>
-      <ContentRail includeRailPadding={false}>
+      <ContentRail>
         <div
           className="flex w-full items-center"
           style={{
