@@ -270,7 +270,6 @@ export function TopNavigation() {
     <div
       ref={barRef}
       role="banner"
-      data-app-header="true"
       className={cn(
         'relative z-[57] flex items-center py-[2px] text-white',
         scrolled ? 'shadow-lg' : 'shadow-none',
