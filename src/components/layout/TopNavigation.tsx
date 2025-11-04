@@ -278,7 +278,7 @@ export function TopNavigation() {
       style={(
         {
           height: 'clamp(44px, var(--toolbar-h, 56px), 72px)',
-          ['--align-cap' as any]: 'calc(var(--page-max) + var(--layout-rail, 72px))',
+          ['--align-cap' as any]: 'var(--page-max)',
         } as React.CSSProperties
       )}
     >
