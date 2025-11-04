@@ -317,139 +317,142 @@ export function TopNavigation() {
       </div>
       <ContentRail includeRailPadding={false}>
         <div
-          className="flex w-full items-center"
+          className="flex w-full flex-wrap items-center gap-y-3"
           style={{
             columnGap: 'var(--page-gutter)',
           }}
         >
-        <div className="flex min-w-0 flex-shrink-0 items-center gap-4">
-          <Link
-            to="/"
-            aria-label={t('navigation.logo.aria')}
-            title={t('navigation.logo.aria')}
-            className="inline-flex shrink-0 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
-          >
-            <HeildaLogo className="h-8 w-auto shrink-0 drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)]" />
-          </Link>
-          <TenantSwitcher />
-        </div>
+          <div className="flex min-w-0 flex-shrink-0 items-center gap-4">
+            <Link
+              to="/"
+              aria-label={t('navigation.logo.aria')}
+              title={t('navigation.logo.aria')}
+              className="inline-flex shrink-0 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
+            >
+              <HeildaLogo className="h-8 w-auto shrink-0 drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)]" />
+            </Link>
+            <TenantSwitcher />
+          </div>
 
-        <div className="flex min-w-0 flex-1 items-center justify-center gap-3">
-          <span
-            className={cn(
-              'relative hidden max-w-[220px] items-center truncate text-left text-[13px] font-medium text-white/80 md:inline-flex',
-              'before:pointer-events-none before:absolute before:-right-3 before:top-1/2 before:-translate-y-1/2 before:border-y-[6px] before:border-l-[6px] before:border-y-transparent before:border-l-white/20'
-            )}
-          >
-            {t('navigation.search.prompt')}
-          </span>
-          <button
-            ref={searchTriggerRef}
-            type="button"
-            aria-haspopup="dialog"
-            aria-keyshortcuts="/ meta+k control+k"
-            aria-describedby={searchAriaDescription}
-            aria-label={t('navigation.search.open')}
-            onPointerDown={() => {
-              searchOpenedByKeyboardRef.current = false
-            }}
-            onKeyDown={(event) => {
-              if (event.key === ' ' || event.key === 'Enter') {
-                searchOpenedByKeyboardRef.current = true
-              }
-            }}
-            onClick={() => setSearchOpen(true)}
-            title={t('navigation.search.title')}
-            className={cn(
-              'group inline-flex size-11 items-center justify-center rounded-full border border-white/10 bg-white/5',
-              'text-white/80',
-              'transition-[background-color,border-color] duration-fast ease-snap',
-              'hover:border-white/20 hover:bg-white/10 hover:text-white/90',
-              'focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-1 focus-visible:ring-offset-transparent',
-            )}
-          >
+          <div className="flex min-w-0 flex-1 items-center gap-3">
             <span
-              aria-hidden="true"
-              className="flex size-7 items-center justify-center rounded-full bg-white/10 text-[color:var(--ink-dim,#cfd7e4)] transition-colors duration-fast ease-snap group-hover:bg-white/15 group-hover:text-[color:var(--ink,#eaf0f7)]"
+              className={cn(
+                'relative hidden max-w-[220px] items-center truncate text-left text-[13px] font-medium text-white/80 md:inline-flex',
+                'before:pointer-events-none before:absolute before:-right-3 before:top-1/2 before:-translate-y-1/2 before:border-y-[6px] before:border-l-[6px] before:border-y-transparent before:border-l-white/20'
+              )}
             >
-              <SearchSoft width={22} height={22} tone={0.18} />
+              {t('navigation.search.prompt')}
             </span>
-          </button>
-          <span id={searchPromptDescriptionId} className="sr-only">
-            {t('navigation.search.button')}
-          </span>
-          <span id={searchShortcutDescriptionId} className="sr-only">
-            {t('navigation.search.shortcut', { shortcut: platformShortcut })}
-          </span>
-        </div>
-
-        <nav aria-label="Global actions" className="flex flex-shrink-0 items-center gap-3.5">
-          <LanguageSwitcher
-            className="flex-shrink-0"
-            triggerClassName="!px-2.5 md:!px-3.5"
-            labelClassName="hidden md:inline"
-            caretClassName="hidden md:inline-flex"
-          />
-          {user ? (
-            <DropdownMenu
-              open={userMenuOpen}
-              onOpenChange={(open) => {
-                if (!open && !accountOpenedByKeyboardRef.current) {
-                  accountTriggerRef.current?.blur()
-                }
-                if (!open) {
-                  accountOpenedByKeyboardRef.current = false
-                }
-                setUserMenuOpen(open)
+            <button
+              ref={searchTriggerRef}
+              type="button"
+              aria-haspopup="dialog"
+              aria-keyshortcuts="/ meta+k control+k"
+              aria-describedby={searchAriaDescription}
+              aria-label={t('navigation.search.open')}
+              onPointerDown={() => {
+                searchOpenedByKeyboardRef.current = false
               }}
+              onKeyDown={(event) => {
+                if (event.key === ' ' || event.key === 'Enter') {
+                  searchOpenedByKeyboardRef.current = true
+                }
+              }}
+              onClick={() => setSearchOpen(true)}
+              title={t('navigation.search.title')}
+              className={cn(
+                'group inline-flex size-11 items-center justify-center rounded-full border border-white/10 bg-white/5',
+                'text-white/80',
+                'transition-[background-color,border-color] duration-fast ease-snap',
+                'hover:border-white/20 hover:bg-white/10 hover:text-white/90',
+                'focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-1 focus-visible:ring-offset-transparent',
+              )}
             >
-              <DropdownMenuTrigger asChild>
-                <button
-                  ref={accountTriggerRef}
-                  type="button"
-                  className={cn(
-                    navTextButtonClass,
-                    'min-w-0 max-w-[240px] text-left !px-3.5',
-                    'disabled:cursor-wait disabled:opacity-80'
-                  )}
-                  disabled={isBusy}
-                  aria-busy={isBusy || undefined}
-                  aria-label={accountMenuLabel}
-                  aria-haspopup="menu"
-                  title={displayName || undefined}
-                  onPointerDown={() => {
-                    accountOpenedByKeyboardRef.current = false
-                  }}
-                  onKeyDown={(event) => {
-                    if (event.key === ' ' || event.key === 'Enter' || event.key === 'ArrowDown' || event.key === 'ArrowUp') {
-                      accountOpenedByKeyboardRef.current = true
-                    }
-                  }}
-                >
-                  <span className={navTextButtonPillClass} aria-hidden="true" />
-                  <span
-                    aria-hidden="true"
-                    className="relative flex size-4 shrink-0 items-center justify-center"
-                  >
-                    <span
-                      className={cn(
-                        'size-4 shrink-0 rounded-full border-2 border-[color:var(--ink,#eaf0f7)] border-b-transparent transition-opacity',
-                        isBusy ? 'animate-spin opacity-100' : 'opacity-0'
-                      )}
-                    />
-                  </span>
-                  <span className="min-w-0 truncate">{displayName}</span>
-                  <ChevronDown className={navTextCaretClass} aria-hidden="true" />
-                  <span className={navTextButtonFocusRingClass} aria-hidden="true" />
-                </button>
-              </DropdownMenuTrigger>
-
-              <PopCard
-                className="w-[320px] space-y-2"
-                sideOffset={12}
-                align="end"
-                withOverlay
+              <span
+                aria-hidden="true"
+                className="flex size-7 items-center justify-center rounded-full bg-white/10 text-[color:var(--ink-dim,#cfd7e4)] transition-colors duration-fast ease-snap group-hover:bg-white/15 group-hover:text-[color:var(--ink,#eaf0f7)]"
               >
+                <SearchSoft width={22} height={22} tone={0.18} />
+              </span>
+            </button>
+            <span id={searchPromptDescriptionId} className="sr-only">
+              {t('navigation.search.button')}
+            </span>
+            <span id={searchShortcutDescriptionId} className="sr-only">
+              {t('navigation.search.shortcut', { shortcut: platformShortcut })}
+            </span>
+          </div>
+
+          <nav
+            aria-label="Global actions"
+            className="ml-auto flex flex-shrink-0 items-center gap-3.5"
+          >
+            <LanguageSwitcher
+              className="flex-shrink-0"
+              triggerClassName="!px-2.5 md:!px-3.5"
+              labelClassName="hidden md:inline"
+              caretClassName="hidden md:inline-flex"
+            />
+            {user ? (
+              <DropdownMenu
+                open={userMenuOpen}
+                onOpenChange={(open) => {
+                  if (!open && !accountOpenedByKeyboardRef.current) {
+                    accountTriggerRef.current?.blur()
+                  }
+                  if (!open) {
+                    accountOpenedByKeyboardRef.current = false
+                  }
+                  setUserMenuOpen(open)
+                }}
+              >
+                <DropdownMenuTrigger asChild>
+                  <button
+                    ref={accountTriggerRef}
+                    type="button"
+                    className={cn(
+                      navTextButtonClass,
+                      'min-w-0 max-w-[240px] text-left !px-3.5',
+                      'disabled:cursor-wait disabled:opacity-80'
+                    )}
+                    disabled={isBusy}
+                    aria-busy={isBusy || undefined}
+                    aria-label={accountMenuLabel}
+                    aria-haspopup="menu"
+                    title={displayName || undefined}
+                    onPointerDown={() => {
+                      accountOpenedByKeyboardRef.current = false
+                    }}
+                    onKeyDown={(event) => {
+                      if (event.key === ' ' || event.key === 'Enter' || event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+                        accountOpenedByKeyboardRef.current = true
+                      }
+                    }}
+                  >
+                    <span className={navTextButtonPillClass} aria-hidden="true" />
+                    <span
+                      aria-hidden="true"
+                      className="relative flex size-4 shrink-0 items-center justify-center"
+                    >
+                      <span
+                        className={cn(
+                          'size-4 shrink-0 rounded-full border-2 border-[color:var(--ink,#eaf0f7)] border-b-transparent transition-opacity',
+                          isBusy ? 'animate-spin opacity-100' : 'opacity-0'
+                        )}
+                      />
+                    </span>
+                    <span className="min-w-0 truncate">{displayName}</span>
+                    <ChevronDown className={navTextCaretClass} aria-hidden="true" />
+                    <span className={navTextButtonFocusRingClass} aria-hidden="true" />
+                  </button>
+                </DropdownMenuTrigger>
+
+                <PopCard
+                  className="w-[320px] space-y-2"
+                  sideOffset={12}
+                  align="end"
+                  withOverlay
+                >
                 <div className="px-2.5 pt-2">
                   <div className="flex items-center gap-3 rounded-[14px] bg-[color:var(--surface-pop)]/35 px-3 py-3">
                     <Avatar className="h-11 w-11 border border-white/10 bg-white/10 shadow-[0_1px_4px_rgba(15,23,42,0.32)]">
@@ -621,7 +624,7 @@ export function TopNavigation() {
             <span className="block h-full w-px rounded-full bg-white/12" />
           </span>
           <CartButton labelClassName="hidden sm:inline" />
-        </nav>
+          </nav>
         </div>
       </ContentRail>
       <HeaderSearch ref={searchRef} mode="dialog" open={searchOpen} onOpenChange={setSearchOpen} />
