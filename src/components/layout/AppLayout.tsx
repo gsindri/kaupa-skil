@@ -175,9 +175,9 @@ export function AppLayout({
       <div
         className="app-shell-content flex min-h-screen flex-col"
         style={{
-          /* Match header's layout box: viewport minus rail */
-          width: 'calc(100dvw - var(--layout-rail,72px))',
-          marginLeft: 'var(--layout-rail,72px)',
+          width: '100%',
+          paddingLeft: 'var(--layout-rail,72px)',
+          boxSizing: 'border-box',
         }}
       >
         <a
@@ -197,9 +197,10 @@ export function AppLayout({
           style={{
             position: 'fixed',
             top: 0,
-            left: 'var(--layout-rail, 72px)',
+            left: 0,
             right: 0,
             zIndex: 'var(--z-header,55)',
+            paddingLeft: 'var(--layout-rail,72px)',
           }}
         >
           <AppChrome />
