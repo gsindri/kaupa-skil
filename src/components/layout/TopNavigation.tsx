@@ -3,7 +3,6 @@ import React, { useEffect, useRef, useState, useLayoutEffect, useId, useMemo } f
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { DropdownMenu, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import { Button } from '@/components/ui/button'
 import {
   Building2,
   CircleUserRound,
@@ -35,6 +34,7 @@ import {
   navTextButtonFocusRingClass,
   navTextButtonPillClass,
   navTextCaretClass,
+  navTextIconClass,
 } from './navStyles'
 import { ContentRail } from './ContentRail'
 import { supabase } from '@/integrations/supabase/client'
@@ -614,9 +614,18 @@ export function TopNavigation() {
               </PopCard>
             </DropdownMenu>
           ) : (
-            <Button asChild size="lg" className="font-semibold shadow-[0_1px_4px_rgba(15,23,42,0.28)]">
-              <Link to="/login">{t('navigation.account.signIn')}</Link>
-            </Button>
+            <Link
+              to="/login"
+              className={cn(
+                navTextButtonClass,
+                'flex-shrink-0 min-w-[120px] justify-center font-semibold text-[color:var(--ink,#eaf0f7)]'
+              )}
+            >
+              <span className={navTextButtonPillClass} aria-hidden="true" />
+              <CircleUserRound aria-hidden="true" className={navTextIconClass} />
+              <span className="truncate">{t('navigation.account.signIn')}</span>
+              <span className={navTextButtonFocusRingClass} aria-hidden="true" />
+            </Link>
           )}
           <span aria-hidden="true" className="pointer-events-none flex h-11 items-center py-2">
             <span className="block h-full w-px rounded-full bg-white/12" />
