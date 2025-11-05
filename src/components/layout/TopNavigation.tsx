@@ -312,13 +312,14 @@ export function TopNavigation() {
         />
         <div className="absolute inset-x-0 bottom-0 h-px bg-white/8" />
       </div>
-      <ContentRail includeRailPadding={false}>
-        <div
-          className="flex w-full flex-wrap items-center gap-y-3"
-          style={{
-            columnGap: 'var(--page-gutter)',
-          }}
-        >
+      <div className="flex-1">
+        <ContentRail includeRailPadding={false}>
+          <div
+            className="flex w-full flex-wrap items-center gap-y-3"
+            style={{
+              columnGap: 'var(--page-gutter)',
+            }}
+          >
           <div className="flex min-w-0 flex-shrink-0 items-center gap-4">
             <Link
               to="/"
@@ -622,8 +623,9 @@ export function TopNavigation() {
           </span>
           <CartButton labelClassName="hidden sm:inline" />
           </nav>
-        </div>
-      </ContentRail>
+          </div>
+        </ContentRail>
+      </div>
       <HeaderSearch ref={searchRef} mode="dialog" open={searchOpen} onOpenChange={setSearchOpen} />
     </div>
   )
