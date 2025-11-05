@@ -317,7 +317,7 @@ export function TopNavigation() {
           <div
             className="flex w-full flex-wrap items-center gap-y-3"
             style={{
-              columnGap: 'var(--page-gutter)',
+              columnGap: 'calc(var(--page-gutter) / 2)',
             }}
           >
           <div className="flex min-w-0 flex-shrink-0 items-center gap-4">
@@ -332,7 +332,7 @@ export function TopNavigation() {
             <TenantSwitcher />
           </div>
 
-          <div className="flex min-w-0 flex-1 items-center gap-3">
+          <div className="flex min-w-0 items-center gap-3">
             <span
               className={cn(
                 'relative hidden max-w-[220px] items-center truncate text-left text-[13px] font-medium text-white/80 md:inline-flex',
@@ -383,7 +383,7 @@ export function TopNavigation() {
 
           <nav
             aria-label="Global actions"
-            className="ml-auto flex flex-shrink-0 items-center gap-3.5"
+            className="flex flex-shrink-0 items-center gap-2.5"
           >
             <LanguageSwitcher
               className="flex-shrink-0"
