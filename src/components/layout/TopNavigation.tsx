@@ -277,9 +277,8 @@ export function TopNavigation() {
       )}
       style={{
         height: 'clamp(44px, var(--toolbar-h, 56px), 72px)',
-        // Use page-max + layout-rail + 2 × page-gutter so the bar lines up with the grid
-        ['--align-cap' as any]:
-          'calc(var(--page-max) + var(--layout-rail) + (var(--page-gutter) * 2))',
+        paddingInline: 0,
+        ['--align-cap' as any]: 'var(--page-max)',
       } as React.CSSProperties}
     >
       <div
