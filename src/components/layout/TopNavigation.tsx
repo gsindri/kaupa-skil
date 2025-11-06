@@ -299,24 +299,23 @@ export function TopNavigation() {
           className="absolute inset-0"
           style={{
             background:
-              'var(--topbar-overlay, radial-gradient(110% 140% at 30% -40%, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0.08) 35%, rgba(8,20,36,0) 70%))',
-            mixBlendMode: 'screen',
+              'var(--topbar-overlay, radial-gradient(140% 120% at 48% -10%, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 65%))',
+            opacity: 0.14,
           }}
         />
         <div
           className="absolute -left-[18%] top-[-120%] h-[260%] w-[150%]"
           style={{
             background:
-              'radial-gradient(140% 120% at 12% -28%, rgba(255,255,255,0.32) 0%, rgba(255,255,255,0.12) 45%, rgba(8,20,36,0) 78%)',
-            mixBlendMode: 'screen',
+              'radial-gradient(140% 120% at 48% -10%, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 65%)',
+            opacity: 0.14,
           }}
         />
         <div
           className="absolute inset-0"
           style={{
             background:
-              'linear-gradient(160deg, rgba(40, 215, 255, 0.28) 0%, rgba(40, 215, 255, 0.08) 32%, rgba(40, 215, 255, 0) 68%)',
-            mixBlendMode: 'screen',
+              'linear-gradient(160deg, rgba(40, 215, 255, 0.1) 0%, rgba(40, 215, 255, 0.04) 28%, rgba(10, 27, 45, 0) 70%)',
           }}
         />
         <div className="absolute inset-x-0 bottom-0 h-px bg-white/8" />
