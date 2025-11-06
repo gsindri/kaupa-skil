@@ -74,7 +74,7 @@ export function CartButton({
       ? [
           navTextButtonClass,
           'text-left',
-          'text-[color:var(--ink-dim,rgba(236,242,248,0.68))] hover:text-[color:var(--ink,rgba(236,242,248,0.88))] focus-visible:text-[color:var(--ink,rgba(236,242,248,0.88))]',
+          'text-[color:var(--ink-dim)] hover:text-[color:var(--ink)] focus-visible:text-[color:var(--ink)]',
         ]
       : [
           'group inline-flex min-h-[38px] items-center rounded-none border-0 bg-transparent p-0 text-sm font-medium leading-tight text-[inherit] transition-opacity duration-150 ease-out hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent',
