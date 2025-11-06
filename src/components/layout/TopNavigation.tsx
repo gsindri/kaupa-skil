@@ -348,7 +348,15 @@ export function TopNavigation() {
                 'before:pointer-events-none before:absolute before:-right-3 before:top-1/2 before:-translate-y-1/2 before:border-y-[6px] before:border-l-[6px] before:border-y-transparent before:border-l-white/20'
               )}
             >
-              <span className="truncate">{t('navigation.search.prompt')}</span>
+              <span className="flex min-w-0 items-center gap-2">
+                <span className="truncate">{t('navigation.search.prompt')}</span>
+                <span
+                  aria-hidden="true"
+                  className="flex size-7 shrink-0 items-center justify-center rounded-full bg-white/10 text-[color:var(--ink-dim,rgba(236,242,248,0.68))]"
+                >
+                  <SearchSoft width={22} height={22} tone={0.18} />
+                </span>
+              </span>
             </span>
             <button
               ref={searchTriggerRef}
