@@ -292,6 +292,13 @@ export function TopNavigation() {
           className="absolute inset-0"
           style={{
             background:
+              'var(--topbar-bg, linear-gradient(128deg, #071021 0%, #0a1628 32%, #102642 66%, #153b63 100%))',
+          }}
+        />
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
               'var(--topbar-overlay, radial-gradient(110% 140% at 30% -40%, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0.08) 35%, rgba(8,20,36,0) 70%))',
             mixBlendMode: 'screen',
           }}
