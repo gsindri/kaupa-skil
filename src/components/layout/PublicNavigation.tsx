@@ -1,4 +1,3 @@
-import React from 'react'
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { HeildaLogo } from '@/components/branding/HeildaLogo'
@@ -7,24 +6,27 @@ import { cn } from '@/lib/utils'
 
 interface PublicNavigationProps {
   catalogVisible?: boolean
+  headerRef?: React.RefCallback<HTMLElement>
 }
 
 /**
  * Public navigation for unauthenticated users
  * Shows: Logo, Explore catalog button, Log in button
  */
-export function PublicNavigation({ catalogVisible }: PublicNavigationProps) {
+export function PublicNavigation({ catalogVisible, headerRef }: PublicNavigationProps) {
   return (
     <header
-      className={cn(
-        "sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60",
-        "transition-shadow duration-300",
-        catalogVisible ? "shadow-md" : "shadow-sm"
-      )}
-      style={{
-        paddingLeft: 'var(--layout-rail, 72px)'
-      }}
-    >
+      ref={headerRef}
+      data-app-header="true"
+        className={cn(
+          "fixed top-0 left-0 right-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60",
+          "transition-shadow duration-300",
+          catalogVisible ? "shadow-md" : "shadow-sm"
+        )}
+        style={{
+          paddingLeft: 'var(--layout-rail, 72px)'
+        }}
+      >
       <div
         className="mx-auto flex h-20 w-full items-center justify-between"
         style={{

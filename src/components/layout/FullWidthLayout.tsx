@@ -30,9 +30,10 @@ export function FullWidthLayout({
     const menuOpen = el?.querySelector('[data-open="true"]')
     return window.scrollY < 1 || !!menuOpen || isTypeableElement(ae)
   }, [])
-  const handleLockChange = useHeaderScrollHide(internalHeaderRef, { isPinned })
+  const { ref: scrollHideRef, handleLockChange } = useHeaderScrollHide({ isPinned })
   const setHeaderRef = (node: HTMLDivElement | null) => {
     internalHeaderRef.current = node as HTMLDivElement
+    scrollHideRef(node as HTMLElement)
     if (typeof headerRef === 'function') headerRef(node as HTMLDivElement)
     else if (headerRef && 'current' in (headerRef as any)) (headerRef as any).current = node
   }
@@ -68,7 +69,7 @@ export function FullWidthLayout({
         >
           <TopNavigation />
           {headerNode && (
-            <div className="mx-auto w-full max-w-[1600px] px-4 sm:px-6 lg:px-8">{headerNode}</div>
+            <div className="content-container">{headerNode}</div>
           )}
         </div>
 
@@ -76,7 +77,7 @@ export function FullWidthLayout({
         <div
           id="catalogContent"
           className={cn(
-            'flex-1 min-h-0 px-4 sm:px-6 lg:px-8 xl:px-10 2xl:px-12',
+            'flex-1 min-h-0',
             contentClassName,
           )}
           style={{
@@ -85,11 +86,13 @@ export function FullWidthLayout({
           }}
           {...restContentProps}
         >
-          <div className="page-grid items-start gap-3">
-            <div className="page-grid__content min-w-0">
-              {children}
+          <div className="content-container">
+            <div className="page-grid items-start gap-3">
+              <div className="page-grid__content min-w-0">
+                {children}
+              </div>
+              <CartDrawer />
             </div>
-            <CartDrawer />
           </div>
         </div>
       </div>

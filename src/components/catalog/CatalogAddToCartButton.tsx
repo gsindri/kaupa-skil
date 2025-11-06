@@ -331,7 +331,7 @@ export function CatalogAddToCartButton({
         ),
       }
     },
-    [product, rawSuppliers, supplierEntries],
+    [product, rawSuppliers],
   )
 
   const optimisticQuantity =
@@ -443,7 +443,7 @@ export function CatalogAddToCartButton({
       }
       setIsPickerOpen(false)
     },
-    [buildCartItem, controller, supplierEntries, addItemOptions],
+    [buildCartItem, controller, supplierEntries, addItemOptions, onAdd],
   )
 
   const handleAddAction = useCallback(() => {

@@ -37,6 +37,7 @@ import { ViewToggle } from '@/components/place-order/ViewToggle'
 
 import AppLayout from '@/components/layout/AppLayout'
 import { PublicNavigation } from '@/components/layout/PublicNavigation'
+import { ContentRail } from '@/components/layout/ContentRail'
 import { Sheet, SheetContent, SheetPortal } from '@/components/ui/sheet'
 import { useCatalogFilters, SortOrder } from '@/state/catalogFiltersStore'
 import { useSearchParams } from 'react-router-dom'
@@ -592,6 +593,7 @@ export default function CatalogPage() {
   const [bannerDismissed, setBannerDismissed] = useState(false)
   const headerRef = useRef<HTMLDivElement>(null)
   const filterButtonRef = useRef<HTMLButtonElement | null>(null)
+  const gridContainerRef = useRef<HTMLDivElement | null>(null)
   const focusFilterToggleButton = useCallback(() => {
     filterButtonRef.current?.focus()
   }, [filterButtonRef])
@@ -1201,160 +1203,155 @@ export default function CatalogPage() {
             />
           }
         >
-          <div
-            className={cn(
-              'mx-auto w-full max-w-[1600px] space-y-5 pb-8',
-              view === 'grid' ? 'pt-2' : 'pt-2'
-            )}
-            style={{
-              paddingInline: 'clamp(1.5rem, 4vw, 4rem)'
-            }}
-          >
-        {chips.length > 0 && (
-          <div
-            className="lg:hidden"
-            style={{ '--ctrl-h': '32px', '--ctrl-r': '10px' } as React.CSSProperties}
-          >
-            <div className="flex flex-wrap items-center gap-2 rounded-[var(--ctrl-r,12px)] border border-[color:var(--ring-idle)]/60 bg-[color:var(--chip-bg)]/70 px-3 py-3 backdrop-blur-xl">
-              <span className="text-xs font-semibold uppercase tracking-wide text-[color:var(--ink-dim)]/70">
-                Active filters
-              </span>
-              {chips.map(chip => (
-                <FilterChip
-                  key={`mobile-${chip.key}`}
-                  selected
-                  onClick={() => chip.onEdit()}
-                  onRemove={chip.onRemove}
-                  className="shrink-0"
-                >
-                  {chip.label}
-                </FilterChip>
-              ))}
-              {activeCount > 0 && (
-                <button
-                  type="button"
-                  onClick={clearAllFilters}
-                  className="ml-auto text-sm font-medium text-[color:var(--ink-dim)]/80 underline decoration-white/20 underline-offset-4 transition hover:text-[color:var(--ink)]"
-                >
-                  Clear all
-                </button>
-              )}
-            </div>
-          </div>
-        )}
-
-        {showConnectBanner && (
-          <div
-            data-testid="alert"
-            className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white/90 p-6 shadow-sm backdrop-blur-xl"
-          >
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex items-start gap-3">
-                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-sky-100 text-sky-600">
-                  <AlertCircle className="h-5 w-5" aria-hidden="true" />
-                </span>
-                <div>
-                  <p className="text-sm font-semibold text-slate-900">
-                    Connect suppliers to unlock prices.
-                  </p>
-                  <p className="mt-1 text-sm text-slate-600">
-                    Get live pricing and availability by connecting with your suppliers.
-                  </p>
+          <ContentRail includeRailPadding={false} contentRef={gridContainerRef}>
+            {chips.length > 0 && (
+              <div
+                className="lg:hidden"
+                style={{ '--ctrl-h': '32px', '--ctrl-r': '10px' } as React.CSSProperties}
+              >
+                <div className="flex flex-wrap items-center gap-2 rounded-[var(--ctrl-r,12px)] border border-[color:var(--ring-idle)]/60 bg-[color:var(--chip-bg)]/70 px-3 py-3 backdrop-blur-xl">
+                  <span className="text-xs font-semibold uppercase tracking-wide text-[color:var(--ink-dim)]/70">
+                    Active filters
+                  </span>
+                  {chips.map(chip => (
+                    <FilterChip
+                      key={`mobile-${chip.key}`}
+                      selected
+                      onClick={() => chip.onEdit()}
+                      onRemove={chip.onRemove}
+                      className="shrink-0"
+                    >
+                      {chip.label}
+                    </FilterChip>
+                  ))}
+                  {activeCount > 0 && (
+                    <button
+                      type="button"
+                      onClick={clearAllFilters}
+                      className="ml-auto text-sm font-medium text-[color:var(--ink-dim)]/80 underline decoration-white/20 underline-offset-4 transition hover:text-[color:var(--ink)]"
+                    >
+                      Clear all
+                    </button>
+                  )}
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setShowFilters(true)}
-                >
-                  Browse suppliers
-                </Button>
-                <button
-                  type="button"
-                  onClick={() => setBannerDismissed(true)}
-                  className="rounded-full p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-none"
-                  aria-label="Dismiss connect suppliers banner"
-                >
-                  <X className="h-4 w-4" aria-hidden="true" />
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+            )}
 
-        {isInitialLoading ? (
-          <div className="flex h-64 items-center justify-center rounded-2xl border border-slate-200 bg-white/90 shadow-sm">
-            <p className="text-sm font-medium text-slate-600">Loading catalog…</p>
-          </div>
-        ) : !displayProducts.length ? (
-          <div className="rounded-2xl border border-dashed border-slate-300 bg-white/80 px-6 py-12 text-center shadow-sm">
-            <h2 className="text-lg font-semibold text-slate-900">No products found</h2>
-            <p className="mt-2 text-sm text-slate-600">
-              {hasAnyFilters
-                ? 'Try adjusting or clearing your search and filters to see more results.'
-                : 'We could not find any products to show right now. Try refreshing the catalog.'}
-            </p>
-            <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-              {hasAnyFilters && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => {
-                    clearAllFilters()
-                    setFilters({ search: '' })
-                  }}
-                >
-                  Clear filters
-                </Button>
-              )}
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => refetch()}
+            {showConnectBanner && (
+              <div
+                data-testid="alert"
+                className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white/90 p-6 shadow-sm backdrop-blur-xl"
               >
-                Refresh
-              </Button>
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-6">
-            {view === 'grid' ? (
-              <CatalogGrid
-                products={displayProducts}
-                onAddToCart={handleAdd}
-                onNearEnd={handleLoadMore}
-                showPrice
-                addingId={addingId}
-              />
-            ) : (
-              <CatalogTable
-                products={displayProducts}
-                sort={tableSort}
-                onSort={handleSort}
-              />
-            )}
-
-            {hasNextPage && (
-              <div className="flex flex-col items-center gap-3 py-6">
-                <InfiniteSentinel
-                  key={sentinelKey}
-                  onVisible={handleLoadMore}
-                  disabled={!hasNextPage || isLoadingMore}
-                />
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={handleLoadMore}
-                  disabled={isLoadingMore}
-                >
-                  {isLoadingMore ? 'Loading more…' : 'Load more'}
-                </Button>
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex items-start gap-3">
+                    <span className="flex h-10 w-10 items-center justify-center rounded-full bg-sky-100 text-sky-600">
+                      <AlertCircle className="h-5 w-5" aria-hidden="true" />
+                    </span>
+                    <div>
+                      <p className="text-sm font-semibold text-slate-900">
+                        Connect suppliers to unlock prices.
+                      </p>
+                      <p className="mt-1 text-sm text-slate-600">
+                        Get live pricing and availability by connecting with your suppliers.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setShowFilters(true)}
+                    >
+                      Browse suppliers
+                    </Button>
+                    <button
+                      type="button"
+                      onClick={() => setBannerDismissed(true)}
+                      className="rounded-full p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-none"
+                      aria-label="Dismiss connect suppliers banner"
+                    >
+                      <X className="h-4 w-4" aria-hidden="true" />
+                    </button>
+                  </div>
+                </div>
               </div>
             )}
-          </div>
-        )}
-      </div>
+
+            <div className="space-y-6 pb-8 pt-2">
+              {isInitialLoading ? (
+                <div className="flex h-64 items-center justify-center rounded-2xl border border-slate-200 bg-white/90 shadow-sm">
+                  <p className="text-sm font-medium text-slate-600">Loading catalog…</p>
+                </div>
+              ) : !displayProducts.length ? (
+                <div className="rounded-2xl border border-dashed border-slate-300 bg-white/80 px-6 py-12 text-center shadow-sm">
+                  <h2 className="text-lg font-semibold text-slate-900">No products found</h2>
+                  <p className="mt-2 text-sm text-slate-600">
+                    {hasAnyFilters
+                      ? 'Try adjusting or clearing your search and filters to see more results.'
+                      : 'We could not find any products to show right now. Try refreshing the catalog.'}
+                  </p>
+                  <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+                    {hasAnyFilters && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          clearAllFilters()
+                          setFilters({ search: '' })
+                        }}
+                      >
+                        Clear filters
+                      </Button>
+                    )}
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => refetch()}
+                    >
+                      Refresh
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {view === 'grid' ? (
+                    <CatalogGrid
+                      containerRef={gridContainerRef}
+                      products={displayProducts}
+                      onAddToCart={handleAdd}
+                      onNearEnd={handleLoadMore}
+                      showPrice
+                      addingId={addingId}
+                    />
+                  ) : (
+                    <CatalogTable
+                      products={displayProducts}
+                      sort={tableSort}
+                      onSort={handleSort}
+                    />
+                  )}
+
+                  {hasNextPage && (
+                    <div className="flex flex-col items-center gap-3 py-6">
+                      <InfiniteSentinel
+                        key={sentinelKey}
+                        onVisible={handleLoadMore}
+                        disabled={!hasNextPage || isLoadingMore}
+                      />
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={handleLoadMore}
+                        disabled={isLoadingMore}
+                      >
+                        {isLoadingMore ? 'Loading more…' : 'Load more'}
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </ContentRail>
         </AppLayout>
         {isDesktop && showFilters && (
           <SheetPortal>
@@ -1459,7 +1456,6 @@ function FiltersBar({
   filterButtonRef,
   focusFilterToggleButton,
 }: FiltersBarProps) {
-  const containerClass = 'mx-auto w-full max-w-[1600px]'
   const { search: _search, ...facetFilters } = filters
   const activeFacetCount = chips.length
   const activeCount =
@@ -1569,8 +1565,13 @@ function FiltersBar({
             aria-expanded={showFilters}
             aria-controls="catalog-filters-panel"
             aria-keyshortcuts="f"
+            aria-label={
+              activeCount
+                ? `Filters, ${activeCount} active`
+                : 'Filters, no active filters'
+            }
             className={cn(
-              'inline-flex h-[var(--ctrl-h,40px)] items-center gap-3 rounded-[var(--ctrl-r,12px)] border border-transparent bg-[color:var(--chip-bg)] px-3 text-sm font-semibold text-[color:var(--ink-hi)] backdrop-blur-xl transition duration-200 ease-out focus-visible:outline-none hover:bg-[color:var(--chip-bg-hover)] hover:text-[color:var(--ink-hi)] motion-reduce:transition-none',
+              'inline-flex h-[var(--ctrl-h,40px)] items-center gap-2 rounded-[var(--ctrl-r,12px)] border border-transparent bg-[color:var(--chip-bg)] px-2.5 text-sm font-semibold text-[color:var(--ink-hi)] backdrop-blur-xl transition duration-200 ease-out focus-visible:outline-none hover:bg-[color:var(--chip-bg-hover)] hover:text-[color:var(--ink-hi)] motion-reduce:transition-none sm:gap-3 sm:px-3',
               showFilters && 'bg-[color:var(--seg-active-bg)] text-[color:var(--ink-hi)] border-[color:var(--ring-hover)]',
               extraClassName,
             )}
@@ -1581,10 +1582,17 @@ function FiltersBar({
               weight="fill"
               className={cn('transition-opacity text-[color:var(--ink-hi)]', !showFilters && 'opacity-80')}
             />
-            <span className="hidden sm:inline">
-              {activeCount ? `Filters (${activeCount})` : 'Filters'}
+            <span className="flex items-center gap-1 sm:gap-2">
+              <span>Filters</span>
+              {activeCount > 0 && (
+                <span
+                  aria-hidden="true"
+                  className="inline-flex min-w-[1.25rem] translate-y-[-1px] items-center justify-center rounded-full bg-[color:var(--chip-bg-hover)] px-1 text-[10px] font-semibold leading-[14px] text-[color:var(--ink-hi)] sm:translate-y-0 sm:bg-[color:var(--seg-active-bg)] sm:px-1.5 sm:text-xs"
+                >
+                  {activeCount}
+                </span>
+              )}
             </span>
-            <span className="sm:hidden">Filters</span>
           </button>
         </TooltipTrigger>
         <TooltipContent sideOffset={8}>Filters (F)</TooltipContent>
@@ -1645,33 +1653,29 @@ function FiltersBar({
       <section
         style={{
           ...COMPACT_TOOLBAR_TOKENS,
-          paddingInline: 'var(--page-gutter)',
-        }}
+          paddingInline: 0,
+          ['--align-cap' as any]: 'var(--page-max)',
+        } as React.CSSProperties}
         className={cn(
-          'relative bg-[color:var(--toolbar-bg)] backdrop-blur-xl after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-white/12 after:content-[""]',
+          'band band--toolbar after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-white/12 after:content-[""]',
           scrolled && 'before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-white/16 before:opacity-70 before:content-[""]',
         )}
       >
-        {error && (
-          <div
-            className={cn(containerClass, 'py-3')}
-            style={{ paddingInline: 'clamp(1.5rem, 4vw, 4rem)' }}
-          >
-            <Alert
-              variant="destructive"
-              className="rounded-[var(--ctrl-r,12px)] bg-white/12 text-[color:var(--ink)] ring-1 ring-inset ring-white/15 shadow-[0_16px_36px_rgba(3,10,22,0.45)] backdrop-blur-xl"
-            >
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>{String(error)}</AlertDescription>
-            </Alert>
-          </div>
-        )}
+        <ContentRail includeRailPadding={false}>
+          <div>
+            {error && (
+              <div className="py-3">
+                <Alert
+                  variant="destructive"
+                  className="rounded-[var(--ctrl-r,12px)] bg-white/12 text-[color:var(--ink)] ring-1 ring-inset ring-white/15 shadow-[0_16px_36px_rgba(3,10,22,0.45)] backdrop-blur-xl"
+                >
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>{String(error)}</AlertDescription>
+                </Alert>
+              </div>
+            )}
 
-        <div
-          className={containerClass}
-          style={{ paddingInline: 'clamp(1.5rem, 4vw, 4rem)' }}
-        >
-          <div className="catalog-toolbar flex flex-col gap-3 py-3">
+            <div className="catalog-toolbar flex flex-col gap-3 py-3">
             <div className="catalog-toolbar-zones">
               <div className="toolbar-left">
                 {renderFiltersToggleButton('flex-none')}
@@ -1767,8 +1771,9 @@ function FiltersBar({
                 )}
               </div>
             )}
+            </div>
           </div>
-        </div>
+        </ContentRail>
       </section>
     )
 }
