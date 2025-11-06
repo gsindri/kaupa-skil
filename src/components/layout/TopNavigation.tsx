@@ -368,19 +368,9 @@ export function TopNavigation() {
             >
               <span
                 aria-hidden="true"
-                className={cn(
-                  'flex size-7 items-center justify-center rounded-full bg-white/10 text-[color:var(--ink,#eaf0f7)]',
-                  'transition-colors duration-fast ease-snap',
-                  'group-hover:bg-white/15 group-focus-visible:bg-white/15',
-                  'group-hover:text-[color:var(--nav-text-strong-color,var(--ink,#eaf0f7))] group-focus-visible:text-[color:var(--nav-text-strong-color,var(--ink,#eaf0f7))]'
-                )}
+                className="flex size-7 items-center justify-center rounded-full bg-white/10 text-[color:var(--ink-dim,#cfd7e4)] transition-colors duration-fast ease-snap group-hover:bg-white/15 group-hover:text-[color:var(--ink,#eaf0f7)]"
               >
-                <SearchSoft
-                  width={22}
-                  height={22}
-                  tone={0.26}
-                  className={cn(navTextIconClass, 'size-[18px] opacity-100')}
-                />
+                <SearchSoft width={22} height={22} tone={0.18} />
               </span>
             </button>
             <span id={searchPromptDescriptionId} className="sr-only">
