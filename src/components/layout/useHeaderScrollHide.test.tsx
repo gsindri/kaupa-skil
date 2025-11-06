@@ -22,14 +22,14 @@ afterEach(() => {
 })
 
 function TestComponent({ isPinned }: { isPinned?: () => boolean }) {
-  const { ref } = useHeaderScrollHide({ isPinned })
+  const ref = useRef<HTMLDivElement>(null)
   useLayoutEffect(() => {
-    const el = ref as any
-    if (el.current) {
-      el.current.getBoundingClientRect = () => ({ height: 56 })
+    if (ref.current) {
+      ;(ref.current as any).getBoundingClientRect = () => ({ height: 56 })
     }
-  }, [ref])
-  return <div ref={ref as any}></div>
+  }, [])
+  useHeaderScrollHide(ref, { isPinned })
+  return <div ref={ref}></div>
 }
 
 describe('useHeaderScrollHide', () => {

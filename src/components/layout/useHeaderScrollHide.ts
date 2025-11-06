@@ -1,4 +1,4 @@
-import { useCallback, useRef } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 
 const HIDE_DELTA = 8
 
@@ -15,18 +15,17 @@ interface Options {
 
 /**
  * Auto-hides the header on downward scroll and reveals on upward scroll.
- * Uses a ref callback to ensure setup happens when DOM element is attached.
+ * Updates `--hdr-p` CSS variable on both the header element and documentElement
+ * and maintains `--header-h` via ResizeObserver.
  */
-export function useHeaderScrollHide({ isPinned, onLockChange }: Options = {}) {
+export function useHeaderScrollHide(
+  ref: React.RefObject<HTMLElement>,
+  { isPinned, onLockChange }: Options = {}
+) {
   const lockCount = useRef(0)
   const hiddenRef = useRef(false)
   const lastYRef = useRef(0)
   const accumulatedDeltaRef = useRef(0)
-  const cleanupRef = useRef<(() => void) | null>(null)
-  const isPinnedRef = useRef(isPinned)
-  
-  // Keep isPinned callback fresh
-  isPinnedRef.current = isPinned
 
   const handleLockChange = useCallback(
     (locked: boolean) => {
@@ -38,30 +37,44 @@ export function useHeaderScrollHide({ isPinned, onLockChange }: Options = {}) {
   )
 
   const reset = useCallback(() => {
-    // Force header visible via CSS variable
-    document.documentElement.style.setProperty('--header-hidden', '0')
+    if (!ref.current) return
+    
+    const el = ref.current
+    
+    // Force header visible in DOM
+    const reduceMotion =
+      typeof window !== 'undefined' &&
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
+    if (!reduceMotion) {
+      el.style.transition = 'transform 200ms ease-in-out'
+    }
+    el.style.transform = 'translate3d(0, 0, 0)'
+    document.documentElement.style.setProperty('--header-hidden', '0')
+    
     // Reset internal state
     hiddenRef.current = false
     lastYRef.current = Math.max(0, window.scrollY)
     accumulatedDeltaRef.current = 0
-  }, [])
+  }, [ref])
 
-  const refCallback = useCallback((el: HTMLElement | null) => {
-    // Clean up previous element
-    if (cleanupRef.current) {
-      cleanupRef.current()
-      cleanupRef.current = null
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+
+    const reduceMotion =
+      typeof window !== 'undefined' &&
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+    const applyTransition = () => {
+      if (reduceMotion) {
+        el.style.removeProperty('transition')
+      } else {
+        el.style.transition = 'transform 200ms ease-in-out'
+      }
     }
-
-    if (!el) {
-      document.documentElement.style.setProperty('--header-hidden', '0')
-      return
-    }
-
-    // Set initial state immediately
-    document.documentElement.style.setProperty('--header-hidden', '0')
-    el.style.setProperty('--header-hidden', '0')
 
     const setHeaderVars = () => {
       const height = Math.round(el.getBoundingClientRect().height)
@@ -82,6 +95,8 @@ export function useHeaderScrollHide({ isPinned, onLockChange }: Options = {}) {
     const handlePointerDown = () => lockFor(180)
     el.addEventListener('pointerdown', handlePointerDown, { passive: true })
 
+    lastYRef.current = Math.max(0, window.scrollY)
+
     const resetScrollState = (y: number) => {
       lastYRef.current = y
       accumulatedDeltaRef.current = 0
@@ -90,13 +105,17 @@ export function useHeaderScrollHide({ isPinned, onLockChange }: Options = {}) {
     const applyHidden = (nextHidden: boolean) => {
       if (hiddenRef.current === nextHidden) return
       hiddenRef.current = nextHidden
-      const value = hiddenRef.current ? '1' : '0'
-      document.documentElement.style.setProperty('--header-hidden', value)
-      el.style.setProperty('--header-hidden', value)
+      document.documentElement.style.setProperty('--header-hidden', hiddenRef.current ? '1' : '0')
+      applyTransition()
+      el.style.transform = hiddenRef.current ? 'translate3d(0, -100%, 0)' : 'translate3d(0, 0, 0)'
     }
 
+    applyTransition()
+    document.documentElement.style.setProperty('--header-hidden', '0')
+    el.style.transform = 'translate3d(0, 0, 0)'
+
     const pinned = () =>
-      (isPinnedRef.current?.() ?? false) || lockCount.current > 0 || performance.now() < interactionLockUntil
+      (isPinned?.() ?? false) || lockCount.current > 0 || performance.now() < interactionLockUntil
 
     const onScroll = () => {
       const y = Math.max(0, window.scrollY)
@@ -126,26 +145,22 @@ export function useHeaderScrollHide({ isPinned, onLockChange }: Options = {}) {
     }
 
     const handleScroll = () => requestAnimationFrame(onScroll)
-    
-    // Initialize scroll position RIGHT before first call
-    lastYRef.current = Math.max(0, window.scrollY)
-    
-    // Run once immediately to sync with current scroll position
-    onScroll()
-    
     window.addEventListener('scroll', handleScroll, { passive: true })
 
-    // Store cleanup function
-    cleanupRef.current = () => {
+    return () => {
       window.removeEventListener('scroll', handleScroll)
       window.removeEventListener('resize', setHeaderVars)
       el.removeEventListener('pointerdown', handlePointerDown)
       ro?.disconnect()
       document.documentElement.style.setProperty('--header-hidden', '0')
+      if (!reduceMotion) {
+        el.style.removeProperty('transition')
+      }
+      el.style.transform = 'translate3d(0, 0, 0)'
     }
-  }, [])
+  }, [ref, isPinned, reset])
 
-  return { ref: refCallback, handleLockChange, reset }
+  return { handleLockChange, reset }
 }
 
 export default useHeaderScrollHide

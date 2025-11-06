@@ -11,7 +11,6 @@ export interface GridBreakpoint {
 }
 
 export interface VirtualizedGridProps<T> {
-  containerRef?: React.RefObject<HTMLDivElement>
   items: T[]
   /** Render a single card. Receive the item and its absolute index. */
   renderItem: (item: T, index: number) => React.ReactNode
@@ -34,54 +33,18 @@ export interface VirtualizedGridProps<T> {
   breakpoints?: GridBreakpoint[]
 }
 
-/** Get content width excluding padding */
-function contentWidth(el: HTMLElement): number {
-  const cs = getComputedStyle(el)
-  const padLeft = parseFloat(cs.paddingLeft) || 0
-  const padRight = parseFloat(cs.paddingRight) || 0
-  return Math.max(0, el.clientWidth - padLeft - padRight)
-}
-
 /** Measure container width and keep it reactive. */
 function useContainerSize(ref: React.RefObject<HTMLElement>) {
   const [w, setW] = React.useState(0)
-  
-  // Force initial measurement after layout to ensure CSS variables are resolved
   React.useLayoutEffect(() => {
     if (!ref.current) return
-    const measure = () => {
-      if (!ref.current) return
-      const width = contentWidth(ref.current)
-      setW(width)
-    }
-    
-    measure() // Immediate
-    requestAnimationFrame(measure) // After paint
-    
-    // Retry after a small delay if we got 0 padding (CSS vars not resolved yet)
-    const timer = setTimeout(() => {
-      if (ref.current) {
-        const cs = getComputedStyle(ref.current)
-        const pad = parseFloat(cs.paddingLeft) || 0
-        if (pad === 0) {
-          // CSS vars still not resolved, force remeasure
-          measure()
-        }
-      }
-    }, 50)
-    
-    return () => clearTimeout(timer)
-  }, [ref])
-  
-  React.useLayoutEffect(() => {
-    if (!ref.current) return
-    const ro = new ResizeObserver(() => {
-      setW(ref.current ? contentWidth(ref.current) : 0)
+    const ro = new ResizeObserver(([entry]) => {
+      const cr = entry.contentRect
+      setW(cr.width)
     })
     ro.observe(ref.current)
     return () => ro.disconnect()
   }, [ref])
-  
   return { width: w }
 }
 
@@ -120,7 +83,6 @@ function useAnchoredGridScroll(args: {
 }
 
 export function VirtualizedGrid<T>({
-  containerRef,
   items,
   renderItem,
   minCardWidth = 260,
@@ -137,17 +99,7 @@ export function VirtualizedGrid<T>({
   const scrollerRef = React.useRef<HTMLDivElement>(null)
   const innerRef = React.useRef<HTMLDivElement>(null)
 
-  // Use external ref if provided, otherwise use internal ref
-  const measureRef = containerRef || scrollerRef
-  const { width } = useContainerSize(measureRef)
-
-  // DEBUG: Log measured width
-  React.useEffect(() => {
-    if (width > 0) {
-      console.log('🔍 VirtualizedGrid measured width:', width)
-      console.log('🔍 Window width:', typeof window !== 'undefined' ? window.innerWidth : 0)
-    }
-  }, [width])
+  const { width } = useContainerSize(scrollerRef)
 
   const sortedBreakpoints = React.useMemo(() => {
     if (!breakpoints || breakpoints.length === 0) return null
@@ -374,36 +326,9 @@ export function VirtualizedGrid<T>({
   }, [virtualRows, rowCount, onNearEnd, items.length, rowStride])
 
   // Grid CSS sizes
-  const baseCardWidth = cols
+  const cardWidth = cols
     ? Math.max(1, Math.floor((width - safeGapX * (cols - 1)) / cols))
     : effectiveMinCardWidth || 1
-
-  const columnWidths = React.useMemo(() => {
-    if (!cols) return []
-    const base = baseCardWidth
-    const widths = Array.from({ length: cols }, () => base)
-    const totalGapWidth = safeGapX * (cols - 1)
-    const totalUsedWidth = base * cols + totalGapWidth
-    const leftover = Math.max(0, Math.round(width - totalUsedWidth))
-    if (leftover <= 0) return widths
-
-    const evenShare = Math.floor(leftover / cols)
-    const remainder = leftover % cols
-
-    if (evenShare > 0) {
-      for (let i = 0; i < widths.length; i += 1) {
-        widths[i] += evenShare
-      }
-    }
-
-    if (remainder > 0) {
-      for (let i = 0; i < remainder; i += 1) {
-        widths[i] += 1
-      }
-    }
-
-    return widths
-  }, [baseCardWidth, cols, safeGapX, width])
   const totalHeight = rowVirtualizer.getTotalSize()
   const normalizedScrollMargin = Number.isFinite(scrollMargin)
     ? scrollMargin
@@ -441,16 +366,12 @@ export function VirtualizedGrid<T>({
                 transform: `translate3d(0, ${Math.max(0, vr.start - normalizedScrollMargin)}px, 0)`,
                 height: cardHeight,
                 display: 'grid',
-                gridTemplateColumns:
-                  columnWidths.length === cols
-                    ? columnWidths.map(w => `${w}px`).join(' ')
-                    : `repeat(${cols}, ${baseCardWidth}px)`,
-                justifyContent: 'start',
+                gridTemplateColumns: `repeat(${cols}, minmax(${cardWidth}px, 1fr))`,
                 columnGap: safeGapX,
                 rowGap: safeGapY,
-                paddingInline: 0,
                 paddingBottom: safeGapY,
                 alignContent: 'start',
+                paddingInline: 0,
               }}
             >
               {Array.from({ length: endIndex - startIndex }).map((_, i) => {

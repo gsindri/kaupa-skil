@@ -338,26 +338,6 @@ body {
 .icon-16 {
   @apply h-4 w-4;
 }
-
-/* Single content container for consistent alignment across header and page content */
-.content-container {
-  inline-size: min(100%, var(--align-cap, var(--page-max)));
-  width: 100%;
-  max-width: var(--align-cap, var(--page-max));
-  box-sizing: border-box !important;
-  padding-inline: var(--page-gutter);
-  margin-inline: auto;
-}
-
-.band {
-  position: relative;
-  inline-size: 100%;
-}
-
-.band--toolbar {
-  background: var(--toolbar-bg);
-  backdrop-filter: blur(12px);
-}
 /* --- Sidebar chrome fixes --- */
 
 /* Ensure sidebar runs flush to the very top */

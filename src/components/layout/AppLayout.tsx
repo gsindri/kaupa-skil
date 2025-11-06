@@ -44,6 +44,19 @@ export function AppLayout({
   const { isDrawerOpen } = useCart()
   const isDesktopCart = useMediaQuery('(min-width: 1024px)')
   const shouldShowCartRail = isDesktopCart && isDrawerOpen
+  const combinedHeaderRef = useCallback(
+    (node: HTMLDivElement | null) => {
+      internalHeaderRef.current = node
+      if (typeof headerRef === 'function') headerRef(node)
+      else if (headerRef && 'current' in headerRef)
+        (headerRef as MutableRefObject<HTMLDivElement | null>).current = node
+    },
+    [headerRef]
+  )
+
+
+  const hasSecondary = !!secondary
+  const showSecondary = hasSecondary && panelOpen
 
   const isPinned = useCallback(() => {
     const el = internalHeaderRef.current
@@ -58,21 +71,7 @@ export function AppLayout({
     return false
   }, [])
 
-  const { ref: scrollHideRef, handleLockChange, reset: resetHeaderScrollHide } = useHeaderScrollHide({ isPinned })
-
-  const combinedHeaderRef = useCallback(
-    (node: HTMLDivElement | null) => {
-      internalHeaderRef.current = node
-      scrollHideRef(node as HTMLElement)
-      if (typeof headerRef === 'function') headerRef(node)
-      else if (headerRef && 'current' in headerRef)
-        (headerRef as MutableRefObject<HTMLDivElement | null>).current = node
-    },
-    [headerRef, scrollHideRef]
-  )
-
-  const hasSecondary = !!secondary
-  const showSecondary = hasSecondary && panelOpen
+  const { handleLockChange, reset: resetHeaderScrollHide } = useHeaderScrollHide(internalHeaderRef, { isPinned })
 
 
   useLayoutEffect(() => {
@@ -175,9 +174,7 @@ export function AppLayout({
       <div
         className="app-shell-content flex min-h-screen flex-col"
         style={{
-          width: '100%',
-          paddingLeft: 'var(--layout-rail,72px)',
-          boxSizing: 'border-box',
+          marginLeft: 'var(--layout-rail,72px)',
         }}
       >
         <a
@@ -195,13 +192,9 @@ export function AppLayout({
           ref={combinedHeaderRef}
           className={cn(headerClassName)}
           style={{
-            position: 'fixed',
+            position: 'sticky',
             top: 0,
-            left: 'var(--layout-rail, 72px)',
-            right: 'auto',
-            width: 'calc(100vw - var(--layout-rail, 72px))',
             zIndex: 'var(--z-header,55)',
-            paddingLeft: 0,
           }}
         >
           <AppChrome />
@@ -209,15 +202,6 @@ export function AppLayout({
           
           {headerNode}
         </div>
-        
-        {/* Spacer to prevent content jump when header is fixed */}
-        <div
-          style={{
-            height: 'var(--header-h, 56px)',
-            transition: 'height 200ms ease-in-out'
-          }}
-          aria-hidden="true"
-        />
 
         {/* Main content */}
         <div className="pb-8 pt-2">
@@ -265,6 +249,7 @@ export function AppLayout({
                 className="w-full min-w-0"
                 style={{
                   minHeight: 'calc(100vh - var(--header-h, 56px))',
+                  paddingInline: 'var(--page-gutter)',
                 }}
               >
                 {children ?? <Outlet />}

@@ -1,25 +1,16 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/useAuth'
 import { Navigate, Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { PublicNavigation } from '@/components/layout/PublicNavigation'
 import { CatalogGridWrapper } from '@/components/landing/CatalogGridWrapper'
-
+import { AnimatePresence, motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
-import { useHeaderScrollHide } from '@/components/layout/useHeaderScrollHide'
 import heroImage from '@/assets/frontpagepic.png'
 
 export default function LandingPage() {
   const { user, isInitialized, loading } = useAuth()
   const [appEntered, setAppEntered] = useState(false)
-
-  // Allow auto-hide behavior everywhere on landing page
-  const isPinned = useCallback(() => {
-    return false
-  }, [])
-
-  // Integrate scroll-hide hook with ref callback
-  const { ref: headerRef } = useHeaderScrollHide({ isPinned })
 
   // Detect when app viewport threshold is reached (~80%)
   useEffect(() => {
@@ -55,17 +46,30 @@ export default function LandingPage() {
 
   return (
     <div className="landing-container min-h-screen bg-background">
-      {/* Navigation - stable throughout scroll */}
-      <PublicNavigation headerRef={headerRef} catalogVisible={appEntered} />
-      
-      {/* Spacer to prevent content jump when header is fixed */}
-      <div 
-        style={{ 
-          height: 'var(--header-h, 56px)',
-          transition: 'height 200ms ease-in-out'
-        }} 
-        aria-hidden="true"
-      />
+      {/* Navigation - morphs when app is entered */}
+      <AnimatePresence mode="wait">
+        {!appEntered ? (
+          <motion.div
+            key="marketing-nav"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.25 }}
+          >
+            <PublicNavigation />
+          </motion.div>
+        ) : (
+          <motion.div
+            key="app-nav"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.25 }}
+          >
+            <PublicNavigation catalogVisible={true} />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Hero Layer - pins at top and peels away */}
       <div 
@@ -107,9 +111,20 @@ export default function LandingPage() {
         </div>
 
         {/* Hero Content */}
-        <div className="relative h-full">
-          <div className="mx-auto w-full max-w-screen-2xl h-full flex items-center px-5 md:px-6 lg:px-8">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center w-full">
+        <div 
+          className="relative h-full"
+          style={{
+            paddingLeft: 'var(--layout-rail, 72px)'
+          }}
+        >
+          <div
+            className="mx-auto w-full h-full flex items-center"
+            style={{
+              maxWidth: '1600px',
+              paddingInline: 'clamp(1.5rem, 4vw, 4rem)'
+            }}
+          >
+            <div className="grid grid-cols-1 lg:grid-cols-[60%_40%] gap-12 lg:gap-16 items-center w-full">
               {/* Left: Content */}
               <div className="text-left">
                 <h1 className="text-5xl md:text-6xl lg:text-7xl font-display font-extrabold text-foreground mb-6 leading-[1.08]">
@@ -155,7 +170,7 @@ export default function LandingPage() {
               </div>
 
               {/* Right: Visual Element */}
-              <div className="relative hidden lg:flex items-center justify-center">
+              <div className="relative hidden lg:flex justify-end">
                 <div className="relative max-w-[520px] rounded-3xl overflow-hidden shadow-[0_40px_120px_rgba(15,23,42,0.12)] border border-primary/10">
                   <img
                     src={heroImage}
@@ -179,8 +194,19 @@ export default function LandingPage() {
           willChange: 'filter, transform'
         }}
       >
-        <main className="relative">
-          <div className="mx-auto w-full max-w-screen-2xl px-5 md:px-6 lg:px-8">
+        <main 
+          className="relative"
+          style={{
+            paddingLeft: 'var(--layout-rail, 72px)'
+          }}
+        >
+          <div
+            className="mx-auto w-full"
+            style={{
+              maxWidth: '1600px',
+              paddingInline: 'clamp(1.5rem, 4vw, 4rem)'
+            }}
+          >
             {/* Catalog Preview Section */}
             <section 
               id="catalog" 
