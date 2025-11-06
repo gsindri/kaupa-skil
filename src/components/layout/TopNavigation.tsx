@@ -295,6 +295,14 @@ export function TopNavigation() {
               'var(--topbar-bg, linear-gradient(128deg, #071021 0%, #0a1628 32%, #102642 66%, #153b63 100%))',
           }}
         />
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              'var(--topbar-overlay, radial-gradient(110% 140% at 30% -40%, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0.08) 35%, rgba(8,20,36,0) 70%))',
+            mixBlendMode: 'screen',
+          }}
+        />
         <div className="absolute inset-x-0 bottom-0 h-px bg-white/8" />
       </div>
       <div className="flex-1">
@@ -353,7 +361,7 @@ export function TopNavigation() {
             >
               <span
                 aria-hidden="true"
-                className="flex size-7 items-center justify-center rounded-full bg-white/10 text-[color:var(--ink-dim,#cfd7e4)] transition-colors duration-fast ease-snap group-hover:bg-white/15 group-hover:text-[color:var(--ink,#eaf0f7)]"
+                className="flex size-7 items-center justify-center rounded-full bg-white/10 text-[color:var(--ink-dim,rgba(236,242,248,0.68))] transition-colors duration-fast ease-snap group-hover:bg-white/15 group-hover:text-[color:var(--ink,rgba(236,242,248,0.88))]"
               >
                 <SearchSoft width={22} height={22} tone={0.18} />
               </span>
@@ -419,7 +427,7 @@ export function TopNavigation() {
                     >
                       <span
                         className={cn(
-                          'size-4 shrink-0 rounded-full border-2 border-[color:var(--ink,#eaf0f7)] border-b-transparent transition-opacity',
+                          'size-4 shrink-0 rounded-full border-2 border-[color:var(--ink,rgba(236,242,248,0.88))] border-b-transparent transition-opacity',
                           isBusy ? 'animate-spin opacity-100' : 'opacity-0'
                         )}
                       />
@@ -603,7 +611,7 @@ export function TopNavigation() {
               to="/login"
               className={cn(
                 navTextButtonClass,
-                'flex-shrink-0 min-w-[120px] justify-center font-semibold text-[color:var(--ink,#eaf0f7)]'
+                'flex-shrink-0 min-w-[120px] justify-center font-semibold text-[color:var(--ink,rgba(236,242,248,0.88))]'
               )}
             >
               <span className={navTextButtonPillClass} aria-hidden="true" />
