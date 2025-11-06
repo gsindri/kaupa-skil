@@ -303,6 +303,22 @@ export function TopNavigation() {
             mixBlendMode: 'screen',
           }}
         />
+        <div
+          className="absolute -left-[18%] top-[-120%] h-[260%] w-[150%]"
+          style={{
+            background:
+              'radial-gradient(140% 120% at 12% -28%, rgba(255,255,255,0.32) 0%, rgba(255,255,255,0.12) 45%, rgba(8,20,36,0) 78%)',
+            mixBlendMode: 'screen',
+          }}
+        />
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              'linear-gradient(160deg, rgba(40, 215, 255, 0.28) 0%, rgba(40, 215, 255, 0.08) 32%, rgba(40, 215, 255, 0) 68%)',
+            mixBlendMode: 'screen',
+          }}
+        />
         <div className="absolute inset-x-0 bottom-0 h-px bg-white/8" />
       </div>
       <div className="flex-1">
