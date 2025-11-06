@@ -340,10 +340,10 @@ export function TopNavigation() {
               )}
             >
               <span className="flex min-w-0 items-center gap-2">
-                <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-white/10 text-[color:var(--ink-dim,#cfd7e4)]">
+                <span className="truncate">{t('navigation.search.prompt')}</span>
+                <span className="order-2 flex size-7 shrink-0 items-center justify-center rounded-full bg-white/10 text-[color:var(--ink-dim,#cfd7e4)]">
                   <SearchSoft width={22} height={22} tone={0.18} />
                 </span>
-                <span className="truncate">{t('navigation.search.prompt')}</span>
               </span>
             </span>
             <button
