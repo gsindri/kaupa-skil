@@ -11,6 +11,7 @@ type CartSoftProps = SvgProps & { count?: string | number }
 
 const baseStrokeClass = 'stroke-current fill-none'
 const baseStrokeProps = {
+  stroke: 'currentColor',
   strokeWidth: 2.25,
   strokeLinecap: 'round' as const,
   strokeLinejoin: 'round' as const
