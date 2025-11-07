@@ -279,8 +279,6 @@ export function TopNavigation() {
         height: 'clamp(44px, var(--toolbar-h, 56px), 72px)',
         paddingInline: 0,
         ['--align-cap' as any]: 'var(--page-max)',
-        ['--topbar-ring' as any]: '0 0% 100% / 0.22',
-        ['--topbar-ring-open' as any]: '0 0% 100% / 0.32',
       } as React.CSSProperties}
     >
       <div
