@@ -220,7 +220,7 @@ export function AppLayout({
         />
 
         {/* Main content */}
-        <div className="pb-8 pt-2">
+        <div className="pb-8 pt-[var(--page-top-gap)]">
           <div
             className={clsx(
               'page-grid items-start',
