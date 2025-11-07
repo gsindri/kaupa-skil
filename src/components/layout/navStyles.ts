@@ -21,14 +21,14 @@ export const navTextButtonPillClass = [
   'data-[active=true]:bg-[color:var(--bg-pill-strong)]',
   'aria-[current=true]:bg-[color:var(--bg-pill-strong)]',
   'aria-[current=page]:bg-[color:var(--bg-pill-strong)]',
-  'group-hover:ring-[color:hsl(var(--topbar-ring,0_0%_100%_/_.22))]',
-  'group-focus-visible:ring-[color:hsl(var(--topbar-ring,0_0%_100%_/_.22))]',
-  'group-active:ring-[color:hsl(var(--topbar-ring,0_0%_100%_/_.22))]',
-  'data-[state=open]:ring-[color:hsl(var(--topbar-ring-open,0_0%_100%_/_.32))]',
-  'group-data-[state=open]:ring-[color:hsl(var(--topbar-ring-open,0_0%_100%_/_.32))]',
-  'data-[active=true]:ring-[color:hsl(var(--topbar-ring,0_0%_100%_/_.22))]',
-  'aria-[current=true]:ring-[color:hsl(var(--topbar-ring,0_0%_100%_/_.22))]',
-  'aria-[current=page]:ring-[color:hsl(var(--topbar-ring,0_0%_100%_/_.22))]'
+  'group-hover:ring-[color:hsl(var(--ring,0_0%_100%_/_.22))]',
+  'group-focus-visible:ring-[color:hsl(var(--ring,0_0%_100%_/_.22))]',
+  'group-active:ring-[color:hsl(var(--ring,0_0%_100%_/_.22))]',
+  'data-[state=open]:ring-[color:hsl(var(--ring-open,0_0%_100%_/_.32))]',
+  'group-data-[state=open]:ring-[color:hsl(var(--ring-open,0_0%_100%_/_.32))]',
+  'data-[active=true]:ring-[color:hsl(var(--ring,0_0%_100%_/_.22))]',
+  'aria-[current=true]:ring-[color:hsl(var(--ring,0_0%_100%_/_.22))]',
+  'aria-[current=page]:ring-[color:hsl(var(--ring,0_0%_100%_/_.22))]'
 ].join(' ')
 
 export const navTextButtonFocusRingClass = [
