@@ -5,8 +5,8 @@ html {
 .top-nav-surface,
 .dark .top-nav-surface {
   /* Re-apply translucent halo tokens for the top navigation surface */
-  --ring: 0 0% 100% / 0.22;
-  --ring-open: 0 0% 100% / 0.32;
+  --topbar-ring: 0 0% 100% / 0.22;
+  --topbar-ring-open: 0 0% 100% / 0.32;
 }
 
 :root {
@@ -43,6 +43,8 @@ html {
   --chip-bg: rgba(255, 255, 255, 0.14);
   --chip-bg-hover: rgba(255, 255, 255, 0.18);
   --seg-active-bg: rgba(255, 255, 255, 0.18);
+  --topbar-ring: 0 0% 100% / 0.22;
+  --topbar-ring-open: 0 0% 100% / 0.32;
 
   --ink-hi: #ecf2f8;
   --ink: #eaf0f7;
