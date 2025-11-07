@@ -54,14 +54,7 @@ export default function Dashboard() {
 
   return (
     <ContentRail includeRailPadding={false}>
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
-          <p className="text-muted-foreground">
-            Real-time overview of your wholesale procurement activity
-          </p>
-        </div>
-
+      <div className="space-y-6 pt-4">
         <PostSetupNudge />
 
         <Tabs value={tab} onValueChange={handleTabChange} className="space-y-6">
