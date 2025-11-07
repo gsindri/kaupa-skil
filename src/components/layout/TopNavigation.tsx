@@ -376,7 +376,7 @@ export function TopNavigation() {
             >
               <span
                 aria-hidden="true"
-                className="flex size-7 items-center justify-center rounded-full bg-white/10 text-[color:var(--ink-dim,rgba(236,242,248,0.68))] transition-colors duration-fast ease-snap group-hover:bg-white/15 group-hover:text-[color:var(--ink,rgba(236,242,248,0.88))]"
+                className="flex size-7 items-center justify-center rounded-full bg-white/10 text-[color:var(--ink-dim)] transition-colors duration-fast ease-snap group-hover:bg-white/15 group-hover:text-[color:var(--ink)]"
               >
                 <SearchSoft width={22} height={22} tone={0.18} />
               </span>
@@ -442,7 +442,7 @@ export function TopNavigation() {
                     >
                       <span
                         className={cn(
-                          'size-4 shrink-0 rounded-full border-2 border-[color:var(--ink,rgba(236,242,248,0.88))] border-b-transparent transition-opacity',
+                          'size-4 shrink-0 rounded-full border-2 border-[color:var(--ink)] border-b-transparent transition-opacity',
                           isBusy ? 'animate-spin opacity-100' : 'opacity-0'
                         )}
                       />
@@ -626,7 +626,7 @@ export function TopNavigation() {
               to="/login"
               className={cn(
                 navTextButtonClass,
-                'flex-shrink-0 min-w-[120px] justify-center font-semibold text-[color:var(--ink,rgba(236,242,248,0.88))]'
+                'flex-shrink-0 min-w-[120px] justify-center font-semibold text-[color:var(--ink)]'
               )}
             >
               <span className={navTextButtonPillClass} aria-hidden="true" />

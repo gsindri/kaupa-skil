@@ -1,26 +1,26 @@
 export const navTextButtonClass = [
   'group relative inline-flex h-11 min-h-[44px] min-w-[44px] items-center gap-2 rounded-full px-4 bg-transparent',
-  'text-[14px] font-medium text-[color:var(--nav-text-color,var(--ink-dim,rgba(236,242,248,0.68)))]',
+  'text-[14px] font-medium text-[color:var(--nav-text-color)]',
   'transition-[color,background-color,transform,outline,box-shadow] duration-150 ease-out',
-  'outline-none hover:text-[color:var(--nav-text-strong-color,var(--ink,rgba(236,242,248,0.88)))] focus-visible:text-[color:var(--nav-text-strong-color,var(--ink,rgba(236,242,248,0.88)))]',
+  'outline-none hover:text-[color:var(--nav-text-strong-color)] focus-visible:text-[color:var(--nav-text-strong-color)]',
   'data-[state=open]:font-semibold data-[state=open]:z-[1]',
-  'data-[state=open]:text-[color:var(--nav-text-strong-color,var(--ink,rgba(236,242,248,0.88)))] data-[active=true]:text-[color:var(--nav-text-strong-color,var(--ink,rgba(236,242,248,0.88)))]',
+  'data-[state=open]:text-[color:var(--nav-text-strong-color)] data-[active=true]:text-[color:var(--nav-text-strong-color)]',
   'data-[state=open]:[box-shadow:0_12px_32px_-16px_rgba(15,23,42,0.48),_0_0_0_1px_rgba(255,255,255,0.28)]',
-  'aria-[current=true]:text-[color:var(--nav-text-strong-color,var(--ink,rgba(236,242,248,0.88)))] aria-[current=page]:text-[color:var(--nav-text-strong-color,var(--ink,rgba(236,242,248,0.88)))]'
+  'aria-[current=true]:text-[color:var(--nav-text-strong-color)] aria-[current=page]:text-[color:var(--nav-text-strong-color)]'
 ].join(' ')
 
 export const navTextButtonPillClass = [
   'pointer-events-none absolute inset-0 -z-10 rounded-full',
   'bg-transparent ring-1 ring-inset ring-transparent',
   'transition-[background-color,border-color,box-shadow] duration-150 ease-out',
-  'group-hover:bg-[color:var(--bg-pill,rgba(255,255,255,0.08))]',
-  'group-focus-visible:bg-[color:var(--bg-pill,rgba(255,255,255,0.08))]',
-  'group-active:bg-[color:var(--bg-pill-strong,rgba(255,255,255,0.12))]',
-  'data-[state=open]:bg-[color:var(--bg-pill-open,rgba(255,255,255,0.2))]',
-  'group-data-[state=open]:bg-[color:var(--bg-pill-open,rgba(255,255,255,0.2))]',
-  'data-[active=true]:bg-[color:var(--bg-pill-strong,rgba(255,255,255,0.12))]',
-  'aria-[current=true]:bg-[color:var(--bg-pill-strong,rgba(255,255,255,0.12))]',
-  'aria-[current=page]:bg-[color:var(--bg-pill-strong,rgba(255,255,255,0.12))]',
+  'group-hover:bg-[color:var(--bg-pill)]',
+  'group-focus-visible:bg-[color:var(--bg-pill)]',
+  'group-active:bg-[color:var(--bg-pill-strong)]',
+  'data-[state=open]:bg-[color:var(--bg-pill-open)]',
+  'group-data-[state=open]:bg-[color:var(--bg-pill-open)]',
+  'data-[active=true]:bg-[color:var(--bg-pill-strong)]',
+  'aria-[current=true]:bg-[color:var(--bg-pill-strong)]',
+  'aria-[current=page]:bg-[color:var(--bg-pill-strong)]',
   'group-hover:ring-[color:hsl(var(--ring,0_0%_100%_/_.22))]',
   'group-focus-visible:ring-[color:hsl(var(--ring,0_0%_100%_/_.22))]',
   'group-active:ring-[color:hsl(var(--ring,0_0%_100%_/_.22))]',
@@ -42,25 +42,25 @@ export const navTextIconClass = [
   'size-4 shrink-0 opacity-80',
   'transition-[color,transform] duration-150 ease-out',
   'motion-reduce:transition-none',
-  'group-data-[state=open]:text-[color:var(--nav-text-strong-color,var(--ink,rgba(236,242,248,0.88)))] group-data-[active=true]:text-[color:var(--nav-text-strong-color,var(--ink,rgba(236,242,248,0.88)))]',
-  'group-aria-[current=true]:text-[color:var(--nav-text-strong-color,var(--ink,rgba(236,242,248,0.88)))] group-aria-[current=page]:text-[color:var(--nav-text-strong-color,var(--ink,rgba(236,242,248,0.88)))]'
+  'group-data-[state=open]:text-[color:var(--nav-text-strong-color)] group-data-[active=true]:text-[color:var(--nav-text-strong-color)]',
+  'group-aria-[current=true]:text-[color:var(--nav-text-strong-color)] group-aria-[current=page]:text-[color:var(--nav-text-strong-color)]'
 ].join(' ')
 
 export const navTextCaretClass = [
   navTextIconClass,
-  'text-[color:var(--nav-text-caret-color,var(--nav-text-color,var(--ink-dim,rgba(236,242,248,0.68)))))] group-data-[state=open]:rotate-180'
+  'text-[color:var(--nav-text-caret-color)] group-data-[state=open]:rotate-180'
 ].join(' ')
 
 export const navQuietLinkClass = [
   'group relative inline-flex h-9 min-h-[36px] items-center rounded-full px-2',
-  'text-[14px] font-medium text-[color:var(--ink-dim,rgba(236,242,248,0.68))] transition-colors duration-150 ease-out',
-  'hover:text-[color:var(--ink,rgba(236,242,248,0.88))] focus-visible:text-[color:var(--ink,rgba(236,242,248,0.88))]',
+  'text-[14px] font-medium text-[color:var(--ink-dim)] transition-colors duration-150 ease-out',
+  'hover:text-[color:var(--ink)] focus-visible:text-[color:var(--ink)]',
   'outline-none'
 ].join(' ')
 
 export const navQuietLinkPillClass = [
   'pointer-events-none absolute inset-0 -z-10 rounded-full bg-transparent',
   'transition-[background-color,box-shadow] duration-150 ease-out',
-  'group-hover:bg-[color:var(--bg-pill,rgba(255,255,255,0.08))]',
-  'group-focus-visible:bg-[color:var(--bg-pill,rgba(255,255,255,0.08))]'
+  'group-hover:bg-[color:var(--bg-pill)]',
+  'group-focus-visible:bg-[color:var(--bg-pill)]'
 ].join(' ')
