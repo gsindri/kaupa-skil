@@ -68,10 +68,6 @@ html {
   --ring-idle: rgba(255, 255, 255, 0.1);
   --ring-hover: rgba(255, 255, 255, 0.2);
   --ring: var(--ring-idle);
-
-  /* Top bar specific ring tokens (HSL components for nav styling) */
-  --topbar-ring: 0 0% 100% / 0.22;
-  --topbar-ring-open: 0 0% 100% / 0.32;
   --focus: #28d7ff;
 
   --z-rail: 60;      /* highest - sidebar always on top */
