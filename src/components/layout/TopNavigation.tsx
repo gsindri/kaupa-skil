@@ -378,7 +378,7 @@ export function TopNavigation() {
             >
               <span
                 aria-hidden="true"
-                className="flex size-7 items-center justify-center rounded-full bg-white/10 text-[color:var(--ink)] transition-colors duration-fast ease-snap group-hover:bg-white/15 group-hover:text-[color:var(--ink-hi)]"
+                className="flex size-7 items-center justify-center rounded-full text-[color:var(--ink)] transition-colors duration-fast ease-snap group-hover:text-[color:var(--ink-hi)]"
               >
                 <SearchSoft width={22} height={22} tone={0.25} />
               </span>
