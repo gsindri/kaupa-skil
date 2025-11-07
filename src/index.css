@@ -111,10 +111,15 @@ html { scrollbar-gutter: stable; }
   --header-hidden: 0;
 }
 
+/* Header pseudo-element for subtle backdrop effect */
 #catalogHeader::before,
 [data-app-header="true"]::before {
-  /* Remove pseudo-element overlay that obscured the page */
-  content: none !important;
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at top, rgba(255, 255, 255, 0.03) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: -1;
 }
 
 @media (prefers-reduced-motion: reduce){
@@ -144,41 +149,11 @@ html { scrollbar-gutter: stable; }
   transform: none;
 }
 
-/* Remove any debug outlines or borders from icons and UI elements */
-.nav-icon,
-.nav-icon *,
-[data-nav-icon-scale],
-[data-nav-icon-translate],
-svg.lucide,
-.search-icon,
-.search-icon *,
-button svg,
-button svg * {
-  border: none !important;
-  outline: none !important;
-  box-shadow: none !important;
-}
-
-/* Specifically target search icons to ensure clean rendering */
-[data-testid="search-icon"],
-[data-testid="search-icon"] *,
-.header-search svg,
-.header-search svg *,
-[role="button"] svg,
-[role="button"] svg * {
-  border: none !important;
-  outline: none !important;
-  box-shadow: none !important;
-  background: transparent !important;
-}
-
-/* Remove browser dev tools highlighting */
-*[style*="outline"],
-*[style*="border"]:not(.border-intended),
-.dev-tools-highlight,
-.__web-inspector-hide-shortcut__ {
-  border: none !important;
-  outline: none !important;
-  box-shadow: none !important;
+/* Focus states for accessibility - allow focus rings on interactive elements */
+button:focus-visible,
+a:focus-visible,
+[role="button"]:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
 }
 
