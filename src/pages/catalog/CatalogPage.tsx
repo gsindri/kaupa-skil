@@ -1277,7 +1277,7 @@ export default function CatalogPage() {
               </div>
             )}
 
-            <div className="space-y-6 pb-8 pt-2">
+            <div className="space-y-6 pb-8 pt-[var(--page-top-gap)]">
               {isInitialLoading ? (
                 <div className="flex h-64 items-center justify-center rounded-2xl border border-slate-200 bg-white/90 shadow-sm">
                   <p className="text-sm font-medium text-slate-600">Loading catalog…</p>

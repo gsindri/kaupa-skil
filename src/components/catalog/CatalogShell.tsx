@@ -328,7 +328,7 @@ export function CatalogShell({ mode }: CatalogShellProps) {
                 paddingInline: 'var(--page-gutter)' 
               }}
             >
-              <div className="space-y-5 pb-8 pt-2">
+              <div className="space-y-5 pb-8 pt-[var(--page-top-gap)]">
             {view === 'grid' ? (
               <CatalogGrid
                 containerRef={gridContainerRef}

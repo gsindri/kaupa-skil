@@ -68,6 +68,9 @@
     --sidebar-accent-foreground: var(--sidebar-fg);
     --sidebar-ring: 212 95% 35%;
     
+    /* Layout */
+    --page-top-gap: 0.5rem;
+
     /* Radius */
     --radius: 0.5rem;
     
@@ -112,6 +115,9 @@
     --sidebar-accent: 0 0% 100% / 0.06;
     --sidebar-accent-foreground: var(--sidebar-fg);
     --sidebar-ring: 212 95% 50%;
+
+    /* Layout */
+    --page-top-gap: 0.5rem;
 
     /* Softer borders and shadows */
     --border-soft: hsl(var(--foreground) / 0.15);
