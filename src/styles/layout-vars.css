@@ -2,13 +2,6 @@ html {
   scrollbar-gutter: stable both-edges;
 }
 
-.top-nav-surface,
-.dark .top-nav-surface {
-  /* Translucent halo tokens scoped to the top navigation surface */
-  --topbar-ring: 0 0% 100% / 0.22;
-  --topbar-ring-open: 0 0% 100% / 0.32;
-}
-
 :root {
   --layout-rail: 72px;     /* nav rail width */
   --page-max: 1440px;      /* shared marketing + app max width (matches widened app shell) */
@@ -39,6 +32,8 @@ html {
   /* Visual tokens */
   --topbar-bg: radial-gradient(120% 80% at 0% 0%, #0f2237 0%, #0b1b2e 60%, #0a1930 100%);
   --topbar-overlay: radial-gradient(110% 140% at 30% -40%, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.08) 35%, rgba(8, 20, 36, 0) 70%);
+  --topbar-ring: 0 0% 100% / 0.22;
+  --topbar-ring-open: 0 0% 100% / 0.32;
   --toolbar-bg: rgba(15, 26, 41, 0.88);
   --chip-bg: rgba(255, 255, 255, 0.14);
   --chip-bg-hover: rgba(255, 255, 255, 0.18);
