@@ -65,9 +65,10 @@ html {
   --accent-fill: #e1c182;
   --accent-ink: #242424;
 
-  --ring-idle: rgba(255, 255, 255, 0.1);
-  --ring-hover: rgba(255, 255, 255, 0.2);
-  --ring: var(--ring-idle);
+  --ring-idle: hsl(0 0% 100% / 0.1);
+  --ring-hover: hsl(0 0% 100% / 0.2);
+  --ring: 0 0% 100% / 0.22;
+  --ring-open: 0 0% 100% / 0.32;
   --focus: #28d7ff;
 
   --z-rail: 60;      /* highest - sidebar always on top */
