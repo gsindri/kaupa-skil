@@ -2,6 +2,12 @@ html {
   scrollbar-gutter: stable both-edges;
 }
 
+.top-nav-surface {
+  /* Re-apply translucent halo tokens for the top navigation surface */
+  --ring: 0 0% 100% / 0.22;
+  --ring-open: 0 0% 100% / 0.32;
+}
+
 :root {
   --layout-rail: 72px;     /* nav rail width */
   --page-max: 1440px;      /* shared marketing + app max width (matches widened app shell) */
