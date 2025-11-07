@@ -43,6 +43,7 @@ html {
   --chip-bg: rgba(255, 255, 255, 0.14);
   --chip-bg-hover: rgba(255, 255, 255, 0.18);
   --seg-active-bg: rgba(255, 255, 255, 0.18);
+  /* Top navigation halo HSL components */
   --topbar-ring: 0 0% 100% / 0.22;
   --topbar-ring-open: 0 0% 100% / 0.32;
 
