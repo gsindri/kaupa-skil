@@ -9,9 +9,6 @@ export const navTextButtonClass = [
   'aria-[current=true]:text-[color:var(--nav-text-strong-color)] aria-[current=page]:text-[color:var(--nav-text-strong-color)]'
 ].join(' ')
 
-const navTopbarRing = 'ring-[color:hsl(var(--topbar-ring))]'
-const navTopbarRingOpen = 'ring-[color:hsl(var(--topbar-ring-open))]'
-
 export const navTextButtonPillClass = [
   'pointer-events-none absolute inset-0 -z-10 rounded-full',
   'bg-transparent ring-1 ring-inset ring-transparent',
@@ -24,14 +21,14 @@ export const navTextButtonPillClass = [
   'data-[active=true]:bg-[color:var(--bg-pill-strong)]',
   'aria-[current=true]:bg-[color:var(--bg-pill-strong)]',
   'aria-[current=page]:bg-[color:var(--bg-pill-strong)]',
-  `group-hover:${navTopbarRing}`,
-  `group-focus-visible:${navTopbarRing}`,
-  `group-active:${navTopbarRing}`,
-  `data-[state=open]:${navTopbarRingOpen}`,
-  `group-data-[state=open]:${navTopbarRingOpen}`,
-  `data-[active=true]:${navTopbarRing}`,
-  `aria-[current=true]:${navTopbarRing}`,
-  `aria-[current=page]:${navTopbarRing}`
+  'group-hover:ring-[color:hsl(var(--topbar-ring))]',
+  'group-focus-visible:ring-[color:hsl(var(--topbar-ring))]',
+  'group-active:ring-[color:hsl(var(--topbar-ring))]',
+  'data-[state=open]:ring-[color:hsl(var(--topbar-ring-open))]',
+  'group-data-[state=open]:ring-[color:hsl(var(--topbar-ring-open))]',
+  'data-[active=true]:ring-[color:hsl(var(--topbar-ring))]',
+  'aria-[current=true]:ring-[color:hsl(var(--topbar-ring))]',
+  'aria-[current=page]:ring-[color:hsl(var(--topbar-ring))]'
 ].join(' ')
 
 export const navTextButtonFocusRingClass = [
