@@ -67,14 +67,14 @@ html {
   --filters-scroll-thumb: rgba(255, 255, 255, 0.18);
   --filters-focus: rgba(46, 230, 214, 0.6);
 
-  --accent-fill: #e1c182;
-  --accent-ink: #242424;
+  --nav-accent-fill: #e1c182;
+  --nav-accent-ink: #242424;
 
-  --ring-idle: hsl(0 0% 100% / 0.1);
-  --ring-hover: hsl(0 0% 100% / 0.2);
-  --ring: 0 0% 100% / 0.4;
-  --ring-open: 0 0% 100% / 0.5;
-  --focus: #28d7ff;
+  --nav-ring-idle: rgba(255, 255, 255, 0.1);
+  --nav-ring-hover: rgba(255, 255, 255, 0.2);
+  --nav-ring: rgba(255, 255, 255, 0.4);
+  --nav-ring-open: rgba(255, 255, 255, 0.5);
+  --nav-focus: #28d7ff;
 
   --z-rail: 60;      /* highest - sidebar always on top */
   --z-stripe: 56;    /* cyan stripe above header */
