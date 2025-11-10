@@ -69,8 +69,8 @@ html {
 
   --ring-idle: hsl(0 0% 100% / 0.1);
   --ring-hover: hsl(0 0% 100% / 0.2);
-  --ring: 0 0% 100% / 0.22;
-  --ring-open: 0 0% 100% / 0.32;
+  --ring: 0 0% 100% / 0.4;
+  --ring-open: 0 0% 100% / 0.5;
   --focus: #28d7ff;
 
   --z-rail: 60;      /* highest - sidebar always on top */
