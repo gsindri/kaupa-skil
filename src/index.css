@@ -102,11 +102,11 @@ html { scrollbar-gutter: stable; }
 }
 
 :root {
-  --bg-pill: rgba(255, 255, 255, 0.14);
-  --bg-pill-strong: rgba(255, 255, 255, 0.2);
-  --bg-pill-open: rgba(255, 255, 255, 0.28);
-  --ring: 0 0% 100% / 0.22;
-  --ring-open: 0 0% 100% / 0.32;
+  --bg-pill: rgba(255, 255, 255, 0.28);
+  --bg-pill-strong: rgba(255, 255, 255, 0.4);
+  --bg-pill-open: rgba(255, 255, 255, 0.5);
+  --ring: 0 0% 100% / 0.4;
+  --ring-open: 0 0% 100% / 0.5;
   --accent: 38 92% 50%;
   --header-hidden: 0;
 }
