@@ -53,6 +53,18 @@ export default {
                                'text-subtle': 'var(--text-subtle)',
                                'button-primary': 'var(--button-primary)',
                                'button-primary-hover': 'var(--button-primary-hover)',
+                               // Navigation-specific colors
+                               'nav-text': 'var(--nav-text-color)',
+                               'nav-text-strong': 'var(--nav-text-strong-color)',
+                               'nav-text-caret': 'var(--nav-text-caret-color)',
+                               'ink': 'var(--ink)',
+                               'ink-hi': 'var(--ink-hi)',
+                               'ink-dim': 'var(--ink-dim)',
+                               'bg-pill': 'var(--bg-pill)',
+                               'bg-pill-strong': 'var(--bg-pill-strong)',
+                               'bg-pill-open': 'var(--bg-pill-open)',
+                               'topbar-ring': 'hsl(var(--topbar-ring))',
+                               'topbar-ring-open': 'hsl(var(--topbar-ring-open))',
                                 primary: {
                                         DEFAULT: 'hsl(var(--primary))',
                                         foreground: 'hsl(var(--primary-foreground))',
