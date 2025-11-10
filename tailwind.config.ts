@@ -9,6 +9,31 @@ export default {
 		"./app/**/*.{ts,tsx}",
 		"./src/**/*.{ts,tsx}",
 	],
+	safelist: [
+		// Icon colors
+		'text-ink',
+		'text-ink-hi',
+		'text-ink-dim',
+		'text-nav-text',
+		'text-nav-text-strong',
+		// Hover states
+		'group-hover:text-ink-hi',
+		'group-hover:text-nav-text-strong',
+		// Ring colors for navigation
+		'ring-nav-ring-idle',
+		'ring-nav-ring-hover',
+		'ring-nav-ring',
+		'ring-nav-ring-open',
+		'ring-nav-accent-fill',
+		// Ring hover states
+		'group-hover:ring-nav-ring-hover',
+		'group-active:ring-nav-ring',
+		'group-focus-visible:ring-nav-accent-fill',
+		// Background colors
+		'bg-bg-pill',
+		'bg-bg-pill-strong',
+		'bg-bg-pill-open',
+	],
 	prefix: "",
         theme: {
                 container: {
