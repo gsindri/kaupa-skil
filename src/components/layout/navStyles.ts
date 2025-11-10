@@ -22,7 +22,6 @@ export const navTextButtonPillClass = [
   'aria-[current=true]:bg-[color:var(--bg-pill-strong)]',
   'aria-[current=page]:bg-[color:var(--bg-pill-strong)]',
   'group-hover:ring-[color:hsl(var(--topbar-ring))]',
-  'group-focus-visible:ring-[color:hsl(var(--topbar-ring))]',
   'group-active:ring-[color:hsl(var(--topbar-ring))]',
   'data-[state=open]:ring-[color:hsl(var(--topbar-ring-open))]',
   'group-data-[state=open]:ring-[color:hsl(var(--topbar-ring-open))]',
