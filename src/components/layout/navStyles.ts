@@ -13,14 +13,14 @@ export const navTextButtonPillClass = [
   'pointer-events-none absolute inset-0 -z-10 rounded-full',
   'bg-transparent ring-1 ring-inset ring-transparent',
   'transition-[background-color,border-color,box-shadow] duration-150 ease-out',
-  'group-hover:bg-[color:var(--bg-pill)]',
-  'group-focus-visible:bg-[color:var(--bg-pill)]',
-  'group-active:bg-[color:var(--bg-pill-strong)]',
-  'data-[state=open]:bg-[color:var(--bg-pill-open)]',
-  'group-data-[state=open]:bg-[color:var(--bg-pill-open)]',
-  'data-[active=true]:bg-[color:var(--bg-pill-strong)]',
-  'aria-[current=true]:bg-[color:var(--bg-pill-strong)]',
-  'aria-[current=page]:bg-[color:var(--bg-pill-strong)]',
+  'group-hover:bg-[var(--bg-pill)]',
+  'group-focus-visible:bg-[var(--bg-pill)]',
+  'group-active:bg-[var(--bg-pill-strong)]',
+  'data-[state=open]:bg-[var(--bg-pill-open)]',
+  'group-data-[state=open]:bg-[var(--bg-pill-open)]',
+  'data-[active=true]:bg-[var(--bg-pill-strong)]',
+  'aria-[current=true]:bg-[var(--bg-pill-strong)]',
+  'aria-[current=page]:bg-[var(--bg-pill-strong)]',
   'group-hover:ring-[color:hsl(var(--topbar-ring))]',
   'group-active:ring-[color:hsl(var(--topbar-ring))]',
   'data-[state=open]:ring-[color:hsl(var(--topbar-ring-open))]',
@@ -60,6 +60,6 @@ export const navQuietLinkClass = [
 export const navQuietLinkPillClass = [
   'pointer-events-none absolute inset-0 -z-10 rounded-full bg-transparent',
   'transition-[background-color,box-shadow] duration-150 ease-out',
-  'group-hover:bg-[color:var(--bg-pill)]',
-  'group-focus-visible:bg-[color:var(--bg-pill)]'
+  'group-hover:bg-[var(--bg-pill)]',
+  'group-focus-visible:bg-[var(--bg-pill)]'
 ].join(' ')
