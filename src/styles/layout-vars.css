@@ -32,12 +32,15 @@ html {
   /* Visual tokens */
   --topbar-bg: radial-gradient(120% 80% at 0% 0%, #0f2237 0%, #0b1b2e 60%, #0a1930 100%);
   --topbar-overlay: radial-gradient(110% 140% at 30% -40%, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.08) 35%, rgba(8, 20, 36, 0) 70%);
-  --topbar-ring: 0 0% 100% / 0.22;
-  --topbar-ring-open: 0 0% 100% / 0.32;
+  --topbar-ring: 0 0% 100% / 0.4;
+  --topbar-ring-open: 0 0% 100% / 0.5;
   --toolbar-bg: rgba(15, 26, 41, 0.88);
   --chip-bg: rgba(255, 255, 255, 0.14);
   --chip-bg-hover: rgba(255, 255, 255, 0.18);
   --seg-active-bg: rgba(255, 255, 255, 0.18);
+  --bg-pill: rgba(255, 255, 255, 0.28);
+  --bg-pill-strong: rgba(255, 255, 255, 0.4);
+  --bg-pill-open: rgba(255, 255, 255, 0.5);
 
   --ink-hi: #ecf2f8;
   --ink: #eaf0f7;
