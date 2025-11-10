@@ -626,7 +626,7 @@ export function TopNavigation() {
               to="/login"
               className={cn(
                 navTextButtonClass,
-                'flex-shrink-0 min-w-[120px] justify-center font-semibold text-[color:var(--ink)]'
+                'flex-shrink-0 min-w-[120px] justify-center font-semibold'
               )}
             >
               <span className={navTextButtonPillClass} aria-hidden="true" />

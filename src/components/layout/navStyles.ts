@@ -21,19 +21,19 @@ export const navTextButtonPillClass = [
   'data-[active=true]:bg-bg-pill-strong',
   'aria-[current=true]:bg-bg-pill-strong',
   'aria-[current=page]:bg-bg-pill-strong',
-  'group-hover:ring-[var(--nav-ring-hover)]',
-  'group-active:ring-[var(--nav-ring)]',
-  'data-[state=open]:ring-[var(--nav-ring-open)]',
-  'group-data-[state=open]:ring-[var(--nav-ring-open)]',
-  'data-[active=true]:ring-[var(--nav-ring)]',
-  'aria-[current=true]:ring-[var(--nav-ring)]',
-  'aria-[current=page]:ring-[var(--nav-ring)]'
+  'group-hover:ring-nav-ring-hover',
+  'group-active:ring-nav-ring',
+  'data-[state=open]:ring-nav-ring-open',
+  'group-data-[state=open]:ring-nav-ring-open',
+  'data-[active=true]:ring-nav-ring',
+  'aria-[current=true]:ring-nav-ring',
+  'aria-[current=page]:ring-nav-ring'
 ].join(' ')
 
 export const navTextButtonFocusRingClass = [
   'pointer-events-none absolute inset-0 rounded-full',
   'ring-0 ring-transparent transition duration-150 ease-out',
-  'group-focus-visible:ring-2 group-focus-visible:ring-[var(--nav-accent-fill)]',
+  'group-focus-visible:ring-2 group-focus-visible:ring-nav-accent-fill',
   'group-focus-visible:ring-offset-2 group-focus-visible:ring-offset-transparent'
 ].join(' ')
 
