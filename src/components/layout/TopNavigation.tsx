@@ -344,7 +344,7 @@ export function TopNavigation() {
             <span
               className={cn(
                 'relative hidden max-w-[220px] min-w-0 items-center truncate text-left text-[13px] font-medium text-white/80 md:inline-flex',
-                'before:pointer-events-none before:absolute before:-right-3 before:top-1/2 before:-translate-y-1/2 before:border-y-[6px] before:border-l-[6px] before:border-y-transparent before:border-l-white/20'
+                "before:pointer-events-none before:absolute before:-right-3 before:top-1/2 before:-translate-y-1/2 before:content-[''] before:border-y-[6px] before:border-l-[6px] before:border-y-transparent before:border-l-white/20"
               )}
             >
               <span className="truncate">{t('navigation.search.prompt')}</span>
