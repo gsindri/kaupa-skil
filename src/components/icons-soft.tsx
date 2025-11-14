@@ -17,21 +17,28 @@ const baseStrokeProps = {
   strokeLinejoin: 'round' as const
 }
 
-export function SearchSoft({ tone = 0.12, className, ...props }: SvgProps) {
+export function SearchSoft({ className }: SvgProps) {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-      {...props}
-      className={cn(baseStrokeClass, className)}
-    >
-      <circle cx="12" cy="12" r="5.8" fill="currentColor" opacity={tone} />
-      <circle cx="12" cy="11.95" r="5.8" {...baseStrokeProps} />
-      <path d="M16.3 16.5c2.1 2 3.6 3.5 4.9 4.9" {...baseStrokeProps} />
-      <path d="M9.9 9.2c1.2-.8 2.5-.9 3.6-.6" {...baseStrokeProps} opacity={0.35} />
-    </svg>
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <g transform="rotate(-45 32 32)">
+    <path d="M4 24H10V40H4C2.89543 40 2 39.1046 2 38V26C2 24.8954 2.89543 24 4 24Z" fill="#F5C518" stroke="#2D3748" stroke-width="2"/>
+    
+    <rect x="10" y="26" width="16" height="12" fill="#2D3748" stroke="#2D3748" stroke-width="2"/>
+    
+    <rect x="26" y="25" width="4" height="14" fill="#F5C518" stroke="#2D3748" stroke-width="2"/>
+    
+    <rect x="30" y="22" width="20" height="20" fill="#2D3748" stroke="#2D3748" stroke-width="2"/>
+    
+    <rect x="50" y="18" width="8" height="28" rx="2" fill="#F5C518" stroke="#2D3748" stroke-width="2"/>
+    
+    <ellipse cx="54" cy="32" rx="2" ry="10" fill="#63B3ED"/>
+    
+    <path d="M54 26C54.5 26 55 28 55 30" stroke="white" stroke-width="2" stroke-linecap="round"/>
+  </g>
+</svg>
   )
 }
+
 
 export function GlobeSoft({ tone = 0.1, className, ...props }: SvgProps) {
   return (

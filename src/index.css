@@ -5,9 +5,9 @@
 @import './styles/design-system.css';
 @import './styles/scroll-animations.css';
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
 
 :root{
   --font-ui: "Red Hat Text", system-ui, "Segoe UI", "Roboto", "Arial", sans-serif;
@@ -77,7 +77,8 @@ html, body, #root {
 }
 
 body {
-  @apply m-0 p-0;
+  margin: 0;
+  padding: 0;
   scroll-padding-top: var(--chrome-h);
 }
 
