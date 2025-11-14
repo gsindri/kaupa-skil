@@ -17,9 +17,9 @@ const baseStrokeProps = {
   strokeLinejoin: 'round' as const
 }
 
-export function SearchSoft({ className }: SvgProps) {
+export function SearchSoft({ className, ...props }: SvgProps) {
   return (
-<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" {...props} className={cn(className)}>
   <g transform="rotate(-45 32 32)">
     <path d="M4 24H10V40H4C2.89543 40 2 39.1046 2 38V26C2 24.8954 2.89543 24 4 24Z" fill="#F5C518" stroke="#2D3748" stroke-width="2"/>
     
