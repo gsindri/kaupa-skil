@@ -374,11 +374,13 @@ export function TopNavigation() {
                 'focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-1 focus-visible:ring-offset-transparent',
               )}
             >
-              <span
-                aria-hidden="true"
-                className="flex size-7 items-center justify-center rounded-full text-ink transition-colors duration-fast ease-snap group-hover:text-ink-hi"
-              >
-                <SearchSoft width={22} height={22} tone={0.25} />
+              <span aria-hidden="true" className="flex size-7 items-center justify-center rounded-full">
+                <SearchSoft
+                  width={22}
+                  height={22}
+                  tone={0.25}
+                  className="text-ink transition-colors duration-fast ease-snap group-hover:text-ink-hi"
+                />
               </span>
             </button>
             <span id={searchPromptDescriptionId} className="sr-only">
