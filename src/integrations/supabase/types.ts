@@ -52,7 +52,7 @@ export type Database = {
           entity_id: string | null
           entity_type: string | null
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           meta_data: Json | null
           reason: string | null
           tenant_id: string | null
@@ -65,7 +65,7 @@ export type Database = {
           entity_id?: string | null
           entity_type?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           meta_data?: Json | null
           reason?: string | null
           tenant_id?: string | null
@@ -78,7 +78,7 @@ export type Database = {
           entity_id?: string | null
           entity_type?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           meta_data?: Json | null
           reason?: string | null
           tenant_id?: string | null
@@ -1163,7 +1163,7 @@ export type Database = {
         }[]
       }
       get_user_memberships: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           attrs: Json
           base_role: string
@@ -1172,30 +1172,7 @@ export type Database = {
           tenant_name: string
         }[]
       }
-      gtrgm_compress: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      gtrgm_decompress: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      gtrgm_in: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      gtrgm_options: {
-        Args: { "": unknown }
-        Returns: undefined
-      }
-      gtrgm_out: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      has_active_elevation: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
+      has_active_elevation: { Args: never; Returns: boolean }
       has_capability: {
         Args: {
           cap: string
@@ -1205,18 +1182,9 @@ export type Database = {
         }
         Returns: boolean
       }
-      has_support_session: {
-        Args: { target_tenant: string }
-        Returns: boolean
-      }
-      is_owner: {
-        Args: { _tenant_id: string }
-        Returns: boolean
-      }
-      is_platform_admin: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
+      has_support_session: { Args: { target_tenant: string }; Returns: boolean }
+      is_owner: { Args: { _tenant_id: string }; Returns: boolean }
+      is_platform_admin: { Args: never; Returns: boolean }
       log_audit_event: {
         Args: {
           action_name: string
@@ -1236,10 +1204,7 @@ export type Database = {
         Args: { _days?: number }
         Returns: undefined
       }
-      revoke_elevation: {
-        Args: { elevation_id: string }
-        Returns: boolean
-      }
+      revoke_elevation: { Args: { elevation_id: string }; Returns: boolean }
       search_suppliers: {
         Args: {
           category_ids?: string[]
@@ -1270,30 +1235,14 @@ export type Database = {
           website: string
         }[]
       }
-      set_limit: {
-        Args: { "": number }
-        Returns: number
-      }
-      setup_initial_platform_admin: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
+      setup_initial_platform_admin: { Args: never; Returns: boolean }
       setup_owner_grants: {
         Args: { _membership_id: string }
         Returns: undefined
       }
-      show_limit: {
-        Args: Record<PropertyKey, never>
-        Returns: number
-      }
-      show_trgm: {
-        Args: { "": string }
-        Returns: string[]
-      }
-      trigger_benchmark_computation: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      show_limit: { Args: never; Returns: number }
+      show_trgm: { Args: { "": string }; Returns: string[] }
+      trigger_benchmark_computation: { Args: never; Returns: undefined }
       v_org_catalog: {
         Args: { _org: string }
         Returns: {
