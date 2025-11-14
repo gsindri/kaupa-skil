@@ -19,17 +19,13 @@ const baseStrokeProps = {
 
 export function SearchSoft({ className, ...props }: SvgProps) {
   return (
-    <svg 
-      viewBox="0 0 24 24" 
-      fill="none" 
-      xmlns="http://www.w3.org/2000/svg" 
-      aria-hidden="true" 
-      {...props}
-      className={cn(className)}
+    <span 
+      aria-hidden="true"
+      className={cn('text-3xl', className)}
+      {...props as any}
     >
-      <circle cx="12" cy="12" r="10" fill="#ff0000" stroke="#ffffff" strokeWidth="2"/>
-      <circle cx="12" cy="12" r="5" fill="#ffff00"/>
-    </svg>
+      🔍
+    </span>
   )
 }
 
