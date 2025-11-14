@@ -19,23 +19,17 @@ const baseStrokeProps = {
 
 export function SearchSoft({ className, ...props }: SvgProps) {
   return (
-<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" {...props} className={cn(className)}>
-  <g transform="rotate(-45 32 32)">
-    <path d="M4 24H10V40H4C2.89543 40 2 39.1046 2 38V26C2 24.8954 2.89543 24 4 24Z" fill="#F5C518" stroke="#2D3748" stroke-width="2"/>
-    
-    <rect x="10" y="26" width="16" height="12" fill="#2D3748" stroke="#2D3748" stroke-width="2"/>
-    
-    <rect x="26" y="25" width="4" height="14" fill="#F5C518" stroke="#2D3748" stroke-width="2"/>
-    
-    <rect x="30" y="22" width="20" height="20" fill="#2D3748" stroke="#2D3748" stroke-width="2"/>
-    
-    <rect x="50" y="18" width="8" height="28" rx="2" fill="#F5C518" stroke="#2D3748" stroke-width="2"/>
-    
-    <ellipse cx="54" cy="32" rx="2" ry="10" fill="#63B3ED"/>
-    
-    <path d="M54 26C54.5 26 55 28 55 30" stroke="white" stroke-width="2" stroke-linecap="round"/>
-  </g>
-</svg>
+    <svg 
+      viewBox="0 0 24 24" 
+      fill="none" 
+      xmlns="http://www.w3.org/2000/svg" 
+      aria-hidden="true" 
+      {...props}
+      className={cn(className)}
+    >
+      <circle cx="12" cy="12" r="10" fill="#ff0000" stroke="#ffffff" strokeWidth="2"/>
+      <circle cx="12" cy="12" r="5" fill="#ffff00"/>
+    </svg>
   )
 }
 
