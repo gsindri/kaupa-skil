@@ -21,10 +21,19 @@ export function SearchSoft({ className, ...props }: SvgProps) {
   return (
     <span 
       aria-hidden="true"
-      className={cn('text-3xl', className)}
-      {...props as any}
+      style={{
+        display: 'inline-block',
+        width: '22px',
+        height: '22px',
+        fontSize: '20px',
+        lineHeight: '22px',
+        textAlign: 'center',
+        background: '#ff0000',
+        color: '#ffff00',
+        border: '2px solid #00ff00'
+      }}
     >
-      🔍
+      X
     </span>
   )
 }
