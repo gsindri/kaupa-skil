@@ -18,6 +18,8 @@ const baseStrokeProps = {
 }
 
 export function SearchSoft({ className, ...props }: SvgProps) {
+  console.log('🔍 SearchSoft called with props:', { className, props });
+  
   return (
     <span 
       aria-hidden="true"
