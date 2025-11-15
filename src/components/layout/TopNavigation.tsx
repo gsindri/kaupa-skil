@@ -271,7 +271,7 @@ export function TopNavigation() {
       ref={barRef}
       role="banner"
       className={cn(
-        'relative z-[57] flex items-center py-[2px] text-white top-nav-surface',
+        'relative z-[var(--z-topnav,9999)] flex items-center py-[2px] text-white top-nav-surface',
         scrolled ? 'shadow-lg' : 'shadow-none',
         'transition-[box-shadow] duration-base ease-snap motion-reduce:transition-none'
       )}
