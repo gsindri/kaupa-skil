@@ -366,7 +366,7 @@ export function TopNavigation() {
               }}
               onClick={() => setSearchOpen(true)}
               title={t('navigation.search.title')}
-              className={cn(navTextButtonClass, '!size-11 !min-w-[44px] !px-0')}
+              className={cn(navTextButtonClass, '!px-0')}
             >
               <span className={navTextButtonPillClass} aria-hidden="true" />
               <SearchSoft
