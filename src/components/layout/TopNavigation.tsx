@@ -375,12 +375,7 @@ export function TopNavigation() {
               )}
             >
               <span aria-hidden="true" className="flex size-7 items-center justify-center rounded-full">
-                <SearchSoft
-                  width={22}
-                  height={22}
-                  tone={0.25}
-                  className="text-ink transition-colors duration-fast ease-snap group-hover:text-ink-hi"
-                />
+                <div className="w-6 h-6 rounded-full bg-red-500" />
               </span>
             </button>
             <span id={searchPromptDescriptionId} className="sr-only">
