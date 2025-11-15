@@ -366,22 +366,17 @@ export function TopNavigation() {
               }}
               onClick={() => setSearchOpen(true)}
               title={t('navigation.search.title')}
-              className={cn(
-                'group inline-flex size-11 items-center justify-center rounded-full border border-white/12 bg-[var(--surface-ring)]/70',
-                'text-white/80',
-                'transition-[background-color,border-color] duration-fast ease-snap',
-                'hover:border-white/20 hover:bg-[var(--surface-ring)]/85 hover:text-white/90',
-                'focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-1 focus-visible:ring-offset-transparent',
-              )}
+              className={cn(navTextButtonClass, '!size-11 !min-w-[44px] !px-0')}
             >
-              <span aria-hidden="true" className="flex size-7 items-center justify-center rounded-full">
-                <SearchSoft
-                  width={22}
-                  height={22}
-                  tone={0.25}
-                  className="text-ink transition-colors duration-fast ease-snap group-hover:text-ink-hi"
-                />
-              </span>
+              <span className={navTextButtonPillClass} aria-hidden="true" />
+              <SearchSoft
+                width={22}
+                height={22}
+                tone={0.25}
+                className={cn(navTextIconClass, 'size-5.5')}
+                aria-hidden="true"
+              />
+              <span className={navTextButtonFocusRingClass} aria-hidden="true" />
             </button>
             <span id={searchPromptDescriptionId} className="sr-only">
               {t('navigation.search.button')}
