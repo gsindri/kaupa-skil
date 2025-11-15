@@ -378,10 +378,18 @@ export function TopNavigation() {
                 <div className="w-6 h-6 rounded-full bg-red-500" />
               </span>
             </button>
-            {/* TEST - Simple text to verify rendering */}
-            <div className="text-yellow-500 text-2xl font-bold bg-red-500 p-4 z-[99999]">
-              TEST TEXT HERE
-            </div>
+            {/* TEST 1: Button with inline styles only */}
+            <button style={{ width: '44px', height: '44px', background: '#ff0000', borderRadius: '50%', border: 'none' }}>
+              1
+            </button>
+            {/* TEST 2: Simple Tailwind classes only */}
+            <button className="w-11 h-11 bg-blue-500 rounded-full">
+              2
+            </button>
+            {/* TEST 3: Completely unstyled button */}
+            <button style={{ background: '#00ff00', padding: '10px', color: '#000' }}>
+              TEST3
+            </button>
             <span id={searchPromptDescriptionId} className="sr-only">
               {t('navigation.search.button')}
             </span>
@@ -394,10 +402,10 @@ export function TopNavigation() {
             aria-label="Global actions"
             className="ml-auto flex flex-shrink-0 items-center gap-3.5"
           >
-            {/* TEST - Bright visible element */}
-            <div className="w-16 h-16 bg-yellow-500 border-4 border-red-500 z-[99999] flex items-center justify-center text-black font-bold">
-              NAV
-            </div>
+            {/* TEST 4: Button in nav section with inline styles */}
+            <button style={{ width: '44px', height: '44px', background: '#ffff00', borderRadius: '50%', border: '2px solid #000' }}>
+              4
+            </button>
             <LanguageSwitcher
               className="flex-shrink-0"
               triggerClassName="!px-2.5 md:!px-3.5"
