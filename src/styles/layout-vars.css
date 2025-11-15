@@ -79,7 +79,7 @@ html {
   --z-rail: 60;      /* highest - sidebar always on top */
   --z-topnav: 9999;  /* top navigation above all overlays */
   --z-stripe: 9998;  /* cyan stripe just below top nav */
-  --z-header: 55;    /* header content on top */
+  --z-header: 9999;  /* header wrapper above all overlays */
   --z-chrome: 50;    /* chrome background below header */
   --z-popover: 70;   /* overlay surfaces (menus, popovers) */
   --z-dialog-overlay: 72; /* global dialog overlay layer */
