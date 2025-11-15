@@ -340,7 +340,7 @@ export function TopNavigation() {
             <TenantSwitcher />
           </div>
 
-          <div className="flex flex-1 items-center gap-3" style={{ minWidth: '44px' }}>
+          <div className="flex flex-shrink-0 items-center gap-3" style={{ minWidth: '44px' }}>
             <span
               className={cn(
                 'relative hidden max-w-[220px] min-w-0 items-center truncate text-left text-[13px] font-medium text-white/80 md:inline-flex',
