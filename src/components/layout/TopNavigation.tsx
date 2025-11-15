@@ -378,15 +378,10 @@ export function TopNavigation() {
                 <div className="w-6 h-6 rounded-full bg-red-500" />
               </span>
             </button>
-            {/* TEST BUTTON 1 - After search button (blue) */}
-            <button
-              type="button"
-              className="group inline-flex size-11 items-center justify-center rounded-full border border-white/12 bg-[var(--surface-ring)]/70"
-            >
-              <span aria-hidden="true" className="flex size-7 items-center justify-center rounded-full">
-                <div className="w-6 h-6 rounded-full bg-blue-500" />
-              </span>
-            </button>
+            {/* TEST - Simple text to verify rendering */}
+            <div className="text-yellow-500 text-2xl font-bold bg-red-500 p-4 z-[99999]">
+              TEST TEXT HERE
+            </div>
             <span id={searchPromptDescriptionId} className="sr-only">
               {t('navigation.search.button')}
             </span>
@@ -399,15 +394,10 @@ export function TopNavigation() {
             aria-label="Global actions"
             className="ml-auto flex flex-shrink-0 items-center gap-3.5"
           >
-            {/* TEST BUTTON 2 - In nav section (green) */}
-            <button
-              type="button"
-              className="group inline-flex size-11 items-center justify-center rounded-full border border-white/12 bg-[var(--surface-ring)]/70"
-            >
-              <span aria-hidden="true" className="flex size-7 items-center justify-center rounded-full">
-                <div className="w-6 h-6 rounded-full bg-green-500" />
-              </span>
-            </button>
+            {/* TEST - Bright visible element */}
+            <div className="w-16 h-16 bg-yellow-500 border-4 border-red-500 z-[99999] flex items-center justify-center text-black font-bold">
+              NAV
+            </div>
             <LanguageSwitcher
               className="flex-shrink-0"
               triggerClassName="!px-2.5 md:!px-3.5"
