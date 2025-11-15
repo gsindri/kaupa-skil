@@ -367,10 +367,10 @@ export function TopNavigation() {
               onClick={() => setSearchOpen(true)}
               title={t('navigation.search.title')}
               className={cn(
-                'flex-shrink-0 group inline-flex size-11 items-center justify-center rounded-full border border-white/12 bg-[var(--surface-ring)]/70',
+                'flex-shrink-0 group inline-flex size-11 items-center justify-center rounded-full border border-white/12 bg-white/5',
                 'text-white/80',
                 'transition-[background-color,border-color] duration-fast ease-snap',
-                'hover:border-white/20 hover:bg-[var(--surface-ring)]/85 hover:text-white/90',
+                'hover:border-white/20 hover:bg-white/10 hover:text-white/90',
                 'focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-1 focus-visible:ring-offset-transparent',
               )}
             >
