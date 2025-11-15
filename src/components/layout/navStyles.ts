@@ -14,6 +14,7 @@ export const navTextButtonPillClass = [
   'bg-transparent ring-1 ring-inset ring-transparent',
   'transition-[background-color,border-color,box-shadow] duration-150 ease-out',
   'group-hover:bg-bg-pill',
+  'group-hover:[box-shadow:0_12px_32px_-16px_rgba(15,23,42,0.48),_0_0_0_1px_rgba(255,255,255,0.28)]',
   'group-focus-visible:bg-bg-pill',
   'group-active:bg-bg-pill-strong',
   'data-[state=open]:bg-bg-pill-open',
