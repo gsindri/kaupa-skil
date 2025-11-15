@@ -18,25 +18,18 @@ const baseStrokeProps = {
 }
 
 export function SearchSoft({ className, ...props }: SvgProps) {
-  console.log('🔍 SearchSoft called with props:', { className, props });
-  
   return (
-    <span 
-      aria-hidden="true"
-      style={{
-        display: 'inline-block',
-        width: '22px',
-        height: '22px',
-        fontSize: '20px',
-        lineHeight: '22px',
-        textAlign: 'center',
-        background: '#ff0000',
-        color: '#ffff00',
-        border: '2px solid #00ff00'
-      }}
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      className={cn(baseStrokeClass, className)}
+      {...baseStrokeProps}
+      {...props}
     >
-      X
-    </span>
+      <circle cx="11" cy="11" r="7" />
+      <path d="m21 21-4.35-4.35" />
+    </svg>
   )
 }
 

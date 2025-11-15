@@ -6,7 +6,7 @@ export function AppChrome() {
       {/* Cyan stripe - moves with the chrome */}
       <div
         data-chrome-layer
-        className="absolute top-0 z-[var(--z-stripe,56)] h-[2px] pointer-events-none duration-200 ease-in-out motion-reduce:transition-none"
+        className="absolute top-0 z-[var(--z-stripe,9998)] h-[2px] pointer-events-none duration-200 ease-in-out motion-reduce:transition-none"
         style={{
           left: 0,
           right: 0,
