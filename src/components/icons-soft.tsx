@@ -17,7 +17,7 @@ const baseStrokeProps = {
   strokeLinejoin: 'round' as const
 }
 
-export function SearchSoft({ className, ...props }: SvgProps) {
+export function SearchSoft({ tone = 0.12, className, ...props }: SvgProps) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -27,6 +27,7 @@ export function SearchSoft({ className, ...props }: SvgProps) {
       {...baseStrokeProps}
       {...props}
     >
+      <circle cx="12" cy="12" r="8" fill="currentColor" opacity={tone} />
       <circle cx="11" cy="11" r="7" />
       <path d="m21 21-4.35-4.35" />
     </svg>
