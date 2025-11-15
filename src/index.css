@@ -134,7 +134,7 @@ html { scrollbar-gutter: stable; }
   width: 100%;
   left: 0;
   right: 0;
-  z-index: var(--z-header, 55);
+  z-index: 55;
 }
 
 /* Nested header fragments (like TopNavigation) should flow with the parent */

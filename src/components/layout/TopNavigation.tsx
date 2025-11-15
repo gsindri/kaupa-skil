@@ -271,7 +271,7 @@ export function TopNavigation() {
       ref={barRef}
       role="banner"
       className={cn(
-        'relative z-[var(--z-topnav,9999)] flex items-center py-[2px] text-white top-nav-surface',
+        'relative z-[57] flex items-center py-[2px] text-white top-nav-surface',
         scrolled ? 'shadow-lg' : 'shadow-none',
         'transition-[box-shadow] duration-base ease-snap motion-reduce:transition-none'
       )}
@@ -340,7 +340,7 @@ export function TopNavigation() {
             <TenantSwitcher />
           </div>
 
-          <div className="flex flex-shrink-0 items-center gap-3" style={{ minWidth: '44px' }}>
+          <div className="flex min-w-0 flex-1 items-center gap-3">
             <span
               className={cn(
                 'relative hidden max-w-[220px] min-w-0 items-center truncate text-left text-[13px] font-medium text-white/80 md:inline-flex',
@@ -366,11 +366,22 @@ export function TopNavigation() {
               }}
               onClick={() => setSearchOpen(true)}
               title={t('navigation.search.title')}
-              className={navTextButtonClass}
+              className={cn(
+                'group inline-flex size-11 items-center justify-center rounded-full border border-white/12 bg-[var(--surface-ring)]/70',
+                'text-white/80',
+                'transition-[background-color,border-color] duration-fast ease-snap',
+                'hover:border-white/20 hover:bg-[var(--surface-ring)]/85 hover:text-white/90',
+                'focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-1 focus-visible:ring-offset-transparent',
+              )}
             >
-              <span className={navTextButtonPillClass} aria-hidden="true" />
-              <span className={navTextButtonFocusRingClass} aria-hidden="true" />
-              <SearchSoft className={navTextIconClass} />
+              <span aria-hidden="true" className="flex size-7 items-center justify-center rounded-full">
+                <SearchSoft
+                  width={22}
+                  height={22}
+                  tone={0.25}
+                  className="text-ink transition-colors duration-fast ease-snap group-hover:text-ink-hi"
+                />
+              </span>
             </button>
             <span id={searchPromptDescriptionId} className="sr-only">
               {t('navigation.search.button')}
