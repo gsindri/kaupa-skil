@@ -378,6 +378,15 @@ export function TopNavigation() {
                 <div className="w-6 h-6 rounded-full bg-red-500" />
               </span>
             </button>
+            {/* TEST BUTTON 1 - After search button (blue) */}
+            <button
+              type="button"
+              className="group inline-flex size-11 items-center justify-center rounded-full border border-white/12 bg-[var(--surface-ring)]/70"
+            >
+              <span aria-hidden="true" className="flex size-7 items-center justify-center rounded-full">
+                <div className="w-6 h-6 rounded-full bg-blue-500" />
+              </span>
+            </button>
             <span id={searchPromptDescriptionId} className="sr-only">
               {t('navigation.search.button')}
             </span>
@@ -390,6 +399,15 @@ export function TopNavigation() {
             aria-label="Global actions"
             className="ml-auto flex flex-shrink-0 items-center gap-3.5"
           >
+            {/* TEST BUTTON 2 - In nav section (green) */}
+            <button
+              type="button"
+              className="group inline-flex size-11 items-center justify-center rounded-full border border-white/12 bg-[var(--surface-ring)]/70"
+            >
+              <span aria-hidden="true" className="flex size-7 items-center justify-center rounded-full">
+                <div className="w-6 h-6 rounded-full bg-green-500" />
+              </span>
+            </button>
             <LanguageSwitcher
               className="flex-shrink-0"
               triggerClassName="!px-2.5 md:!px-3.5"
