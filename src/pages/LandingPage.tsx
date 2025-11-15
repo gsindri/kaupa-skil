@@ -4,6 +4,7 @@ import { Navigate, Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { PublicNavigation } from '@/components/layout/PublicNavigation'
 import { CatalogGridWrapper } from '@/components/landing/CatalogGridWrapper'
+import FloatingLines from '@/components/effects/FloatingLines'
 
 import { cn } from '@/lib/utils'
 import { useHeaderScrollHide } from '@/components/layout/useHeaderScrollHide'
@@ -84,6 +85,26 @@ export default function LandingPage() {
               background: 'linear-gradient(135deg, #F9FAFB 0%, #F4F6FB 45%, #E8EDF5 100%)'
             }}
           />
+
+          {/* Floating Lines Effect */}
+          <div className="absolute inset-0">
+            <FloatingLines 
+              enabledWaves={['top', 'middle', 'bottom']}
+              lineCount={[8, 12, 15]}
+              lineDistance={[6, 5, 4]}
+              topWavePosition={{ x: 10.0, y: 0.5, rotate: -0.4 }}
+              middleWavePosition={{ x: 5.0, y: 0.0, rotate: 0.2 }}
+              bottomWavePosition={{ x: 2.0, y: -0.7, rotate: 0.4 }}
+              animationSpeed={0.8}
+              interactive={true}
+              bendRadius={5.0}
+              bendStrength={-0.5}
+              parallax={true}
+              parallaxStrength={0.15}
+              mixBlendMode="screen"
+              linesGradient={['#E8EDF5', '#F4F6FB', '#FFFFFF']}
+            />
+          </div>
 
           {/* Grid overlay with radial fade */}
           <div
