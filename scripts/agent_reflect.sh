@@ -138,6 +138,7 @@ manifest_path = pathlib.Path(sys.argv[4])
 repo_name = os.path.basename(repo_dir)
 
 matched = []
+
 for path in sessions.rglob('*.jsonl'):
     try:
         blob = path.read_text('utf-8', errors='ignore')
@@ -145,6 +146,11 @@ for path in sessions.rglob('*.jsonl'):
         continue
     if repo_dir in blob or repo_name in blob:
         matched.append(path)
+
+# Fallback: if no sessions explicitly mention this repo, include all sessions.
+if not matched:
+    matched = list(sessions.rglob('*.jsonl'))
+
 
 def to_text(payload):
     if isinstance(payload, str):
