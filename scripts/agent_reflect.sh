@@ -54,7 +54,7 @@ die() { printf "error: %s\n" "$*" >&2; exit 1; }
 need() { command -v "$1" >/dev/null 2>&1 || die "missing dependency: $1"; }
 
 abspath() {
-  python3 - <<'PY' "$1"
+  "$PYTHON" - <<'PY' "$1"
 import os, sys
 print(os.path.abspath(os.path.expanduser(sys.argv[1])))
 PY
@@ -103,9 +103,10 @@ done
 
 [ -n "$REPO_ARG" ] || { usage; exit 1; }
 
-need python3
+need py
 need codex
 CODEX=(codex --dangerously-bypass-approvals-and-sandbox)
+PYTHON=py
 
 REPO_DIR=$(resolve_repo "$REPO_ARG")
 REPO_NAME=$(basename "$REPO_DIR")
@@ -127,7 +128,7 @@ echo "== Stage 1: collecting user-only transcripts into $CORPUS_DIR"
 rm -rf "$CORPUS_DIR"
 mkdir -p "$CORPUS_DIR"
 
-python3 - "$SESSIONS_DIR" "$REPO_DIR" "$CORPUS_DIR" "$MANIFEST" <<'PY'
+"$PYTHON" - "$SESSIONS_DIR" "$REPO_DIR" "$CORPUS_DIR" "$MANIFEST" <<'PY'
 import json, os, sys, datetime, pathlib
 
 sessions = pathlib.Path(sys.argv[1]).expanduser()
@@ -225,7 +226,7 @@ print(f"Matched {len(manifest)} sessions / {total_msgs} user messages -> {out_ro
 PY
 
 echo "== Stage 2A: generating meta reflection -> $REFLECTION_MD"
-ANALYSIS_PROMPT_TEMPLATE="$ANALYSIS_PROMPT_TEMPLATE" python3 - "$REPO_DIR" "$CORPUS_DIR" "$MANIFEST" "$AGENTS_FILE" <<'PY' |
+ANALYSIS_PROMPT_TEMPLATE="$ANALYSIS_PROMPT_TEMPLATE" "$PYTHON" - "$REPO_DIR" "$CORPUS_DIR" "$MANIFEST" "$AGENTS_FILE" <<'PY' |
 "${CODEX[@]}" exec -C "$REPO_DIR" - > "$REFLECTION_MD"
 import os, sys
 template = os.environ["ANALYSIS_PROMPT_TEMPLATE"]
