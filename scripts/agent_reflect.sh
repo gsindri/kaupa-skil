@@ -67,14 +67,27 @@ slugify() {
 resolve_repo() {
   local arg="$1" cand
   [ -n "$arg" ] || die "missing repo argument"
+
+  # Special-case '.' so this works reliably in Git Bash on Windows,
+  # where python's abspath returns Windows-style paths that `test -d` can't use.
+  case "$arg" in
+    .|./)
+      printf "%s" "$PWD"
+      return
+      ;;
+  esac
+
   cand=$(abspath "$arg" 2>/dev/null || true)
   if [ -n "$cand" ] && [ -d "$cand" ]; then printf "%s" "$cand"; return; fi
+
   for base in "$PWD" "$HOME/Desktop/Development" "$HOME/Development" "$HOME/Desktop" "$HOME/code" "$HOME/projects" "$HOME"; do
     cand=$(abspath "$base/$arg" 2>/dev/null || true)
     if [ -n "$cand" ] && [ -d "$cand" ]; then printf "%s" "$cand"; return; fi
   done
+
   die "could not find repo directory for '$arg'"
 }
+
 
 REPO_ARG=""
 AUTO=0
