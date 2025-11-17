@@ -29,30 +29,45 @@ EOF
 ANALYSIS_PROMPT_TEMPLATE=$(cat <<'PROMPT'
 You are running a short "agent reflection" pass for the repo at __REPO_DIR__.
 
-Artifacts already prepared for you:
+Artifacts:
 - User-only Codex transcripts live under __CORPUS_DIR__. Each .txt file includes metadata plus numbered user messages [0001], [0002], etc.
 - The manifest at __MANIFEST__ lists every transcript with counts.
-- Current guardrails live in AGENTS.md at __AGENTS_FILE__. Do not edit files; just read them for context.
+- Current guardrails live in AGENTS.md at __AGENTS_FILE__.
 
-Deliverable:
-Produce a Markdown memo with the following sections:
-1. Repeated Expectations — bullet the strongest recurring instructions the user gives agents. Cite transcripts as <relative/path.txt>:[0007].
-2. Meta Themes — describe how the user wants the repo developed (tooling stance, UX tone, logging habits, etc.). Tie every claim to at least one transcript citation.
-3. Debugging Expectations & Missing Directions — summarize exactly how the user tells agents to debug (tools, logs, comparisons, UX replays) and call out any repeated "missing" instructions they keep asking to see documented. Cite transcripts for every point.
-4. Change Directions for AGENTS.md — list the categories of edits the user routinely asks for. Reference both the transcripts and any relevant spots in AGENTS.md (cite as AGENTS.md:#Lxx if helpful). Do not propose wording yet; just explain the intent.
+Task:
+Write a Markdown memo with these sections:
+
+1. Repeated Expectations
+   - Bullet the strongest recurring instructions the user gives agents.
+   - Cite transcripts as <relative/path.txt>:[0007].
+
+2. Meta Themes
+   - Describe how the user wants the repo developed (tooling stance, UX tone, logging habits, etc.).
+   - Tie every claim to at least one transcript citation.
+
+3. Debugging Expectations and Missing Directions
+   - Summarize how the user tells agents to debug (tools, logs, comparisons, UX replays).
+   - Call out any repeated "missing" instructions they keep asking to see documented.
+   - Cite transcripts for every point.
+
+4. Change Directions for AGENTS.md
+   - List the categories of edits the user routinely asks for.
+   - Reference both the transcripts and AGENTS.md (cite as AGENTS.md:#Lxx when helpful).
+   - Do not propose wording yet; just explain the intent.
 
 Guidelines:
 - Only summarize user-authored content from the transcripts.
 - Treat the memo as guidance for another agent who will later rewrite AGENTS.md.
 - Keep the tone direct and practical.
-- You may run read-only shell commands (cat/sed/rg) to inspect transcripts, but do not modify files.
-- Pay special attention to debugging workflows plus any repeated user complaints about missing guidance.
+- You may run read-only shell commands (cat, sed, rg) to inspect transcripts, but do not modify files.
+- Pay special attention to debugging workflows and repeated user complaints about missing guidance.
 PROMPT
 )
 
 die() { printf "error: %s\n" "$*" >&2; exit 1; }
 need() { command -v "$1" >/dev/null 2>&1 || die "missing dependency: $1"; }
 
+# abspath uses the configured $PYTHON (set later) so it works with Windows `py`
 abspath() {
   "$PYTHON" - <<'PY' "$1"
 import os, sys
@@ -68,8 +83,7 @@ resolve_repo() {
   local arg="$1" cand
   [ -n "$arg" ] || die "missing repo argument"
 
-  # Special-case '.' so this works reliably in Git Bash on Windows,
-  # where python's abspath returns Windows-style paths that `test -d` can't use.
+  # Special-case '.' so this works reliably in Git Bash on Windows.
   case "$arg" in
     .|./)
       printf "%s" "$PWD"
@@ -78,16 +92,21 @@ resolve_repo() {
   esac
 
   cand=$(abspath "$arg" 2>/dev/null || true)
-  if [ -n "$cand" ] && [ -d "$cand" ]; then printf "%s" "$cand"; return; fi
+  if [ -n "$cand" ] && [ -d "$cand" ]; then
+    printf "%s" "$cand"
+    return
+  fi
 
   for base in "$PWD" "$HOME/Desktop/Development" "$HOME/Development" "$HOME/Desktop" "$HOME/code" "$HOME/projects" "$HOME"; do
     cand=$(abspath "$base/$arg" 2>/dev/null || true)
-    if [ -n "$cand" ] && [ -d "$cand" ]; then printf "%s" "$cand"; return; fi
+    if [ -n "$cand" ] && [ -d "$cand" ]; then
+      printf "%s" "$cand"
+      return
+    fi
   done
 
   die "could not find repo directory for '$arg'"
 }
-
 
 REPO_ARG=""
 AUTO=0
@@ -103,6 +122,7 @@ done
 
 [ -n "$REPO_ARG" ] || { usage; exit 1; }
 
+# Use the Windows Python launcher
 need py
 need codex
 CODEX=(codex --dangerously-bypass-approvals-and-sandbox)
@@ -139,18 +159,19 @@ repo_name = os.path.basename(repo_dir)
 
 matched = []
 
-for path in sessions.rglob('*.jsonl'):
+# Look for any JSON-ish session files
+for path in sessions.rglob("*.json*"):
     try:
-        blob = path.read_text('utf-8', errors='ignore')
+        blob = path.read_text("utf-8", errors="ignore")
     except Exception:
         continue
+    # Prefer sessions that mention this repo by path or name
     if repo_dir in blob or repo_name in blob:
         matched.append(path)
 
 # Fallback: if no sessions explicitly mention this repo, include all sessions.
 if not matched:
-    matched = list(sessions.rglob('*.jsonl'))
-
+    matched = list(sessions.rglob("*.json*"))
 
 def to_text(payload):
     if isinstance(payload, str):
@@ -179,9 +200,10 @@ total_msgs = 0
 for src in sorted(matched):
     user_msgs = []
     try:
-        lines = src.read_text('utf-8', errors='ignore').splitlines()
+        lines = src.read_text("utf-8", errors="ignore").splitlines()
     except Exception:
         continue
+
     for line in lines:
         line = line.strip()
         if not line:
@@ -190,15 +212,68 @@ for src in sorted(matched):
             evt = json.loads(line)
         except Exception:
             continue
-        role = evt.get('role') or (evt.get('message') or {}).get('role')
-        if role != 'user':
+
+        # Look for nested payload structure (Codex sessions)
+        payload = evt.get("payload")
+        if not isinstance(payload, dict):
+            payload = {}
+
+        msg_obj = evt.get("message")
+        if not isinstance(msg_obj, dict):
+            msg_obj = payload.get("message")
+            if not isinstance(msg_obj, dict):
+                msg_obj = {}
+
+        # Role: check top-level, nested message, or payload.role
+        role = (
+            evt.get("role")
+            or msg_obj.get("role")
+            or payload.get("role")
+        )
+        # Prefer user messages, but allow missing role
+        if role and role != "user":
             continue
-        content = evt.get('content') or evt.get('text') or (evt.get('message') or {}).get('content') or evt.get('input')
-        text = to_text(content).rstrip()
-        ts = evt.get('ts') or evt.get('timestamp') or evt.get('time')
+
+        # Extract content from a few possible shapes:
+        content = None
+
+        # Simple top-level fields
+        for key in ("content", "text", "input"):
+            if key in evt and evt[key]:
+                content = evt[key]
+                break
+
+        # Nested message content (if message is a dict)
+        if content is None and "content" in msg_obj and msg_obj["content"]:
+            content = msg_obj["content"]
+
+        # payload.message as a plain string
+        if content is None and isinstance(payload.get("message"), str):
+            content = payload["message"]
+
+        # payload.content as a list of segments with .text
+        if content is None and isinstance(payload.get("content"), list):
+            segments = []
+            for seg in payload["content"]:
+                if isinstance(seg, dict):
+                    t = seg.get("text") or seg.get("content") or seg.get("message")
+                    if isinstance(t, str):
+                        segments.append(t)
+            if segments:
+                content = " ".join(segments)
+
+        # Turn whatever we found into plain text
+        text = to_text(content).strip()
+        # Filter out empties and literal "null"
+        if not text or text.lower() == "null":
+            continue
+
+        ts = evt.get("ts") or evt.get("timestamp") or evt.get("time")
         user_msgs.append((to_iso(ts), text))
+
     if not user_msgs:
         continue
+
     rel = src.relative_to(sessions)
     parts = rel.parts
     if len(parts) >= 4:
@@ -206,35 +281,51 @@ for src in sorted(matched):
     else:
         out_dir = out_root
     out_dir.mkdir(parents=True, exist_ok=True)
-    out_file = out_dir / (src.stem + '.txt')
-    with out_file.open('w', encoding='utf-8') as fh:
+    out_file = out_dir / (src.stem + ".txt")
+
+    with out_file.open("w", encoding="utf-8") as fh:
         fh.write(f"source={src}\nrepo={repo_dir}\nsession={src.stem}\nmessages={len(user_msgs)}\n---\n")
         for idx, (ts, text) in enumerate(user_msgs, 1):
             fh.write(f"[{idx:04d}] {ts}\n{text}\n\n")
+
     manifest.append({
         "session": src.stem,
         "source_log": str(src),
         "transcript": str(out_file.relative_to(out_root)),
-        "user_message_count": len(user_msgs)
+        "user_message_count": len(user_msgs),
     })
     total_msgs += len(user_msgs)
 
 if not manifest:
-    manifest_path.write_text(json.dumps({"repo": repo_dir, "sessions": []}, indent=2), encoding='utf-8')
-    sys.exit("No Codex sessions referenced the target repo. Nothing to reflect on.")
+    manifest_path.write_text(json.dumps({"repo": repo_dir, "sessions": []}, indent=2), encoding="utf-8")
+    sys.exit("No Codex sessions with user messages were found under the sessions directory.")
 
-manifest_path.write_text(json.dumps({"repo": repo_dir, "sessions": manifest}, indent=2), encoding='utf-8')
+manifest_path.write_text(json.dumps({"repo": repo_dir, "sessions": manifest}, indent=2), encoding="utf-8")
 
-readme = out_root / 'README.md'
-readme.write_text(f"""Repo-specific Codex user transcripts\n\n- Repo: {repo_dir}\n- Source logs: {sessions}\n- Transcript root: {out_root}\n\nEach transcript lists user-only messages with counters like [0001].\nWhen citing, use <relative transcript path>:[0001] to point at a message.\nManifest file: manifest.json\n""", encoding='utf-8')
+readme = out_root / "README.md"
+readme.write_text(
+    f"Repo-specific Codex user transcripts\n\n"
+    f"- Repo: {repo_dir}\n"
+    f"- Source logs: {sessions}\n"
+    f"- Transcript root: {out_root}\n\n"
+    f"Each transcript lists user-only (or role-less) messages with counters like [0001].\n"
+    f"When citing, use <relative transcript path>:[0001] to point at a message.\n"
+    f"Manifest file: manifest.json\n",
+    encoding="utf-8",
+)
 
-print(f"Matched {len(manifest)} sessions / {total_msgs} user messages -> {out_root}")
+print(f"Matched {len(manifest)} sessions / {total_msgs} messages -> {out_root}")
 PY
 
+
 echo "== Stage 2A: generating meta reflection -> $REFLECTION_MD"
-ANALYSIS_PROMPT_TEMPLATE="$ANALYSIS_PROMPT_TEMPLATE" "$PYTHON" - "$REPO_DIR" "$CORPUS_DIR" "$MANIFEST" "$AGENTS_FILE" <<'PY' |
-"${CODEX[@]}" exec -C "$REPO_DIR" - > "$REFLECTION_MD"
+ANALYSIS_PROMPT_TEMPLATE="$ANALYSIS_PROMPT_TEMPLATE" "$PYTHON" - "$REPO_DIR" "$CORPUS_DIR" "$MANIFEST" "$AGENTS_FILE" <<'PY' | "${CODEX[@]}" exec -C "$REPO_DIR" - > "$REFLECTION_MD"
 import os, sys
+
+# Make sure stdout is UTF-8 so downstream consumer sees valid bytes
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
+
 template = os.environ["ANALYSIS_PROMPT_TEMPLATE"]
 replacements = {
     "__REPO_DIR__": sys.argv[1],
@@ -282,7 +373,7 @@ You now need to update AGENTS.md at ${AGENTS_FILE} using the detailed plan store
 Process:
 1. Read ${IMPROV_MD} and the transcript corpus under ${CORPUS_DIR} so you fully understand each recommended change.
 2. Update only AGENTS.md, inserting the new language exactly where specified (create new subsections if needed). Preserve existing guidance that still applies.
-3. After editing, show a concise `git diff AGENTS.md` so the operator can review.
+3. After editing, show a concise \`git diff AGENTS.md\` so the operator can review.
 4. Do not touch other files; respect the backup already saved at ${BACKUP_AGENTS}.
 
 Finish when AGENTS.md reflects every recommendation from ${IMPROV_MD}.
