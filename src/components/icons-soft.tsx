@@ -17,69 +17,50 @@ const baseStrokeProps = {
   strokeLinejoin: 'round' as const
 }
 
-export function SearchSoft({ className, ...props }: SvgProps) {
+export function SearchSoft({ className, tone, ...props }: SvgProps) {
   return (
     <svg 
-      viewBox="0 0 100 100" 
       xmlns="http://www.w3.org/2000/svg" 
+      viewBox="0 0 24 24" 
       role="img" 
       aria-labelledby="searchIconTitle"
       aria-hidden="true"
-      {...props} 
+      strokeLinecap="round" 
+      strokeLinejoin="round"
+      {...props}
       className={cn(className)}
     >
-      <title id="searchIconTitle">High-Quality Search Icon</title>
-
+      <title id="searchIconTitle">Search Icon</title>
+      
+      <style>
+        {`@media (prefers-reduced-motion: reduce) {
+          #search-shine animate { display: none; }
+        }`}
+      </style>
+      
       <defs>
-        <radialGradient id="lensGradient" cx="50%" cy="50%" r="50%" fx="30%" fy="30%">
-          <stop offset="0%" style={{stopColor:'#EBF8FF', stopOpacity:1}} />
-          <stop offset="100%" style={{stopColor:'#63B3ED', stopOpacity:1}} />
-        </radialGradient>
-        
-        <linearGradient id="metalGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" style={{stopColor:'#F7FAFC', stopOpacity:1}} />
-          <stop offset="100%" style={{stopColor:'#A0AEC0', stopOpacity:1}} />
+        <linearGradient id="search-shine" x1="0%" y1="0%" x2="200%" y2="0%">
+          <stop offset="0%" style={{stopColor:'#3B82F6', stopOpacity:1}} />
+          <stop offset="50%" style={{stopColor:'#93C5FD', stopOpacity:1}} />
+          <stop offset="100%" style={{stopColor:'#3B82F6', stopOpacity:1}} />
+          
+          <animate 
+            attributeName="x1" 
+            from="-100%" 
+            to="100%" 
+            dur="1.5s" 
+            repeatCount="indefinite" />
+          <animate 
+            attributeName="x2" 
+            from="0%" 
+            to="200%" 
+            dur="1.5s" 
+            repeatCount="indefinite" />
         </linearGradient>
-        
-        <radialGradient id="sparkleGradient" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
-          <stop offset="0%" style={{stopColor:'#FEFCBF', stopOpacity:1}} />
-          <stop offset="100%" style={{stopColor:'#F6E05E', stopOpacity:0}} />
-        </radialGradient>
-
-        <path id="star-shape" d="M 0 -7 L 2 -2 L 7 0 L 2 2 L 0 7 L -2 2 L -7 0 L -2 -2 Z" />
       </defs>
-
-      <g id="magnifying-glass-premium">
-        <line x1="66" y1="66" x2="95" y2="95" 
-              stroke="url(#metalGradient)" 
-              strokeWidth="12" 
-              strokeLinecap="round" />
-        
-        <circle cx="45" cy="45" r="30" fill="url(#lensGradient)" />
-        
-        <path d="M 30,30 A 20 20, 0, 0, 1, 50 30" 
-              fill="none" 
-              stroke="rgba(255, 255, 255, 0.5)" 
-              strokeWidth="3" 
-              strokeLinecap="round" />
-
-        <circle cx="45" cy="45" r="30" 
-                fill="none" 
-                stroke="url(#metalGradient)" 
-                strokeWidth="12" />
-      </g>
-
-      <g className="hover-stars">
-        <g transform="translate(78 18) scale(1)">
-          <use href="#star-shape" fill="url(#sparkleGradient)" transform="scale(1.5)" />
-          <use href="#star-shape" fill="#F6E05E" />
-        </g>
-        
-        <g transform="translate(90 32) scale(0.7)">
-          <use href="#star-shape" fill="url(#sparkleGradient)" transform="scale(1.5)" />
-          <use href="#star-shape" fill="#F6E05E" />
-        </g>
-      </g>
+      
+      <circle cx="11" cy="11" r="8" fill="url(#search-shine)" stroke="none"/>
+      <path d="m21 21-4.34-4.34" stroke="#3B82F6" strokeWidth="3" />
     </svg>
   )
 }
