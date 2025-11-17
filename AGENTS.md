@@ -91,6 +91,7 @@ run successfully without extra manual steps.
     - Backgrounds: `bg-surface-pop`, `bg-surface-ring`, `bg-pill`
     - Navigation: `text-nav-text`, `text-nav-text-strong`
   - Prefer Tailwind classes wired to CSS variables over raw hex values.
+  - For header/nav icons that rely on `currentColor`, set `text-ink`/`text-[color:var(--ink)]` (and `group-hover:text-ink-hi` if needed) directly on the SVG; avoid inheriting `text-white/80` from parents so icons stay visible on dark surfaces.
 
 - Behavior:
   - Preserve sticky headers and stable top bars.
@@ -112,6 +113,8 @@ When something seems wrong (alignment, colors, behavior):
   - Tailwind classes in JSX/TSX.
   - Generated CSS (search for the relevant class).
   - Component props and conditional rendering.
+- If a style seems missing, confirm Tailwind actually emitted the utility (inspect compiled CSS/build output). When elements disappear, inspect stacking contexts/overlays (including DragOverlay or parent z-index/filters) in DevTools before changing colors.
+- For header/nav regressions, reproduce through the public "Explore catalog" flow (unauthenticated) to validate visibility/hover behavior.
 - Identify the root cause (which component / token / CSS rule).
 - Then propose a targeted change and explain:
   - Why it fixes the issue.
@@ -152,6 +155,7 @@ Guidelines:
 - Comments:
   - Keep comments and docs professional and to the point.
   - Preserve comments that explain non-obvious behavior or layout hacks.
+- When the user supplies a doc template (title, target length, required sections), follow it exactly--keep to 200-400 words, professional tone, and include the specified sections (project structure, build/test commands, coding style, testing, commit/PR guidelines) unless told otherwise.
 
 - Ambiguity:
   - Prefer the simplest, least destructive solution.
