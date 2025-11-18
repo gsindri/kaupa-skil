@@ -104,15 +104,15 @@ function OrderControlCard({ cartCount, cartTotal }: { cartCount: number; cartTot
             </div>
 
             <div className="grid grid-cols-2 gap-6 sm:gap-10">
-              <HeroMetric value={cartCount.toString()} label="in cart" />
-              <HeroMetric value={cartTotal} label="total" />
+              <HeroMetric value={cartCount.toString()} label="IN CART" />
+              <HeroMetric value={cartTotal} label="TOTAL" />
             </div>
           </div>
 
           <div className="grid w-full grid-cols-1 gap-3 sm:grid-cols-3 lg:max-w-md">
-            <HeroAction to="/catalog" icon={Plus} label="New" />
-            <HeroAction to="/dashboard/orders" icon={History} label="Last order" />
-            <HeroAction to="/dashboard/pantry" icon={ListChecks} label="From list" />
+            <HeroAction to="/catalog" icon={Plus} label="NEW" />
+            <HeroAction to="/dashboard/orders" icon={History} label="LAST ORDER" />
+            <HeroAction to="/dashboard/pantry" icon={ListChecks} label="FROM LIST" />
           </div>
         </div>
       </CardContent>
@@ -181,9 +181,9 @@ function MetricsCard({ metrics, sparkline }: { metrics: ActivityMetrics; sparkli
         </div>
 
         <div className="grid gap-3 sm:grid-cols-3">
-          <MetricTile value={metrics.orders.toString()} label="orders" />
-          <MetricTile value={metrics.spend} label="kr spent" />
-          <MetricTile value={metrics.suppliers.toString()} label="suppliers" />
+          <MetricTile value={metrics.orders.toString()} label="ORDERS" />
+          <MetricTile value={metrics.spend} label="KR SPENT" />
+          <MetricTile value={metrics.suppliers.toString()} label="SUPPLIERS" />
         </div>
 
         <SparklineBars data={sparkline} />
