@@ -103,6 +103,9 @@ export const queryKeys = {
     pantry: () => ['dashboard', 'pantry'] as const,
     deliveries: () => ['dashboard', 'deliveries'] as const,
     approvals: () => ['dashboard', 'approvals'] as const,
+    kpis: () => ['dashboard', 'kpis'] as const,
+    inventory: () => ['dashboard', 'inventory'] as const,
+    stockAlerts: () => ['dashboard', 'stock-alerts'] as const,
     layout: (userId?: string | null, workspaceId?: string | null, preset?: string) =>
       ['dashboard', 'layout', userId, workspaceId, preset] as const,
     presets: (userId?: string | null, workspaceId?: string | null) =>
