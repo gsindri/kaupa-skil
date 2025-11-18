@@ -2,9 +2,9 @@ import React, { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import {
   ChevronRight,
-  GlassWater,
   History,
   ListChecks,
+  LucideIcon,
   Plus,
   Sparkles
 } from 'lucide-react'
@@ -14,32 +14,19 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { useDashboardTelemetry } from '@/hooks/useDashboardTelemetry'
 
-type ActivityMetrics = {
+type DashboardMetrics = {
   orders: number
   spend: string
   suppliers: number
+  history: number[]
 }
 
-type Shortcut = {
-  label: string
-  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>
-  to?: string
-  onClick?: () => void
-}
-
-const MOCK_DASHBOARD_METRICS: ActivityMetrics = {
+const MOCK_DASHBOARD_METRICS: DashboardMetrics = {
   orders: 3,
   spend: '152.900',
-  suppliers: 2
+  suppliers: 2,
+  history: [0.1, 0.2, 0.05, 0.4, 0.3, 0.6, 0.25]
 }
-
-const SHORTCUTS: Shortcut[] = [
-  { label: 'Breakfast list', icon: ListChecks, to: '/dashboard/pantry' },
-  { label: 'Bar essentials', icon: GlassWater, to: '/dashboard/discovery' },
-  { label: 'Last order', icon: History, to: '/dashboard/orders' }
-]
-
-const SPARKLINE_DATA = [0, 1, 0, 3, 2, 4, 1]
 
 export default function Dashboard() {
   const trackTelemetry = useDashboardTelemetry()
@@ -73,8 +60,8 @@ export default function Dashboard() {
           <OrderControlCard cartCount={12} cartTotal="84.300" />
 
           <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
-            <MetricsCard metrics={MOCK_DASHBOARD_METRICS} sparkline={SPARKLINE_DATA} />
-            <ShortcutsCard shortcuts={SHORTCUTS} />
+            <DashboardMetricsCard metrics={MOCK_DASHBOARD_METRICS} />
+            <DashboardShortcutsCard />
           </div>
         </div>
       </ContentRail>
@@ -171,13 +158,15 @@ function HeroAction({
   )
 }
 
-function MetricsCard({ metrics, sparkline }: { metrics: ActivityMetrics; sparkline: number[] }) {
+function DashboardMetricsCard({ metrics }: { metrics: DashboardMetrics }) {
   return (
-    <Card className="overflow-hidden border border-white/12 bg-[var(--surface-pop,#0f1b28)] text-ink shadow-[0_18px_44px_rgba(2,10,28,0.35)] backdrop-blur-xl lg:h-full">
-      <CardContent className="space-y-6 p-6 sm:p-7">
-        <div className="flex items-start justify-between text-[11px] uppercase tracking-[0.16em] text-ink-dim">
+    <Card className="relative overflow-hidden border border-white/10 bg-slate-950/70 shadow-[0_22px_80px_rgba(0,0,0,0.7)] backdrop-blur-xl">
+      <CardContent className="flex flex-col gap-5 p-6">
+        <div className="flex items-center justify-between text-[11px] font-medium uppercase tracking-[0.22em] text-slate-300/80">
           <span>Today</span>
-          <span className="rounded-full border border-white/12 bg-white/10 px-3 py-1 text-[11px] text-ink-hi">7 days</span>
+          <span className="rounded-full border border-slate-500/70 px-3 py-1 text-[10px] tracking-[0.18em] text-slate-200/85">
+            7 days
+          </span>
         </div>
 
         <div className="grid gap-3 sm:grid-cols-3">
@@ -186,97 +175,91 @@ function MetricsCard({ metrics, sparkline }: { metrics: ActivityMetrics; sparkli
           <MetricTile value={metrics.suppliers.toString()} label="SUPPLIERS" />
         </div>
 
-        <SparklineBars data={sparkline} />
+        <MetricsSparkline points={metrics.history} />
       </CardContent>
     </Card>
   )
 }
 
-function MetricTile({ value, label }: { value: string; label: string }) {
+function MetricTile(props: { value: string; label: string }) {
+  const { value, label } = props
   return (
-    <div className="group rounded-2xl border border-white/14 bg-white/10 px-4 py-4 shadow-[0_14px_32px_rgba(2,10,28,0.22)] backdrop-blur-md transition-all duration-200 hover:-translate-y-0.5 hover:border-white/24 hover:bg-white/15">
-      <div className="text-2xl font-semibold leading-tight text-ink-hi sm:text-3xl">{value}</div>
-      <div className="text-[10px] uppercase tracking-[0.2em] text-ink-dim">{label}</div>
-    </div>
-  )
-}
-
-function SparklineBars({ data }: { data: number[] }) {
-  const max = Math.max(...data, 1)
-
-  return (
-    <div className="relative rounded-3xl border border-white/10 bg-white/8 p-3">
-      <div
-        className="pointer-events-none absolute inset-0 opacity-70"
-        style={{
-          background:
-            'radial-gradient(circle at 12% 0%, rgba(255,255,255,0.12), transparent 30%), radial-gradient(circle at 88% 0%, rgba(46,230,214,0.16), transparent 28%)'
-        }}
-      />
-      <div className="relative flex h-16 items-end gap-2">
-        {data.map((value, index) => {
-          const height = Math.max(6, (value / max) * 48)
-          return (
-            <div key={index} className="flex-1">
-              <div
-                className="mx-auto w-full max-w-[34px] rounded-full opacity-95 shadow-[0_10px_26px_rgba(0,0,0,0.28)] transition-transform duration-200 hover:-translate-y-0.5"
-                style={{
-                  height,
-                  background:
-                    'linear-gradient(180deg, hsla(var(--accent) / 0.92) 0%, hsla(var(--accent) / 0.55) 55%, hsla(var(--accent) / 0.2) 100%)'
-                }}
-              />
-            </div>
-          )
-        })}
+    <div className="rounded-2xl bg-slate-900/80 px-4 py-3 shadow-sm shadow-black/40">
+      <div className="text-xl font-semibold text-slate-50">{value}</div>
+      <div className="mt-1 text-[11px] font-medium uppercase tracking-[0.18em] text-slate-400">
+        {label}
       </div>
     </div>
   )
 }
 
-function ShortcutsCard({ shortcuts }: { shortcuts: Shortcut[] }) {
-  return (
-    <Card className="overflow-hidden border border-white/12 bg-[var(--surface-pop,#0f1b28)] text-ink shadow-[0_18px_44px_rgba(2,10,28,0.35)] backdrop-blur-xl lg:h-full">
-      <CardContent className="space-y-4 p-6 sm:p-7">
-        <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.16em] text-ink-dim">
-          <span>Shortcuts</span>
-          <ChevronRight className="h-4 w-4 text-ink/60" />
-        </div>
+function MetricsSparkline({ points }: { points: number[] }) {
+  const safePoints = points.length ? points : [0, 0, 0, 0, 0, 0, 0]
 
-        <div className="space-y-2">
-          {shortcuts.map((shortcut) => (
-            <ShortcutRow key={shortcut.label} {...shortcut} />
-          ))}
+  const path = safePoints
+    .map((p, i) => {
+      const x = (i / Math.max(safePoints.length - 1, 1)) * 100
+      const clamped = Math.min(1, Math.max(0, p))
+      const y = 100 - clamped * 70 - 10
+      return `${x},${y}`
+    })
+    .join(' ')
+
+  return (
+    <svg viewBox="0 0 100 40" preserveAspectRatio="none" className="h-10 w-full opacity-80">
+      <defs>
+        <linearGradient id="metrics-line" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stopColor="#fbbf24" />
+          <stop offset="100%" stopColor="#fb923c" />
+        </linearGradient>
+      </defs>
+      <polyline
+        fill="none"
+        stroke="url(#metrics-line)"
+        strokeWidth="2.4"
+        strokeLinejoin="round"
+        strokeLinecap="round"
+        points={path}
+      />
+    </svg>
+  )
+}
+
+function DashboardShortcutsCard() {
+  return (
+    <Card className="relative overflow-hidden border border-white/10 bg-slate-950/70 shadow-[0_22px_80px_rgba(0,0,0,0.7)] backdrop-blur-xl">
+      <CardContent className="flex flex-col gap-4 p-6">
+        <div className="text-[11px] font-medium uppercase tracking-[0.22em] text-slate-300/80">Shortcuts</div>
+
+        <div className="flex flex-col gap-2">
+          <ShortcutRow to="/dashboard/lists/breakfast" icon={ListChecks} label="Breakfast list" />
+          <ShortcutRow to="/dashboard/lists/bar" icon={ListChecks} label="Bar essentials" />
+          <ShortcutRow to="/dashboard/orders/last" icon={History} label="Last order" />
         </div>
       </CardContent>
     </Card>
   )
 }
 
-function ShortcutRow({ label, icon: Icon, to, onClick }: Shortcut) {
-  const content = (
-    <div className="group flex w-full items-center justify-between gap-3 rounded-2xl border border-white/12 bg-white/10 px-4 py-3 shadow-[0_12px_30px_rgba(2,10,28,0.2)] backdrop-blur-md transition-all duration-200 hover:-translate-y-0.5 hover:border-white/20 hover:bg-white/14">
-      <div className="flex items-center gap-3">
-        <span className="flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-white/12 text-ink shadow-inner shadow-black/10 transition-transform duration-200 group-hover:translate-x-0.5">
+type ShortcutRowProps = {
+  to: string
+  icon: LucideIcon
+  label: string
+}
+
+function ShortcutRow({ to, icon: Icon, label }: ShortcutRowProps) {
+  return (
+    <Link
+      to={to}
+      className="group flex items-center justify-between rounded-2xl bg-slate-900/80 px-4 py-3 text-sm text-slate-50 shadow-sm shadow-black/40 transition hover:-translate-y-px hover:bg-slate-900 hover:shadow-[0_18px_40px_rgba(0,0,0,0.7)]"
+    >
+      <span className="flex items-center gap-3">
+        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white/5 text-slate-100">
           <Icon className="h-4 w-4" />
         </span>
-        <span className="text-sm font-semibold tracking-tight text-ink-hi">{label}</span>
-      </div>
-      <ChevronRight className="h-4 w-4 text-ink/70 transition-transform duration-200 group-hover:translate-x-1" />
-    </div>
-  )
-
-  if (to) {
-    return (
-      <Link to={to} className="block">
-        {content}
-      </Link>
-    )
-  }
-
-  return (
-    <button type="button" onClick={onClick} className="block w-full text-left">
-      {content}
-    </button>
+        <span>{label}</span>
+      </span>
+      <ChevronRight className="h-4 w-4 text-slate-400 transition group-hover:translate-x-[1px] group-hover:text-slate-200" />
+    </Link>
   )
 }
