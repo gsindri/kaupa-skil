@@ -41,7 +41,7 @@ export default function Dashboard() {
 
   return (
     <div
-      className="relative isolate min-h-screen overflow-hidden bg-[var(--surface-pop,#0f1b28)]"
+      className="relative isolate -mt-[var(--page-top-gap)] -mb-8 min-h-screen overflow-hidden bg-[var(--surface-pop,#0f1b28)] pt-[calc(var(--page-top-gap)+2.5rem)] pb-[calc(5rem+2rem)]"
     >
       <div
         className="pointer-events-none absolute inset-0 -z-10"
@@ -59,7 +59,7 @@ export default function Dashboard() {
       />
 
       <ContentRail includeRailPadding={false}>
-        <div className="mx-auto flex w-full max-w-[1100px] flex-col gap-7 px-6 py-10 pb-20 sm:py-12 sm:pb-24">
+        <div className="mx-auto flex w-full max-w-[1100px] flex-col gap-7 px-6">
           <OrderControlCard cartCount={12} cartTotal="84.300" />
 
           <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
