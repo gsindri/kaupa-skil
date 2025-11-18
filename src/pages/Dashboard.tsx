@@ -37,8 +37,7 @@ export default function Dashboard() {
 
   return (
     <div
-      className="relative isolate flex-1 overflow-hidden bg-[var(--surface-pop,#0f1b28)]"
-      style={{ minHeight: 'calc(100vh - var(--header-h,56px))' }}
+      className="relative isolate min-h-screen overflow-hidden bg-[var(--surface-pop,#0f1b28)]"
     >
       <div
         className="pointer-events-none absolute inset-0 -z-10"
