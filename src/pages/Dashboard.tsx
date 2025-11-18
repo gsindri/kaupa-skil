@@ -44,9 +44,9 @@ export default function Dashboard() {
       className="relative isolate min-h-screen overflow-hidden bg-[var(--surface-pop,#0f1b28)]"
       style={{
         marginTop: 'calc(var(--page-top-gap,1.5rem) * -1)',
-        marginBottom: '-2rem',
-        paddingTop: 'calc(var(--page-top-gap,1.5rem) + 2.5rem)',
-        paddingBottom: 'calc(var(--page-top-gap,1.5rem) + 3rem)',
+        marginBottom: 'calc(var(--page-top-gap,1.5rem) * -1)',
+        paddingTop: 'calc(var(--page-top-gap,1.5rem) + 2rem)',
+        paddingBottom: 'calc(var(--page-top-gap,1.5rem) + 1.5rem)',
         paddingLeft: 'var(--page-gutter,1.5rem)',
         paddingRight: 'var(--page-gutter,1.5rem)'
       }}
