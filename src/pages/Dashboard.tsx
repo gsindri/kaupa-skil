@@ -6,13 +6,16 @@ import {
   ListChecks,
   LucideIcon,
   Plus,
-  Sparkles
+  Sparkles,
+  Loader2
 } from 'lucide-react'
 
 import { ContentRail } from '@/components/layout/ContentRail'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { useDashboardTelemetry } from '@/hooks/useDashboardTelemetry'
+import { useKpis } from '@/hooks/useKpis'
+import { formatCurrency } from '@/lib/format'
 
 type DashboardMetrics = {
   orders: number
@@ -21,19 +24,20 @@ type DashboardMetrics = {
   history: number[]
 }
 
-const MOCK_DASHBOARD_METRICS: DashboardMetrics = {
-  orders: 3,
-  spend: '152.900',
-  suppliers: 2,
-  history: [0.1, 0.2, 0.05, 0.4, 0.3, 0.6, 0.25]
-}
-
 export default function Dashboard() {
   const trackTelemetry = useDashboardTelemetry()
+  const { data: kpis, isLoading: isLoadingKpis } = useKpis()
 
   useEffect(() => {
     trackTelemetry('dashboard_enter')
   }, [trackTelemetry])
+
+  const metrics: DashboardMetrics = {
+    orders: kpis?.ordersToday || 0,
+    spend: formatCurrency(kpis?.spendToday || 0),
+    suppliers: kpis?.suppliersCount || 0,
+    history: kpis?.sparklineData || []
+  }
 
   return (
     <div
@@ -59,7 +63,7 @@ export default function Dashboard() {
           <OrderControlCard cartCount={12} cartTotal="84.300" />
 
           <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
-            <DashboardMetricsCard metrics={MOCK_DASHBOARD_METRICS} />
+            <DashboardMetricsCard metrics={metrics} isLoading={isLoadingKpis} />
             <DashboardShortcutsCard />
           </div>
         </div>
@@ -157,7 +161,49 @@ function HeroAction({
   )
 }
 
-function DashboardMetricsCard({ metrics }: { metrics: DashboardMetrics }) {
+function DashboardMetricsCard({ 
+  metrics, 
+  isLoading 
+}: { 
+  metrics: DashboardMetrics
+  isLoading: boolean
+}) {
+  if (isLoading) {
+    return (
+      <Card className="relative overflow-hidden border border-white/10 bg-slate-950/70 shadow-[0_22px_80px_rgba(0,0,0,0.7)] backdrop-blur-xl">
+        <CardContent className="flex h-[280px] items-center justify-center p-6">
+          <div className="flex flex-col items-center gap-3 text-slate-300/70">
+            <Loader2 className="h-8 w-8 animate-spin" />
+            <p className="text-sm">Loading metrics...</p>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  const hasData = metrics.orders > 0 || metrics.suppliers > 0
+
+  if (!hasData) {
+    return (
+      <Card className="relative overflow-hidden border border-white/10 bg-slate-950/70 shadow-[0_22px_80px_rgba(0,0,0,0.7)] backdrop-blur-xl">
+        <CardContent className="flex h-[280px] flex-col items-center justify-center gap-4 p-6 text-center">
+          <div className="rounded-full bg-slate-800/50 p-4">
+            <Sparkles className="h-8 w-8 text-slate-400" />
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-slate-200">No activity yet</h3>
+            <p className="mt-1 text-sm text-slate-400">
+              Connect suppliers and create orders to see your metrics
+            </p>
+          </div>
+          <Button asChild variant="default" size="sm">
+            <Link to="/suppliers">Connect Suppliers</Link>
+          </Button>
+        </CardContent>
+      </Card>
+    )
+  }
+
   return (
     <Card className="relative overflow-hidden border border-white/10 bg-slate-950/70 shadow-[0_22px_80px_rgba(0,0,0,0.7)] backdrop-blur-xl">
       <CardContent className="flex flex-col gap-5 p-6">
@@ -174,7 +220,7 @@ function DashboardMetricsCard({ metrics }: { metrics: DashboardMetrics }) {
           <MetricTile value={metrics.suppliers.toString()} label="SUPPLIERS" />
         </div>
 
-        <MetricsSparkline points={metrics.history} />
+        {metrics.history.length > 0 && <MetricsSparkline points={metrics.history} />}
       </CardContent>
     </Card>
   )
