@@ -41,7 +41,7 @@ export default function Dashboard() {
 
   return (
     <div
-      className="relative isolate min-h-screen overflow-hidden bg-[var(--surface-pop,#0f1b28)]"
+      className="relative isolate min-h-[calc(100dvh-var(--header-h,56px))] overflow-hidden bg-[var(--surface-pop,#0f1b28)]"
       style={{
         marginTop: 'calc(var(--page-top-gap,1.5rem) * -1)',
         marginBottom: 'calc(var(--page-top-gap,1.5rem) * -1)',
@@ -71,7 +71,7 @@ export default function Dashboard() {
           <OrderControlCard cartCount={12} cartTotal="84.300" />
 
           <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
-            <DashboardMetricsCard metrics={metrics} />
+            <DashboardMetricsCard metrics={metrics} isLoading={isLoadingKpis} />
             <DashboardShortcutsCard />
           </div>
         </div>
