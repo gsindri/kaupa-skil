@@ -37,7 +37,7 @@ export default function Dashboard() {
 
   return (
     <div
-      className="relative isolate overflow-hidden bg-[var(--surface-pop,#0f1b28)]"
+      className="relative isolate flex-1 overflow-hidden bg-[var(--surface-pop,#0f1b28)]"
       style={{ minHeight: 'calc(100vh - var(--header-h,56px))' }}
     >
       <div
@@ -56,7 +56,7 @@ export default function Dashboard() {
       />
 
       <ContentRail includeRailPadding={false}>
-        <div className="mx-auto flex min-h-[calc(100vh-80px)] w-full max-w-[1100px] flex-col gap-7 px-6 pb-20 pt-10 sm:pb-24 sm:pt-12">
+        <div className="mx-auto flex w-full max-w-[1100px] flex-col gap-7 px-6 py-10 pb-20 sm:py-12 sm:pb-24">
           <OrderControlCard cartCount={12} cartTotal="84.300" />
 
           <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
