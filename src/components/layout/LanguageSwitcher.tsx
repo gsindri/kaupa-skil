@@ -61,7 +61,7 @@ export function LanguageSwitcher({
               className={cn(
                 'fi',
                 `fi-${activeLanguage.flag}`,
-                'shrink-0 overflow-hidden rounded-[4px] text-[16px]',
+                'inline-flex h-[18px] w-[24px] shrink-0 items-center justify-center overflow-hidden rounded-[4px] text-[16px] leading-none',
                 'ring-1 ring-inset ring-[color:var(--surface-ring)]',
                 'transition-colors duration-150 ease-out'
               )}
@@ -95,7 +95,7 @@ export function LanguageSwitcher({
                       className={cn(
                         'fi',
                         `fi-${option.flag}`,
-                        'block shrink-0 overflow-hidden rounded-[4px] text-[18px]',
+                        'inline-flex h-[18px] w-[24px] shrink-0 items-center justify-center overflow-hidden rounded-[4px] text-[18px] leading-none',
                         'ring-1 ring-inset ring-[color:var(--surface-ring)]',
                       )}
                     />
