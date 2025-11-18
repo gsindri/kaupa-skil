@@ -41,15 +41,7 @@ export default function Dashboard() {
 
   return (
     <div
-      className="relative isolate min-h-[calc(100dvh-var(--header-h,56px)+var(--page-top-gap,1.5rem))] overflow-hidden bg-[var(--surface-pop,#0f1b28)]"
-      style={{
-        marginTop: 'calc(var(--page-top-gap,1.5rem) * -1)',
-        marginBottom: 'calc(var(--page-top-gap,1.5rem) * -1)',
-        paddingTop: 'calc(var(--page-top-gap,1.5rem) + 2rem)',
-        paddingBottom: 'calc(var(--page-top-gap,1.5rem) + 1.5rem)',
-        paddingLeft: 'var(--page-gutter,1.5rem)',
-        paddingRight: 'var(--page-gutter,1.5rem)'
-      }}
+      className="relative isolate overflow-hidden bg-[var(--surface-pop,#0f1b28)] p-6 sm:p-8"
     >
       <div
         className="pointer-events-none absolute inset-0 -z-10"
