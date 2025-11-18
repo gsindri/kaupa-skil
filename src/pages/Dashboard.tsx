@@ -41,7 +41,7 @@ export default function Dashboard() {
 
   return (
     <div
-      className="relative isolate overflow-hidden bg-[var(--surface-pop,#0f1b28)]"
+      className="relative isolate min-h-[calc(100dvh-var(--header-h,56px)+var(--page-top-gap,1.5rem))] overflow-hidden bg-[var(--surface-pop,#0f1b28)]"
       style={{
         marginTop: 'calc(var(--page-top-gap,1.5rem) * -1)',
         marginBottom: 'calc(var(--page-top-gap,1.5rem) * -1)',
