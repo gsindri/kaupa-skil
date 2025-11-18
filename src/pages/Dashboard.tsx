@@ -41,15 +41,7 @@ export default function Dashboard() {
 
   return (
     <div
-      className="relative isolate min-h-screen overflow-hidden bg-[var(--surface-pop,#0f1b28)]"
-      style={{
-        marginTop: 'calc(var(--page-top-gap,1.5rem) * -1)',
-        marginBottom: 'calc(var(--page-top-gap,1.5rem) * -1 - 2rem)',
-        paddingTop: 'calc(var(--page-top-gap,1.5rem) + 2rem)',
-        paddingBottom: 'calc(var(--page-top-gap,1.5rem) + 1.5rem)',
-        paddingLeft: 'var(--page-gutter,1.5rem)',
-        paddingRight: 'var(--page-gutter,1.5rem)'
-      }}
+      className="relative isolate min-h-[calc(100vh-var(--header-h,56px))] overflow-hidden bg-[var(--surface-pop,#0f1b28)] px-[var(--page-gutter,1.5rem)] pb-12 pt-[calc(var(--page-top-gap,1.5rem)+1.5rem)]"
     >
       <div
         className="pointer-events-none absolute inset-0 -z-10"
@@ -67,7 +59,7 @@ export default function Dashboard() {
       />
 
       <ContentRail includeRailPadding={false}>
-        <div className="mx-auto flex w-full max-w-[1100px] flex-col gap-7">
+        <div className="mx-auto flex w-full max-w-[1100px] flex-col gap-7 pb-16 pt-8 sm:pb-20 sm:pt-10">
           <OrderControlCard cartCount={12} cartTotal="84.300" />
 
           <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
