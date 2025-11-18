@@ -46,7 +46,7 @@ export default function Dashboard() {
         marginTop: 'calc(var(--page-top-gap,1.5rem) * -1)',
         marginBottom: '-2rem',
         paddingTop: 'calc(var(--page-top-gap,1.5rem) + 2.5rem)',
-        paddingBottom: 'calc(5rem + 2rem)',
+        paddingBottom: 'calc(var(--page-top-gap,1.5rem) + 3rem)',
         paddingLeft: 'var(--page-gutter,1.5rem)',
         paddingRight: 'var(--page-gutter,1.5rem)'
       }}
@@ -67,7 +67,7 @@ export default function Dashboard() {
       />
 
       <ContentRail includeRailPadding={false}>
-        <div className="mx-auto flex w-full max-w-[1100px] flex-col gap-7 pb-20 pt-10 sm:pb-24 sm:pt-12">
+        <div className="mx-auto flex w-full max-w-[1100px] flex-col gap-7">
           <OrderControlCard cartCount={12} cartTotal="84.300" />
 
           <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
