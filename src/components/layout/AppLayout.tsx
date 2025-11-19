@@ -210,17 +210,8 @@ export function AppLayout({
           {headerNode}
         </div>
         
-        {/* Spacer to prevent content jump when header is fixed */}
-        <div
-          style={{
-            height: 'var(--header-h, 56px)',
-            transition: 'height 200ms ease-in-out'
-          }}
-          aria-hidden="true"
-        />
-
         {/* Main content */}
-        <div className="pb-8">
+        <div className="pb-8" style={{ paddingTop: 'var(--header-h, 56px)' }}>
           <div
             className={clsx(
               'page-grid items-start',
