@@ -58,7 +58,7 @@ export default function Dashboard() {
       />
 
       <ContentRail includeRailPadding={false}>
-        <div className="mx-auto flex w-full max-w-[1100px] flex-col gap-7 pb-16 pt-8 sm:pb-20 sm:pt-10">
+        <div className="mx-auto flex w-full max-w-[1100px] flex-col gap-7">
           <OrderControlCard cartCount={12} cartTotal="84.300" />
 
           <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
