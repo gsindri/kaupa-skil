@@ -211,7 +211,7 @@ export function AppLayout({
         </div>
         
         {/* Main content */}
-        <div className="pb-8" style={{ paddingTop: 'var(--header-h, 56px)' }}>
+        <div className="pb-8">
           <div
             className={clsx(
               'page-grid items-start',
