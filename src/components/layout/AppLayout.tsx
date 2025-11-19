@@ -173,7 +173,7 @@ export function AppLayout({
 
       {/* Right content area */}
       <div
-        className="app-shell-content flex min-h-screen flex-col"
+        className="app-shell-content flex flex-col"
         style={{
           width: '100%',
           paddingLeft: 'var(--layout-rail,72px)',
