@@ -220,7 +220,7 @@ export function AppLayout({
         />
 
         {/* Main content */}
-        <div className="pb-8 pt-[var(--page-top-gap)]">
+        <div className="pb-8">
           <div
             className={clsx(
               'page-grid items-start',
@@ -264,7 +264,7 @@ export function AppLayout({
                 id="main-content"
                 className="w-full min-w-0"
                 style={{
-                  minHeight: 'calc(100vh - calc(var(--header-h, 56px) * 2) - var(--page-top-gap, 1.5rem) - 2rem)',
+                  minHeight: 'calc(100vh - var(--header-h, 56px) - 2rem)',
                 }}
               >
                 {children ?? <Outlet />}
