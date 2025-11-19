@@ -41,6 +41,7 @@ export default function Dashboard() {
 
   return (
     <div
+<<<<<<< HEAD
       className="relative isolate overflow-hidden bg-[var(--surface-pop,#0f1b28)]"
       style={{
         marginTop: 'calc(var(--page-top-gap,1.5rem) * -1)',
@@ -50,6 +51,9 @@ export default function Dashboard() {
         paddingLeft: 'var(--page-gutter,1.5rem)',
         paddingRight: 'var(--page-gutter,1.5rem)'
       }}
+=======
+      className="relative isolate overflow-hidden bg-[var(--surface-pop,#0f1b28)] p-6 sm:p-8"
+>>>>>>> 79b2506dfca0654261ecdbc1f5afcb8e44e2d982
     >
       <div
         className="pointer-events-none absolute inset-0 -z-10"
