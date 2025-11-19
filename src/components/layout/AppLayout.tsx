@@ -255,7 +255,7 @@ export function AppLayout({
                 id="main-content"
                 className="w-full min-w-0"
                 style={{
-                  minHeight: 'calc(100vh - var(--header-h, 56px) - 2rem)',
+                  minHeight: 'calc(100dvh - var(--header-h, 56px) - 2rem)',
                 }}
               >
                 {children ?? <Outlet />}
