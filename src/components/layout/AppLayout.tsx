@@ -201,6 +201,7 @@ export function AppLayout({
             zIndex: 'var(--z-header,55)',
             paddingLeft: 0,
             width: '100%',
+            overflow: 'hidden',
           }}
         >
           <AppChrome />
