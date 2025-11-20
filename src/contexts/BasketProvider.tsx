@@ -102,47 +102,50 @@ export default function BasketProvider({ children }: { children: React.ReactNode
   const mergeCart = useMergeAnonymousCart()
   const { data: dbCart, isLoading: isLoadingDBCart } = useLoadCartFromDB()
   
-  const [items, setItems] = useState<CartItem[]>(() => {
-    const saved = localStorage.getItem(CART_STORAGE_KEY)
-    if (!saved) return []
-
-    try {
-      const parsed: any[] = JSON.parse(saved)
-
-      // Migration: legacy basket entries only stored the product `name` field.
-      // Ensure newer schema fields `itemName` and `displayName` are populated
-      // when loading from localStorage for backward compatibility.
-      return parsed.map(it => ({
-        ...it,
-        supplierItemId: it.supplierItemId ?? it.id,
-        supplierLogoUrl: (() => {
-          const logoCandidate =
-            it.supplierLogoUrl ??
-            it.supplier_logo_url ??
-            it.logoUrl ??
-            it.supplierLogo ??
-            null
-          return logoCandidate ? getCachedImageUrl(logoCandidate) : null
-        })(),
-        supplierName: extractLegacySupplierName(it),
-        itemName:
-          it.itemName ??
-          it.name ??
-          it.title ??
-          it.productName,
-        displayName:
-          it.displayName ??
-          it.itemName ??
-          it.name ??
-          it.title ??
-          it.productName,
-      }))
-    } catch {
-      return []
-    }
-  })
+  // Start with empty cart - will load from localStorage for anonymous users or DB for authenticated
+  const [items, setItems] = useState<CartItem[]>([])
   
   const [mergeProcessed, setMergeProcessed] = useState<string | null>(null)
+
+  // Load from localStorage only for anonymous users on mount
+  useEffect(() => {
+    if (!user) {
+      const saved = localStorage.getItem(CART_STORAGE_KEY)
+      if (saved) {
+        try {
+          const parsed: any[] = JSON.parse(saved)
+          const loadedItems = parsed.map(it => ({
+            ...it,
+            supplierItemId: it.supplierItemId ?? it.id,
+            supplierLogoUrl: (() => {
+              const logoCandidate =
+                it.supplierLogoUrl ??
+                it.supplier_logo_url ??
+                it.logoUrl ??
+                it.supplierLogo ??
+                null
+              return logoCandidate ? getCachedImageUrl(logoCandidate) : null
+            })(),
+            supplierName: extractLegacySupplierName(it),
+            itemName:
+              it.itemName ??
+              it.name ??
+              it.title ??
+              it.productName,
+            displayName:
+              it.displayName ??
+              it.itemName ??
+              it.name ??
+              it.title ??
+              it.productName,
+          }))
+          setItems(loadedItems)
+        } catch {
+          // Ignore parse errors
+        }
+      }
+    }
+  }, [user])
 
   // Generate anonymous cart ID if not authenticated
   useEffect(() => {
@@ -163,10 +166,8 @@ export default function BasketProvider({ children }: { children: React.ReactNode
     
     // Check if merge was already processed for this login session
     if (mergeProcessed === userSessionKey) {
-      // Already merged/loaded for this session, just update from dbCart
-      if (dbCart && dbCart.length > 0) {
-        setItems(dbCart)
-      }
+      // Already merged/loaded for this session, always sync with DB (even if empty)
+      setItems(dbCart || [])
       return
     }
     
@@ -199,9 +200,9 @@ export default function BasketProvider({ children }: { children: React.ReactNode
           },
         }
       )
-    } else if (dbCart) {
-      // No anonymous cart, just load from DB
-      setItems(dbCart)
+    } else {
+      // No anonymous cart, load from DB (even if empty)
+      setItems(dbCart || [])
       setMergeProcessed(userSessionKey)
     }
   }, [user, profile?.tenant_id, dbCart, isLoadingDBCart, mergeProcessed])
@@ -230,8 +231,10 @@ export default function BasketProvider({ children }: { children: React.ReactNode
 
   const isDrawerOpen = isDrawerPinned || drawerOpenExplicit
 
-  // Sync basket across tabs
+  // Sync basket across tabs (only for anonymous users)
   useEffect(() => {
+    if (user) return // Don't sync for authenticated users
+    
     const channel =
       typeof BroadcastChannel !== 'undefined'
         ? new BroadcastChannel('procurewise-basket')
@@ -248,10 +251,12 @@ export default function BasketProvider({ children }: { children: React.ReactNode
       channel?.removeEventListener('message', handleMessage)
       channel?.close()
     }
-  }, [])
+  }, [user])
 
-  // Fallback: cross-tab sync via storage events
+  // Fallback: cross-tab sync via storage events (only for anonymous users)
   useEffect(() => {
+    if (user) return // Don't sync for authenticated users
+    
     const onStorage = (e: StorageEvent) => {
       if (e.key === CART_STORAGE_KEY && e.newValue) {
         try {
@@ -263,17 +268,20 @@ export default function BasketProvider({ children }: { children: React.ReactNode
     }
     window.addEventListener('storage', onStorage)
     return () => window.removeEventListener('storage', onStorage)
-  }, [])
+  }, [user])
 
-  const syncBasket = (() => {
+  const syncBasket = useCallback((() => {
     let timeout: number | undefined
     let latest: CartItem[] = []
     const send = (items: CartItem[]) => {
-      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items))
-      if (typeof BroadcastChannel !== 'undefined') {
-        const channel = new BroadcastChannel('procurewise-basket')
-        channel.postMessage({ type: 'BASKET_UPDATED', items })
-        channel.close()
+      // Only persist to localStorage for anonymous users
+      if (!user) {
+        localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items))
+        if (typeof BroadcastChannel !== 'undefined') {
+          const channel = new BroadcastChannel('procurewise-basket')
+          channel.postMessage({ type: 'BASKET_UPDATED', items })
+          channel.close()
+        }
       }
     }
     return (items: CartItem[]) => {
@@ -281,7 +289,7 @@ export default function BasketProvider({ children }: { children: React.ReactNode
       if (timeout) window.clearTimeout(timeout)
       timeout = window.setTimeout(() => send(latest), 400)
     }
-  })()
+  })(), [user])
 
   useEffect(() => {
     if (typeof window === 'undefined') return
