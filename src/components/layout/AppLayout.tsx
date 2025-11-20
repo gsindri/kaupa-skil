@@ -178,6 +178,7 @@ export function AppLayout({
           width: '100%',
           paddingLeft: 'var(--layout-rail,72px)',
           boxSizing: 'border-box',
+          minHeight: '100dvh',
         }}
       >
         <a
@@ -211,10 +212,10 @@ export function AppLayout({
         </div>
 
         {/* Main content */}
-        <div className="pb-8" style={{ paddingTop: 'var(--header-h, 56px)' }}>
+        <div className="flex-1 flex flex-col" style={{ paddingTop: 'var(--header-h, 56px)' }}>
           <div
             className={clsx(
-              'page-grid items-start',
+              'page-grid flex-1',
               hasSecondary && 'page-grid--with-secondary'
             )}
             data-has-secondary={showSecondary ? 'true' : undefined}
@@ -245,7 +246,7 @@ export function AppLayout({
               </aside>
             )}
             <div
-              className="page-grid__content min-w-0 w-full"
+              className="page-grid__content min-w-0 w-full flex flex-col"
               ref={contentRef}
               style={{
                 gridColumn: contentGridColumn,
@@ -253,10 +254,7 @@ export function AppLayout({
             >
               <main
                 id="main-content"
-                className="w-full min-w-0"
-                style={{
-                  minHeight: 'calc(100dvh - var(--header-h, 56px) - 2rem)',
-                }}
+                className="w-full min-w-0 flex-1"
               >
                 {children ?? <Outlet />}
               </main>

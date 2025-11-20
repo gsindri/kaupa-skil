@@ -40,7 +40,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="relative isolate overflow-hidden min-h-full -mb-8 pb-8">
+    <div className="relative isolate overflow-hidden min-h-full">
       <div className="pointer-events-none absolute inset-0 -z-10 bg-[var(--surface-pop,#0f1b28)]" />
       <div
         className="pointer-events-none absolute inset-0 -z-10"
@@ -160,10 +160,10 @@ function HeroAction({
   )
 }
 
-function DashboardMetricsCard({ 
-  metrics, 
-  isLoading 
-}: { 
+function DashboardMetricsCard({
+  metrics,
+  isLoading
+}: {
   metrics: DashboardMetrics
   isLoading: boolean
 }) {
