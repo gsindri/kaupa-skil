@@ -106,7 +106,6 @@ export const queryKeys = {
     kpis: () => ['dashboard', 'kpis'] as const,
     inventory: () => ['dashboard', 'inventory'] as const,
     stockAlerts: () => ['dashboard', 'stock-alerts'] as const,
-    cart: (tenantId?: string | null) => ['dashboard', 'cart', tenantId] as const,
     layout: (userId?: string | null, workspaceId?: string | null, preset?: string) =>
       ['dashboard', 'layout', userId, workspaceId, preset] as const,
     presets: (userId?: string | null, workspaceId?: string | null) =>
