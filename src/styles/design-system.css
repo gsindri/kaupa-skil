@@ -1,127 +1,135 @@
 /* Iceland B2B Design System - Professional wholesale platform styling */
 
 :root {
-    /* Primary Brand Colors - Professional blue palette inspired by Icelandic landscape */
-    --primary: 212 95% 35%;
-    --primary-foreground: 210 40% 98%;
-    --primary-hover: 212 95% 30%;
-    
-    /* Secondary - Clean slate grays */
-    --secondary: 215 15% 96%;
-    --secondary-foreground: 215 25% 25%;
-    --secondary-hover: 215 15% 92%;
-    
-    /* Accent - Icelandic aurora green */
-    --accent: 165 85% 45%;
-    --accent-foreground: 210 40% 98%;
-    --accent-hover: 165 85% 40%;
-    
-    /* Status Colors */
-    --success: 142 76% 36%;
-    --success-foreground: 210 40% 98%;
-    --warning: 38 92% 50%;
-    --warning-foreground: 215 25% 25%;
-    --error: 0 84% 60%;
-    --error-foreground: 210 40% 98%;
-    
-    /* Neutral Palette */
-    --background: 0 0% 100%;
-    --foreground: 215 25% 15%;
-    --muted: 215 15% 96%;
-    --muted-foreground: 215 15% 45%;
-    --border: 215 15% 90%;
-    --input: 215 15% 95%;
-    --ring: 212 95% 35%;
-    
-    /* Card & Surface */
-    --card: 0 0% 100%;
-    --card-foreground: 215 25% 15%;
-    
-    /* Popover & Dialog */
-    --popover: 0 0% 100%;
-    --popover-foreground: 215 25% 15%;
+  /* Primary Brand Colors - Professional blue palette inspired by Icelandic landscape */
+  --primary: 212 95% 35%;
+  --primary-foreground: 210 40% 98%;
+  --primary-hover: 212 95% 30%;
 
-    /* Data Table Specific */
-    --table-header: 215 15% 98%;
-    --table-row-hover: 215 15% 98%;
-    --table-border: 215 15% 92%;
-    
-    /* VAT Toggle Colors */
-    --vat-inclusive: 165 85% 45%;
-    --vat-exclusive: 212 95% 35%;
-    
-    /* Price Comparison */
-    --price-best: 142 76% 36%;
-    --price-good: 165 85% 45%;
-    --price-average: 38 92% 50%;
-    --price-expensive: 0 84% 60%;
+  /* Secondary - Clean slate grays */
+  --secondary: 215 15% 96%;
+  --secondary-foreground: 215 25% 25%;
+  --secondary-hover: 215 15% 92%;
 
-    /* Sidebar */
-    --sidebar-bg: 210 25% 97%;
-    --sidebar-fg: 222 47% 11%;
-    --sidebar-fg-muted: 222 12% 35%;
-    --sidebar-border: 210 16% 90%;
-    --sidebar: var(--sidebar-bg);
-    --sidebar-foreground: var(--sidebar-fg);
-    --sidebar-muted-foreground: var(--sidebar-fg-muted);
-    --sidebar-accent: 212 95% 35% / 0.1;
-    --sidebar-accent-foreground: var(--sidebar-fg);
-    --sidebar-ring: 212 95% 35%;
-    
-    /* Layout */
-    --page-top-gap: 1.5rem;
+  /* Accent - Icelandic aurora green */
+  --accent: 165 85% 45%;
+  --accent-foreground: 210 40% 98%;
+  --accent-hover: 165 85% 40%;
 
-    /* Radius */
-    --radius: 0.5rem;
-    
-    /* Shadows */
-    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-    
-    /* Softer borders and shadows */
-    --border-soft: hsl(var(--foreground) / 0.1);
-    --shadow-soft: 0 1px 3px 0 rgb(0 0 0 / 0.05), 0 1px 2px -1px rgb(0 0 0 / 0.05);
-    --shadow-soft-md: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
-  }
-  
-  .dark {
-    --background: 215 25% 8%;
-    --foreground: 210 40% 98%;
-    --card: 215 25% 10%;
-    --card-foreground: 210 40% 98%;
-    --popover: 215 25% 10%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 212 95% 50%;
-    --primary-foreground: 215 25% 8%;
-    --secondary: 215 25% 15%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 215 25% 15%;
-    --muted-foreground: 215 15% 65%;
-    --accent: 165 85% 50%;
-    --accent-foreground: 215 25% 8%;
-    --border: 215 25% 20%;
-    --input: 215 25% 15%;
-    --ring: 212 95% 50%;
+  /* Status Colors */
+  --success: 142 76% 36%;
+  --success-foreground: 210 40% 98%;
+  --warning: 38 92% 50%;
+  --warning-foreground: 215 25% 25%;
+  --error: 0 84% 60%;
+  --error-foreground: 210 40% 98%;
 
-    /* Sidebar */
-    --sidebar-bg: 222 22% 12%;
-    --sidebar-fg: 0 0% 100%;
-    --sidebar-fg-muted: 220 9% 70%;
-    --sidebar-border: 220 8% 20%;
-    --sidebar: var(--sidebar-bg);
-    --sidebar-foreground: var(--sidebar-fg);
-    --sidebar-muted-foreground: var(--sidebar-fg-muted);
-    --sidebar-accent: 0 0% 100% / 0.06;
-    --sidebar-accent-foreground: var(--sidebar-fg);
-    --sidebar-ring: 212 95% 50%;
+  /* Neutral Palette */
+  --background: 0 0% 100%;
+  --foreground: 215 25% 15%;
+  --muted: 215 15% 96%;
+  --muted-foreground: 215 15% 45%;
+  --border: 215 15% 90%;
+  --input: 215 15% 95%;
+  --ring: 212 95% 35%;
 
-    /* Layout */
-    --page-top-gap: 1.5rem;
+  /* Card & Surface */
+  --card: 0 0% 100%;
+  --card-foreground: 215 25% 15%;
 
-    /* Softer borders and shadows */
-    --border-soft: hsl(var(--foreground) / 0.15);
-  }
+  /* Popover & Dialog */
+  --popover: 0 0% 100%;
+  --popover-foreground: 215 25% 15%;
+
+  /* Data Table Specific */
+  --table-header: 215 15% 98%;
+  --table-row-hover: 215 15% 98%;
+  --table-border: 215 15% 92%;
+
+  /* VAT Toggle Colors */
+  --vat-inclusive: 165 85% 45%;
+  --vat-exclusive: 212 95% 35%;
+
+  /* Price Comparison */
+  --price-best: 142 76% 36%;
+  --price-good: 165 85% 45%;
+  --price-average: 38 92% 50%;
+  --price-expensive: 0 84% 60%;
+
+  /* Sidebar */
+  --sidebar-bg: 210 25% 97%;
+  --sidebar-fg: 222 47% 11%;
+  --sidebar-fg-muted: 222 12% 35%;
+  --sidebar-border: 210 16% 90%;
+  --sidebar: var(--sidebar-bg);
+  --sidebar-foreground: var(--sidebar-fg);
+  --sidebar-muted-foreground: var(--sidebar-fg-muted);
+  --sidebar-accent: 212 95% 35% / 0.1;
+  --sidebar-accent-foreground: var(--sidebar-fg);
+  --sidebar-ring: 212 95% 35%;
+
+  /* Layout */
+  --page-top-gap: 1.5rem;
+
+  /* Radius */
+  --radius: 0.5rem;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+
+  /* Softer borders and shadows */
+  --border-soft: hsl(var(--foreground) / 0.1);
+  --shadow-soft: 0 1px 3px 0 rgb(0 0 0 / 0.05), 0 1px 2px -1px rgb(0 0 0 / 0.05);
+  --shadow-soft-md: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+}
+
+.dark {
+  --background: 215 25% 8%;
+  --foreground: 210 40% 98%;
+  --card: 215 25% 10%;
+  --card-foreground: 210 40% 98%;
+  --popover: 215 25% 10%;
+  --popover-foreground: 210 40% 98%;
+  --primary: 212 95% 50%;
+  --primary-foreground: 215 25% 8%;
+  --secondary: 215 25% 15%;
+  --secondary-foreground: 210 40% 98%;
+  --muted: 215 25% 15%;
+  --muted-foreground: 215 15% 65%;
+  --accent: 165 85% 50%;
+  --accent-foreground: 215 25% 8%;
+  --border: 215 25% 20%;
+  --input: 215 25% 15%;
+  --ring: 212 95% 50%;
+
+  /* Sidebar */
+  --sidebar-bg: 222 22% 12%;
+  --sidebar-fg: 0 0% 100%;
+  --sidebar-fg-muted: 220 9% 70%;
+  --sidebar-border: 220 8% 20%;
+  --sidebar: var(--sidebar-bg);
+  --sidebar-foreground: var(--sidebar-fg);
+  --sidebar-muted-foreground: var(--sidebar-fg-muted);
+  --sidebar-accent: 0 0% 100% / 0.06;
+  --sidebar-accent-foreground: var(--sidebar-fg);
+  --sidebar-ring: 212 95% 50%;
+
+  /* Layout */
+  --page-top-gap: 1.5rem;
+
+  /* Softer borders and shadows */
+  --border-soft: hsl(var(--foreground) / 0.15);
+}
+
+/* Ensure body doesn't have horizontal overflow */
+html,
+body {
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100vw;
+}
 
 /* Professional typography with tabular numbers */
 body {
@@ -144,112 +152,113 @@ body {
 }
 
 /* Component Variants */
-  .btn-primary {
-    @apply bg-primary text-primary-foreground hover:bg-primary-hover;
-    @apply px-4 py-2 rounded-md font-medium transition-colors;
-    @apply focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2;
-    @apply border border-foreground/10 shadow-sm;
-  }
-  
-  .btn-secondary {
-    @apply bg-secondary text-secondary-foreground hover:bg-secondary-hover;
-    @apply px-4 py-2 rounded-md font-medium transition-colors;
-    @apply focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2;
-    @apply border border-foreground/10 shadow-sm;
-  }
-  
-  .btn-accent {
-    @apply bg-accent text-accent-foreground hover:bg-accent-hover;
-    @apply px-4 py-2 rounded-md font-medium transition-colors;
-    @apply focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2;
-  }
-  
-  .data-table {
-    @apply w-full border-collapse border border-table-border;
-  }
-  
-  .data-table th {
-    @apply bg-table-header text-left p-3 font-semibold text-sm;
-    @apply border-b border-table-border;
-  }
-  
-  .data-table td {
-    @apply p-3 border-b border-table-border;
-  }
-  
-  .data-table tr:hover {
-    @apply bg-table-row-hover;
-  }
-  
-  .price-badge-best {
-    @apply bg-price-best/10 text-price-best border border-price-best/20;
-    @apply px-2 py-1 rounded text-xs font-medium;
-  }
-  
-  .price-badge-good {
-    @apply bg-price-good/10 text-price-good border border-price-good/20;
-    @apply px-2 py-1 rounded text-xs font-medium;
-  }
-  
-  .price-badge-average {
-    @apply bg-price-average/10 text-price-average border border-price-average/20;
-    @apply px-2 py-1 rounded text-xs font-medium;
-  }
-  
-  .price-badge-expensive {
-    @apply bg-price-expensive/10 text-price-expensive border border-price-expensive/20;
-    @apply px-2 py-1 rounded text-xs font-medium;
-  }
-  
-  .vat-toggle-inclusive {
-    @apply bg-vat-inclusive text-white;
-  }
-  
-  .vat-toggle-exclusive {
-    @apply bg-vat-exclusive text-white;
-  }
-  
-  .card-elevated {
-    @apply bg-card border border-border rounded-lg shadow-md;
-  }
-  
-  .input-field {
-    @apply bg-input border border-border rounded-md px-3 py-2;
-    @apply focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent;
-  }
-  
-  /* Softer table styling */
-  .data-table {
-    @apply w-full border-collapse border border-foreground/10 shadow-sm;
-  }
-  
-  .data-table th {
-    @apply bg-table-header text-left p-3 font-semibold text-sm;
-    @apply border-b border-foreground/10;
-  }
-  
-  .data-table td {
-    @apply p-3 border-b border-foreground/10;
-  }
+.btn-primary {
+  @apply bg-primary text-primary-foreground hover:bg-primary-hover;
+  @apply px-4 py-2 rounded-md font-medium transition-colors;
+  @apply focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2;
+  @apply border border-foreground/10 shadow-sm;
+}
+
+.btn-secondary {
+  @apply bg-secondary text-secondary-foreground hover:bg-secondary-hover;
+  @apply px-4 py-2 rounded-md font-medium transition-colors;
+  @apply focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2;
+  @apply border border-foreground/10 shadow-sm;
+}
+
+.btn-accent {
+  @apply bg-accent text-accent-foreground hover:bg-accent-hover;
+  @apply px-4 py-2 rounded-md font-medium transition-colors;
+  @apply focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2;
+}
+
+.data-table {
+  @apply w-full border-collapse border border-table-border;
+}
+
+.data-table th {
+  @apply bg-table-header text-left p-3 font-semibold text-sm;
+  @apply border-b border-table-border;
+}
+
+.data-table td {
+  @apply p-3 border-b border-table-border;
+}
+
+.data-table tr:hover {
+  @apply bg-table-row-hover;
+}
+
+.price-badge-best {
+  @apply bg-price-best/10 text-price-best border border-price-best/20;
+  @apply px-2 py-1 rounded text-xs font-medium;
+}
+
+.price-badge-good {
+  @apply bg-price-good/10 text-price-good border border-price-good/20;
+  @apply px-2 py-1 rounded text-xs font-medium;
+}
+
+.price-badge-average {
+  @apply bg-price-average/10 text-price-average border border-price-average/20;
+  @apply px-2 py-1 rounded text-xs font-medium;
+}
+
+.price-badge-expensive {
+  @apply bg-price-expensive/10 text-price-expensive border border-price-expensive/20;
+  @apply px-2 py-1 rounded text-xs font-medium;
+}
+
+.vat-toggle-inclusive {
+  @apply bg-vat-inclusive text-white;
+}
+
+.vat-toggle-exclusive {
+  @apply bg-vat-exclusive text-white;
+}
+
+.card-elevated {
+  @apply bg-card border border-border rounded-lg shadow-md;
+}
+
+.input-field {
+  @apply bg-input border border-border rounded-md px-3 py-2;
+  @apply focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent;
+}
+
+/* Softer table styling */
+.data-table {
+  @apply w-full border-collapse border border-foreground/10 shadow-sm;
+}
+
+.data-table th {
+  @apply bg-table-header text-left p-3 font-semibold text-sm;
+  @apply border-b border-foreground/10;
+}
+
+.data-table td {
+  @apply p-3 border-b border-foreground/10;
+}
 
 /* Animations for professional feel */
-  .animate-slide-up {
-    animation: slideUp 0.2s ease-out;
-  }
-  
-  .animate-fade-in {
-    animation: fadeIn 0.3s ease-out;
-  }
-  
-  .animate-scale-in {
-    animation: scaleIn 0.2s ease-out;
-  }
+.animate-slide-up {
+  animation: slideUp 0.2s ease-out;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.2s ease-out;
+}
 
 @keyframes slideUp {
   from {
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -260,6 +269,7 @@ body {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -270,6 +280,7 @@ body {
     opacity: 0;
     transform: scale(0.95);
   }
+
   to {
     opacity: 1;
     transform: scale(1);
@@ -364,6 +375,7 @@ body {
   background: var(--toolbar-bg);
   backdrop-filter: blur(12px);
 }
+
 /* --- Sidebar chrome fixes --- */
 
 /* Ensure sidebar runs flush to the very top */
@@ -377,12 +389,14 @@ body {
   border-top: 0 !important;
   box-shadow: none !important;
 }
+
 [data-sidebar="sidebar"]::before,
 [data-sidebar="sidebar"]::after,
-[data-sidebar="sidebar"] > .top-stripe,
+[data-sidebar="sidebar"]>.top-stripe,
 [data-sidebar="sidebar"] [data-top-stripe] {
   content: none !important;
-  display: none !important; /* hides any extra cyan stripe element if present */
+  display: none !important;
+  /* hides any extra cyan stripe element if present */
 }
 
 /* Start the menu lower for visual balance */
