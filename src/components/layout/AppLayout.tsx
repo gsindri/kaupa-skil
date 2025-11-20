@@ -196,11 +196,8 @@ export function AppLayout({
           ref={combinedHeaderRef}
           className={cn(headerClassName)}
           style={{
-            position: 'fixed',
+            position: 'sticky',
             top: 0,
-            left: 'var(--layout-rail, 72px)',
-            right: 'auto',
-            width: 'calc(100vw - var(--layout-rail, 72px))',
             zIndex: 'var(--z-header,55)',
             paddingLeft: 0,
           }}
@@ -212,7 +209,7 @@ export function AppLayout({
         </div>
 
         {/* Main content */}
-        <div className="flex-1 flex flex-col" style={{ paddingTop: 'var(--header-h, 56px)' }}>
+        <div className="flex-1 flex flex-col">
           <div
             className={clsx(
               'page-grid flex-1',
