@@ -107,13 +107,13 @@ export function AppLayout({
 
   useLayoutEffect(() => {
     if (typeof window === 'undefined') return
-    
+
     // When filter sidebar toggles, reset header scroll-hide state
     // Small delay ensures layout has settled before reset
     const timeoutId = setTimeout(() => {
       resetHeaderScrollHide()
     }, 50)
-    
+
     return () => clearTimeout(timeoutId)
   }, [showSecondary, resetHeaderScrollHide])
 
@@ -206,10 +206,10 @@ export function AppLayout({
         >
           <AppChrome />
           <TopNavigation />
-          
+
           {headerNode}
         </div>
-        
+
         {/* Main content */}
         <div className="pb-8">
           <div
@@ -261,7 +261,7 @@ export function AppLayout({
                 {children ?? <Outlet />}
               </main>
             </div>
-            {shouldShowCartRail && isDesktopCart && <CartDrawer />}
+
             {isDesktopCart && (
               <div
                 aria-hidden={!isDesktopCart}
