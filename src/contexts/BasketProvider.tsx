@@ -142,7 +142,7 @@ export default function BasketProvider({ children }: { children: React.ReactNode
     }
   })
   
-  const [hasMerged, setHasMerged] = useState(false)
+  const [mergeProcessed, setMergeProcessed] = useState<string | null>(null)
 
   // Generate anonymous cart ID if not authenticated
   useEffect(() => {
@@ -157,44 +157,62 @@ export default function BasketProvider({ children }: { children: React.ReactNode
 
   // Load cart from DB for authenticated users
   useEffect(() => {
-    if (user && profile?.tenant_id && dbCart && !isLoadingDBCart && !hasMerged) {
-      // Check if there's an anonymous cart to merge
-      const anonymousCartId = localStorage.getItem(ANONYMOUS_CART_ID_KEY)
-      const localItems = items
-
-      if (anonymousCartId && localItems.length > 0) {
-        // Merge anonymous cart
-        mergeCart.mutate(
-          { anonymousCartId, items: localItems },
-          {
-            onSuccess: () => {
-              // Clear anonymous cart
-              localStorage.removeItem(ANONYMOUS_CART_ID_KEY)
-              localStorage.removeItem(CART_STORAGE_KEY)
-              // Load merged cart from DB
-              setItems(dbCart)
-              setHasMerged(true)
-            },
-            onError: (error) => {
-              console.error('Failed to merge cart:', error)
-              // Fallback: just load DB cart
-              setItems(dbCart)
-              setHasMerged(true)
-            },
-          }
-        )
-      } else if (dbCart.length > 0) {
-        // No anonymous cart, just load from DB
+    if (!user || !profile?.tenant_id || isLoadingDBCart) return
+    
+    const userSessionKey = `${user.id}-${profile.tenant_id}`
+    
+    // Check if merge was already processed for this login session
+    if (mergeProcessed === userSessionKey) {
+      // Already merged/loaded for this session, just update from dbCart
+      if (dbCart && dbCart.length > 0) {
         setItems(dbCart)
-        setHasMerged(true)
       }
+      return
     }
-  }, [user, profile?.tenant_id, dbCart, isLoadingDBCart, hasMerged])
+    
+    // First time loading for this session - check for anonymous cart
+    const anonymousCartId = localStorage.getItem(ANONYMOUS_CART_ID_KEY)
+    const localItems = items
+    
+    if (anonymousCartId && localItems.length > 0) {
+      // Merge anonymous cart with DB cart
+      mergeCart.mutate(
+        { anonymousCartId, items: localItems },
+        {
+          onSuccess: () => {
+            // Clear anonymous cart
+            localStorage.removeItem(ANONYMOUS_CART_ID_KEY)
+            localStorage.removeItem(CART_STORAGE_KEY)
+            // Load merged cart from DB
+            if (dbCart) {
+              setItems(dbCart)
+            }
+            setMergeProcessed(userSessionKey)
+          },
+          onError: (error) => {
+            console.error('Failed to merge cart:', error)
+            // Fallback: just load DB cart
+            if (dbCart) {
+              setItems(dbCart)
+            }
+            setMergeProcessed(userSessionKey)
+          },
+        }
+      )
+    } else if (dbCart) {
+      // No anonymous cart, just load from DB
+      setItems(dbCart)
+      setMergeProcessed(userSessionKey)
+    }
+  }, [user, profile?.tenant_id, dbCart, isLoadingDBCart, mergeProcessed])
 
-  // Reset merge flag when user logs out
+  // Clear cart when user logs out
   useEffect(() => {
     if (!user) {
-      setHasMerged(false)
+      setItems([])
+      setMergeProcessed(null)
+      localStorage.removeItem(CART_STORAGE_KEY)
+      localStorage.removeItem(ANONYMOUS_CART_ID_KEY)
     }
   }, [user])
 
