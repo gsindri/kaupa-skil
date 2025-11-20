@@ -36,6 +36,7 @@ export function useKpis() {
         .from('orders')
         .select('id, order_lines(line_total)')
         .eq('tenant_id', tenantId)
+        .neq('status', 'draft')
         .gte('order_date', today.toISOString())
 
       if (ordersError) {
@@ -69,6 +70,7 @@ export function useKpis() {
           .from('orders')
           .select('id, order_lines(line_total)')
           .eq('tenant_id', tenantId)
+          .neq('status', 'draft')
           .gte('order_date', dayStart.toISOString())
           .lt('order_date', dayEnd.toISOString())
 
