@@ -1,24 +1,27 @@
-html {
-  scrollbar-gutter: stable both-edges;
-}
-
 :root {
-  --layout-rail: 72px;     /* nav rail width */
-  --page-max: 1440px;      /* shared marketing + app max width (matches widened app shell) */
-  --page-gutter: 2rem;     /* responsive page padding (lg: 32px) */
-  --header-h: 56px;        /* unified header height */
-  --toolbar-h: var(--header-h, 56px); /* toolbar follows header */
-  --chrome-h: var(--header-h);  /* chrome follows header */
-  --align-cap: min(
-    var(--page-max),
-    calc(100vw - (2 * var(--page-gutter)))
-  );
-  --sidebar-push: 0px;     /* dynamically updated by AppLayout */
+  --layout-rail: 72px;
+  /* nav rail width */
+  --page-max: 1440px;
+  /* shared marketing + app max width (matches widened app shell) */
+  --page-gutter: 2rem;
+  /* responsive page padding (lg: 32px) */
+  --header-h: 56px;
+  /* unified header height */
+  --toolbar-h: var(--header-h, 56px);
+  /* toolbar follows header */
+  --chrome-h: var(--header-h);
+  /* chrome follows header */
+  --align-cap: min(var(--page-max),
+      calc(100vw - (2 * var(--page-gutter))));
+  --sidebar-push: 0px;
+  /* dynamically updated by AppLayout */
   --header-left: var(--layout-rail);
 
   /* Filters panel tokens */
-  --filters-w: 320px;      /* desktop panel width */
-  --filters-w-mobile: min(92vw, 360px); /* mobile drawer width */
+  --filters-w: 320px;
+  /* desktop panel width */
+  --filters-w-mobile: min(92vw, 360px);
+  /* mobile drawer width */
   --filters-transition: 200ms cubic-bezier(0.4, 0, 0.2, 1);
 
   /* top bar sizing + radii */
@@ -76,16 +79,24 @@ html {
   --nav-ring-open: rgba(255, 255, 255, 0.5);
   --nav-focus: #28d7ff;
 
-  --z-rail: 60;      /* highest - sidebar always on top */
-  --z-stripe: 56;    /* cyan stripe above header */
-  --z-header: 55;    /* header content on top */
-  --z-chrome: 50;    /* chrome background below header */
-  --z-popover: 70;   /* overlay surfaces (menus, popovers) */
-  --z-dialog-overlay: 72; /* global dialog overlay layer */
-  --z-dialog-content: 80; /* spotlight/dialog content */
+  --z-rail: 60;
+  /* highest - sidebar always on top */
+  --z-stripe: 56;
+  /* cyan stripe above header */
+  --z-header: 55;
+  /* header content on top */
+  --z-chrome: 50;
+  /* chrome background below header */
+  --z-popover: 70;
+  /* overlay surfaces (menus, popovers) */
+  --z-dialog-overlay: 72;
+  /* global dialog overlay layer */
+  --z-dialog-content: 80;
+  /* spotlight/dialog content */
 
   /* Cart rail tokens */
-  --cart-rail-w: 240px;           /* cart width when open */
+  --cart-rail-w: 240px;
+  /* cart width when open */
   --cart-rail-transition: 240ms cubic-bezier(0.4, 0, 0.2, 1);
 
   /* Catalog toolbar tokens */
@@ -117,7 +128,8 @@ html {
 
 @media (max-width: 1024px) {
   :root {
-    --page-gutter: 1.5rem;  /* md: 24px */
+    --page-gutter: 1.5rem;
+    /* md: 24px */
   }
 }
 
@@ -133,7 +145,8 @@ html {
 
 @media (max-width: 640px) {
   :root {
-    --page-gutter: 1.25rem;  /* sm: 20px */
+    --page-gutter: 1.25rem;
+    /* sm: 20px */
   }
 }
 
@@ -164,7 +177,7 @@ html {
   .transition-\[width\] {
     transition: none !important;
   }
-  
+
   .filters-drawer,
   .filters-backdrop {
     transition: none !important;

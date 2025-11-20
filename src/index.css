@@ -1,4 +1,3 @@
-
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&display=swap');
 @import './styles/globals.css';
 @import './styles/layout-vars.css';
@@ -9,32 +8,78 @@
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
 
-:root{
+:root {
   --font-ui: "Red Hat Text", system-ui, "Segoe UI", "Roboto", "Arial", sans-serif;
   --font-display: "Red Hat Display", var(--font-ui);
 
   /* type scale (tweak if needed) */
-  --fs-h1: 28px; --fs-h2: 22px; --fs-h3: 18px; --fs-body: 15px; --fs-meta: 13px;
+  --fs-h1: 28px;
+  --fs-h2: 22px;
+  --fs-h3: 18px;
+  --fs-body: 15px;
+  --fs-meta: 13px;
 }
 
 /* Defaults */
-html { font-family: var(--font-ui); font-size: 15px; font-variant-numeric: tabular-nums; }
-body { font-variant-numeric: inherit; }
+html {
+  font-family: var(--font-ui);
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+}
+
+body {
+  font-variant-numeric: inherit;
+}
 
 /* Headings / nav “brand voice” */
-h1,h2,h3,.display { font-family: var(--font-display); font-weight: 600; letter-spacing: -0.01em; }
-h1{ font-size: var(--fs-h1); } h2{ font-size: var(--fs-h2); } h3{ font-size: var(--fs-h3); }
+h1,
+h2,
+h3,
+.display {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+h1 {
+  font-size: var(--fs-h1);
+}
+
+h2 {
+  font-size: var(--fs-h2);
+}
+
+h3 {
+  font-size: var(--fs-h3);
+}
 
 /* UI text */
-p,li,button,input,select,textarea,table { font-size: var(--fs-body); }
-.meta, small { font-size: var(--fs-meta); opacity:.9; }
+p,
+li,
+button,
+input,
+select,
+textarea,
+table {
+  font-size: var(--fs-body);
+}
 
-.tabular { font-variant-numeric: tabular-nums; }
+.meta,
+small {
+  font-size: var(--fs-meta);
+  opacity: .9;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
 
 /* Import our comprehensive design system */
 
 /* Ensure no default margins/padding for clean layout */
-html, body, #root {
+html,
+body,
+#root {
   margin: 0;
   padding: 0;
   height: 100%;
@@ -42,7 +87,8 @@ html, body, #root {
 
 /* Navigation rail icon sizing respects component-provided dimensions */
 .nav-rail {
-  --icon-size: 28px; /* Fallback size aligned with PrimaryNavRail */
+  --icon-size: 28px;
+  /* Fallback size aligned with PrimaryNavRail */
   --icon-stroke: 2;
 }
 
@@ -59,8 +105,10 @@ html, body, #root {
 
 /* Set a fallback header height so content can offset correctly */
 :root {
-  --sidebar-w: 288px; /* fixed sidebar width */
-  --header-right: 0px; /* reserved for symmetry */
+  --sidebar-w: 288px;
+  /* fixed sidebar width */
+  --header-right: 0px;
+  /* reserved for symmetry */
 }
 
 @media (max-width: 1024px) {
@@ -89,11 +137,11 @@ body {
 }
 
 
-main > *:first-child {
+main>*:first-child {
   margin-top: 0;
 }
 
-html { scrollbar-gutter: stable; }
+
 
 #catalogHeader,
 [data-app-header="true"] {
@@ -118,9 +166,10 @@ html { scrollbar-gutter: stable; }
   z-index: -1;
 }
 
-@media (prefers-reduced-motion: reduce){
+@media (prefers-reduced-motion: reduce) {
+
   #catalogHeader,
-  [data-app-header="true"]{
+  [data-app-header="true"] {
     transition: none;
   }
 }
@@ -152,4 +201,3 @@ a:focus-visible,
   outline: 2px solid hsl(var(--ring));
   outline-offset: 2px;
 }
-
