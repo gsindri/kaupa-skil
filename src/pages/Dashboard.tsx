@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { useDashboardTelemetry } from '@/hooks/useDashboardTelemetry'
 import { useKpis } from '@/hooks/useKpis'
+import { useBasket } from '@/contexts/useBasket'
 import { formatCurrency } from '@/lib/format'
 
 type DashboardMetrics = {
@@ -27,6 +28,7 @@ type DashboardMetrics = {
 export default function Dashboard() {
   const trackTelemetry = useDashboardTelemetry()
   const { data: kpis, isLoading: isLoadingKpis } = useKpis()
+  const basket = useBasket()
 
   useEffect(() => {
     trackTelemetry('dashboard_enter')
@@ -68,7 +70,10 @@ export default function Dashboard() {
 
       <ContentRail includeRailPadding={false}>
         <div className="mx-auto flex w-full max-w-[1100px] flex-col gap-7">
-          <OrderControlCard cartCount={12} cartTotal="84.300" />
+          <OrderControlCard 
+            cartCount={basket.getTotalItems()} 
+            cartTotal={formatCurrency(basket.getTotalPrice(true))}
+          />
 
           <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
             <DashboardMetricsCard metrics={metrics} isLoading={isLoadingKpis} />
@@ -80,7 +85,13 @@ export default function Dashboard() {
   )
 }
 
-function OrderControlCard({ cartCount, cartTotal }: { cartCount: number; cartTotal: string }) {
+function OrderControlCard({ 
+  cartCount, 
+  cartTotal
+}: { 
+  cartCount: number
+  cartTotal: string
+}) {
   return (
     <Card
       className="relative overflow-hidden border-white/10 bg-gradient-to-br from-[var(--brand-from)] via-[var(--brand-via)] to-[var(--brand-to)] text-ink shadow-[0_28px_80px_rgba(2,10,28,0.5)] transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-[0_32px_90px_rgba(2,10,28,0.6)]"

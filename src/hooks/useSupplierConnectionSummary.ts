@@ -32,10 +32,10 @@ export function useSupplierConnectionSummary() {
         }
       }
 
-      const [{ data: tenantSuppliers, error: tenantSuppliersError }, { data: connections, error: connectionsError }] =
+      const [{ data: credentials, error: credentialsError }, { data: connections, error: connectionsError }] =
         await Promise.all([
           supabase
-            .from('tenant_suppliers')
+            .from('supplier_credentials')
             .select('supplier_id')
             .eq('tenant_id', workspaceId),
           supabase
@@ -44,15 +44,15 @@ export function useSupplierConnectionSummary() {
             .eq('tenant_id', workspaceId),
         ])
 
-      if (tenantSuppliersError) {
-        console.warn('Failed to load tenant suppliers', tenantSuppliersError)
+      if (credentialsError) {
+        console.warn('Failed to load supplier credentials', credentialsError)
       }
 
       if (connectionsError) {
         console.warn('Failed to load supplier connections', connectionsError)
       }
 
-      const supplierCount = tenantSuppliers?.length ?? 0
+      const supplierCount = credentials?.length ?? 0
       const connectionRecords = connections ?? []
       const linkedCount = connectionRecords.filter((record: any) => record?.status === 'connected').length
       const pendingInvites = connectionRecords.filter((record: any) => record?.status === 'needs_login').length

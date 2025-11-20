@@ -44,6 +44,63 @@ export type Database = {
         }
         Relationships: []
       }
+      alerts: {
+        Row: {
+          alert_type: string
+          created_at: string
+          id: string
+          metadata: Json | null
+          resolved_at: string | null
+          severity: string
+          sku: string | null
+          summary: string
+          supplier_id: string | null
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          alert_type: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          resolved_at?: string | null
+          severity: string
+          sku?: string | null
+          summary: string
+          supplier_id?: string | null
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          alert_type?: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          resolved_at?: string | null
+          severity?: string
+          sku?: string | null
+          summary?: string
+          supplier_id?: string | null
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "alerts_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "alerts_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_events: {
         Row: {
           action: string
@@ -208,6 +265,60 @@ export type Database = {
             columns: ["parent_id"]
             isOneToOne: false
             referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      delivery_rules: {
+        Row: {
+          created_at: string
+          cutoff_time: string | null
+          delivery_days: number[]
+          flat_fee: number | null
+          free_threshold_ex_vat: number | null
+          id: string
+          is_active: boolean
+          supplier_id: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          cutoff_time?: string | null
+          delivery_days: number[]
+          flat_fee?: number | null
+          free_threshold_ex_vat?: number | null
+          id?: string
+          is_active?: boolean
+          supplier_id: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          cutoff_time?: string | null
+          delivery_days?: number[]
+          flat_fee?: number | null
+          free_threshold_ex_vat?: number | null
+          id?: string
+          is_active?: boolean
+          supplier_id?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "delivery_rules_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "delivery_rules_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
             referencedColumns: ["id"]
           },
         ]
@@ -764,6 +875,57 @@ export type Database = {
             columns: ["supplier_id"]
             isOneToOne: false
             referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      supplier_connections: {
+        Row: {
+          created_at: string
+          id: string
+          last_sync: string | null
+          next_scheduled_sync: string | null
+          status: string
+          supplier_id: string
+          sync_error: string | null
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_sync?: string | null
+          next_scheduled_sync?: string | null
+          status: string
+          supplier_id: string
+          sync_error?: string | null
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_sync?: string | null
+          next_scheduled_sync?: string | null
+          status?: string
+          supplier_id?: string
+          sync_error?: string | null
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_connections_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supplier_connections_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
             referencedColumns: ["id"]
           },
         ]

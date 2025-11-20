@@ -5,9 +5,13 @@ import { BasketContext } from './BasketProviderUtils'
 import { ToastAction } from '@/components/ui/toast'
 import { flyToCart } from '@/lib/flyToCart'
 import { getCachedImageUrl } from '@/services/ImageCache'
+import { useAuth } from './useAuth'
+import { useMergeAnonymousCart } from '@/hooks/useCartMutations'
+import { useLoadCartFromDB } from '@/hooks/useLoadCartFromDB'
 
 const CART_STORAGE_KEY = 'procurewise-basket'
 const CART_PIN_STORAGE_KEY = 'procurewise-cart-pinned'
+const ANONYMOUS_CART_ID_KEY = 'procurewise-anonymous-cart-id'
 
 const PLACEHOLDER_SUPPLIER_NAMES = new Set([
   '??',
@@ -94,6 +98,10 @@ const extractLegacySupplierName = (it: any): string => {
   return sanitizeSupplierName(supplierNameCandidate, supplierIdCandidate)
 }
 export default function BasketProvider({ children }: { children: React.ReactNode }) {
+  const { user, profile } = useAuth()
+  const mergeCart = useMergeAnonymousCart()
+  const { data: dbCart, isLoading: isLoadingDBCart } = useLoadCartFromDB()
+  
   const [items, setItems] = useState<CartItem[]>(() => {
     const saved = localStorage.getItem(CART_STORAGE_KEY)
     if (!saved) return []
@@ -133,6 +141,62 @@ export default function BasketProvider({ children }: { children: React.ReactNode
       return []
     }
   })
+  
+  const [hasMerged, setHasMerged] = useState(false)
+
+  // Generate anonymous cart ID if not authenticated
+  useEffect(() => {
+    if (!user && items.length > 0) {
+      const existingId = localStorage.getItem(ANONYMOUS_CART_ID_KEY)
+      if (!existingId) {
+        const newId = crypto.randomUUID()
+        localStorage.setItem(ANONYMOUS_CART_ID_KEY, newId)
+      }
+    }
+  }, [user, items.length])
+
+  // Load cart from DB for authenticated users
+  useEffect(() => {
+    if (user && profile?.tenant_id && dbCart && !isLoadingDBCart && !hasMerged) {
+      // Check if there's an anonymous cart to merge
+      const anonymousCartId = localStorage.getItem(ANONYMOUS_CART_ID_KEY)
+      const localItems = items
+
+      if (anonymousCartId && localItems.length > 0) {
+        // Merge anonymous cart
+        mergeCart.mutate(
+          { anonymousCartId, items: localItems },
+          {
+            onSuccess: () => {
+              // Clear anonymous cart
+              localStorage.removeItem(ANONYMOUS_CART_ID_KEY)
+              localStorage.removeItem(CART_STORAGE_KEY)
+              // Load merged cart from DB
+              setItems(dbCart)
+              setHasMerged(true)
+            },
+            onError: (error) => {
+              console.error('Failed to merge cart:', error)
+              // Fallback: just load DB cart
+              setItems(dbCart)
+              setHasMerged(true)
+            },
+          }
+        )
+      } else if (dbCart.length > 0) {
+        // No anonymous cart, just load from DB
+        setItems(dbCart)
+        setHasMerged(true)
+      }
+    }
+  }, [user, profile?.tenant_id, dbCart, isLoadingDBCart, hasMerged])
+
+  // Reset merge flag when user logs out
+  useEffect(() => {
+    if (!user) {
+      setHasMerged(false)
+    }
+  }, [user])
 
   const [isDrawerPinned, setIsDrawerPinned] = useState<boolean>(() => {
     if (typeof window === 'undefined') return false
