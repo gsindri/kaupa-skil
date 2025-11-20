@@ -32,6 +32,15 @@ export default function Dashboard() {
     trackTelemetry('dashboard_enter')
   }, [trackTelemetry])
 
+  React.useLayoutEffect(() => {
+    // Fix for "white gap" on right edge: ensure body background matches dashboard background
+    const originalBg = document.body.style.backgroundColor
+    document.body.style.backgroundColor = '#0f2031' // var(--brand-bg)
+    return () => {
+      document.body.style.backgroundColor = originalBg
+    }
+  }, [])
+
   const metrics: DashboardMetrics = {
     orders: kpis?.ordersToday || 0,
     spend: formatCurrency(kpis?.spendToday || 0),

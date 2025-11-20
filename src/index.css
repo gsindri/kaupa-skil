@@ -71,24 +71,6 @@ small {
 }
 
 .tabular {
-  font-variant-numeric: tabular-nums;
-}
-
-/* Import our comprehensive design system */
-
-/* Ensure no default margins/padding for clean layout */
-html,
-body,
-#root {
-  margin: 0;
-  padding: 0;
-  height: 100%;
-}
-
-/* Navigation rail icon sizing respects component-provided dimensions */
-.nav-rail {
-  --icon-size: 28px;
-  /* Fallback size aligned with PrimaryNavRail */
   --icon-stroke: 2;
 }
 

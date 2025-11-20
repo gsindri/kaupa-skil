@@ -118,21 +118,6 @@
 
   /* Layout */
   --page-top-gap: 1.5rem;
-
-  /* Softer borders and shadows */
-  --border-soft: hsl(var(--foreground) / 0.15);
-}
-
-/* Ensure body doesn't have horizontal overflow */
-html,
-body {
-  overflow-x: hidden;
-  width: 100%;
-  max-width: 100vw;
-}
-
-/* Professional typography with tabular numbers */
-body {
   font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
   font-variation-settings: 'opsz' 32;
 }

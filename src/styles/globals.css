@@ -81,12 +81,6 @@
   --catalog-focus-ring: rgba(33, 212, 214, 0.92);
 }
 
-body {
-  background-color: var(--brand-bg);
-  color: var(--text);
-  overflow-x: hidden;
-}
-
 input[type='search']::-webkit-search-decoration,
 input[type='search']::-webkit-search-results-button,
 input[type='search']::-webkit-search-results-decoration {
@@ -128,18 +122,6 @@ input[type='search'] {
   --catalog-image-floor: linear-gradient(180deg, rgba(0, 0, 0, 0) 70%, rgba(0, 0, 0, 0.28) 100%);
   --catalog-image-placeholder: rgba(255, 255, 255, 0.2);
   --catalog-card-surface: rgba(13, 19, 32, 0.88);
-  --catalog-card-surface-hover: rgba(13, 19, 32, 0.94);
-  --catalog-card-ring-idle: rgba(148, 163, 184, 0.32);
-  --catalog-card-ring-hover: rgba(148, 163, 184, 0.42);
-  --catalog-card-ring-selected: rgba(33, 212, 214, 0.65);
-  --catalog-card-shadow: 0 28px 48px -30px rgba(2, 6, 23, 0.72), 0 8px 22px -20px rgba(2, 6, 23, 0.5);
-  --catalog-card-shadow-hover: 0 36px 60px -26px rgba(2, 6, 23, 0.76), 0 16px 32px -20px rgba(2, 6, 23, 0.62);
-  --catalog-focus-ring: rgba(99, 233, 236, 0.92);
-  --catalog-focus-glow: rgba(33, 212, 214, 0.3);
-  --catalog-cta-bg: linear-gradient(135deg, rgba(96, 126, 236, 0.92) 0%, rgba(83, 108, 224, 0.92) 100%);
-  --catalog-cta-bg-hover: linear-gradient(135deg, rgba(106, 138, 244, 0.96) 0%, rgba(94, 121, 230, 0.96) 100%);
-  --catalog-cta-shadow: 0 20px 36px -20px rgba(8, 15, 35, 0.62);
-  --catalog-cta-bg-disabled: linear-gradient(135deg, rgba(120, 140, 220, 0.24) 0%, rgba(108, 128, 208, 0.24) 100%);
 }
 
 [data-chrome-layer],
