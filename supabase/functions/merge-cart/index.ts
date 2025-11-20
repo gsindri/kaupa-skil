@@ -128,7 +128,23 @@ Deno.serve(async (req) => {
       )
 
       // Insert or update order lines
+      const skippedItems: string[] = []
+      const processedItems: string[] = []
+
       for (const item of supplierItems) {
+        // Validate that supplier_product exists
+        const { data: supplierProduct, error: productError } = await supabase
+          .from('supplier_product')
+          .select('id')
+          .eq('id', item.supplierItemId)
+          .single()
+
+        if (productError || !supplierProduct) {
+          console.warn(`Skipping invalid product ${item.supplierItemId}: product not found`)
+          skippedItems.push(item.supplierItemId)
+          continue
+        }
+
         const existingLine = existingLineMap.get(item.supplierItemId)
 
         if (existingLine) {
@@ -145,10 +161,12 @@ Deno.serve(async (req) => {
 
           if (updateError) {
             console.error('Error updating order line:', updateError)
-            throw updateError
+            skippedItems.push(item.supplierItemId)
+            continue
           }
 
           console.log(`Updated order line ${existingLine.id} with new quantity ${newQuantity}`)
+          processedItems.push(item.supplierItemId)
         } else {
           // Insert new order line
           const { error: lineError } = await supabase.from('order_lines').insert({
@@ -164,10 +182,12 @@ Deno.serve(async (req) => {
 
           if (lineError) {
             console.error('Error creating order line:', lineError)
-            throw lineError
+            skippedItems.push(item.supplierItemId)
+            continue
           }
 
           console.log(`Created order line for item ${item.supplierItemId}`)
+          processedItems.push(item.supplierItemId)
         }
       }
 
@@ -175,6 +195,9 @@ Deno.serve(async (req) => {
         supplierId,
         orderId,
         itemsCount: supplierItems.length,
+        processedCount: processedItems.length,
+        skippedCount: skippedItems.length,
+        skippedItems: skippedItems.length > 0 ? skippedItems : undefined,
       })
     }
 
