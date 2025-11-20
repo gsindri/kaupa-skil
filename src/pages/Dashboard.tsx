@@ -15,7 +15,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { useDashboardTelemetry } from '@/hooks/useDashboardTelemetry'
 import { useKpis } from '@/hooks/useKpis'
-import { useCartSummary } from '@/hooks/useCartSummary'
+import { useBasket } from '@/contexts/useBasket'
 import { formatCurrency } from '@/lib/format'
 
 type DashboardMetrics = {
@@ -28,7 +28,7 @@ type DashboardMetrics = {
 export default function Dashboard() {
   const trackTelemetry = useDashboardTelemetry()
   const { data: kpis, isLoading: isLoadingKpis } = useKpis()
-  const { data: cart, isLoading: isLoadingCart } = useCartSummary()
+  const basket = useBasket()
 
   useEffect(() => {
     trackTelemetry('dashboard_enter')
@@ -62,9 +62,8 @@ export default function Dashboard() {
       <ContentRail includeRailPadding={false}>
         <div className="mx-auto flex w-full max-w-[1100px] flex-col gap-7">
           <OrderControlCard 
-            cartCount={cart?.itemCount || 0} 
-            cartTotal={formatCurrency(cart?.totalAmount || 0)}
-            isLoading={isLoadingCart}
+            cartCount={basket.getTotalItems()} 
+            cartTotal={formatCurrency(basket.getTotalPrice(true))}
           />
 
           <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
@@ -79,12 +78,10 @@ export default function Dashboard() {
 
 function OrderControlCard({ 
   cartCount, 
-  cartTotal, 
-  isLoading 
+  cartTotal
 }: { 
   cartCount: number
   cartTotal: string
-  isLoading?: boolean
 }) {
   return (
     <Card
@@ -107,8 +104,8 @@ function OrderControlCard({
             </div>
 
             <div className="grid grid-cols-2 gap-6 sm:gap-10">
-              <HeroMetric value={isLoading ? '...' : cartCount.toString()} label="IN CART" />
-              <HeroMetric value={isLoading ? '...' : cartTotal} label="TOTAL" />
+              <HeroMetric value={cartCount.toString()} label="IN CART" />
+              <HeroMetric value={cartTotal} label="TOTAL" />
             </div>
           </div>
 
