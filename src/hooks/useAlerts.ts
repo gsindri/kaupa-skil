@@ -18,15 +18,31 @@ export function useAlerts() {
   const { data: alerts, isLoading } = useQuery<AlertItem[]>({
     queryKey: [...queryKeys.dashboard.alerts(), profile?.tenant_id],
     queryFn: async () => {
-      try {
-        // Return empty array since alerts table doesn't exist yet
-        return []
-      } catch (error) {
+      if (!profile?.tenant_id) return []
+      
+      const { data, error } = await supabase
+        .from('alerts')
+        .select('id, supplier_id, sku, summary, severity, created_at')
+        .eq('tenant_id', profile.tenant_id)
+        .is('resolved_at', null)
+        .order('created_at', { ascending: false })
+        .limit(20)
+
+      if (error) {
         console.warn('Error fetching alerts:', error)
         return []
       }
+
+      return data?.map(row => ({
+        id: row.id,
+        supplier: row.supplier_id || '',
+        sku: row.sku || '',
+        summary: row.summary,
+        severity: row.severity as 'high' | 'medium' | 'info',
+        created_at: row.created_at,
+      })) || []
     },
-    enabled: !!profile
+    enabled: !!profile?.tenant_id
   })
 
   return { alerts: alerts || [], isLoading }
