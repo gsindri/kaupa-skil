@@ -68,8 +68,8 @@ export function useLoadCartFromDB() {
           const catalogProduct = supplierProduct.catalog_product as any
 
           cartItems.push({
-            id: line.supplier_product_id,
-            supplierItemId: line.supplier_product_id,
+            id: supplierProduct.catalog_product_id,
+            supplierItemId: supplierProduct.catalog_product_id,
             supplierId: supplierProduct.supplier_id,
             supplierName: supplier?.display_name || supplier?.name || supplierProduct.supplier_id,
             supplierLogoUrl: supplier?.logo_url || null,
