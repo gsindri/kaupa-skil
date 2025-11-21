@@ -93,6 +93,7 @@ export function useLoadCartFromDB() {
         }
       }
 
+      console.log('Loaded cart items from DB:', cartItems)
       return cartItems
     },
     enabled: !!profile?.tenant_id,

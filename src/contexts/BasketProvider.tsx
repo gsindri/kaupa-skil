@@ -536,12 +536,19 @@ export default function BasketProvider({ children }: { children: React.ReactNode
     setItems(prev => {
       const previousItems = prev.map(i => ({ ...i }))
       const removed = prev.find(i => i.supplierItemId === supplierItemId)
+      console.log('removeItem called:', { supplierItemId, found: !!removed, removedItem: removed })
+
       const newItems = prev.filter(item => item.supplierItemId !== supplierItemId)
 
       // Persist based on cart mode
       if (mode === 'anonymous') {
         syncBasket(newItems)
       } else if (mode === 'authenticated' && removed) {
+        console.log('Triggering removeProductFromCartDB mutation:', {
+          supplierItemId: removed.supplierItemId,
+          supplierId: removed.supplierId,
+          orderLineId: removed.orderLineId
+        })
         // Persist to database using robust delete (removes all duplicates)
         removeProductFromCartDB.mutate({
           supplierItemId: removed.supplierItemId,
