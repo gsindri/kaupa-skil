@@ -77,9 +77,9 @@ export function useLoadCartFromDB() {
             displayName: catalogProduct?.name || 'Unknown Item',
             sku: supplierProduct.supplier_sku,
             packSize: line.pack_size || supplierProduct.pack_size || '',
-            packPrice: line.unit_price_per_pack,
-            unitPriceExVat: line.unit_price_per_pack / 1.24, // Assuming 24% VAT
-            unitPriceIncVat: line.unit_price_per_pack,
+            packPrice: line.unit_price_per_pack || null,
+            unitPriceExVat: line.unit_price_per_pack ? line.unit_price_per_pack / 1.24 : null,
+            unitPriceIncVat: line.unit_price_per_pack || null,
             quantity: line.quantity_packs,
             vatRate: 0.24,
             unit: 'pack',

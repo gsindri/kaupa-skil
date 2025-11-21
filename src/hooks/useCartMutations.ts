@@ -73,7 +73,7 @@ export function useAddToCartDB() {
             .from('order_lines')
             .update({
               quantity_packs: newQuantity,
-              line_total: (item.packPrice || 0) * newQuantity,
+              line_total: item.packPrice ? item.packPrice * newQuantity : null,
             })
             .eq('id', existingLine.id)
 
@@ -106,8 +106,8 @@ export function useAddToCartDB() {
           order_id: orderId,
           supplier_product_id: supplierProduct.id,
           quantity_packs: item.quantity,
-          unit_price_per_pack: item.packPrice || 0,
-          line_total: (item.packPrice || 0) * item.quantity,
+          unit_price_per_pack: item.packPrice ?? null,
+          line_total: item.packPrice ? item.packPrice * item.quantity : null,
           pack_size: item.packSize,
           currency: 'ISK',
           vat_included: true,
@@ -276,7 +276,7 @@ export function useUpdateProductQuantityDB() {
         .from('order_lines')
         .update({
           quantity_packs: quantity,
-          line_total: packPrice * quantity
+          line_total: packPrice ? packPrice * quantity : null
         })
         .eq('id', primaryLine.id)
 
