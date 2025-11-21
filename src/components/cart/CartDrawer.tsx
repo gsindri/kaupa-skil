@@ -1,7 +1,7 @@
 import * as React from "react"
 import { Sheet, SheetContent } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
-import { ShoppingCart, X, Trash2 } from "lucide-react"
+import { ShoppingCart, X, Trash2, Loader2 } from "lucide-react"
 import { useCart } from "@/contexts/useBasket"
 import { useSettings } from "@/contexts/useSettings"
 import { QuantityStepper } from "./QuantityStepper"
@@ -25,6 +25,7 @@ export function CartDrawer() {
     getTotalPrice,
     isDrawerOpen,
     setIsDrawerOpen,
+    isHydrating,
   } = useCart()
   const { includeVat } = useSettings()
   const isDesktop = useMediaQuery(DESKTOP_MEDIA_QUERY)
@@ -51,7 +52,14 @@ export function CartDrawer() {
     window.location.assign("/checkout")
   }, [])
 
-  const cartItems = (
+  const cartItems = isHydrating ? (
+    <div className="cart-rail__body">
+      <div className="flex flex-col items-center justify-center p-8 gap-3">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <p className="text-sm text-muted-foreground">Loading your cart...</p>
+      </div>
+    </div>
+  ) : (
     <div className="cart-rail__body">
       {items.length === 0 ? (
         <div className="cart-rail__empty-state" role="status">

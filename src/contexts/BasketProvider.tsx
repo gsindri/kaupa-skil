@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { useToast } from '@/hooks/use-toast'
 import type { CartItem } from '@/lib/types'
-import { BasketContext } from './BasketProviderUtils'
+import { BasketContext, type CartMode } from './BasketProviderUtils'
 import { ToastAction } from '@/components/ui/toast'
 import { flyToCart } from '@/lib/flyToCart'
 import { getCachedImageUrl } from '@/services/ImageCache'
@@ -102,120 +102,158 @@ export default function BasketProvider({ children }: { children: React.ReactNode
   const mergeCart = useMergeAnonymousCart()
   const { data: dbCart, isLoading: isLoadingDBCart } = useLoadCartFromDB()
   
-  // Start with empty cart - will load from localStorage for anonymous users or DB for authenticated
+  // State machine for cart mode
+  const [mode, setMode] = useState<CartMode>('anonymous')
   const [items, setItems] = useState<CartItem[]>([])
-  
-  const [mergeProcessed, setMergeProcessed] = useState<string | null>(null)
 
-  // Load from localStorage only for anonymous users on mount
+  // Master effect: State machine for cart mode transitions
   useEffect(() => {
-    if (!user) {
-      const saved = localStorage.getItem(CART_STORAGE_KEY)
-      if (saved) {
-        try {
-          const parsed: any[] = JSON.parse(saved)
-          const loadedItems = parsed.map(it => ({
-            ...it,
-            supplierItemId: it.supplierItemId ?? it.id,
-            supplierLogoUrl: (() => {
-              const logoCandidate =
-                it.supplierLogoUrl ??
-                it.supplier_logo_url ??
-                it.logoUrl ??
-                it.supplierLogo ??
-                null
-              return logoCandidate ? getCachedImageUrl(logoCandidate) : null
-            })(),
-            supplierName: extractLegacySupplierName(it),
-            itemName:
-              it.itemName ??
-              it.name ??
-              it.title ??
-              it.productName,
-            displayName:
-              it.displayName ??
-              it.itemName ??
-              it.name ??
-              it.title ??
-              it.productName,
-          }))
-          setItems(loadedItems)
-        } catch {
-          // Ignore parse errors
+    // ANONYMOUS MODE: no user logged in
+    if (!user || !profile?.tenant_id) {
+      if (mode !== 'anonymous') {
+        setMode('anonymous')
+        setItems([])
+        localStorage.removeItem(CART_STORAGE_KEY)
+        localStorage.removeItem(ANONYMOUS_CART_ID_KEY)
+      }
+      
+      // Load from localStorage only on mount for anonymous users
+      if (mode === 'anonymous' && items.length === 0) {
+        const saved = localStorage.getItem(CART_STORAGE_KEY)
+        if (saved) {
+          try {
+            const parsed: any[] = JSON.parse(saved)
+            const loadedItems = parsed.map(it => ({
+              ...it,
+              supplierItemId: it.supplierItemId ?? it.id,
+              supplierLogoUrl: (() => {
+                const logoCandidate =
+                  it.supplierLogoUrl ??
+                  it.supplier_logo_url ??
+                  it.logoUrl ??
+                  it.supplierLogo ??
+                  null
+                return logoCandidate ? getCachedImageUrl(logoCandidate) : null
+              })(),
+              supplierName: extractLegacySupplierName(it),
+              itemName:
+                it.itemName ??
+                it.name ??
+                it.title ??
+                it.productName,
+              displayName:
+                it.displayName ??
+                it.itemName ??
+                it.name ??
+                it.title ??
+                it.productName,
+            }))
+            setItems(loadedItems)
+          } catch {
+            // Ignore parse errors
+          }
         }
       }
+      return
     }
-  }, [user])
+
+    // HYDRATING MODE: user logged in, need to merge carts
+    if (mode === 'anonymous') {
+      setMode('hydrating')
+      return
+    }
+
+    if (mode === 'hydrating') {
+      // Wait for DB cart to load
+      if (isLoadingDBCart) {
+        return
+      }
+
+      // Get local anonymous cart snapshot
+      const anonymousCartId = localStorage.getItem(ANONYMOUS_CART_ID_KEY)
+      const localItems = items.length > 0 ? items : (() => {
+        const saved = localStorage.getItem(CART_STORAGE_KEY)
+        if (saved) {
+          try {
+            const parsed: any[] = JSON.parse(saved)
+            return parsed.map(it => ({
+              ...it,
+              supplierItemId: it.supplierItemId ?? it.id,
+              supplierLogoUrl: (() => {
+                const logoCandidate =
+                  it.supplierLogoUrl ??
+                  it.supplier_logo_url ??
+                  it.logoUrl ??
+                  it.supplierLogo ??
+                  null
+                return logoCandidate ? getCachedImageUrl(logoCandidate) : null
+              })(),
+              supplierName: extractLegacySupplierName(it),
+              itemName:
+                it.itemName ??
+                it.name ??
+                it.title ??
+                it.productName,
+              displayName:
+                it.displayName ??
+                it.itemName ??
+                it.name ??
+                it.title ??
+                it.productName,
+            }))
+          } catch {
+            return []
+          }
+        }
+        return []
+      })()
+
+      // Merge strategy
+      if (anonymousCartId && localItems.length > 0) {
+        // Merge anonymous cart with server cart
+        mergeCart.mutate(
+          { anonymousCartId, items: localItems },
+          {
+            onSuccess: () => {
+              // Clear anonymous cart data
+              localStorage.removeItem(ANONYMOUS_CART_ID_KEY)
+              localStorage.removeItem(CART_STORAGE_KEY)
+              // Switch to authenticated mode
+              setMode('authenticated')
+              setItems(dbCart || [])
+            },
+            onError: (error) => {
+              console.error('Failed to merge cart:', error)
+              // Fallback: just use DB cart
+              setMode('authenticated')
+              setItems(dbCart || [])
+            },
+          }
+        )
+      } else {
+        // No local cart to merge, just use DB cart
+        setMode('authenticated')
+        setItems(dbCart || [])
+      }
+      return
+    }
+
+    // AUTHENTICATED MODE: server is boss
+    if (mode === 'authenticated' && !isLoadingDBCart) {
+      setItems(dbCart || [])
+    }
+  }, [user, profile?.tenant_id, mode, dbCart, isLoadingDBCart])
 
   // Generate anonymous cart ID if not authenticated
   useEffect(() => {
-    if (!user && items.length > 0) {
+    if (mode === 'anonymous' && items.length > 0) {
       const existingId = localStorage.getItem(ANONYMOUS_CART_ID_KEY)
       if (!existingId) {
         const newId = crypto.randomUUID()
         localStorage.setItem(ANONYMOUS_CART_ID_KEY, newId)
       }
     }
-  }, [user, items.length])
-
-  // Load cart from DB for authenticated users
-  useEffect(() => {
-    if (!user || !profile?.tenant_id || isLoadingDBCart) return
-    
-    const userSessionKey = `${user.id}-${profile.tenant_id}`
-    
-    // Check if merge was already processed for this login session
-    if (mergeProcessed === userSessionKey) {
-      // Already merged/loaded for this session, always sync with DB (even if empty)
-      setItems(dbCart || [])
-      return
-    }
-    
-    // First time loading for this session - check for anonymous cart
-    const anonymousCartId = localStorage.getItem(ANONYMOUS_CART_ID_KEY)
-    const localItems = items
-    
-    if (anonymousCartId && localItems.length > 0) {
-      // Merge anonymous cart with DB cart
-      mergeCart.mutate(
-        { anonymousCartId, items: localItems },
-        {
-          onSuccess: () => {
-            // Clear anonymous cart
-            localStorage.removeItem(ANONYMOUS_CART_ID_KEY)
-            localStorage.removeItem(CART_STORAGE_KEY)
-            // Load merged cart from DB
-            if (dbCart) {
-              setItems(dbCart)
-            }
-            setMergeProcessed(userSessionKey)
-          },
-          onError: (error) => {
-            console.error('Failed to merge cart:', error)
-            // Fallback: just load DB cart
-            if (dbCart) {
-              setItems(dbCart)
-            }
-            setMergeProcessed(userSessionKey)
-          },
-        }
-      )
-    } else {
-      // No anonymous cart, load from DB (even if empty)
-      setItems(dbCart || [])
-      setMergeProcessed(userSessionKey)
-    }
-  }, [user, profile?.tenant_id, dbCart, isLoadingDBCart, mergeProcessed])
-
-  // Clear cart when user logs out
-  useEffect(() => {
-    if (!user) {
-      setItems([])
-      setMergeProcessed(null)
-      localStorage.removeItem(CART_STORAGE_KEY)
-      localStorage.removeItem(ANONYMOUS_CART_ID_KEY)
-    }
-  }, [user])
+  }, [mode, items.length])
 
   const [isDrawerPinned, setIsDrawerPinned] = useState<boolean>(() => {
     if (typeof window === 'undefined') return false
@@ -233,7 +271,7 @@ export default function BasketProvider({ children }: { children: React.ReactNode
 
   // Sync basket across tabs (only for anonymous users)
   useEffect(() => {
-    if (user) return // Don't sync for authenticated users
+    if (mode !== 'anonymous') return // Only sync in anonymous mode
     
     const channel =
       typeof BroadcastChannel !== 'undefined'
@@ -251,11 +289,11 @@ export default function BasketProvider({ children }: { children: React.ReactNode
       channel?.removeEventListener('message', handleMessage)
       channel?.close()
     }
-  }, [user])
+  }, [mode])
 
   // Fallback: cross-tab sync via storage events (only for anonymous users)
   useEffect(() => {
-    if (user) return // Don't sync for authenticated users
+    if (mode !== 'anonymous') return // Only sync in anonymous mode
     
     const onStorage = (e: StorageEvent) => {
       if (e.key === CART_STORAGE_KEY && e.newValue) {
@@ -268,14 +306,14 @@ export default function BasketProvider({ children }: { children: React.ReactNode
     }
     window.addEventListener('storage', onStorage)
     return () => window.removeEventListener('storage', onStorage)
-  }, [user])
+  }, [mode])
 
   const syncBasket = useCallback((() => {
     let timeout: number | undefined
     let latest: CartItem[] = []
     const send = (items: CartItem[]) => {
-      // Only persist to localStorage for anonymous users
-      if (!user) {
+      // Only persist to localStorage in anonymous mode
+      if (mode === 'anonymous') {
         localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items))
         if (typeof BroadcastChannel !== 'undefined') {
           const channel = new BroadcastChannel('procurewise-basket')
@@ -289,7 +327,7 @@ export default function BasketProvider({ children }: { children: React.ReactNode
       if (timeout) window.clearTimeout(timeout)
       timeout = window.setTimeout(() => send(latest), 400)
     }
-  })(), [user])
+  })(), [mode])
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -495,7 +533,9 @@ export default function BasketProvider({ children }: { children: React.ReactNode
       setIsDrawerOpen,
       isDrawerPinned,
       setIsDrawerPinned,
-      cartPulseSignal
+      cartPulseSignal,
+      cartMode: mode,
+      isHydrating: mode === 'hydrating'
     }}>
       {children}
     </BasketContext.Provider>

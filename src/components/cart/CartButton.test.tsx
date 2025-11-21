@@ -46,7 +46,9 @@ function renderWithProviders(items: CartItem[]) {
     setIsDrawerOpen: vi.fn(),
     isDrawerPinned: false,
     setIsDrawerPinned: vi.fn(),
-    cartPulseSignal: 0
+    cartPulseSignal: 0,
+    cartMode: 'anonymous',
+    isHydrating: false,
   }
 
   const settingsValue: SettingsContextType = {
