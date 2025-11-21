@@ -61,8 +61,8 @@ export default function ForgotPassword() {
         /over_email_send_rate_limit/i.test(msg)
           ? "Too many reset emails sent. Please wait a few minutes and try again."
           : /invalid/i.test(msg) && /email/i.test(msg)
-          ? "That email doesn’t look valid."
-          : msg;
+            ? "That email doesn’t look valid."
+            : msg;
 
       toast({
         variant: "destructive",
@@ -121,8 +121,8 @@ export default function ForgotPassword() {
                     {isLoading
                       ? "Sending…"
                       : cooldown > 0
-                      ? `Resend in ${cooldown}s`
-                      : "Send reset link"}
+                        ? `Resend in ${cooldown}s`
+                        : "Send reset link"}
                   </button>
 
                   <div className="relative my-1">
@@ -197,7 +197,7 @@ function TopBanner() {
       <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
         {/* Wordmark */}
         <div className="flex items-center">
-          <HeildaLogo className="h-6 -ml-px" />
+          <HeildaLogo className="h-6 -ml-px" variant="dark" />
         </div>
 
         {/* Auth actions */}

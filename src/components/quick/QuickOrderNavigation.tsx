@@ -29,7 +29,7 @@ export function QuickOrderNavigation() {
     <>
       <div className="flex items-center justify-between px-4 py-3 bg-background border-b">
         <div className="flex items-center gap-4">
-          <HeildaLogo className="h-6 w-auto" />
+          <HeildaLogo className="h-6 w-auto" variant="auto" />
           <Button
             variant="ghost"
             size="sm"

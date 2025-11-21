@@ -234,7 +234,7 @@ export function ExistingUserOnboarding() {
       <div className="mx-auto w-full max-w-xl px-4">
         <header className="mb-10 space-y-6 text-center">
           <div className="flex justify-center">
-            <HeildaLogo className="h-12 w-auto" />
+            <HeildaLogo className="h-12 w-auto" variant="dark" />
           </div>
           <div className="space-y-2">
             <div className="flex items-center justify-center gap-2 text-[color:var(--text)]">

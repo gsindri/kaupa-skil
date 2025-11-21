@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { HeildaLogo } from "@/components/branding/HeildaLogo";
 
 export default function ResetPassword() {
   const navigate = useNavigate();
@@ -155,7 +156,7 @@ function TopBanner() {
     <div className="fixed inset-x-0 top-0 z-10 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/70 border-b border-slate-200">
       <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
         <div className="flex items-center">
-          <HeildaLogo className="h-6 -ml-px" />
+          <HeildaLogo className="h-6 -ml-px" variant="dark" />
         </div>
         <div className="flex items-center gap-3">
           <Link
@@ -176,51 +177,4 @@ function TopBanner() {
   );
 }
 
-function HeildaLogo({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 320 64" role="img" aria-label="Heilda">
-      <defs>
-        <linearGradient id="arcGrad" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0" stopColor="#C7793B" />
-          <stop offset="1" stopColor="#F6B044" />
-        </linearGradient>
-        <linearGradient id="textGrad" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0" stopColor="#5F7597" />
-          <stop offset="1" stopColor="#D18A3A" />
-        </linearGradient>
-      </defs>
-      <path d="M25,34 A16,16 0 0 1 41,20" fill="none" stroke="url(#arcGrad)" strokeWidth="5" strokeLinecap="round" />
-      <text
-        x="46"
-        y="42"
-        fontWeight="500"
-        fontSize="30"
-        letterSpacing=".02em"
-        fill="url(#textGrad)"
-        stroke="#0B1220"
-        strokeWidth=".22"
-        strokeOpacity=".10"
-        style={{
-          paintOrder: "stroke fill",
-          strokeLinejoin: "round",
-          fontFamily: "var(--font-display)",
-        }}
-      >
-        Heilda
-      </text>
-      <defs>
-        <filter id="softGlow" x="-50%" y="-50%" width="200%" height="200%">
-          <feGaussianBlur in="SourceGraphic" stdDeviation="1.0" result="blur" />
-          <feMerge>
-            <feMergeNode in="blur" />
-            <feMergeNode in="SourceGraphic" />
-          </feMerge>
-        </filter>
-      </defs>
-      <g filter="url(#softGlow)">
-        <circle cx="84.6" cy="14.1" r="2.0" fill="#F6B044" opacity="0.85" />
-      </g>
-      <circle cx="84.6" cy="14.1" r="2.6" fill="none" stroke="url(#arcGrad)" strokeWidth="1.1" opacity="0.9" />
-    </svg>
-  );
-}
+

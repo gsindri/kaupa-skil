@@ -18,15 +18,15 @@ export function PublicNavigation({ catalogVisible, headerRef }: PublicNavigation
     <header
       ref={headerRef}
       data-app-header="true"
-        className={cn(
-          "fixed top-0 left-0 right-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60",
-          "transition-shadow duration-300",
-          catalogVisible ? "shadow-md" : "shadow-sm"
-        )}
-        style={{
-          paddingLeft: 'var(--layout-rail, 72px)'
-        }}
-      >
+      className={cn(
+        "fixed top-0 left-0 right-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60",
+        "transition-shadow duration-300",
+        catalogVisible ? "shadow-md" : "shadow-sm"
+      )}
+      style={{
+        paddingLeft: 'var(--layout-rail, 72px)'
+      }}
+    >
       <div
         className="mx-auto flex h-20 w-full items-center justify-between"
         style={{
@@ -36,7 +36,7 @@ export function PublicNavigation({ catalogVisible, headerRef }: PublicNavigation
       >
         {/* Logo */}
         <Link to="/" className="flex items-center">
-          <HeildaLogo />
+          <HeildaLogo variant="auto" />
         </Link>
 
         {/* Right side actions */}
@@ -46,11 +46,11 @@ export function PublicNavigation({ catalogVisible, headerRef }: PublicNavigation
             labelClassName="text-foreground"
             caretClassName="text-muted-foreground"
           />
-          
+
           <Button asChild variant="ghost">
             <Link to="/catalog">Explore catalog</Link>
           </Button>
-          
+
           <Button asChild variant="default">
             <Link to="/login">Log in</Link>
           </Button>

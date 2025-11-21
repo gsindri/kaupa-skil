@@ -48,9 +48,9 @@ type AddressValues = {
 }
 
 // Combined form values from all steps
-type CombinedFormValues = OrganizationBasicsFormValues & 
-  DeliveryDetailsFormValues & 
-  InvoicingSetupFormValues & 
+type CombinedFormValues = OrganizationBasicsFormValues &
+  DeliveryDetailsFormValues &
+  InvoicingSetupFormValues &
   ContactInformationFormValues
 
 const trimString = (value?: string | null) => value?.trim() ?? ''
@@ -551,19 +551,19 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
   const exitDialogCopy =
     exitDialogContext === 'blocked'
       ? {
-          title: t('exitDialog.title'),
-          description: t('exitDialog.blockedDescription')
-        }
+        title: t('exitDialog.title'),
+        description: t('exitDialog.blockedDescription')
+      }
       : {
-          title: t('exitDialog.title'),
-          description: t('exitDialog.manualDescription')
-        }
+        title: t('exitDialog.title'),
+        description: t('exitDialog.manualDescription')
+      }
 
   // Step-specific footers
   const stepFooter = useMemo(() => {
     const isFirstStep = currentStep === 1
     const isLastStep = currentStep === TOTAL_STEPS
-    
+
     if (isLastStep) {
       // Review step footer
       return (
@@ -690,7 +690,7 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
       <div className="flex flex-1 flex-col items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
         <div className="w-full max-w-[520px] space-y-8">
           <div className="flex justify-center">
-            <HeildaLogo className="h-10 w-auto" />
+            <HeildaLogo className="h-10 w-auto" variant="auto" />
           </div>
 
           {/* Progress Header */}
@@ -714,7 +714,7 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
                 />
               ))}
             </div>
-          <p className="text-sm text-[color:var(--text-muted)]">
+            <p className="text-sm text-[color:var(--text-muted)]">
               {t('progress', { current: currentStep, total: TOTAL_STEPS })}
             </p>
           </div>
@@ -783,7 +783,7 @@ export function OnboardingWizard({ onSkip, onComplete }: OnboardingWizardProps) 
                 suppliers={marketplaceSuppliers}
                 selectedIds={selectedSupplierIds}
                 onToggle={handleSupplierToggle}
-                onInviteSupplier={() => {}}
+                onInviteSupplier={() => { }}
                 isLoading={suppliersLoading}
                 footer={null}
               />
