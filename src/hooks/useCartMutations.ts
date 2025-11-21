@@ -193,7 +193,21 @@ export function useRemoveProductFromCartDB() {
           console.log(`Deleted order_line directly by id=${orderLineId}`)
           return { deletedCount: count, method: 'direct-id' }
         }
-        console.warn(`Delete by orderLineId=${orderLineId} returned 0 rows. Trying fallbacks...`)
+        console.warn(`Delete by orderLineId=${orderLineId} returned 0 rows. Trying RPC force delete...`)
+
+        // STRATEGY 1.5: RPC Force Delete (Bypasses RLS if strict)
+        const { data: rpcSuccess, error: rpcError } = await supabase.rpc('delete_cart_item_force', {
+          p_order_line_id: orderLineId
+        })
+
+        if (rpcSuccess) {
+          console.log(`Deleted order_line via RPC force delete id=${orderLineId}`)
+          return { deletedCount: 1, method: 'rpc-force' }
+        }
+        if (rpcError) {
+          console.error('RPC force delete failed:', rpcError)
+          // Continue to other fallbacks just in case
+        }
       }
 
       // Find all draft orders for this tenant
