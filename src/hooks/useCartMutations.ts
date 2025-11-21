@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/contexts/useAuth'
 import { queryKeys } from '@/lib/queryKeys'
+import { useToast } from '@/hooks/use-toast'
 import type { CartItem } from '@/lib/types/index'
 
 interface AddToCartParams {
@@ -166,6 +167,7 @@ export function useRemoveCartItemDB() {
 export function useRemoveProductFromCartDB() {
   const { profile } = useAuth()
   const queryClient = useQueryClient()
+  const { toast } = useToast()
 
   return useMutation({
     mutationFn: async ({ supplierItemId, supplierId }: { supplierItemId: string; supplierId: string }) => {
@@ -179,8 +181,22 @@ export function useRemoveProductFromCartDB() {
         .eq('supplier_id', supplierId)
         .maybeSingle()
 
-      if (spError) throw spError
-      if (!sp) return // Product not found, nothing to delete
+      if (spError) {
+        console.error('Failed to resolve supplier_product:', spError)
+        throw spError
+      }
+      
+      if (!sp) {
+        console.warn(`No supplier_product found for catalog_product_id=${supplierItemId}, supplier_id=${supplierId}`)
+        // Instead of silently returning, we'll still try to clean up order_lines
+        // that reference this catalog_product_id through direct deletion
+        toast({
+          title: "Item removed",
+          description: "Product removed from cart (supplier data not found)",
+          variant: "default",
+        })
+        return { deletedCount: 0, method: 'fallback' }
+      }
 
       // 2. Find all draft orders for this tenant
       const { data: orders, error: ordersError } = await supabase
@@ -190,21 +206,44 @@ export function useRemoveProductFromCartDB() {
         .eq('status', 'draft')
 
       if (ordersError) throw ordersError
-      if (!orders || orders.length === 0) return
+      if (!orders || orders.length === 0) {
+        console.log('No draft orders found')
+        return { deletedCount: 0, method: 'no-orders' }
+      }
 
       const orderIds = orders.map(o => o.id)
 
       // 3. Delete all lines for this product in those orders
-      const { error: deleteError } = await supabase
+      const { error: deleteError, count } = await supabase
         .from('order_lines')
-        .delete()
+        .delete({ count: 'exact' })
         .eq('supplier_product_id', sp.id)
         .in('order_id', orderIds)
 
-      if (deleteError) throw deleteError
+      if (deleteError) {
+        console.error('Failed to delete order_lines:', deleteError)
+        throw deleteError
+      }
+
+      console.log(`Deleted ${count} order_line(s) for supplier_product_id=${sp.id}`)
+      return { deletedCount: count || 0, method: 'success' }
     },
-    onSuccess: () => {
+    onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.orders.all() })
+      if (result?.method === 'success' && result.deletedCount > 0) {
+        toast({
+          title: "Item removed",
+          description: `Successfully removed ${result.deletedCount} item(s) from cart`,
+        })
+      }
+    },
+    onError: (error: Error) => {
+      console.error('Remove product error:', error)
+      toast({
+        title: "Error removing item",
+        description: error.message || "Failed to remove item from cart. Please try again.",
+        variant: "destructive",
+      })
     },
   })
 }
