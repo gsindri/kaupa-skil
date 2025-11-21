@@ -175,7 +175,24 @@ export function useRemoveProductFromCartDB() {
     mutationFn: async ({ supplierItemId, supplierId, orderLineId }: { supplierItemId: string; supplierId: string; orderLineId?: string }) => {
       if (!profile?.tenant_id) throw new Error('Not authenticated')
 
-      // supplierItemId is already supplier_product_id from cart items
+      // supplierItemId is catalog_product_id, need to resolve to supplier_product_id
+      const { data: sp, error: spError } = await supabase
+        .from('supplier_product')
+        .select('id')
+        .eq('catalog_product_id', supplierItemId)
+        .eq('supplier_id', supplierId)
+        .maybeSingle()
+
+      if (spError) {
+        console.error('Failed to resolve supplier_product:', spError)
+        throw spError
+      }
+
+      if (!sp) {
+        console.warn(`No supplier_product found for catalog_product_id=${supplierItemId}, supplier_id=${supplierId}`)
+        return { deletedCount: 0 }
+      }
+
       // Find all draft orders for this tenant
       const { data: orders, error: ordersError } = await supabase
         .from('orders')
@@ -191,11 +208,11 @@ export function useRemoveProductFromCartDB() {
 
       const orderIds = orders.map(o => o.id)
 
-      // Delete by supplier_product_id (supplierItemId is already supplier_product_id)
+      // Delete by supplier_product_id (resolved from catalog_product_id)
       const { error: deleteError, count } = await supabase
         .from('order_lines')
         .delete({ count: 'exact' })
-        .eq('supplier_product_id', supplierItemId)
+        .eq('supplier_product_id', sp.id)
         .in('order_id', orderIds)
 
       if (deleteError) {
@@ -246,7 +263,17 @@ export function useUpdateProductQuantityDB() {
     }) => {
       if (!profile?.tenant_id) throw new Error('Not authenticated')
 
-      // supplierItemId is already supplier_product_id from cart items
+      // supplierItemId is catalog_product_id, need to resolve to supplier_product_id
+      const { data: sp, error: spError } = await supabase
+        .from('supplier_product')
+        .select('id')
+        .eq('catalog_product_id', supplierItemId)
+        .eq('supplier_id', supplierId)
+        .maybeSingle()
+
+      if (spError) throw spError
+      if (!sp) throw new Error('Product not found')
+
       // Find all draft orders
       const { data: orders, error: ordersError } = await supabase
         .from('orders')
@@ -263,7 +290,7 @@ export function useUpdateProductQuantityDB() {
       const { data: lines, error: linesError } = await supabase
         .from('order_lines')
         .select('id, order_id')
-        .eq('supplier_product_id', supplierItemId)
+        .eq('supplier_product_id', sp.id)
         .in('order_id', orderIds)
         .order('id') // Keep the oldest/first one
 
