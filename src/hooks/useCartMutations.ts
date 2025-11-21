@@ -163,6 +163,142 @@ export function useRemoveCartItemDB() {
   })
 }
 
+export function useRemoveProductFromCartDB() {
+  const { profile } = useAuth()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ supplierItemId, supplierId }: { supplierItemId: string; supplierId: string }) => {
+      if (!profile?.tenant_id) throw new Error('Not authenticated')
+
+      // 1. Resolve supplier_product_id
+      const { data: sp, error: spError } = await supabase
+        .from('supplier_product')
+        .select('id')
+        .eq('catalog_product_id', supplierItemId)
+        .eq('supplier_id', supplierId)
+        .maybeSingle()
+
+      if (spError) throw spError
+      if (!sp) return // Product not found, nothing to delete
+
+      // 2. Find all draft orders for this tenant
+      const { data: orders, error: ordersError } = await supabase
+        .from('orders')
+        .select('id')
+        .eq('tenant_id', profile.tenant_id)
+        .eq('status', 'draft')
+
+      if (ordersError) throw ordersError
+      if (!orders || orders.length === 0) return
+
+      const orderIds = orders.map(o => o.id)
+
+      // 3. Delete all lines for this product in those orders
+      const { error: deleteError } = await supabase
+        .from('order_lines')
+        .delete()
+        .eq('supplier_product_id', sp.id)
+        .in('order_id', orderIds)
+
+      if (deleteError) throw deleteError
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.orders.all() })
+    },
+  })
+}
+
+export function useUpdateProductQuantityDB() {
+  const { profile } = useAuth()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({
+      supplierItemId,
+      supplierId,
+      quantity,
+      packPrice,
+      packSize
+    }: {
+      supplierItemId: string
+      supplierId: string
+      quantity: number
+      packPrice: number
+      packSize?: string
+    }) => {
+      if (!profile?.tenant_id) throw new Error('Not authenticated')
+
+      // 1. Resolve supplier_product_id
+      const { data: sp, error: spError } = await supabase
+        .from('supplier_product')
+        .select('id')
+        .eq('catalog_product_id', supplierItemId)
+        .eq('supplier_id', supplierId)
+        .maybeSingle()
+
+      if (spError) throw spError
+      if (!sp) throw new Error('Product not found')
+
+      // 2. Find all draft orders
+      const { data: orders, error: ordersError } = await supabase
+        .from('orders')
+        .select('id')
+        .eq('tenant_id', profile.tenant_id)
+        .eq('status', 'draft')
+
+      if (ordersError) throw ordersError
+      if (!orders || orders.length === 0) throw new Error('No draft orders found')
+
+      const orderIds = orders.map(o => o.id)
+
+      // 3. Find all existing lines
+      const { data: lines, error: linesError } = await supabase
+        .from('order_lines')
+        .select('id, order_id')
+        .eq('supplier_product_id', sp.id)
+        .in('order_id', orderIds)
+        .order('id') // Keep the oldest/first one
+
+      if (linesError) throw linesError
+
+      if (!lines || lines.length === 0) {
+        // Should have existed if we are updating, but maybe it was deleted?
+        // Fallback to add? No, strict update.
+        throw new Error('Item not found in cart')
+      }
+
+      // 4. Update the first one, delete the rest (deduplicate)
+      const [primaryLine, ...duplicates] = lines
+
+      // Update primary
+      const { error: updateError } = await supabase
+        .from('order_lines')
+        .update({
+          quantity_packs: quantity,
+          line_total: packPrice * quantity
+        })
+        .eq('id', primaryLine.id)
+
+      if (updateError) throw updateError
+
+      // Delete duplicates
+      if (duplicates.length > 0) {
+        const duplicateIds = duplicates.map(d => d.id)
+        const { error: deleteError } = await supabase
+          .from('order_lines')
+          .delete()
+          .in('id', duplicateIds)
+
+        if (deleteError) console.error('Failed to cleanup duplicates', deleteError)
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.orders.all() })
+    },
+  })
+}
+
 export function useMergeAnonymousCart() {
   const queryClient = useQueryClient()
 

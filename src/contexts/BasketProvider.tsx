@@ -12,7 +12,9 @@ import {
   useMergeAnonymousCart,
   useAddToCartDB,
   useUpdateCartItemDB,
-  useRemoveCartItemDB
+  useRemoveCartItemDB,
+  useRemoveProductFromCartDB,
+  useUpdateProductQuantityDB
 } from '@/hooks/useCartMutations'
 import { useLoadCartFromDB } from '@/hooks/useLoadCartFromDB'
 
@@ -114,6 +116,8 @@ export default function BasketProvider({ children }: { children: React.ReactNode
   const addToCartDB = useAddToCartDB()
   const updateCartItemDB = useUpdateCartItemDB()
   const removeCartItemDB = useRemoveCartItemDB()
+  const removeProductFromCartDB = useRemoveProductFromCartDB()
+  const updateProductQuantityDB = useUpdateProductQuantityDB()
 
   // State machine for cart mode
   const [mode, setMode] = useState<CartMode>('anonymous')
@@ -256,13 +260,22 @@ export default function BasketProvider({ children }: { children: React.ReactNode
       // Don't sync if we are currently mutating (optimistic updates in flight)
       // or if we are fetching fresh data (wait for it to settle)
       if (isMutating > 0 || isFetchingDBCart) {
+        // console.log('Skipping sync:', { isMutating, isFetchingDBCart })
         return
       }
 
       // Only update if we have data and it's different (simple length check or deep compare if needed)
       // For now, we trust the DB cart if we are idle
       if (dbCart) {
-        setItems(dbCart)
+        // Deduplicate items based on supplierItemId to prevent React key collisions and UI glitches
+        const uniqueItems = dbCart.reduce((acc, item) => {
+          if (!acc.some(i => i.supplierItemId === item.supplierItemId)) {
+            acc.push(item)
+          }
+          return acc
+        }, [] as CartItem[])
+
+        setItems(uniqueItems)
       }
     }
   }, [user, profile?.tenant_id, mode, dbCart, isLoadingDBCart, isFetchingDBCart, isMutating])
@@ -504,13 +517,14 @@ export default function BasketProvider({ children }: { children: React.ReactNode
       // Persist based on cart mode
       if (mode === 'anonymous') {
         syncBasket(newItems)
-      } else if (mode === 'authenticated' && itemToUpdate?.orderLineId) {
-        // Persist to database
-        updateCartItemDB.mutate({
-          orderLineId: itemToUpdate.orderLineId,
-          orderId: itemToUpdate.orderId || '',
+      } else if (mode === 'authenticated' && itemToUpdate) {
+        // Persist to database using robust update (handles duplicates)
+        updateProductQuantityDB.mutate({
+          supplierItemId: itemToUpdate.supplierItemId,
+          supplierId: itemToUpdate.supplierId,
           quantity: newQuantity,
-          packPrice: itemToUpdate.packPrice || 0
+          packPrice: itemToUpdate.packPrice || 0,
+          packSize: itemToUpdate.packSize
         })
       }
 
@@ -521,28 +535,23 @@ export default function BasketProvider({ children }: { children: React.ReactNode
   const removeItem = (supplierItemId: string) => {
     setItems(prev => {
       const previousItems = prev.map(i => ({ ...i }))
-      // Find ALL items that match this supplierItemId (handling potential DB duplicates)
-      const itemsToRemove = prev.filter(i => i.supplierItemId === supplierItemId)
+      const removed = prev.find(i => i.supplierItemId === supplierItemId)
       const newItems = prev.filter(item => item.supplierItemId !== supplierItemId)
 
       // Persist based on cart mode
       if (mode === 'anonymous') {
         syncBasket(newItems)
-      } else if (mode === 'authenticated') {
-        // Persist to database - delete ALL matching lines
-        itemsToRemove.forEach(item => {
-          if (item.orderLineId) {
-            removeCartItemDB.mutate({
-              orderLineId: item.orderLineId
-            })
-          }
+      } else if (mode === 'authenticated' && removed) {
+        // Persist to database using robust delete (removes all duplicates)
+        removeProductFromCartDB.mutate({
+          supplierItemId: removed.supplierItemId,
+          supplierId: removed.supplierId
         })
       }
 
-      if (itemsToRemove.length > 0) {
-        const itemName = itemsToRemove[0].itemName
+      if (removed) {
         toast({
-          description: `${itemName} removed from cart`,
+          description: `${removed.itemName} removed from cart`,
           action: (
             <ToastAction altText="Undo" onClick={() => restoreItems(previousItems)}>
               Undo
