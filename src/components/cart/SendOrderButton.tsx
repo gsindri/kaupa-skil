@@ -246,8 +246,8 @@ export function SendOrderButton({
           supplier_product_id: item.id,
           pack_size: item.packSize || null,
           quantity_packs: item.quantity,
-          unit_price_per_pack: item.unitPriceExVat || 0,
-          line_total: (item.unitPriceExVat || 0) * item.quantity,
+          unit_price_per_pack: item.unitPriceExVat ?? null,
+          line_total: item.unitPriceExVat ? item.unitPriceExVat * item.quantity : null,
           currency: 'ISK',
           vat_included: false
         }

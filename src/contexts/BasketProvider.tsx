@@ -523,7 +523,7 @@ export default function BasketProvider({ children }: { children: React.ReactNode
           supplierItemId: itemToUpdate.supplierItemId,
           supplierId: itemToUpdate.supplierId,
           quantity: newQuantity,
-          packPrice: itemToUpdate.packPrice || 0,
+          packPrice: itemToUpdate.packPrice ?? null,
           packSize: itemToUpdate.packSize
         })
       }
