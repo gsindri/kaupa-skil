@@ -25,6 +25,8 @@ function renderWithCart(
     isDrawerPinned: false,
     setIsDrawerPinned: vi.fn(),
     cartPulseSignal: 0,
+    cartMode: 'anonymous',
+    isHydrating: false,
   } satisfies React.ContextType<typeof BasketContext>;
 
   const value = { ...defaultValue, ...overrides };

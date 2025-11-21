@@ -1,6 +1,8 @@
 import { createContext, type Dispatch, type SetStateAction } from 'react'
 import type { CartItem } from '@/lib/types'
 
+export type CartMode = 'anonymous' | 'hydrating' | 'authenticated'
+
 export interface BasketContextType {
   items: CartItem[]
   addItem: (
@@ -23,6 +25,8 @@ export interface BasketContextType {
   isDrawerPinned: boolean
   setIsDrawerPinned: Dispatch<SetStateAction<boolean>>
   cartPulseSignal: number
+  cartMode: CartMode
+  isHydrating: boolean
 }
 
 export const BasketContext = createContext<BasketContextType | undefined>(undefined)

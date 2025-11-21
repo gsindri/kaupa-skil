@@ -261,6 +261,8 @@ describe('CatalogQuantityStepper', () => {
       isDrawerPinned: false,
       setIsDrawerPinned: vi.fn() as React.Dispatch<React.SetStateAction<boolean>>,
       cartPulseSignal: 0,
+      cartMode: 'anonymous',
+      isHydrating: false,
     }
 
     const payload: Omit<CartItem, 'quantity'> = {
@@ -349,6 +351,8 @@ describe('CatalogQuantityStepper', () => {
       isDrawerPinned: false,
       setIsDrawerPinned: vi.fn() as React.Dispatch<React.SetStateAction<boolean>>,
       cartPulseSignal: 0,
+      cartMode: 'anonymous',
+      isHydrating: false,
     }
 
     function ControllerHarness({ quantity }: { quantity: number }) {
@@ -404,6 +408,8 @@ describe('CatalogQuantityStepper', () => {
       isDrawerPinned: false,
       setIsDrawerPinned: vi.fn() as React.Dispatch<React.SetStateAction<boolean>>,
       cartPulseSignal: 0,
+      cartMode: 'anonymous',
+      isHydrating: false,
     }
 
     function ControllerProbe({ quantity }: { quantity: number }) {
@@ -448,6 +454,8 @@ describe('CatalogQuantityStepper', () => {
       isDrawerPinned: false,
       setIsDrawerPinned: vi.fn() as React.Dispatch<React.SetStateAction<boolean>>,
       cartPulseSignal: 0,
+      cartMode: 'anonymous',
+      isHydrating: false,
     }
 
     const payload: Omit<CartItem, 'quantity'> = {
@@ -604,6 +612,8 @@ describe('CatalogQuantityStepper', () => {
             isDrawerPinned: false,
             setIsDrawerPinned: vi.fn() as React.Dispatch<React.SetStateAction<boolean>>,
             cartPulseSignal: 0,
+            cartMode: 'anonymous',
+            isHydrating: false,
           }),
           [scheduleCartQuantity],
         )
