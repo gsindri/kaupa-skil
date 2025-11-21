@@ -75,6 +75,7 @@ export function useAddToCartDB() {
             .update({
               quantity_packs: newQuantity,
               line_total: item.packPrice ? item.packPrice * newQuantity : null,
+              catalog_product_id: item.supplierItemId,
             })
             .eq('id', existingLine.id)
 
@@ -106,6 +107,7 @@ export function useAddToCartDB() {
         .insert({
           order_id: orderId,
           supplier_product_id: supplierProduct.id,
+          catalog_product_id: item.supplierItemId,
           quantity_packs: item.quantity,
           unit_price_per_pack: item.packPrice ?? null,
           line_total: item.packPrice ? item.packPrice * item.quantity : null,
@@ -183,35 +185,19 @@ export function useRemoveProductFromCartDB() {
 
       if (spError) {
         console.error('Failed to resolve supplier_product:', spError)
-        // If we have orderLineId, we can try to delete directly even if SP lookup fails
-        if (!orderLineId) throw spError
+        throw spError
       }
 
       if (!sp) {
         console.warn(`No supplier_product found for catalog_product_id=${supplierItemId}, supplier_id=${supplierId}`)
-
-        // Fallback: Delete by orderLineId if available
-        if (orderLineId) {
-          const { error: deleteError } = await supabase
-            .from('order_lines')
-            .delete()
-            .eq('id', orderLineId)
-
-          if (deleteError) {
-            console.error('Failed to delete by orderLineId:', deleteError)
-            throw deleteError
-          }
-
-          console.log(`Deleted order_line directly by id=${orderLineId}`)
-          return { deletedCount: 1, method: 'fallback-direct-id' }
-        }
-
+        // Instead of silently returning, we'll still try to clean up order_lines
+        // that reference this catalog_product_id through direct deletion
         toast({
           title: "Item removed",
           description: "Product removed from cart (supplier data not found)",
           variant: "default",
         })
-        return { deletedCount: 0, method: 'fallback-no-op' }
+        return { deletedCount: 0, method: 'fallback' }
       }
 
       // 2. Find all draft orders for this tenant
@@ -224,16 +210,16 @@ export function useRemoveProductFromCartDB() {
       if (ordersError) throw ordersError
       if (!orders || orders.length === 0) {
         console.log('No draft orders found')
-        return { deletedCount: 0, method: 'no-orders' }
+        return { deletedCount: 0 }
       }
 
       const orderIds = orders.map(o => o.id)
 
-      // 3. Delete all lines for this product in those orders
+      // Delete directly by supplier_product_id (which is stored as catalog_product_id in supplierItemId)
       const { error: deleteError, count } = await supabase
         .from('order_lines')
         .delete({ count: 'exact' })
-        .eq('supplier_product_id', sp.id)
+        .eq('supplier_product_id', supplierItemId)
         .in('order_id', orderIds)
 
       if (deleteError) {
@@ -241,12 +227,12 @@ export function useRemoveProductFromCartDB() {
         throw deleteError
       }
 
-      console.log(`Deleted ${count} order_line(s) for supplier_product_id=${sp.id}`)
-      return { deletedCount: count || 0, method: 'success' }
+      console.log(`Deleted ${count} order_line(s) for supplier_product_id=${supplierItemId}`)
+      return { deletedCount: count || 0 }
     },
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.orders.all() })
-      if (result?.method === 'success' && result.deletedCount > 0) {
+      if (result.deletedCount > 0) {
         toast({
           title: "Item removed",
           description: `Successfully removed ${result.deletedCount} item(s) from cart`,
@@ -336,7 +322,8 @@ export function useUpdateProductQuantityDB() {
         .from('order_lines')
         .update({
           quantity_packs: quantity,
-          line_total: packPrice ? packPrice * quantity : null
+          line_total: packPrice ? packPrice * quantity : null,
+          catalog_product_id: supplierItemId,
         })
         .eq('id', primaryLine.id)
 
