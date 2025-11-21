@@ -40,14 +40,30 @@ export function useAddToCartDB() {
 
       if (orderFetchError) throw orderFetchError
 
+      // Resolve supplier_product.id from catalog_product_id + supplier_id
+      const { data: supplierProduct, error: spError } = await supabase
+        .from('supplier_product')
+        .select('id')
+        .eq('catalog_product_id', item.supplierItemId)
+        .eq('supplier_id', item.supplierId)
+        .maybeSingle()
+
+      if (spError) throw spError
+
+      if (!supplierProduct) {
+        throw new Error(
+          `No supplier product found for catalog_product_id=${item.supplierItemId} and supplier_id=${item.supplierId}`
+        )
+      }
+
       let orderId: string
 
       if (existingOrders && existingOrders.length > 0) {
         orderId = existingOrders[0].id
 
-        // Check if item already exists in order
+        // Check if item already exists in order (using resolved supplier_product.id)
         const existingLine = existingOrders[0].order_lines?.find(
-          (line: any) => line.supplier_product_id === item.supplierItemId
+          (line: any) => line.supplier_product_id === supplierProduct.id
         )
 
         if (existingLine) {
@@ -83,12 +99,12 @@ export function useAddToCartDB() {
         orderId = newOrder.id
       }
 
-      // Insert new order line
+      // Insert new order line (using resolved supplier_product.id)
       const { data: newLine, error: lineError } = await supabase
         .from('order_lines')
         .insert({
           order_id: orderId,
-          supplier_product_id: item.supplierItemId,
+          supplier_product_id: supplierProduct.id,
           quantity_packs: item.quantity,
           unit_price_per_pack: item.packPrice || 0,
           line_total: (item.packPrice || 0) * item.quantity,
