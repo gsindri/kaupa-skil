@@ -5,12 +5,14 @@ import { BasketContext, type CartMode } from './BasketProviderUtils'
 import { ToastAction } from '@/components/ui/toast'
 import { flyToCart } from '@/lib/flyToCart'
 import { getCachedImageUrl } from '@/services/ImageCache'
+import { useMutation, useQueryClient, useIsMutating } from '@tanstack/react-query'
+import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from './useAuth'
-import { 
+import {
   useMergeAnonymousCart,
   useAddToCartDB,
   useUpdateCartItemDB,
-  useRemoveCartItemDB 
+  useRemoveCartItemDB
 } from '@/hooks/useCartMutations'
 import { useLoadCartFromDB } from '@/hooks/useLoadCartFromDB'
 
@@ -50,7 +52,7 @@ const sanitizeSupplierName = (
   const fallbackCandidate = normalize(fallbackId)
   const fallback =
     fallbackCandidate &&
-    !PLACEHOLDER_SUPPLIER_NAMES.has(fallbackCandidate.toLowerCase())
+      !PLACEHOLDER_SUPPLIER_NAMES.has(fallbackCandidate.toLowerCase())
       ? fallbackCandidate
       : 'Supplier'
 
@@ -105,13 +107,14 @@ const extractLegacySupplierName = (it: any): string => {
 export default function BasketProvider({ children }: { children: React.ReactNode }) {
   const { user, profile } = useAuth()
   const mergeCart = useMergeAnonymousCart()
-  const { data: dbCart, isLoading: isLoadingDBCart } = useLoadCartFromDB()
-  
+  const { data: dbCart, isLoading: isLoadingDBCart, isFetching: isFetchingDBCart } = useLoadCartFromDB()
+  const isMutating = useIsMutating({ mutationKey: ['cart'] }) // Track any cart mutations
+
   // Database mutation hooks for authenticated cart persistence
   const addToCartDB = useAddToCartDB()
   const updateCartItemDB = useUpdateCartItemDB()
   const removeCartItemDB = useRemoveCartItemDB()
-  
+
   // State machine for cart mode
   const [mode, setMode] = useState<CartMode>('anonymous')
   const [items, setItems] = useState<CartItem[]>([])
@@ -126,7 +129,7 @@ export default function BasketProvider({ children }: { children: React.ReactNode
         localStorage.removeItem(CART_STORAGE_KEY)
         localStorage.removeItem(ANONYMOUS_CART_ID_KEY)
       }
-      
+
       // Load from localStorage only on mount for anonymous users
       if (mode === 'anonymous' && items.length === 0) {
         const saved = localStorage.getItem(CART_STORAGE_KEY)
@@ -248,11 +251,21 @@ export default function BasketProvider({ children }: { children: React.ReactNode
       return
     }
 
-    // AUTHENTICATED MODE: server is boss
-    if (mode === 'authenticated' && !isLoadingDBCart) {
-      setItems(dbCart || [])
+    // AUTHENTICATED MODE: server is boss, but respect local optimism
+    if (mode === 'authenticated') {
+      // Don't sync if we are currently mutating (optimistic updates in flight)
+      // or if we are fetching fresh data (wait for it to settle)
+      if (isMutating > 0 || isFetchingDBCart) {
+        return
+      }
+
+      // Only update if we have data and it's different (simple length check or deep compare if needed)
+      // For now, we trust the DB cart if we are idle
+      if (dbCart) {
+        setItems(dbCart)
+      }
     }
-  }, [user, profile?.tenant_id, mode, dbCart, isLoadingDBCart])
+  }, [user, profile?.tenant_id, mode, dbCart, isLoadingDBCart, isFetchingDBCart, isMutating])
 
   // Generate anonymous cart ID if not authenticated
   useEffect(() => {
@@ -282,7 +295,7 @@ export default function BasketProvider({ children }: { children: React.ReactNode
   // Sync basket across tabs (only for anonymous users)
   useEffect(() => {
     if (mode !== 'anonymous') return // Only sync in anonymous mode
-    
+
     const channel =
       typeof BroadcastChannel !== 'undefined'
         ? new BroadcastChannel('procurewise-basket')
@@ -304,7 +317,7 @@ export default function BasketProvider({ children }: { children: React.ReactNode
   // Fallback: cross-tab sync via storage events (only for anonymous users)
   useEffect(() => {
     if (mode !== 'anonymous') return // Only sync in anonymous mode
-    
+
     const onStorage = (e: StorageEvent) => {
       if (e.key === CART_STORAGE_KEY && e.newValue) {
         try {
@@ -481,13 +494,13 @@ export default function BasketProvider({ children }: { children: React.ReactNode
     setItems(prev => {
       const newQuantity = Math.max(1, quantity)
       const itemToUpdate = prev.find(item => item.supplierItemId === supplierItemId)
-      
+
       const newItems = prev.map(item =>
         item.supplierItemId === supplierItemId
           ? { ...item, quantity: newQuantity }
           : item
       )
-      
+
       // Persist based on cart mode
       if (mode === 'anonymous') {
         syncBasket(newItems)
@@ -500,7 +513,7 @@ export default function BasketProvider({ children }: { children: React.ReactNode
           packPrice: itemToUpdate.packPrice || 0
         })
       }
-      
+
       return newItems
     })
   }
@@ -510,7 +523,7 @@ export default function BasketProvider({ children }: { children: React.ReactNode
       const previousItems = prev.map(i => ({ ...i }))
       const removed = prev.find(i => i.supplierItemId === supplierItemId)
       const newItems = prev.filter(item => item.supplierItemId !== supplierItemId)
-      
+
       // Persist based on cart mode
       if (mode === 'anonymous') {
         syncBasket(newItems)
@@ -520,7 +533,7 @@ export default function BasketProvider({ children }: { children: React.ReactNode
           orderLineId: removed.orderLineId
         })
       }
-      
+
       if (removed) {
         toast({
           description: `${removed.itemName} removed from cart`,
