@@ -512,7 +512,7 @@ export type Database = {
           order_id: string
           pack_size: string | null
           quantity_packs: number
-          supplier_product_id: string | null
+          supplier_product_id: string
           unit_price_per_pack: number | null
           vat_included: boolean
         }
@@ -527,7 +527,7 @@ export type Database = {
           order_id: string
           pack_size?: string | null
           quantity_packs: number
-          supplier_product_id?: string | null
+          supplier_product_id: string
           unit_price_per_pack?: number | null
           vat_included?: boolean
         }
@@ -542,11 +542,18 @@ export type Database = {
           order_id?: string
           pack_size?: string | null
           quantity_packs?: number
-          supplier_product_id?: string | null
+          supplier_product_id?: string
           unit_price_per_pack?: number | null
           vat_included?: boolean
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_order_lines_supplier_product"
+            columns: ["supplier_product_id"]
+            isOneToOne: false
+            referencedRelation: "supplier_product"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "order_lines_catalog_product_id_fkey"
             columns: ["catalog_product_id"]
