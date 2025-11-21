@@ -521,22 +521,28 @@ export default function BasketProvider({ children }: { children: React.ReactNode
   const removeItem = (supplierItemId: string) => {
     setItems(prev => {
       const previousItems = prev.map(i => ({ ...i }))
-      const removed = prev.find(i => i.supplierItemId === supplierItemId)
+      // Find ALL items that match this supplierItemId (handling potential DB duplicates)
+      const itemsToRemove = prev.filter(i => i.supplierItemId === supplierItemId)
       const newItems = prev.filter(item => item.supplierItemId !== supplierItemId)
 
       // Persist based on cart mode
       if (mode === 'anonymous') {
         syncBasket(newItems)
-      } else if (mode === 'authenticated' && removed?.orderLineId) {
-        // Persist to database
-        removeCartItemDB.mutate({
-          orderLineId: removed.orderLineId
+      } else if (mode === 'authenticated') {
+        // Persist to database - delete ALL matching lines
+        itemsToRemove.forEach(item => {
+          if (item.orderLineId) {
+            removeCartItemDB.mutate({
+              orderLineId: item.orderLineId
+            })
+          }
         })
       }
 
-      if (removed) {
+      if (itemsToRemove.length > 0) {
+        const itemName = itemsToRemove[0].itemName
         toast({
-          description: `${removed.itemName} removed from cart`,
+          description: `${itemName} removed from cart`,
           action: (
             <ToastAction altText="Undo" onClick={() => restoreItems(previousItems)}>
               Undo
