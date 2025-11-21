@@ -134,7 +134,7 @@ export function useUpdateCartItemDB() {
         .from('order_lines')
         .update({
           quantity_packs: quantity,
-          line_total: packPrice * quantity,
+          line_total: packPrice ? packPrice * quantity : null,
         })
         .eq('id', orderLineId)
 
