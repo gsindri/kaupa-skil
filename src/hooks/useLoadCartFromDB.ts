@@ -52,7 +52,7 @@ export function useLoadCartFromDB() {
           // We need to fetch supplier product details to populate CartItem properly
           const { data: supplierProduct } = await supabase
             .from('supplier_product')
-            .select('supplier_id, supplier_sku, pack_size, catalog_product_id, catalog_product(name, brand)')
+            .select('supplier_id, supplier_sku, pack_size, catalog_product_id, image_url, catalog_product(name, brand)')
             .eq('id', line.supplier_product_id)
             .single()
 
@@ -69,7 +69,7 @@ export function useLoadCartFromDB() {
 
           cartItems.push({
             id: supplierProduct.catalog_product_id,
-            supplierItemId: supplierProduct.catalog_product_id,
+            supplierItemId: line.supplier_product_id,
             supplierId: supplierProduct.supplier_id,
             supplierName: supplier?.display_name || supplier?.name || supplierProduct.supplier_id,
             supplierLogoUrl: supplier?.logo_url || null,
@@ -84,7 +84,7 @@ export function useLoadCartFromDB() {
             vatRate: 0.24,
             unit: 'pack',
             packQty: 1,
-            image: null,
+            image: supplierProduct.image_url || null,
             
             // Database identifiers for authenticated cart persistence
             orderLineId: line.id,
