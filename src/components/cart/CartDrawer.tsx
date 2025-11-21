@@ -10,12 +10,15 @@ import { useMediaQuery } from "@/hooks/useMediaQuery"
 
 const DESKTOP_MEDIA_QUERY = "(min-width: 1024px)"
 
-function formatCurrency(value: number) {
+function formatCurrency(value: number | null | undefined) {
+  if (value === null || value === undefined) {
+    return 'Price unavailable'
+  }
   return new Intl.NumberFormat(undefined, {
     style: "currency",
     currency: "ISK",
     maximumFractionDigits: 0,
-  }).format(value || 0)
+  }).format(value)
 }
 
 export function CartDrawer() {
