@@ -28,7 +28,7 @@ export function PublicNavigation({ catalogVisible, headerRef }: PublicNavigation
       }}
     >
       <div
-        className="mx-auto flex h-20 w-full items-center justify-between"
+        className="mx-auto flex h-[var(--header-h,56px)] w-full items-center justify-between"
         style={{
           maxWidth: '1600px',
           paddingInline: 'clamp(1.5rem, 4vw, 4rem)'
