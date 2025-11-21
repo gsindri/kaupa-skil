@@ -199,14 +199,13 @@ export function CartDrawer() {
           isDrawerOpen ? 'cart-rail--open' : 'cart-rail--closed'
         )}
         style={{
-          position: 'sticky',
-          top: 'var(--header-h, 56px)',
+          position: 'fixed',
+          top: 0,
           right: 0,
-          height: 'calc(100vh - var(--header-h, 56px))',
-          width: isDrawerOpen ? 'var(--cart-rail-w, 240px)' : '0px',
-          opacity: isDrawerOpen ? 1 : 0,
-          pointerEvents: isDrawerOpen ? 'auto' : 'none',
-          overflow: 'hidden',
+          height: '100vh',
+          width: isDrawerOpen ? 'var(--cart-rail-w, 400px)' : '0px',
+          zIndex: 100,
+          transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         }}
         aria-label="Cart"
         role="region"
