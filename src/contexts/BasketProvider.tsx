@@ -6,7 +6,12 @@ import { ToastAction } from '@/components/ui/toast'
 import { flyToCart } from '@/lib/flyToCart'
 import { getCachedImageUrl } from '@/services/ImageCache'
 import { useAuth } from './useAuth'
-import { useMergeAnonymousCart } from '@/hooks/useCartMutations'
+import { 
+  useMergeAnonymousCart,
+  useAddToCartDB,
+  useUpdateCartItemDB,
+  useRemoveCartItemDB 
+} from '@/hooks/useCartMutations'
 import { useLoadCartFromDB } from '@/hooks/useLoadCartFromDB'
 
 const CART_STORAGE_KEY = 'procurewise-basket'
@@ -101,6 +106,11 @@ export default function BasketProvider({ children }: { children: React.ReactNode
   const { user, profile } = useAuth()
   const mergeCart = useMergeAnonymousCart()
   const { data: dbCart, isLoading: isLoadingDBCart } = useLoadCartFromDB()
+  
+  // Database mutation hooks for authenticated cart persistence
+  const addToCartDB = useAddToCartDB()
+  const updateCartItemDB = useUpdateCartItemDB()
+  const removeCartItemDB = useRemoveCartItemDB()
   
   // State machine for cart mode
   const [mode, setMode] = useState<CartMode>('anonymous')
@@ -434,7 +444,17 @@ export default function BasketProvider({ children }: { children: React.ReactNode
         newItems = [...prev, { ...normalizedItem, quantity: finalQuantity }]
       }
 
-      syncBasket(newItems)
+      // Persist based on cart mode
+      if (mode === 'anonymous') {
+        syncBasket(newItems)
+      } else if (mode === 'authenticated') {
+        // Persist to database
+        const itemToAdd = newItems.find(i => i.supplierItemId === normalizedItem.supplierItemId)
+        if (itemToAdd) {
+          addToCartDB.mutate({ item: itemToAdd })
+        }
+      }
+      // If mode === 'hydrating', don't persist (wait for hydration to complete)
 
       if (options.showToast !== false) {
         toast({
@@ -460,12 +480,27 @@ export default function BasketProvider({ children }: { children: React.ReactNode
     }
     setItems(prev => {
       const newQuantity = Math.max(1, quantity)
+      const itemToUpdate = prev.find(item => item.supplierItemId === supplierItemId)
+      
       const newItems = prev.map(item =>
         item.supplierItemId === supplierItemId
           ? { ...item, quantity: newQuantity }
           : item
       )
-      syncBasket(newItems)
+      
+      // Persist based on cart mode
+      if (mode === 'anonymous') {
+        syncBasket(newItems)
+      } else if (mode === 'authenticated' && itemToUpdate?.orderLineId) {
+        // Persist to database
+        updateCartItemDB.mutate({
+          orderLineId: itemToUpdate.orderLineId,
+          orderId: itemToUpdate.orderId || '',
+          quantity: newQuantity,
+          packPrice: itemToUpdate.packPrice || 0
+        })
+      }
+      
       return newItems
     })
   }
@@ -475,7 +510,17 @@ export default function BasketProvider({ children }: { children: React.ReactNode
       const previousItems = prev.map(i => ({ ...i }))
       const removed = prev.find(i => i.supplierItemId === supplierItemId)
       const newItems = prev.filter(item => item.supplierItemId !== supplierItemId)
-      syncBasket(newItems)
+      
+      // Persist based on cart mode
+      if (mode === 'anonymous') {
+        syncBasket(newItems)
+      } else if (mode === 'authenticated' && removed?.orderLineId) {
+        // Persist to database
+        removeCartItemDB.mutate({
+          orderLineId: removed.orderLineId
+        })
+      }
+      
       if (removed) {
         toast({
           description: `${removed.itemName} removed from cart`,
@@ -492,12 +537,18 @@ export default function BasketProvider({ children }: { children: React.ReactNode
 
   const clearBasket = () => {
     setItems([])
-    syncBasket([])
+    if (mode === 'anonymous') {
+      syncBasket([])
+    }
+    // For authenticated mode, items will be cleared from DB when user explicitly deletes them
   }
 
   const restoreItems = (items: CartItem[]) => {
     setItems(items)
-    syncBasket(items)
+    if (mode === 'anonymous') {
+      syncBasket(items)
+    }
+    // For authenticated mode, we don't restore to DB (only local optimistic update)
   }
 
   // Add clearCart method for backward compatibility

@@ -375,6 +375,10 @@ export interface CartItem {
    * URL or path to a product image. Use `null` when no image is available.
    */
   image: string | null
+  
+  // Database identifiers (only present for authenticated users)
+  orderLineId?: string  // Maps to order_lines.id
+  orderId?: string      // Maps to orders.id
 }
 
 // Price comparison types

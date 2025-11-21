@@ -85,6 +85,10 @@ export function useLoadCartFromDB() {
             unit: 'pack',
             packQty: 1,
             image: null,
+            
+            // Database identifiers for authenticated cart persistence
+            orderLineId: line.id,
+            orderId: order.id,
           })
         }
       }
