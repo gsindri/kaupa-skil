@@ -175,7 +175,62 @@ export function useRemoveProductFromCartDB() {
     mutationFn: async ({ supplierItemId, supplierId, orderLineId }: { supplierItemId: string; supplierId: string; orderLineId?: string }) => {
       if (!profile?.tenant_id) throw new Error('Not authenticated')
 
-      // supplierItemId is catalog_product_id, need to resolve to supplier_product_id
+      // STRATEGY 1: Delete by orderLineId (Most specific and robust)
+      if (orderLineId) {
+        const { error: deleteError, count } = await supabase
+          .from('order_lines')
+          .delete({ count: 'exact' })
+          .eq('id', orderLineId)
+
+        if (deleteError) {
+          console.error('Failed to delete by orderLineId:', deleteError)
+          // Continue to fallback strategies if this fails? 
+          // Usually if DB error, we should stop. But if count is 0, we might try others.
+          throw deleteError
+        }
+
+        if (count && count > 0) {
+          console.log(`Deleted order_line directly by id=${orderLineId}`)
+          return { deletedCount: count, method: 'direct-id' }
+        }
+        console.warn(`Delete by orderLineId=${orderLineId} returned 0 rows. Trying fallbacks...`)
+      }
+
+      // Find all draft orders for this tenant
+      const { data: orders, error: ordersError } = await supabase
+        .from('orders')
+        .select('id')
+        .eq('tenant_id', profile.tenant_id)
+        .eq('status', 'draft')
+
+      if (ordersError) throw ordersError
+      if (!orders || orders.length === 0) {
+        console.log('No draft orders found')
+        return { deletedCount: 0, method: 'no-orders' }
+      }
+
+      const orderIds = orders.map(o => o.id)
+
+      // STRATEGY 2: Delete by catalog_product_id (New column, reliable if populated)
+      // supplierItemId IS the catalog_product_id
+      const { error: catDeleteError, count: catCount } = await supabase
+        .from('order_lines')
+        .delete({ count: 'exact' })
+        .eq('catalog_product_id', supplierItemId)
+        .in('order_id', orderIds)
+
+      if (catDeleteError) {
+        console.error('Failed to delete by catalog_product_id:', catDeleteError)
+        throw catDeleteError
+      }
+
+      if (catCount && catCount > 0) {
+        console.log(`Deleted ${catCount} items by catalog_product_id=${supplierItemId}`)
+        return { deletedCount: catCount, method: 'catalog-id' }
+      }
+
+      // STRATEGY 3: Legacy lookup via supplier_product (Fall back for old items)
+      console.log('Fallback to supplier_product lookup...')
       const { data: sp, error: spError } = await supabase
         .from('supplier_product')
         .select('id')
@@ -190,45 +245,31 @@ export function useRemoveProductFromCartDB() {
 
       if (!sp) {
         console.warn(`No supplier_product found for catalog_product_id=${supplierItemId}, supplier_id=${supplierId}`)
-        return { deletedCount: 0 }
+        toast({
+          title: "Item removed",
+          description: "Product removed from cart (cleanup required)",
+          variant: "default",
+        })
+        return { deletedCount: 0, method: 'failed-all-strategies' }
       }
 
-      // Find all draft orders for this tenant
-      const { data: orders, error: ordersError } = await supabase
-        .from('orders')
-        .select('id')
-        .eq('tenant_id', profile.tenant_id)
-        .eq('status', 'draft')
-
-      if (ordersError) throw ordersError
-      if (!orders || orders.length === 0) {
-        console.log('No draft orders found')
-        return { deletedCount: 0 }
-      }
-
-      const orderIds = orders.map(o => o.id)
-
-      // Delete by supplier_product_id (resolved from catalog_product_id)
-      const { error: deleteError, count } = await supabase
+      const { error: spDeleteError, count: spCount } = await supabase
         .from('order_lines')
         .delete({ count: 'exact' })
         .eq('supplier_product_id', sp.id)
         .in('order_id', orderIds)
 
-      if (deleteError) {
-        console.error('Failed to delete order_lines:', deleteError)
-        throw deleteError
-      }
+      if (spDeleteError) throw spDeleteError
 
-      console.log(`Deleted ${count} order_line(s) for supplier_product_id=${supplierItemId}`)
-      return { deletedCount: count || 0 }
+      console.log(`Deleted ${spCount} items by supplier_product_id=${sp.id}`)
+      return { deletedCount: spCount || 0, method: 'supplier-product-id' }
     },
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.orders.all() })
-      if (result.deletedCount > 0) {
+      if (result?.deletedCount > 0) {
         toast({
           title: "Item removed",
-          description: `Successfully removed ${result.deletedCount} item(s) from cart`,
+          description: `Successfully removed item from cart`,
         })
       }
     },
@@ -236,7 +277,7 @@ export function useRemoveProductFromCartDB() {
       console.error('Remove product error:', error)
       toast({
         title: "Error removing item",
-        description: error.message || "Failed to remove item from cart. Please try again.",
+        description: "Failed to remove item. Please try again.",
         variant: "destructive",
       })
     },
