@@ -589,7 +589,8 @@ export default function BasketProvider({ children }: { children: React.ReactNode
   const getTotalPrice = (includeVat: boolean): number => {
     return items.reduce((total, item) => {
       const price = includeVat ? item.unitPriceIncVat : item.unitPriceExVat
-      return total + ((price ?? 0) * item.quantity)
+      // Only add items with valid prices to the total
+      return price != null ? total + (price * item.quantity) : total
     }, 0)
   }
 
