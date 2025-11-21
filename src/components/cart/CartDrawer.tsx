@@ -81,8 +81,8 @@ export function CartDrawer() {
             const unitPrice = includeVat
               ? item.unitPriceIncVat ?? item.packPrice
               : item.unitPriceExVat ?? item.packPrice
+
             const lineTotal = unitPrice ? unitPrice * item.quantity : null
-            const unitPriceLabel = formatCurrency(unitPrice)
 
             const renderItemThumb = () => {
               if (item.image) {
@@ -112,12 +112,24 @@ export function CartDrawer() {
                     <span className="cart-item__title" title={name}>
                       {name}
                     </span>
-                    <span className="cart-item__line-total">{formatCurrency(lineTotal)}</span>
+                    <span className="cart-item__line-total">
+                      {lineTotal !== null ? (
+                        formatCurrency(lineTotal)
+                      ) : (
+                        <span className="text-amber-600 text-xs font-medium">Price unavailable</span>
+                      )}
+                    </span>
                   </div>
                   {item.supplierName ? (
                     <p className="cart-item__supplier">{item.supplierName}</p>
                   ) : null}
-                  <p className="cart-item__unit-price">Unit price · {unitPriceLabel}</p>
+                  <p className="cart-item__unit-price">
+                    {unitPrice !== null ? (
+                      <>Unit price · {formatCurrency(unitPrice)}</>
+                    ) : (
+                      <span className="text-amber-600/80">Price not set by supplier</span>
+                    )}
+                  </p>
                   <div className="cart-item__controls">
                     <QuantityStepper
                       supplierItemId={item.supplierItemId}
