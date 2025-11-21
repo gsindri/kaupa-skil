@@ -508,12 +508,12 @@ export type Database = {
           currency: string
           id: string
           kr_per_base_unit: number | null
-          line_total: number
+          line_total: number | null
           order_id: string
           pack_size: string | null
           quantity_packs: number
           supplier_product_id: string | null
-          unit_price_per_pack: number
+          unit_price_per_pack: number | null
           vat_included: boolean
         }
         Insert: {
@@ -523,12 +523,12 @@ export type Database = {
           currency?: string
           id?: string
           kr_per_base_unit?: number | null
-          line_total: number
+          line_total?: number | null
           order_id: string
           pack_size?: string | null
           quantity_packs: number
           supplier_product_id?: string | null
-          unit_price_per_pack: number
+          unit_price_per_pack?: number | null
           vat_included?: boolean
         }
         Update: {
@@ -538,12 +538,12 @@ export type Database = {
           currency?: string
           id?: string
           kr_per_base_unit?: number | null
-          line_total?: number
+          line_total?: number | null
           order_id?: string
           pack_size?: string | null
           quantity_packs?: number
           supplier_product_id?: string | null
-          unit_price_per_pack?: number
+          unit_price_per_pack?: number | null
           vat_included?: boolean
         }
         Relationships: [
