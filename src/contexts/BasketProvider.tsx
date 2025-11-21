@@ -545,7 +545,8 @@ export default function BasketProvider({ children }: { children: React.ReactNode
         // Persist to database using robust delete (removes all duplicates)
         removeProductFromCartDB.mutate({
           supplierItemId: removed.supplierItemId,
-          supplierId: removed.supplierId
+          supplierId: removed.supplierId,
+          orderLineId: removed.orderLineId // Pass orderLineId for fallback deletion
         })
       }
 

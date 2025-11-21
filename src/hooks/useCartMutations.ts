@@ -170,7 +170,7 @@ export function useRemoveProductFromCartDB() {
   const { toast } = useToast()
 
   return useMutation({
-    mutationFn: async ({ supplierItemId, supplierId }: { supplierItemId: string; supplierId: string }) => {
+    mutationFn: async ({ supplierItemId, supplierId, orderLineId }: { supplierItemId: string; supplierId: string; orderLineId?: string }) => {
       if (!profile?.tenant_id) throw new Error('Not authenticated')
 
       // 1. Resolve supplier_product_id
@@ -183,19 +183,35 @@ export function useRemoveProductFromCartDB() {
 
       if (spError) {
         console.error('Failed to resolve supplier_product:', spError)
-        throw spError
+        // If we have orderLineId, we can try to delete directly even if SP lookup fails
+        if (!orderLineId) throw spError
       }
-      
+
       if (!sp) {
         console.warn(`No supplier_product found for catalog_product_id=${supplierItemId}, supplier_id=${supplierId}`)
-        // Instead of silently returning, we'll still try to clean up order_lines
-        // that reference this catalog_product_id through direct deletion
+
+        // Fallback: Delete by orderLineId if available
+        if (orderLineId) {
+          const { error: deleteError } = await supabase
+            .from('order_lines')
+            .delete()
+            .eq('id', orderLineId)
+
+          if (deleteError) {
+            console.error('Failed to delete by orderLineId:', deleteError)
+            throw deleteError
+          }
+
+          console.log(`Deleted order_line directly by id=${orderLineId}`)
+          return { deletedCount: 1, method: 'fallback-direct-id' }
+        }
+
         toast({
           title: "Item removed",
           description: "Product removed from cart (supplier data not found)",
           variant: "default",
         })
-        return { deletedCount: 0, method: 'fallback' }
+        return { deletedCount: 0, method: 'fallback-no-op' }
       }
 
       // 2. Find all draft orders for this tenant
@@ -234,6 +250,11 @@ export function useRemoveProductFromCartDB() {
         toast({
           title: "Item removed",
           description: `Successfully removed ${result.deletedCount} item(s) from cart`,
+        })
+      } else if (result?.method === 'fallback-direct-id') {
+        toast({
+          title: "Item removed",
+          description: "Item removed from cart",
         })
       }
     },
