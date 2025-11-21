@@ -175,32 +175,8 @@ export function useRemoveProductFromCartDB() {
     mutationFn: async ({ supplierItemId, supplierId, orderLineId }: { supplierItemId: string; supplierId: string; orderLineId?: string }) => {
       if (!profile?.tenant_id) throw new Error('Not authenticated')
 
-      // 1. Resolve supplier_product_id
-      const { data: sp, error: spError } = await supabase
-        .from('supplier_product')
-        .select('id')
-        .eq('catalog_product_id', supplierItemId)
-        .eq('supplier_id', supplierId)
-        .maybeSingle()
-
-      if (spError) {
-        console.error('Failed to resolve supplier_product:', spError)
-        throw spError
-      }
-
-      if (!sp) {
-        console.warn(`No supplier_product found for catalog_product_id=${supplierItemId}, supplier_id=${supplierId}`)
-        // Instead of silently returning, we'll still try to clean up order_lines
-        // that reference this catalog_product_id through direct deletion
-        toast({
-          title: "Item removed",
-          description: "Product removed from cart (supplier data not found)",
-          variant: "default",
-        })
-        return { deletedCount: 0, method: 'fallback' }
-      }
-
-      // 2. Find all draft orders for this tenant
+      // supplierItemId is already supplier_product_id from cart items
+      // Find all draft orders for this tenant
       const { data: orders, error: ordersError } = await supabase
         .from('orders')
         .select('id')
@@ -215,7 +191,7 @@ export function useRemoveProductFromCartDB() {
 
       const orderIds = orders.map(o => o.id)
 
-      // Delete directly by supplier_product_id (which is stored as catalog_product_id in supplierItemId)
+      // Delete by supplier_product_id (supplierItemId is already supplier_product_id)
       const { error: deleteError, count } = await supabase
         .from('order_lines')
         .delete({ count: 'exact' })
@@ -236,11 +212,6 @@ export function useRemoveProductFromCartDB() {
         toast({
           title: "Item removed",
           description: `Successfully removed ${result.deletedCount} item(s) from cart`,
-        })
-      } else if (result?.method === 'fallback-direct-id') {
-        toast({
-          title: "Item removed",
-          description: "Item removed from cart",
         })
       }
     },
@@ -275,18 +246,8 @@ export function useUpdateProductQuantityDB() {
     }) => {
       if (!profile?.tenant_id) throw new Error('Not authenticated')
 
-      // 1. Resolve supplier_product_id
-      const { data: sp, error: spError } = await supabase
-        .from('supplier_product')
-        .select('id')
-        .eq('catalog_product_id', supplierItemId)
-        .eq('supplier_id', supplierId)
-        .maybeSingle()
-
-      if (spError) throw spError
-      if (!sp) throw new Error('Product not found')
-
-      // 2. Find all draft orders
+      // supplierItemId is already supplier_product_id from cart items
+      // Find all draft orders
       const { data: orders, error: ordersError } = await supabase
         .from('orders')
         .select('id')
@@ -298,11 +259,11 @@ export function useUpdateProductQuantityDB() {
 
       const orderIds = orders.map(o => o.id)
 
-      // 3. Find all existing lines
+      // Find all existing lines
       const { data: lines, error: linesError } = await supabase
         .from('order_lines')
         .select('id, order_id')
-        .eq('supplier_product_id', sp.id)
+        .eq('supplier_product_id', supplierItemId)
         .in('order_id', orderIds)
         .order('id') // Keep the oldest/first one
 
@@ -323,7 +284,6 @@ export function useUpdateProductQuantityDB() {
         .update({
           quantity_packs: quantity,
           line_total: packPrice ? packPrice * quantity : null,
-          catalog_product_id: supplierItemId,
         })
         .eq('id', primaryLine.id)
 
