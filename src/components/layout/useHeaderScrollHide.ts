@@ -24,7 +24,7 @@ export function useHeaderScrollHide({ isPinned, onLockChange }: Options = {}) {
   const accumulatedDeltaRef = useRef(0)
   const cleanupRef = useRef<(() => void) | null>(null)
   const isPinnedRef = useRef(isPinned)
-  
+
   // Keep isPinned callback fresh
   isPinnedRef.current = isPinned
 
@@ -126,13 +126,13 @@ export function useHeaderScrollHide({ isPinned, onLockChange }: Options = {}) {
     }
 
     const handleScroll = () => requestAnimationFrame(onScroll)
-    
+
     // Initialize scroll position RIGHT before first call
     lastYRef.current = Math.max(0, window.scrollY)
-    
+
     // Run once immediately to sync with current scroll position
     onScroll()
-    
+
     window.addEventListener('scroll', handleScroll, { passive: true })
 
     // Store cleanup function
@@ -142,6 +142,7 @@ export function useHeaderScrollHide({ isPinned, onLockChange }: Options = {}) {
       el.removeEventListener('pointerdown', handlePointerDown)
       ro?.disconnect()
       document.documentElement.style.setProperty('--header-hidden', '0')
+      document.documentElement.style.removeProperty('--header-h')
     }
   }, [])
 

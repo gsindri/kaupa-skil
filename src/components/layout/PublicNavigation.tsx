@@ -20,7 +20,7 @@ export function PublicNavigation({ catalogVisible, headerRef }: PublicNavigation
       data-app-header="true"
       className={cn(
         "fixed top-0 left-0 right-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60",
-        "transition-shadow duration-300 h-[var(--header-h,56px)]",
+        "transition-shadow duration-300",
         catalogVisible ? "shadow-md" : "shadow-sm"
       )}
       style={{
@@ -28,7 +28,7 @@ export function PublicNavigation({ catalogVisible, headerRef }: PublicNavigation
       }}
     >
       <div
-        className="mx-auto flex h-full w-full items-center justify-between"
+        className="mx-auto flex h-20 w-full items-center justify-between"
         style={{
           maxWidth: '1600px',
           paddingInline: 'clamp(1.5rem, 4vw, 4rem)'
