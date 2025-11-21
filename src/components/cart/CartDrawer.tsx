@@ -76,9 +76,9 @@ export function CartDrawer() {
           {items.map(item => {
             const name = (item.displayName || item.itemName || "Item").trim() || "Item"
             const unitPrice = includeVat
-              ? item.unitPriceIncVat ?? item.packPrice ?? 0
-              : item.unitPriceExVat ?? item.packPrice ?? 0
-            const lineTotal = unitPrice * item.quantity
+              ? item.unitPriceIncVat ?? item.packPrice
+              : item.unitPriceExVat ?? item.packPrice
+            const lineTotal = unitPrice ? unitPrice * item.quantity : null
             const unitPriceLabel = formatCurrency(unitPrice)
 
             const renderItemThumb = () => {

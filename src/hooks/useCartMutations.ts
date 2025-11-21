@@ -224,7 +224,7 @@ export function useUpdateProductQuantityDB() {
       supplierItemId: string
       supplierId: string
       quantity: number
-      packPrice: number
+      packPrice: number | null
       packSize?: string
     }) => {
       if (!profile?.tenant_id) throw new Error('Not authenticated')
