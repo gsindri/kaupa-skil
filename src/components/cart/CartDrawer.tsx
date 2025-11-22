@@ -107,29 +107,24 @@ export function CartDrawer() {
             return (
               <li className="cart-item" key={item.supplierItemId}>
                 <div className="cart-item__media">{renderItemThumb()}</div>
-                <div className="cart-item__meta">
-                  <div className="cart-item__topline">
-                    <span className="cart-item__title" title={name}>
-                      {name}
-                    </span>
-                    <span className="cart-item__line-total">
-                      {lineTotal !== null ? (
-                        formatCurrency(lineTotal)
-                      ) : (
-                        <span className="text-amber-600 text-xs font-medium">Price unavailable</span>
-                      )}
-                    </span>
-                  </div>
-                  {item.supplierName ? (
-                    <p className="cart-item__supplier">{item.supplierName}</p>
-                  ) : null}
-                  <p className="cart-item__unit-price">
-                    {unitPrice !== null ? (
-                      <>Unit price · {formatCurrency(unitPrice)}</>
+
+                <div className="cart-item__main">
+                  <span className="cart-item__title" title={name}>
+                    {name}
+                  </span>
+                  <div className="cart-item__meta-row">
+                    {unitPrice === null ? (
+                      <span className="badge badge--out text-[10px] px-1.5 py-0.5 h-auto">Price unavailable</span>
                     ) : (
-                      <span className="text-amber-600/80">Price not set by supplier</span>
+                      <span className="cart-item__supplier">{item.supplierName || "Supplier"}</span>
                     )}
-                  </p>
+                  </div>
+                </div>
+
+                <div className="cart-item__right">
+                  <div className="cart-item__price">
+                    {lineTotal !== null ? formatCurrency(lineTotal) : null}
+                  </div>
                   <div className="cart-item__controls">
                     <QuantityStepper
                       supplierItemId={item.supplierItemId}
@@ -159,9 +154,11 @@ export function CartDrawer() {
   const content = (
     <>
       <header className="cart-rail__header">
-        <div className="cart-rail__title" aria-live="polite">
+        <div className="flex items-center gap-2">
           <span className="cart-rail__title-text">Cart</span>
-          <span className="cart-rail__count">{totalLabel}</span>
+          <span className="bg-slate-100 text-slate-600 text-xs font-medium px-2 py-0.5 rounded-full">
+            {totalItems} items
+          </span>
         </div>
         <button
           type="button"
@@ -203,9 +200,10 @@ export function CartDrawer() {
           top: 0,
           right: 0,
           height: '100vh',
-          width: isDrawerOpen ? 'var(--cart-rail-w, 400px)' : '0px',
+          width: isDrawerOpen ? '280px' : '0px',
           zIndex: 100,
           transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          overflow: 'hidden',
         }}
         aria-label="Cart"
         role="region"

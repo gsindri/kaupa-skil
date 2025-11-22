@@ -137,25 +137,22 @@ export function AppLayout({
     const cols: string[] = []
     if (showSecondary) cols.push('var(--filters-w, 0px)')
     cols.push('minmax(0, 1fr)')
-    if (shouldShowCartRail) cols.push(cartWidth)
+    // Cart is now an overlay, so we don't add a column for it
+    // if (shouldShowCartRail) cols.push(cartWidth)
 
     return {
       '--filters-w': filtersWidth,
       gridTemplateColumns: cols.join(' '),
       transition: 'grid-template-columns var(--cart-rail-transition, 240ms)',
     }
-  }, [showSecondary, filtersWidth, shouldShowCartRail, cartWidth])
+  }, [showSecondary, filtersWidth]) // Removed shouldShowCartRail, cartWidth dependencies
 
   const contentGridColumn = useMemo(() => {
     if (showSecondary) return '2 / span 1'
-    if (isDesktopCart) return '1 / span 1'
     return '1 / -1'
-  }, [showSecondary, isDesktopCart])
+  }, [showSecondary])
 
-  const cartGridColumn = useMemo(() => {
-    if (!isDesktopCart) return undefined
-    return showSecondary ? '3 / span 1' : '2 / span 1'
-  }, [isDesktopCart, showSecondary])
+  // cartGridColumn is no longer needed
 
   return (
     <div className="relative min-h-screen">
@@ -259,15 +256,8 @@ export function AppLayout({
               </main>
             </div>
 
-            {isDesktopCart && (
-              <div
-                aria-hidden={!isDesktopCart}
-                style={{ gridColumn: cartGridColumn }}
-              >
-                <CartDrawer />
-              </div>
-            )}
-            {!isDesktopCart && <CartDrawer />}
+            {/* Cart is now rendered as an overlay, independent of the grid */}
+            <CartDrawer />
           </div>
         </div>
       </div>
