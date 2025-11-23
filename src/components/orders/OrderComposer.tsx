@@ -30,123 +30,11 @@ function formatPriceISK(price: number) {
   }).format(price)
 }
 
-interface SupplierItemRowProps {
-  item: CartItem
-  includeVat: boolean
-  formatPrice: (price: number) => string
-  onRemoveItem: (supplierItemId: string) => void
-}
+import { SupplierOrderCard } from '@/components/orders/SupplierOrderCard'
 
-function SupplierItemRow({ item, includeVat, formatPrice, onRemoveItem }: SupplierItemRowProps) {
-  const [open, setOpen] = useState(false)
+// ... (imports)
 
-  const displayName = item.displayName || item.itemName
-  const unitPrice = includeVat ? item.unitPriceIncVat : item.unitPriceExVat
-  const unitLabel = item.unit ? `per ${item.unit}` : 'per unit'
-  const metadata = [item.packSize, item.unit ? `Unit: ${item.unit}` : null]
-    .filter(Boolean)
-    .join(' • ')
-  const lineTotal = unitPrice != null ? unitPrice * item.quantity : null
-  const pricePerUnit = unitPrice != null ? formatPrice(unitPrice) : 'Pending'
-  const lineTotalDisplay = lineTotal != null ? formatPrice(lineTotal) : 'Pending'
-  const packPriceDisplay = item.packPrice != null ? formatPrice(item.packPrice) : 'Pending'
-  const priceIncVat = item.unitPriceIncVat != null ? formatPrice(item.unitPriceIncVat) : 'Pending'
-  const priceExVat = item.unitPriceExVat != null ? formatPrice(item.unitPriceExVat) : 'Pending'
-
-  return (
-    <Collapsible
-      open={open}
-      onOpenChange={setOpen}
-      className="rounded-xl border border-border/60 bg-background/70 px-4 py-3 shadow-sm"
-    >
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div className="flex flex-1 items-center gap-4">
-          <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-muted">
-            {item.image ? (
-              <LazyImage src={item.image} alt={displayName} className="h-full w-full" imgClassName="object-contain" />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center text-[11px] text-muted-foreground">No image</div>
-            )}
-          </div>
-
-          <div className="min-w-0 space-y-1">
-            <p className="truncate text-sm font-semibold text-foreground">{displayName}</p>
-            {metadata && metadata.length > 0 && (
-              <p className="text-xs text-muted-foreground">{metadata}</p>
-            )}
-
-            <CollapsibleTrigger asChild>
-              <button
-                type="button"
-                className="flex items-center gap-1 text-xs font-medium text-primary hover:underline"
-              >
-                {open ? 'Hide details' : 'View details'}
-                {open ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
-              </button>
-            </CollapsibleTrigger>
-          </div>
-        </div>
-
-        <div className="flex flex-col gap-3 text-right md:flex-row md:items-center md:gap-6">
-          <div>
-            <p className="text-sm font-semibold tabular-nums text-foreground">{lineTotalDisplay}</p>
-            <p className="text-xs text-muted-foreground">Line total</p>
-          </div>
-          <div>
-            <p className="text-xs font-medium tabular-nums text-muted-foreground">{pricePerUnit}</p>
-            <p className="text-xs text-muted-foreground">
-              {unitLabel} {includeVat ? '(inc VAT)' : '(ex VAT)'}
-            </p>
-          </div>
-          <div className="flex items-center justify-end gap-2">
-            <QuantityStepper
-              supplierItemId={item.supplierItemId}
-              quantity={item.quantity}
-              min={1}
-              label={displayName}
-              supplier={item.supplierName ?? undefined}
-            />
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              aria-label={`Remove ${displayName}`}
-              className="h-8 w-8 rounded-full text-muted-foreground transition hover:bg-destructive/10 hover:text-destructive"
-              onClick={() => onRemoveItem(item.supplierItemId)}
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      <CollapsibleContent className="mt-3 rounded-lg border border-dashed border-muted-foreground/30 bg-muted/10 p-3 text-xs text-muted-foreground">
-        <div className="grid gap-3 sm:grid-cols-2">
-          <div className="space-y-1">
-            <p className="text-xs font-medium text-foreground">SKU</p>
-            <p className="font-mono text-xs">{item.sku || 'Not provided'}</p>
-          </div>
-          <div className="space-y-1">
-            <p className="text-xs font-medium text-foreground">Pack size</p>
-            <p>{item.packSize || 'Not provided'}</p>
-          </div>
-          <div className="space-y-1">
-            <p className="text-xs font-medium text-foreground">Pack price</p>
-            <p className="tabular-nums">{packPriceDisplay}</p>
-          </div>
-          <div className="space-y-1">
-            <p className="text-xs font-medium text-foreground">Unit price (inc VAT)</p>
-            <p className="tabular-nums">{priceIncVat}</p>
-          </div>
-          <div className="space-y-1">
-            <p className="text-xs font-medium text-foreground">Unit price (ex VAT)</p>
-            <p className="tabular-nums">{priceExVat}</p>
-          </div>
-        </div>
-      </CollapsibleContent>
-    </Collapsible>
-  )
-}
+// Remove SupplierItemRow and SupplierItemRowProps definitions
 
 function SummaryRow({ label, value }: { label: string; value: React.ReactNode }) {
   return (
@@ -328,10 +216,7 @@ export function OrderComposer() {
             const price = includeVat ? item.unitPriceIncVat : item.unitPriceExVat
             return price != null ? sum + price * item.quantity : sum
           }, 0)
-          const supplierHasUnknownPrices = group.items.some(item => {
-            const price = includeVat ? item.unitPriceIncVat : item.unitPriceExVat
-            return price == null
-          })
+
           const supplierDeliveryCost = supplierDelivery?.total_delivery_cost ?? 0
           const supplierTotal = supplierSubtotal + supplierDeliveryCost
           const [firstItem] = group.items
@@ -341,164 +226,32 @@ export function OrderComposer() {
             supplierLogo?: string | null
           }
           const supplierLogo = extended?.supplierLogoUrl ?? extended?.logoUrl ?? extended?.supplierLogo ?? null
-          const supplierInitials = (group.supplierName || '??').slice(0, 2).toUpperCase()
           const amountToFreeDelivery = supplierDelivery?.amount_to_free_delivery
+          const supplierData = suppliers?.find(s => s.id === supplierId) as any
+          const minOrderValue = supplierData?.min_order_isk || 0
+          const supplierEmail = supplierData?.order_email
 
           return (
-            <Card key={supplierId} className="shadow-md">
-              <CardHeader className="border-b pb-4">
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="flex items-center gap-3">
-                    <Avatar className="h-11 w-11">
-                      {supplierLogo ? (
-                        <AvatarImage src={supplierLogo} alt={`${group.supplierName} logo`} className="object-contain" />
-                      ) : (
-                        <AvatarFallback className="text-sm font-medium">{supplierInitials}</AvatarFallback>
-                      )}
-                    </Avatar>
-                    <div>
-                      <CardTitle className="text-lg font-semibold leading-snug text-foreground">
-                        {group.supplierName || 'Supplier'}
-                      </CardTitle>
-                      <p className="text-sm text-muted-foreground">
-                        {group.items.length} item{group.items.length === 1 ? '' : 's'} in this delivery
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-wrap items-center gap-2">
-                    {supplierDelivery && (
-                      <Badge variant="outline" className="flex items-center gap-1 border-border/60 text-xs text-muted-foreground">
-                        <Truck className="h-3 w-3" />
-                        {supplierDelivery.total_delivery_cost > 0
-                          ? `${formatPrice(supplierDelivery.total_delivery_cost)} delivery`
-                          : 'Delivery included'}
-                      </Badge>
-                    )}
-
-                    {isLoadingDelivery && !supplierDelivery && (
-                      <Badge variant="outline" className="border-dashed text-muted-foreground">
-                        Calculating delivery
-                      </Badge>
-                    )}
-
-                    {supplierDelivery?.next_delivery_day && (
-                      <Badge variant="outline" className="text-xs">
-                        <Truck className="mr-1 h-3 w-3" />
-                        Next: {supplierDelivery.next_delivery_day}
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-              </CardHeader>
-
-              <CardContent className="space-y-5 pt-4">
-                <div className="space-y-3">
-                  {group.items.map(item => (
-                    <SupplierItemRow
-                      key={item.supplierItemId}
-                      item={item}
-                      includeVat={includeVat}
-                      formatPrice={formatPrice}
-                      onRemoveItem={removeItem}
-                    />
-                  ))}
-                </div>
-
-                <Separator />
-
-                <div className="space-y-3 rounded-lg bg-muted/10 p-4">
-                  <SummaryRow
-                    label="Items subtotal"
-                    value={
-                      supplierSubtotal > 0 || !supplierHasUnknownPrices
-                        ? formatPrice(supplierSubtotal)
-                        : 'Pending'
-                    }
-                  />
-
-                  {supplierDelivery && (
-                    <div className="space-y-2">
-                      <SummaryRow
-                        label="Delivery & fees"
-                        value={
-                          supplierDeliveryCost > 0
-                            ? formatPrice(supplierDeliveryCost)
-                            : 'Included'
-                        }
-                      />
-
-                      {(supplierDelivery.delivery_fee > 0 ||
-                        supplierDelivery.fuel_surcharge > 0 ||
-                        supplierDelivery.pallet_deposit > 0) && (
-                        <div className="space-y-1 pl-2 text-xs text-muted-foreground">
-                          {supplierDelivery.delivery_fee > 0 && (
-                            <div className="flex items-center justify-between">
-                              <span>Delivery fee</span>
-                              <span className="tabular-nums">
-                                {formatPrice(supplierDelivery.delivery_fee)}
-                              </span>
-                            </div>
-                          )}
-                          {supplierDelivery.fuel_surcharge > 0 && (
-                            <div className="flex items-center justify-between">
-                              <span>Fuel surcharge</span>
-                              <span className="tabular-nums">
-                                {formatPrice(supplierDelivery.fuel_surcharge)}
-                              </span>
-                            </div>
-                          )}
-                          {supplierDelivery.pallet_deposit > 0 && (
-                            <div className="flex items-center justify-between">
-                              <span>Pallet deposit</span>
-                              <span className="tabular-nums">
-                                {formatPrice(supplierDelivery.pallet_deposit)}
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {amountToFreeDelivery && amountToFreeDelivery > 0 && (
-                    <div className="rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-700">
-                      Add {formatPrice(amountToFreeDelivery)} more for free delivery
-                    </div>
-                  )}
-
-                  <Separator className="my-1" />
-
-                  <SummaryRow
-                    label={supplierHasUnknownPrices ? 'Estimated supplier total' : 'Supplier total'}
-                    value={
-                      supplierTotal > 0 || (!supplierHasUnknownPrices && supplierDeliveryCost === 0)
-                        ? formatPrice(supplierTotal)
-                        : 'Pending'
-                    }
-                  />
-
-                  {supplierHasUnknownPrices && (
-                    <p className="text-xs text-muted-foreground">
-                      Final total will update once pricing is confirmed for all items.
-                    </p>
-                  )}
-                </div>
-
-                <SendOrderButton
-                  supplierId={supplierId}
-                  supplierName={group.supplierName}
-                  supplierEmail={(suppliers?.find(s => s.id === supplierId) as any)?.order_email}
-                  supplierLogoUrl={supplierLogo}
-                  cartItems={group.items}
-                  subtotal={supplierSubtotal}
-                  minOrderValue={(suppliers?.find(s => s.id === supplierId) as any)?.min_order_isk || 0}
-                />
-              </CardContent>
-            </Card>
+            <SupplierOrderCard
+              key={supplierId}
+              supplierId={supplierId}
+              supplierName={group.supplierName}
+              supplierEmail={supplierEmail}
+              logoUrl={supplierLogo}
+              items={group.items}
+              subtotal={supplierSubtotal}
+              deliveryFee={supplierDeliveryCost}
+              total={supplierTotal}
+              minOrderValue={minOrderValue}
+              amountToFreeDelivery={amountToFreeDelivery}
+              onRemoveItem={removeItem}
+              formatPrice={formatPrice}
+            />
           )
         })}
       </div>
+
+      {/* ... (Order Summary sidebar remains unchanged) */}
 
       <div className="space-y-4 xl:sticky xl:top-[calc(100vh-26rem)] xl:self-end">
         <Card className="shadow-lg">

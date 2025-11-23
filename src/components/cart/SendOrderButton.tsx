@@ -162,8 +162,8 @@ export function SendOrderButton({
 
       toast({
         title: language === 'is' ? 'Drög búin til' : 'Draft Created',
-        description: language === 'is' 
-          ? 'Gmail drög hafa verið búin til og pöntun vistuð.' 
+        description: language === 'is'
+          ? 'Gmail drög hafa verið búin til og pöntun vistuð.'
           : 'Gmail draft has been created and order saved.',
       })
 
@@ -204,8 +204,8 @@ export function SendOrderButton({
 
       toast({
         title: language === 'is' ? 'Drög búin til' : 'Draft Created',
-        description: language === 'is' 
-          ? 'Outlook drög hafa verið búin til og pöntun vistuð.' 
+        description: language === 'is'
+          ? 'Outlook drög hafa verið búin til og pöntun vistuð.'
           : 'Outlook draft has been created and order saved.',
       })
 
@@ -284,188 +284,77 @@ export function SendOrderButton({
     setLanguage(prev => prev === 'en' ? 'is' : 'en')
   }
 
+  // ... (keep existing logic/hooks)
+
   return (
     <>
-      <div className="space-y-4 pt-4 border-t">
-        {/* Header with supplier info and language toggle */}
-        <div className="flex items-center gap-3">
-          <Avatar className="h-10 w-10">
-            <AvatarImage src={supplierLogoUrl || undefined} alt={supplierName} />
-            <AvatarFallback>{supplierName.slice(0, 2).toUpperCase()}</AvatarFallback>
-          </Avatar>
-          <div className="flex-1 font-medium">{supplierName}</div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={toggleLanguage}
-            className="h-8 px-3"
-          >
-            {language === 'en' ? '🇬🇧 EN' : '🇮🇸 IS'}
-          </Button>
-          {meetsMinimum ? (
-            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-              <CheckCircle2 className="h-3 w-3 mr-1" />
-              {language === 'is' ? 'Tilbúið' : 'Ready'}
-            </Badge>
-          ) : (
-            <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
-              <AlertCircle className="h-3 w-3 mr-1" />
-              {minOrderValue > 0 && `+${(minOrderValue - subtotal).toLocaleString()} kr.`}
-            </Badge>
-          )}
-        </div>
+      <div className="flex items-center gap-2">
+        {/* Auth buttons (hidden if authorized usually, or small) */}
+        {!isGmailAuthorized && <div className="hidden"><GmailAuthButton /></div>}
+        {!isOutlookAuthorized && <div className="hidden"><OutlookAuthButton /></div>}
 
-        {/* Gmail Auth Button */}
-        <GmailAuthButton />
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-9 w-9 p-0"
+                onClick={() => handleSendEmail('clipboard')}
+                disabled={!meetsMinimum}
+              >
+                <Copy className="h-4 w-4 text-muted-foreground" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Copy to clipboard</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
 
-        {/* Outlook Auth Button */}
-        <OutlookAuthButton />
+        <Button variant="outline" size="sm" className="h-9 gap-2">
+          <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
+          Review
+        </Button>
 
-        {/* Primary Send Options */}
-        <div className="space-y-2">
-          <TooltipProvider>
-            {isGmailAuthorized && (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    onClick={() => handleSendEmail('gmail-draft')}
-                    disabled={!meetsMinimum || !supplierEmail}
-                    className="w-full"
-                    size="default"
-                  >
-                    <Star className="h-4 w-4 mr-2" />
-                    {language === 'is' ? 'Búa til Gmail drög' : 'Create Gmail Draft'}
-                  </Button>
-                </TooltipTrigger>
-                {!meetsMinimum && (
-                  <TooltipContent>
-                    <p>
-                      {language === 'is' 
-                        ? `Bæta við ${shortfall.toLocaleString('is-IS')} kr. til að ná lágmarki`
-                        : `Add ${shortfall.toLocaleString('en-US')} kr. more to meet minimum`
-                      }
-                    </p>
-                  </TooltipContent>
-                )}
-              </Tooltip>
+        <div className="h-4 w-px bg-border mx-1" />
+
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-9 gap-2 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-100"
+                onClick={() => handleSendEmail('gmail-draft')}
+                disabled={!meetsMinimum || !supplierEmail}
+              >
+                <Mail className="h-4 w-4" />
+                Gmail
+              </Button>
+            </TooltipTrigger>
+            {!meetsMinimum && (
+              <TooltipContent>Min order not met</TooltipContent>
             )}
+          </Tooltip>
+        </TooltipProvider>
 
-            {isOutlookAuthorized && (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    onClick={() => handleSendEmail('outlook-draft')}
-                    disabled={!meetsMinimum || !supplierEmail}
-                    className="w-full"
-                    size="default"
-                    variant="secondary"
-                  >
-                    <Mail className="h-4 w-4 mr-2" />
-                    {language === 'is' ? 'Búa til Outlook drög' : 'Create Outlook Draft'}
-                  </Button>
-                </TooltipTrigger>
-                {!meetsMinimum && (
-                  <TooltipContent>
-                    <p>
-                      {language === 'is' 
-                        ? `Bæta við ${shortfall.toLocaleString('is-IS')} kr. til að ná lágmarki`
-                        : `Add ${shortfall.toLocaleString('en-US')} kr. more to meet minimum`
-                      }
-                    </p>
-                  </TooltipContent>
-                )}
-              </Tooltip>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                size="sm"
+                className="h-9 gap-2 bg-[#0078D4] hover:bg-[#006cbd] text-white"
+                onClick={() => handleSendEmail('outlook-draft')}
+                disabled={!meetsMinimum || !supplierEmail}
+              >
+                <Mail className="h-4 w-4" />
+                Outlook
+              </Button>
+            </TooltipTrigger>
+            {!meetsMinimum && (
+              <TooltipContent>Min order not met</TooltipContent>
             )}
-
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  onClick={() => handleSendEmail('gmail')}
-                  disabled={!meetsMinimum || !supplierEmail}
-                  variant="outline"
-                  className="w-full"
-                  size="default"
-                >
-                  <Mail className="h-4 w-4 mr-2" />
-                  {language === 'is' ? 'Opna í Gmail' : 'Open in Gmail Web'}
-                </Button>
-              </TooltipTrigger>
-              {!meetsMinimum && (
-                <TooltipContent>
-                  <p>
-                    {language === 'is' 
-                      ? `Bæta við ${shortfall.toLocaleString('is-IS')} kr. til að ná lágmarki`
-                      : `Add ${shortfall.toLocaleString('en-US')} kr. more to meet minimum`
-                    }
-                  </p>
-                </TooltipContent>
-              )}
-            </Tooltip>
-
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  onClick={() => handleSendEmail('outlook')}
-                  disabled={!meetsMinimum || !supplierEmail}
-                  variant="outline"
-                  className="w-full"
-                  size="default"
-                >
-                  <Mail className="h-4 w-4 mr-2" />
-                  {language === 'is' ? 'Opna í Outlook' : 'Open in Outlook Web'}
-                </Button>
-              </TooltipTrigger>
-              {!meetsMinimum && (
-                <TooltipContent>
-                  <p>
-                    {language === 'is' 
-                      ? `Bæta við ${shortfall.toLocaleString('is-IS')} kr. til að ná lágmarki`
-                      : `Add ${shortfall.toLocaleString('en-US')} kr. more to meet minimum`
-                    }
-                  </p>
-                </TooltipContent>
-              )}
-            </Tooltip>
-
-            <Button
-              onClick={() => handleSendEmail('clipboard')}
-              disabled={!meetsMinimum}
-              variant="outline"
-              className="w-full"
-              size="default"
-            >
-              <Copy className="h-4 w-4 mr-2" />
-              {language === 'is' ? 'Afrita á klemmuspjald' : 'Copy to Clipboard'}
-            </Button>
-          </TooltipProvider>
-
-          {/* Secondary option */}
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  onClick={() => handleSendEmail('mailto')}
-                  disabled={!meetsMinimum || !supplierEmail}
-                  variant="ghost"
-                  className="w-full text-sm"
-                  size="sm"
-                >
-                  {language === 'is' ? 'Opna í sjálfgefnu póstforriti' : 'Open in default email app'}
-                </Button>
-              </TooltipTrigger>
-              {!meetsMinimum && (
-                <TooltipContent>
-                  <p>
-                    {language === 'is' 
-                      ? `Bæta við ${shortfall.toLocaleString('is-IS')} kr. til að ná lágmarki`
-                      : `Add ${shortfall.toLocaleString('en-US')} kr. more to meet minimum`
-                    }
-                  </p>
-                </TooltipContent>
-              )}
-            </Tooltip>
-          </TooltipProvider>
-        </div>
+          </Tooltip>
+        </TooltipProvider>
       </div>
 
       <MarkAsSentDialog
