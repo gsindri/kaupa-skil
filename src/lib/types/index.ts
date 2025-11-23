@@ -379,6 +379,11 @@ export interface CartItem {
   // Database identifiers (only present for authenticated users)
   orderLineId?: string  // Maps to order_lines.id
   orderId?: string      // Maps to orders.id
+  
+  // Live pricing fields
+  offerId?: string        // references supplier_offer.id
+  availabilityStatus?: string
+  snapshotPrice?: number | null  // Original price when added to cart
 }
 
 // Price comparison types
