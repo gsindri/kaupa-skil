@@ -121,11 +121,11 @@ export function CartDrawer() {
                   </div>
                 </div>
 
-                <div className="cart-item__right">
+                <div className="cart-item__controls">
                   <div className="cart-item__price">
                     {lineTotal !== null ? formatCurrency(lineTotal) : null}
                   </div>
-                  <div className="cart-item__controls">
+                  <div className="flex items-center gap-2">
                     <QuantityStepper
                       supplierItemId={item.supplierItemId}
                       quantity={item.quantity}
@@ -156,7 +156,7 @@ export function CartDrawer() {
       <header className="cart-rail__header">
         <div className="flex items-center gap-2">
           <span className="cart-rail__title-text">Cart</span>
-          <span className="bg-slate-100 text-slate-600 text-xs font-medium px-2 py-0.5 rounded-full">
+          <span className="bg-slate-100 text-slate-500 text-[11px] font-medium px-2 py-0.5 rounded-full">
             {totalItems} items
           </span>
         </div>
