@@ -307,30 +307,6 @@ input[type='search'] {
   padding: 16px;
   border-top: 1px solid var(--cart-rail-border);
   background: var(--cart-rail-surface);
-  display: grid;
-  gap: 12px;
-  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.02);
-}
-
-.cart-item {
-  display: grid;
-  grid-template-columns: 48px 1fr auto;
-  gap: 12px;
-  padding: 8px 16px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-  align-items: center;
-  background: transparent;
-  border-radius: 0;
-  margin-bottom: 0;
-}
-
-.cart-item:last-child {
-  border-bottom: none;
-}
-
-.cart-item__media {
-  width: 48px;
-  height: 48px;
   flex-shrink: 0;
 }
 
@@ -707,36 +683,6 @@ input[type='search'] {
 }
 
 /* Numbers align perfectly in tables/badges */
-.ui-numeric {
-  font-variant-numeric: tabular-nums;
-}
-
-/* Basic line clamp utilities for legacy Tailwind setup */
-.line-clamp-1,
-.line-clamp-2 {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.line-clamp-1 {
-  -webkit-line-clamp: 1;
-}
-
-.line-clamp-2 {
-  -webkit-line-clamp: 2;
-}
-
-/* Lucide icons */
-svg.lucide {
-  stroke-width: 1.75;
-}
-
-.icon-16 {
-  width: 16px;
-  height: 16px;
-}
-
 .icon-18 {
   width: 18px;
   height: 18px;

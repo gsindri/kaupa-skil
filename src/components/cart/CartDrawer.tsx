@@ -121,11 +121,11 @@ export function CartDrawer() {
                   </div>
                 </div>
 
-                <div className="cart-item__controls">
+                <div className="cart-item__right">
                   <div className="cart-item__price">
                     {lineTotal !== null ? formatCurrency(lineTotal) : null}
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="cart-item__controls">
                     <QuantityStepper
                       supplierItemId={item.supplierItemId}
                       quantity={item.quantity}
