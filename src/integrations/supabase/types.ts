@@ -509,6 +509,7 @@ export type Database = {
           id: string
           kr_per_base_unit: number | null
           line_total: number | null
+          offer_id: string | null
           order_id: string
           pack_size: string | null
           quantity_packs: number
@@ -524,6 +525,7 @@ export type Database = {
           id?: string
           kr_per_base_unit?: number | null
           line_total?: number | null
+          offer_id?: string | null
           order_id: string
           pack_size?: string | null
           quantity_packs: number
@@ -539,6 +541,7 @@ export type Database = {
           id?: string
           kr_per_base_unit?: number | null
           line_total?: number | null
+          offer_id?: string | null
           order_id?: string
           pack_size?: string | null
           quantity_packs?: number
@@ -569,6 +572,13 @@ export type Database = {
             referencedColumns: ["catalog_id"]
           },
           {
+            foreignKeyName: "order_lines_offer_id_fkey"
+            columns: ["offer_id"]
+            isOneToOne: false
+            referencedRelation: "supplier_offer"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "order_lines_order_id_fkey"
             columns: ["order_id"]
             isOneToOne: false
@@ -593,6 +603,7 @@ export type Database = {
           id: string
           order_date: string
           order_number: string | null
+          prices_last_validated_at: string | null
           status: string
           supplier_id: string
           tenant_id: string
@@ -607,6 +618,7 @@ export type Database = {
           id?: string
           order_date: string
           order_number?: string | null
+          prices_last_validated_at?: string | null
           status?: string
           supplier_id: string
           tenant_id: string
@@ -621,6 +633,7 @@ export type Database = {
           id?: string
           order_date?: string
           order_number?: string | null
+          prices_last_validated_at?: string | null
           status?: string
           supplier_id?: string
           tenant_id?: string
@@ -978,6 +991,56 @@ export type Database = {
           },
         ]
       }
+      supplier_offer: {
+        Row: {
+          availability_qty: number | null
+          availability_status: string | null
+          created_at: string
+          currency: string
+          id: string
+          pack_price: number
+          supplier_product_id: string
+          updated_at: string
+          valid_from: string
+          valid_to: string | null
+          vat_included: boolean
+        }
+        Insert: {
+          availability_qty?: number | null
+          availability_status?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          pack_price: number
+          supplier_product_id: string
+          updated_at?: string
+          valid_from?: string
+          valid_to?: string | null
+          vat_included?: boolean
+        }
+        Update: {
+          availability_qty?: number | null
+          availability_status?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          pack_price?: number
+          supplier_product_id?: string
+          updated_at?: string
+          valid_from?: string
+          valid_to?: string | null
+          vat_included?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_offer_supplier_product_id_fkey"
+            columns: ["supplier_product_id"]
+            isOneToOne: false
+            referencedRelation: "supplier_product"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       supplier_product: {
         Row: {
           active_status: string | null
@@ -1273,6 +1336,15 @@ export type Database = {
         Args: { password_text: string }
         Returns: boolean
       }
+      checkout_validate_prices: {
+        Args: { max_drift_percent?: number; order_id_param: string }
+        Returns: {
+          drift_items: Json
+          has_drift: boolean
+          total_new: number
+          total_old: number
+        }[]
+      }
       compute_kr_per_base_unit: {
         Args: {
           base_qty_per_pack_val: number
@@ -1331,6 +1403,7 @@ export type Database = {
           name: string
         }[]
       }
+      get_current_offer: { Args: { product_id: string }; Returns: string }
       get_user_memberships: {
         Args: never
         Returns: {
