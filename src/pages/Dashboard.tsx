@@ -69,9 +69,9 @@ export default function Dashboard() {
       />
 
       <ContentRail includeRailPadding={false}>
-        <div className="mx-auto flex w-full max-w-[1100px] flex-col gap-7">
-          <OrderControlCard 
-            cartCount={basket.getTotalItems()} 
+        <div className="mx-auto flex w-full flex-col gap-7">
+          <OrderControlCard
+            cartCount={basket.getTotalItems()}
             cartTotal={formatCurrency(basket.getTotalPrice(true))}
           />
 
@@ -85,10 +85,10 @@ export default function Dashboard() {
   )
 }
 
-function OrderControlCard({ 
-  cartCount, 
+function OrderControlCard({
+  cartCount,
   cartTotal
-}: { 
+}: {
   cartCount: number
   cartTotal: string
 }) {
