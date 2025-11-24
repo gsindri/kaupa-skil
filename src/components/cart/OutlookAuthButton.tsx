@@ -4,11 +4,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Mail } from 'lucide-react';
 
-export function OutlookAuthButton({ minimal = false, onAuthChange }: { minimal?: boolean; onAuthChange?: () => void }) {
+export function OutlookAuthButton({ minimal = false, onAuthChange, className }: { minimal?: boolean; onAuthChange?: () => void; className?: string }) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: profile } = useQuery({
+  const { data: profile, isLoading } = useQuery({
     queryKey: ['outlook-auth-status'],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -23,6 +23,18 @@ export function OutlookAuthButton({ minimal = false, onAuthChange }: { minimal?:
       return data;
     },
   });
+
+  if (isLoading) {
+    if (minimal) {
+      return <div className={`h-7 w-24 animate-pulse rounded bg-slate-100 ${className}`} />;
+    }
+    return (
+      <Button variant="outline" className={`w-full ${className}`} disabled>
+        <Mail className="mr-2 h-4 w-4 opacity-50" />
+        Loading...
+      </Button>
+    );
+  }
 
   const handleAuthorize = async () => {
     try {
@@ -103,14 +115,14 @@ export function OutlookAuthButton({ minimal = false, onAuthChange }: { minimal?:
       return (
         <button
           onClick={handleDisconnect}
-          className="text-xs font-medium text-slate-500 transition-colors hover:text-red-600 hover:underline"
+          className={`text-xs font-medium text-slate-500 transition-colors hover:text-red-600 hover:underline ${className}`}
         >
           Disconnect
         </button>
       );
     }
     return (
-      <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
+      <div className={`flex items-center gap-2 p-3 bg-muted rounded-lg ${className}`}>
         <Mail className="h-4 w-4 text-muted-foreground" />
         <span className="text-sm text-muted-foreground">Outlook Connected</span>
         <Button
@@ -128,7 +140,7 @@ export function OutlookAuthButton({ minimal = false, onAuthChange }: { minimal?:
     <Button
       onClick={handleAuthorize}
       variant="outline"
-      className={minimal ? "h-7 px-2.5 py-1 text-xs font-semibold rounded border border-slate-200 bg-white text-slate-600 transition-colors hover:border-blue-600 hover:text-blue-600" : "w-full"}
+      className={minimal ? `h-9 px-3 py-1 text-xs font-semibold rounded border border-slate-200 bg-white text-slate-600 transition-colors hover:border-blue-600 hover:text-blue-600 ${className}` : `w-full ${className}`}
     >
       {!minimal && <Mail className="mr-2 h-4 w-4" />}
       Connect Outlook
