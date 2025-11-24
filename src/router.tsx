@@ -59,45 +59,21 @@ export const routes = [
         element: <Orders />,
       },
       {
-        path: "cart",
-        element: <Orders />,
-      },
-      {
         path: "checkout",
         loader: shouldRedirectCheckout
           ? ({ request }) => {
-              const url = new URL(request.url);
-              const params = new URLSearchParams(url.search);
-              params.set("mode", "email");
-              const search = params.toString();
-              return redirect(`/cart${search ? `?${search}` : ""}`);
-            }
+            const url = new URL(request.url);
+            const params = new URLSearchParams(url.search);
+            params.set("mode", "email");
+            const search = params.toString();
+            return redirect(`/cart${search ? `?${search}` : ""}`);
+          }
           : undefined,
         element: <Checkout />,
       },
       {
         path: "checkout/confirmation",
         element: <OrderConfirmation />,
-      },
-      {
-        path: "compare",
-        element: <Compare />,
-      },
-      {
-        path: "suppliers",
-        element: <Suppliers />,
-      },
-      {
-        path: "pantry",
-        element: <Pantry />,
-      },
-      {
-        path: "price-history",
-        element: <PriceHistory />,
-      },
-      {
-        path: "discovery",
-        element: <Discovery />,
       },
       {
         path: "admin",
@@ -129,6 +105,67 @@ export const routes = [
     path: "/catalog",
     element: <CatalogPage />,
     errorElement: <ErrorPage />,
+  },
+  {
+    path: "/cart",
+    element: (
+      <AuthGate>
+        <AppLayout>
+          <Orders />
+        </AppLayout>
+      </AuthGate>
+    ),
+    errorElement: <ErrorPage />,
+  },
+  {
+    path: "/compare",
+    element: (
+      <AuthGate>
+        <AppLayout>
+          <Compare />
+        </AppLayout>
+      </AuthGate>
+    ),
+  },
+  {
+    path: "/suppliers",
+    element: (
+      <AuthGate>
+        <AppLayout>
+          <Suppliers />
+        </AppLayout>
+      </AuthGate>
+    ),
+  },
+  {
+    path: "/pantry",
+    element: (
+      <AuthGate>
+        <AppLayout>
+          <Pantry />
+        </AppLayout>
+      </AuthGate>
+    ),
+  },
+  {
+    path: "/price-history",
+    element: (
+      <AuthGate>
+        <AppLayout>
+          <PriceHistory />
+        </AppLayout>
+      </AuthGate>
+    ),
+  },
+  {
+    path: "/discovery",
+    element: (
+      <AuthGate>
+        <AppLayout>
+          <Discovery />
+        </AppLayout>
+      </AuthGate>
+    ),
   },
   {
     path: "/login",

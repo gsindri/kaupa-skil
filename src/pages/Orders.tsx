@@ -8,6 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import CartEmailCheckout from './CartEmailCheckout'
 import { FEATURE_EMAIL_CHECKOUT_ONE_PAGE } from '@/lib/featureFlags'
 
+import { ContentRail } from '@/components/layout/ContentRail'
+
 function OrdersErrorFallback({ resetErrorBoundary }: { resetErrorBoundary: () => void }) {
   return (
     <Card className="mx-auto max-w-md">
@@ -21,13 +23,13 @@ function OrdersErrorFallback({ resetErrorBoundary }: { resetErrorBoundary: () =>
         <p className="text-center text-muted-foreground">
           We couldn't load your cart right now. Please try again.
         </p>
-        
+
         <div className="flex flex-col gap-2">
           <Button onClick={resetErrorBoundary} className="w-full">
             <RefreshCw className="h-4 w-4 mr-2" />
             Try Again
           </Button>
-          
+
           <Button variant="outline" onClick={() => window.location.href = '/catalog'} className="w-full">
             <ShoppingCart className="h-4 w-4 mr-2" />
             Browse Catalog
@@ -38,13 +40,17 @@ function OrdersErrorFallback({ resetErrorBoundary }: { resetErrorBoundary: () =>
   )
 }
 
+
+
 function OrdersContent() {
   return (
-    <div className="space-y-6">
-      <h1 className="text-3xl font-bold text-foreground">Cart</h1>
+    <ContentRail includeRailPadding={false}>
+      <div className="mx-auto w-full max-w-[1100px] space-y-6">
+        <h1 className="text-3xl font-bold text-foreground">Cart</h1>
 
-      <OrderComposer />
-    </div>
+        <OrderComposer />
+      </div>
+    </ContentRail>
   )
 }
 
