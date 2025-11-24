@@ -78,6 +78,23 @@ export default function OutlookCallback() {
     };
 
     processCallback();
+
+    // Listen for postMessage from OAuth popup window
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data.type === 'OUTLOOK_AUTH_SUCCESS') {
+        setStatus('success');
+        toast({
+          title: 'Success',
+          description: 'Outlook connected successfully',
+        });
+        setTimeout(() => {
+          window.close();
+        }, 1500);
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
   }, [searchParams, navigate, toast]);
 
   return (
