@@ -61,7 +61,7 @@ export function OrderComposer() {
     getMissingPriceCount,
   } = useCart()
   const { includeVat } = useSettings()
-  const { isGmailAuthorized, isOutlookAuthorized, userEmail, isLoading: isAuthLoading } = useEmailAuth()
+  const { isGmailAuthorized, isOutlookAuthorized, userEmail, isLoading: isAuthLoading, refresh: refreshAuth } = useEmailAuth()
   const {
     data: deliveryCalculations,
     isLoading: isLoadingDelivery,
@@ -374,18 +374,18 @@ export function OrderComposer() {
               <div className="flex items-center gap-2">
                 {!isGmailAuthorized && !isOutlookAuthorized && !isAuthLoading && (
                   <>
-                    <div className="[&>button]:h-7 [&>button]:px-2.5 [&>button]:py-1 [&>button]:text-xs [&>button]:font-semibold [&>button]:rounded [&>button]:border [&>button]:border-slate-200 [&>button]:bg-white [&>button]:text-slate-600 [&>button]:transition-colors hover:[&>button]:border-blue-600 hover:[&>button]:text-blue-600">
-                      <GmailAuthButton />
-                    </div>
+                    <GmailAuthButton minimal onAuthChange={refreshAuth} />
                     <span className="text-xs text-slate-400">or</span>
-                    <div className="[&>button]:h-7 [&>button]:px-2.5 [&>button]:py-1 [&>button]:text-xs [&>button]:font-semibold [&>button]:rounded [&>button]:border [&>button]:border-slate-200 [&>button]:bg-white [&>button]:text-slate-600 [&>button]:transition-colors hover:[&>button]:border-blue-600 hover:[&>button]:text-blue-600">
-                      <OutlookAuthButton />
-                    </div>
+                    <OutlookAuthButton minimal onAuthChange={refreshAuth} />
                   </>
                 )}
                 {(isGmailAuthorized || isOutlookAuthorized) && (
-                  <div className="[&_button]:text-xs [&_button]:font-medium [&_button]:text-slate-500 [&_button]:transition-colors hover:[&_button]:text-red-600 hover:[&_button]:underline">
-                    {isGmailAuthorized ? <GmailAuthButton /> : <OutlookAuthButton />}
+                  <div className="flex items-center">
+                    {isGmailAuthorized ? (
+                      <GmailAuthButton minimal onAuthChange={refreshAuth} />
+                    ) : (
+                      <OutlookAuthButton minimal onAuthChange={refreshAuth} />
+                    )}
                   </div>
                 )}
               </div>
