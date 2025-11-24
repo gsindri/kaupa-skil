@@ -92,16 +92,107 @@ serve(async (req) => {
 
     console.log('Outlook authorization successful for user:', user.id);
 
-    return new Response(
-      JSON.stringify({ 
-        success: true,
-        message: 'Outlook authorization successful'
-      }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200,
-      }
-    );
+    // Return HTML with success UI and auto-close script
+    const html = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Outlook Connected</title>
+          <style>
+            body {
+              margin: 0;
+              padding: 0;
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              min-height: 100vh;
+              background: linear-gradient(135deg, #0078D4 0%, #00BCF2 100%);
+            }
+            .container {
+              background: white;
+              border-radius: 16px;
+              padding: 48px 40px;
+              text-align: center;
+              box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+              max-width: 400px;
+            }
+            .icon {
+              width: 64px;
+              height: 64px;
+              background: #0078D4;
+              border-radius: 50%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              margin: 0 auto 24px;
+            }
+            .checkmark {
+              width: 32px;
+              height: 32px;
+              border: 3px solid white;
+              border-top: none;
+              border-left: none;
+              transform: rotate(45deg);
+              margin-top: -8px;
+            }
+            h1 {
+              margin: 0 0 12px;
+              font-size: 24px;
+              font-weight: 600;
+              color: #1f2937;
+            }
+            p {
+              margin: 0 0 32px;
+              color: #6b7280;
+              font-size: 14px;
+            }
+            button {
+              background: #0078D4;
+              color: white;
+              border: none;
+              border-radius: 8px;
+              padding: 14px 32px;
+              font-size: 16px;
+              font-weight: 500;
+              cursor: pointer;
+              transition: background 0.2s;
+              width: 100%;
+            }
+            button:hover {
+              background: #005A9E;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="icon">
+              <div class="checkmark"></div>
+            </div>
+            <h1>Outlook Connected!</h1>
+            <p>Your Outlook account has been successfully connected.</p>
+            <button onclick="window.close()">Close Window</button>
+          </div>
+          <script>
+            // Notify parent window
+            if (window.opener) {
+              window.opener.postMessage({ type: 'OUTLOOK_AUTH_SUCCESS' }, '*');
+            }
+            // Auto-close after 1.5 seconds
+            setTimeout(function() {
+              window.close();
+            }, 1500);
+          </script>
+        </body>
+      </html>
+    `;
+
+    return new Response(html, {
+      headers: {
+        ...corsHeaders,
+        'Content-Type': 'text/html; charset=utf-8',
+      },
+    });
   } catch (error) {
     console.error('Error in microsoft-oauth-callback:', error);
     return new Response(

@@ -19,7 +19,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('id,email,full_name,tenant_id,created_at,updated_at')
+        .select('id,email,full_name,tenant_id,created_at,updated_at,gmail_authorized,outlook_authorized')
         .eq('id', userId)
         .maybeSingle()
 
@@ -31,7 +31,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
         const { data: newProfile, error: createError } = await supabase
           .from('profiles')
           .upsert({ id: userId }, { onConflict: 'id' })
-          .select('id,email,full_name,tenant_id,created_at,updated_at')
+          .select('id,email,full_name,tenant_id,created_at,updated_at,gmail_authorized,outlook_authorized')
           .single()
         if (createError) throw createError
         setProfile(newProfile)

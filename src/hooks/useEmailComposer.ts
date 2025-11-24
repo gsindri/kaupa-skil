@@ -154,6 +154,70 @@ export function useEmailComposer() {
     }
   }
 
+  async function createGmailDraftViaAPI(
+    supplierEmail: string,
+    emailData: OrderEmailData,
+    language: EmailLanguage
+  ): Promise<{ success: boolean; error?: string }> {
+    const subject = generateOrderSubject(emailData.poNumber, emailData.organizationName, language)
+    const body = generateOrderEmailBody(emailData, language)
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('create-gmail-draft', {
+        body: { to: supplierEmail, subject, body }
+      })
+
+      if (error) throw error
+      if (data?.error) throw new Error(data.error)
+
+      toast({
+        title: language === 'is' ? 'Drög búin til' : 'Draft created',
+        description: language === 'is' ? 'Opna Gmail til að senda' : 'Open Gmail to send'
+      })
+
+      return { success: true }
+    } catch (error) {
+      toast({
+        title: language === 'is' ? 'Villa' : 'Error',
+        description: error instanceof Error ? error.message : 'Failed to create draft',
+        variant: 'destructive'
+      })
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
+    }
+  }
+
+  async function createOutlookDraftViaAPI(
+    supplierEmail: string,
+    emailData: OrderEmailData,
+    language: EmailLanguage
+  ): Promise<{ success: boolean; error?: string; webLink?: string }> {
+    const subject = generateOrderSubject(emailData.poNumber, emailData.organizationName, language)
+    const body = generateOrderEmailBody(emailData, language)
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('create-outlook-draft', {
+        body: { to: supplierEmail, subject, body }
+      })
+
+      if (error) throw error
+      if (data?.error) throw new Error(data.error)
+
+      toast({
+        title: language === 'is' ? 'Drög búin til' : 'Draft created',
+        description: language === 'is' ? 'Opna Outlook til að senda' : 'Open Outlook to send'
+      })
+
+      return { success: true, webLink: data?.webLink }
+    } catch (error) {
+      toast({
+        title: language === 'is' ? 'Villa' : 'Error',
+        description: error instanceof Error ? error.message : 'Failed to create draft',
+        variant: 'destructive'
+      })
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
+    }
+  }
+
   return {
     isLoading,
     userProfile,
@@ -163,6 +227,8 @@ export function useEmailComposer() {
     createMailtoLink,
     createGmailLink,
     createOutlookLink,
-    copyToClipboard
+    copyToClipboard,
+    createGmailDraftViaAPI,
+    createOutlookDraftViaAPI
   }
 }
