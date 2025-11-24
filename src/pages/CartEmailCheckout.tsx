@@ -225,6 +225,8 @@ export default function CartEmailCheckout() {
     createGmailLink,
     createOutlookLink,
     copyToClipboard,
+    createGmailDraftViaAPI,
+    createOutlookDraftViaAPI,
   } = useEmailComposer()
 
   const subtotalPrice = getTotalPrice(includeVat)
@@ -710,7 +712,7 @@ export default function CartEmailCheckout() {
   }, [])
 
   const openEmailForSupplier = useCallback(
-    (supplierId: string, method?: SendMethod) => {
+    async (supplierId: string, method?: SendMethod) => {
       const context = composeEmailForSupplier(supplierId)
       if (!context) {
         return false
@@ -740,11 +742,40 @@ export default function CartEmailCheckout() {
         const link = createMailtoLink(supplierEmail, context.emailData, context.language)
         window.location.href = link
       } else if (selectedMethod === 'gmail' && supplierEmail) {
-        const link = createGmailLink(supplierEmail, context.emailData, context.language)
-        window.open(link, '_blank', 'noopener')
+        // Check if Gmail is authorized
+        const isGmailAuthorized = (profile as any)?.gmail_authorized === true
+        if (isGmailAuthorized) {
+          // Use API to create draft
+          const result = await createGmailDraftViaAPI(supplierEmail, context.emailData, context.language)
+          if (!result.success) {
+            // Fallback to web link if API fails
+            const link = createGmailLink(supplierEmail, context.emailData, context.language)
+            window.open(link, '_blank', 'noopener')
+          }
+        } else {
+          // Use web link if not authorized
+          const link = createGmailLink(supplierEmail, context.emailData, context.language)
+          window.open(link, '_blank', 'noopener')
+        }
       } else if (selectedMethod === 'outlook' && supplierEmail) {
-        const link = createOutlookLink(supplierEmail, context.emailData, context.language)
-        window.open(link, '_blank', 'noopener')
+        // Check if Outlook is authorized
+        const isOutlookAuthorized = (profile as any)?.outlook_authorized === true
+        if (isOutlookAuthorized) {
+          // Use API to create draft
+          const result = await createOutlookDraftViaAPI(supplierEmail, context.emailData, context.language)
+          if (!result.success) {
+            // Fallback to web link if API fails
+            const link = createOutlookLink(supplierEmail, context.emailData, context.language)
+            window.open(link, '_blank', 'noopener')
+          } else if (result.webLink) {
+            // Open the draft in Outlook web
+            window.open(result.webLink, '_blank', 'noopener')
+          }
+        } else {
+          // Use web link if not authorized
+          const link = createOutlookLink(supplierEmail, context.emailData, context.language)
+          window.open(link, '_blank', 'noopener')
+        }
       } else if (selectedMethod === 'copy') {
         copyToClipboard(context.emailData, context.language)
       } else if (selectedMethod === 'eml') {
