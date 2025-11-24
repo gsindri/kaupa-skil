@@ -190,6 +190,7 @@ export function AppLayout({
           id="catalogHeader"
           data-app-header="true"
           data-chrome-layer
+          data-locking-shim
           ref={combinedHeaderRef}
           className={cn(headerClassName)}
           style={{

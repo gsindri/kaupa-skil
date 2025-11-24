@@ -45,9 +45,7 @@ function OrdersErrorFallback({ resetErrorBoundary }: { resetErrorBoundary: () =>
 function OrdersContent() {
   return (
     <ContentRail includeRailPadding={false}>
-      <div className="mx-auto w-full space-y-6">
-        <h1 className="text-3xl font-bold text-foreground">Cart</h1>
-
+      <div className="mx-auto w-full space-y-6 pt-[var(--page-top-gap)]">
         <OrderComposer />
       </div>
     </ContentRail>

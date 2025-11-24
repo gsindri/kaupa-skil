@@ -12,30 +12,25 @@ const Dialog = ({
 }: React.ComponentProps<typeof DialogPrimitive.Root>) => {
   const location = useLocation()
   const isLandingPage = location.pathname === '/'
-  
+
   React.useEffect(() => {
     if (isLandingPage) return // Skip scroll lock on landing page
-    
+
     if (open) {
-        lockScroll()
+      lockScroll()
     } else {
+      // Delay unlock to match animation
+      const timer = setTimeout(() => {
         unlockScroll()
+      }, 150)
+      return () => clearTimeout(timer)
     }
   }, [open, isLandingPage])
 
   return (
     <DialogPrimitive.Root
       open={open}
-      onOpenChange={o => {
-        if (!isLandingPage) {
-          if (o) {
-            lockScroll()
-          } else {
-            unlockScroll()
-          }
-        }
-        onOpenChange?.(o)
-      }}
+      onOpenChange={onOpenChange}
       {...props}
     />
   )

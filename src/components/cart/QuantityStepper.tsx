@@ -73,6 +73,7 @@ export function QuantityStepper({
       minQuantity={minQuantity}
       maxQuantity={maxQuantity}
       size="sm"
+      hideTrashIcon={true}
     />
   );
 }

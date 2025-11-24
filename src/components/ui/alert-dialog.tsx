@@ -12,23 +12,20 @@ const AlertDialog = ({
 }: React.ComponentProps<typeof AlertDialogPrimitive.Root>) => {
   React.useEffect(() => {
     if (open) {
-        lockScroll()
+      lockScroll()
     } else {
+      // Delay unlock to match animation
+      const timer = setTimeout(() => {
         unlockScroll()
+      }, 150)
+      return () => clearTimeout(timer)
     }
   }, [open])
 
   return (
     <AlertDialogPrimitive.Root
       open={open}
-      onOpenChange={o => {
-        if (o) {
-          lockScroll()
-        } else {
-          unlockScroll()
-        }
-        onOpenChange?.(o)
-      }}
+      onOpenChange={onOpenChange}
       {...props}
     />
   )

@@ -23,6 +23,7 @@ interface CatalogQuantityStepperProps {
   maxQuantity?: number;
   size?: "sm" | "md";
   increaseButtonRef?: RefObject<HTMLButtonElement>;
+  hideTrashIcon?: boolean;
 }
 
 type StepDirection = "inc" | "dec";
@@ -41,6 +42,7 @@ export function CatalogQuantityStepper({
   maxQuantity,
   size = "md",
   increaseButtonRef,
+  hideTrashIcon,
 }: CatalogQuantityStepperProps) {
   const holdTimeoutRef = useRef<number>();
   const holdIntervalRef = useRef<number>();
@@ -258,25 +260,25 @@ export function CatalogQuantityStepper({
   const sizeStyles =
     size === "sm"
       ? {
-          root:
-            "h-full min-h-[2.25rem] overflow-hidden rounded-full border border-border/60 bg-background/95 text-[13px] font-medium text-foreground shadow-sm focus-within:ring-2 focus-within:ring-primary/40 focus-within:ring-offset-1 focus-within:ring-offset-background",
-          button:
-            "flex h-full min-h-[2.25rem] min-w-[2.25rem] items-center justify-center rounded-none bg-transparent text-foreground first:rounded-l-full last:rounded-r-full",
-          countWrapper:
-            "relative flex h-full flex-1 items-center justify-center bg-transparent px-2",
-          count:
-            "catalog-card__stepper-count h-[2.25rem] min-w-[3rem] text-center text-sm font-medium leading-[2.25rem] text-foreground",
-        }
+        root:
+          "h-full min-h-[2.25rem] overflow-hidden rounded-full border border-border/60 bg-background/95 text-[13px] font-medium text-foreground shadow-sm focus-within:ring-2 focus-within:ring-primary/40 focus-within:ring-offset-1 focus-within:ring-offset-background",
+        button:
+          "flex h-full min-h-[2.25rem] min-w-[2.25rem] items-center justify-center rounded-none bg-transparent text-foreground first:rounded-l-full last:rounded-r-full",
+        countWrapper:
+          "relative flex h-full flex-1 items-center justify-center bg-transparent px-2",
+        count:
+          "catalog-card__stepper-count h-[2.25rem] min-w-[3rem] text-center text-sm font-medium leading-[2.25rem] text-foreground",
+      }
       : {
-          root:
-            "h-full min-h-[2.5rem] overflow-hidden rounded-full border border-border/60 bg-background text-sm font-medium text-foreground shadow-sm focus-within:ring-2 focus-within:ring-primary/40 focus-within:ring-offset-1 focus-within:ring-offset-background",
-          button:
-            "flex h-full min-h-[2.5rem] min-w-[2.5rem] items-center justify-center rounded-none bg-transparent text-foreground first:rounded-l-full last:rounded-r-full",
-          countWrapper:
-            "relative flex h-full flex-1 items-center justify-center bg-transparent px-3",
-          count:
-            "catalog-card__stepper-count h-[2.5rem] min-w-[3.25rem] text-center text-base font-medium leading-[2.5rem] text-foreground",
-        };
+        root:
+          "h-full min-h-[2.5rem] overflow-hidden rounded-full border border-border/60 bg-background text-sm font-medium text-foreground shadow-sm focus-within:ring-2 focus-within:ring-primary/40 focus-within:ring-offset-1 focus-within:ring-offset-background",
+        button:
+          "flex h-full min-h-[2.5rem] min-w-[2.5rem] items-center justify-center rounded-none bg-transparent text-foreground first:rounded-l-full last:rounded-r-full",
+        countWrapper:
+          "relative flex h-full flex-1 items-center justify-center bg-transparent px-3",
+        count:
+          "catalog-card__stepper-count h-[2.5rem] min-w-[3.25rem] text-center text-base font-medium leading-[2.5rem] text-foreground",
+      };
 
   const showRemoveIcon = allowRemoval && optimisticQuantity <= Math.max(1, minQuantity || 0);
   const decrementLabel = showRemoveIcon
@@ -311,7 +313,7 @@ export function CatalogQuantityStepper({
         onPointerCancel={stopHold}
         onClick={event => handleClick("dec", event)}
       >
-        {showRemoveIcon ? (
+        {showRemoveIcon && !hideTrashIcon ? (
           <Trash2 className="h-4 w-4" aria-hidden="true" />
         ) : (
           <Minus className="h-4 w-4" aria-hidden="true" />

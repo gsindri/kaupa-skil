@@ -6,8 +6,11 @@ import {
   ListChecks,
   LucideIcon,
   Plus,
-  Sparkles,
-  Loader2
+
+  Package,
+  BarChart2,
+  Loader2,
+  ArrowRight
 } from 'lucide-react'
 
 import { ContentRail } from '@/components/layout/ContentRail'
@@ -37,7 +40,7 @@ export default function Dashboard() {
   React.useLayoutEffect(() => {
     // Fix for "white gap" on right edge: ensure body background matches dashboard background
     const originalBg = document.body.style.backgroundColor
-    document.body.style.backgroundColor = '#0f2031' // var(--brand-bg)
+    document.body.style.backgroundColor = '#f8fafc' // slate-50
     return () => {
       document.body.style.backgroundColor = originalBg
     }
@@ -52,21 +55,7 @@ export default function Dashboard() {
 
   return (
     <div className="relative isolate overflow-hidden min-h-full">
-      <div className="pointer-events-none absolute inset-0 -z-10 bg-[var(--surface-pop,#0f1b28)]" />
-      <div
-        className="pointer-events-none absolute inset-0 -z-10"
-        style={{
-          background:
-            'radial-gradient(circle at 16% 18%, hsla(var(--accent) / 0.16), transparent 32%), radial-gradient(circle at 82% 6%, hsla(var(--accent) / 0.14), transparent 32%), radial-gradient(circle at 12% 22%, rgba(59,130,246,0.12), transparent 38%), radial-gradient(circle at 78% 8%, rgba(46,230,214,0.12), transparent 34%), linear-gradient(145deg, var(--brand-from), var(--brand-via), var(--brand-to))'
-        }}
-      />
-      <div
-        className="pointer-events-none absolute inset-0 -z-10 opacity-[0.15]"
-        style={{
-          backgroundImage:
-            'radial-gradient(circle at 40% 50%, rgba(255,255,255,0.14) 0, transparent 32%), linear-gradient(120deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0) 38%, rgba(255,255,255,0.08) 68%, rgba(255,255,255,0) 100%)'
-        }}
-      />
+
 
       <ContentRail includeRailPadding={false}>
         <div className="mx-auto flex w-full flex-col gap-7">
@@ -93,35 +82,47 @@ function OrderControlCard({
   cartTotal: string
 }) {
   return (
-    <Card
-      className="relative overflow-hidden border-white/10 bg-gradient-to-br from-[var(--brand-from)] via-[var(--brand-via)] to-[var(--brand-to)] text-ink shadow-[0_28px_80px_rgba(2,10,28,0.5)] transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-[0_32px_90px_rgba(2,10,28,0.6)]"
-    >
-      <div
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background:
-            'radial-gradient(circle at 20% 32%, rgba(255,255,255,0.16), transparent 38%), radial-gradient(circle at 74% -8%, rgba(46,230,214,0.18), transparent 34%)'
-        }}
-      />
-      <div className="pointer-events-none absolute -left-24 -top-28 h-80 w-80 rounded-full bg-white/10 blur-[140px]" />
-
-      <CardContent className="relative flex flex-col gap-6 p-7 sm:p-8">
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex items-center gap-6">
-            <div className="flex h-20 w-20 items-center justify-center rounded-full border border-white/25 bg-white/15 text-ink shadow-[0_10px_34px_rgba(0,0,0,0.35)] backdrop-blur-md transition-transform duration-200 hover:scale-[1.02]">
-              <Sparkles className="h-10 w-10 drop-shadow" />
+    <Card className="relative overflow-hidden border-slate-200 bg-white shadow-sm transition-all duration-200 hover:shadow-md">
+      <CardContent className="p-8">
+        <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex items-start gap-6">
+            <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-blue-50 text-blue-600 border border-blue-100 shadow-sm">
+              <Package className="h-8 w-8" />
             </div>
 
-            <div className="grid grid-cols-2 gap-6 sm:gap-10">
-              <HeroMetric value={cartCount.toString()} label="IN CART" />
-              <HeroMetric value={cartTotal} label="TOTAL" />
+            <div className="flex flex-col">
+              <div className="flex items-baseline gap-3">
+                <span className="text-5xl font-bold tracking-tight text-slate-900">{cartCount}</span>
+                <span className="text-lg font-medium text-slate-500">Pending Items</span>
+              </div>
+              <div className="mt-1 text-sm font-medium text-slate-400 uppercase tracking-wider">
+                Total Value: <span className="text-slate-700">{cartTotal}</span>
+              </div>
             </div>
           </div>
 
-          <div className="grid w-full grid-cols-1 gap-3 sm:grid-cols-3 lg:max-w-md">
-            <HeroAction to="/catalog" icon={Plus} label="NEW" />
-            <HeroAction to="/dashboard/orders" icon={History} label="LAST ORDER" />
-            <HeroAction to="/dashboard/pantry" icon={ListChecks} label="FROM LIST" />
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <Button asChild size="lg" className="h-12 px-8 bg-blue-600 hover:bg-blue-700 text-white shadow-sm font-semibold">
+              <Link to="/catalog">
+                <Plus className="mr-2 h-5 w-5" />
+                New Order
+              </Link>
+            </Button>
+
+            <div className="flex gap-3">
+              <Button asChild variant="outline" size="lg" className="h-12 border-slate-200 text-slate-700 hover:bg-slate-50">
+                <Link to="/dashboard/orders">
+                  <History className="mr-2 h-4 w-4 text-slate-400" />
+                  Last Order
+                </Link>
+              </Button>
+              <Button asChild variant="outline" size="lg" className="h-12 border-slate-200 text-slate-700 hover:bg-slate-50">
+                <Link to="/dashboard/pantry">
+                  <ListChecks className="mr-2 h-4 w-4 text-slate-400" />
+                  From List
+                </Link>
+              </Button>
+            </div>
           </div>
         </div>
       </CardContent>
@@ -204,32 +205,33 @@ function DashboardMetricsCard({
 
   if (!hasData) {
     return (
-      <Card className="relative overflow-hidden border border-white/10 bg-slate-950/70 shadow-[0_22px_80px_rgba(0,0,0,0.7)] backdrop-blur-xl">
+      <Card className="relative overflow-hidden border-slate-200 bg-white shadow-sm">
         <CardContent className="flex h-[280px] flex-col items-center justify-center gap-4 p-6 text-center">
-          <div className="rounded-full bg-slate-800/50 p-4">
-            <Sparkles className="h-8 w-8 text-slate-400" />
+          <div className="rounded-full bg-slate-50 p-4">
+            <BarChart2 className="h-8 w-8 text-slate-400" />
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-slate-200">No activity yet</h3>
-            <p className="mt-1 text-sm text-slate-400">
+            <h3 className="text-lg font-semibold text-slate-900">No activity yet</h3>
+            <p className="mt-1 text-sm text-slate-500">
               Connect suppliers and create orders to see your metrics
             </p>
           </div>
-          <Button asChild variant="default" size="sm">
+          <Button asChild variant="default" size="sm" className="bg-slate-900 text-white hover:bg-slate-800">
             <Link to="/suppliers">Connect Suppliers</Link>
           </Button>
         </CardContent>
       </Card>
     )
+
   }
 
   return (
-    <Card className="relative overflow-hidden border border-white/10 bg-slate-950/70 shadow-[0_22px_80px_rgba(0,0,0,0.7)] backdrop-blur-xl">
+    <Card className="relative overflow-hidden border-slate-200 bg-white shadow-sm">
       <CardContent className="flex flex-col gap-5 p-6">
-        <div className="flex items-center justify-between text-[11px] font-medium uppercase tracking-[0.22em] text-slate-300/80">
-          <span>Today</span>
-          <span className="rounded-full border border-slate-500/70 px-3 py-1 text-[10px] tracking-[0.18em] text-slate-200/85">
-            7 days
+        <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-slate-500">
+          <span>Activity</span>
+          <span className="rounded-full bg-slate-100 px-3 py-1 text-[10px] text-slate-600">
+            Last 7 days
           </span>
         </div>
 
@@ -248,9 +250,9 @@ function DashboardMetricsCard({
 function MetricTile(props: { value: string; label: string }) {
   const { value, label } = props
   return (
-    <div className="rounded-2xl bg-slate-900/80 px-4 py-3 shadow-sm shadow-black/40">
-      <div className="text-xl font-semibold text-slate-50">{value}</div>
-      <div className="mt-1 text-[11px] font-medium uppercase tracking-[0.18em] text-slate-400">
+    <div className="rounded-xl bg-slate-50 px-4 py-3 border border-slate-100">
+      <div className="text-xl font-bold text-slate-900">{value}</div>
+      <div className="mt-1 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
         {label}
       </div>
     </div>
@@ -291,9 +293,9 @@ function MetricsSparkline({ points }: { points: number[] }) {
 
 function DashboardShortcutsCard() {
   return (
-    <Card className="relative overflow-hidden border border-white/10 bg-slate-950/70 shadow-[0_22px_80px_rgba(0,0,0,0.7)] backdrop-blur-xl">
+    <Card className="relative overflow-hidden border-slate-200 bg-white shadow-sm">
       <CardContent className="flex flex-col gap-4 p-6">
-        <div className="text-[11px] font-medium uppercase tracking-[0.22em] text-slate-300/80">Shortcuts</div>
+        <div className="text-xs font-semibold uppercase tracking-wider text-slate-500">Shortcuts</div>
 
         <div className="flex flex-col gap-2">
           <ShortcutRow to="/dashboard/lists/breakfast" icon={ListChecks} label="Breakfast list" />
@@ -315,15 +317,15 @@ function ShortcutRow({ to, icon: Icon, label }: ShortcutRowProps) {
   return (
     <Link
       to={to}
-      className="group flex items-center justify-between rounded-2xl bg-slate-900/80 px-4 py-3 text-sm text-slate-50 shadow-sm shadow-black/40 transition hover:-translate-y-px hover:bg-slate-900 hover:shadow-[0_18px_40px_rgba(0,0,0,0.7)]"
+      className="group flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm text-slate-700 transition hover:border-slate-200 hover:bg-white hover:shadow-sm"
     >
       <span className="flex items-center gap-3">
-        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white/5 text-slate-100">
+        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-white text-slate-500 shadow-sm border border-slate-100 group-hover:text-blue-600 group-hover:border-blue-100">
           <Icon className="h-4 w-4" />
         </span>
-        <span>{label}</span>
+        <span className="font-medium">{label}</span>
       </span>
-      <ChevronRight className="h-4 w-4 text-slate-400 transition group-hover:translate-x-[1px] group-hover:text-slate-200" />
+      <ArrowRight className="h-4 w-4 text-slate-300 transition group-hover:translate-x-1 group-hover:text-blue-600" />
     </Link>
   )
 }
