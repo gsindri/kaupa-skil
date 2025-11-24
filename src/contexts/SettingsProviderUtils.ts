@@ -7,8 +7,6 @@ export interface SettingsContextType {
   setPreferredUnit: (value: string) => void
   userMode: 'just-order' | 'balanced' | 'analytical'
   setUserMode: (value: 'just-order' | 'balanced' | 'analytical') => void
-  emailIntegration: 'none' | 'gmail' | 'outlook'
-  setEmailIntegration: (value: 'none' | 'gmail' | 'outlook') => void
 }
 
 export const SettingsContext = createContext<SettingsContextType | undefined>(undefined)

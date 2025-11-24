@@ -10,7 +10,6 @@ type SettingsMessage =
   | { type: 'VAT_CHANGED'; value: boolean }
   | { type: 'UNIT_CHANGED'; value: string }
   | { type: 'USER_MODE_CHANGED'; value: UserMode }
-  | { type: 'EMAIL_INTEGRATION_CHANGED'; value: 'none' | 'gmail' | 'outlook' }
 
 const broadcastSettingsMessage = (message: SettingsMessage) => {
   if (typeof BroadcastChannel === 'undefined') {
@@ -38,11 +37,6 @@ export default function SettingsProvider({ children }: { children: React.ReactNo
     return (saved as UserMode) || 'balanced'
   })
 
-  const [emailIntegration, setEmailIntegration] = useState<'none' | 'gmail' | 'outlook'>(() => {
-    const saved = localStorage.getItem('procurewise-email-integration')
-    return (saved as 'none' | 'gmail' | 'outlook') || 'none'
-  })
-
   // Sync settings across tabs
   useEffect(() => {
     if (typeof BroadcastChannel === 'undefined') {
@@ -58,8 +52,6 @@ export default function SettingsProvider({ children }: { children: React.ReactNo
         setPreferredUnit(event.data.value)
       } else if (event.data.type === 'USER_MODE_CHANGED') {
         setUserMode(event.data.value)
-      } else if (event.data.type === 'EMAIL_INTEGRATION_CHANGED') {
-        setEmailIntegration(event.data.value)
       }
     }
 
@@ -91,13 +83,6 @@ export default function SettingsProvider({ children }: { children: React.ReactNo
     broadcastSettingsMessage({ type: 'USER_MODE_CHANGED', value })
   }
 
-  const handleSetEmailIntegration = (value: 'none' | 'gmail' | 'outlook') => {
-    setEmailIntegration(value)
-    localStorage.setItem('procurewise-email-integration', value)
-
-    broadcastSettingsMessage({ type: 'EMAIL_INTEGRATION_CHANGED', value })
-  }
-
   return (
     <SettingsContext.Provider value={{
       includeVat,
@@ -105,9 +90,7 @@ export default function SettingsProvider({ children }: { children: React.ReactNo
       preferredUnit,
       setPreferredUnit: handleSetPreferredUnit,
       userMode,
-      setUserMode: handleSetUserMode,
-      emailIntegration,
-      setEmailIntegration: handleSetEmailIntegration
+      setUserMode: handleSetUserMode
     }}>
       {children}
     </SettingsContext.Provider>

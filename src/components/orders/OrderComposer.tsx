@@ -25,6 +25,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
+import { useEmailAuth } from '@/hooks/useEmailAuth'
+import { GmailAuthButton } from '@/components/gmail/GmailAuthButton'
+import { OutlookAuthButton } from '@/components/cart/OutlookAuthButton'
 
 function formatPriceISK(price: number) {
   if (typeof price !== 'number' || isNaN(price)) return '0 kr.'
@@ -52,7 +60,8 @@ export function OrderComposer() {
     getTotalPrice,
     getMissingPriceCount,
   } = useCart()
-  const { includeVat, emailIntegration, setEmailIntegration } = useSettings()
+  const { includeVat } = useSettings()
+  const { isGmailAuthorized, isOutlookAuthorized, userEmail, isLoading: isAuthLoading } = useEmailAuth()
   const {
     data: deliveryCalculations,
     isLoading: isLoadingDelivery,
@@ -305,7 +314,7 @@ export function OrderComposer() {
             </p>
 
             {/* Summary Ticket */}
-            <div className="w-full bg-slate-50 rounded-xl p-4 mb-8 border border-slate-100">
+            <div className="w-full bg-slate-50 rounded-xl p-4 mb-4 border border-slate-100">
               <div className="flex justify-between items-center py-2 border-b border-slate-200/60 last:border-0">
                 <span className="text-sm text-slate-500">Suppliers</span>
                 <span className="text-sm font-semibold text-slate-900 text-right">
@@ -329,36 +338,58 @@ export function OrderComposer() {
               </div>
             </div>
 
-            {/* Email Identity Note */}
-            {emailIntegration === 'none' ? (
-              <div className="mb-8 space-y-3">
-                <div className="flex items-center justify-center gap-2 text-xs text-slate-400">
-                  <Info className="h-3 w-3" />
-                  <p>Email will appear as "Restaurant Name"</p>
-                </div>
-                <div className="rounded-lg border border-slate-100 bg-slate-50 p-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Mail className="h-4 w-4 text-slate-400" />
-                      <span className="text-xs font-medium text-slate-600">Send from your own address?</span>
+            {/* Email Sender Row */}
+            <div className="w-full mb-8 flex items-center justify-between rounded-md border border-dashed border-slate-300 bg-slate-50 px-3 py-2 text-[13px]">
+              <div className="flex items-center gap-2 text-slate-700">
+                <span className="font-medium text-slate-500">From:</span>
+                {!isGmailAuthorized && !isOutlookAuthorized ? (
+                  <span className="flex items-center gap-1.5">
+                    Restaurant Name <span className="text-slate-400">(via Deilda)</span>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Info className="h-3 w-3 text-slate-400 cursor-help" />
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-[240px] text-xs">
+                        <p>Orders currently send via Deilda. Connect your email to send directly from your address.</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </span>
+                ) : isGmailAuthorized ? (
+                  <span className="flex items-center gap-1.5 font-medium text-slate-900">
+                    {userEmail || 'your.email@gmail.com'}
+                    <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-1.5 py-0.5 text-[10px] font-bold text-green-700">
+                      Gmail <CheckCircle className="h-3 w-3" />
+                    </span>
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-1.5 font-medium text-slate-900">
+                    {userEmail || 'your.email@outlook.com'}
+                    <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-1.5 py-0.5 text-[10px] font-bold text-blue-700">
+                      Outlook <CheckCircle className="h-3 w-3" />
+                    </span>
+                  </span>
+                )}
+              </div>
+
+              <div className="flex items-center gap-2">
+                {!isGmailAuthorized && !isOutlookAuthorized && !isAuthLoading && (
+                  <>
+                    <div className="[&>button]:h-7 [&>button]:px-2.5 [&>button]:py-1 [&>button]:text-xs [&>button]:font-semibold [&>button]:rounded [&>button]:border [&>button]:border-slate-200 [&>button]:bg-white [&>button]:text-slate-600 [&>button]:transition-colors hover:[&>button]:border-blue-600 hover:[&>button]:text-blue-600">
+                      <GmailAuthButton />
                     </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="h-7 text-xs"
-                      onClick={() => setEmailIntegration('gmail')}
-                    >
-                      Connect Gmail
-                    </Button>
+                    <span className="text-xs text-slate-400">or</span>
+                    <div className="[&>button]:h-7 [&>button]:px-2.5 [&>button]:py-1 [&>button]:text-xs [&>button]:font-semibold [&>button]:rounded [&>button]:border [&>button]:border-slate-200 [&>button]:bg-white [&>button]:text-slate-600 [&>button]:transition-colors hover:[&>button]:border-blue-600 hover:[&>button]:text-blue-600">
+                      <OutlookAuthButton />
+                    </div>
+                  </>
+                )}
+                {(isGmailAuthorized || isOutlookAuthorized) && (
+                  <div className="[&_button]:text-xs [&_button]:font-medium [&_button]:text-slate-500 [&_button]:transition-colors hover:[&_button]:text-red-600 hover:[&_button]:underline">
+                    {isGmailAuthorized ? <GmailAuthButton /> : <OutlookAuthButton />}
                   </div>
-                </div>
+                )}
               </div>
-            ) : (
-              <div className="mb-8 flex items-center justify-center gap-2 text-xs text-green-600 bg-green-50 py-2 rounded-lg border border-green-100">
-                <CheckCircle className="h-3 w-3" />
-                <p>Sending directly from <strong>sindri@restaurant.is</strong></p>
-              </div>
-            )}
+            </div>
 
             {/* Actions */}
             <div className="w-full space-y-3">

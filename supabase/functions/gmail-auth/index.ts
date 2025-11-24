@@ -15,7 +15,7 @@ serve(async (req) => {
     const url = new URL(req.url);
     const code = url.searchParams.get('code');
     const state = url.searchParams.get('state'); // Contains user_id
-    
+
     if (!code || !state) {
       return new Response(JSON.stringify({ error: 'Missing authorization code or state' }), {
         status: 400,
@@ -41,7 +41,7 @@ serve(async (req) => {
       if (!GOOGLE_CLIENT_ID) missingVars.push('GOOGLE_CLIENT_ID');
       if (!GOOGLE_CLIENT_SECRET) missingVars.push('GOOGLE_CLIENT_SECRET');
       if (!GOOGLE_REDIRECT_URI) missingVars.push('GOOGLE_REDIRECT_URI');
-      
+
       console.error('Missing Google OAuth credentials:', missingVars);
       throw new Error(`Missing Google OAuth credentials: ${missingVars.join(', ')}`);
     }
@@ -177,6 +177,15 @@ serve(async (req) => {
             // Notify parent window
             if (window.opener) {
               window.opener.postMessage({ type: 'GMAIL_AUTH_SUCCESS' }, '*');
+              // Auto-close after showing success briefly
+              setTimeout(() => {
+                window.close();
+              }, 1500);
+            } else {
+              // If no opener, close immediately when button clicked
+              setTimeout(() => {
+                window.close();
+              }, 3000);
             }
           </script>
         </body>
