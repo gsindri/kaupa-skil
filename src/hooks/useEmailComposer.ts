@@ -163,6 +163,41 @@ export function useEmailComposer() {
     const body = generateOrderEmailBody(emailData, language)
     
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('Not authenticated');
+      }
+
+      // Check if token is expired and refresh if needed
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('gmail_token_expires_at')
+        .eq('id', session.user.id)
+        .single();
+
+      if (profile?.gmail_token_expires_at) {
+        const expiresAt = new Date(profile.gmail_token_expires_at);
+        const now = new Date();
+        
+        // Refresh if expired or expiring in next 5 minutes
+        if (expiresAt <= new Date(now.getTime() + 5 * 60 * 1000)) {
+          const { data: refreshData, error: refreshError } = await supabase.functions.invoke('gmail-refresh-token', {
+            headers: {
+              Authorization: `Bearer ${session.access_token}`,
+            },
+          });
+
+          if (refreshError || !refreshData?.success) {
+            toast({
+              title: language === 'is' ? 'Gmail tenging útrunnin' : 'Gmail Connection Expired',
+              description: language === 'is' ? 'Vinsamlegast tengdu Gmail aftur til að halda áfram.' : 'Please reconnect your Gmail account to continue.',
+              variant: 'destructive',
+            });
+            throw new Error('Token refresh failed');
+          }
+        }
+      }
+
       const { data, error } = await supabase.functions.invoke('create-gmail-draft', {
         body: { to: supplierEmail, subject, body }
       })
@@ -195,6 +230,41 @@ export function useEmailComposer() {
     const body = generateOrderEmailBody(emailData, language)
     
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('Not authenticated');
+      }
+
+      // Check if token is expired and refresh if needed
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('outlook_token_expires_at')
+        .eq('id', session.user.id)
+        .single();
+
+      if (profile?.outlook_token_expires_at) {
+        const expiresAt = new Date(profile.outlook_token_expires_at);
+        const now = new Date();
+        
+        // Refresh if expired or expiring in next 5 minutes
+        if (expiresAt <= new Date(now.getTime() + 5 * 60 * 1000)) {
+          const { data: refreshData, error: refreshError } = await supabase.functions.invoke('outlook-refresh-token', {
+            headers: {
+              Authorization: `Bearer ${session.access_token}`,
+            },
+          });
+
+          if (refreshError || !refreshData?.success) {
+            toast({
+              title: language === 'is' ? 'Outlook tenging útrunnin' : 'Outlook Connection Expired',
+              description: language === 'is' ? 'Vinsamlegast tengdu Outlook aftur til að halda áfram.' : 'Please reconnect your Outlook account to continue.',
+              variant: 'destructive',
+            });
+            throw new Error('Token refresh failed');
+          }
+        }
+      }
+
       const { data, error } = await supabase.functions.invoke('create-outlook-draft', {
         body: { to: supplierEmail, subject, body }
       })
