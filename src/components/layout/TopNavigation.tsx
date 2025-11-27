@@ -265,7 +265,7 @@ export function TopNavigation() {
     currentTenant?.kind === 'personal'
       ? t('navigation.workspace.personal')
       : t('navigation.workspace.workspace')
-  
+
   return (
     <div
       ref={barRef}
@@ -328,7 +328,8 @@ export function TopNavigation() {
               columnGap: 'var(--page-gutter)',
             }}
           >
-            <div className="flex min-w-0 flex-1 items-center gap-4 md:gap-5">
+            {/* Left Section: Logo & Tenant Switcher */}
+            <div className="flex flex-1 items-center justify-start gap-4 md:gap-5">
               <div className="flex min-w-0 flex-shrink-0 items-center gap-4">
                 <Link
                   to="/"
@@ -340,13 +341,11 @@ export function TopNavigation() {
                 </Link>
                 <TenantSwitcher />
               </div>
+            </div>
 
-              <span
-                aria-hidden="true"
-                className="hidden h-9 w-px flex-shrink-0 rounded-full bg-white/14 sm:inline-flex"
-              />
-
-              <div className="flex min-w-0 flex-1 items-center gap-3">
+            {/* Center Section: Search Bar */}
+            <div className="flex flex-0 items-center justify-center mx-auto px-4">
+              <div className="flex min-w-0 items-center gap-3">
                 <span
                   className={cn(
                     'relative hidden max-w-[220px] min-w-0 items-center truncate text-left text-[13px] font-medium text-white/80 md:inline-flex',
@@ -393,9 +392,10 @@ export function TopNavigation() {
               </div>
             </div>
 
+            {/* Right Section: Global Actions */}
             <nav
               aria-label="Global actions"
-              className="ml-auto flex flex-shrink-0 items-center gap-3"
+              className="flex flex-1 items-center justify-end gap-3"
             >
               <LanguageSwitcher
                 className="flex-shrink-0"
@@ -457,188 +457,188 @@ export function TopNavigation() {
                     </button>
                   </DropdownMenuTrigger>
 
-                <PopCard
-                  className="w-[320px] space-y-2"
-                  sideOffset={12}
-                  align="end"
-                  withOverlay
-                >
-                <div className="px-2.5 pt-2">
-                  <div className="flex items-center gap-3 rounded-[14px] bg-[color:var(--surface-pop)]/35 px-3 py-3">
-                    <Avatar className="h-11 w-11 border border-white/10 bg-white/10 shadow-[0_1px_4px_rgba(15,23,42,0.32)]">
-                      {avatarUrl ? (
-                        <AvatarImage src={avatarUrl} alt={`${displayName} avatar`} className="object-cover" />
-                      ) : null}
-                      <AvatarFallback
-                        style={{ background: avatarColor }}
-                        className="text-sm font-semibold uppercase tracking-wide text-white"
-                      >
-                        {userInitials}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="min-w-0 space-y-1">
-                      <div className="truncate text-[15px] font-semibold text-[color:var(--text)]">
-                        {displayName}
-                      </div>
-                      {displayEmail ? (
-                        <div className="truncate text-[13px] text-[color:var(--text-muted)]">
-                          {displayEmail}
-                        </div>
-                      ) : null}
-                      <div className="min-w-0 text-[12px] text-[color:var(--text-muted)]">
-                        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                          <span className="inline-flex shrink-0 items-center rounded-full bg-white/10 px-2 py-[2px] text-[10px] font-semibold uppercase tracking-[0.08em] text-white/80">
-                            {workspacePillLabel}
-                          </span>
-                          <span className="flex-1 min-w-0 whitespace-normal text-left leading-tight">
-                            {membershipsLoading
-                              ? t('common.status.loadingWorkspace')
-                              : workspaceLabel}
-                          </span>
+                  <PopCard
+                    className="w-[320px] space-y-2"
+                    sideOffset={12}
+                    align="end"
+                    withOverlay
+                  >
+                    <div className="px-2.5 pt-2">
+                      <div className="flex items-center gap-3 rounded-[14px] bg-[color:var(--surface-pop)]/35 px-3 py-3">
+                        <Avatar className="h-11 w-11 border border-white/10 bg-white/10 shadow-[0_1px_4px_rgba(15,23,42,0.32)]">
+                          {avatarUrl ? (
+                            <AvatarImage src={avatarUrl} alt={`${displayName} avatar`} className="object-cover" />
+                          ) : null}
+                          <AvatarFallback
+                            style={{ background: avatarColor }}
+                            className="text-sm font-semibold uppercase tracking-wide text-white"
+                          >
+                            {userInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0 space-y-1">
+                          <div className="truncate text-[15px] font-semibold text-[color:var(--text)]">
+                            {displayName}
+                          </div>
+                          {displayEmail ? (
+                            <div className="truncate text-[13px] text-[color:var(--text-muted)]">
+                              {displayEmail}
+                            </div>
+                          ) : null}
+                          <div className="min-w-0 text-[12px] text-[color:var(--text-muted)]">
+                            <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                              <span className="inline-flex shrink-0 items-center rounded-full bg-white/10 px-2 py-[2px] text-[10px] font-semibold uppercase tracking-[0.08em] text-white/80">
+                                {workspacePillLabel}
+                              </span>
+                              <span className="flex-1 min-w-0 whitespace-normal text-left leading-tight">
+                                {membershipsLoading
+                                  ? t('common.status.loadingWorkspace')
+                                  : workspaceLabel}
+                              </span>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                </div>
 
-                <div className="tw-label normal-case opacity-60">{t('navigation.account.profileSection')}</div>
-                <div className="flex flex-col gap-1 px-1">
-                  <DropdownMenuItem asChild onSelect={() => setUserMenuOpen(false)}>
-                    <button type="button" className="tw-row tw-row-loose w-full text-left">
-                      <CircleUserRound className="size-4 text-[color:var(--text-muted)]" />
-                      <span className="truncate">{t('navigation.account.profileSettings')}</span>
-                      <span />
-                    </button>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild onSelect={() => setUserMenuOpen(false)}>
-                    <button type="button" className="tw-row tw-row-loose w-full text-left">
-                      <Building2 className="size-4 text-[color:var(--text-muted)]" />
-                      <span className="truncate">{t('navigation.account.organizationSettings')}</span>
-                      <ChevronRight className="size-4 text-[color:var(--text-muted)]" aria-hidden />
-                    </button>
-                  </DropdownMenuItem>
-                </div>
-
-                <div className="xl:hidden">
-                  <div className="pop-div my-2 opacity-70" />
-                  <div className="tw-label normal-case opacity-60">{t('navigation.account.languageSection')}</div>
-                  <div className="flex flex-col gap-1 px-1">
-                    {languageOptions.map((option) => (
-                      <DropdownMenuItem
-                        key={option.value}
-                        onSelect={() => {
-                          setLanguage(option.value as any)
-                          setUserMenuOpen(false)
-                        }}
-                        asChild
-                      >
-                        <button
-                          type="button"
-                          role="menuitemradio"
-                          aria-checked={language === option.value}
-                          className="tw-row tw-row-loose w-full text-left"
-                        >
-                          <span className="flex size-8 items-center justify-center rounded-full border border-[color:var(--surface-ring)] text-[13px] font-semibold text-[color:var(--text-muted)]" aria-hidden="true">
-                            {option.code}
-                          </span>
-                          <span className="truncate">{option.label}</span>
-                          <Check
-                            aria-hidden="true"
-                            className={cn(
-                              'h-3.5 w-3.5 justify-self-end text-[color:var(--brand-accent)] transition-opacity',
-                              language === option.value ? 'opacity-80' : 'opacity-0',
-                            )}
-                          />
+                    <div className="tw-label normal-case opacity-60">{t('navigation.account.profileSection')}</div>
+                    <div className="flex flex-col gap-1 px-1">
+                      <DropdownMenuItem asChild onSelect={() => setUserMenuOpen(false)}>
+                        <button type="button" className="tw-row tw-row-loose w-full text-left">
+                          <CircleUserRound className="size-4 text-[color:var(--text-muted)]" />
+                          <span className="truncate">{t('navigation.account.profileSettings')}</span>
+                          <span />
                         </button>
                       </DropdownMenuItem>
-                    ))}
-                  </div>
-                </div>
+                      <DropdownMenuItem asChild onSelect={() => setUserMenuOpen(false)}>
+                        <button type="button" className="tw-row tw-row-loose w-full text-left">
+                          <Building2 className="size-4 text-[color:var(--text-muted)]" />
+                          <span className="truncate">{t('navigation.account.organizationSettings')}</span>
+                          <ChevronRight className="size-4 text-[color:var(--text-muted)]" aria-hidden />
+                        </button>
+                      </DropdownMenuItem>
+                    </div>
 
-                <div className="pop-div my-2 opacity-70" />
+                    <div className="xl:hidden">
+                      <div className="pop-div my-2 opacity-70" />
+                      <div className="tw-label normal-case opacity-60">{t('navigation.account.languageSection')}</div>
+                      <div className="flex flex-col gap-1 px-1">
+                        {languageOptions.map((option) => (
+                          <DropdownMenuItem
+                            key={option.value}
+                            onSelect={() => {
+                              setLanguage(option.value as any)
+                              setUserMenuOpen(false)
+                            }}
+                            asChild
+                          >
+                            <button
+                              type="button"
+                              role="menuitemradio"
+                              aria-checked={language === option.value}
+                              className="tw-row tw-row-loose w-full text-left"
+                            >
+                              <span className="flex size-8 items-center justify-center rounded-full border border-[color:var(--surface-ring)] text-[13px] font-semibold text-[color:var(--text-muted)]" aria-hidden="true">
+                                {option.code}
+                              </span>
+                              <span className="truncate">{option.label}</span>
+                              <Check
+                                aria-hidden="true"
+                                className={cn(
+                                  'h-3.5 w-3.5 justify-self-end text-[color:var(--brand-accent)] transition-opacity',
+                                  language === option.value ? 'opacity-80' : 'opacity-0',
+                                )}
+                              />
+                            </button>
+                          </DropdownMenuItem>
+                        ))}
+                      </div>
+                    </div>
 
-                <div className="tw-label normal-case opacity-60">{t('navigation.account.helpSection')}</div>
-                <div className="flex flex-col gap-1 px-1">
-                  <DropdownMenuItem asChild onSelect={() => setUserMenuOpen(false)}>
-                    <button type="button" className="tw-row tw-row-loose w-full text-left">
-                      <Keyboard className="size-4 text-[color:var(--text-muted)]" />
-                      <span className="truncate">{t('navigation.account.keyboardShortcuts')}</span>
-                      <span className="tw-kbd">?</span>
-                    </button>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild onSelect={() => setUserMenuOpen(false)}>
-                    <a
-                      href="https://help.heilda.app"
-                      target="_blank"
-                      rel="noreferrer"
-                      className="tw-row tw-row-loose w-full text-left"
-                      onClick={() => setUserMenuOpen(false)}
+                    <div className="pop-div my-2 opacity-70" />
+
+                    <div className="tw-label normal-case opacity-60">{t('navigation.account.helpSection')}</div>
+                    <div className="flex flex-col gap-1 px-1">
+                      <DropdownMenuItem asChild onSelect={() => setUserMenuOpen(false)}>
+                        <button type="button" className="tw-row tw-row-loose w-full text-left">
+                          <Keyboard className="size-4 text-[color:var(--text-muted)]" />
+                          <span className="truncate">{t('navigation.account.keyboardShortcuts')}</span>
+                          <span className="tw-kbd">?</span>
+                        </button>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild onSelect={() => setUserMenuOpen(false)}>
+                        <a
+                          href="https://help.heilda.app"
+                          target="_blank"
+                          rel="noreferrer"
+                          className="tw-row tw-row-loose w-full text-left"
+                          onClick={() => setUserMenuOpen(false)}
+                        >
+                          <LifeBuoy className="size-4 text-[color:var(--text-muted)]" />
+                          <span className="truncate">{t('navigation.account.helpCenter')}</span>
+                          <ArrowUpRight className="size-4 text-[color:var(--text-muted)]" aria-hidden />
+                        </a>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild onSelect={() => setUserMenuOpen(false)}>
+                        <a
+                          href="mailto:support@heilda.app"
+                          className="tw-row tw-row-loose w-full text-left"
+                          onClick={() => setUserMenuOpen(false)}
+                        >
+                          <Mail className="size-4 text-[color:var(--text-muted)]" />
+                          <span className="truncate">{t('navigation.account.contactSupport')}</span>
+                          <span />
+                        </a>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild onSelect={() => setUserMenuOpen(false)}>
+                        <a
+                          href="https://docs.heilda.app"
+                          target="_blank"
+                          rel="noreferrer"
+                          className="tw-row tw-row-loose w-full text-left"
+                          onClick={() => setUserMenuOpen(false)}
+                        >
+                          <BookOpen className="size-4 text-[color:var(--text-muted)]" />
+                          <span className="truncate">{t('navigation.account.documentation')}</span>
+                          <ArrowUpRight className="size-4 text-[color:var(--text-muted)]" aria-hidden />
+                        </a>
+                      </DropdownMenuItem>
+                    </div>
+
+                    <div className="pop-div my-2 opacity-70" />
+
+                    <DropdownMenuItem
+                      onSelect={() => {
+                        setUserMenuOpen(false)
+                        handleSignOut()
+                      }}
+                      asChild
                     >
-                      <LifeBuoy className="size-4 text-[color:var(--text-muted)]" />
-                      <span className="truncate">{t('navigation.account.helpCenter')}</span>
-                      <ArrowUpRight className="size-4 text-[color:var(--text-muted)]" aria-hidden />
-                    </a>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild onSelect={() => setUserMenuOpen(false)}>
-                    <a
-                      href="mailto:support@heilda.app"
-                      className="tw-row tw-row-loose w-full text-left"
-                      onClick={() => setUserMenuOpen(false)}
-                    >
-                      <Mail className="size-4 text-[color:var(--text-muted)]" />
-                      <span className="truncate">{t('navigation.account.contactSupport')}</span>
-                      <span />
-                    </a>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild onSelect={() => setUserMenuOpen(false)}>
-                    <a
-                      href="https://docs.heilda.app"
-                      target="_blank"
-                      rel="noreferrer"
-                      className="tw-row tw-row-loose w-full text-left"
-                      onClick={() => setUserMenuOpen(false)}
-                    >
-                      <BookOpen className="size-4 text-[color:var(--text-muted)]" />
-                      <span className="truncate">{t('navigation.account.documentation')}</span>
-                      <ArrowUpRight className="size-4 text-[color:var(--text-muted)]" aria-hidden />
-                    </a>
-                  </DropdownMenuItem>
-                </div>
-
-                <div className="pop-div my-2 opacity-70" />
-
-                <DropdownMenuItem
-                  onSelect={() => {
-                    setUserMenuOpen(false)
-                    handleSignOut()
-                  }}
-                  asChild
+                      <button
+                        type="button"
+                        className="tw-row tw-row-loose w-full text-left text-[color:var(--text)]"
+                      >
+                        <LogOut className="size-4 text-[color:var(--text-muted)]" aria-hidden />
+                        <span className="truncate">{t('navigation.account.signOut')}</span>
+                        <span />
+                      </button>
+                    </DropdownMenuItem>
+                  </PopCard>
+                </DropdownMenu>
+              ) : (
+                <Link
+                  to="/login"
+                  className={cn(
+                    navTextButtonClass,
+                    'flex-shrink-0 min-w-[120px] justify-center font-semibold'
+                  )}
                 >
-                  <button
-                    type="button"
-                    className="tw-row tw-row-loose w-full text-left text-[color:var(--text)]"
-                  >
-                    <LogOut className="size-4 text-[color:var(--text-muted)]" aria-hidden />
-                    <span className="truncate">{t('navigation.account.signOut')}</span>
-                    <span />
-                  </button>
-                </DropdownMenuItem>
-              </PopCard>
-            </DropdownMenu>
-          ) : (
-            <Link
-              to="/login"
-              className={cn(
-                navTextButtonClass,
-                'flex-shrink-0 min-w-[120px] justify-center font-semibold'
+                  <span className={navTextButtonPillClass} aria-hidden="true" />
+                  <CircleUserRound aria-hidden="true" className={navTextIconClass} />
+                  <span className="truncate">{t('navigation.account.signIn')}</span>
+                  <span className={navTextButtonFocusRingClass} aria-hidden="true" />
+                </Link>
               )}
-            >
-              <span className={navTextButtonPillClass} aria-hidden="true" />
-              <CircleUserRound aria-hidden="true" className={navTextIconClass} />
-              <span className="truncate">{t('navigation.account.signIn')}</span>
-              <span className={navTextButtonFocusRingClass} aria-hidden="true" />
-            </Link>
-          )}
               <span aria-hidden="true" className="pointer-events-none flex h-11 items-center py-2">
                 <span className="block h-full w-px rounded-full bg-white/12" />
               </span>
