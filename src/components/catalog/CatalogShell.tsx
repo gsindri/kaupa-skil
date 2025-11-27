@@ -40,9 +40,9 @@ export function CatalogShell({ mode }: CatalogShellProps) {
   const { addItem } = useBasket()
   const { gateAction, showAuthModal, closeAuthModal, pendingActionName } = useGatedAction()
   const orgId = profile?.tenant_id || ''
-  
+
   const [addingId, setAddingId] = useState<string | null>(null)
-  
+
   // State management
   const filters = useCatalogFilters(s => s.filters)
   const setFilters = useCatalogFilters(s => s.setFilters)
@@ -55,7 +55,7 @@ export function CatalogShell({ mode }: CatalogShellProps) {
   const setOnSpecial = useCatalogFilters(s => s.setOnSpecial)
   const mySuppliers = useCatalogFilters(s => s.mySuppliers)
   const setMySuppliers = useCatalogFilters(s => s.setMySuppliers)
-  
+
   const [view, setView] = useState<'grid' | 'list'>('grid')
   const [showFilters, setShowFilters] = useState(false)
   const [focusedFacet, setFocusedFacet] = useState<keyof FacetFilters | null>(null)
@@ -63,13 +63,13 @@ export function CatalogShell({ mode }: CatalogShellProps) {
     key: 'name' | 'supplier' | 'price' | 'availability'
     direction: 'asc' | 'desc'
   } | null>({ key: 'name', direction: 'asc' })
-  
+
   const debouncedSearch = useDebounce(filters.search ?? '', 300)
   const isDesktop = useMediaQuery('(min-width: 1024px)')
   const searchRef = useRef<HTMLInputElement>(null)
   const filterButtonRef = useRef<HTMLButtonElement | null>(null)
   const gridContainerRef = useRef<HTMLDivElement>(null)
-  
+
   // Data fetching
   const availability = inStock ? ['IN_STOCK'] : undefined
   const publicFilters = useMemo(() => ({
@@ -79,7 +79,7 @@ export function CatalogShell({ mode }: CatalogShellProps) {
     ...(onSpecial ? { onSpecial: true } : {}),
     ...(availability ? { availability } : {}),
   }), [filters, debouncedSearch, onlyWithPrice, onSpecial, availability])
-  
+
   const orgFilters = useMemo(() => ({
     ...filters,
     search: debouncedSearch || undefined,
@@ -88,52 +88,52 @@ export function CatalogShell({ mode }: CatalogShellProps) {
     ...(onSpecial ? { onSpecial: true } : {}),
     ...(availability ? { availability } : {}),
   }), [filters, debouncedSearch, onlyWithPrice, mySuppliers, onSpecial, availability])
-  
+
   const publicQuery = useCatalogProducts(publicFilters, sortOrder)
   const orgQuery = useOrgCatalog(orgId, orgFilters, sortOrder)
-  
+
   const currentQuery = isPublicMode ? publicQuery : (orgId ? orgQuery : publicQuery)
   const products = useMemo(() => currentQuery.data ?? [], [currentQuery.data])
   const totalCount = currentQuery.total
   const { hasNextPage, isFetchingNextPage, loadMore } = currentQuery
-  
+
   // Filter chips
   const chips = useMemo<ActiveFilterChip[]>(() => {
     const result: ActiveFilterChip[] = []
-    
+
     if (inStock) {
       result.push({
         key: 'inStock',
         label: 'In Stock',
         variant: 'boolean',
         onRemove: () => setInStock(false),
-        onEdit: () => {},
+        onEdit: () => { },
       })
     }
-    
+
     if (onSpecial) {
       result.push({
         key: 'onSpecial',
         label: 'On Special',
         variant: 'boolean',
         onRemove: () => setOnSpecial(false),
-        onEdit: () => {},
+        onEdit: () => { },
       })
     }
-    
+
     if (mySuppliers && !isPublicMode) {
       result.push({
         key: 'mySuppliers',
         label: 'My Suppliers',
         variant: 'boolean',
         onRemove: () => setMySuppliers(false),
-        onEdit: () => {},
+        onEdit: () => { },
       })
     }
-    
+
     return result
   }, [inStock, onSpecial, mySuppliers, isPublicMode, setInStock, setOnSpecial, setMySuppliers])
-  
+
   const clearAllFilters = useCallback(() => {
     setInStock(false)
     setMySuppliers(false)
@@ -145,17 +145,17 @@ export function CatalogShell({ mode }: CatalogShellProps) {
       packSizeRange: undefined,
     })
   }, [setFilters, setInStock, setMySuppliers, setOnSpecial])
-  
+
   // Handlers
   const handleAddToCart = useCallback((product: any, supplierId?: string) => {
     if (isPublicMode) {
-      gateAction(() => {}, product.name)
+      gateAction(() => { }, product.name)
       return
     }
-    
+
     const firstSupplierId = supplierId || product.supplier_ids?.[0]
     if (!firstSupplierId) return
-    
+
     setAddingId(product.catalog_id)
     addItem({
       product_id: product.catalog_id,
@@ -164,13 +164,13 @@ export function CatalogShell({ mode }: CatalogShellProps) {
     })
     setTimeout(() => setAddingId(null), 800)
   }, [isPublicMode, gateAction, addItem])
-  
+
   const handleLoadMore = useCallback(() => {
     if (hasNextPage && !isFetchingNextPage) {
       loadMore()
     }
   }, [hasNextPage, isFetchingNextPage, loadMore])
-  
+
   const sortedProducts = useMemo(() => {
     if (!tableSort) return products
     const sorted = [...products]
@@ -200,9 +200,9 @@ export function CatalogShell({ mode }: CatalogShellProps) {
     })
     return sorted
   }, [products, tableSort])
-  
+
   const displayProducts = view === 'list' ? sortedProducts : products
-  
+
   return (
     <>
       <Sheet open={isDesktop && showFilters} onOpenChange={setShowFilters}>
@@ -246,8 +246,8 @@ export function CatalogShell({ mode }: CatalogShellProps) {
                       <TooltipContent>Filters</TooltipContent>
                     </Tooltip>
                   </div>
-                  
-                  <div className="toolbar-center flex min-w-[220px] items-center gap-3">
+
+                  <div className="toolbar-center flex min-w-[220px] items-center gap-3 mx-auto justify-center">
                     <div className="relative flex-1">
                       <Input
                         ref={searchRef}
@@ -270,7 +270,7 @@ export function CatalogShell({ mode }: CatalogShellProps) {
                         </button>
                       )}
                     </div>
-                    
+
                     {totalCount != null && (
                       <div className="hidden items-center text-sm font-semibold text-[color:var(--ink-hi)] lg:flex">
                         <span className="tabular-nums">{totalCount.toLocaleString()}</span>
@@ -278,7 +278,7 @@ export function CatalogShell({ mode }: CatalogShellProps) {
                       </div>
                     )}
                   </div>
-                  
+
                   <div className="toolbar-right lg:flex-nowrap lg:gap-4">
                     <SortDropdown value={sortOrder} onChange={setSortOrder} />
                     <ViewToggle
@@ -290,7 +290,7 @@ export function CatalogShell({ mode }: CatalogShellProps) {
                     />
                   </div>
                 </div>
-                
+
                 {chips.length > 0 && (
                   <div className="flex items-center gap-2 overflow-x-auto">
                     {chips.map(chip => (
@@ -317,59 +317,59 @@ export function CatalogShell({ mode }: CatalogShellProps) {
               </div>
             </ContentRail>
           </section>
-          
+
           {/* Grid/Table - Single wrapper for measurement */}
           <div className="pl-[var(--layout-rail,72px)]">
-            <div 
+            <div
               ref={gridContainerRef}
-              className="mx-auto w-full" 
-              style={{ 
-                maxWidth: 'var(--page-max)', 
-                paddingInline: 'var(--page-gutter)' 
+              className="mx-auto w-full"
+              style={{
+                maxWidth: 'var(--page-max)',
+                paddingInline: 'var(--page-gutter)'
               }}
             >
               <div className="space-y-5 pb-8 pt-[var(--page-top-gap)]">
-            {view === 'grid' ? (
-              <CatalogGrid
-                containerRef={gridContainerRef}
-                products={displayProducts}
-                onAddToCart={handleAddToCart}
-                onNearEnd={handleLoadMore}
-                showPrice={!isPublicMode}
-                addingId={addingId}
-                mode={mode}
-              />
-            ) : (
-              <CatalogTable
-                products={displayProducts}
-                sort={tableSort}
-                onSort={(key) => {
-                  setTableSort(prev => {
-                    if (prev && prev.key === key) {
-                      return { key, direction: prev.direction === 'asc' ? 'desc' : 'asc' }
-                    }
-                    return { key, direction: 'asc' }
-                  })
-                }}
-              />
-            )}
-            
-            {hasNextPage && (
-              <div className="flex justify-center py-6">
-                <Button
-                  variant="outline"
-                  onClick={handleLoadMore}
-                  disabled={isFetchingNextPage}
-                >
-                  {isFetchingNextPage ? 'Loading...' : 'Load more'}
-                </Button>
-              </div>
-              )}
+                {view === 'grid' ? (
+                  <CatalogGrid
+                    containerRef={gridContainerRef}
+                    products={displayProducts}
+                    onAddToCart={handleAddToCart}
+                    onNearEnd={handleLoadMore}
+                    showPrice={!isPublicMode}
+                    addingId={addingId}
+                    mode={mode}
+                  />
+                ) : (
+                  <CatalogTable
+                    products={displayProducts}
+                    sort={tableSort}
+                    onSort={(key) => {
+                      setTableSort(prev => {
+                        if (prev && prev.key === key) {
+                          return { key, direction: prev.direction === 'asc' ? 'desc' : 'asc' }
+                        }
+                        return { key, direction: 'asc' }
+                      })
+                    }}
+                  />
+                )}
+
+                {hasNextPage && (
+                  <div className="flex justify-center py-6">
+                    <Button
+                      variant="outline"
+                      onClick={handleLoadMore}
+                      disabled={isFetchingNextPage}
+                    >
+                      {isFetchingNextPage ? 'Loading...' : 'Load more'}
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
         </div>
-        
+
         {/* Desktop Filters Panel */}
         {isDesktop && showFilters && (
           <>
@@ -400,7 +400,7 @@ export function CatalogShell({ mode }: CatalogShellProps) {
           </>
         )}
       </Sheet>
-      
+
       {showAuthModal && (
         <SignUpPromptModal
           isOpen={showAuthModal}
