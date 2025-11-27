@@ -313,82 +313,81 @@ export function OrderComposer() {
               You are about to email purchase orders to <strong>{supplierGroups.length} supplier{supplierGroups.length > 1 ? 's' : ''}</strong>.
             </p>
 
-            {/* Merged Ticket Card */}
-            <div className="w-full bg-slate-50 rounded-xl border border-slate-200 overflow-hidden mb-8">
-              {/* Receipt Body */}
-              <div className="p-5 space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-slate-500">Suppliers</span>
-                  <span className="text-sm font-semibold text-slate-900 text-right">
-                    {supplierGroups.map(([, g]) => g.supplierName).join(', ')}
+            {/* Summary Ticket */}
+            <div className="w-full bg-slate-50 rounded-xl p-4 mb-4 border border-slate-100">
+              <div className="flex justify-between items-center py-2 border-b border-slate-200/60 last:border-0">
+                <span className="text-sm text-slate-500">Suppliers</span>
+                <span className="text-sm font-semibold text-slate-900 text-right">
+                  {supplierGroups.map(([, g]) => g.supplierName).join(', ')}
+                </span>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-slate-200/60 last:border-0">
+                <span className="text-sm text-slate-500">Total Items</span>
+                <span className="text-sm font-semibold text-slate-900">
+                  {items.reduce((acc, item) => acc + item.quantity, 0)}
+                </span>
+              </div>
+              <div className="flex justify-between items-center py-2 last:border-0">
+                <span className="text-sm text-slate-500">Total Value</span>
+                <span className={cn(
+                  "text-sm font-bold",
+                  grandTotal === 0 || missingPriceCount > 0 ? "text-amber-600" : "text-slate-900"
+                )}>
+                  {grandTotal === 0 || missingPriceCount > 0 ? 'Pending Pricing' : formatPrice(grandTotal)}
+                </span>
+              </div>
+            </div>
+
+            {/* Email Sender Row */}
+            <div className="w-full mb-8 flex items-center justify-between rounded-md border border-dashed border-slate-300 bg-slate-50 px-3 py-2 text-[13px]">
+              <div className="flex items-center gap-2 text-slate-700">
+                <span className="font-medium text-slate-500">From:</span>
+                {!isGmailAuthorized && !isOutlookAuthorized ? (
+                  <span className="flex items-center gap-1.5">
+                    Restaurant Name <span className="text-slate-400">(via Deilda)</span>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Info className="h-3 w-3 text-slate-400 cursor-help" />
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-[240px] text-xs">
+                        <p>Orders currently send via Deilda. Connect your email to send directly from your address.</p>
+                      </TooltipContent>
+                    </Tooltip>
                   </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-slate-500">Total Items</span>
-                  <span className="text-sm font-semibold text-slate-900">
-                    {items.reduce((acc, item) => acc + item.quantity, 0)}
+                ) : isGmailAuthorized ? (
+                  <span className="flex items-center gap-1.5 font-medium text-slate-900">
+                    {userEmail || 'your.email@gmail.com'}
+                    <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-1.5 py-0.5 text-[10px] font-bold text-green-700">
+                      Gmail <CheckCircle className="h-3 w-3" />
+                    </span>
                   </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-slate-500">Total Value</span>
-                  <span className={cn(
-                    "text-sm font-bold",
-                    grandTotal === 0 || missingPriceCount > 0 ? "text-amber-600" : "text-slate-900"
-                  )}>
-                    {grandTotal === 0 || missingPriceCount > 0 ? 'Pending Pricing' : formatPrice(grandTotal)}
+                ) : (
+                  <span className="flex items-center gap-1.5 font-medium text-slate-900">
+                    {userEmail || 'your.email@outlook.com'}
+                    <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-1.5 py-0.5 text-[10px] font-bold text-blue-700">
+                      Outlook <CheckCircle className="h-3 w-3" />
+                    </span>
                   </span>
-                </div>
+                )}
               </div>
 
-              {/* Receipt Footer (Sender Settings) */}
-              <div className="bg-slate-100/50 px-5 py-4 border-t border-slate-200 flex flex-col gap-3">
-                <div className="flex items-center gap-2 text-slate-700">
-                  <span className="font-medium text-slate-500 text-[13px]">From:</span>
-                  {!isGmailAuthorized && !isOutlookAuthorized ? (
-                    <span className="flex items-center gap-1.5 text-[13px]">
-                      Restaurant Name <span className="text-slate-400">(via Deilda)</span>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Info className="h-3 w-3 text-slate-400 cursor-help" />
-                        </TooltipTrigger>
-                        <TooltipContent className="max-w-[240px] text-xs">
-                          <p>Orders currently send via Deilda. Connect your email to send directly from your address.</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </span>
-                  ) : isGmailAuthorized ? (
-                    <span className="flex items-center gap-1.5 font-medium text-slate-900 text-[13px]">
-                      {userEmail || 'your.email@gmail.com'}
-                      <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-1.5 py-0.5 text-[10px] font-bold text-green-700">
-                        Gmail <CheckCircle className="h-3 w-3" />
-                      </span>
-                    </span>
-                  ) : (
-                    <span className="flex items-center gap-1.5 font-medium text-slate-900 text-[13px]">
-                      {userEmail || 'your.email@outlook.com'}
-                      <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-1.5 py-0.5 text-[10px] font-bold text-blue-700">
-                        Outlook <CheckCircle className="h-3 w-3" />
-                      </span>
-                    </span>
-                  )}
-                </div>
-
-                <div className="flex items-center gap-2 w-full">
-                  {!isGmailAuthorized && !isOutlookAuthorized ? (
-                    <>
-                      <GmailAuthButton minimal onAuthChange={refreshAuth} className="flex-1 justify-center" />
-                      <OutlookAuthButton minimal onAuthChange={refreshAuth} className="flex-1 justify-center" />
-                    </>
-                  ) : (
-                    <div className="flex items-center w-full">
-                      {isGmailAuthorized ? (
-                        <GmailAuthButton minimal onAuthChange={refreshAuth} className="ml-auto" />
-                      ) : (
-                        <OutlookAuthButton minimal onAuthChange={refreshAuth} className="ml-auto" />
-                      )}
-                    </div>
-                  )}
-                </div>
+              <div className="flex items-center gap-2">
+                {!isGmailAuthorized && !isOutlookAuthorized && !isAuthLoading && (
+                  <>
+                    <GmailAuthButton minimal onAuthChange={refreshAuth} />
+                    <span className="text-xs text-slate-400">or</span>
+                    <OutlookAuthButton minimal onAuthChange={refreshAuth} />
+                  </>
+                )}
+                {(isGmailAuthorized || isOutlookAuthorized) && (
+                  <div className="flex items-center">
+                    {isGmailAuthorized ? (
+                      <GmailAuthButton minimal onAuthChange={refreshAuth} />
+                    ) : (
+                      <OutlookAuthButton minimal onAuthChange={refreshAuth} />
+                    )}
+                  </div>
+                )}
               </div>
             </div>
 
