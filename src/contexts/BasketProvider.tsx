@@ -659,7 +659,7 @@ export default function BasketProvider({ children }: { children: React.ReactNode
       setIsDrawerPinned,
       cartPulseSignal,
       cartMode: mode,
-      isHydrating: mode === 'hydrating' || !isInitialized || gracePeriod
+      isHydrating: mode === 'hydrating' || !isInitialized || gracePeriod || profileLoading || (user && !profile) || (mode === 'authenticated' && isLoadingDBCart)
     }}>
       {children}
     </BasketContext.Provider>
