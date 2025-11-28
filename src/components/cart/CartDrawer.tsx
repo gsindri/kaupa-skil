@@ -5,6 +5,7 @@ import { ShoppingCart, X, Trash2, Loader2 } from "lucide-react"
 import { useCart } from "@/contexts/useBasket"
 import { useSettings } from "@/contexts/useSettings"
 import { QuantityStepper } from "./QuantityStepper"
+import { CartSkeleton } from "./CartSkeleton"
 import { cn } from "@/lib/utils"
 import { useMediaQuery } from "@/hooks/useMediaQuery"
 
@@ -56,12 +57,7 @@ export function CartDrawer() {
   }, [])
 
   const cartItems = isHydrating ? (
-    <div className="cart-rail__body">
-      <div className="flex flex-col items-center justify-center p-8 gap-3">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        <p className="text-sm text-muted-foreground">Loading your cart...</p>
-      </div>
-    </div>
+    <CartSkeleton />
   ) : (
     <div className="cart-rail__body">
       {items.length === 0 ? (

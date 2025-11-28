@@ -107,9 +107,9 @@ const extractLegacySupplierName = (it: any): string => {
   return sanitizeSupplierName(supplierNameCandidate, supplierIdCandidate)
 }
 export default function BasketProvider({ children }: { children: React.ReactNode }) {
-  const { user, profile } = useAuth()
+  const { user, profile, profileLoading, isInitialized } = useAuth()
   const mergeCart = useMergeAnonymousCart()
-  const { data: dbCart, isLoading: isLoadingDBCart, isFetching: isFetchingDBCart } = useLoadCartFromDB()
+  const { data: dbCart, isLoading: isLoadingDBCart, isFetching: isFetchingDBCart, error: dbCartError } = useLoadCartFromDB()
   const isMutating = useIsMutating({ mutationKey: ['cart'] }) // Track any cart mutations
 
   // Database mutation hooks for authenticated cart persistence
@@ -125,8 +125,12 @@ export default function BasketProvider({ children }: { children: React.ReactNode
 
   // Master effect: State machine for cart mode transitions
   useEffect(() => {
+    // Wait for auth to initialize
+    if (!isInitialized) return
+
     // ANONYMOUS MODE: no user logged in
-    if (!user || !profile?.tenant_id) {
+    // If user is present but profile is loading, we wait (don't switch to anonymous)
+    if (!user) {
       if (mode !== 'anonymous') {
         setMode('anonymous')
         setItems([])
@@ -164,6 +168,7 @@ export default function BasketProvider({ children }: { children: React.ReactNode
                 it.name ??
                 it.title ??
                 it.productName,
+              // ...
             }))
             setItems(loadedItems)
           } catch {
@@ -181,9 +186,17 @@ export default function BasketProvider({ children }: { children: React.ReactNode
     }
 
     if (mode === 'hydrating') {
-      // Wait for DB cart to load
-      if (isLoadingDBCart) {
+      // Wait for profile to be fully loaded
+      // We know user is present, so we must have a profile before proceeding
+      if (!profile) {
         return
+      }
+
+      // If we have a profile, we must wait for the DB cart to load
+      if (profile.tenant_id) {
+        if (isLoadingDBCart) return
+        // If data is missing and no error, we are probably initializing the query or waiting for network
+        if (!dbCart && !dbCartError) return
       }
 
       // Get local anonymous cart snapshot
@@ -278,7 +291,7 @@ export default function BasketProvider({ children }: { children: React.ReactNode
         setItems(uniqueItems)
       }
     }
-  }, [user, profile?.tenant_id, mode, dbCart, isLoadingDBCart, isFetchingDBCart, isMutating])
+  }, [user, profile?.tenant_id, mode, dbCart, isLoadingDBCart, isFetchingDBCart, isMutating, profileLoading, isInitialized])
 
   // Generate anonymous cart ID if not authenticated
   useEffect(() => {
@@ -605,6 +618,29 @@ export default function BasketProvider({ children }: { children: React.ReactNode
   const getMissingPriceCount = () =>
     items.filter(i => i.unitPriceIncVat == null && i.unitPriceExVat == null).length
 
+  // Check if there's a potential session in local storage
+  const [hasLocalSession] = useState(() => {
+    if (typeof window === 'undefined') return false
+    try {
+      return Object.keys(localStorage).some(key => key.startsWith('sb-') && key.endsWith('-auth-token'))
+    } catch {
+      return false
+    }
+  })
+
+  // Grace period for session restoration
+  const [gracePeriod, setGracePeriod] = useState(hasLocalSession)
+
+  useEffect(() => {
+    if (!gracePeriod) return
+    if (user) {
+      setGracePeriod(false)
+      return
+    }
+    const timer = setTimeout(() => setGracePeriod(false), 2000)
+    return () => clearTimeout(timer)
+  }, [gracePeriod, user])
+
   return (
     <BasketContext.Provider value={{
       items,
@@ -623,7 +659,7 @@ export default function BasketProvider({ children }: { children: React.ReactNode
       setIsDrawerPinned,
       cartPulseSignal,
       cartMode: mode,
-      isHydrating: mode === 'hydrating'
+      isHydrating: mode === 'hydrating' || !isInitialized || gracePeriod
     }}>
       {children}
     </BasketContext.Provider>
