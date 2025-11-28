@@ -57,9 +57,7 @@ function renderWithProviders(items: CartItem[]) {
     preferredUnit: 'ea',
     setPreferredUnit: vi.fn(),
     userMode: 'balanced',
-    setUserMode: vi.fn(),
-    emailIntegration: 'none',
-    setEmailIntegration: vi.fn()
+    setUserMode: vi.fn()
   }
 
   return render(
