@@ -18,6 +18,7 @@ import {
 } from '@/hooks/useCartMutations'
 import { useLoadCartFromDB } from '@/hooks/useLoadCartFromDB'
 import { useCartRecovery } from '@/hooks/useCartRecovery'
+import { useCartRealtime } from '@/hooks/useCartRealtime'
 
 const CART_STORAGE_KEY = 'procurewise-basket'
 const CART_PIN_STORAGE_KEY = 'procurewise-cart-pinned'
@@ -130,6 +131,13 @@ export default function BasketProvider({ children }: { children: React.ReactNode
     restoreItems,
     mode
   )
+
+  // Real-time cart sync across devices for authenticated users
+  const { isSubscribed } = useCartRealtime({
+    enabled: mode === 'authenticated',
+    tenantId: profile?.tenant_id,
+    userId: user?.id,
+  })
 
   // Master effect: State machine for cart mode transitions
   useEffect(() => {
@@ -710,7 +718,8 @@ export default function BasketProvider({ children }: { children: React.ReactNode
       setIsDrawerPinned,
       cartPulseSignal,
       cartMode: mode,
-      isHydrating: mode === 'hydrating' || !isInitialized || gracePeriod || profileLoading || (user && !profile) || (mode === 'authenticated' && isLoadingDBCart)
+      isHydrating: mode === 'hydrating' || !isInitialized || gracePeriod || profileLoading || (user && !profile) || (mode === 'authenticated' && isLoadingDBCart),
+      isRealtimeSynced: isSubscribed
     }}>
       {children}
     </BasketContext.Provider>

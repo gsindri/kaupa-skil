@@ -27,6 +27,7 @@ export interface BasketContextType {
   cartPulseSignal: number
   cartMode: CartMode
   isHydrating: boolean
+  isRealtimeSynced: boolean
 }
 
 export const BasketContext = createContext<BasketContextType | undefined>(undefined)

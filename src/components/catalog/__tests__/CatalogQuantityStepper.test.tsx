@@ -263,6 +263,7 @@ describe('CatalogQuantityStepper', () => {
       cartPulseSignal: 0,
       cartMode: 'anonymous',
       isHydrating: false,
+      isRealtimeSynced: false,
     }
 
     const payload: Omit<CartItem, 'quantity'> = {
@@ -353,6 +354,7 @@ describe('CatalogQuantityStepper', () => {
       cartPulseSignal: 0,
       cartMode: 'anonymous',
       isHydrating: false,
+      isRealtimeSynced: false,
     }
 
     function ControllerHarness({ quantity }: { quantity: number }) {
@@ -410,6 +412,7 @@ describe('CatalogQuantityStepper', () => {
       cartPulseSignal: 0,
       cartMode: 'anonymous',
       isHydrating: false,
+      isRealtimeSynced: false,
     }
 
     function ControllerProbe({ quantity }: { quantity: number }) {
@@ -456,6 +459,7 @@ describe('CatalogQuantityStepper', () => {
       cartPulseSignal: 0,
       cartMode: 'anonymous',
       isHydrating: false,
+      isRealtimeSynced: false,
     }
 
     const payload: Omit<CartItem, 'quantity'> = {
@@ -614,6 +618,7 @@ describe('CatalogQuantityStepper', () => {
             cartPulseSignal: 0,
             cartMode: 'anonymous',
             isHydrating: false,
+            isRealtimeSynced: false,
           }),
           [scheduleCartQuantity],
         )
