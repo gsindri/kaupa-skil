@@ -20,7 +20,7 @@ interface SmartCartSidebarProps {
 }
 
 export function SmartCartSidebar({ className = "" }: SmartCartSidebarProps) {
-  const { items, getTotalItems, getTotalPrice, addItem } = useCart();
+  const { items, getTotalItems, getTotalPrice, addItem, isHydrating } = useCart();
   const { includeVat } = useSettings();
 
   const formatPrice = (price: number) => {
@@ -71,6 +71,21 @@ export function SmartCartSidebar({ className = "" }: SmartCartSidebarProps) {
       image: PLACEHOLDER_IMAGE
     });
   };
+
+  if (isHydrating) {
+    return (
+      <div className={className}>
+        <Card className="w-full">
+          <CardContent className="px-4 py-6 text-center">
+            <div className="animate-pulse space-y-3">
+              <div className="h-12 w-12 bg-muted rounded-full mx-auto" />
+              <div className="h-4 bg-muted rounded w-3/4 mx-auto" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   if (getTotalItems() === 0) {
     return (

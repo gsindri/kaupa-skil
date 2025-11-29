@@ -62,6 +62,7 @@ export default function Dashboard() {
           <OrderControlCard
             cartCount={basket.getTotalItems()}
             cartTotal={formatCurrency(basket.getTotalPrice(true))}
+            isLoading={basket.isHydrating}
           />
 
           <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
@@ -76,10 +77,12 @@ export default function Dashboard() {
 
 function OrderControlCard({
   cartCount,
-  cartTotal
+  cartTotal,
+  isLoading
 }: {
   cartCount: number
   cartTotal: string
+  isLoading?: boolean
 }) {
   return (
     <Card className="relative overflow-hidden border-slate-200 bg-white shadow-sm transition-all duration-200 hover:shadow-md">
@@ -87,16 +90,28 @@ function OrderControlCard({
         <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-start gap-6">
             <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-blue-50 text-blue-600 border border-blue-100 shadow-sm">
-              <Package className="h-8 w-8" />
+              {isLoading ? (
+                <Loader2 className="h-8 w-8 animate-spin" />
+              ) : (
+                <Package className="h-8 w-8" />
+              )}
             </div>
 
             <div className="flex flex-col">
               <div className="flex items-baseline gap-3">
-                <span className="text-5xl font-bold tracking-tight text-slate-900">{cartCount}</span>
+                {isLoading ? (
+                  <div className="h-12 w-16 animate-pulse bg-slate-200 rounded" />
+                ) : (
+                  <span className="text-5xl font-bold tracking-tight text-slate-900">{cartCount}</span>
+                )}
                 <span className="text-lg font-medium text-slate-500">Pending Items</span>
               </div>
               <div className="mt-1 text-sm font-medium text-slate-400 uppercase tracking-wider">
-                Total Value: <span className="text-slate-700">{cartTotal}</span>
+                Total Value: {isLoading ? (
+                  <span className="inline-block h-4 w-24 animate-pulse bg-slate-200 rounded" />
+                ) : (
+                  <span className="text-slate-700">{cartTotal}</span>
+                )}
               </div>
             </div>
           </div>
