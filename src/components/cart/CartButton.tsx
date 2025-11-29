@@ -108,7 +108,6 @@ export function CartButton({
       onClick={handleOpenCart}
       className={buttonClassName}
       aria-label={ariaLabel}
-      title={tooltipLabel}
     >
       {isToolbarVariant ? <span className={navTextButtonPillClass} aria-hidden="true" /> : null}
       <span className={iconWrapperClass}>

@@ -47,7 +47,6 @@ export function SortDropdown({ value, onChange, className, onOpenChange }: SortD
             className,
           )}
           aria-label={`Sort by ${label}`}
-          title={label}
         >
           <Sparkle size={24} weight="fill" className="text-[color:var(--ink-hi)]" aria-hidden="true" />
           <span className="truncate">{label}</span>
