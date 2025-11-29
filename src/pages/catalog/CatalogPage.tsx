@@ -1564,47 +1564,42 @@ function FiltersBar({
 
   const renderFiltersToggleButton = useCallback(
     (extraClassName?: string) => (
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <button
-            type="button"
-            onClick={toggleFilters}
-            aria-pressed={showFilters}
-            aria-expanded={showFilters}
-            aria-controls="catalog-filters-panel"
-            aria-keyshortcuts="f"
-            aria-label={
-              activeCount
-                ? `Filters, ${activeCount} active`
-                : 'Filters, no active filters'
-            }
-            className={cn(
-              'inline-flex h-[var(--ctrl-h,40px)] items-center gap-2 rounded-[var(--ctrl-r,12px)] border border-transparent bg-[color:var(--chip-bg)] px-2.5 text-sm font-semibold text-[color:var(--ink-hi)] backdrop-blur-xl transition duration-200 ease-out focus-visible:outline-none hover:bg-[color:var(--chip-bg-hover)] hover:text-[color:var(--ink-hi)] motion-reduce:transition-none sm:gap-3 sm:px-3',
-              showFilters && 'bg-[color:var(--seg-active-bg)] text-[color:var(--ink-hi)] border-[color:var(--ring-hover)]',
-              extraClassName,
-            )}
-            ref={filterButtonRef ?? undefined}
-          >
-            <FunnelSimple
-              size={24}
-              weight="fill"
-              className={cn('transition-opacity text-[color:var(--ink-hi)]', !showFilters && 'opacity-80')}
-            />
-            <span className="flex items-center gap-1 sm:gap-2">
-              <span>Filters</span>
-              {activeCount > 0 && (
-                <span
-                  aria-hidden="true"
-                  className="inline-flex min-w-[1.25rem] translate-y-[-1px] items-center justify-center rounded-full bg-[color:var(--chip-bg-hover)] px-1 text-[10px] font-semibold leading-[14px] text-[color:var(--ink-hi)] sm:translate-y-0 sm:bg-[color:var(--seg-active-bg)] sm:px-1.5 sm:text-xs"
-                >
-                  {activeCount}
-                </span>
-              )}
+      <button
+        type="button"
+        onClick={toggleFilters}
+        aria-pressed={showFilters}
+        aria-expanded={showFilters}
+        aria-controls="catalog-filters-panel"
+        aria-keyshortcuts="f"
+        aria-label={
+          activeCount
+            ? `Filters, ${activeCount} active`
+            : 'Filters, no active filters'
+        }
+        className={cn(
+          'inline-flex h-[var(--ctrl-h,40px)] items-center gap-2 rounded-[var(--ctrl-r,12px)] border border-transparent bg-[color:var(--chip-bg)] px-2.5 text-sm font-semibold text-[color:var(--ink-hi)] backdrop-blur-xl transition duration-200 ease-out focus-visible:outline-none hover:bg-[color:var(--chip-bg-hover)] hover:text-[color:var(--ink-hi)] motion-reduce:transition-none sm:gap-3 sm:px-3',
+          showFilters && 'bg-[color:var(--seg-active-bg)] text-[color:var(--ink-hi)] border-[color:var(--ring-hover)]',
+          extraClassName,
+        )}
+        ref={filterButtonRef ?? undefined}
+      >
+        <FunnelSimple
+          size={24}
+          weight="fill"
+          className={cn('transition-opacity text-[color:var(--ink-hi)]', !showFilters && 'opacity-80')}
+        />
+        <span className="flex items-center gap-1 sm:gap-2">
+          <span>Filters</span>
+          {activeCount > 0 && (
+            <span
+              aria-hidden="true"
+              className="inline-flex min-w-[1.25rem] translate-y-[-1px] items-center justify-center rounded-full bg-[color:var(--chip-bg-hover)] px-1 text-[10px] font-semibold leading-[14px] text-[color:var(--ink-hi)] sm:translate-y-0 sm:bg-[color:var(--seg-active-bg)] sm:px-1.5 sm:text-xs"
+            >
+              {activeCount}
             </span>
-          </button>
-        </TooltipTrigger>
-        <TooltipContent sideOffset={8}>Filters (F)</TooltipContent>
-      </Tooltip>
+          )}
+        </span>
+      </button>
     ),
     [toggleFilters, showFilters, activeCount, filterButtonRef],
   )
@@ -1694,24 +1689,19 @@ function FiltersBar({
                   <label className="sr-only" htmlFor="catalog-search">
                     Search products
                   </label>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <input
-                        id="catalog-search"
-                        ref={searchRef}
-                        type="search"
-                        placeholder="Search products"
-                        aria-keyshortcuts="Control+K Meta+K"
-                        value={searchValue}
-                        onChange={handleSearchChange}
-                        onKeyDown={handleSearchKeyDown}
-                        onFocus={() => onLockChange?.(true)}
-                        onBlur={() => onLockChange?.(false)}
-                        className="h-11 w-full flex-1 rounded-[var(--ctrl-r,14px)] border border-transparent bg-white pl-12 pr-12 text-base font-semibold text-slate-900 placeholder:text-slate-500 shadow-[0_12px_38px_rgba(7,18,30,0.26)] transition duration-200 ease-out focus-visible:outline-none motion-reduce:transition-none"
-                      />
-                    </TooltipTrigger>
-                    <TooltipContent sideOffset={8}>Search (Ctrl/⌘+K)</TooltipContent>
-                  </Tooltip>
+                  <input
+                    id="catalog-search"
+                    ref={searchRef}
+                    type="search"
+                    placeholder="Search products"
+                    aria-keyshortcuts="Control+K Meta+K"
+                    value={searchValue}
+                    onChange={handleSearchChange}
+                    onKeyDown={handleSearchKeyDown}
+                    onFocus={() => onLockChange?.(true)}
+                    onBlur={() => onLockChange?.(false)}
+                    className="h-11 w-full flex-1 rounded-[var(--ctrl-r,14px)] border border-transparent bg-white pl-12 pr-12 text-base font-semibold text-slate-900 placeholder:text-slate-500 shadow-[0_12px_38px_rgba(7,18,30,0.26)] transition duration-200 ease-out focus-visible:outline-none motion-reduce:transition-none"
+                  />
                   <span className="pointer-events-none absolute left-3 top-1/2 grid -translate-y-1/2 place-items-center text-slate-500">
                     <MagnifyingGlass size={22} weight="fill" aria-hidden="true" />
                   </span>

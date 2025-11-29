@@ -23,14 +23,12 @@ export function SearchSoft({ className, tone, ...props }: SvgProps) {
       xmlns="http://www.w3.org/2000/svg" 
       viewBox="0 0 24 24" 
       role="img" 
-      aria-labelledby="searchIconTitle"
       aria-hidden="true"
       strokeLinecap="round" 
       strokeLinejoin="round"
       {...props}
       className={cn(className)}
     >
-      <title id="searchIconTitle">Search Icon</title>
       
       <style>
         {`@media (prefers-reduced-motion: reduce) {
