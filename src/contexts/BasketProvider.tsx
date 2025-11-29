@@ -19,6 +19,7 @@ import {
 import { useLoadCartFromDB } from '@/hooks/useLoadCartFromDB'
 import { useCartRecovery } from '@/hooks/useCartRecovery'
 import { useCartRealtime } from '@/hooks/useCartRealtime'
+import { ConflictResolutionModal } from '@/components/cart/ConflictResolutionModal'
 
 const CART_STORAGE_KEY = 'procurewise-basket'
 const CART_PIN_STORAGE_KEY = 'procurewise-cart-pinned'
@@ -124,6 +125,9 @@ export default function BasketProvider({ children }: { children: React.ReactNode
   // State machine for cart mode
   const [mode, setMode] = useState<CartMode>('anonymous')
   const [items, setItems] = useState<CartItem[]>([])
+  
+  // Track pending mutations for conflict detection
+  const [pendingMutations, setPendingMutations] = useState<Set<string>>(new Set())
 
   // Cart recovery system
   const { saveSnapshot, recoverFromSnapshot, clearSnapshot } = useCartRecovery(
@@ -133,10 +137,12 @@ export default function BasketProvider({ children }: { children: React.ReactNode
   )
 
   // Real-time cart sync across devices for authenticated users
-  const { isSubscribed } = useCartRealtime({
+  const { isSubscribed, conflicts, handleConflictResolution, dismissConflict } = useCartRealtime({
     enabled: mode === 'authenticated',
     tenantId: profile?.tenant_id,
     userId: user?.id,
+    currentItems: items,
+    pendingMutations
   })
 
   // Master effect: State machine for cart mode transitions
@@ -509,15 +515,30 @@ export default function BasketProvider({ children }: { children: React.ReactNode
         // Persist to database
         const itemToAdd = newItems.find(i => i.supplierItemId === normalizedItem.supplierItemId)
         if (itemToAdd) {
+          // Mark as pending mutation for conflict detection
+          setPendingMutations(prev => new Set(prev).add(itemToAdd.supplierItemId))
+          
           addToCartDB.mutate(
             { item: itemToAdd },
             {
               onSuccess: () => {
                 clearSnapshot()
+                // Clear pending mutation
+                setPendingMutations(prev => {
+                  const next = new Set(prev)
+                  next.delete(itemToAdd.supplierItemId)
+                  return next
+                })
               },
               onError: (error) => {
                 console.error('Failed to add item to cart:', error)
                 recoverFromSnapshot('Failed to add item')
+                // Clear pending mutation on error too
+                setPendingMutations(prev => {
+                  const next = new Set(prev)
+                  next.delete(itemToAdd.supplierItemId)
+                  return next
+                })
               }
             }
           )
@@ -564,6 +585,9 @@ export default function BasketProvider({ children }: { children: React.ReactNode
         // Save snapshot before database operation
         saveSnapshot('update_quantity')
         
+        // Mark as pending mutation for conflict detection
+        setPendingMutations(prev => new Set(prev).add(itemToUpdate.supplierItemId))
+        
         // Persist to database using robust update (handles duplicates)
         updateProductQuantityDB.mutate(
           {
@@ -576,10 +600,22 @@ export default function BasketProvider({ children }: { children: React.ReactNode
           {
             onSuccess: () => {
               clearSnapshot()
+              // Clear pending mutation
+              setPendingMutations(prev => {
+                const next = new Set(prev)
+                next.delete(itemToUpdate.supplierItemId)
+                return next
+              })
             },
             onError: (error) => {
               console.error('Failed to update quantity:', error)
               recoverFromSnapshot('Failed to update quantity')
+              // Clear pending mutation on error
+              setPendingMutations(prev => {
+                const next = new Set(prev)
+                next.delete(itemToUpdate.supplierItemId)
+                return next
+              })
             }
           }
         )
@@ -610,6 +646,9 @@ export default function BasketProvider({ children }: { children: React.ReactNode
         // Save snapshot before database operation
         saveSnapshot('remove_item')
         
+        // Mark as pending mutation for conflict detection
+        setPendingMutations(prev => new Set(prev).add(removed.supplierItemId))
+        
         // Persist to database using robust delete (removes all duplicates)
         removeProductFromCartDB.mutate(
           {
@@ -620,10 +659,22 @@ export default function BasketProvider({ children }: { children: React.ReactNode
           {
             onSuccess: () => {
               clearSnapshot()
+              // Clear pending mutation
+              setPendingMutations(prev => {
+                const next = new Set(prev)
+                next.delete(removed.supplierItemId)
+                return next
+              })
             },
             onError: (error) => {
               console.error('Failed to remove item:', error)
               recoverFromSnapshot('Failed to remove item')
+              // Clear pending mutation on error
+              setPendingMutations(prev => {
+                const next = new Set(prev)
+                next.delete(removed.supplierItemId)
+                return next
+              })
             }
           }
         )
@@ -701,7 +752,17 @@ export default function BasketProvider({ children }: { children: React.ReactNode
   }, [gracePeriod, user])
 
   return (
-    <BasketContext.Provider value={{
+    <>
+      <ConflictResolutionModal
+        conflicts={conflicts}
+        onResolve={(resolution) => {
+          if (conflicts.length > 0) {
+            handleConflictResolution(conflicts[0], resolution)
+          }
+        }}
+        onDismiss={dismissConflict}
+      />
+      <BasketContext.Provider value={{
       items,
       addItem,
       updateQuantity,
@@ -720,8 +781,9 @@ export default function BasketProvider({ children }: { children: React.ReactNode
       cartMode: mode,
       isHydrating: mode === 'hydrating' || !isInitialized || gracePeriod || profileLoading || (user && !profile) || (mode === 'authenticated' && isLoadingDBCart),
       isRealtimeSynced: isSubscribed
-    }}>
-      {children}
-    </BasketContext.Provider>
+      }}>
+        {children}
+      </BasketContext.Provider>
+    </>
   )
 }

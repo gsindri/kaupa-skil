@@ -1,20 +1,128 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import { supabase } from '@/integrations/supabase/client'
 import { useQueryClient } from '@tanstack/react-query'
 import { useToast } from '@/hooks/use-toast'
 import { RealtimeChannel } from '@supabase/supabase-js'
+import type { CartItem } from '@/lib/types'
+import type { CartConflict } from '@/components/cart/ConflictResolutionModal'
 
 interface UseCartRealtimeOptions {
   enabled: boolean
   tenantId: string | null | undefined
   userId: string | null | undefined
+  currentItems: CartItem[]
+  pendingMutations: Set<string> // Track items with pending optimistic updates
 }
 
-export function useCartRealtime({ enabled, tenantId, userId }: UseCartRealtimeOptions) {
+export function useCartRealtime({ 
+  enabled, 
+  tenantId, 
+  userId, 
+  currentItems,
+  pendingMutations 
+}: UseCartRealtimeOptions) {
   const queryClient = useQueryClient()
   const { toast } = useToast()
   const channelRef = useRef<RealtimeChannel | null>(null)
   const lastUpdateRef = useRef<number>(0)
+  const [conflicts, setConflicts] = useState<CartConflict[]>([])
+  
+  // Track item versions to detect conflicts
+  const itemVersionsRef = useRef<Map<string, { quantity: number, timestamp: number }>>(new Map())
+
+  // Update local item versions when items change
+  useEffect(() => {
+    currentItems.forEach(item => {
+      itemVersionsRef.current.set(item.supplierItemId, {
+        quantity: item.quantity,
+        timestamp: Date.now()
+      })
+    })
+  }, [currentItems])
+
+  // Detect conflicts between local and remote changes
+  const detectConflict = useCallback((
+    supplierItemId: string,
+    remoteItem: CartItem | null,
+    changeType: 'update' | 'delete' | 'insert'
+  ): CartConflict | null => {
+    // If we have pending mutations for this item, check for conflicts
+    if (!pendingMutations.has(supplierItemId)) {
+      return null
+    }
+
+    const localItem = currentItems.find(item => item.supplierItemId === supplierItemId)
+    const localVersion = itemVersionsRef.current.get(supplierItemId)
+
+    // Conflict: Item was updated on both devices
+    if (changeType === 'update' && localItem && remoteItem) {
+      if (localItem.quantity !== remoteItem.quantity) {
+        return {
+          type: 'quantity_change',
+          supplierItemId,
+          itemName: localItem.itemName,
+          localVersion: localItem,
+          remoteVersion: remoteItem,
+          timestamp: Date.now()
+        }
+      }
+    }
+
+    // Conflict: Item was removed remotely but modified locally
+    if (changeType === 'delete' && localItem && localVersion) {
+      return {
+        type: 'item_removed',
+        supplierItemId,
+        itemName: localItem.itemName,
+        localVersion: localItem,
+        remoteVersion: null,
+        timestamp: Date.now()
+      }
+    }
+
+    // Conflict: Item was added remotely while local changes pending
+    if (changeType === 'insert' && remoteItem && localItem) {
+      if (localItem.quantity !== remoteItem.quantity) {
+        return {
+          type: 'item_added',
+          supplierItemId,
+          itemName: remoteItem.itemName,
+          localVersion: localItem,
+          remoteVersion: remoteItem,
+          timestamp: Date.now()
+        }
+      }
+    }
+
+    return null
+  }, [currentItems, pendingMutations])
+
+  const handleConflictResolution = useCallback((
+    conflict: CartConflict,
+    resolution: 'keep_local' | 'keep_remote' | 'merge'
+  ) => {
+    // Remove this conflict
+    setConflicts(prev => prev.filter(c => c.supplierItemId !== conflict.supplierItemId))
+
+    // Apply resolution
+    if (resolution === 'keep_remote') {
+      // Invalidate to fetch fresh data from server
+      queryClient.invalidateQueries({ queryKey: ['cart', tenantId] })
+    } else if (resolution === 'keep_local') {
+      // Local version already in place, just clear the conflict
+      // The next sync will push local changes to server
+    }
+    // 'merge' could be implemented for more complex scenarios
+
+    toast({
+      description: 'Conflict resolved',
+      duration: 2000
+    })
+  }, [queryClient, tenantId, toast])
+
+  const dismissConflict = useCallback(() => {
+    setConflicts(prev => prev.slice(1))
+  }, [])
 
   useEffect(() => {
     // Only subscribe if enabled and we have tenant/user info
@@ -88,7 +196,70 @@ export function useCartRealtime({ enabled, tenantId, userId }: UseCartRealtimeOp
 
           console.log('Cart item changed:', payload)
           
-          // Invalidate cart query to trigger refetch
+          // Extract supplier_item_id from the payload
+          const newRecord = payload.new as any
+          const oldRecord = payload.old as any
+          const supplierItemId = (newRecord?.supplier_product_id || oldRecord?.supplier_product_id) as string
+
+          // Check for conflicts before applying changes
+          if (supplierItemId) {
+            let conflict: CartConflict | null = null
+
+            if (payload.eventType === 'UPDATE') {
+              // Build a CartItem from the new record for conflict detection
+              const remoteItem: CartItem | null = newRecord ? {
+                id: newRecord.id,
+                supplierId: '', // Not available in order_lines
+                supplierName: '',
+                itemName: 'Item',
+                sku: '',
+                packSize: newRecord.pack_size || '',
+                packPrice: newRecord.unit_price_per_pack,
+                unitPriceExVat: null,
+                unitPriceIncVat: null,
+                quantity: newRecord.quantity_packs,
+                vatRate: 0,
+                unit: '',
+                supplierItemId: supplierItemId,
+                displayName: 'Item',
+                packQty: 1,
+                image: null
+              } : null
+
+              conflict = detectConflict(supplierItemId, remoteItem, 'update')
+            } else if (payload.eventType === 'DELETE') {
+              conflict = detectConflict(supplierItemId, null, 'delete')
+            } else if (payload.eventType === 'INSERT') {
+              const remoteItem: CartItem | null = newRecord ? {
+                id: newRecord.id,
+                supplierId: '',
+                supplierName: '',
+                itemName: 'Item',
+                sku: '',
+                packSize: newRecord.pack_size || '',
+                packPrice: newRecord.unit_price_per_pack,
+                unitPriceExVat: null,
+                unitPriceIncVat: null,
+                quantity: newRecord.quantity_packs,
+                vatRate: 0,
+                unit: '',
+                supplierItemId: supplierItemId,
+                displayName: 'Item',
+                packQty: 1,
+                image: null
+              } : null
+
+              conflict = detectConflict(supplierItemId, remoteItem, 'insert')
+            }
+
+            if (conflict) {
+              // Add conflict to queue
+              setConflicts(prev => [...prev, conflict!])
+              return // Don't auto-apply changes when there's a conflict
+            }
+          }
+          
+          // No conflict, apply changes normally
           queryClient.invalidateQueries({ queryKey: ['cart', tenantId] })
           
           // Show toast for item changes
@@ -123,13 +294,16 @@ export function useCartRealtime({ enabled, tenantId, userId }: UseCartRealtimeOp
     // Cleanup subscription on unmount or when dependencies change
     return () => {
       if (channelRef.current) {
-        supabase.removeChannel(channelRef.current)
+      supabase.removeChannel(channelRef.current)
         channelRef.current = null
       }
     }
-  }, [enabled, tenantId, userId, queryClient, toast])
+  }, [enabled, tenantId, userId, queryClient, toast, detectConflict])
 
   return {
     isSubscribed: !!channelRef.current,
+    conflicts,
+    handleConflictResolution,
+    dismissConflict
   }
 }
