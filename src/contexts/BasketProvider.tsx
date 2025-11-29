@@ -779,7 +779,7 @@ export default function BasketProvider({ children }: { children: React.ReactNode
       setIsDrawerPinned,
       cartPulseSignal,
       cartMode: mode,
-      isHydrating: mode === 'hydrating' || !isInitialized || gracePeriod || profileLoading || (user && !profile) || (mode === 'authenticated' && isLoadingDBCart),
+      isHydrating: mode === 'hydrating' || !isInitialized || gracePeriod || profileLoading || (user && !profile) || (user && mode === 'anonymous') || (mode === 'authenticated' && isLoadingDBCart),
       isRealtimeSynced: isSubscribed
       }}>
         {children}
