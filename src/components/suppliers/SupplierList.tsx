@@ -23,6 +23,7 @@ import {
 import { Play, Upload, Plus, Building2 } from 'lucide-react'
 import { useSuppliers } from '@/hooks/useSuppliers'
 import type { Database } from '@/lib/types'
+import { SupplierCardSkeleton } from './SupplierCardSkeleton'
 
 type Supplier = Database['public']['Tables']['suppliers']['Row']
 type SupplierCredential = Database['public']['Tables']['supplier_credentials']['Row'] & {
@@ -36,6 +37,7 @@ interface SupplierListProps {
   onSelectSupplier: (supplierId: string) => void
   onRunConnector: (supplierId: string) => void
   onHarUpload?: (supplierId: string) => void
+  isLoading?: boolean
 }
 
 export function SupplierList({
@@ -44,7 +46,8 @@ export function SupplierList({
   selectedSupplier,
   onSelectSupplier,
   onRunConnector,
-  onHarUpload
+  onHarUpload,
+  isLoading
 }: SupplierListProps) {
   const { createSupplier } = useSuppliers()
   const [isDialogOpen, setIsDialogOpen] = useState(false)
@@ -150,17 +153,20 @@ export function SupplierList({
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
-          {suppliers && suppliers.length > 0 ? (
+          {isLoading ? (
+            Array.from({ length: 3 }).map((_, i) => (
+              <SupplierCardSkeleton key={i} />
+            ))
+          ) : suppliers && suppliers.length > 0 ? (
             suppliers.map((supplier) => {
               const status = getCredentialStatus(supplier.id)
               return (
                 <div
                   key={supplier.id}
-                  className={`p-3 border rounded-lg cursor-pointer transition-colors ${
-                    selectedSupplier === supplier.id
-                      ? 'border-primary bg-primary/5'
-                      : 'hover:bg-muted/50'
-                  }`}
+                  className={`p-3 border rounded-lg cursor-pointer transition-colors ${selectedSupplier === supplier.id
+                    ? 'border-primary bg-primary/5'
+                    : 'hover:bg-muted/50'
+                    }`}
                   onClick={() => onSelectSupplier(supplier.id)}
                 >
                   <div className="flex items-center justify-between">

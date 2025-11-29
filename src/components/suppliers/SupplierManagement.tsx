@@ -64,13 +64,14 @@ export function SupplierManagement() {
         </TabsList>
 
         <TabsContent value="suppliers" className="space-y-6">
-          <SupplierList 
+          <SupplierList
             suppliers={suppliers || []}
             credentials={credentials || []}
             selectedSupplier={selectedSupplier}
             onSelectSupplier={handleSelectSupplier}
             onRunConnector={handleRunConnector}
             onHarUpload={handleHarUpload}
+            isLoading={suppliersLoading}
           />
         </TabsContent>
 

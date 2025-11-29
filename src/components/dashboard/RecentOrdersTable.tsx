@@ -13,6 +13,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { useRecentOrders } from '@/hooks/useRecentOrders'
+import { RecentOrdersSkeleton } from './RecentOrdersSkeleton'
 
 export function RecentOrdersTable() {
   const { orders, isLoading } = useRecentOrders()
@@ -65,7 +66,7 @@ export function RecentOrdersTable() {
       </CardHeader>
       <CardContent>
         {isLoading ? (
-          <div className="p-4 text-sm text-muted-foreground text-center">Loading orders...</div>
+          <RecentOrdersSkeleton />
         ) : orders.length === 0 ? (
           <div className="p-4 text-sm text-muted-foreground text-center">No recent orders</div>
         ) : (

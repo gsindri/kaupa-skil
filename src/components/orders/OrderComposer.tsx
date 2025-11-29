@@ -17,6 +17,7 @@ import type { CartItem } from '@/lib/types'
 import { useSuppliers } from '@/hooks/useSuppliers'
 import { SendOrderButton } from '@/components/cart/SendOrderButton'
 import { SupplierOrderCard } from '@/components/orders/SupplierOrderCard'
+import { SupplierOrderCardSkeleton } from '@/components/orders/SupplierOrderCardSkeleton'
 import { OrderSummaryCard } from '@/components/orders/OrderSummaryCard'
 import {
   Dialog,
@@ -179,29 +180,7 @@ export function OrderComposer() {
           <CardContent className="space-y-6">
             {/* Loading skeleton for supplier card */}
             <div className="space-y-4">
-              <div className="flex items-center gap-3 p-4 bg-muted/30 rounded-lg">
-                <div className="h-12 w-12 rounded-lg bg-gradient-to-r from-muted via-muted/60 to-muted bg-[length:200%_100%] animate-shimmer" />
-                <div className="space-y-2 flex-1">
-                  <div className="h-5 w-40 rounded bg-gradient-to-r from-muted via-muted/60 to-muted bg-[length:200%_100%] animate-shimmer" />
-                  <div className="h-4 w-32 rounded bg-gradient-to-r from-muted via-muted/60 to-muted bg-[length:200%_100%] animate-shimmer" />
-                </div>
-                <div className="h-6 w-24 rounded-full bg-gradient-to-r from-muted via-muted/60 to-muted bg-[length:200%_100%] animate-shimmer" />
-              </div>
-              
-              {/* Loading skeleton for items */}
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="flex items-center gap-3 py-3 border-b border-border/50 last:border-0">
-                  <div className="h-14 w-14 rounded-md bg-gradient-to-r from-muted via-muted/60 to-muted bg-[length:200%_100%] animate-shimmer" style={{ animationDelay: `${i * 150}ms` }} />
-                  <div className="flex-1 space-y-2">
-                    <div className="h-4 w-56 rounded bg-gradient-to-r from-muted via-muted/60 to-muted bg-[length:200%_100%] animate-shimmer" style={{ animationDelay: `${i * 150}ms` }} />
-                    <div className="h-3 w-32 rounded bg-gradient-to-r from-muted via-muted/60 to-muted bg-[length:200%_100%] animate-shimmer" style={{ animationDelay: `${i * 150}ms` }} />
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="h-9 w-28 rounded-md bg-gradient-to-r from-muted via-muted/60 to-muted bg-[length:200%_100%] animate-shimmer" style={{ animationDelay: `${i * 150}ms` }} />
-                    <div className="h-5 w-20 rounded bg-gradient-to-r from-muted via-muted/60 to-muted bg-[length:200%_100%] animate-shimmer" style={{ animationDelay: `${i * 150}ms` }} />
-                  </div>
-                </div>
-              ))}
+              <SupplierOrderCardSkeleton />
             </div>
           </CardContent>
         </Card>

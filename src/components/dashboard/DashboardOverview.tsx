@@ -55,6 +55,7 @@ import {
 import { DASHBOARD_WIDGET_CATALOG, getWidgetDefinitionById } from './widgetCatalog'
 import { useLazyMount } from '@/hooks/useLazyMount'
 import { useDashboardTelemetry } from '@/hooks/useDashboardTelemetry'
+import { DashboardSkeleton } from './DashboardSkeleton'
 
 const SIZE_CLASS: Record<DashboardWidgetSize, string> = {
   S: 'md:col-span-4',
@@ -569,11 +570,7 @@ export default function DashboardOverview() {
       </div>
 
       {isLoading ? (
-        <div className="grid gap-6 md:grid-cols-2">
-          {Array.from({ length: 4 }).map((_, index) => (
-            <div key={index} className="min-h-[220px] rounded-2xl bg-muted/40" />
-          ))}
-        </div>
+        <DashboardSkeleton />
       ) : (
         <DndContext
           collisionDetection={closestCenter}
@@ -590,10 +587,10 @@ export default function DashboardOverview() {
                   definition={activeDefinition}
                   size={activeSize}
                   editMode={true}
-                  onSizeChange={() => {}}
-                  onHide={() => {}}
+                  onSizeChange={() => { }}
+                  onHide={() => { }}
                   dragHandleProps={{}}
-                  dragHandleRef={() => {}}
+                  dragHandleRef={() => { }}
                   isDragging
                 >
                   {(() => {
