@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
 import { ArrowRight, Info, Send, CheckCircle, Mail } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useDeliveryCalculation, useDeliveryOptimization } from '@/hooks/useDeliveryOptimization'
@@ -59,6 +60,7 @@ export function OrderComposer() {
     clearCart,
     getTotalPrice,
     getMissingPriceCount,
+    isHydrating,
   } = useCart()
   const { includeVat } = useSettings()
   const { isGmailAuthorized, isOutlookAuthorized, userEmail, isLoading: isAuthLoading, refresh: refreshAuth } = useEmailAuth()
@@ -165,6 +167,64 @@ export function OrderComposer() {
   }
 
 
+
+  // Show loading skeleton while cart is hydrating
+  if (isHydrating) {
+    return (
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
+        <Card className="shadow-lg border-none shadow-slate-200/50">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg font-bold text-slate-900">Send Orders</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Loading skeleton for supplier card */}
+            <div className="space-y-4 animate-pulse">
+              <div className="flex items-center gap-3">
+                <Skeleton className="h-12 w-12 rounded-lg" />
+                <div className="space-y-2 flex-1">
+                  <Skeleton className="h-5 w-32" />
+                  <Skeleton className="h-4 w-24" />
+                </div>
+                <Skeleton className="h-6 w-20" />
+              </div>
+              {/* Loading skeleton for items */}
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="flex items-center gap-3 py-2">
+                  <Skeleton className="h-10 w-10 rounded-md" />
+                  <div className="flex-1 space-y-1">
+                    <Skeleton className="h-4 w-48" />
+                    <Skeleton className="h-3 w-24" />
+                  </div>
+                  <Skeleton className="h-8 w-24" />
+                  <Skeleton className="h-4 w-16" />
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Sidebar skeleton */}
+        <div className="space-y-4 xl:sticky xl:top-6 xl:self-start">
+          <Card className="shadow-lg border-none shadow-slate-200/50">
+            <CardHeader>
+              <Skeleton className="h-5 w-32" />
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex justify-between">
+                <Skeleton className="h-4 w-20" />
+                <Skeleton className="h-4 w-8" />
+              </div>
+              <div className="flex justify-between">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-4 w-8" />
+              </div>
+              <Skeleton className="h-10 w-full rounded-md" />
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    )
+  }
 
   if (items.length === 0) {
     return (
