@@ -17,6 +17,7 @@ import {
   useUpdateProductQuantityDB
 } from '@/hooks/useCartMutations'
 import { useLoadCartFromDB } from '@/hooks/useLoadCartFromDB'
+import { useCartRecovery } from '@/hooks/useCartRecovery'
 
 const CART_STORAGE_KEY = 'procurewise-basket'
 const CART_PIN_STORAGE_KEY = 'procurewise-cart-pinned'
@@ -122,6 +123,13 @@ export default function BasketProvider({ children }: { children: React.ReactNode
   // State machine for cart mode
   const [mode, setMode] = useState<CartMode>('anonymous')
   const [items, setItems] = useState<CartItem[]>([])
+
+  // Cart recovery system
+  const { saveSnapshot, recoverFromSnapshot, clearSnapshot } = useCartRecovery(
+    items,
+    restoreItems,
+    mode
+  )
 
   // Master effect: State machine for cart mode transitions
   useEffect(() => {
@@ -487,10 +495,24 @@ export default function BasketProvider({ children }: { children: React.ReactNode
       if (mode === 'anonymous') {
         syncBasket(newItems)
       } else if (mode === 'authenticated') {
+        // Save snapshot before database operation
+        saveSnapshot('add_item')
+        
         // Persist to database
         const itemToAdd = newItems.find(i => i.supplierItemId === normalizedItem.supplierItemId)
         if (itemToAdd) {
-          addToCartDB.mutate({ item: itemToAdd })
+          addToCartDB.mutate(
+            { item: itemToAdd },
+            {
+              onSuccess: () => {
+                clearSnapshot()
+              },
+              onError: (error) => {
+                console.error('Failed to add item to cart:', error)
+                recoverFromSnapshot('Failed to add item')
+              }
+            }
+          )
         }
       }
       // If mode === 'hydrating', don't persist (wait for hydration to complete)
@@ -531,14 +553,28 @@ export default function BasketProvider({ children }: { children: React.ReactNode
       if (mode === 'anonymous') {
         syncBasket(newItems)
       } else if (mode === 'authenticated' && itemToUpdate) {
+        // Save snapshot before database operation
+        saveSnapshot('update_quantity')
+        
         // Persist to database using robust update (handles duplicates)
-        updateProductQuantityDB.mutate({
-          supplierItemId: itemToUpdate.supplierItemId,
-          supplierId: itemToUpdate.supplierId,
-          quantity: newQuantity,
-          packPrice: itemToUpdate.packPrice ?? null,
-          packSize: itemToUpdate.packSize
-        })
+        updateProductQuantityDB.mutate(
+          {
+            supplierItemId: itemToUpdate.supplierItemId,
+            supplierId: itemToUpdate.supplierId,
+            quantity: newQuantity,
+            packPrice: itemToUpdate.packPrice ?? null,
+            packSize: itemToUpdate.packSize
+          },
+          {
+            onSuccess: () => {
+              clearSnapshot()
+            },
+            onError: (error) => {
+              console.error('Failed to update quantity:', error)
+              recoverFromSnapshot('Failed to update quantity')
+            }
+          }
+        )
       }
 
       return newItems
@@ -562,12 +598,27 @@ export default function BasketProvider({ children }: { children: React.ReactNode
           supplierId: removed.supplierId,
           orderLineId: removed.orderLineId
         })
+        
+        // Save snapshot before database operation
+        saveSnapshot('remove_item')
+        
         // Persist to database using robust delete (removes all duplicates)
-        removeProductFromCartDB.mutate({
-          supplierItemId: removed.supplierItemId,
-          supplierId: removed.supplierId,
-          orderLineId: removed.orderLineId // Pass orderLineId for fallback deletion
-        })
+        removeProductFromCartDB.mutate(
+          {
+            supplierItemId: removed.supplierItemId,
+            supplierId: removed.supplierId,
+            orderLineId: removed.orderLineId // Pass orderLineId for fallback deletion
+          },
+          {
+            onSuccess: () => {
+              clearSnapshot()
+            },
+            onError: (error) => {
+              console.error('Failed to remove item:', error)
+              recoverFromSnapshot('Failed to remove item')
+            }
+          }
+        )
       }
 
       if (removed) {
@@ -592,7 +643,7 @@ export default function BasketProvider({ children }: { children: React.ReactNode
     // For authenticated mode, items will be cleared from DB when user explicitly deletes them
   }
 
-  const restoreItems = (items: CartItem[]) => {
+  function restoreItems(items: CartItem[]) {
     setItems(items)
     if (mode === 'anonymous') {
       syncBasket(items)
