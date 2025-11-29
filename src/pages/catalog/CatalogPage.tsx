@@ -17,6 +17,7 @@ import { useDebounce } from '@/hooks/useDebounce'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { CatalogTable } from '@/components/catalog/CatalogTable'
 import { CatalogGrid } from '@/components/catalog/CatalogGrid'
+import { ProductCardSkeleton } from '@/components/catalog/ProductCardSkeleton'
 import { InfiniteSentinel } from '@/components/common/InfiniteSentinel'
 import { FilterChip } from '@/components/ui/filter-chip'
 import {
@@ -1279,8 +1280,10 @@ export default function CatalogPage() {
 
             <div className="space-y-6 pb-8 pt-[var(--page-top-gap)]">
               {isInitialLoading ? (
-                <div className="flex h-64 items-center justify-center rounded-2xl border border-slate-200 bg-white/90 shadow-sm">
-                  <p className="text-sm font-medium text-slate-600">Loading catalog…</p>
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 lg:gap-6">
+                  {Array.from({ length: 8 }).map((_, i) => (
+                    <ProductCardSkeleton key={i} />
+                  ))}
                 </div>
               ) : !displayProducts.length ? (
                 <div className="rounded-2xl border border-dashed border-slate-300 bg-white/80 px-6 py-12 text-center shadow-sm">
