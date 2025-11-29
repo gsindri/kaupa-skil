@@ -18,6 +18,7 @@ import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { CatalogTable } from '@/components/catalog/CatalogTable'
 import { CatalogGrid } from '@/components/catalog/CatalogGrid'
 import { ProductCardSkeleton } from '@/components/catalog/ProductCardSkeleton'
+import { CatalogTableSkeleton } from '@/components/catalog/CatalogTableSkeleton'
 import { InfiniteSentinel } from '@/components/common/InfiniteSentinel'
 import { FilterChip } from '@/components/ui/filter-chip'
 import {
@@ -84,7 +85,7 @@ function deriveChipsFromFilters(
       label: 'In Stock',
       variant: 'boolean',
       onRemove: () => setInStock(false),
-      onEdit: () => {},
+      onEdit: () => { },
     })
   }
 
@@ -94,7 +95,7 @@ function deriveChipsFromFilters(
       label: 'On Special',
       variant: 'boolean',
       onRemove: () => setOnSpecial(false),
-      onEdit: () => {},
+      onEdit: () => { },
     })
   }
 
@@ -104,7 +105,7 @@ function deriveChipsFromFilters(
       label: 'My Suppliers',
       variant: 'boolean',
       onRemove: () => setMySuppliers(false),
-      onEdit: () => {},
+      onEdit: () => { },
     })
   }
 
@@ -653,7 +654,7 @@ export default function CatalogPage() {
     const suppliersExclude = searchParams.get('suppliers_exclude')
     const pack = searchParams.get('pack')
     const search = searchParams.get('search')
-    
+
     if (categories || categoriesExclude) {
       f.category = {
         include: categories ? categories.split(',').filter(Boolean) : [],
@@ -723,12 +724,12 @@ export default function CatalogPage() {
       }
       return false
     }
-    
+
     let changed = false
     changed = updateBoolParam('in_stock', inStock) || changed
     changed = updateBoolParam('my_suppliers', mySuppliers) || changed
     changed = updateBoolParam('special_only', onSpecial) || changed
-    
+
     if (changed) setSearchParams(params, { replace: true })
   }, [inStock, mySuppliers, onSpecial, searchParams, setSearchParams])
 
@@ -849,8 +850,8 @@ export default function CatalogPage() {
     const missing = products.filter(product => {
       const supplierIds = Array.isArray(product?.supplier_ids)
         ? (product.supplier_ids as unknown[]).filter(
-            (value): value is string => typeof value === 'string' && value.length > 0,
-          )
+          (value): value is string => typeof value === 'string' && value.length > 0,
+        )
         : []
       const supplierEntries: string[] = []
       const supplierProducts: string[] = []
@@ -862,7 +863,7 @@ export default function CatalogPage() {
     }).length
     return (missing / products.length) * 100
   }, [products])
-  
+
   const hideConnectPill = unconnectedPercentage > 70
 
   useEffect(() => {
@@ -884,7 +885,7 @@ export default function CatalogPage() {
     const brandTotal = (filters.brand?.include?.length || 0) + (filters.brand?.exclude?.length || 0)
     const categoryTotal = (filters.category?.include?.length || 0) + (filters.category?.exclude?.length || 0)
     const supplierTotal = (filters.supplier?.include?.length || 0) + (filters.supplier?.exclude?.length || 0)
-    
+
     if (brandTotal > 0) logFacetInteraction('brand', `${filters.brand?.include?.join(',') || ''}|${filters.brand?.exclude?.join(',') || ''}`)
     if (categoryTotal > 0) logFacetInteraction('category', `${filters.category?.include?.join(',') || ''}|${filters.category?.exclude?.join(',') || ''}`)
     if (supplierTotal > 0) logFacetInteraction('supplier', `${filters.supplier?.include?.join(',') || ''}|${filters.supplier?.exclude?.join(',') || ''}`)
@@ -997,16 +998,16 @@ export default function CatalogPage() {
   const supplierTotal = (filters.supplier?.include?.length || 0) + (filters.supplier?.exclude?.length || 0)
   const hasFacetFilters = Boolean(
     brandTotal > 0 ||
-      categoryTotal > 0 ||
-      supplierTotal > 0 ||
-      filters.packSizeRange ||
-      filters.priceRange ||
-      filters.pricePerUnitRange ||
-      (filters.dietary && filters.dietary.length > 0) ||
-      (filters.quality && filters.quality.length > 0) ||
-      filters.operational ||
-      (filters.lifecycle && filters.lifecycle.length > 0) ||
-      filters.dataQuality,
+    categoryTotal > 0 ||
+    supplierTotal > 0 ||
+    filters.packSizeRange ||
+    filters.priceRange ||
+    filters.pricePerUnitRange ||
+    (filters.dietary && filters.dietary.length > 0) ||
+    (filters.quality && filters.quality.length > 0) ||
+    filters.operational ||
+    (filters.lifecycle && filters.lifecycle.length > 0) ||
+    filters.dataQuality,
   )
   const hasSearchQuery = Boolean((filters.search ?? '').trim().length)
   const hasAnyFilters =
@@ -1120,14 +1121,14 @@ export default function CatalogPage() {
   // Focus trap when panel is open on desktop
   useEffect(() => {
     if (!showFilters) return
-    
+
     const filterPanel = document.getElementById('catalog-filters-panel')
     if (!filterPanel) return
 
     const focusableElements = filterPanel.querySelectorAll<HTMLElement>(
       'button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])'
     )
-    
+
     if (focusableElements.length === 0) return
 
     const firstElement = focusableElements[0]
@@ -1280,11 +1281,15 @@ export default function CatalogPage() {
 
             <div className="space-y-6 pb-8 pt-[var(--page-top-gap)]">
               {isInitialLoading ? (
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 lg:gap-6">
-                  {Array.from({ length: 8 }).map((_, i) => (
-                    <ProductCardSkeleton key={i} />
-                  ))}
-                </div>
+                view === 'grid' ? (
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 lg:gap-6">
+                    {Array.from({ length: 8 }).map((_, i) => (
+                      <ProductCardSkeleton key={i} />
+                    ))}
+                  </div>
+                ) : (
+                  <CatalogTableSkeleton />
+                )
               ) : !displayProducts.length ? (
                 <div className="rounded-2xl border border-dashed border-slate-300 bg-white/80 px-6 py-12 text-center shadow-sm">
                   <h2 className="text-lg font-semibold text-slate-900">No products found</h2>
@@ -1652,33 +1657,33 @@ function FiltersBar({
     return () => window.removeEventListener('keydown', handleShortcuts)
   }, [toggleFilters, setView, view, onLockChange])
 
-    return (
-      <section
-        style={{
-          ...COMPACT_TOOLBAR_TOKENS,
-          paddingInline: 0,
-          ['--align-cap' as any]: 'var(--page-max)',
-        } as React.CSSProperties}
-        className={cn(
-          'band band--toolbar after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-white/12 after:content-[""]',
-          scrolled && 'before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-white/16 before:opacity-70 before:content-[""]',
-        )}
-      >
-        <ContentRail includeRailPadding={false}>
-          <div>
-            {error && (
-              <div className="py-3">
-                <Alert
-                  variant="destructive"
-                  className="rounded-[var(--ctrl-r,12px)] bg-white/12 text-[color:var(--ink)] ring-1 ring-inset ring-white/15 shadow-[0_16px_36px_rgba(3,10,22,0.45)] backdrop-blur-xl"
-                >
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>{String(error)}</AlertDescription>
-                </Alert>
-              </div>
-            )}
+  return (
+    <section
+      style={{
+        ...COMPACT_TOOLBAR_TOKENS,
+        paddingInline: 0,
+        ['--align-cap' as any]: 'var(--page-max)',
+      } as React.CSSProperties}
+      className={cn(
+        'band band--toolbar after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-white/12 after:content-[""]',
+        scrolled && 'before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-white/16 before:opacity-70 before:content-[""]',
+      )}
+    >
+      <ContentRail includeRailPadding={false}>
+        <div>
+          {error && (
+            <div className="py-3">
+              <Alert
+                variant="destructive"
+                className="rounded-[var(--ctrl-r,12px)] bg-white/12 text-[color:var(--ink)] ring-1 ring-inset ring-white/15 shadow-[0_16px_36px_rgba(3,10,22,0.45)] backdrop-blur-xl"
+              >
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{String(error)}</AlertDescription>
+              </Alert>
+            </div>
+          )}
 
-            <div className="catalog-toolbar flex flex-col gap-3 py-3">
+          <div className="catalog-toolbar flex flex-col gap-3 py-3">
             <div className="catalog-toolbar-zones">
               <div className="toolbar-left">
                 {renderFiltersToggleButton('flex-none')}
@@ -1774,11 +1779,11 @@ function FiltersBar({
                 )}
               </div>
             )}
-            </div>
           </div>
-        </ContentRail>
-      </section>
-    )
+        </div>
+      </ContentRail>
+    </section>
+  )
 }
 
 const FOCUSABLE_SELECTOR =
@@ -1792,7 +1797,7 @@ function usePrefersReducedMotionLocal() {
   })
 
   useEffect(() => {
-    if (typeof window === 'undefined' || !('matchMedia' in window)) return () => {}
+    if (typeof window === 'undefined' || !('matchMedia' in window)) return () => { }
     const media = window.matchMedia('(prefers-reduced-motion: reduce)')
     const handler = (event: MediaQueryListEvent) => setPrefersReducedMotion(event.matches)
 
