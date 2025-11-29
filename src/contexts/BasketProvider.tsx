@@ -779,7 +779,33 @@ export default function BasketProvider({ children }: { children: React.ReactNode
       setIsDrawerPinned,
       cartPulseSignal,
       cartMode: mode,
-      isHydrating: mode === 'hydrating' || !isInitialized || gracePeriod || profileLoading || (user && !profile) || (user && mode === 'anonymous') || (mode === 'authenticated' && isLoadingDBCart) || (mode === 'authenticated' && items.length === 0 && dbCart && dbCart.length > 0),
+      isHydrating: (() => {
+        const result = mode === 'hydrating' 
+          || !isInitialized 
+          || gracePeriod 
+          || profileLoading 
+          || (user && !profile) 
+          || (user && mode === 'anonymous') 
+          || (mode === 'authenticated' && isLoadingDBCart)
+          || (mode === 'authenticated' && items.length === 0 && dbCart && dbCart.length > 0)
+          || (mode === 'authenticated' && isFetchingDBCart && items.length === 0)
+        
+        console.log('[CART DEBUG] isHydrating calculation:', {
+          result,
+          mode,
+          isInitialized,
+          gracePeriod,
+          profileLoading,
+          hasUser: !!user,
+          hasProfile: !!profile,
+          isLoadingDBCart,
+          isFetchingDBCart,
+          itemsLength: items.length,
+          dbCartLength: dbCart?.length ?? 0,
+        })
+        
+        return result
+      })(),
       isRealtimeSynced: isSubscribed
       }}>
         {children}
