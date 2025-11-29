@@ -158,15 +158,19 @@ export function SupplierList({
               <SupplierCardSkeleton key={i} />
             ))
           ) : suppliers && suppliers.length > 0 ? (
-            suppliers.map((supplier) => {
+            suppliers.map((supplier, index) => {
               const status = getCredentialStatus(supplier.id)
               return (
                 <div
                   key={supplier.id}
-                  className={`p-3 border rounded-lg cursor-pointer transition-colors ${selectedSupplier === supplier.id
-                    ? 'border-primary bg-primary/5'
-                    : 'hover:bg-muted/50'
+                  className={`p-3 border rounded-lg cursor-pointer transition-colors animate-card-reveal ${selectedSupplier === supplier.id
+                      ? 'border-primary bg-primary/5'
+                      : 'hover:bg-muted/50'
                     }`}
+                  style={{
+                    animationDelay: `${index * 100}ms`,
+                    animationFillMode: 'both'
+                  }}
                   onClick={() => onSelectSupplier(supplier.id)}
                 >
                   <div className="flex items-center justify-between">

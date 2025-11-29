@@ -82,8 +82,15 @@ export function RecentOrdersTable() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {orders.map((order) => (
-                <TableRow key={order.id}>
+              {orders.map((order, index) => (
+                <TableRow
+                  key={order.id}
+                  className="animate-card-reveal"
+                  style={{
+                    animationDelay: `${index * 100}ms`,
+                    animationFillMode: 'both'
+                  }}
+                >
                   <TableCell className="font-medium">{order.id}</TableCell>
                   <TableCell>{new Date(order.created_at).toLocaleDateString('is-IS')}</TableCell>
                   <TableCell>{order.supplier_count} supplier{order.supplier_count !== 1 ? 's' : ''}</TableCell>

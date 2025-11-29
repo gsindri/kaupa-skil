@@ -274,7 +274,7 @@ export function OrderComposer() {
               </Alert>
             )}
 
-            {supplierGroups.map(([supplierId, group]) => {
+            {supplierGroups.map(([supplierId, group], index) => {
               const supplierDelivery = deliveryCalculations?.find(calc => calc.supplier_id === supplierId)
               const supplierSubtotal = group.items.reduce((sum, item) => {
                 const price = includeVat ? item.unitPriceIncVat : item.unitPriceExVat
@@ -300,22 +300,30 @@ export function OrderComposer() {
               })
 
               return (
-                <SupplierOrderCard
+                <div
                   key={supplierId}
-                  supplierId={supplierId}
-                  supplierName={group.supplierName}
-                  supplierEmail={supplierEmail}
-                  logoUrl={supplierLogo}
-                  items={group.items}
-                  subtotal={supplierSubtotal}
-                  deliveryFee={supplierDeliveryCost}
-                  total={supplierTotal}
-                  minOrderValue={minOrderValue}
-                  amountToFreeDelivery={amountToFreeDelivery}
-                  onRemoveItem={removeItem}
-                  formatPrice={formatPrice}
-                  hasUnknownPrices={supplierHasUnknownPrices}
-                />
+                  className="animate-card-reveal"
+                  style={{
+                    animationDelay: `${index * 150}ms`,
+                    animationFillMode: 'both'
+                  }}
+                >
+                  <SupplierOrderCard
+                    supplierId={supplierId}
+                    supplierName={group.supplierName}
+                    supplierEmail={supplierEmail}
+                    logoUrl={supplierLogo}
+                    items={group.items}
+                    subtotal={supplierSubtotal}
+                    deliveryFee={supplierDeliveryCost}
+                    total={supplierTotal}
+                    minOrderValue={minOrderValue}
+                    amountToFreeDelivery={amountToFreeDelivery}
+                    onRemoveItem={removeItem}
+                    formatPrice={formatPrice}
+                    hasUnknownPrices={supplierHasUnknownPrices}
+                  />
+                </div>
               )
             })}
           </CardContent>

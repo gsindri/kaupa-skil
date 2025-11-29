@@ -157,6 +157,7 @@ function SortableWidget({
   editMode,
   onSizeChange,
   onHide,
+  index,
 }: {
   widgetId: string
   definition: DashboardWidgetDefinition
@@ -164,6 +165,7 @@ function SortableWidget({
   editMode: boolean
   onSizeChange: (size: DashboardWidgetSize) => void
   onHide: () => void
+  index: number
 }) {
   const {
     setNodeRef,
@@ -186,8 +188,13 @@ function SortableWidget({
   return (
     <div
       ref={combinedRef}
-      style={{ transform: CSS.Transform.toString(transform), transition }}
-      className={cn('col-span-12', SIZE_CLASS[size])}
+      style={{
+        transform: CSS.Transform.toString(transform),
+        transition,
+        animationDelay: `${index * 100}ms`,
+        animationFillMode: 'both'
+      }}
+      className={cn('col-span-12 animate-card-reveal', SIZE_CLASS[size])}
     >
       <WidgetCard
         definition={definition}
@@ -205,44 +212,6 @@ function SortableWidget({
           <div className="flex h-full items-center justify-center text-sm text-muted-foreground">Preparing…</div>
         )}
       </WidgetCard>
-    </div>
-  )
-}
-
-function SectionGrid({
-  section,
-  editMode,
-  onSizeChange,
-  onHide,
-  widgetSizes,
-}: {
-  section: DashboardSectionLayout
-  editMode: boolean
-  onSizeChange: (widgetId: string, size: DashboardWidgetSize) => void
-  onHide: (widgetId: string) => void
-  widgetSizes: Record<string, DashboardWidgetSize>
-}) {
-  const { setNodeRef } = useDroppable({ id: `section:${section.id}` })
-
-  return (
-    <div ref={setNodeRef} className="grid grid-cols-12 gap-6">
-      <SortableContext items={section.widgetIds} strategy={rectSortingStrategy}>
-        {section.widgetIds.map((widgetId) => {
-          const definition = getWidgetDefinitionById(widgetId)
-          if (!definition) return null
-          return (
-            <SortableWidget
-              key={widgetId}
-              widgetId={widgetId}
-              definition={definition}
-              size={widgetSizes[widgetId] ?? definition.defaultSize}
-              editMode={editMode}
-              onSizeChange={(size) => onSizeChange(widgetId, size)}
-              onHide={() => onHide(widgetId)}
-            />
-          )
-        })}
-      </SortableContext>
     </div>
   )
 }
