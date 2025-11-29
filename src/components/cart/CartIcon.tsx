@@ -9,12 +9,15 @@ export type CartIconProps = {
 } & Omit<React.HTMLAttributes<HTMLSpanElement>, 'title' | 'children'>
 
 export default function CartIcon({
-  count = 0,
+  count,
   title = 'Cart',
   className,
   ...rest
 }: CartIconProps) {
-  const display = count >= 100 ? '99+' : String(count)
+  // Hide badge when count is undefined (loading state)
+  const shouldShowBadge = count !== undefined
+  const safeCount = count ?? 0
+  const display = safeCount >= 100 ? '99+' : String(safeCount)
   const glyphLength = display.length
 
   const fontSize = React.useMemo(() => {
@@ -55,33 +58,35 @@ export default function CartIcon({
         <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
       </svg>
 
-      <span
-        className="cart-icon__badge pointer-events-none absolute right-1 top-1 flex items-center justify-center"
-        aria-hidden="true"
-      >
-        <svg className="cart-icon__badge-svg" width="28" height="28" viewBox="0 0 32 32">
-          <defs>
-            <linearGradient id={gradientId} x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="#FB923C" />
-              <stop offset="100%" stopColor="#F97316" />
-            </linearGradient>
-          </defs>
-          <circle cx="16" cy="16" r="12" fill={`url(#${gradientId})`} />
-          <text
-            x="16"
-            y="16"
-            textAnchor="middle"
-            dominantBaseline="middle"
-            fontFamily="Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Arial"
-            fontWeight={700}
-            fontSize={fontSize}
-            fill="#ffffff"
-            style={{ fontVariantNumeric: 'tabular-nums' }}
-          >
-            {display}
-          </text>
-        </svg>
-      </span>
+      {shouldShowBadge && (
+        <span
+          className="cart-icon__badge pointer-events-none absolute right-1 top-1 flex items-center justify-center"
+          aria-hidden="true"
+        >
+          <svg className="cart-icon__badge-svg" width="28" height="28" viewBox="0 0 32 32">
+            <defs>
+              <linearGradient id={gradientId} x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="#FB923C" />
+                <stop offset="100%" stopColor="#F97316" />
+              </linearGradient>
+            </defs>
+            <circle cx="16" cy="16" r="12" fill={`url(#${gradientId})`} />
+            <text
+              x="16"
+              y="16"
+              textAnchor="middle"
+              dominantBaseline="middle"
+              fontFamily="Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Arial"
+              fontWeight={700}
+              fontSize={fontSize}
+              fill="#ffffff"
+              style={{ fontVariantNumeric: 'tabular-nums' }}
+            >
+              {display}
+            </text>
+          </svg>
+        </span>
+      )}
     </span>
   )
 }

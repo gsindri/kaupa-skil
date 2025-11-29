@@ -31,7 +31,7 @@ export function CartButton({
   label,
   labelClassName
 }: CartButtonProps) {
-  const { items, isDrawerOpen, cartPulseSignal } = useCart()
+  const { items, isDrawerOpen, cartPulseSignal, isHydrating } = useCart()
   const { t } = useTranslation(undefined, { keyPrefix: 'cart.button' })
 
   const totalItems = React.useMemo(() => {
@@ -113,7 +113,7 @@ export function CartButton({
       {isToolbarVariant ? <span className={navTextButtonPillClass} aria-hidden="true" /> : null}
       <span className={iconWrapperClass}>
         <CartIcon
-          count={totalItems}
+          count={isHydrating ? undefined : totalItems}
           className={iconClassName}
           title={t('iconTitle', { label: displayLabel, count: totalItems })}
         />
