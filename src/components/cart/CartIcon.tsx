@@ -4,13 +4,11 @@ import { cn } from '@/lib/utils'
 
 export type CartIconProps = {
   count?: number
-  title?: string
   className?: string
-} & Omit<React.HTMLAttributes<HTMLSpanElement>, 'title' | 'children'>
+} & Omit<React.HTMLAttributes<HTMLSpanElement>, 'children'>
 
 export default function CartIcon({
   count,
-  title = 'Cart',
   className,
   ...rest
 }: CartIconProps) {
@@ -35,8 +33,7 @@ export default function CartIcon({
   return (
     <span
       role="img"
-      aria-label={title}
-      title={title}
+      aria-label="Cart"
       className={cn(
         'cart-icon relative inline-flex shrink-0 items-center justify-center',
         className
