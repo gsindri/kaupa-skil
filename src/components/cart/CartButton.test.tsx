@@ -49,6 +49,7 @@ function renderWithProviders(items: CartItem[]) {
     cartPulseSignal: 0,
     cartMode: 'anonymous',
     isHydrating: false,
+    isRealtimeSynced: false,
   }
 
   const settingsValue: SettingsContextType = {

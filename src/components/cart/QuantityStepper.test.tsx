@@ -27,6 +27,7 @@ function renderWithCart(
     cartPulseSignal: 0,
     cartMode: 'anonymous',
     isHydrating: false,
+    isRealtimeSynced: false,
   } satisfies React.ContextType<typeof BasketContext>;
 
   const value = { ...defaultValue, ...overrides };
