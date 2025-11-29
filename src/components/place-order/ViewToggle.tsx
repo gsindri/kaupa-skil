@@ -140,7 +140,6 @@ const SegButton = forwardRef<HTMLButtonElement, SegButtonProps>(function SegButt
     <button
       ref={ref}
       type="button"
-      title={title}
       aria-pressed={active}
       aria-label={ariaLabel}
       aria-keyshortcuts={shortcut}
