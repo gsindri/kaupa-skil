@@ -2,7 +2,7 @@ import * as React from "react";
 import { useState, useEffect } from "react";
 import { Eye, EyeOff, AlertCircle, CheckCircle2 } from "lucide-react";
 import { useAuth } from '@/contexts/useAuth';
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { EmailConfirmation } from "@/components/auth/EmailConfirmation";
@@ -101,10 +101,10 @@ function AuthForm() {
       const title = isLogin ? "Login failed" : "Signup failed";
       const detail =
         /Invalid login credentials/i.test(msg) ? "Invalid email or password."
-        : /User already registered/i.test(msg) ? "An account with this email already exists. Try logging in."
-        : /over_email_send_rate_limit/i.test(msg) ? "Too many emails sent. Please wait a few minutes."
-        : /invalid/i.test(msg) && /email/i.test(msg) ? "Please enter a valid email address."
-        : msg;
+          : /User already registered/i.test(msg) ? "An account with this email already exists. Try logging in."
+            : /over_email_send_rate_limit/i.test(msg) ? "Too many emails sent. Please wait a few minutes."
+              : /invalid/i.test(msg) && /email/i.test(msg) ? "Please enter a valid email address."
+                : msg;
       toast({ variant: "destructive", title, description: detail });
     } finally {
       setBusy(false);
@@ -246,56 +246,58 @@ function AuthForm() {
 function BrandHeader() {
   return (
     <header className="mb-5">
-      {/* h-[26→30] scales nicely; -ml-px aligns the arc with input borders */}
-      <svg
-        className="block h-[30px] md:h-[32px] lg:h-[34px] w-auto -ml-px"
-        viewBox="0 0 320 64"
-        role="img"
-        aria-label="Heilda"
-      >
-        <defs>
-          <linearGradient id="arcGrad" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0" stopColor="#C7793B" />
-            <stop offset="1" stopColor="#F6B044" />
-          </linearGradient>
-          <linearGradient id="textGrad" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0" stopColor="#5F7597" />
-            <stop offset="1" stopColor="#D18A3A" />
-          </linearGradient>
-        </defs>
-
-        {/* Arc tucked in */}
-        <path
-          d="M25,34 A16,16 0 0 1 41,20"
-          fill="none"
-          stroke="url(#arcGrad)"
-          strokeWidth="5"
-          strokeLinecap="round"
-        />
-
-        {/* Wordmark – light enough for full legibility */}
-        <text
-          x="46"
-          y="42"
-          fontWeight="500"
-          fontSize="30"
-          letterSpacing=".02em"
-          fill="url(#textGrad)"
-          stroke="#0B1220"
-          strokeWidth=".22"
-          strokeOpacity=".10"
-          style={{
-            paintOrder: "stroke fill",
-            strokeLinejoin: "round",
-            fontFamily: "var(--font-display)",
-          }}
+      <Link to="/" className="inline-block">
+        {/* h-[26→30] scales nicely; -ml-px aligns the arc with input borders */}
+        <svg
+          className="block h-[30px] md:h-[32px] lg:h-[34px] w-auto -ml-px"
+          viewBox="0 0 320 64"
+          role="img"
+          aria-label="Heilda"
         >
-          Heilda
-        </text>
+          <defs>
+            <linearGradient id="arcGrad" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0" stopColor="#C7793B" />
+              <stop offset="1" stopColor="#F6B044" />
+            </linearGradient>
+            <linearGradient id="textGrad" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0" stopColor="#5F7597" />
+              <stop offset="1" stopColor="#D18A3A" />
+            </linearGradient>
+          </defs>
 
-        <defs>
-        </defs>
-      </svg>
+          {/* Arc tucked in */}
+          <path
+            d="M25,34 A16,16 0 0 1 41,20"
+            fill="none"
+            stroke="url(#arcGrad)"
+            strokeWidth="5"
+            strokeLinecap="round"
+          />
+
+          {/* Wordmark – light enough for full legibility */}
+          <text
+            x="46"
+            y="42"
+            fontWeight="500"
+            fontSize="30"
+            letterSpacing=".02em"
+            fill="url(#textGrad)"
+            stroke="#0B1220"
+            strokeWidth=".22"
+            strokeOpacity=".10"
+            style={{
+              paintOrder: "stroke fill",
+              strokeLinejoin: "round",
+              fontFamily: "var(--font-display)",
+            }}
+          >
+            Heilda
+          </text>
+
+          <defs>
+          </defs>
+        </svg>
+      </Link>
     </header>
   );
 }

@@ -106,7 +106,7 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
         await signIn(emailTrimmed, password, remember);
         console.log('Log in completed successfully')
         toast({ title: "Welcome back", description: "Logged in successfully." });
-        
+
       } else {
         console.log('Starting sign up process...')
         await signUp(emailTrimmed, password, fullNameTrimmed);
@@ -211,7 +211,7 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
           </AlertDescription>
         </Alert>
         <div className="flex justify-between text-sm">
-          <Link to="/reset-password" className="text-blue-600 hover:underline">
+          <Link to="/forgot-password" className="text-blue-600 hover:underline">
             Forgot password?
           </Link>
           <Link to="/login" className="text-blue-600 hover:underline">

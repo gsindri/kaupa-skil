@@ -4,11 +4,11 @@ import { Navigate, Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { PublicNavigation } from '@/components/layout/PublicNavigation'
 import { CatalogGridWrapper } from '@/components/landing/CatalogGridWrapper'
+import { OrderingFlowDiagram } from '@/components/OrderingFlowDiagram'
 import FloatingLines from '@/components/effects/FloatingLines'
 
 import { cn } from '@/lib/utils'
 import { useHeaderScrollHide } from '@/components/layout/useHeaderScrollHide'
-import heroImage from '@/assets/frontpagepic.png'
 
 export default function LandingPage() {
   const { user, isInitialized, loading } = useAuth()
@@ -30,10 +30,10 @@ export default function LandingPage() {
       },
       { threshold: [0, 0.2, 0.4, 0.6, 0.8, 1.0] }
     )
-    
+
     const appViewport = document.getElementById('app-viewport')
     if (appViewport) observer.observe(appViewport)
-    
+
     return () => observer.disconnect()
   }, [])
 
@@ -58,18 +58,18 @@ export default function LandingPage() {
     <div className="landing-container min-h-screen bg-background">
       {/* Navigation - stable throughout scroll */}
       <PublicNavigation headerRef={headerRef} catalogVisible={appEntered} />
-      
+
       {/* Spacer to prevent content jump when header is fixed */}
-      <div 
-        style={{ 
+      <div
+        style={{
           height: 'var(--header-h, 56px)',
           transition: 'height 200ms ease-in-out'
-        }} 
+        }}
         aria-hidden="true"
       />
 
       {/* Hero Layer - pins at top and peels away */}
-      <div 
+      <div
         className="hero-layer sticky top-0 h-screen overflow-hidden"
         style={{
           zIndex: 1,
@@ -88,7 +88,7 @@ export default function LandingPage() {
 
           {/* Floating Lines Effect */}
           <div className="absolute inset-0">
-            <FloatingLines 
+            <FloatingLines
               enabledWaves={['top', 'middle', 'bottom']}
               lineCount={[8, 12, 15]}
               lineDistance={[6, 5, 4]}
@@ -134,24 +134,23 @@ export default function LandingPage() {
               {/* Left: Content */}
               <div className="text-left">
                 <h1 className="text-5xl md:text-6xl lg:text-7xl font-display font-extrabold text-foreground mb-6 leading-[1.08]">
-                  A <span className="relative inline-block">
-                    simpler
+                  Browse, and order — <br className="hidden md:block" />
+                  <span className="relative inline-block">
+                    all in one place
                     <span
                       className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-warning to-accent rounded-full animate-fade-in"
                       style={{ animationDelay: '120ms' }}
                     />
-                  </span> way to order from your suppliers.
+                  </span>
                 </h1>
-                <p className="text-base md:text-lg text-muted-foreground mb-10 max-w-[500px]">
-                  Browse, compare, and order — all in one shared catalog.
-                </p>
-                <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-5">
+
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-5 mb-12">
                   <Button
                     asChild
                     size="lg"
                     className="text-base relative group overflow-hidden transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/20"
                   >
-                    <a 
+                    <a
                       href="#app-viewport"
                       onClick={(e) => {
                         e.preventDefault()
@@ -170,20 +169,12 @@ export default function LandingPage() {
                     <Link to="/login">Log in</Link>
                   </Button>
                 </div>
-                <p className="text-xs text-muted-foreground/80 mt-6 tracking-wide">
-                  No account needed — just start browsing.
-                </p>
               </div>
 
-              {/* Right: Visual Element */}
+              {/* Right: Diagram */}
               <div className="relative hidden lg:flex items-center justify-center">
-                <div className="relative max-w-[520px] rounded-3xl overflow-hidden shadow-[0_40px_120px_rgba(15,23,42,0.12)] border border-primary/10">
-                  <img
-                    src={heroImage}
-                    alt="Professional chef managing inventory in a modern kitchen"
-                    className="w-full h-full object-cover brightness-[1.08] saturate-[0.94]"
-                  />
-                  <div className="absolute inset-0 pointer-events-none shadow-[inset_0_0_40px_rgba(15,23,42,0.08)]" />
+                <div className="w-full transform scale-75 origin-center">
+                  <OrderingFlowDiagram />
                 </div>
               </div>
             </div>
@@ -192,7 +183,7 @@ export default function LandingPage() {
       </div>
 
       {/* App Viewport - revealed from underneath with zoom/blur effect */}
-      <div 
+      <div
         id="app-viewport"
         className="app-viewport min-h-screen relative bg-background"
         style={{
@@ -202,9 +193,10 @@ export default function LandingPage() {
       >
         <main className="relative">
           <div className="mx-auto w-full max-w-screen-2xl px-5 md:px-6 lg:px-8">
+
             {/* Catalog Preview Section */}
-            <section 
-              id="catalog" 
+            <section
+              id="catalog"
               className="py-12 md:py-16 scroll-mt-[80px]"
             >
               <div className="mb-8">
@@ -215,7 +207,7 @@ export default function LandingPage() {
                   See what's available — no account needed.
                 </p>
               </div>
-              
+
               {/* Mount the actual catalog grid */}
               <CatalogGridWrapper />
             </section>

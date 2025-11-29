@@ -197,7 +197,9 @@ function TopBanner() {
       <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
         {/* Wordmark */}
         <div className="flex items-center">
-          <HeildaLogo className="h-6 -ml-px" variant="dark" />
+          <Link to="/">
+            <HeildaLogo className="h-6 -ml-px" variant="dark" />
+          </Link>
         </div>
 
         {/* Auth actions */}

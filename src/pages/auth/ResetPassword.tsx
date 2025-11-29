@@ -72,78 +72,81 @@ export default function ResetPassword() {
   return (
     <>
       <TopBanner />
-      <main className="min-h-screen bg-slate-50 pt-20">
-        <div className="mx-auto max-w-sm px-4">
-          <div className="w-full rounded-2xl bg-white p-6 shadow-xl ring-1 ring-black/5">
-            <header className="text-center">
-              <div className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-slate-50 ring-1 ring-slate-200">
-                <Lock className="h-7 w-7 text-slate-600" />
-              </div>
-              <h1 className="mt-3 text-lg font-semibold text-gray-900">Reset your password</h1>
-              <p className="mt-1 text-sm text-gray-600">Enter a new password for your account.</p>
-            </header>
-
-            {pageError ? (
-              <div className="mt-6 space-y-4">
-                <Alert variant="destructive">
-                  <AlertDescription className="text-sm">{pageError}</AlertDescription>
-                </Alert>
-                <button
-                  type="button"
-                  className="w-full rounded-full bg-blue-500 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-600"
-                  onClick={() => navigate("/forgot-password")}
-                >
-                  Send a new reset link
-                </button>
-              </div>
-            ) : (
-              <form className="mt-6 space-y-4" onSubmit={handleSubmit} noValidate>
-                <div>
-                  <label htmlFor="password" className="sr-only">
-                    New password
-                  </label>
-                  <input
-                    id="password"
-                    type="password"
-                    autoComplete="new-password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    className="w-full rounded-full border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:ring-4 focus:ring-blue-100"
-                    placeholder="New password"
-                  />
+      <main className="min-h-screen grid place-items-center bg-slate-50 pt-20">
+        <div className="w-full max-w-md mt-[-8rem] px-4">
+          <div className="rounded-2xl p-px bg-gradient-to-br from-brand-400 to-brand-600 shadow-lg">
+            <div className="rounded-2xl bg-white p-8">
+              <header className="text-center">
+                <div className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-slate-50 ring-1 ring-slate-200">
+                  <Lock className="h-7 w-7 text-slate-600" />
                 </div>
-                <div>
-                  <label htmlFor="confirm" className="sr-only">
-                    Confirm password
-                  </label>
-                  <input
-                    id="confirm"
-                    type="password"
-                    autoComplete="new-password"
-                    value={confirm}
-                    onChange={(e) => setConfirm(e.target.value)}
-                    required
-                    className="w-full rounded-full border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:ring-4 focus:ring-blue-100"
-                    placeholder="Confirm password"
-                  />
-                </div>
+                <h1 className="mt-6 text-lg font-semibold text-gray-900">Reset your password</h1>
+                <span className="mt-2 block h-[2px] w-8 rounded-full bg-gradient-to-r from-brand-400 to-brand-600 mx-auto" />
+                <p className="mt-4 text-sm text-gray-600">Enter a new password for your account.</p>
+              </header>
 
-                {formError && (
+              {pageError ? (
+                <div className="mt-6 space-y-4">
                   <Alert variant="destructive">
-                    <AlertDescription className="text-sm">{formError}</AlertDescription>
+                    <AlertDescription className="text-sm">{pageError}</AlertDescription>
                   </Alert>
-                )}
+                  <button
+                    type="button"
+                    className="w-full rounded-full bg-brand-500 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-600"
+                    onClick={() => navigate("/forgot-password")}
+                  >
+                    Send a new reset link
+                  </button>
+                </div>
+              ) : (
+                <form className="mt-6 space-y-4" onSubmit={handleSubmit} noValidate>
+                  <div>
+                    <label htmlFor="password" className="sr-only">
+                      New password
+                    </label>
+                    <input
+                      id="password"
+                      type="password"
+                      autoComplete="new-password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      className="w-full rounded-full border border-slate-300 bg-white px-4 py-3 text-sm outline-none transition-colors duration-120 ease-in-out focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+                      placeholder="New password"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="confirm" className="sr-only">
+                      Confirm password
+                    </label>
+                    <input
+                      id="confirm"
+                      type="password"
+                      autoComplete="new-password"
+                      value={confirm}
+                      onChange={(e) => setConfirm(e.target.value)}
+                      required
+                      className="w-full rounded-full border border-slate-300 bg-white px-4 py-3 text-sm outline-none transition-colors duration-120 ease-in-out focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+                      placeholder="Confirm password"
+                    />
+                  </div>
 
-                <button
-                  type="submit"
-                  disabled={busy}
-                  className="w-full rounded-full bg-blue-500 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-600 disabled:opacity-50"
-                >
-                  {busy ? "Updating…" : "Update password"}
-                </button>
-              </form>
-            )}
+                  {formError && (
+                    <Alert variant="destructive">
+                      <AlertDescription className="text-sm">{formError}</AlertDescription>
+                    </Alert>
+                  )}
+
+                  <button
+                    type="submit"
+                    disabled={busy}
+                    className="w-full rounded-full bg-brand-500 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-600 disabled:opacity-50"
+                  >
+                    {busy ? "Updating…" : "Update password"}
+                  </button>
+                </form>
+              )}
+            </div>
           </div>
         </div>
       </main>
@@ -156,7 +159,9 @@ function TopBanner() {
     <div className="fixed inset-x-0 top-0 z-10 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/70 border-b border-slate-200">
       <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
         <div className="flex items-center">
-          <HeildaLogo className="h-6 -ml-px" variant="dark" />
+          <Link to="/">
+            <HeildaLogo className="h-6 -ml-px" variant="dark" />
+          </Link>
         </div>
         <div className="flex items-center gap-3">
           <Link

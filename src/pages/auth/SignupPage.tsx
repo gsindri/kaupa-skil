@@ -13,7 +13,7 @@ export default function SignupPage() {
   }
 
   return (
-    <AuthCard title="Create your account" description="Get started with Heilda.">
+    <AuthCard title="Create your account" description="Get started with deilda.">
       <AuthForm mode="signup" />
     </AuthCard>
   );
