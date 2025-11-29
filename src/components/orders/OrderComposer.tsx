@@ -178,25 +178,28 @@ export function OrderComposer() {
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Loading skeleton for supplier card */}
-            <div className="space-y-4 animate-pulse">
-              <div className="flex items-center gap-3">
-                <Skeleton className="h-12 w-12 rounded-lg" />
+            <div className="space-y-4">
+              <div className="flex items-center gap-3 p-4 bg-muted/30 rounded-lg">
+                <div className="h-12 w-12 rounded-lg bg-gradient-to-r from-muted via-muted/60 to-muted bg-[length:200%_100%] animate-shimmer" />
                 <div className="space-y-2 flex-1">
-                  <Skeleton className="h-5 w-32" />
-                  <Skeleton className="h-4 w-24" />
+                  <div className="h-5 w-40 rounded bg-gradient-to-r from-muted via-muted/60 to-muted bg-[length:200%_100%] animate-shimmer" />
+                  <div className="h-4 w-32 rounded bg-gradient-to-r from-muted via-muted/60 to-muted bg-[length:200%_100%] animate-shimmer" />
                 </div>
-                <Skeleton className="h-6 w-20" />
+                <div className="h-6 w-24 rounded-full bg-gradient-to-r from-muted via-muted/60 to-muted bg-[length:200%_100%] animate-shimmer" />
               </div>
+              
               {/* Loading skeleton for items */}
               {[1, 2, 3].map((i) => (
-                <div key={i} className="flex items-center gap-3 py-2">
-                  <Skeleton className="h-10 w-10 rounded-md" />
-                  <div className="flex-1 space-y-1">
-                    <Skeleton className="h-4 w-48" />
-                    <Skeleton className="h-3 w-24" />
+                <div key={i} className="flex items-center gap-3 py-3 border-b border-border/50 last:border-0">
+                  <div className="h-14 w-14 rounded-md bg-gradient-to-r from-muted via-muted/60 to-muted bg-[length:200%_100%] animate-shimmer" style={{ animationDelay: `${i * 150}ms` }} />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-4 w-56 rounded bg-gradient-to-r from-muted via-muted/60 to-muted bg-[length:200%_100%] animate-shimmer" style={{ animationDelay: `${i * 150}ms` }} />
+                    <div className="h-3 w-32 rounded bg-gradient-to-r from-muted via-muted/60 to-muted bg-[length:200%_100%] animate-shimmer" style={{ animationDelay: `${i * 150}ms` }} />
                   </div>
-                  <Skeleton className="h-8 w-24" />
-                  <Skeleton className="h-4 w-16" />
+                  <div className="flex items-center gap-3">
+                    <div className="h-9 w-28 rounded-md bg-gradient-to-r from-muted via-muted/60 to-muted bg-[length:200%_100%] animate-shimmer" style={{ animationDelay: `${i * 150}ms` }} />
+                    <div className="h-5 w-20 rounded bg-gradient-to-r from-muted via-muted/60 to-muted bg-[length:200%_100%] animate-shimmer" style={{ animationDelay: `${i * 150}ms` }} />
+                  </div>
                 </div>
               ))}
             </div>
@@ -206,19 +209,25 @@ export function OrderComposer() {
         {/* Sidebar skeleton */}
         <div className="space-y-4 xl:sticky xl:top-6 xl:self-start">
           <Card className="shadow-lg border-none shadow-slate-200/50">
-            <CardHeader>
-              <Skeleton className="h-5 w-32" />
+            <CardHeader className="border-b border-border/50">
+              <div className="h-5 w-36 rounded bg-gradient-to-r from-muted via-muted/60 to-muted bg-[length:200%_100%] animate-shimmer" />
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex justify-between">
-                <Skeleton className="h-4 w-20" />
-                <Skeleton className="h-4 w-8" />
+            <CardContent className="space-y-5 pt-6">
+              <div className="flex justify-between items-center">
+                <div className="h-4 w-28 rounded bg-gradient-to-r from-muted via-muted/60 to-muted bg-[length:200%_100%] animate-shimmer" />
+                <div className="h-4 w-16 rounded bg-gradient-to-r from-muted via-muted/60 to-muted bg-[length:200%_100%] animate-shimmer" />
               </div>
-              <div className="flex justify-between">
-                <Skeleton className="h-4 w-24" />
-                <Skeleton className="h-4 w-8" />
+              <div className="flex justify-between items-center">
+                <div className="h-4 w-32 rounded bg-gradient-to-r from-muted via-muted/60 to-muted bg-[length:200%_100%] animate-shimmer" style={{ animationDelay: '100ms' }} />
+                <div className="h-4 w-14 rounded bg-gradient-to-r from-muted via-muted/60 to-muted bg-[length:200%_100%] animate-shimmer" style={{ animationDelay: '100ms' }} />
               </div>
-              <Skeleton className="h-10 w-full rounded-md" />
+              <div className="pt-4 border-t border-border/50">
+                <div className="flex justify-between items-center mb-4">
+                  <div className="h-5 w-20 rounded bg-gradient-to-r from-muted via-muted/60 to-muted bg-[length:200%_100%] animate-shimmer" style={{ animationDelay: '200ms' }} />
+                  <div className="h-6 w-24 rounded bg-gradient-to-r from-muted via-muted/60 to-muted bg-[length:200%_100%] animate-shimmer" style={{ animationDelay: '200ms' }} />
+                </div>
+                <div className="h-11 w-full rounded-md bg-gradient-to-r from-primary/20 via-primary/10 to-primary/20 bg-[length:200%_100%] animate-shimmer" style={{ animationDelay: '300ms' }} />
+              </div>
             </CardContent>
           </Card>
         </div>

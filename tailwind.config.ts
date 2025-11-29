@@ -273,6 +273,14 @@ export default {
 						opacity: '1',
 						transform: 'translateY(0) scale(1.0)'
 					}
+				},
+				'shimmer': {
+					'0%': {
+						backgroundPosition: '-200% 0'
+					},
+					'100%': {
+						backgroundPosition: '200% 0'
+					}
 				}
                         },
                         animation: {
@@ -288,6 +296,7 @@ export default {
 				'search-result-enter': 'search-result-enter 0.12s ease-out',
 				'chip-bounce': 'chip-bounce 0.25s ease-out',
 				'card-reveal': 'card-reveal 0.35s ease-out',
+				'shimmer': 'shimmer 2s infinite linear',
                         },
 			fontFeatureSettings: {
 				'tnum': '"tnum" 1',
