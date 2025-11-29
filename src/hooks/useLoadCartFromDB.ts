@@ -10,6 +10,9 @@ export function useLoadCartFromDB() {
   return useQuery({
     queryKey: [...queryKeys.orders.all(), 'cart', profile?.tenant_id],
     queryFn: async () => {
+      console.log('[CART DEBUG] Starting cart load from DB')
+      const loadStartTime = performance.now()
+      
       if (!profile?.tenant_id) {
         return []
       }
@@ -53,26 +56,43 @@ export function useLoadCartFromDB() {
       // 2. Collect IDs
       const supplierProductIds = [...new Set(allLines.map(l => l.supplier_product_id))]
 
-      // 3. Batch fetch Supplier Products
-      const { data: supplierProducts, error: spError } = await supabase
-        .from('supplier_product')
-        .select(`
-          id, 
-          supplier_id, 
-          supplier_sku, 
-          pack_size, 
-          catalog_product_id, 
-          image_url, 
-          catalog_product(name, brand)
-        `)
-        .in('id', supplierProductIds)
+      console.log('[CART DEBUG] Starting parallel queries for', supplierProductIds.length, 'products')
+      const queryStartTime = performance.now()
 
-      if (spError) throw spError
+      // 3. Fetch Supplier Products and Offers in parallel (both need supplierProductIds only)
+      const now = new Date().toISOString()
+      const [supplierProductsResult, offersResult] = await Promise.all([
+        supabase
+          .from('supplier_product')
+          .select(`
+            id, 
+            supplier_id, 
+            supplier_sku, 
+            pack_size, 
+            catalog_product_id, 
+            image_url, 
+            catalog_product(name, brand)
+          `)
+          .in('id', supplierProductIds),
+        supabase
+          .from('supplier_offer')
+          .select('id, supplier_product_id, pack_price, availability_status')
+          .in('supplier_product_id', supplierProductIds)
+          .lte('valid_from', now)
+          .or(`valid_to.is.null,valid_to.gt.${now}`)
+          .order('valid_from', { ascending: false })
+      ])
+
+      if (supplierProductsResult.error) throw supplierProductsResult.error
+      if (offersResult.error) throw offersResult.error
+
+      const supplierProducts = supplierProductsResult.data
+      const offers = offersResult.data
 
       const spMap = new Map(supplierProducts?.map(sp => [sp.id, sp]))
       const supplierIds = [...new Set(supplierProducts?.map(sp => sp.supplier_id))]
 
-      // 4. Batch fetch Suppliers
+      // 4. Fetch Suppliers (depends on supplier_ids from supplierProducts)
       const { data: suppliers, error: sError } = await supabase
         .from('suppliers')
         .select('id, name, logo_url, display_name')
@@ -81,18 +101,9 @@ export function useLoadCartFromDB() {
       if (sError) throw sError
 
       const supplierMap = new Map(suppliers?.map(s => [s.id, s]))
-
-      // 5. Batch fetch Active Offers
-      const now = new Date().toISOString()
-      const { data: offers, error: oError } = await supabase
-        .from('supplier_offer')
-        .select('id, supplier_product_id, pack_price, availability_status')
-        .in('supplier_product_id', supplierProductIds)
-        .lte('valid_from', now)
-        .or(`valid_to.is.null,valid_to.gt.${now}`)
-        .order('valid_from', { ascending: false })
-
-      if (oError) throw oError
+      
+      const queryEndTime = performance.now()
+      console.log('[CART DEBUG] Parallel queries completed in', (queryEndTime - queryStartTime).toFixed(2), 'ms')
 
       // Group offers by supplier_product_id to find the best one (first one due to sort)
       const offerMap = new Map()
@@ -102,7 +113,7 @@ export function useLoadCartFromDB() {
         }
       })
 
-      // 6. Construct CartItems
+      // 5. Construct CartItems
       const cartItems: CartItem[] = []
 
       for (const line of allLines) {
@@ -146,7 +157,13 @@ export function useLoadCartFromDB() {
         })
       }
 
-      console.log('Loaded cart items from DB (Batched):', cartItems)
+      const loadEndTime = performance.now()
+      console.log('[CART DEBUG] Cart load completed:', {
+        totalTime: (loadEndTime - loadStartTime).toFixed(2) + 'ms',
+        itemsLoaded: cartItems.length,
+        ordersCount: orders.length,
+      })
+      
       return cartItems
     },
     enabled: !!profile?.tenant_id,
