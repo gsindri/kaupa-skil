@@ -153,7 +153,14 @@ export function CartDrawer() {
         <div className="flex items-center gap-2">
           <span className="cart-rail__title-text">Cart</span>
           <span className="bg-slate-100 text-slate-500 text-[11px] font-medium px-2 py-0.5 rounded-full">
-            {totalItems} items
+            {isHydrating ? (
+              <span className="inline-flex items-center gap-1">
+                <Loader2 className="h-3 w-3 animate-spin" />
+                <span>Loading...</span>
+              </span>
+            ) : (
+              `${totalItems} items`
+            )}
           </span>
         </div>
         <button
