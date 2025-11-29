@@ -10,7 +10,7 @@ import { useCart } from '@/contexts/useBasket';
 import { useSettings } from '@/contexts/useSettings';
 
 export function EnhancedCartIntegration() {
-  const { items, getTotalItems, getTotalPrice, setIsDrawerOpen } = useCart();
+  const { items, getTotalItems, getTotalPrice, setIsDrawerOpen, isHydrating } = useCart();
   const { includeVat } = useSettings();
   const { data: deliveryCalculations = [] } = useDeliveryCalculation();
 
@@ -32,7 +32,7 @@ export function EnhancedCartIntegration() {
     calc => calc.is_under_threshold && calc.amount_to_free_delivery
   );
 
-  if (items.length === 0) {
+  if (items.length === 0 && !isHydrating) {
     return null;
   }
 
@@ -43,9 +43,13 @@ export function EnhancedCartIntegration() {
           <div className="flex items-center gap-2">
             <ShoppingCart className="h-5 w-5 text-brand-600" />
             <span>Cart Summary</span>
-            <Badge variant="secondary" className="bg-brand-100 text-brand-700">
-              {getTotalItems()} items
-            </Badge>
+            {isHydrating ? (
+              <div className="h-5 w-16 animate-pulse bg-brand-100 rounded" />
+            ) : (
+              <Badge variant="secondary" className="bg-brand-100 text-brand-700">
+                {getTotalItems()} items
+              </Badge>
+            )}
           </div>
           <Button
             variant="outline"
