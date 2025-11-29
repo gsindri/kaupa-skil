@@ -316,6 +316,60 @@ function WidgetCatalogDialog({ open, sectionId, onClose, onSelect, disabledIds }
   )
 }
 
+interface SectionGridProps {
+  section: DashboardSectionLayout & { widgetSizes: Record<string, DashboardWidgetSize> }
+  editMode: boolean
+  onSizeChange: (widgetId: string, size: DashboardWidgetSize) => void
+  onHide: (widgetId: string) => void
+  widgetSizes: Record<string, DashboardWidgetSize>
+}
+
+function SectionGrid({ section, editMode, onSizeChange, onHide, widgetSizes }: SectionGridProps) {
+  const { setNodeRef, isOver } = useDroppable({
+    id: `section:${section.id}`,
+    disabled: !editMode,
+  })
+
+  return (
+    <div
+      ref={setNodeRef}
+      className={cn(
+        'rounded-xl border-2 border-dashed transition-colors',
+        isOver && editMode ? 'border-primary bg-primary/5' : 'border-transparent',
+        section.widgetIds.length === 0 && editMode && 'min-h-[200px] border-muted-foreground/30 bg-muted/20'
+      )}
+    >
+      {section.widgetIds.length === 0 && editMode ? (
+        <div className="flex h-[200px] items-center justify-center text-sm text-muted-foreground">
+          Drop widgets here
+        </div>
+      ) : (
+        <SortableContext items={section.widgetIds} strategy={rectSortingStrategy}>
+          <div className="grid grid-cols-12 gap-4">
+            {section.widgetIds.map((widgetId, index) => {
+              const definition = getWidgetDefinitionById(widgetId)
+              if (!definition) return null
+              const size = widgetSizes[widgetId] ?? definition.defaultSize
+              return (
+                <SortableWidget
+                  key={widgetId}
+                  widgetId={widgetId}
+                  definition={definition}
+                  size={size}
+                  editMode={editMode}
+                  onSizeChange={(nextSize) => onSizeChange(widgetId, nextSize)}
+                  onHide={() => onHide(widgetId)}
+                  index={index}
+                />
+              )
+            })}
+          </div>
+        </SortableContext>
+      )}
+    </div>
+  )
+}
+
 function SavePresetDialog({
   open,
   onClose,
