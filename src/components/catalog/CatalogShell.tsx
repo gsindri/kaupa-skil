@@ -14,7 +14,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { FilterChip } from '@/components/ui/filter-chip'
 import { Sheet, SheetContent, SheetPortal } from '@/components/ui/sheet'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { useCatalogFilters, SortOrder } from '@/state/catalogFiltersStore'
 import { useDebounce } from '@/hooks/useDebounce'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
@@ -225,26 +224,22 @@ export function CatalogShell({ mode }: CatalogShellProps) {
               <div className="catalog-toolbar flex flex-col gap-3 py-3">
                 <div className="catalog-toolbar-zones">
                   <div className="toolbar-left">
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <button
-                          type="button"
-                          ref={filterButtonRef}
-                          onClick={() => setShowFilters(!showFilters)}
-                          aria-pressed={showFilters}
-                          className={cn(
-                            'inline-flex h-[var(--ctrl-h,40px)] items-center gap-3 rounded-[var(--ctrl-r,12px)] border border-transparent bg-[color:var(--chip-bg)] px-3 text-sm font-semibold text-[color:var(--ink-hi)] backdrop-blur-xl transition',
-                            showFilters && 'bg-[color:var(--seg-active-bg)] border-[color:var(--ring-hover)]'
-                          )}
-                        >
-                          <FunnelSimple size={24} weight="fill" />
-                          <span className="hidden sm:inline">
-                            {chips.length ? `Filters (${chips.length})` : 'Filters'}
-                          </span>
-                        </button>
-                      </TooltipTrigger>
-                      <TooltipContent>Filters</TooltipContent>
-                    </Tooltip>
+                    <button
+                      type="button"
+                      ref={filterButtonRef}
+                      onClick={() => setShowFilters(!showFilters)}
+                      aria-pressed={showFilters}
+                      aria-label="Filters"
+                      className={cn(
+                        'inline-flex h-[var(--ctrl-h,40px)] items-center gap-3 rounded-[var(--ctrl-r,12px)] border border-transparent bg-[color:var(--chip-bg)] px-3 text-sm font-semibold text-[color:var(--ink-hi)] backdrop-blur-xl transition',
+                        showFilters && 'bg-[color:var(--seg-active-bg)] border-[color:var(--ring-hover)]'
+                      )}
+                    >
+                      <FunnelSimple size={24} weight="fill" />
+                      <span className="hidden sm:inline">
+                        {chips.length ? `Filters (${chips.length})` : 'Filters'}
+                      </span>
+                    </button>
                   </div>
                   
                   <div className="toolbar-center flex min-w-[220px] items-center gap-3">

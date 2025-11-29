@@ -334,7 +334,6 @@ export function TopNavigation() {
                 <Link
                   to="/"
                   aria-label={t('navigation.logo.aria')}
-                  title={t('navigation.logo.aria')}
                   className="inline-flex shrink-0 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
                 >
                   <HeildaLogo className="h-8 w-auto shrink-0 drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)]" />
@@ -370,7 +369,6 @@ export function TopNavigation() {
                     }
                   }}
                   onClick={() => setSearchOpen(true)}
-                  title={t('navigation.search.title')}
                   className={cn(navTextButtonClass, '!px-0')}
                 >
                   <span className={navTextButtonPillClass} aria-hidden="true" />
@@ -429,7 +427,6 @@ export function TopNavigation() {
                       aria-busy={isBusy || undefined}
                       aria-label={accountMenuLabel}
                       aria-haspopup="menu"
-                      title={displayName || undefined}
                       onPointerDown={() => {
                         accountOpenedByKeyboardRef.current = false
                       }}

@@ -51,7 +51,6 @@ export function LanguageSwitcher({
             type="button"
             className={cn(navTextButtonClass, 'px-3', triggerClassName)}
             aria-haspopup="menu"
-            title={t('label')}
             aria-label={t('ariaLabel', {
               language: activeLanguage.label
             })}

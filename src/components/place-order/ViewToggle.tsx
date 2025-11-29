@@ -5,7 +5,6 @@ import {
   useRef,
 } from 'react'
 import type { KeyboardEvent, ReactNode } from 'react'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 
 type View = 'grid' | 'list'
@@ -172,10 +171,5 @@ const SegButton = forwardRef<HTMLButtonElement, SegButtonProps>(function SegButt
     </button>
   )
 
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>{content}</TooltipTrigger>
-      <TooltipContent sideOffset={8}>{title}</TooltipContent>
-    </Tooltip>
-  )
+  return content
 })
