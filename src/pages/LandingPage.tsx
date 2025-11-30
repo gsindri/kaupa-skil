@@ -208,6 +208,10 @@ export default function LandingPage() {
         className="app-viewport min-h-screen relative bg-background pl-[var(--layout-rail,72px)]"
         style={{
           zIndex: 2,
+          // Pull the container up behind the header so sticky children
+          // have room to stick at header-h position
+          marginTop: 'calc(-1 * var(--header-h, 56px))',
+          paddingTop: 'var(--header-h, 56px)',
         }}
       >
         <main className="relative">
