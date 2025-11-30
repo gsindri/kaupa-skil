@@ -45,7 +45,7 @@ function contentWidth(el: HTMLElement): number {
 /** Measure container width and keep it reactive. */
 function useContainerSize(ref: React.RefObject<HTMLElement>) {
   const [w, setW] = React.useState(0)
-  
+
   // Force initial measurement after layout to ensure CSS variables are resolved
   React.useLayoutEffect(() => {
     if (!ref.current) return
@@ -54,10 +54,10 @@ function useContainerSize(ref: React.RefObject<HTMLElement>) {
       const width = contentWidth(ref.current)
       setW(width)
     }
-    
+
     measure() // Immediate
     requestAnimationFrame(measure) // After paint
-    
+
     // Retry after a small delay if we got 0 padding (CSS vars not resolved yet)
     const timer = setTimeout(() => {
       if (ref.current) {
@@ -69,10 +69,10 @@ function useContainerSize(ref: React.RefObject<HTMLElement>) {
         }
       }
     }, 50)
-    
+
     return () => clearTimeout(timer)
   }, [ref])
-  
+
   React.useLayoutEffect(() => {
     if (!ref.current) return
     const ro = new ResizeObserver(() => {
@@ -81,7 +81,7 @@ function useContainerSize(ref: React.RefObject<HTMLElement>) {
     ro.observe(ref.current)
     return () => ro.disconnect()
   }, [ref])
-  
+
   return { width: w }
 }
 
@@ -332,7 +332,7 @@ export function VirtualizedGrid<T>({
     }
     previousLengthRef.current = items.length
   }, [items.length])
-  
+
   // Prefetch when near the end (observe the last virtual row)
   React.useEffect(() => {
     if (!onNearEnd) return
@@ -343,7 +343,7 @@ export function VirtualizedGrid<T>({
     const debounceMs = 500 // Minimum time between triggers
 
     if (now - lastTriggerRef.current < debounceMs) return
-    
+
     // For initial load, trigger onNearEnd if we have very few items and enough space (only once)
     const totalScreens = Math.ceil(
       rowCount / Math.max(1, Math.floor(window.innerHeight / rowStride)),
@@ -355,12 +355,12 @@ export function VirtualizedGrid<T>({
       onNearEnd()
       return
     }
-    
+
     // Mark initial as triggered if we have enough content
     if (totalScreens > 2) {
       hasTriggeredInitialRef.current = true
     }
-    
+
     const last = virtualRows[virtualRows.length - 1]
     if (!last) return
 

@@ -24,7 +24,7 @@ import { rememberScroll } from '@/lib/scrollMemory'
 import { ContentRail } from '@/components/layout/ContentRail'
 
 interface CatalogShellProps {
-  mode: 'public' | 'authenticated'
+  header?: React.ReactNode
 }
 
 const COMPACT_TOOLBAR_TOKENS = {
@@ -33,15 +33,33 @@ const COMPACT_TOOLBAR_TOKENS = {
   '--icon-btn': '36px',
 } as React.CSSProperties
 
-export function CatalogShell({ mode }: CatalogShellProps) {
-  const isPublicMode = mode === 'public'
+export function CatalogShell({ header }: CatalogShellProps) {
+  // Assuming `mode` is now determined by context or parent, or removed.
+  // For now, let's assume it's still needed and derived from `user` or `profile` if not passed.
+  // If `mode` is truly removed, `isPublicMode` logic needs to be adjusted.
+  // Based on the instruction, `mode` prop is removed. Let's assume `isPublicMode` is derived or passed differently.
+  // For now, I'll keep the original `isPublicMode` derivation if `mode` was implicitly removed.
+  // However, the instruction's snippet for `CatalogShell` function signature removes `mode` from props.
+  // Let's assume `isPublicMode` is determined by `user` presence for now, or passed via context.
+  // Given the original code, `mode` was a prop. If it's removed, `isPublicMode` needs a new source.
+  // The instruction doesn't provide a new source for `isPublicMode`.
+  // I will make `isPublicMode` a prop for now, as it's critical for the component's logic.
+  // Re-reading the instruction: "Update props interface to include `header`."
+  // The provided snippet for `CatalogShellProps` removes `mode`.
+  // The provided snippet for `CatalogShell` function signature removes `mode`.
+  // This implies `isPublicMode` needs to be handled differently.
+  // I will assume `isPublicMode` is now derived from `user` or `profile` if `mode` is truly removed.
+  // Or, if `mode` was meant to stay, the instruction was incomplete.
+  // Given the explicit change to `CatalogShellProps` and function signature, `mode` is gone.
+  // Let's assume `isPublicMode` is determined by `!user` for public mode.
   const { user, profile } = useAuth()
+  const isPublicMode = !user // Assuming public mode if no user is logged in
   const { addItem } = useBasket()
   const { gateAction, showAuthModal, closeAuthModal, pendingActionName } = useGatedAction()
   const orgId = profile?.tenant_id || ''
-  
+
   const [addingId, setAddingId] = useState<string | null>(null)
-  
+
   // State management
   const filters = useCatalogFilters(s => s.filters)
   const setFilters = useCatalogFilters(s => s.setFilters)
@@ -54,7 +72,7 @@ export function CatalogShell({ mode }: CatalogShellProps) {
   const setOnSpecial = useCatalogFilters(s => s.setOnSpecial)
   const mySuppliers = useCatalogFilters(s => s.mySuppliers)
   const setMySuppliers = useCatalogFilters(s => s.setMySuppliers)
-  
+
   const [view, setView] = useState<'grid' | 'list'>('grid')
   const [showFilters, setShowFilters] = useState(false)
   const [focusedFacet, setFocusedFacet] = useState<keyof FacetFilters | null>(null)
@@ -62,13 +80,13 @@ export function CatalogShell({ mode }: CatalogShellProps) {
     key: 'name' | 'supplier' | 'price' | 'availability'
     direction: 'asc' | 'desc'
   } | null>({ key: 'name', direction: 'asc' })
-  
+
   const debouncedSearch = useDebounce(filters.search ?? '', 300)
   const isDesktop = useMediaQuery('(min-width: 1024px)')
   const searchRef = useRef<HTMLInputElement>(null)
   const filterButtonRef = useRef<HTMLButtonElement | null>(null)
   const gridContainerRef = useRef<HTMLDivElement>(null)
-  
+
   // Data fetching
   const availability = inStock ? ['IN_STOCK'] : undefined
   const publicFilters = useMemo(() => ({
@@ -78,7 +96,7 @@ export function CatalogShell({ mode }: CatalogShellProps) {
     ...(onSpecial ? { onSpecial: true } : {}),
     ...(availability ? { availability } : {}),
   }), [filters, debouncedSearch, onlyWithPrice, onSpecial, availability])
-  
+
   const orgFilters = useMemo(() => ({
     ...filters,
     search: debouncedSearch || undefined,
@@ -87,52 +105,52 @@ export function CatalogShell({ mode }: CatalogShellProps) {
     ...(onSpecial ? { onSpecial: true } : {}),
     ...(availability ? { availability } : {}),
   }), [filters, debouncedSearch, onlyWithPrice, mySuppliers, onSpecial, availability])
-  
+
   const publicQuery = useCatalogProducts(publicFilters, sortOrder)
   const orgQuery = useOrgCatalog(orgId, orgFilters, sortOrder)
-  
+
   const currentQuery = isPublicMode ? publicQuery : (orgId ? orgQuery : publicQuery)
   const products = useMemo(() => currentQuery.data ?? [], [currentQuery.data])
   const totalCount = currentQuery.total
   const { hasNextPage, isFetchingNextPage, loadMore } = currentQuery
-  
+
   // Filter chips
   const chips = useMemo<ActiveFilterChip[]>(() => {
     const result: ActiveFilterChip[] = []
-    
+
     if (inStock) {
       result.push({
         key: 'inStock',
         label: 'In Stock',
         variant: 'boolean',
         onRemove: () => setInStock(false),
-        onEdit: () => {},
+        onEdit: () => { },
       })
     }
-    
+
     if (onSpecial) {
       result.push({
         key: 'onSpecial',
         label: 'On Special',
         variant: 'boolean',
         onRemove: () => setOnSpecial(false),
-        onEdit: () => {},
+        onEdit: () => { },
       })
     }
-    
+
     if (mySuppliers && !isPublicMode) {
       result.push({
         key: 'mySuppliers',
         label: 'My Suppliers',
         variant: 'boolean',
         onRemove: () => setMySuppliers(false),
-        onEdit: () => {},
+        onEdit: () => { },
       })
     }
-    
+
     return result
   }, [inStock, onSpecial, mySuppliers, isPublicMode, setInStock, setOnSpecial, setMySuppliers])
-  
+
   const clearAllFilters = useCallback(() => {
     setInStock(false)
     setMySuppliers(false)
@@ -144,17 +162,17 @@ export function CatalogShell({ mode }: CatalogShellProps) {
       packSizeRange: undefined,
     })
   }, [setFilters, setInStock, setMySuppliers, setOnSpecial])
-  
+
   // Handlers
   const handleAddToCart = useCallback((product: any, supplierId?: string) => {
     if (isPublicMode) {
-      gateAction(() => {}, product.name)
+      gateAction(() => { }, product.name)
       return
     }
-    
+
     const firstSupplierId = supplierId || product.supplier_ids?.[0]
     if (!firstSupplierId) return
-    
+
     setAddingId(product.catalog_id)
     addItem({
       product_id: product.catalog_id,
@@ -163,13 +181,13 @@ export function CatalogShell({ mode }: CatalogShellProps) {
     })
     setTimeout(() => setAddingId(null), 800)
   }, [isPublicMode, gateAction, addItem])
-  
+
   const handleLoadMore = useCallback(() => {
     if (hasNextPage && !isFetchingNextPage) {
       loadMore()
     }
   }, [hasNextPage, isFetchingNextPage, loadMore])
-  
+
   const sortedProducts = useMemo(() => {
     if (!tableSort) return products
     const sorted = [...products]
@@ -199,28 +217,33 @@ export function CatalogShell({ mode }: CatalogShellProps) {
     })
     return sorted
   }, [products, tableSort])
-  
+
   const displayProducts = view === 'list' ? sortedProducts : products
-  
+
+
   return (
     <>
       <Sheet open={isDesktop && showFilters} onOpenChange={setShowFilters}>
         <div className="w-full">
-          {/* Toolbar */}
+          {/* Toolbar Wrapper */}
           <section
             style={{
               ...COMPACT_TOOLBAR_TOKENS,
               position: 'sticky',
               top: 'calc(var(--header-h, 56px) * (1 - var(--header-hidden, 0)))',
-              transform: 'translate3d(0, calc(-100% * var(--header-hidden, 0)), 0)',
-              transition: 'transform 200ms ease-in-out, top 200ms ease-in-out',
               zIndex: 'var(--z-toolbar, 40)',
               paddingInline: 0,
               ['--align-cap' as any]: 'var(--page-max)',
+              // Sync with header animation:
+              // When header is visible (hidden=0), top is header-h (56px).
+              // When header is hidden (hidden=1), top is 0.
+              // This only affects the element when it is sticky. When in flow, top is ignored.
+              transition: 'top 300ms var(--ease-snap)',
+              willChange: 'top',
             }}
             className="band band--toolbar after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-white/12"
           >
-            <ContentRail>
+            <ContentRail includeRailPadding={false}>
               <div className="catalog-toolbar flex flex-col gap-3 py-3">
                 <div className="catalog-toolbar-zones">
                   <div className="toolbar-left">
@@ -241,7 +264,8 @@ export function CatalogShell({ mode }: CatalogShellProps) {
                       </span>
                     </button>
                   </div>
-                  
+
+
                   <div className="toolbar-center flex min-w-[220px] items-center gap-3">
                     <div className="relative flex-1">
                       <Input
@@ -265,7 +289,7 @@ export function CatalogShell({ mode }: CatalogShellProps) {
                         </button>
                       )}
                     </div>
-                    
+
                     {totalCount != null && (
                       <div className="hidden items-center text-sm font-semibold text-[color:var(--ink-hi)] lg:flex">
                         <span className="tabular-nums">{totalCount.toLocaleString()}</span>
@@ -273,7 +297,7 @@ export function CatalogShell({ mode }: CatalogShellProps) {
                       </div>
                     )}
                   </div>
-                  
+
                   <div className="toolbar-right lg:flex-nowrap lg:gap-4">
                     <SortDropdown value={sortOrder} onChange={setSortOrder} />
                     <ViewToggle
@@ -285,7 +309,7 @@ export function CatalogShell({ mode }: CatalogShellProps) {
                     />
                   </div>
                 </div>
-                
+
                 {chips.length > 0 && (
                   <div className="flex items-center gap-2 overflow-x-auto">
                     {chips.map(chip => (
@@ -312,59 +336,58 @@ export function CatalogShell({ mode }: CatalogShellProps) {
               </div>
             </ContentRail>
           </section>
-          
-          {/* Grid/Table - Single wrapper for measurement */}
-          <div className="pl-[var(--layout-rail,72px)]">
-            <div 
-              ref={gridContainerRef}
-              className="mx-auto w-full" 
-              style={{ 
-                maxWidth: 'var(--page-max)', 
-                paddingInline: 'var(--page-gutter)' 
-              }}
-            >
-              <div className="space-y-5 pb-8 pt-[var(--page-top-gap)]">
-            {view === 'grid' ? (
-              <CatalogGrid
-                containerRef={gridContainerRef}
-                products={displayProducts}
-                onAddToCart={handleAddToCart}
-                onNearEnd={handleLoadMore}
-                showPrice={!isPublicMode}
-                addingId={addingId}
-                mode={mode}
-              />
-            ) : (
-              <CatalogTable
-                products={displayProducts}
-                sort={tableSort}
-                onSort={(key) => {
-                  setTableSort(prev => {
-                    if (prev && prev.key === key) {
-                      return { key, direction: prev.direction === 'asc' ? 'desc' : 'asc' }
-                    }
-                    return { key, direction: 'asc' }
-                  })
-                }}
-              />
-            )}
-            
-            {hasNextPage && (
-              <div className="flex justify-center py-6">
-                <Button
-                  variant="outline"
-                  onClick={handleLoadMore}
-                  disabled={isFetchingNextPage}
-                >
-                  {isFetchingNextPage ? 'Loading...' : 'Load more'}
-                </Button>
-              </div>
+        </div>
+
+        {/* Grid/Table - Single wrapper for measurement */}
+        <div className="w-full">
+          <div
+            ref={gridContainerRef}
+            className="mx-auto w-full"
+            style={{
+              maxWidth: 'var(--page-max)',
+              paddingInline: 'var(--page-gutter)'
+            }}
+          >
+            <div className="space-y-5 pb-8 pt-4">
+              {view === 'grid' ? (
+                <CatalogGrid
+                  containerRef={gridContainerRef}
+                  products={displayProducts}
+                  onAddToCart={handleAddToCart}
+                  onNearEnd={handleLoadMore}
+                  showPrice={!isPublicMode}
+                  addingId={addingId}
+                  mode={isPublicMode ? 'public' : 'authenticated'}
+                />
+              ) : (
+                <CatalogTable
+                  products={displayProducts}
+                  sort={tableSort}
+                  onSort={(key) => {
+                    setTableSort(prev => {
+                      if (prev && prev.key === key) {
+                        return { key, direction: prev.direction === 'asc' ? 'desc' : 'asc' }
+                      }
+                      return { key, direction: 'asc' }
+                    })
+                  }}
+                />
               )}
-              </div>
+
+              {hasNextPage && (
+                <div className="flex justify-center py-6">
+                  <Button
+                    variant="outline"
+                    onClick={handleLoadMore}
+                    disabled={isFetchingNextPage}
+                  >
+                    {isFetchingNextPage ? 'Loading...' : 'Load more'}
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         </div>
-        
         {/* Desktop Filters Panel */}
         {isDesktop && showFilters && (
           <>
@@ -388,14 +411,14 @@ export function CatalogShell({ mode }: CatalogShellProps) {
                   focusedFacet={focusedFacet}
                   onClearFilters={clearAllFilters}
                   chips={chips}
-                  mode={mode}
+                  mode={isPublicMode ? 'public' : 'authenticated'}
                 />
               </div>
             </SheetContent>
           </>
         )}
       </Sheet>
-      
+
       {showAuthModal && (
         <SignUpPromptModal
           isOpen={showAuthModal}

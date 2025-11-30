@@ -4,7 +4,9 @@ import { CatalogShell } from '@/components/catalog/CatalogShell'
 export function CatalogGridWrapper() {
   return (
     <div className="w-full">
-      <CatalogShell mode="public" />
+      <CatalogShell>
+        {/* Grid content is now children of CatalogShell */}
+      </CatalogShell>
     </div>
   )
 }

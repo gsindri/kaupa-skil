@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { PublicNavigation } from '@/components/layout/PublicNavigation'
 import { CatalogGridWrapper } from '@/components/landing/CatalogGridWrapper'
 import { OrderingFlowDiagram } from '@/components/OrderingFlowDiagram'
+import { PrimaryNavRail } from '@/components/layout/PrimaryNavRail'
 import FloatingLines from '@/components/effects/FloatingLines'
 
 import { cn } from '@/lib/utils'
@@ -56,21 +57,24 @@ export default function LandingPage() {
 
   return (
     <div className="landing-container min-h-screen bg-background">
+      {/* Left rail - fixed position */}
+      <aside
+        data-rail
+        className="fixed top-0 left-0 h-screen"
+        style={{
+          width: 'var(--layout-rail,72px)',
+          zIndex: 'var(--z-rail, 60)'
+        }}
+      >
+        <PrimaryNavRail />
+      </aside>
+
       {/* Navigation - stable throughout scroll */}
       <PublicNavigation headerRef={headerRef} catalogVisible={appEntered} />
 
-      {/* Spacer to prevent content jump when header is fixed */}
-      <div
-        style={{
-          height: 'var(--header-h, 56px)',
-          transition: 'height 200ms ease-in-out'
-        }}
-        aria-hidden="true"
-      />
-
       {/* Hero Layer - pins at top and peels away */}
       <div
-        className="hero-layer sticky top-0 h-screen overflow-hidden"
+        className="hero-layer sticky top-0 h-screen overflow-hidden pl-[var(--layout-rail,72px)]"
         style={{
           zIndex: 1,
           willChange: 'clip-path, opacity'
@@ -128,54 +132,70 @@ export default function LandingPage() {
         </div>
 
         {/* Hero Content */}
-        <div className="relative h-full">
-          <div className="mx-auto w-full max-w-screen-2xl h-full flex items-center px-5 md:px-6 lg:px-8">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center w-full">
-              {/* Left: Content */}
-              <div className="text-left">
-                <h1 className="text-5xl md:text-6xl lg:text-7xl font-display font-extrabold text-foreground mb-6 leading-[1.08]">
-                  Browse, and order — <br className="hidden md:block" />
-                  <span className="relative inline-block">
-                    all in one place
-                    <span
-                      className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-warning to-accent rounded-full animate-fade-in"
-                      style={{ animationDelay: '120ms' }}
-                    />
+        <div className="relative z-10 h-full flex flex-col justify-center items-center text-center px-4 sm:px-6 lg:px-8">
+          <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-12 py-16">
+            {/* Left: Text and Buttons */}
+            <div className="flex-1 text-left">
+              <h1 className="text-5xl md:text-6xl font-display font-extrabold text-foreground leading-tight mb-6">
+                <span className="block">
+                  The easiest way to{' '}
+                  <span
+                    className="relative inline-block text-primary"
+                    style={{ animationDelay: '0ms' }}
+                  >
+                    order
                   </span>
-                </h1>
+                </span>
+                <span className="block">
+                  <span
+                    className="relative inline-block text-primary"
+                    style={{ animationDelay: '60ms' }}
+                  >
+                    wholesale
+                  </span>{' '}
+                  products
+                </span>
+                <span className="block">
+                  <span
+                    className="relative inline-block text-primary"
+                    style={{ animationDelay: '120ms' }}
+                  >
+                    online
+                  </span>
+                </span>
+              </h1>
 
-                <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-5 mb-12">
-                  <Button
-                    asChild
-                    size="lg"
-                    className="text-base relative group overflow-hidden transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/20"
+              <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-5 mb-12">
+                <Button
+                  asChild
+                  size="lg"
+                  className="text-base relative group overflow-hidden transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/20"
+                >
+                  <a
+                    href="#app-viewport"
+                    onClick={(e) => {
+                      e.preventDefault()
+                      document.getElementById('app-viewport')?.scrollIntoView({ behavior: 'smooth' })
+                    }}
                   >
-                    <a
-                      href="#app-viewport"
-                      onClick={(e) => {
-                        e.preventDefault()
-                        document.getElementById('app-viewport')?.scrollIntoView({ behavior: 'smooth' })
-                      }}
-                    >
-                      <span className="relative z-10">Explore catalog</span>
-                    </a>
-                  </Button>
-                  <Button
-                    asChild
-                    variant="outline"
-                    size="lg"
-                    className="text-base"
-                  >
-                    <Link to="/login">Log in</Link>
-                  </Button>
-                </div>
+                    <span className="relative z-10">Explore catalog</span>
+                  </a>
+                </Button>
+                <Button
+                  asChild
+                  variant="outline"
+                  size="lg"
+                  className="text-base"
+                >
+                  <Link to="/login">Log in</Link>
+                </Button>
               </div>
+            </div>
 
-              {/* Right: Diagram */}
-              <div className="relative hidden lg:flex items-center justify-center">
-                <div className="w-full transform scale-75 origin-center">
-                  <OrderingFlowDiagram />
-                </div>
+            {/* Right: Diagram */}
+            <div className="relative hidden lg:flex items-center justify-center">
+              <div className="w-full transform scale-75 origin-center">
+                <OrderingFlowDiagram />
               </div>
             </div>
           </div>
@@ -185,33 +205,28 @@ export default function LandingPage() {
       {/* App Viewport - revealed from underneath with zoom/blur effect */}
       <div
         id="app-viewport"
-        className="app-viewport min-h-screen relative bg-background"
+        className="app-viewport min-h-screen relative bg-background pl-[var(--layout-rail,72px)]"
         style={{
           zIndex: 2,
-          willChange: 'filter, transform'
         }}
       >
         <main className="relative">
-          <div className="mx-auto w-full max-w-screen-2xl px-5 md:px-6 lg:px-8">
+          {/* Catalog Preview Section - Full Width for Toolbar */}
+          <section
+            id="catalog"
+            className="pt-2 pb-4 md:pt-4 md:pb-6 scroll-mt-[80px]"
+          >
+            <div className="mx-auto w-full max-w-screen-xl px-5 md:px-6 lg:px-8 mb-2 relative z-50">
+              <h2 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-3">
+                Browse the catalog
+              </h2>
+            </div>
 
-            {/* Catalog Preview Section */}
-            <section
-              id="catalog"
-              className="py-12 md:py-16 scroll-mt-[80px]"
-            >
-              <div className="mb-8">
-                <h2 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-3">
-                  Browse the catalog
-                </h2>
-                <p className="text-base text-muted-foreground">
-                  See what's available — no account needed.
-                </p>
-              </div>
+            {/* Mount the actual catalog grid - Full Width */}
+            <CatalogGridWrapper />
+          </section>
 
-              {/* Mount the actual catalog grid */}
-              <CatalogGridWrapper />
-            </section>
-
+          <div className="mx-auto w-full max-w-screen-xl px-5 md:px-6 lg:px-8">
             {/* Benefits Section */}
             <section className="py-10 md:py-12 bg-muted/30 rounded-3xl mt-8">
               <div className="max-w-[1000px] mr-auto px-6">

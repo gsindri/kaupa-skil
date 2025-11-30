@@ -11,12 +11,11 @@
 /* App viewport zoom-in - defocuses and scales up as it's revealed */
 @keyframes app-zoom {
   from {
-    filter: blur(6px);
     transform: scale(0.96);
     pointer-events: none;
   }
+
   to {
-    filter: blur(0);
     transform: scale(1);
     pointer-events: auto;
   }
@@ -30,25 +29,25 @@
     animation-range: exit 0% exit 100%;
   }
 
-  .app-viewport {
-    animation: app-zoom linear both;
-    animation-timeline: view();
-    animation-range: entry 0% entry 100%;
-  }
+  /* 
+     Removed app-viewport animation to prevent transform from creating 
+     a containing block that breaks position: sticky for descendants.
+  */
 }
 
 /* Respect reduced motion preferences */
 @media (prefers-reduced-motion: reduce) {
+
   .hero-layer,
   .app-viewport {
     animation: none !important;
   }
-  
+
   .hero-layer {
     clip-path: none;
     opacity: 1;
   }
-  
+
   .app-viewport {
     filter: none;
     transform: none;

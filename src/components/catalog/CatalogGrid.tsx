@@ -27,36 +27,6 @@ export function CatalogGrid({
 }: CatalogGridProps) {
   const renderItem = React.useCallback(
     (p: any, index: number) => {
-      // Only animate first 12 cards with subtle reveal
-      if (index < 12) {
-        return (
-          <motion.div
-            key={p.catalog_id}
-            initial={{ opacity: 0, y: 16, scale: 0.985 }}
-            whileInView={{ 
-              opacity: 1, 
-              y: 0, 
-              scale: 1.0,
-              transition: { 
-                duration: 0.35, 
-                ease: 'easeOut',
-                delay: (index % 4) * 0.07 // Stagger within rows
-              }
-            }}
-            viewport={{ once: true, amount: 0.2 }}
-          >
-            <ProductCard
-              product={p}
-              onAdd={supplierId => onAddToCart(p, supplierId)}
-              showPrice={showPrice}
-              isAdding={addingId === p.catalog_id}
-              mode={mode}
-            />
-          </motion.div>
-        )
-      }
-      
-      // No animation for cards beyond first 12
       return (
         <ProductCard
           key={p.catalog_id}
