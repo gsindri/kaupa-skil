@@ -74,7 +74,7 @@ export default function LandingPage() {
 
       {/* Hero Layer - pins at top and peels away */}
       <div
-        className="hero-layer sticky top-0 h-screen overflow-hidden pl-[var(--layout-rail,72px)]"
+        className="hero-layer relative h-screen overflow-hidden pl-[var(--layout-rail,72px)]"
         style={{
           zIndex: 1,
           willChange: 'clip-path, opacity'
