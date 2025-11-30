@@ -74,7 +74,7 @@ export default function LandingPage() {
 
       {/* Hero Layer - pins at top and peels away */}
       <div
-        className="hero-layer relative h-screen overflow-hidden pl-[var(--layout-rail,72px)]"
+        className="hero-layer sticky top-0 h-screen overflow-hidden pl-[var(--layout-rail,72px)]"
         style={{
           zIndex: 1,
           willChange: 'clip-path, opacity'
@@ -208,10 +208,6 @@ export default function LandingPage() {
         className="app-viewport min-h-screen relative bg-background pl-[var(--layout-rail,72px)]"
         style={{
           zIndex: 2,
-          // Pull the container up behind the header so sticky children
-          // have room to stick at header-h position
-          marginTop: 'calc(-1 * var(--header-h, 56px))',
-          paddingTop: 'var(--header-h, 56px)',
         }}
       >
         <main className="relative">
