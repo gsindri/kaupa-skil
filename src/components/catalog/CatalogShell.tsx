@@ -230,14 +230,16 @@ export function CatalogShell({ header }: CatalogShellProps) {
             style={{
               ...COMPACT_TOOLBAR_TOKENS,
               position: 'sticky',
-              top: 'calc(var(--header-h, 56px) - (var(--header-h, 56px) * var(--header-hidden, 0)))',
+              top: 0,
               zIndex: 'var(--z-toolbar, 40)',
               paddingInline: 0,
               ['--align-cap' as any]: 'var(--page-max)',
-              // Sync with header animation:
-              // When header is visible (hidden=0), top is header-h (56px).
-              // When header is hidden (hidden=1), top is 0.
-              transition: 'top 300ms var(--ease-snap)',
+              // Use transform to animate position in sync with header
+              // When header is visible (hidden=0), translate down by 56px
+              // When header is hidden (hidden=1), translate by 0
+              transform: `translate3d(0, calc(var(--header-h, 56px) * (1 - var(--header-hidden, 0))), 0)`,
+              transition: 'transform 300ms var(--ease-snap)',
+              willChange: 'transform',
             }}
             className="band band--toolbar after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-white/12"
           >
