@@ -230,16 +230,14 @@ export function CatalogShell({ header }: CatalogShellProps) {
             style={{
               ...COMPACT_TOOLBAR_TOKENS,
               position: 'sticky',
-              top: 'calc(var(--header-h, 56px) * (1 - var(--header-hidden, 0)))',
+              top: 'calc(var(--header-h, 56px) - (var(--header-h, 56px) * var(--header-hidden, 0)))',
               zIndex: 'var(--z-toolbar, 40)',
               paddingInline: 0,
               ['--align-cap' as any]: 'var(--page-max)',
               // Sync with header animation:
               // When header is visible (hidden=0), top is header-h (56px).
               // When header is hidden (hidden=1), top is 0.
-              // This only affects the element when it is sticky. When in flow, top is ignored.
               transition: 'top 300ms var(--ease-snap)',
-              willChange: 'top',
             }}
             className="band band--toolbar after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-white/12"
           >
