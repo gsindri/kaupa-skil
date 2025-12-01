@@ -25,6 +25,7 @@ export default function LandingPage() {
     if (!pathRef.current) return
 
     // Calculate path length for the "comet" effect
+    // We use anime.setDashoffset to get the exact length from the browser
     const pathLength = anime.setDashoffset(pathRef.current)
     pathRef.current.setAttribute('stroke-dasharray', `100 ${pathLength}`)
 
@@ -270,11 +271,11 @@ export default function LandingPage() {
                   >
                     <rect
                       ref={pathRef}
-                      x="2"
-                      y="2"
-                      width="296"
-                      height="56"
-                      rx="28"
+                      x="3"
+                      y="3"
+                      width="294"
+                      height="54"
+                      rx="27"
                       fill="none"
                       stroke="#0D9488"
                       strokeWidth="5"
