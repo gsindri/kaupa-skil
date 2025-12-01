@@ -231,8 +231,8 @@ export function CatalogShell({ header }: CatalogShellProps) {
         setIsSticky(!entry.isIntersecting && entry.boundingClientRect.top <= 56)
       },
       {
-        // Offset by header height (0px now that we stick to top)
-        rootMargin: '0px 0px 0px 0px',
+        // Offset by header height (56px)
+        rootMargin: '-56px 0px 0px 0px',
         threshold: [0, 1],
       }
     )
@@ -256,17 +256,16 @@ export function CatalogShell({ header }: CatalogShellProps) {
           style={{
             ...COMPACT_TOOLBAR_TOKENS,
             position: 'sticky',
-            top: 0,
+            top: 'var(--header-h, 56px)',
             zIndex: 51,
             backgroundColor: 'var(--toolbar-bg)',
             paddingInline: 0,
             ['--align-cap' as any]: 'var(--page-max)',
             // Sync with header visibility:
-            // When header is visible (hidden=0): translate(0, 56px) -> Sits below header.
-            // When header is hidden (hidden=1): translate(0, -100%) -> Hides completely.
-            // Formula: 56px - (56px + 100%) * hidden
+            // When header is visible (hidden=0): transform 0 -> Sits at top (56px).
+            // When header is hidden (hidden=1): transform -(100% + 56px) -> Hides completely.
             transform: isSticky
-              ? 'translate3d(0, calc(var(--header-h, 56px) - (var(--header-h, 56px) + 100%) * var(--header-hidden, 0)), 0)'
+              ? 'translate3d(0, calc(-1 * (100% + var(--header-h, 56px)) * var(--header-hidden, 0)), 0)'
               : 'none',
             transition: 'transform 300ms var(--ease-snap)',
             willChange: 'transform',

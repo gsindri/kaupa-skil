@@ -249,7 +249,7 @@ export default function LandingPage() {
           // Pull the container up behind the header so sticky children
           // have room to stick at header-h position
           marginTop: 'calc(-1 * var(--header-h, 56px))',
-          paddingTop: 'var(--header-h, 56px)',
+          paddingTop: '0px',
         }}
       >
         <main className="relative">
