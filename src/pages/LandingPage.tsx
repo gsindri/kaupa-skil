@@ -255,7 +255,7 @@ export default function LandingPage() {
           {/* Catalog Preview Section - Full Width for Toolbar */}
           <section
             id="catalog"
-            className="pb-4 md:pb-6 scroll-mt-[80px]"
+            className="pt-2 pb-4 md:pt-4 md:pb-6 scroll-mt-[80px]"
           >
             <div className="mx-auto w-full max-w-screen-xl px-5 md:px-6 lg:px-8 mb-2 relative z-50">
 

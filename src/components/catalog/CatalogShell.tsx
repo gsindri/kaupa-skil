@@ -262,11 +262,10 @@ export function CatalogShell({ header }: CatalogShellProps) {
             paddingInline: 0,
             ['--align-cap' as any]: 'var(--page-max)',
             // Sync with header visibility:
-            // When header is visible (hidden=0): translate(0, 56px) -> Sits below header.
-            // When header is hidden (hidden=1): translate(0, -100%) -> Hides completely.
-            // Formula: 56px - (56px + 100%) * hidden
+            // When header is visible (hidden=0), push down by header height (56px) to sit below it.
+            // When header is hidden (hidden=1), push down by 0px (sit at top).
             transform: isSticky
-              ? 'translate3d(0, calc(var(--header-h, 56px) - (var(--header-h, 56px) + 100%) * var(--header-hidden, 0)), 0)'
+              ? 'translate3d(0, calc(var(--header-h, 56px) * (1 - var(--header-hidden, 0))), 0)'
               : 'none',
             transition: 'transform 300ms var(--ease-snap)',
             willChange: 'transform',
