@@ -126,13 +126,13 @@ export const OrderingFlowDiagram: React.FC = () => {
 
                                     {/* Moving Particle (The "Order" traveling) */}
                                     {isActive && (
-                                        <motion.circle r="4" fill={supplier.line} className="hidden md:block">
-                                            <motion.animateMotion
+                                        <circle r="4" fill={supplier.line} className="hidden md:block">
+                                            <animateMotion
                                                 dur="1s"
                                                 repeatCount="indefinite"
                                                 path={`M 280,${(index * 90) + 65} C 450,${(index * 90) + 65} 450,160 600,160`}
                                             />
-                                        </motion.circle>
+                                        </circle>
                                     )}
                                 </g>
                             );
