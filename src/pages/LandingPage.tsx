@@ -9,6 +9,8 @@ import { CatalogGridWrapper } from '@/components/landing/CatalogGridWrapper'
 import { OrderingFlowDiagram } from '@/components/OrderingFlowDiagram'
 import { PrimaryNavRail } from '@/components/layout/PrimaryNavRail'
 import FloatingLines from '@/components/effects/FloatingLines'
+import { AuroraBackground } from '@/components/effects/AuroraBackground'
+import { CatalogShell } from '@/components/catalog/CatalogShell'
 
 import { cn } from '@/lib/utils'
 import { useHeaderScrollHide } from '@/components/layout/useHeaderScrollHide'
@@ -130,6 +132,7 @@ export default function LandingPage() {
 
           {/* Floating Lines Effect */}
           <div className="absolute inset-0">
+            <AuroraBackground />
             <FloatingLines
               enabledWaves={['top', 'middle', 'bottom']}
               lineCount={[8, 12, 15]}
