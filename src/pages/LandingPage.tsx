@@ -1,4 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
+import anime from 'animejs'
+
 import { useAuth } from '@/contexts/useAuth'
 import { Navigate, Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
@@ -10,10 +12,45 @@ import FloatingLines from '@/components/effects/FloatingLines'
 
 import { cn } from '@/lib/utils'
 import { useHeaderScrollHide } from '@/components/layout/useHeaderScrollHide'
+import '@/styles/scroll-animations.css'
 
 export default function LandingPage() {
   const { user, isInitialized, loading } = useAuth()
   const [appEntered, setAppEntered] = useState(false)
+
+  const catalogHeadingRef = useRef<HTMLDivElement>(null)
+  const pathRef = useRef<SVGRectElement>(null)
+
+  useEffect(() => {
+    if (!pathRef.current) return
+
+    // Calculate path length for the "comet" effect
+    const pathLength = anime.setDashoffset(pathRef.current)
+    pathRef.current.setAttribute('stroke-dasharray', `100 ${pathLength}`)
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          anime({
+            targets: pathRef.current,
+            strokeDashoffset: [pathLength, -pathLength],
+            opacity: [0, 1],
+            easing: 'linear',
+            duration: 4000,
+            loop: true
+          })
+          observer.disconnect()
+        }
+      },
+      { threshold: 0.5 }
+    )
+
+    if (catalogHeadingRef.current) {
+      observer.observe(catalogHeadingRef.current)
+    }
+
+    return () => observer.disconnect()
+  }, [])
 
   // Allow auto-hide behavior everywhere on landing page
   const isPinned = useCallback(() => {
@@ -208,6 +245,10 @@ export default function LandingPage() {
         className="app-viewport min-h-screen relative bg-background pl-[var(--layout-rail,72px)]"
         style={{
           zIndex: 2,
+          // Pull the container up behind the header so sticky children
+          // have room to stick at header-h position
+          marginTop: 'calc(-1 * var(--header-h, 56px))',
+          paddingTop: 'var(--header-h, 56px)',
         }}
       >
         <main className="relative">
@@ -217,8 +258,30 @@ export default function LandingPage() {
             className="pt-2 pb-4 md:pt-4 md:pb-6 scroll-mt-[80px]"
           >
             <div className="mx-auto w-full max-w-screen-xl px-5 md:px-6 lg:px-8 mb-2 relative z-50">
-              <h2 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-3">
-                Browse the catalog
+
+
+              <h2 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-3 relative inline-block">
+                <div ref={catalogHeadingRef} className="orbit-container relative inline-block px-4 py-2">
+                  <span className="relative z-10">Browse the catalog</span>
+                  <svg
+                    className="orbit-svg absolute inset-0 w-full h-full pointer-events-none"
+                    viewBox="0 0 300 60"
+                    preserveAspectRatio="none"
+                  >
+                    <rect
+                      ref={pathRef}
+                      x="2"
+                      y="2"
+                      width="296"
+                      height="56"
+                      rx="28"
+                      fill="none"
+                      stroke="#0D9488"
+                      strokeWidth="5"
+                      className="orbit-path"
+                    />
+                  </svg>
+                </div>
               </h2>
             </div>
 
@@ -226,39 +289,7 @@ export default function LandingPage() {
             <CatalogGridWrapper />
           </section>
 
-          <div className="mx-auto w-full max-w-screen-xl px-5 md:px-6 lg:px-8">
-            {/* Benefits Section */}
-            <section className="py-10 md:py-12 bg-muted/30 rounded-3xl mt-8">
-              <div className="max-w-[1000px] mr-auto px-6">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                  <div className="flex items-start gap-3 p-4 rounded-2xl hover:bg-background/50 transition-all duration-200 hover:-translate-y-1 group">
-                    <div className="w-2 h-2 rounded-full bg-warning mt-2 flex-shrink-0 group-hover:scale-150 transition-transform" />
-                    <p className="text-base leading-7 text-foreground">
-                      Compare prices across wholesalers.
-                    </p>
-                  </div>
-                  <div className="flex items-start gap-3 p-4 rounded-2xl hover:bg-background/50 transition-all duration-200 hover:-translate-y-1 group">
-                    <div className="w-2 h-2 rounded-full bg-warning mt-2 flex-shrink-0 group-hover:scale-150 transition-transform" />
-                    <p className="text-base leading-7 text-foreground">
-                      See what's in stock before you order.
-                    </p>
-                  </div>
-                  <div className="flex items-start gap-3 p-4 rounded-2xl hover:bg-background/50 transition-all duration-200 hover:-translate-y-1 group">
-                    <div className="w-2 h-2 rounded-full bg-warning mt-2 flex-shrink-0 group-hover:scale-150 transition-transform" />
-                    <p className="text-base leading-7 text-foreground">
-                      No juggling multiple supplier sites.
-                    </p>
-                  </div>
-                  <div className="flex items-start gap-3 p-4 rounded-2xl hover:bg-background/50 transition-all duration-200 hover:-translate-y-1 group">
-                    <div className="w-2 h-2 rounded-full bg-warning mt-2 flex-shrink-0 group-hover:scale-150 transition-transform" />
-                    <p className="text-base leading-7 text-foreground">
-                      No spreadsheets — just ordering.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </section>
-          </div>
+
         </main>
 
         {/* Footer spacing */}

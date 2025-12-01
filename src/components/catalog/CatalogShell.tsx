@@ -221,122 +221,151 @@ export function CatalogShell({ header }: CatalogShellProps) {
   const displayProducts = view === 'list' ? sortedProducts : products
 
 
+  const [isSticky, setIsSticky] = useState(false)
+  const sentinelRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        // When sentinel crosses the sticky threshold (56px from top)
+        setIsSticky(!entry.isIntersecting && entry.boundingClientRect.top <= 56)
+      },
+      {
+        // Offset by header height (0px now that we stick to top)
+        rootMargin: '0px 0px 0px 0px',
+        threshold: [0, 1],
+      }
+    )
+
+    if (sentinelRef.current) {
+      observer.observe(sentinelRef.current)
+    }
+
+    return () => observer.disconnect()
+  }, [])
+
   return (
     <>
       <Sheet open={isDesktop && showFilters} onOpenChange={setShowFilters}>
-        <div className="w-full">
-          {/* Toolbar Wrapper */}
-          <section
-            style={{
-              ...COMPACT_TOOLBAR_TOKENS,
-              position: 'sticky',
-              top: 'calc(var(--header-h, 56px) * (1 - var(--header-hidden, 0)))',
-              zIndex: 'var(--z-toolbar, 40)',
-              paddingInline: 0,
-              ['--align-cap' as any]: 'var(--page-max)',
-              // Sync with header animation:
-              // When header is visible (hidden=0), top is header-h (56px).
-              // When header is hidden (hidden=1), top is 0.
-              // This only affects the element when it is sticky. When in flow, top is ignored.
-              transition: 'top 300ms var(--ease-snap)',
-              willChange: 'top',
-            }}
-            className="band band--toolbar after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-white/12"
-          >
-            <ContentRail includeRailPadding={false}>
-              <div className="catalog-toolbar flex flex-col gap-3 py-3">
-                <div className="catalog-toolbar-zones">
-                  <div className="toolbar-left">
-                    <button
-                      type="button"
-                      ref={filterButtonRef}
-                      onClick={() => setShowFilters(!showFilters)}
-                      aria-pressed={showFilters}
-                      aria-label="Filters"
-                      className={cn(
-                        'inline-flex h-[var(--ctrl-h,40px)] items-center gap-3 rounded-[var(--ctrl-r,12px)] border border-transparent bg-[color:var(--chip-bg)] px-3 text-sm font-semibold text-[color:var(--ink-hi)] backdrop-blur-xl transition',
-                        showFilters && 'bg-[color:var(--seg-active-bg)] border-[color:var(--ring-hover)]'
-                      )}
-                    >
-                      <FunnelSimple size={24} weight="fill" />
-                      <span className="hidden sm:inline">
-                        {chips.length ? `Filters (${chips.length})` : 'Filters'}
-                      </span>
-                    </button>
-                  </div>
+        {/* Sentinel for sticky detection - anchored to top of wrapper */}
+        <div ref={sentinelRef} className="absolute top-0 left-0 h-px w-full pointer-events-none opacity-0" />
 
-
-                  <div className="toolbar-center flex min-w-[220px] items-center gap-3">
-                    <div className="relative flex-1">
-                      <Input
-                        ref={searchRef}
-                        type="search"
-                        placeholder="Search products"
-                        value={filters.search ?? ''}
-                        onChange={(e) => setFilters({ search: e.target.value })}
-                        className="h-11 w-full rounded-[var(--ctrl-r,14px)] border-transparent bg-white pl-12 pr-12 text-base font-semibold shadow-[0_12px_38px_rgba(7,18,30,0.26)]"
-                      />
-                      <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">
-                        <MagnifyingGlass size={22} weight="fill" />
-                      </span>
-                      {filters.search && (
-                        <button
-                          type="button"
-                          onClick={() => setFilters({ search: '' })}
-                          className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-full p-2 text-slate-500 hover:bg-slate-200/70"
-                        >
-                          <XCircle size={20} weight="fill" />
-                        </button>
-                      )}
-                    </div>
-
-                    {totalCount != null && (
-                      <div className="hidden items-center text-sm font-semibold text-[color:var(--ink-hi)] lg:flex">
-                        <span className="tabular-nums">{totalCount.toLocaleString()}</span>
-                        <span className="ml-1 font-normal text-[color:var(--ink-lo)]">results</span>
-                      </div>
+        {/* Toolbar Wrapper */}
+        <section
+          data-sticky={isSticky}
+          style={{
+            ...COMPACT_TOOLBAR_TOKENS,
+            position: 'sticky',
+            top: 0,
+            zIndex: 51,
+            backgroundColor: 'var(--toolbar-bg)',
+            paddingInline: 0,
+            ['--align-cap' as any]: 'var(--page-max)',
+            // Sync with header visibility:
+            // When header is visible (hidden=0), push down by header height (56px) to sit below it.
+            // When header is hidden (hidden=1), push down by 0px (sit at top).
+            transform: isSticky
+              ? 'translate3d(0, calc(var(--header-h, 56px) * (1 - var(--header-hidden, 0))), 0)'
+              : 'none',
+            transition: 'transform 300ms var(--ease-snap)',
+            willChange: 'transform',
+          }}
+          className="band band--toolbar after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-white/12"
+        >
+          <ContentRail includeRailPadding={false}>
+            <div className="catalog-toolbar flex flex-col gap-3 py-3">
+              <div className="catalog-toolbar-zones">
+                <div className="toolbar-left">
+                  <button
+                    type="button"
+                    ref={filterButtonRef}
+                    onClick={() => setShowFilters(!showFilters)}
+                    aria-pressed={showFilters}
+                    aria-label="Filters"
+                    className={cn(
+                      'inline-flex h-[var(--ctrl-h,40px)] items-center gap-3 rounded-[var(--ctrl-r,12px)] border border-transparent bg-[color:var(--chip-bg)] px-3 text-sm font-semibold text-[color:var(--ink-hi)] backdrop-blur-xl transition',
+                      showFilters && 'bg-[color:var(--seg-active-bg)] border-[color:var(--ring-hover)]'
                     )}
-                  </div>
-
-                  <div className="toolbar-right lg:flex-nowrap lg:gap-4">
-                    <SortDropdown value={sortOrder} onChange={setSortOrder} />
-                    <ViewToggle
-                      value={view}
-                      onChange={(v) => {
-                        rememberScroll(`catalog:${view}`)
-                        setView(v)
-                      }}
-                    />
-                  </div>
+                  >
+                    <FunnelSimple size={24} weight="fill" />
+                    <span className="hidden sm:inline">
+                      {chips.length ? `Filters (${chips.length})` : 'Filters'}
+                    </span>
+                  </button>
                 </div>
 
-                {chips.length > 0 && (
-                  <div className="flex items-center gap-2 overflow-x-auto">
-                    {chips.map(chip => (
-                      <FilterChip
-                        key={chip.key}
-                        variant={chip.variant}
-                        onRemove={chip.onRemove}
-                        className="flex-none"
-                      >
-                        {chip.label}
-                      </FilterChip>
-                    ))}
-                    {chips.length > 0 && (
+
+                <div className="toolbar-center flex min-w-[220px] items-center gap-3">
+                  <div className="relative flex-1">
+                    <Input
+                      ref={searchRef}
+                      type="search"
+                      placeholder="Search products"
+                      value={filters.search ?? ''}
+                      onChange={(e) => setFilters({ search: e.target.value })}
+                      className="h-11 w-full rounded-[var(--ctrl-r,14px)] border-transparent bg-white pl-12 pr-12 text-base font-semibold shadow-[0_12px_38px_rgba(7,18,30,0.26)]"
+                    />
+                    <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">
+                      <MagnifyingGlass size={22} weight="fill" />
+                    </span>
+                    {filters.search && (
                       <button
                         type="button"
-                        onClick={clearAllFilters}
-                        className="flex-none text-sm font-medium text-destructive/80 hover:text-destructive"
+                        onClick={() => setFilters({ search: '' })}
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-full p-2 text-slate-500 hover:bg-slate-200/70"
                       >
-                        Clear all
+                        <XCircle size={20} weight="fill" />
                       </button>
                     )}
                   </div>
-                )}
+
+                  {totalCount != null && (
+                    <div className="hidden items-center text-sm font-semibold text-[color:var(--ink-hi)] lg:flex">
+                      <span className="tabular-nums">{totalCount.toLocaleString()}</span>
+                      <span className="ml-1 font-normal text-[color:var(--ink-lo)]">results</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="toolbar-right lg:flex-nowrap lg:gap-4">
+                  <SortDropdown value={sortOrder} onChange={setSortOrder} />
+                  <ViewToggle
+                    value={view}
+                    onChange={(v) => {
+                      rememberScroll(`catalog:${view}`)
+                      setView(v)
+                    }}
+                  />
+                </div>
               </div>
-            </ContentRail>
-          </section>
-        </div>
+
+              {chips.length > 0 && (
+                <div className="flex items-center gap-2 overflow-x-auto">
+                  {chips.map(chip => (
+                    <FilterChip
+                      key={chip.key}
+                      variant={chip.variant}
+                      onRemove={chip.onRemove}
+                      className="flex-none"
+                    >
+                      {chip.label}
+                    </FilterChip>
+                  ))}
+                  {chips.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={clearAllFilters}
+                      className="flex-none text-sm font-medium text-destructive/80 hover:text-destructive"
+                    >
+                      Clear all
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          </ContentRail>
+        </section>
+
 
         {/* Grid/Table - Single wrapper for measurement */}
         <div className="w-full">
@@ -417,7 +446,7 @@ export function CatalogShell({ header }: CatalogShellProps) {
             </SheetContent>
           </>
         )}
-      </Sheet>
+      </Sheet >
 
       {showAuthModal && (
         <SignUpPromptModal
@@ -425,7 +454,8 @@ export function CatalogShell({ header }: CatalogShellProps) {
           onClose={closeAuthModal}
           productName={pendingActionName}
         />
-      )}
+      )
+      }
     </>
   )
 }
