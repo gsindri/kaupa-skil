@@ -54,10 +54,3 @@
     pointer-events: auto;
   }
 }
-
-/* Orbiting Trail Animation */
-.orbit-path {
-  stroke-dasharray: 100 1000;
-  /* Dash length 100, Gap 1000 (large gap for comet effect) */
-  opacity: 0;
-}

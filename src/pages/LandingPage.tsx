@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react'
-import anime from 'animejs'
+import React, { useState, useCallback } from 'react'
+
 
 import { useAuth } from '@/contexts/useAuth'
 import { Navigate, Link } from 'react-router-dom'
@@ -10,50 +10,14 @@ import { OrderingFlowDiagram } from '@/components/OrderingFlowDiagram'
 import { PrimaryNavRail } from '@/components/layout/PrimaryNavRail'
 import FloatingLines from '@/components/effects/FloatingLines'
 import { AuroraBackground } from '@/components/effects/AuroraBackground'
-import { CatalogShell } from '@/components/catalog/CatalogShell'
+import { CometButton } from '@/components/CometButton'
 
-import { cn } from '@/lib/utils'
 import { useHeaderScrollHide } from '@/components/layout/useHeaderScrollHide'
 import '@/styles/scroll-animations.css'
 
 export default function LandingPage() {
   const { user, isInitialized, loading } = useAuth()
   const [appEntered, setAppEntered] = useState(false)
-
-  const catalogHeadingRef = useRef<HTMLDivElement>(null)
-  const pathRef = useRef<SVGRectElement>(null)
-
-  useEffect(() => {
-    if (!pathRef.current) return
-
-    // Calculate path length for the "comet" effect
-    // We use anime.setDashoffset to get the exact length from the browser
-    const pathLength = anime.setDashoffset(pathRef.current)
-    pathRef.current.setAttribute('stroke-dasharray', `100 ${pathLength}`)
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          anime({
-            targets: pathRef.current,
-            strokeDashoffset: [pathLength, -pathLength],
-            opacity: [0, 1],
-            easing: 'linear',
-            duration: 4000,
-            loop: true
-          })
-          observer.disconnect()
-        }
-      },
-      { threshold: 0.5 }
-    )
-
-    if (catalogHeadingRef.current) {
-      observer.observe(catalogHeadingRef.current)
-    }
-
-    return () => observer.disconnect()
-  }, [])
 
   // Allow auto-hide behavior everywhere on landing page
   const isPinned = useCallback(() => {
@@ -64,19 +28,7 @@ export default function LandingPage() {
   const { ref: headerRef } = useHeaderScrollHide({ isPinned })
 
   // Detect when app viewport threshold is reached (~80%)
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        setAppEntered(entry.intersectionRatio > 0.8)
-      },
-      { threshold: [0, 0.2, 0.4, 0.6, 0.8, 1.0] }
-    )
-
-    const appViewport = document.getElementById('app-viewport')
-    if (appViewport) observer.observe(appViewport)
-
-    return () => observer.disconnect()
-  }, [])
+  // Note: We removed the useEffect for ResizeObserver as the new CometButton handles its own animation
 
   // Show loading state while checking authentication
   if (loading || !isInitialized) {
@@ -207,21 +159,14 @@ export default function LandingPage() {
               </h1>
 
               <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-5 mb-12">
-                <Button
-                  asChild
-                  size="lg"
-                  className="text-base relative group overflow-hidden transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/20"
+                <CometButton
+                  onClick={(e) => {
+                    e.preventDefault()
+                    document.getElementById('app-viewport')?.scrollIntoView({ behavior: 'smooth' })
+                  }}
                 >
-                  <a
-                    href="#app-viewport"
-                    onClick={(e) => {
-                      e.preventDefault()
-                      document.getElementById('app-viewport')?.scrollIntoView({ behavior: 'smooth' })
-                    }}
-                  >
-                    <span className="relative z-10">Explore catalog</span>
-                  </a>
-                </Button>
+                  Browse the catalog
+                </CometButton>
                 <Button
                   asChild
                   variant="outline"
@@ -265,27 +210,7 @@ export default function LandingPage() {
 
 
               <h2 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-3 relative inline-block">
-                <div ref={catalogHeadingRef} className="orbit-container relative inline-block px-4 py-2">
-                  <span className="relative z-10">Browse the catalog</span>
-                  <svg
-                    className="orbit-svg absolute inset-0 w-full h-full pointer-events-none"
-                    viewBox="0 0 300 60"
-                    preserveAspectRatio="none"
-                  >
-                    <rect
-                      ref={pathRef}
-                      x="3"
-                      y="3"
-                      width="294"
-                      height="54"
-                      rx="27"
-                      fill="none"
-                      stroke="#0D9488"
-                      strokeWidth="5"
-                      className="orbit-path"
-                    />
-                  </svg>
-                </div>
+                Browse the catalog
               </h2>
             </div>
 
