@@ -595,7 +595,7 @@ export default function CatalogPage() {
   const [bannerDismissed, setBannerDismissed] = useState(false)
   const headerRef = useRef<HTMLDivElement>(null)
   const filterButtonRef = useRef<HTMLButtonElement | null>(null)
-  const gridContainerRef = useRef<HTMLDivElement | null>(null)
+
   const focusFilterToggleButton = useCallback(() => {
     filterButtonRef.current?.focus()
   }, [filterButtonRef])
@@ -1324,7 +1324,7 @@ export default function CatalogPage() {
                 <div className="space-y-6">
                   {view === 'grid' ? (
                     <CatalogGrid
-                      containerRef={gridContainerRef}
+
                       products={displayProducts}
                       onAddToCart={handleAdd}
                       onNearEnd={handleLoadMore}
