@@ -296,6 +296,14 @@ export default {
 				'pulse-slow': {
 					'0%, 100%': { opacity: '1' },
 					'50%': { opacity: '0.8' }
+				},
+				'star-movement-bottom': {
+					'0%': { transform: 'translate(0%, 0%)', opacity: '1' },
+					'100%': { transform: 'translate(-100%, 0%)', opacity: '0' },
+				},
+				'star-movement-top': {
+					'0%': { transform: 'translate(0%, 0%)', opacity: '1' },
+					'100%': { transform: 'translate(100%, 0%)', opacity: '0' },
 				}
 			},
 			animation: {
@@ -315,6 +323,8 @@ export default {
 				'blob': 'blob 7s infinite',
 				'float': 'float 6s ease-in-out infinite',
 				'pulse-slow': 'pulse-slow 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+				'star-movement-bottom': 'star-movement-bottom 4s linear infinite alternate',
+				'star-movement-top': 'star-movement-top 4s linear infinite alternate',
 			},
 			fontFeatureSettings: {
 				'tnum': '"tnum" 1',

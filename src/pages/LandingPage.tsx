@@ -1,6 +1,5 @@
 import React, { useState, useCallback } from 'react'
 
-
 import { useAuth } from '@/contexts/useAuth'
 import { Navigate, Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
@@ -10,9 +9,9 @@ import { OrderingFlowDiagram } from '@/components/OrderingFlowDiagram'
 import { PrimaryNavRail } from '@/components/layout/PrimaryNavRail'
 import FloatingLines from '@/components/effects/FloatingLines'
 import { AuroraBackground } from '@/components/effects/AuroraBackground'
-import { CometButton } from '@/components/CometButton'
-
 import { useHeaderScrollHide } from '@/components/layout/useHeaderScrollHide'
+import StarBorder from '@/components/ui/StarBorder'
+import AnimatedContent from '@/components/ui/AnimatedContent'
 import '@/styles/scroll-animations.css'
 
 export default function LandingPage() {
@@ -104,18 +103,7 @@ export default function LandingPage() {
           </div>
 
           {/* Grid overlay with radial fade */}
-          <div
-            className="absolute inset-0"
-            style={{
-              backgroundImage: `
-                linear-gradient(to right, rgba(0, 0, 0, 0.03) 1px, transparent 1px),
-                linear-gradient(to bottom, rgba(0, 0, 0, 0.03) 1px, transparent 1px)
-              `,
-              backgroundSize: '72px 72px',
-              maskImage: 'radial-gradient(ellipse 80% 70% at 50% 50%, black 40%, transparent 100%)',
-              WebkitMaskImage: 'radial-gradient(ellipse 80% 70% at 50% 50%, black 40%, transparent 100%)'
-            }}
-          />
+
           <div
             className="absolute inset-x-0 bottom-0 h-1/3"
             style={{
@@ -130,43 +118,43 @@ export default function LandingPage() {
             {/* Left: Text and Buttons */}
             <div className="flex-1 text-left">
               <h1 className="text-5xl md:text-6xl font-display font-extrabold text-foreground leading-tight mb-6">
-                <span className="block">
-                  The easiest way to{' '}
-                  <span
-                    className="relative inline-block text-primary"
-                    style={{ animationDelay: '0ms' }}
-                  >
-                    order
-                  </span>
-                </span>
-                <span className="block">
-                  <span
-                    className="relative inline-block text-primary"
-                    style={{ animationDelay: '60ms' }}
-                  >
-                    wholesale
-                  </span>{' '}
-                  products
-                </span>
-                <span className="block">
-                  <span
-                    className="relative inline-block text-primary"
-                    style={{ animationDelay: '120ms' }}
-                  >
-                    online
-                  </span>
-                </span>
+                Deilda
               </h1>
+              <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-lg">
+                The fastest path from scattered wholesalers to one simple order.
+              </p>
 
               <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-5 mb-12">
-                <CometButton
-                  onClick={(e) => {
-                    e.preventDefault()
-                    document.getElementById('app-viewport')?.scrollIntoView({ behavior: 'smooth' })
-                  }}
+                <AnimatedContent
+                  distance={150}
+                  direction="horizontal"
+                  reverse={false}
+                  duration={1.2}
+                  ease="bounce.out"
+                  initialOpacity={0.2}
+                  animateOpacity
+                  scale={1.1}
+                  threshold={0.2}
+                  delay={0.3}
                 >
-                  Browse the catalog
-                </CometButton>
+                  <Button
+                    asChild
+                    size="lg"
+                    className="relative h-14 px-8 rounded-xl bg-gradient-to-b from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white shadow-[0_4px_6px_-1px_rgba(0,0,0,0.2),0_2px_4px_-1px_rgba(0,0,0,0.1),inset_0_1px_0_rgba(255,255,255,0.2)] hover:shadow-[0_6px_8px_-1px_rgba(0,0,0,0.3),0_4px_6px_-1px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.2)] transition-all duration-200 transform hover:-translate-y-0.5 border-t border-blue-400"
+                  >
+                    <a
+                      href="#app-viewport"
+                      onClick={(e) => {
+                        e.preventDefault()
+                        document.getElementById('app-viewport')?.scrollIntoView({ behavior: 'smooth' })
+                      }}
+                    >
+                      <span className="font-sans font-medium text-lg tracking-wide">
+                        Browse the catalog
+                      </span>
+                    </a>
+                  </Button>
+                </AnimatedContent>
                 <Button
                   asChild
                   variant="outline"
@@ -204,14 +192,19 @@ export default function LandingPage() {
           {/* Catalog Preview Section - Full Width for Toolbar */}
           <section
             id="catalog"
-            className="pt-2 pb-4 md:pt-4 md:pb-6 scroll-mt-[80px]"
+            className="pt-0 pb-4 md:pt-2 md:pb-6 scroll-mt-[80px]"
           >
-            <div className="mx-auto w-full max-w-screen-xl px-5 md:px-6 lg:px-8 mb-2 relative z-50">
+            <div className="mx-auto w-full max-w-screen-xl px-5 md:px-6 lg:px-8 mb-1 relative z-50">
 
 
-              <h2 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-3 relative inline-block">
+              <StarBorder
+                as="h2"
+                className="text-3xl md:text-4xl font-display font-bold text-foreground mb-0 relative inline-block"
+                color="cyan"
+                speed="5s"
+              >
                 Browse the catalog
-              </h2>
+              </StarBorder>
             </div>
 
             {/* Mount the actual catalog grid - Full Width */}

@@ -1,11 +1,39 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Truck, ChefHat, Check, ShoppingBag, ArrowRight, Package } from 'lucide-react';
+import { Truck, ChefHat, Package, ArrowRight, ShoppingCart, Apple, Wheat } from 'lucide-react';
 
+// Updated with real Icelandic suppliers and relevant categories/colors
 const CONNECTIONS = [
-    { id: 'sup-1', label: 'Produce Pro', category: 'Vegetables', color: 'bg-green-500', bgSoft: 'bg-green-50', text: 'text-green-600', line: '#22c55e' },
-    { id: 'sup-2', label: 'Prime Meats', category: 'Proteins', color: 'bg-red-500', bgSoft: 'bg-red-50', text: 'text-red-600', line: '#ef4444' },
-    { id: 'sup-3', label: 'BevDistro', category: 'Beverages', color: 'bg-blue-500', bgSoft: 'bg-blue-50', text: 'text-blue-600', line: '#3b82f6' },
+    {
+        id: 'sup-1',
+        label: 'Bananar',
+        category: 'Fruits & Veg',
+        color: 'bg-green-500',
+        bgSoft: 'bg-green-50',
+        text: 'text-green-600',
+        line: '#22c55e',
+        icon: Apple
+    },
+    {
+        id: 'sup-2',
+        label: 'Innnes',
+        category: 'Full Line',
+        color: 'bg-blue-500',
+        bgSoft: 'bg-blue-50',
+        text: 'text-blue-600',
+        line: '#3b82f6',
+        icon: Truck
+    },
+    {
+        id: 'sup-3',
+        label: 'Garri',
+        category: 'Bakery & Dry',
+        color: 'bg-amber-500',
+        bgSoft: 'bg-amber-50',
+        text: 'text-amber-600',
+        line: '#f59e0b',
+        icon: Wheat
+    },
 ];
 
 export const OrderingFlowDiagram: React.FC = () => {
@@ -19,95 +47,118 @@ export const OrderingFlowDiagram: React.FC = () => {
     };
 
     return (
-        <div className="relative w-full max-w-3xl mx-auto p-8 my-12">
+        <div className="relative w-full max-w-4xl mx-auto p-4 md:p-8 my-12">
 
-            {/* 1. ATMOSPHERE: Warm Glow Behind (Fixes the 'Grey' feeling) */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-stone-100/50 rounded-full blur-3xl -z-10" />
-            <div className="absolute top-1/2 right-0 w-64 h-64 bg-orange-100/40 rounded-full blur-3xl -z-10" />
+            {/* Background Atmosphere */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[110%] h-[110%] bg-stone-100/50 rounded-full blur-3xl -z-10" />
+            <div className="absolute top-1/2 right-0 w-64 h-64 bg-blue-100/30 rounded-full blur-3xl -z-10" />
 
-            {/* Main Card */}
-            <div className="bg-white/80 backdrop-blur-xl rounded-2xl shadow-xl border border-white/60 p-8 overflow-hidden relative">
+            {/* Main Glass Card */}
+            <div className="bg-white/80 backdrop-blur-xl rounded-2xl shadow-xl border border-white/60 p-8 md:p-12 overflow-hidden relative">
 
                 {/* Header */}
-                <div className="text-center mb-10">
-                    <h3 className="font-serif text-3xl mb-3 text-stone-900">One Shared Catalog</h3>
-                    <p className="text-stone-500 text-sm md:text-base">
+                <div className="text-center mb-12">
+                    <h3 className="font-serif text-3xl md:text-4xl mb-3 text-stone-900">One Shared Catalog</h3>
+                    <p className="text-stone-500">
                         Click the <span className="font-bold text-stone-800">Suppliers</span> to unify your ordering guide.
                     </p>
                 </div>
 
-                {/* Diagram Area */}
-                <div className="relative flex justify-between h-[340px]">
+                {/* Diagram Area - Wider and spaced out */}
+                <div className="relative flex justify-between items-center h-[340px]">
 
                     {/* --- LEFT COLUMN: SUPPLIERS --- */}
-                    {/* justify-between ensures they sit exactly at Top, Middle, Bottom matching SVG coords */}
-                    <div className="flex flex-col justify-between z-10 w-48">
+                    {/* Changed from justify-between to justify-center + gap to bring them closer */}
+                    <div className="flex flex-col justify-center gap-5 z-10 w-56">
                         {CONNECTIONS.map((supplier) => {
                             const isActive = activeSuppliers.includes(supplier.id);
+                            const Icon = supplier.icon;
                             return (
                                 <motion.button
                                     key={supplier.id}
                                     onClick={() => toggleSupplier(supplier.id)}
                                     whileHover={{ scale: 1.02, x: 5 }}
                                     whileTap={{ scale: 0.98 }}
-                                    className={`group flex items-center gap-3 p-3 rounded-xl border-2 transition-all duration-300 text-left
+                                    className={`group flex items-center gap-4 p-3.5 rounded-xl border-2 transition-all duration-300 text-left
                     ${isActive
-                                            ? 'bg-white border-stone-800 shadow-lg'
-                                            : 'bg-white/50 border-stone-200 hover:border-stone-300 hover:bg-white'
+                                            ? 'bg-white border-stone-800 shadow-lg z-20'
+                                            : 'bg-white/50 border-stone-200 hover:border-stone-300 hover:bg-white z-10'
                                         }`}
                                 >
-                                    {/* Icon: Always colored now, just softer when inactive */}
-                                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors duration-300 
+                                    {/* Icon */}
+                                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors duration-300 shrink-0
                     ${isActive ? `${supplier.color} text-white` : `${supplier.bgSoft} ${supplier.text}`}`}>
-                                        <Truck size={18} />
+                                        <Icon size={18} />
                                     </div>
 
                                     <div>
-                                        <div className={`text-sm font-bold leading-tight ${isActive ? 'text-stone-900' : 'text-stone-600'}`}>
+                                        <div className={`text-base font-bold leading-tight ${isActive ? 'text-stone-900' : 'text-stone-600'}`}>
                                             {supplier.label}
                                         </div>
                                         <div className="text-[10px] font-bold uppercase tracking-wider text-stone-400 mt-0.5">
                                             {supplier.category}
                                         </div>
                                     </div>
+
+                                    {/* Small checkmark for active state */}
+                                    {isActive && (
+                                        <motion.div
+                                            initial={{ scale: 0 }} animate={{ scale: 1 }}
+                                            className="ml-auto text-stone-900"
+                                        >
+                                            <div className="w-1.5 h-1.5 rounded-full bg-current" />
+                                        </motion.div>
+                                    )}
                                 </motion.button>
                             );
                         })}
                     </div>
 
                     {/* --- CENTER: SVG LINES --- */}
-                    {/* inset-0 with w-full allows it to bridge the gap perfectly */}
                     <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
                         <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
                             {CONNECTIONS.map((supplier, index) => {
                                 const isActive = activeSuppliers.includes(supplier.id);
-                                // Coordinates: Starts at 35% (right side of left col) ends at 65% (left side of right col)
-                                // Y-Coords: 12% (Top), 50% (Mid), 88% (Bot) - tuned to match justify-between
-                                const yPos = index === 0 ? 12 : index === 1 ? 50 : 88;
+                                // New Y coordinates to match the tighter grouping (approx 32%, 50%, 68%)
+                                const yPos = index === 0 ? 32 : index === 1 ? 50 : 68;
 
                                 return (
                                     <g key={`line-${supplier.id}`}>
-                                        {/* Base Path (The "Road") - visible but faint by default */}
+                                        {/* Base Path */}
                                         <path
-                                            d={`M 30,${yPos} C 50,${yPos} 50,50 70,50`}
+                                            d={`M 26,${yPos} L 62,50`}
                                             fill="none"
                                             stroke="#E5E7EB"
                                             strokeWidth="0.5"
                                             vectorEffect="non-scaling-stroke"
                                         />
 
-                                        {/* Active Path (The "Signal") */}
+                                        {/* Active Path */}
                                         {isActive && (
                                             <motion.path
-                                                d={`M 30,${yPos} C 50,${yPos} 50,50 70,50`}
+                                                d={`M 26,${yPos} L 62,50`}
                                                 fill="none"
                                                 stroke={supplier.line}
-                                                strokeWidth="1"
+                                                strokeWidth="1.5"
                                                 initial={{ pathLength: 0, opacity: 0 }}
                                                 animate={{ pathLength: 1, opacity: 1 }}
-                                                transition={{ duration: 0.4 }}
+                                                transition={{ duration: 0.6, ease: "easeInOut" }}
                                                 vectorEffect="non-scaling-stroke"
                                             />
+                                        )}
+
+                                        {/* Traveling Particle */}
+                                        {isActive && (
+                                            <circle r="1" fill={supplier.line}>
+                                                <animateMotion
+                                                    dur="1.5s"
+                                                    repeatCount="indefinite"
+                                                    path={`M 26,${yPos} L 62,50`}
+                                                    keyPoints="0;1"
+                                                    keyTimes="0;1"
+                                                    calcMode="linear"
+                                                />
+                                            </circle>
                                         )}
                                     </g>
                                 );
@@ -115,56 +166,73 @@ export const OrderingFlowDiagram: React.FC = () => {
                         </svg>
                     </div>
 
-                    {/* --- RIGHT COLUMN: RESTAURANT --- */}
-                    <div className="z-10 flex flex-col justify-center w-48 items-end">
-                        <div className={`relative w-full aspect-square bg-white rounded-2xl border-2 transition-all duration-500 flex flex-col items-center justify-center gap-2
-              ${hasOrders ? 'border-stone-800 shadow-xl scale-105' : 'border-stone-100 shadow-sm'}`}>
+                    {/* --- RIGHT COLUMN: REALISTIC MINI APP UI --- */}
+                    <div className="z-10 flex flex-col justify-center items-end">
+                        <div className={`relative w-[320px] aspect-[4/3] bg-stone-50 rounded-xl border-2 transition-all duration-500 overflow-hidden flex flex-col
+              ${hasOrders ? 'border-stone-800 shadow-2xl scale-105' : 'border-stone-200 shadow-lg'}`}>
 
-                            {/* Floating Badge */}
-                            <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-stone-900 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest shadow-md whitespace-nowrap">
-                                Your Restaurant
+                            {/* Window Header */}
+                            <div className="h-8 bg-white border-b border-stone-100 flex items-center px-3 gap-1.5">
+                                <div className="w-2 h-2 rounded-full bg-stone-200" />
+                                <div className="w-2 h-2 rounded-full bg-stone-200" />
+                                <div className="w-2 h-2 rounded-full bg-stone-200" />
                             </div>
 
-                            <ChefHat size={32} className={`transition-colors duration-300 ${hasOrders ? 'text-stone-900' : 'text-stone-300'}`} />
-
-                            <div className="text-center">
-                                <div className="font-serif font-bold text-lg text-stone-900">Weekly Order</div>
-                                <div className="text-xs text-stone-400 mt-1 font-medium">
-                                    {hasOrders ? (
-                                        <span className="text-green-600 flex items-center justify-center gap-1">
-                                            <Package size={12} /> {activeSuppliers.length} Suppliers Linked
-                                        </span>
-                                    ) : (
-                                        "Waiting for input..."
+                            {/* App Content */}
+                            <div className="flex-1 flex p-3 gap-3 overflow-hidden">
+                                {/* Left: Cart Items */}
+                                <div className="flex-1 flex flex-col gap-2">
+                                    <div className="h-2 w-16 bg-stone-200 rounded-full mb-1" /> {/* "Cart" title */}
+                                    <AnimatePresence>
+                                        {activeSuppliers.map((id) => {
+                                            const s = CONNECTIONS.find(c => c.id === id);
+                                            return (
+                                                <motion.div
+                                                    key={id}
+                                                    initial={{ opacity: 0, x: -10 }}
+                                                    animate={{ opacity: 1, x: 0 }}
+                                                    exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+                                                    className="h-10 bg-white rounded border border-stone-100 flex items-center px-2 gap-2 shadow-sm"
+                                                >
+                                                    <div className={`w-6 h-6 rounded ${s?.bgSoft} flex items-center justify-center`}>
+                                                        {s && <s.icon size={12} className={s.text} />}
+                                                    </div>
+                                                    <div className="flex-1">
+                                                        <div className="h-1.5 w-12 bg-stone-200 rounded-full mb-1" />
+                                                        <div className="h-1 w-8 bg-stone-100 rounded-full" />
+                                                    </div>
+                                                </motion.div>
+                                            );
+                                        })}
+                                    </AnimatePresence>
+                                    {activeSuppliers.length === 0 && (
+                                        <div className="h-full flex items-center justify-center text-stone-300 text-[10px]">
+                                            Your cart is empty
+                                        </div>
                                     )}
                                 </div>
-                            </div>
 
-                            {/* Incoming Dots Indicator */}
-                            <div className="absolute bottom-4 flex gap-1 h-2">
-                                <AnimatePresence>
-                                    {activeSuppliers.map((id) => {
-                                        const sup = CONNECTIONS.find(s => s.id === id);
-                                        return (
-                                            <motion.div
-                                                key={id}
-                                                initial={{ scale: 0, y: 10 }}
-                                                animate={{ scale: 1, y: 0 }}
-                                                exit={{ scale: 0 }}
-                                                className={`w-2 h-2 rounded-full ${sup?.color}`}
-                                            />
-                                        )
-                                    })}
-                                </AnimatePresence>
+                                {/* Right: Summary Sidebar */}
+                                <div className="w-24 bg-white rounded border border-stone-100 p-2 flex flex-col gap-2 shadow-sm">
+                                    <div className="h-1.5 w-10 bg-stone-200 rounded-full" /> {/* "Summary" */}
+                                    <div className="space-y-1 mt-1">
+                                        <div className="flex justify-between"><div className="h-1 w-6 bg-stone-100 rounded-full" /><div className="h-1 w-4 bg-stone-100 rounded-full" /></div>
+                                        <div className="flex justify-between"><div className="h-1 w-5 bg-stone-100 rounded-full" /><div className="h-1 w-4 bg-stone-100 rounded-full" /></div>
+                                    </div>
+                                    <div className="mt-auto h-6 bg-stone-900 rounded flex items-center justify-center text-white text-[8px] font-bold">
+                                        Checkout
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
+
                 </div>
 
-                {/* Footer Hint */}
-                <div className={`mt-8 text-center transition-opacity duration-500 ${hasOrders ? 'opacity-0' : 'opacity-100'}`}>
-                    <p className="text-xs text-stone-400 font-medium uppercase tracking-widest flex items-center justify-center gap-2">
-                        <ArrowRight size={12} className="animate-pulse" /> Select a supplier to connect
+                {/* Action Hint */}
+                <div className={`mt-10 text-center transition-all duration-500 ${hasOrders ? 'opacity-0 translate-y-2' : 'opacity-100 translate-y-0'}`}>
+                    <p className="text-xs text-stone-400 font-bold uppercase tracking-widest flex items-center justify-center gap-2">
+                        <ArrowRight size={14} className="text-stone-300 animate-bounce-x" /> Select suppliers to begin
                     </p>
                 </div>
 
