@@ -8,7 +8,6 @@ import { CatalogGridWrapper } from '@/components/landing/CatalogGridWrapper'
 import { OrderingFlowDiagram } from '@/components/OrderingFlowDiagram'
 import { PrimaryNavRail } from '@/components/layout/PrimaryNavRail'
 import FloatingLines from '@/components/effects/FloatingLines'
-import { AuroraBackground } from '@/components/effects/AuroraBackground'
 import { useHeaderScrollHide } from '@/components/layout/useHeaderScrollHide'
 import StarBorder from '@/components/ui/StarBorder'
 import AnimatedContent from '@/components/ui/AnimatedContent'
@@ -74,42 +73,24 @@ export default function LandingPage() {
         {/* Hybrid background: soft gradient + light grid with edge fade */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
           {/* Gradient base layer */}
-          <div
-            className="absolute inset-0"
-            style={{
-              background: 'linear-gradient(135deg, #F9FAFB 0%, #F4F6FB 45%, #E8EDF5 100%)'
-            }}
-          />
+          {/* Gradient base layer */}
+          <div className="absolute inset-0 bg-white" />
 
           {/* Floating Lines Effect */}
           <div className="absolute inset-0">
-            <AuroraBackground />
             <FloatingLines
               enabledWaves={['top', 'middle', 'bottom']}
-              lineCount={[8, 12, 15]}
-              lineDistance={[6, 5, 4]}
-              topWavePosition={{ x: 10.0, y: 0.5, rotate: -0.4 }}
-              middleWavePosition={{ x: 5.0, y: 0.0, rotate: 0.2 }}
-              bottomWavePosition={{ x: 2.0, y: -0.7, rotate: 0.4 }}
-              animationSpeed={0.8}
+              lineCount={[3, 4, 5]}
+              lineDistance={[40, 30, 20]}
+              bendRadius={10.0}
+              bendStrength={-0.4}
               interactive={true}
-              bendRadius={5.0}
-              bendStrength={-0.5}
-              parallax={true}
-              parallaxStrength={0.15}
-              mixBlendMode="screen"
-              linesGradient={['#E8EDF5', '#F4F6FB', '#FFFFFF']}
+              parallax={false}
+              mixBlendMode="normal"
+              linesGradient={['#93C5FD', '#6EE7B7', '#A5B4FC']}
+              animationSpeed={0.2}
             />
           </div>
-
-          {/* Grid overlay with radial fade */}
-
-          <div
-            className="absolute inset-x-0 bottom-0 h-1/3"
-            style={{
-              background: 'linear-gradient(to top, rgba(148, 163, 184, 0.14), transparent)'
-            }}
-          />
         </div>
 
         {/* Hero Content */}
@@ -155,14 +136,7 @@ export default function LandingPage() {
                     </a>
                   </Button>
                 </AnimatedContent>
-                <Button
-                  asChild
-                  variant="outline"
-                  size="lg"
-                  className="text-base"
-                >
-                  <Link to="/login">Log in</Link>
-                </Button>
+
               </div>
             </div>
 

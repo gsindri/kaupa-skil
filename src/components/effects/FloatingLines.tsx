@@ -63,17 +63,6 @@ mat2 rotate(float r) {
   return mat2(cos(r), sin(r), -sin(r), cos(r));
 }
 
-vec3 background_color(vec2 uv) {
-  vec3 col = vec3(0.0);
-
-  float y = sin(uv.x - 0.2) * 0.3 - 0.1;
-  float m = uv.y - y;
-
-  col += mix(BLUE, BLACK, smoothstep(0.0, 1.0, abs(m)));
-  col += mix(PINK, BLACK, smoothstep(0.0, 1.0, abs(m - 0.8)));
-  return col * 0.5;
-}
-
 vec3 getLineColor(float t, vec3 baseColor) {
   if (lineGradientCount <= 0) {
     return baseColor;
@@ -96,10 +85,10 @@ vec3 getLineColor(float t, vec3 baseColor) {
     gradientColor = mix(c1, c2, f);
   }
   
-  return gradientColor * 0.5;
+  return gradientColor;
 }
 
-float wave(vec2 uv, float offset, vec2 screenUv, vec2 mouseUv, bool shouldBend) {
+  float wave(vec2 uv, float offset, vec2 screenUv, vec2 mouseUv, bool shouldBend) {
   float time = iTime * animationSpeed;
 
   float x_offset   = offset;
@@ -109,13 +98,13 @@ float wave(vec2 uv, float offset, vec2 screenUv, vec2 mouseUv, bool shouldBend) 
 
   if (shouldBend) {
     vec2 d = screenUv - mouseUv;
-    float influence = exp(-dot(d, d) * bendRadius);
+    float influence = exp(-dot(d, d) * bendRadius); // radial falloff around cursor
     float bendOffset = (mouseUv.y - screenUv.y) * influence * bendStrength * bendInfluence;
     y += bendOffset;
   }
 
   float m = uv.y - y;
-  return 0.0175 / max(abs(m) + 0.01, 1e-3) + 0.01;
+  return 0.005 / (abs(m) + 0.005);
 }
 
 void mainImage(out vec4 fragColor, in vec2 fragCoord) {
@@ -128,7 +117,7 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
 
   vec3 col = vec3(0.0);
 
-  vec3 b = lineGradientCount > 0 ? vec3(0.0) : background_color(baseUv);
+  vec3 b = vec3(0.0);
 
   vec2 mouseUv = vec2(0.0);
   if (interactive) {
@@ -150,7 +139,7 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
         baseUv,
         mouseUv,
         interactive
-      ) * 0.2;
+      ) * 0.4;
     }
   }
 
@@ -168,7 +157,7 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
         baseUv,
         mouseUv,
         interactive
-      );
+      ) * 0.4;
     }
   }
 
@@ -187,11 +176,12 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
         baseUv,
         mouseUv,
         interactive
-      ) * 0.1;
+      ) * 0.4;
     }
   }
 
-  fragColor = vec4(col, 1.0);
+  float alpha = max(max(col.r, col.g), col.b);
+  fragColor = vec4(col, min(alpha, 1.0));
 }
 
 void main() {
@@ -203,7 +193,7 @@ void main() {
 
 const MAX_GRADIENT_STOPS = 8;
 
-function hexToVec3(hex: string): Vector3 {
+function hexToVec3(hex: string) {
   let value = hex.trim();
 
   if (value.startsWith('#')) {
@@ -235,7 +225,7 @@ interface WavePosition {
 
 interface FloatingLinesProps {
   linesGradient?: string[];
-  enabledWaves?: ('top' | 'middle' | 'bottom')[];
+  enabledWaves?: string[];
   lineCount?: number | number[];
   lineDistance?: number | number[];
   topWavePosition?: WavePosition;
@@ -248,7 +238,7 @@ interface FloatingLinesProps {
   mouseDamping?: number;
   parallax?: boolean;
   parallaxStrength?: number;
-  mixBlendMode?: string;
+  mixBlendMode?: React.CSSProperties['mixBlendMode'];
 }
 
 export default function FloatingLines({
@@ -276,14 +266,14 @@ export default function FloatingLines({
   const targetParallaxRef = useRef(new Vector2(0, 0));
   const currentParallaxRef = useRef(new Vector2(0, 0));
 
-  const getLineCount = (waveType: 'top' | 'middle' | 'bottom'): number => {
+  const getLineCount = (waveType: string) => {
     if (typeof lineCount === 'number') return lineCount;
     if (!enabledWaves.includes(waveType)) return 0;
     const index = enabledWaves.indexOf(waveType);
     return lineCount[index] ?? 6;
   };
 
-  const getLineDistance = (waveType: 'top' | 'middle' | 'bottom'): number => {
+  const getLineDistance = (waveType: string) => {
     if (typeof lineDistance === 'number') return lineDistance;
     if (!enabledWaves.includes(waveType)) return 0.1;
     const index = enabledWaves.indexOf(waveType);
@@ -306,7 +296,7 @@ export default function FloatingLines({
     const camera = new OrthographicCamera(-1, 1, 1, -1, 0, 1);
     camera.position.z = 1;
 
-    const renderer = new WebGLRenderer({ antialias: true, alpha: false });
+    const renderer = new WebGLRenderer({ antialias: true, alpha: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     renderer.domElement.style.width = '100%';
     renderer.domElement.style.height = '100%';
@@ -429,8 +419,8 @@ export default function FloatingLines({
     };
 
     if (interactive) {
-      renderer.domElement.addEventListener('pointermove', handlePointerMove);
-      renderer.domElement.addEventListener('pointerleave', handlePointerLeave);
+      window.addEventListener('pointermove', handlePointerMove);
+      window.addEventListener('pointerleave', handlePointerLeave);
     }
 
     let raf = 0;
@@ -457,13 +447,14 @@ export default function FloatingLines({
 
     return () => {
       cancelAnimationFrame(raf);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       if (ro && containerRef.current) {
         ro.disconnect();
       }
 
       if (interactive) {
-        renderer.domElement.removeEventListener('pointermove', handlePointerMove);
-        renderer.domElement.removeEventListener('pointerleave', handlePointerLeave);
+        window.removeEventListener('pointermove', handlePointerMove);
+        window.removeEventListener('pointerleave', handlePointerLeave);
       }
 
       geometry.dispose();
@@ -473,6 +464,7 @@ export default function FloatingLines({
         renderer.domElement.parentElement.removeChild(renderer.domElement);
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     linesGradient,
     enabledWaves,
@@ -495,7 +487,7 @@ export default function FloatingLines({
       ref={containerRef}
       className="w-full h-full relative overflow-hidden floating-lines-container"
       style={{
-        mixBlendMode: mixBlendMode as any
+        mixBlendMode: mixBlendMode
       }}
     />
   );
