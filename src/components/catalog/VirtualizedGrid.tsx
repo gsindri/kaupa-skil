@@ -419,7 +419,7 @@ export function VirtualizedGrid<T>({
       style={{
         position: 'relative',
         willChange: 'transform',
-        width: '100%',
+        maxWidth: '100%',
         ...style,
       }}
     >
