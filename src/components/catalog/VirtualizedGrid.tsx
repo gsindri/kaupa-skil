@@ -11,7 +11,7 @@ export interface GridBreakpoint {
 }
 
 export interface VirtualizedGridProps<T> {
-  containerRef?: React.RefObject<HTMLDivElement>
+  containerRef?: React.Ref<HTMLDivElement>
   items: T[]
   /** Render a single card. Receive the item and its absolute index. */
   renderItem: (item: T, index: number) => React.ReactNode
@@ -45,52 +45,33 @@ function contentWidth(el: HTMLElement): number {
 }
 
 /** Measure container width and keep it reactive. */
-function useContainerSize(ref: React.RefObject<HTMLElement>) {
-  const [w, setW] = React.useState(0)
+function useContainerSize(): { ref: (node: HTMLElement | null) => void; width: number } {
+  const [width, setWidth] = React.useState(0)
+  const resizeObserver = React.useRef<ResizeObserver>()
 
-  // Force initial measurement after layout to ensure CSS variables are resolved
-  React.useLayoutEffect(() => {
-    if (!ref.current) return
-    const measure = () => {
-      if (!ref.current) return
-      const width = contentWidth(ref.current)
-      // Only update if changed prevents loops, but React state dedupes anyway
-      setW(width)
+  const ref = React.useCallback((node: HTMLElement | null) => {
+    if (resizeObserver.current) {
+      resizeObserver.current.disconnect()
+      resizeObserver.current = undefined
     }
 
-    measure() // Immediate
-    requestAnimationFrame(measure) // After paint
-
-    // Retry after a small delay to ensure layout is settled
-    const timer = setTimeout(() => {
+    if (node) {
+      // Measure immediately
+      const measure = () => setWidth(contentWidth(node))
       measure()
-    }, 150)
 
-    return () => clearTimeout(timer)
-  }, [ref])
+      // Create observer
+      const observer = new ResizeObserver(measure)
+      observer.observe(node)
+      resizeObserver.current = observer
 
-  // Failsafe: if we are still 0 after 250ms, force a width to unblock render
-  React.useEffect(() => {
-    if (w === 0) {
-      const timeout = setTimeout(() => {
-        if (w === 0) {
-          setW(typeof window !== 'undefined' ? window.innerWidth : 1024)
-        }
-      }, 250)
-      return () => clearTimeout(timeout)
+      // Double check after a frame to catch layout shifts
+      requestAnimationFrame(measure)
     }
-  }, [w])
+  }, [])
 
-  React.useLayoutEffect(() => {
-    if (!ref.current) return
-    const ro = new ResizeObserver(() => {
-      setW(ref.current ? contentWidth(ref.current) : 0)
-    })
-    ro.observe(ref.current)
-    return () => ro.disconnect()
-  }, [ref])
-
-  return { width: w }
+  // ... (useContainerSize same as before up to return)
+  return { ref, width }
 }
 
 /**
@@ -143,12 +124,24 @@ export function VirtualizedGrid<T>({
   breakpoints,
   fallback,
 }: VirtualizedGridProps<T>) {
+  // We use our internal measurement hook which gives us a ref callback
+  const { ref: internalRef, width } = useContainerSize()
   const scrollerRef = React.useRef<HTMLDivElement>(null)
   const innerRef = React.useRef<HTMLDivElement>(null)
 
-  // Use external ref if provided, otherwise use internal ref
-  const measureRef = containerRef || scrollerRef
-  const { width } = useContainerSize(measureRef)
+  // Combine refs: we need to set both our measurement ref AND the user's ref if provided
+  const setRef = React.useCallback((node: HTMLDivElement | null) => {
+    internalRef(node)
+    // @ts-ignore
+    scrollerRef.current = node
+    if (typeof containerRef === 'function') {
+      containerRef(node)
+    } else if (containerRef) {
+      // @ts-ignore
+      containerRef.current = node
+    }
+  }, [internalRef, containerRef])
+
 
   // DEBUG: Log measured width
   React.useEffect(() => {
@@ -421,7 +414,7 @@ export function VirtualizedGrid<T>({
 
   return (
     <div
-      ref={scrollerRef}
+      ref={setRef}
       className={className}
       style={{
         position: 'relative',
