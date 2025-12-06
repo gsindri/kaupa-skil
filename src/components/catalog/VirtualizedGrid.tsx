@@ -410,6 +410,23 @@ export function VirtualizedGrid<T>({
     : 0
   const contentHeight = Math.max(0, totalHeight)
 
+  if (width === 0) {
+    return (
+      <div
+        ref={scrollerRef}
+        className={className}
+        style={{
+          ...style,
+          width: '100%',
+          opacity: 0,
+          pointerEvents: 'none',
+        }}
+      >
+        <div ref={innerRef} style={{ height: 1 }} />
+      </div>
+    )
+  }
+
   return (
     <div
       ref={scrollerRef}
