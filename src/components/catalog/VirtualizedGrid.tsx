@@ -46,7 +46,7 @@ function contentWidth(el: HTMLElement): number {
 
 /** Measure container width and keep it reactive. */
 function useContainerSize(ref: React.RefObject<HTMLElement>) {
-  const [w, setW] = React.useState(0)
+  const [w, setW] = React.useState(() => (typeof window !== 'undefined' ? window.innerWidth : 0))
 
   // Force initial measurement after layout to ensure CSS variables are resolved
   React.useLayoutEffect(() => {
