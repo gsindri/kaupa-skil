@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import { VirtualizedGrid } from './VirtualizedGrid'
 import { ProductCard } from './ProductCard'
+import { ProductCardSkeleton } from './ProductCardSkeleton'
 
 interface CatalogGridProps {
   containerRef?: React.RefObject<HTMLDivElement>
@@ -41,6 +42,14 @@ export function CatalogGrid({
     [onAddToCart, showPrice, addingId, mode],
   )
 
+  const fallback = (
+    <div className="grid grid-cols-2 gap-x-3 gap-y-4 sm:grid-cols-3 sm:gap-x-4 sm:gap-y-5 lg:grid-cols-4 lg:gap-x-6 lg:gap-y-7">
+      {Array.from({ length: 8 }).map((_, i) => (
+        <ProductCardSkeleton key={i} />
+      ))}
+    </div>
+  )
+
   return (
     <VirtualizedGrid
       containerRef={containerRef}
@@ -62,6 +71,7 @@ export function CatalogGrid({
         'catalog-grid mt-8 scroll-mt-[calc(var(--header-h,64px)+32px)]',
         className,
       )}
+      fallback={fallback}
     />
   )
 }

@@ -32,6 +32,8 @@ export interface VirtualizedGridProps<T> {
   className?: string
   style?: React.CSSProperties
   breakpoints?: GridBreakpoint[]
+  /** Optional fallback while the grid is measuring/calculating layout */
+  fallback?: React.ReactNode
 }
 
 /** Get content width excluding padding */
@@ -133,6 +135,7 @@ export function VirtualizedGrid<T>({
   className,
   style,
   breakpoints,
+  fallback,
 }: VirtualizedGridProps<T>) {
   const scrollerRef = React.useRef<HTMLDivElement>(null)
   const innerRef = React.useRef<HTMLDivElement>(null)
@@ -410,23 +413,6 @@ export function VirtualizedGrid<T>({
     : 0
   const contentHeight = Math.max(0, totalHeight)
 
-  if (width === 0) {
-    return (
-      <div
-        ref={scrollerRef}
-        className={className}
-        style={{
-          ...style,
-          width: '100%',
-          opacity: 0,
-          pointerEvents: 'none',
-        }}
-      >
-        <div ref={innerRef} style={{ height: 1 }} />
-      </div>
-    )
-  }
-
   return (
     <div
       ref={scrollerRef}
@@ -437,53 +423,55 @@ export function VirtualizedGrid<T>({
         ...style,
       }}
     >
-      {/* The inner spacer sets the full height for the virtualizer */}
-      <div
-        ref={innerRef}
-        style={{ height: contentHeight, position: 'relative' }}
-      >
-        {virtualRows.map(vr => {
-          const startIndex = vr.index * cols
-          const endIndex = Math.min(startIndex + cols, items.length)
-          // Row container absolutely positioned
-          return (
-            <div
-              key={vr.key}
-              data-row={vr.index}
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                width: '100%',
-                transform: `translate3d(0, ${Math.max(0, vr.start - normalizedScrollMargin)}px, 0)`,
-                height: cardHeight,
-                display: 'grid',
-                gridTemplateColumns:
-                  columnWidths.length === cols
-                    ? columnWidths.map(w => `${w}px`).join(' ')
-                    : `repeat(${cols}, ${baseCardWidth}px)`,
-                justifyContent: 'start',
-                columnGap: safeGapX,
-                rowGap: safeGapY,
-                paddingInline: 0,
-                paddingBottom: safeGapY,
-                alignContent: 'start',
-              }}
-            >
-              {Array.from({ length: endIndex - startIndex }).map((_, i) => {
-                const index = startIndex + i
-                const item = items[index]
-                return (
-                  <div key={itemKey ? itemKey(item, index) : index} data-grid-card>
-                    {renderItem(item, index)}
-                  </div>
-                )
-              })}
-            </div>
-          )
-        })}
-      </div>
+      {width === 0 && fallback ? (
+        fallback
+      ) : (
+        <div
+          ref={innerRef}
+          style={{ height: contentHeight, position: 'relative', opacity: width === 0 ? 0 : 1 }}
+        >
+          {virtualRows.map(vr => {
+            const startIndex = vr.index * cols
+            const endIndex = Math.min(startIndex + cols, items.length)
+            // Row container absolutely positioned
+            return (
+              <div
+                key={vr.key}
+                data-row={vr.index}
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: '100%',
+                  transform: `translate3d(0, ${Math.max(0, vr.start - normalizedScrollMargin)}px, 0)`,
+                  height: cardHeight,
+                  display: 'grid',
+                  gridTemplateColumns:
+                    columnWidths.length === cols
+                      ? columnWidths.map(w => `${w}px`).join(' ')
+                      : `repeat(${cols}, ${baseCardWidth}px)`,
+                  justifyContent: 'start',
+                  columnGap: safeGapX,
+                  rowGap: safeGapY,
+                  paddingInline: 0,
+                  paddingBottom: safeGapY,
+                  alignContent: 'start',
+                }}
+              >
+                {Array.from({ length: endIndex - startIndex }).map((_, i) => {
+                  const index = startIndex + i
+                  const item = items[index]
+                  return (
+                    <div key={itemKey ? itemKey(item, index) : index} data-grid-card>
+                      {renderItem(item, index)}
+                    </div>
+                  )
+                })}
+              </div>
+            )
+          })}
+        </div>
+      )}
     </div>
   )
 }
-
