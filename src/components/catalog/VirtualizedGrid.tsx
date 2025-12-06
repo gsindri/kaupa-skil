@@ -69,6 +69,18 @@ function useContainerSize(ref: React.RefObject<HTMLElement>) {
     return () => clearTimeout(timer)
   }, [ref])
 
+  // Failsafe: if we are still 0 after 250ms, force a width to unblock render
+  React.useEffect(() => {
+    if (w === 0) {
+      const timeout = setTimeout(() => {
+        if (w === 0) {
+          setW(typeof window !== 'undefined' ? window.innerWidth : 1024)
+        }
+      }, 250)
+      return () => clearTimeout(timeout)
+    }
+  }, [w])
+
   React.useLayoutEffect(() => {
     if (!ref.current) return
     const ro = new ResizeObserver(() => {
@@ -414,6 +426,7 @@ export function VirtualizedGrid<T>({
       style={{
         position: 'relative',
         willChange: 'transform',
+        width: '100%',
         ...style,
       }}
     >
