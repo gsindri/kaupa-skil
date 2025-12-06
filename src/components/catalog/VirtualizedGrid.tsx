@@ -46,7 +46,7 @@ function contentWidth(el: HTMLElement): number {
 
 /** Measure container width and keep it reactive. */
 function useContainerSize(ref: React.RefObject<HTMLElement>) {
-  const [w, setW] = React.useState(() => (typeof window !== 'undefined' ? window.innerWidth : 0))
+  const [w, setW] = React.useState(0)
 
   // Force initial measurement after layout to ensure CSS variables are resolved
   React.useLayoutEffect(() => {
@@ -54,23 +54,17 @@ function useContainerSize(ref: React.RefObject<HTMLElement>) {
     const measure = () => {
       if (!ref.current) return
       const width = contentWidth(ref.current)
+      // Only update if changed prevents loops, but React state dedupes anyway
       setW(width)
     }
 
     measure() // Immediate
     requestAnimationFrame(measure) // After paint
 
-    // Retry after a small delay if we got 0 padding (CSS vars not resolved yet)
+    // Retry after a small delay to ensure layout is settled
     const timer = setTimeout(() => {
-      if (ref.current) {
-        const cs = getComputedStyle(ref.current)
-        const pad = parseFloat(cs.paddingLeft) || 0
-        if (pad === 0) {
-          // CSS vars still not resolved, force remeasure
-          measure()
-        }
-      }
-    }, 50)
+      measure()
+    }, 150)
 
     return () => clearTimeout(timer)
   }, [ref])
